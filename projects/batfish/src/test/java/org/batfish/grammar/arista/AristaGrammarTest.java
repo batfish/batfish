@@ -191,6 +191,7 @@ import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
@@ -3618,6 +3619,26 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testBgpClientToClientReflectionExtraction() {
+    AristaConfiguration c = parseVendorConfig("arista_bgp_reflection");
+    Map<String, AristaBgpVrf> bgpVrfs = c.getAristaBgp().getVrfs();
+    assertThat(bgpVrfs, hasKeys("default", "vrf2", "vrf3"));
+    assertThat(bgpVrfs.get("default").getClientToClientReflection(), equalTo(false));
+    assertThat(bgpVrfs.get("vrf2").getClientToClientReflection(), nullValue());
+    assertThat(bgpVrfs.get("vrf3").getClientToClientReflection(), equalTo(true));
+  }
+
+  @Test
+  public void testBgpClientToClientReflectionConversion() {
+    Configuration c = parseConfig("arista_bgp_reflection");
+    Map<String, Vrf> vrfs = c.getVrfs();
+    assertThat(vrfs, hasKeys("default", "vrf2", "vrf3"));
+    assertThat(vrfs.get("default").getBgpProcess().getClientToClientReflection(), equalTo(false));
+    assertThat(vrfs.get("vrf2").getBgpProcess().getClientToClientReflection(), equalTo(true));
+    assertThat(vrfs.get("vrf3").getBgpProcess().getClientToClientReflection(), equalTo(true));
+  }
+
+  @Test
   public void testConfederationExtraction() {
     AristaConfiguration config = parseVendorConfig("arista_bgp_confederations");
     {
@@ -3644,14 +3665,14 @@ public class AristaGrammarTest {
     {
       BgpConfederation confederation = c.getDefaultVrf().getBgpProcess().getConfederation();
       assertThat(confederation.getId(), equalTo(1111L));
-      assertThat(confederation.getMembers(), equalTo(ImmutableSet.of(3L, 4L, 5L, 6L)));
+      assertThat(confederation.getMembers().enumerate(), equalTo(ImmutableSet.of(3L, 4L, 5L, 6L)));
     }
     {
       BgpConfederation confederation = c.getVrfs().get("vrf2").getBgpProcess().getConfederation();
 
       assertThat(confederation.getId(), equalTo((22L << 16) + 22));
       assertThat(
-          confederation.getMembers(),
+          confederation.getMembers().enumerate(),
           containsInAnyOrder((1L << 16) + 1, (1L << 16) + 2, (3L << 16) + 3, 44L));
     }
   }

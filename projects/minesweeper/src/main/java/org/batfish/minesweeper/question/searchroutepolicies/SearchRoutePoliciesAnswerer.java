@@ -4,6 +4,7 @@ import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
+import static org.parboiled.common.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BoundType;
@@ -183,7 +184,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // satAssignmentToInputRoute to produce the output route from our fullModel and the final
       // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
       // result.
-      assert result.getAction().equals(_action);
+      checkState(
+          result.getAction().equals(_action),
+          "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
 
       return Optional.of(toRow(toQuestionResult(result, outputRoute)));
     }

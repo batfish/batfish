@@ -4,14 +4,13 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import com.google.common.collect.ImmutableSortedSet;
 import java.io.Serializable;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.LongSpace;
 
 /**
  * Represents configuration for a BGP confederation.
@@ -21,7 +20,18 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class BgpConfederation implements Serializable {
   private final long _id;
-  @Nonnull private final SortedSet<Long> _members;
+  @Nonnull private final LongSpace _members;
+
+  /**
+   * @see #BgpConfederation(long, Set)
+   */
+  public BgpConfederation(long id, Set<Long> members) {
+    checkArgument(!members.isEmpty(), "BGP confederation without members is not allowed");
+    _id = id;
+    LongSpace.Builder asSpace = LongSpace.builder();
+    members.forEach(asSpace::including);
+    _members = asSpace.build();
+  }
 
   /**
    * Create new confederation config.
@@ -29,10 +39,10 @@ public final class BgpConfederation implements Serializable {
    * @param id externally visible autonomous system number
    * @param members Set of autonomous system numbers visible only within a BGP confederation
    */
-  public BgpConfederation(long id, Set<Long> members) {
+  public BgpConfederation(long id, LongSpace members) {
     checkArgument(!members.isEmpty(), "BGP confederation without members is not allowed");
     _id = id;
-    _members = ImmutableSortedSet.copyOf(members);
+    _members = members;
   }
 
   /**
@@ -47,9 +57,8 @@ public final class BgpConfederation implements Serializable {
    * Set of autonomous system numbers visible only within a BGP confederation, and used to represent
    * a Member-AS within that confederation.
    */
-  @Nonnull
   @JsonProperty(PROP_MEMBERS)
-  public SortedSet<Long> getMembers() {
+  public @Nonnull LongSpace getMembers() {
     return _members;
   }
 
@@ -57,8 +66,7 @@ public final class BgpConfederation implements Serializable {
   public boolean equals(Object o) {
     if (this == o) {
       return true;
-    }
-    if (!(o instanceof BgpConfederation)) {
+    } else if (!(o instanceof BgpConfederation)) {
       return false;
     }
     BgpConfederation that = (BgpConfederation) o;
@@ -76,7 +84,7 @@ public final class BgpConfederation implements Serializable {
   @JsonCreator
   private static BgpConfederation create(
       @Nullable @JsonProperty(PROP_ID) Long id,
-      @Nullable @JsonProperty(PROP_MEMBERS) Set<Long> members) {
+      @Nullable @JsonProperty(PROP_MEMBERS) LongSpace members) {
     checkArgument(id != null, "Missing %s", PROP_ID);
     checkArgument(members != null, "Missing %s", PROP_ID);
     return new BgpConfederation(id, members);

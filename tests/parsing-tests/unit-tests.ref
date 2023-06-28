@@ -44809,7 +44809,7 @@
             "      (community_set_elem_list*",
             "        (community_set_elem*",
             "          IOS_REGEX:'ios-regex'  <== mode:M_CommunitySetElem",
-            "          COMMUNITY_SET_REGEX:''2153:*''  <== mode:M_CommunitySetRegex",
+            "          COMMUNITY_SET_REGEX:''2153:.*''  <== mode:M_CommunitySetRegex",
             "          NEWLINE:'\\n'  <== mode:M_CommunitySetElem))",
             "      END_SET:'end-set'  <== mode:M_CommunitySetElem",
             "      NEWLINE:'\\n'))",
@@ -44890,7 +44890,7 @@
             "      (community_set_elem_list*",
             "        (community_set_elem*",
             "          IOS_REGEX:'ios-regex'  <== mode:M_CommunitySetElem",
-            "          COMMUNITY_SET_REGEX:''2152:*''  <== mode:M_CommunitySetRegex",
+            "          COMMUNITY_SET_REGEX:''2152:.*''  <== mode:M_CommunitySetRegex",
             "          NEWLINE:'\\n'  <== mode:M_CommunitySetElem))",
             "      END_SET:'end-set'  <== mode:M_CommunitySetElem",
             "      NEWLINE:'\\n'))",
@@ -70365,6 +70365,18 @@
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 201,
+              "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vtep-source-interface lo0.0"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 203,
+              "Parser_Context" : "[ri_vrf_import ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vrf-import fabric"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 211,
               "Parser_Context" : "[evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "vrf-target target:100:100"
@@ -70620,6 +70632,16 @@
               "Line" : 12,
               "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "priority 65"
+            }
+          ]
+        },
+        "configs/juniper_misc" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "vtep-source-interface lo0.0"
             }
           ]
         },
@@ -86210,10 +86232,6 @@
         },
         "juniper_bgp" : {
           "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "Currently do not support per-neighbor BGP preference"
-            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
