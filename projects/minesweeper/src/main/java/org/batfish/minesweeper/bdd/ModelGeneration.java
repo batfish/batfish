@@ -179,8 +179,9 @@ public class ModelGeneration {
       BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
     // Note: this is the only part of model generation that relies on the fact that we are solving
     // for the input route.  If we also want to produce the output route from the model, given the
-    // BDDRoute that results from symbolic analysis, we need to consider the _direction as well as
-    // the values of the two next-hop flags in the BDDRoute, in order to do it properly.
+    // BDDRoute that results from symbolic analysis, we need to consider the direction of the route
+    // map (in or out) as well as the values of the other next-hop-related in the BDDRoute, in order
+    // to do it properly.
 
     Ip ip = Ip.create(r.getNextHop().satAssignmentToLong(fullModel));
     // if we matched on a next-hop interface then include the interface name in the produced
@@ -241,9 +242,7 @@ public class ModelGeneration {
     NextHop nextHop = satAssignmentToNextHop(fullModel, r, configAPs);
     builder.setNextHop(nextHop);
 
-    Bgpv4Route route = builder.build();
-
-    return route;
+    return builder.build();
   }
 
   /**

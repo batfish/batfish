@@ -92,10 +92,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   private MutableBDDInteger _med;
 
-  private MutableBDDInteger _nextHop;
+  // we use a BDDInteger to track the constraints on the next-hop IP, but we also track a few
+  // additional pieces of information that are needed to properly account for the next-hop:  a
+  // "type" that accounts for actions such as when a route map discards the next-hop, and a flag
+  // indicating whether the route map explicitly updated the next hop
 
-  // to properly determine the next-hop IP that results from each path through a given route-map we
-  // need to track a few more pieces of information:
+  private MutableBDDInteger _nextHop;
 
   public enum NextHopType {
     BGP_PEER_ADDRESS,
@@ -131,8 +133,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   /**
-   * Contains a BDD variable for next-hop interface that may be encountered along the path. See
-   * {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
+   * Contains a BDD variable for each next-hop interface name that may be encountered along the
+   * path. See {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
    */
   private final BDD[] _nextHopInterfaces;
 

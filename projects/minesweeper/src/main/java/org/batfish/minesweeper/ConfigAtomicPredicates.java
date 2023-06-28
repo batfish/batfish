@@ -334,14 +334,14 @@ public final class ConfigAtomicPredicates {
   /**
    * Collect up all next-hop interface names that appear in the given policies.
    *
-   * @param policies the set of policies to collect tracks from.
+   * @param policies the set of policies to collect interface names from.
    * @param configuration the batfish configuration
    * @return a set of all next-hop interface names that appear
    */
-  private static Set<String> findAllTracks(
+  private static Set<String> findAllNextHopInterfaces(
       Collection<RoutingPolicy> policies, Configuration configuration) {
     return findAllMatchItems(
-        ImmutableSet.of(), policies, configuration, new BooleanExprTrackCollector());
+        ImmutableSet.of(), policies, configuration, new NextHopInterfaceCollector());
   }
 
   /**
@@ -351,10 +351,10 @@ public final class ConfigAtomicPredicates {
    * @param configuration the batfish configuration
    * @return a set of all tracks that appear
    */
-  private static Set<String> findAllNextHopInterfaces(
+  private static Set<String> findAllTracks(
       Collection<RoutingPolicy> policies, Configuration configuration) {
     return findAllMatchItems(
-        ImmutableSet.of(), policies, configuration, new NextHopInterfaceCollector());
+        ImmutableSet.of(), policies, configuration, new BooleanExprTrackCollector());
   }
 
   /**

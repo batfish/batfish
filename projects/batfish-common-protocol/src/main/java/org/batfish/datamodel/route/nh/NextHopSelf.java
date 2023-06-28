@@ -4,6 +4,12 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import javax.annotation.Nonnull;
 
+/**
+ * Represents the fact that the next-hop IP of a BGP route is set to the local address of the BGP
+ * session by a particular route policy. Objects of this class can be used in results produced by
+ * the {@link org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion}
+ * question.
+ */
 public final class NextHopSelf implements NextHopResult {
 
   @JsonValue

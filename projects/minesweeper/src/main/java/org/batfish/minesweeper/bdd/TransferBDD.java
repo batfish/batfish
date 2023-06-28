@@ -551,7 +551,7 @@ public class TransferBDD {
       MatchInterface mi = (MatchInterface) expr;
       if (_useOutputAttributes) {
         // we don't yet properly model the situation where a modified next-hop can be later matched
-        // upon, so we don't allow such matching
+        // upon, so we don't allow matching if that is possible
         throw new UnsupportedFeatureException(expr.toString());
       }
       BDD[] nextHopInterfaces = p.getData().getNextHopInterfaces();
