@@ -2,6 +2,7 @@ package org.batfish.datamodel.route.nh;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import java.io.Serializable;
 
 /**
  * The base type for a next-hop in a route that is produced by a Batfish question. The {@link
@@ -15,4 +16,4 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
   @JsonSubTypes.Type(value = NextHopSelf.class),
   @JsonSubTypes.Type(value = NextHopBgpPeerAddress.class)
 })
-public interface NextHopResult {}
+public interface NextHopResult extends Serializable {}

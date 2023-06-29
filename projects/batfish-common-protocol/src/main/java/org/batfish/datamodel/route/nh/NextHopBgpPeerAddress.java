@@ -3,6 +3,7 @@ package org.batfish.datamodel.route.nh;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
 /**
  * Represents the fact that the next-hop IP of a BGP route is set to the address of the BGP peer by
@@ -15,6 +16,16 @@ public final class NextHopBgpPeerAddress implements NextHopResult {
   @JsonCreator
   public static @Nonnull NextHopBgpPeerAddress instance() {
     return INSTANCE;
+  }
+
+  @Override
+  public boolean equals(@Nullable Object obj) {
+    return obj instanceof NextHopBgpPeerAddress;
+  }
+
+  @Override
+  public int hashCode() {
+    return 139295017; // randomly generated
   }
 
   @Override

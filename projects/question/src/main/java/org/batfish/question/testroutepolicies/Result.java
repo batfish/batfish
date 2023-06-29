@@ -9,7 +9,10 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.trace.TraceTree;
 
-/** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
+/**
+ * A {@link TestRoutePoliciesQuestion} result for a single policy and input route. The class is
+ * parameterized by the type used for the input and output routes.
+ */
 public final class Result<R> {
   /** A key to relate results by policy and input route. */
   public static final class Key<R> {
