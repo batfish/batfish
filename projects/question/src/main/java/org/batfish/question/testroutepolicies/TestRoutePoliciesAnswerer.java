@@ -105,13 +105,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Produce the difference of simulating the given route policies on the given input route.
+   * Produce the difference of simulating the given route policy on the given input route.
    *
-   * @param referencePolicy the route policy to simulate
-   * @param proposedPolicy the other route policy to simulate
+   * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
-   * @return a table row containing the differences of the simulation
+   * @return the results of the simulation
    */
   private static Result<Bgpv4Route> simulatePolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
@@ -406,6 +405,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         columnMetadata, String.format("Results for route ${%s}", COL_INPUT_ROUTE));
   }
 
+  /**
+   * Converts a simulation result that uses {@link Bgpv4Route} to represent the input and output
+   * routes to an equivalent result that uses {@link BgpRoute} instead. The former class is used by
+   * the Batfish route simulation, while the latter class is the format that is used in results by
+   * {@link TestRoutePoliciesQuestion}.
+   *
+   * @param result the original simulation result
+   * @return a version of the result suitable for output from this analysis
+   */
   public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result) {
     return new Result<>(
         result.getPolicyId(),

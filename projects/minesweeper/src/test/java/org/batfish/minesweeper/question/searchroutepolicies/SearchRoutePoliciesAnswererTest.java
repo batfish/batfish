@@ -2204,7 +2204,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetThenDiscardNextHop() {
+  public void testUnreachableSetNextHop() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))

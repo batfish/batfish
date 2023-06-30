@@ -97,45 +97,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Convert the results of symbolic route analysis into an answer to this question, if the
-   * resulting constraints are satisfiable.
-   *
-   * @param referencePolicy the reference route policy that we compared against.
-   * @param policy the proposed route policy.
-   * @param inRoute the input route to simulate on each policy
-   * @param env a pair of predicate that assigns truth values to tracks and a source VRF
-   * @return the concrete input route and, if the desired action is PERMIT, the concrete output
-   *     routes resulting from analyzing the given policies.
-   */
-  private Tuple<Result<BgpRoute>, Result<BgpRoute>> computeDifferencesForInputs(
-      RoutingPolicy referencePolicy,
-      RoutingPolicy policy,
-      Bgpv4Route inRoute,
-      Tuple<Predicate<String>, String> env,
-      BDDRoute outputRoutes,
-      BDDRoute outputRoutesOther) {
-    Result<Bgpv4Route> r1 =
-        TestRoutePoliciesAnswerer.simulatePolicy(
-            policy,
-            inRoute,
-            SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES,
-            _direction,
-            env.getFirst(),
-            env.getSecond());
-    Result<Bgpv4Route> r2 =
-        TestRoutePoliciesAnswerer.simulatePolicy(
-            referencePolicy,
-            inRoute,
-            SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES,
-            _direction,
-            env.getFirst(),
-            env.getSecond());
-    Result<BgpRoute> qRoute1 = SearchRoutePoliciesAnswerer.toQuestionResult(r1, outputRoutesOther);
-    Result<BgpRoute> qRoute2 = SearchRoutePoliciesAnswerer.toQuestionResult(r2, outputRoutes);
-    return new Tuple<>(qRoute1, qRoute2);
-  }
-
-  /**
    * @param constraints Logical constraints that describe a set of routes.
    * @param configAPs the atomic predicates used for communities/as-paths.
    * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
@@ -266,22 +227,15 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
-        // some common
-        // input routes and their behavior should match.
+        // some common input routes and their behavior should match.
         if (!intersection.isZero()) {
+          // a flag that is set if we find a behavioral difference between the two paths
+          boolean behaviorDiff = false;
+          BDD finalConstraints = null;
           // Naive check to see if both policies accepted/rejected the route(s).
           if (path.getAccepted() != otherPath.getAccepted()) {
-            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
-                constraintsToInputs(intersection, configAPs);
-            Tuple<Result<BgpRoute>, Result<BgpRoute>> results =
-                computeDifferencesForInputs(
-                    referencePolicy,
-                    policy,
-                    t.getFirst(),
-                    t.getSecond(),
-                    path.getFirst(),
-                    otherPath.getFirst());
-            differences.add(results);
+            behaviorDiff = true;
+            finalConstraints = intersection;
           } else {
             // If both policies perform the same action, then check that their outputs match.
             // We compute the outputs of interest, by restricting the sets of output routes to the
@@ -296,19 +250,23 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
               BDD outputConstraints =
                   counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
               if (!diff.isEmpty()) {
-                Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
-                    constraintsToInputs(intersection.and(outputConstraints), configAPs);
-                Tuple<Result<BgpRoute>, Result<BgpRoute>> results =
-                    computeDifferencesForInputs(
-                        referencePolicy,
-                        policy,
-                        t.getFirst(),
-                        t.getSecond(),
-                        outputRoutes,
-                        outputRoutesOther);
-                differences.add(results);
+                behaviorDiff = true;
+                finalConstraints = intersection.and(outputConstraints);
               }
             }
+          }
+
+          // we have found a difference, so let's get a concrete example of the difference
+          if (behaviorDiff) {
+            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+                constraintsToInputs(finalConstraints, configAPs);
+            Result<BgpRoute> otherResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
+            Result<BgpRoute> refResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
+            differences.add(new Tuple<>(otherResult, refResult));
           }
         }
       }

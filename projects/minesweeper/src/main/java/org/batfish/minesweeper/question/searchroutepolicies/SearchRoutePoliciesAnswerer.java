@@ -84,9 +84,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final Set<String> _asPathRegexes;
 
   /**
-   * Some route-map statements, notably setting the next hop to the address of the BGP peer, require
-   * a BgpSessionProperties object to exist in the environment. For our purposes the specific
-   * property values can be anything, so we use this dummy object.
+   * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
+   * only be simulated by Batfish if a {@link BgpSessionProperties} object exists in the {@link
+   * Environment}. For our purposes the specific property values can be anything, so we use this
+   * dummy object.
    */
   @Nonnull
   public static BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
@@ -168,14 +169,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
       }
 
-      Result<Bgpv4Route> result =
-          TestRoutePoliciesAnswerer.simulatePolicy(
-              policy,
-              inRoute,
-              DUMMY_BGP_SESSION_PROPERTIES,
-              _direction,
-              env.getFirst(),
-              env.getSecond());
+      Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
@@ -188,11 +182,50 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
           result.getAction().equals(_action),
           "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
 
-      return Optional.of(toRow(toQuestionResult(result, outputRoute)));
+      return Optional.of(toRow(result));
     }
   }
 
-  public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result, BDDRoute outputRoute) {
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param env a pair of a predicate that indicates which tracks are successful and an optional
+   *     name of the source VRF
+   * @return the results of the simulation as a result for this question
+   */
+  public static Result<BgpRoute> simulatePolicy(
+      RoutingPolicy policy,
+      Bgpv4Route inRoute,
+      Environment.Direction direction,
+      Tuple<Predicate<String>, String> env,
+      BDDRoute bddRoute) {
+    Result<Bgpv4Route> simResult =
+        TestRoutePoliciesAnswerer.simulatePolicy(
+            policy,
+            inRoute,
+            DUMMY_BGP_SESSION_PROPERTIES,
+            direction,
+            env.getFirst(),
+            env.getSecond());
+    return toQuestionResult(simResult, bddRoute);
+  }
+
+  /**
+   * Converts a simulation result that uses {@link Bgpv4Route} to represent the input and output
+   * routes to an equivalent result that uses {@link BgpRoute} instead. The former class is used by
+   * the Batfish route simulation, while the latter class is the format that is used in results by
+   * {@link SearchRoutePoliciesQuestion}. This method differs from the same-named method in {@link
+   * TestRoutePoliciesAnswerer} because results here sometimes use symbolic values instead of
+   * concrete ones, for instance for the next-hop in a route.
+   *
+   * @param result the original simulation result
+   * @return a version of the result suitable for output from this analysis
+   */
+  private static Result<BgpRoute> toQuestionResult(
+      Result<Bgpv4Route> result, BDDRoute outputRoute) {
     Result<BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
 
     if (result.getAction() == PERMIT) {
