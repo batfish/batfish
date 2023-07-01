@@ -297,7 +297,8 @@ ro_static
 :
    STATIC
    (
-      ros_rib_group
+      apply
+      | ros_rib_group
       | ros_route
    )
 ;
@@ -742,7 +743,8 @@ s_routing_options
 :
    ROUTING_OPTIONS
    (
-      ro_aggregate
+      apply
+      | ro_aggregate
       | ro_auto_export
       | ro_autonomous_system
       | ro_bmp
