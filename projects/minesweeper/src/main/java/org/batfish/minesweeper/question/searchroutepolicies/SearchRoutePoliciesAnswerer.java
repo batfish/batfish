@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.HashSet;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -53,6 +54,7 @@ import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -72,10 +74,23 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   @Nonnull private final RoutingPolicySpecifier _policySpecifier;
   @Nonnull private final Action _action;
 
-  private final boolean _perPath;
+  private final PathOption _pathOption;
 
   @Nonnull private final Set<String> _communityRegexes;
   @Nonnull private final Set<String> _asPathRegexes;
+
+  /**
+   * Helper class that contains both a row and and Bgpv4Route for a result
+   *
+   */
+  private class RowAndRoute {
+      public Bgpv4Route route;
+      public Row row;
+      public RowAndRoute(Bgpv4Route route, Row row) {
+          this.route = route;
+          this.row = row;
+      }
+  }
 
   public SearchRoutePoliciesAnswerer(SearchRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -89,7 +104,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
             question.getPolicies(), ALL_ROUTING_POLICIES);
     _action = question.getAction();
-    _perPath = question.getPerPath();
+    _pathOption = question.getPathOption();
 
     // in the future, it may improve performance to combine all input community regexes
     // into a single regex representing their disjunction, and similarly for all output
@@ -122,7 +137,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
-  private Optional<Row> constraintsToResult(
+  private Optional<RowAndRoute> constraintsToResult(
       BDD constraints,
       RoutingPolicy policy,
       ConfigAtomicPredicates configAPs,
@@ -163,7 +178,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       checkState(
           result.get(TestRoutePoliciesAnswerer.COL_ACTION, STRING).equals(_action.toString()),
           "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
-      return Optional.of(result);
+      return Optional.of(new RowAndRoute(inRoute, result));
     }
   }
 
@@ -391,6 +406,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // for false positives as much as possible
     List<TransferReturn> relevantPaths = pathMap.get(false);
     relevantPaths.addAll(pathMap.get(true));
+    Set<PrefixSpace> blockedPrefixes = new HashSet<>();
     BDD inConstraints =
         routeConstraintsToBDD(
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
@@ -399,6 +415,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD pathAnnouncements = path.getSecond();
       BDDRoute outputRoute = path.getFirst();
       BDD intersection = pathAnnouncements.and(inConstraints);
+      for (PrefixSpace blockedPrefix : blockedPrefixes) {
+          intersection = intersection.andWith(prefixSpaceToBDD(blockedPrefix, outputRoute, true));
+      }
       // make a copy of the config atomic predicates, since the process of creating the constraints
       // on the output route can modify them, in order to handle AS-path constraints in the presence
       // of AS prepending
@@ -409,14 +428,17 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
         intersection = intersection.and(outConstraints);
       }
-
-      Optional<Row> result =
+      Optional<RowAndRoute> result =
           constraintsToResult(intersection, policy, outConfigAPs, outputRoute.getPrependedASes());
       if (result.isPresent()) {
-        builder.add(result.get());
-        if (!_perPath) {
+        builder.add(result.get().row);
+        if (_pathOption == PathOption.SINGLE) {
           // return the first result we find
           break;
+        } else if (_pathOption == PathOption.NON_OVERLAP) {
+          // modify the input constraints to not include this route anymore
+          PrefixSpace prefixSpace = new PrefixSpace(PrefixRange.fromPrefix(result.get().route.getNetwork()));
+          blockedPrefixes.add(prefixSpace);
         }
       }
     }
