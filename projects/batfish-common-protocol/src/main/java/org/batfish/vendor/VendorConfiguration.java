@@ -2,6 +2,7 @@ package org.batfish.vendor;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
@@ -75,6 +76,19 @@ public abstract class VendorConfiguration implements Serializable {
 
   public @Nonnull StructureManager getStructureManager() {
     return _structureManager;
+  }
+
+  /**
+   * Return a mapping from filename -> structure manager
+   *
+   * <p>Default implementation returns singleton map of {@link #getFilename()} to {@link
+   * #getStructureManager()}.
+   *
+   * <p>Multi-file primary {@link VendorConfiguration} implementations should override and return a
+   * map including a structure manager for each applicable file.
+   */
+  public @Nonnull Map<String, StructureManager> getStructureManagerByFilename() {
+    return ImmutableMap.of(getFilename(), getStructureManager());
   }
 
   public boolean getUnrecognized() {

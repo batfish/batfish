@@ -1038,8 +1038,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                     configurations, warningsByHost, fileMap, warnings, filenames, configuration);
               });
       vendorConfiguration
-          .getStructureManager()
-          .saveInto(answerElement, vendorConfiguration.getFilename());
+          .getStructureManagerByFilename()
+          .forEach(
+              (filename, structureManager) -> structureManager.saveInto(answerElement, filename));
       for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
         // Merge in config-specific warnings in deterministic fashion; values are ordered by
         // Configuration-specific hostname key from SortedMap.
