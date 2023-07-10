@@ -6,6 +6,7 @@ import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePo
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.DENY;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ACTION;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_DIRECTION;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_PATH_OPTION;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ROUTE_CONSTRAINTS;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_ACTION;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_DIFF;
@@ -203,7 +204,8 @@ public class SearchRoutePoliciesAnswererTest {
                 null,
                 null,
                 DEFAULT_ACTION,
-                false),
+                false,
+                DEFAULT_PATH_OPTION),
             _batfish);
     assertEquals(answerer.getNodeSpecifier(), AllNodesNodeSpecifier.INSTANCE);
     assertEquals(answerer.getPolicySpecifier(), ALL_ROUTING_POLICIES);
@@ -222,7 +224,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -267,7 +270,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -317,7 +321,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -362,7 +367,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -405,7 +411,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -432,7 +439,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -479,7 +487,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -529,7 +538,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -583,7 +593,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -611,7 +622,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -673,7 +685,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -736,7 +749,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -799,7 +813,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -823,7 +838,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -873,7 +889,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -894,7 +911,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -940,7 +958,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -987,7 +1006,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1037,7 +1057,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1087,7 +1108,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1138,7 +1160,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1191,7 +1214,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1244,7 +1268,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1293,7 +1318,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1340,7 +1366,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1367,7 +1394,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1402,7 +1430,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1450,7 +1479,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1514,7 +1544,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1574,7 +1605,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1623,7 +1655,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1688,7 +1721,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1712,7 +1746,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1771,7 +1806,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1831,7 +1867,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1900,7 +1937,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1950,7 +1988,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1973,7 +2012,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -2009,7 +2049,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -2035,7 +2076,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -2081,7 +2123,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
     assertEquals(0, answer.getRows().size());
@@ -2102,7 +2145,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -2147,7 +2191,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -2200,7 +2245,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2248,7 +2294,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2297,7 +2344,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2345,7 +2393,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2393,7 +2442,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2419,7 +2469,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2467,7 +2518,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2516,7 +2568,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2540,7 +2593,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2594,7 +2648,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2649,7 +2704,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2703,7 +2759,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2749,7 +2806,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            true);
+            true,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2814,7 +2872,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.DENY,
-            true);
+            true,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2876,7 +2935,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2921,7 +2981,8 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             Action.PERMIT,
-            false);
+            false,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
