@@ -7,6 +7,7 @@
     "action": "${action}",
     "outputConstraints": "${outputConstraints}",
     "perPath": "${perPath}",
+    "pathOption": "${pathOption}",
     "instance": {
         "description": "Finds route announcements for which a route policy has a particular behavior.",
         "instanceName": "searchRoutePolicies",
@@ -17,7 +18,8 @@
             "inputConstraints",
             "action",
             "outputConstraints",
-            "perPath"
+	    "perPath",
+            "pathOption"
         ],
         "tags": [
             "routing"
@@ -53,11 +55,17 @@
                 "optional": true,
                 "displayName": "Output Constraints"
             },
-            "perPath": {
+	    "perPath": {
                 "description": "Run the analysis separately for each execution path of a route map",
                 "type": "boolean",
                 "optional": true,
                 "displayName": "Per-Path"
+            },
+            "pathOption": {
+                "description": "If set to 'per_path' run the analysis separately for each execution path. If set to `non_overlap` run the analysis separately for each execution path but do not produce the same route for each path.",
+                "type": "string",
+                "optional": true,
+                "displayName": "Path Options"
             }
         }
     }
