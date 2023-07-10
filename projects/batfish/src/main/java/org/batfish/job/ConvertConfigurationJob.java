@@ -1037,10 +1037,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 postFinalize(
                     configurations, warningsByHost, fileMap, warnings, filenames, configuration);
               });
-      vendorConfiguration
-          .getStructureManagerByFilename()
-          .forEach(
-              (filename, structureManager) -> structureManager.saveInto(answerElement, filename));
+      saveStructureInfo(answerElement, vendorConfiguration);
       for (Warnings currentConfigSpecificWarnings : configSpecificWarnings.values()) {
         // Merge in config-specific warnings in deterministic fashion; values are ordered by
         // Configuration-specific hostname key from SortedMap.
@@ -1058,6 +1055,15 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     elapsedTime = System.currentTimeMillis() - startTime;
     return new ConvertConfigurationResult(
         elapsedTime, _logger.getHistory(), warningsByHost, _name, configurations, answerElement);
+  }
+
+  @VisibleForTesting
+  static void saveStructureInfo(
+      ConvertConfigurationAnswerElement answerElement, VendorConfiguration vendorConfiguration) {
+    vendorConfiguration
+        .getStructureManagerByFilename()
+        .forEach(
+            (filename, structureManager) -> structureManager.saveInto(answerElement, filename));
   }
 
   /** Apply changes to job-level structures. */
