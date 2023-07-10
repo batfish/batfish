@@ -15,7 +15,7 @@
       "2.2.2.0/24"
     ]
   },
-  "perPath" : true,
+  "pathOption" : "PER_PATH",
   "policies" : "policies",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -29,7 +29,8 @@
       "inputConstraints",
       "action",
       "outputConstraints",
-      "perPath"
+      "perPath",
+      "pathOption"
     ],
     "tags" : [
       "routing"
@@ -71,8 +72,15 @@
           ]
         }
       },
+      "pathOption" : {
+        "description" : "If set to 'per_path' run the analysis separately for each execution path. If set to `non_overlap` run the analysis separately for each execution path but do not produce the same route for each path.",
+        "displayName" : "Path Options",
+        "optional" : true,
+        "type" : "string",
+        "value" : "single"
+      },
       "perPath" : {
-        "description" : "Run the analysis separately for each execution path of a route map",
+        "description" : "Run the analysis separately for each execution path of a route map. This option is deprecated in favor of 'pathOption'",
         "displayName" : "Per-Path",
         "optional" : true,
         "type" : "boolean",
