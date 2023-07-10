@@ -25,12 +25,15 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private static final String PROP_ACTION = "action";
 
   private static final String PROP_PER_PATH = "perPath";
+  private static final String PROP_PATH_OPTION = "pathOption";
 
   @VisibleForTesting
   static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       BgpRouteConstraints.builder().build();
 
   @VisibleForTesting static final Action DEFAULT_ACTION = Action.PERMIT;
+
+  @VisibleForTesting static final PathOption DEFAULT_PATH_OPTION = PathOption.SINGLE;
 
   @VisibleForTesting
   static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
@@ -42,12 +45,31 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @Nonnull private final BgpRouteConstraints _outputConstraints;
   @Nonnull private final Action _action;
 
-  // if set, the analysis is run separately on each execution path in the given route map
-  private final boolean _perPath;
+  private final PathOption _pathOption;
 
   public enum Action {
     DENY,
     PERMIT
+  }
+
+  /**
+   * The PathOption enum represents various options for how results are presented based on how paths
+   * are explored.
+   */
+  public enum PathOption {
+    /** SINGLE means we return a single path that meets the input and ouput constraints. */
+    SINGLE,
+
+    /**
+     * PER_PATH means we return a set of input and output routes that follow each execution path.
+     */
+    PER_PATH,
+
+    /**
+     * NON_OVERLAP means the same as PER_PATH except each input route we return does not conflict
+     * with any others.
+     */
+    NON_OVERLAP
   }
 
   public SearchRoutePoliciesQuestion() {
@@ -58,7 +80,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
         null,
         null,
         DEFAULT_ACTION,
-        false);
+        DEFAULT_PATH_OPTION);
   }
 
   public SearchRoutePoliciesQuestion(
@@ -68,7 +90,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable String nodes,
       @Nullable String policies,
       Action action,
-      boolean perPath) {
+      PathOption pathOption) {
     checkArgument(
         action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
@@ -78,7 +100,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
     _inputConstraints = inputConstraints;
     _outputConstraints = outputConstraints;
     _action = action;
-    _perPath = perPath;
+    _pathOption = pathOption;
   }
 
   @JsonCreator
@@ -89,7 +111,11 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
       @Nullable @JsonProperty(PROP_ACTION) Action action,
-      @JsonProperty(PROP_PER_PATH) boolean perPath) {
+      @Nullable @JsonProperty(PROP_PER_PATH) Boolean perPath,
+      @Nullable @JsonProperty(PROP_PATH_OPTION) PathOption pathOption) {
+    checkArgument(
+        perPath == null || pathOption == null,
+        "Either perPath or pathOption must be null (perPath is deprecated)");
     return new SearchRoutePoliciesQuestion(
         firstNonNull(direction, DEFAULT_DIRECTION),
         firstNonNull(inputConstraints, DEFAULT_ROUTE_CONSTRAINTS),
@@ -97,7 +123,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
         nodes,
         policies,
         firstNonNull(action, DEFAULT_ACTION),
-        perPath);
+        perPath != null && perPath ? PathOption.PER_PATH : pathOption);
   }
 
   @JsonIgnore
@@ -149,9 +175,9 @@ public final class SearchRoutePoliciesQuestion extends Question {
     return _action;
   }
 
-  @JsonProperty(PROP_PER_PATH)
+  @JsonProperty(PROP_PATH_OPTION)
   @Nonnull
-  public boolean getPerPath() {
-    return _perPath;
+  public PathOption getPathOption() {
+    return _pathOption;
   }
 }
