@@ -5265,6 +5265,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Prefix prefix = toPrefix(ctx.prefix);
       _currentNatPool.setFromAddress(prefix.getFirstHostIp());
       _currentNatPool.setToAddress(prefix.getLastHostIp());
+      if (ctx.port_num != null) {
+        int port = toInt(ctx.port_num);
+        _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      }
     } else {
       assert ctx.port_num != null;
       // this command can only happen for destination nat, and when port is given we need to enable
