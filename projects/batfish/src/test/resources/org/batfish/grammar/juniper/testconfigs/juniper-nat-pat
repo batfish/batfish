@@ -16,3 +16,4 @@ set security nat source pool POOL3 port range 10000 to 20000
 # destination nat
 set security nat destination pool POOL4 address 1.0.0.1 port 6000
 set security nat destination pool POOL5 address 1.0.0.2/24
+set security nat destination pool POOL6 address 1.0.0.1/32 port 6666

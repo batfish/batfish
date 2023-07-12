@@ -6786,16 +6786,24 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
 
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
-    NatPool pool4 = destNat.getPools().get("POOL4");
-    NatPool pool5 = destNat.getPools().get("POOL5");
+    Map<String, NatPool> pools = destNat.getPools();
+    assertThat(pools, hasKeys("POOL4", "POOL5", "POOL6"));
 
     // pool4 should have a pat pool ranging [6000,6000]
-    assertNotNull(pool4);
+    NatPool pool4 = pools.get("POOL4");
+    assertThat(
+        pool4.getFromAddress(), allOf(equalTo(pool4.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
     assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
 
     // pool5 should not have pat specified
-    assertNotNull(pool5);
+    NatPool pool5 = pools.get("POOL5");
     assertNull(pool5.getPortAddressTranslation());
+
+    // pool6 should have a pat pool ranging [6666,6666]
+    NatPool pool6 = pools.get("POOL6");
+    assertThat(
+        pool6.getFromAddress(), allOf(equalTo(pool6.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
+    assertThat(pool6.getPortAddressTranslation(), equalTo(new PatPool(6666, 6666)));
   }
 
   @Test
