@@ -190,7 +190,7 @@ public class ModelGeneration {
         allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), fullModel);
     checkState(
         nextHopInterfaces.size() <= 1,
-        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+        "Error in symbolic route analysis: at most one next-hop interface can be set");
     if (nextHopInterfaces.isEmpty()) {
       return NextHopIp.of(ip);
     } else {

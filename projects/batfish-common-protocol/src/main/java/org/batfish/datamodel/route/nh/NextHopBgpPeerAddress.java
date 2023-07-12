@@ -6,9 +6,11 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * Represents the fact that the next-hop IP of a BGP route is set to the address of the BGP peer by
- * a particular route policy. Objects of this class can be used in results produced by the {@link
- * org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion} question.
+ * This class is used by the symbolic route-policy analysis questions, {@link
+ * org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion} and {@link
+ * org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion}, to represent
+ * the fact that a route's next-hop was set to {@link
+ * org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop}.
  */
 public final class NextHopBgpPeerAddress implements NextHopResult {
 
