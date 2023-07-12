@@ -28,16 +28,19 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
+import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
@@ -263,10 +266,37 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             Result<BgpRoute> otherResult =
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
+
             Result<BgpRoute> refResult =
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
             differences.add(new Tuple<>(otherResult, refResult));
+
+            // As a sanity check, compare the simulated results above with what the symbolic route
+            // analysis predicts will happen.
+            BDD fullModel = constraintsToModel(finalConstraints, configAPs);
+            ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
+            // update the atomic predicates to include any prepended ASes
+            AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
+            aps.prependAPs(otherPath.getFirst().getPrependedASes());
+            ModelGeneration.validateModel(
+                fullModel,
+                otherPath.getFirst(),
+                configAPsCopy,
+                otherPath.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
+                _direction,
+                otherResult);
+            configAPsCopy = new ConfigAtomicPredicates(configAPs);
+            // update the atomic predicates to include any prepended ASes
+            aps = configAPsCopy.getAsPathRegexAtomicPredicates();
+            aps.prependAPs(path.getFirst().getPrependedASes());
+            ModelGeneration.validateModel(
+                fullModel,
+                path.getFirst(),
+                configAPsCopy,
+                path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
+                _direction,
+                refResult);
           }
         }
       }
