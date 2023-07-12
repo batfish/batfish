@@ -49608,7 +49608,7 @@
             "                AS_PATH:'as-path'",
             "                name = (junos_name*",
             "                  NAME:'AS_PATH_REGEX_NAME2'  <== mode:M_AsPathDefinitionName)",
-            "                regex = AS_PATH_REGEX:'.* 654321 .*'  <== mode:M_AsPathDefinitionRegexQuoted))))))",
+            "                regex = AS_PATH_REGEX:'\".* 654321 .*\"'  <== mode:M_AsPathDefinitionRegex2))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
@@ -57292,7 +57292,7 @@
             "              AS_PATH:'as-path'",
             "              name = (junos_name*",
             "                NAME:'ORIGINATED_IN_65535'  <== mode:M_AsPathDefinitionName)",
-            "              regex = AS_PATH_REGEX:'.* 65535'  <== mode:M_AsPathDefinitionRegexQuoted)))))",
+            "              regex = AS_PATH_REGEX:'\".* 65535\"'  <== mode:M_AsPathDefinitionRegex2)))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57305,7 +57305,7 @@
             "              AS_PATH:'as-path'",
             "              name = (junos_name*",
             "                NAME:'UNUSED_ORIGINATED_IN_65535'  <== mode:M_AsPathDefinitionName)",
-            "              regex = AS_PATH_REGEX:'.* 65535'  <== mode:M_AsPathDefinitionRegexQuoted)))))",
+            "              regex = AS_PATH_REGEX:'\".* 65535\"'  <== mode:M_AsPathDefinitionRegex2)))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57322,7 +57322,7 @@
             "                AS_PATH:'as-path'",
             "                name = (junos_name*",
             "                  NAME:'ASN65534'  <== mode:M_AsPathDefinitionName)",
-            "                regex = AS_PATH_REGEX:'.* 65534$'  <== mode:M_AsPathDefinitionRegexQuoted))))))",
+            "                regex = AS_PATH_REGEX:'\".* 65534$\"'  <== mode:M_AsPathDefinitionRegex2))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -57339,7 +57339,7 @@
             "                AS_PATH:'as-path'",
             "                name = (junos_name*",
             "                  NAME:'ASN65535'  <== mode:M_AsPathDefinitionName)",
-            "                regex = AS_PATH_REGEX:'.* 65535$'  <== mode:M_AsPathDefinitionRegexQuoted))))))",
+            "                regex = AS_PATH_REGEX:'\".* 65535$\"'  <== mode:M_AsPathDefinitionRegex2))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]

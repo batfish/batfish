@@ -5788,6 +5788,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testGH8744() {
+    parseConfig("gh-8744");
+    // don't crash.
+  }
+
+  @Test
   public void testImplicitInitInterface() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("implicit-init-interface");
 
