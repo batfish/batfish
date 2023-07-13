@@ -7,6 +7,8 @@ public interface NatRuleMatchVisitor<T> {
 
   T visitNatRuleMatchDstPort(NatRuleMatchDstPort natRuleMatchDstPort);
 
+  T visitNatRuleMatchProtocol(NatRuleMatchProtocol natRuleMatchProtocol);
+
   T visitNatRuleMatchSrcAddr(NatRuleMatchSrcAddr natRuleMatchSrcAddr);
 
   T visitNatRuleMatchSrcAddrName(NatRuleMatchSrcAddrName natRuleMatchSrcAddrName);

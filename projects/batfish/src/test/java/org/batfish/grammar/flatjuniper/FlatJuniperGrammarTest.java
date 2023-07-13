@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
+import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -428,6 +429,7 @@ import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
 import org.batfish.representation.juniper.NatRuleMatchDstPort;
+import org.batfish.representation.juniper.NatRuleMatchProtocol;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
@@ -5269,7 +5271,10 @@ public final class FlatJuniperGrammarTest {
 
     Transformation ruleSetIfaceRule3Transformation =
         when(match(
-                HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(6))).build()))
+                HeaderSpace.builder()
+                    .setIpProtocols(UDP)
+                    .setSrcPorts(ImmutableList.of(SubRange.singleton(6)))
+                    .build()))
             .apply(NOOP_DEST_NAT)
             .setOrElse(ruleSetZoneRule1Transformation)
             .build();
@@ -5306,6 +5311,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getInterface(), equalTo("ge-0/0/0.0"));
     assertThat(fromLocation.getRoutingInstance(), nullValue());
     assertThat(fromLocation.getZone(), nullValue());
+    List<NatRule> rules = ruleSets.get("RULE-SET-IFACE").getRules();
+    assertThat(rules, hasSize(1));
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
+    assertThat(
+        rule1.getMatches(), contains(new NatRuleMatchSrcPort(6, 6), new NatRuleMatchProtocol(UDP)));
+    assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     fromLocation = ruleSets.get("RULE-SET-RI").getFromLocation();
     assertThat(fromLocation.getInterface(), nullValue());
@@ -5318,11 +5330,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getZone(), equalTo("ZONE"));
 
     // test RULE-SET-ZONE rules
-    List<NatRule> rules = ruleSets.get("RULE-SET-ZONE").getRules();
+    rules = ruleSets.get("RULE-SET-ZONE").getRules();
     assertThat(rules, hasSize(3));
 
     // test rule1
-    NatRule rule1 = rules.get(0);
+    rule1 = rules.get(0);
     assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
