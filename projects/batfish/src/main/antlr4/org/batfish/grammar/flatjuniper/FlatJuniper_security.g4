@@ -273,6 +273,7 @@ rsr_match
       rsrm_destination_address
       | rsrm_destination_address_name
       | rsrm_destination_port
+      | rsrm_protocol
       | rsrm_source_address
       | rsrm_source_address_name
       | rsrm_source_port
@@ -306,6 +307,8 @@ rsrm_destination_port
       TO to = port_number
    )?
 ;
+
+rsrm_protocol: PROTOCOL p = ip_protocol;
 
 rsrm_source_address
 :

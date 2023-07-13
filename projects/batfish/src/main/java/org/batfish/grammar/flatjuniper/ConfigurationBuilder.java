@@ -581,6 +581,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext;
@@ -847,6 +848,7 @@ import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
 import org.batfish.representation.juniper.NatRuleMatchDstPort;
+import org.batfish.representation.juniper.NatRuleMatchProtocol;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
@@ -6300,6 +6302,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int fromPort = toInt(ctx.from);
     int toPort = ctx.TO() != null ? toInt(ctx.to) : fromPort;
     _currentNatRule.getMatches().add(new NatRuleMatchDstPort(fromPort, toPort));
+  }
+
+  @Override
+  public void exitRsrm_protocol(Rsrm_protocolContext ctx) {
+    IpProtocol protocol = toIpProtocol(ctx.p);
+    _currentNatRule.getMatches().add(new NatRuleMatchProtocol(protocol));
   }
 
   @Override

@@ -30,6 +30,11 @@ class ReverseStaticNat {
         }
 
         @Override
+        public NatRuleMatch visitNatRuleMatchProtocol(NatRuleMatchProtocol natRuleMatchProtocol) {
+          return null;
+        }
+
+        @Override
         public NatRuleMatch visitNatRuleMatchSrcAddr(NatRuleMatchSrcAddr natRuleMatchSrcAddr) {
           return new NatRuleMatchDstAddr(natRuleMatchSrcAddr.getPrefix());
         }
@@ -62,6 +67,11 @@ class ReverseStaticNat {
 
         @Override
         public NatRuleThen visitNatRuleMatchDstPort(NatRuleMatchDstPort natRuleMatchDstPort) {
+          return null;
+        }
+
+        @Override
+        public NatRuleThen visitNatRuleMatchProtocol(NatRuleMatchProtocol natRuleMatchProtocol) {
           return null;
         }
 
