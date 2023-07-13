@@ -8,6 +8,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.answers.NextHopResult;
 
 /**
  * Represent a generic routing next hop. There are many types of next hops: IPv4 concrete address,

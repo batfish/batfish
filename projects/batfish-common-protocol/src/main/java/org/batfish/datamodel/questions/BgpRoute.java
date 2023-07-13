@@ -22,11 +22,11 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopResult;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.route.nh.NextHopResult;
 
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault

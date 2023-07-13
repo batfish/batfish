@@ -1,4 +1,4 @@
-package org.batfish.datamodel.route.nh;
+package org.batfish.datamodel.answers;
 
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;

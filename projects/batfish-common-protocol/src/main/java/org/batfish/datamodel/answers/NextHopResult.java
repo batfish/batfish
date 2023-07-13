@@ -1,8 +1,9 @@
-package org.batfish.datamodel.route.nh;
+package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import java.io.Serializable;
+import org.batfish.datamodel.route.nh.NextHop;
 
 /**
  * The base type for a next-hop in a route that is produced by a Batfish question. The {@link

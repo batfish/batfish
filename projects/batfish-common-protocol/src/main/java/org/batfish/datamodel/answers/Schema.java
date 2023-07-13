@@ -22,7 +22,6 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.route.nh.NextHopResult;
 import org.batfish.datamodel.trace.TraceTree;
 
 public class Schema {

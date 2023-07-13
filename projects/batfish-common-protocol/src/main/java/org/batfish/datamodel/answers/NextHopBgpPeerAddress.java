@@ -1,4 +1,4 @@
-package org.batfish.datamodel.route.nh;
+package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
