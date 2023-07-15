@@ -10,13 +10,6 @@ import org.junit.Test;
 /** Test of {@link NextHopBgpPeerAddress}. */
 public final class NextHopBgpPeerAddressTest {
 
-  /*  @Test
-   public void testJavaSerialiation() {
-     NextHopBgpPeerAddress obj = NextHopBgpPeerAddress.instance();
-     assertThat(SerializationUtils.clone(obj), equalTo(obj));
-   }
-  */
-
   @Test
   public void testJacksonSerialization() {
     NextHopBgpPeerAddress obj = NextHopBgpPeerAddress.instance();

@@ -10,14 +10,6 @@ import org.junit.Test;
 /** Test of {@link NextHopSelf}. */
 public final class NextHopSelfTest {
 
-  /*
-  @Test
-  public void testJavaSerialiation() {
-    NextHopSelf obj = NextHopSelf.instance();
-    assertThat(SerializationUtils.clone(obj), equalTo(obj));
-  }
-   */
-
   @Test
   public void testJacksonSerialization() {
     NextHopSelf obj = NextHopSelf.instance();
