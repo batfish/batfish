@@ -241,7 +241,6 @@ public class WorkMgrServiceV2Test extends WorkMgrServiceV2TestBase {
             .path(CoordConstsV2.RSC_VERSION)
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
             .get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       // Should get a non-unknown Batfish version
