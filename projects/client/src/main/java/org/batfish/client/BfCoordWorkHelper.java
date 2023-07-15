@@ -34,7 +34,6 @@ import org.batfish.common.WorkItem;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.pojo.WorkStatus;
-import org.batfish.version.BatfishVersion;
 
 public class BfCoordWorkHelper {
 
@@ -63,7 +62,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request(MediaType.APPLICATION_JSON)
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .delete()) {
 
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -102,7 +100,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request(MediaType.TEXT_PLAIN)
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -136,7 +133,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request(MediaType.APPLICATION_JSON)
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       _logger.debug(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
       if (response.getStatusInfo().getFamily() != Status.Family.SUCCESSFUL) {
@@ -197,7 +193,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       if (response.getStatus() != Status.OK.getStatusCode()) {
         _logger.errorf("getWorkStatus: Did not get OK response. Got: %s\n", response.getStatus());
@@ -228,7 +223,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .post(Entity.entity(null, MediaType.APPLICATION_JSON))) {
 
       if (response.getStatus() != Status.CREATED.getStatusCode()) {
@@ -255,7 +249,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       _logger.info(response.getStatus() + " " + response.getStatusInfo() + " " + response + "\n");
 
@@ -301,7 +294,6 @@ public class BfCoordWorkHelper {
         webTarget
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .post(Entity.entity(wItem, MediaType.APPLICATION_JSON))) {
       if (response.getStatus() != Status.CREATED.getStatusCode()) {
         _logger.errorf("queueWork: Did not get CREATED response. Got: %s\n", response.getStatus());
@@ -326,7 +318,6 @@ public class BfCoordWorkHelper {
           webTarget
               .request()
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
               .put(Entity.entity(content, MediaType.TEXT_PLAIN))) {
         if (response.getStatus() != Status.OK.getStatusCode()) {
           _logger.errorf(
@@ -362,7 +353,6 @@ public class BfCoordWorkHelper {
           webTarget
               .request()
               .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-              .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
               .post(Entity.entity(zipInput, MediaType.APPLICATION_OCTET_STREAM))) {
 
         if (response.getStatus() != Status.CREATED.getStatusCode()) {
@@ -402,8 +392,7 @@ public class BfCoordWorkHelper {
     Invocation.Builder builder =
         webTarget
             .request(MediaType.APPLICATION_JSON)
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey())
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+            .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, _settings.getApiKey());
     try (Response response =
         entity != null
             ? builder.method(method, Entity.entity(entity, mediaType))

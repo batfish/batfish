@@ -27,7 +27,6 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.storage.StoredObjectMetadata;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,8 +45,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
         .path(CoordConstsV2.RSC_OBJECTS)
         .queryParam(QP_KEY, key)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private Builder listKeysTarget(String network, String snapshot) {
@@ -59,8 +57,7 @@ public final class SnapshotObjectsResourceTest extends WorkMgrServiceV2TestBase 
         .path(CoordConstsV2.RSC_OBJECTS)
         .path(CoordConstsV2.RSC_LIST)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before
