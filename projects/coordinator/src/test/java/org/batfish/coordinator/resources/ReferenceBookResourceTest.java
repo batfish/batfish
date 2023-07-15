@@ -20,7 +20,6 @@ import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.referencelibrary.AddressGroup;
 import org.batfish.referencelibrary.ReferenceBook;
 import org.batfish.referencelibrary.ReferenceLibrary;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -42,8 +41,7 @@ public class ReferenceBookResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_REFERENCE_LIBRARY)
         .path(bookName)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Test

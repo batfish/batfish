@@ -34,7 +34,6 @@ import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.pojo.WorkStatus;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -59,8 +58,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
     }
     return target
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private @Nonnull Builder getWorkItemTarget(String network, String workId) {
@@ -70,8 +68,7 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_WORK)
         .path(workId)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before
@@ -122,7 +119,6 @@ public final class WorkResourceTest extends WorkMgrServiceV2TestBase {
         target(uri.getPath())
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       assertThat(response.getStatus(), equalTo(OK.getStatusCode()));
       WorkStatus retrieved = response.readEntity(WorkStatus.class);

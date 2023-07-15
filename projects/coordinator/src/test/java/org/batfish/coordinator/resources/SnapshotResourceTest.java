@@ -34,7 +34,6 @@ import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.datamodel.Topology;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -52,8 +51,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(snapshot)
         .path(CoordConstsV2.RSC_COMPLETED_WORK)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private Builder getPojoTopologyTarget(String network, String snapshot) {
@@ -64,8 +62,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(snapshot)
         .path(CoordConstsV2.RSC_POJO_TOPOLOGY)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private Builder getTarget(String network, String snapshot) {
@@ -75,8 +72,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .path(snapshot)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private Builder getTopologyTarget(String network, String snapshot) {
@@ -87,8 +83,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(snapshot)
         .path(CoordConstsV2.RSC_TOPOLOGY)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   private Builder getWorkLogTarget(String network, String snapshot, String workId) {
@@ -100,8 +95,7 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_WORK_LOG)
         .path(workId)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before
@@ -346,7 +340,6 @@ public final class SnapshotResourceTest extends WorkMgrServiceV2TestBase {
         target(outputUri.getPath())
             .request()
             .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-            .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic())
             .get()) {
       assertThat(resp.getStatus(), equalTo(OK.getStatusCode()));
       metadata = resp.readEntity(SnapshotMetadata.class);
