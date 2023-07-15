@@ -36,11 +36,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -191,7 +191,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     checkArgument(
-        questionsBgpRoute.getNextHop() instanceof NextHop,
+        questionsBgpRoute.getNextHop() instanceof NextHopConcrete,
         "Unexpected next-hop: " + questionsBgpRoute.getNextHop());
     return Bgpv4Route.builder()
         .setWeight(questionsBgpRoute.getWeight())
@@ -206,7 +206,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setTag(questionsBgpRoute.getTag())
         .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(questionsBgpRoute.getNetwork())
-        .setNextHop((NextHop) questionsBgpRoute.getNextHop())
+        .setNextHop(((NextHopConcrete) questionsBgpRoute.getNextHop()).getNextHop())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
         .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route
@@ -227,7 +227,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         // route map does not explicitly set the next hop.  If the simulated route map has direction
         // IN, AUTO/NONE can indicate that the route is explicitly discarded by the route map, but
         // it is also used in other situations (see AbstractRoute::NEXT_HOP_IP_EXTRACTOR).
-        .setNextHop(dataplaneBgpRoute.getNextHop())
+        .setNextHopConcrete(dataplaneBgpRoute.getNextHop())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
         .setOriginMechanism(dataplaneBgpRoute.getOriginMechanism())

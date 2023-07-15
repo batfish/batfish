@@ -4,18 +4,19 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
-import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 /** Test of {@link NextHopSelf}. */
 public final class NextHopSelfTest {
 
+  /*
   @Test
   public void testJavaSerialiation() {
     NextHopSelf obj = NextHopSelf.instance();
     assertThat(SerializationUtils.clone(obj), equalTo(obj));
   }
+   */
 
   @Test
   public void testJacksonSerialization() {

@@ -8,7 +8,6 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Route;
-import org.batfish.datamodel.answers.NextHopResult;
 
 /**
  * Represent a generic routing next hop. There are many types of next hops: IPv4 concrete address,
@@ -23,7 +22,7 @@ import org.batfish.datamodel.answers.NextHopResult;
   @JsonSubTypes.Type(value = NextHopVrf.class, name = "vrf"),
   @JsonSubTypes.Type(value = NextHopVtep.class, name = "vtep")
 })
-public interface NextHop extends NextHopResult, Serializable {
+public interface NextHop extends Serializable {
   <T> T accept(NextHopVisitor<T> visitor);
 
   /**

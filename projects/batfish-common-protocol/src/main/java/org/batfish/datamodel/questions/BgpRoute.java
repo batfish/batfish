@@ -22,9 +22,11 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.NextHopResult;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 
@@ -133,7 +135,7 @@ public final class BgpRoute {
         localPreference,
         metric,
         network,
-        firstNonNull(nextHop, NextHopDiscard.instance()),
+        firstNonNull(nextHop, new NextHopConcrete(NextHopDiscard.instance())),
         originatorIp,
         firstNonNull(originMechanism, LEARNED),
         originType,
@@ -348,7 +350,7 @@ public final class BgpRoute {
           _localPreference,
           _metric,
           _network,
-          firstNonNull(_nextHop, NextHopDiscard.instance()),
+          firstNonNull(_nextHop, new NextHopConcrete(NextHopDiscard.instance())),
           _originatorIp,
           firstNonNull(_originMechanism, LEARNED),
           _originType,
@@ -396,11 +398,18 @@ public final class BgpRoute {
     }
 
     public Builder setNextHopIp(Ip nextHopIp) {
+      NextHop nh;
       if (nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
-        _nextHop = NextHopDiscard.instance();
+        nh = NextHopDiscard.instance();
       } else {
-        _nextHop = NextHopIp.of(nextHopIp);
+        nh = NextHopIp.of(nextHopIp);
       }
+      _nextHop = new NextHopConcrete(nh);
+      return this;
+    }
+
+    public Builder setNextHopConcrete(NextHop nh) {
+      _nextHop = new NextHopConcrete(nh);
       return this;
     }
 

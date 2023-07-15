@@ -2,19 +2,15 @@ package org.batfish.datamodel.answers;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import java.io.Serializable;
-import org.batfish.datamodel.route.nh.NextHop;
 
 /**
- * The base type for a next-hop in a route that is produced by a Batfish question. The {@link
- * NextHop} subtype is the base type for all concrete next hops, and the other subtypes are symbolic
- * representations of next hops that can be produced by the {@link
- * org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion} question.
+ * The base type for a next-hop in a route that is produced by a Batfish question (see {@link
+ * org.batfish.datamodel.questions.BgpRoute}).
  */
 @JsonTypeInfo(use = JsonTypeInfo.Id.NAME, property = "type")
 @JsonSubTypes({
-  @JsonSubTypes.Type(value = NextHop.class),
-  @JsonSubTypes.Type(value = NextHopSelf.class),
-  @JsonSubTypes.Type(value = NextHopBgpPeerAddress.class)
+  @JsonSubTypes.Type(value = NextHopConcrete.class, name = "concrete"),
+  @JsonSubTypes.Type(value = NextHopBgpPeerAddress.class, name = "peer"),
+  @JsonSubTypes.Type(value = NextHopSelf.class, name = "self"),
 })
-public interface NextHopResult extends Serializable {}
+public interface NextHopResult {}
