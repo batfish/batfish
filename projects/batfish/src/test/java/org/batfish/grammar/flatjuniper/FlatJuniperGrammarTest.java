@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
+import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -428,6 +429,7 @@ import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
 import org.batfish.representation.juniper.NatRuleMatchDstPort;
+import org.batfish.representation.juniper.NatRuleMatchProtocol;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
@@ -5269,7 +5271,10 @@ public final class FlatJuniperGrammarTest {
 
     Transformation ruleSetIfaceRule3Transformation =
         when(match(
-                HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(6))).build()))
+                HeaderSpace.builder()
+                    .setIpProtocols(UDP)
+                    .setSrcPorts(ImmutableList.of(SubRange.singleton(6)))
+                    .build()))
             .apply(NOOP_DEST_NAT)
             .setOrElse(ruleSetZoneRule1Transformation)
             .build();
@@ -5306,6 +5311,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getInterface(), equalTo("ge-0/0/0.0"));
     assertThat(fromLocation.getRoutingInstance(), nullValue());
     assertThat(fromLocation.getZone(), nullValue());
+    List<NatRule> rules = ruleSets.get("RULE-SET-IFACE").getRules();
+    assertThat(rules, hasSize(1));
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
+    assertThat(
+        rule1.getMatches(), contains(new NatRuleMatchSrcPort(6, 6), new NatRuleMatchProtocol(UDP)));
+    assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     fromLocation = ruleSets.get("RULE-SET-RI").getFromLocation();
     assertThat(fromLocation.getInterface(), nullValue());
@@ -5318,11 +5330,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getZone(), equalTo("ZONE"));
 
     // test RULE-SET-ZONE rules
-    List<NatRule> rules = ruleSets.get("RULE-SET-ZONE").getRules();
+    rules = ruleSets.get("RULE-SET-ZONE").getRules();
     assertThat(rules, hasSize(3));
 
     // test rule1
-    NatRule rule1 = rules.get(0);
+    rule1 = rules.get(0);
     assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
@@ -5784,6 +5796,12 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testGH6307() {
     parseConfig("gh-6307");
+    // don't crash.
+  }
+
+  @Test
+  public void testGH8744() {
+    parseConfig("gh-8744");
     // don't crash.
   }
 
@@ -6780,16 +6798,24 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
 
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
-    NatPool pool4 = destNat.getPools().get("POOL4");
-    NatPool pool5 = destNat.getPools().get("POOL5");
+    Map<String, NatPool> pools = destNat.getPools();
+    assertThat(pools, hasKeys("POOL4", "POOL5", "POOL6"));
 
     // pool4 should have a pat pool ranging [6000,6000]
-    assertNotNull(pool4);
+    NatPool pool4 = pools.get("POOL4");
+    assertThat(
+        pool4.getFromAddress(), allOf(equalTo(pool4.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
     assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
 
     // pool5 should not have pat specified
-    assertNotNull(pool5);
+    NatPool pool5 = pools.get("POOL5");
     assertNull(pool5.getPortAddressTranslation());
+
+    // pool6 should have a pat pool ranging [6666,6666]
+    NatPool pool6 = pools.get("POOL6");
+    assertThat(
+        pool6.getFromAddress(), allOf(equalTo(pool6.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
+    assertThat(pool6.getPortAddressTranslation(), equalTo(new PatPool(6666, 6666)));
   }
 
   @Test

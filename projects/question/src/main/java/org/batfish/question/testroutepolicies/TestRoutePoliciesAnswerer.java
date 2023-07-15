@@ -435,7 +435,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .put(COL_DIFF, permit ? routeDiffs(inputRoute, outputRoute) : null)
         .put(COL_TRACE, result.getTrace())
         .build();
   }
@@ -468,8 +468,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
     RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = snapshotResult.getInputRoute();
@@ -505,8 +504,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     boolean equalOutputRoutes = Objects.equals(referenceOutputRoute, snapshotOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
     RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
     RoutingPolicyId policyId = snapshotResult.getPolicyId();

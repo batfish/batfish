@@ -32,7 +32,6 @@ import org.batfish.datamodel.questions.Variable;
 import org.batfish.datamodel.questions.Variable.Type;
 import org.batfish.identifiers.NetworkId;
 import org.batfish.identifiers.SnapshotId;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -62,8 +61,7 @@ public final class AutocompleteResourceTest extends WorkMgrServiceV2TestBase {
       t = t.queryParam(QP_MAX_SUGGESTIONS, maxSuggestions);
     }
     return t.request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before

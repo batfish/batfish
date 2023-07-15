@@ -25,8 +25,9 @@ set security nat destination rule-set RULE-SET-ZONE rule RULE3 match destination
 set security nat destination rule-set RULE-SET-ZONE rule RULE3 then destination-nat pool POOL1
 #
 set security nat destination rule-set RULE-SET-IFACE from interface ge-0/0/0.0
-set security nat destination rule-set RULE-SET-IFACE rule RULE3 match source-port 6
-set security nat destination rule-set RULE-SET-IFACE rule RULE3 then destination-nat off
+set security nat destination rule-set RULE-SET-IFACE rule RULE1 match source-port 6
+set security nat destination rule-set RULE-SET-IFACE rule RULE1 match protocol udp
+set security nat destination rule-set RULE-SET-IFACE rule RULE1 then destination-nat off
 #
 set interfaces ge-0/0/0 unit 0 family inet address 1.0.0.1/24
 #

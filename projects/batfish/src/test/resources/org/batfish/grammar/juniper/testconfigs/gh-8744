@@ -1,0 +1,19 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name gh-8744;
+}
+groups {
+    POLICIES {
+        policy-options {
+            policy-statement TEST {
+                then reject;
+            }
+            as-path-group TEST-ASNS-GROUP {
+                as-path TEST-ASNS ".* [100-200] .*";
+            }
+        }
+    }
+}
+policy-options {
+    apply-groups POLICIES;
+}

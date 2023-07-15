@@ -47,6 +47,12 @@ public class NatRuleMatchToHeaderSpace implements NatRuleMatchVisitor<Void> {
   }
 
   @Override
+  public Void visitNatRuleMatchProtocol(NatRuleMatchProtocol natRuleMatchProtocol) {
+    _headerSpace.setIpProtocols(natRuleMatchProtocol.getProtocol());
+    return null;
+  }
+
+  @Override
   public Void visitNatRuleMatchSrcAddr(NatRuleMatchSrcAddr natRuleMatchSrcAddr) {
     _headerSpace.setSrcIps(natRuleMatchSrcAddr.getPrefix().toIpSpace());
     return null;
