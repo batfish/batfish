@@ -70,6 +70,7 @@ public class InitIssuesAnswerer extends Answerer {
                     getRow(
                         null,
                         fileLines.asMap().entrySet().stream()
+                            .sorted(Entry.comparingByKey())
                             .map(
                                 e ->
                                     new FileLines(
