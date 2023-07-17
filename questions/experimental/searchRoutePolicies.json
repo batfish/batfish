@@ -7,6 +7,7 @@
     "action": "${action}",
     "outputConstraints": "${outputConstraints}",
     "perPath": "${perPath}",
+    "pathOption": "${pathOption}",
     "instance": {
         "description": "Finds route announcements for which a route policy has a particular behavior.",
         "instanceName": "searchRoutePolicies",
@@ -17,7 +18,8 @@
             "inputConstraints",
             "action",
             "outputConstraints",
-            "perPath"
+            "perPath",
+            "pathOption"
         ],
         "tags": [
             "routing"
@@ -54,10 +56,16 @@
                 "displayName": "Output Constraints"
             },
             "perPath": {
-                "description": "Run the analysis separately for each execution path of a route map",
+                "description": "(deprecated) Run the analysis separately for each execution path of a route map. This option is deprecated in favor of 'pathOption'",
                 "type": "boolean",
                 "optional": true,
                 "displayName": "Per-Path"
+            },
+            "pathOption": {
+                "description": "If set to 'per_path' run the analysis separately for each execution path. If set to `non_overlap` run the analysis separately for each execution path but greedily attempt to produce a different prefix for each advertisement to cover each path. This analysis may not produce results for all paths. If set to `single` (or null) the analysis will produce a single advertisement that meets the input and output constraints along one path through the route map.",
+                "type": "string",
+                "optional": true,
+                "displayName": "Path Options"
             }
         }
     }
