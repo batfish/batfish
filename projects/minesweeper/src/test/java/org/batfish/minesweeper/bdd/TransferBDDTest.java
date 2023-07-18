@@ -1063,6 +1063,23 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+
+    // do the analysis once more, but after a directive to read from intermediate attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2119,62 +2136,6 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().zero();
     }
 
-    // each atomic predicate for community 5:55 has the 1 BDD
-    for (int ap :
-        tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
-      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
-    }
-
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-  }
-
-  @Test
-  public void testAddCommunitiesTwice() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        InputCommunities.instance(),
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))))
-            .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        InputCommunities.instance(),
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55"))))))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
-    _configAPs =
-        new ConfigAtomicPredicates(
-            _batfish,
-            _batfish.getSnapshot(),
-            HOSTNAME,
-            // add another community to be tracked by the analysis
-            ImmutableSet.of(CommunityVar.from(StandardCommunity.parse("3:33"))),
-            null);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
-
-    // each atomic predicate for community 4:44 has the 1 BDD
-    for (int ap :
-        tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
-      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
-    }
-
-    // each atomic predicate for community 5:55 has the 1 BDD
-    for (int ap :
-        tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
-      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
-    }
-
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
@@ -2246,16 +2207,12 @@ public class TransferBDDTest {
 
     BDD[] expectedCommAPs = expected.getCommunityAtomicPredicates();
     Set<Integer> setAPs =
-        tbdd.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("5:55")));
-    setAPs.addAll(
         tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44"))));
-    // each atomic predicate for community 5:55 and 0:4:44 has the 1 BDD; all others have the 0 BDD
+            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")));
+    // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int i = 0; i < expectedCommAPs.length; i++) {
       if (setAPs.contains(i)) {
         expectedCommAPs[i] = tbdd.getFactory().one();
-      } else {
-        expectedCommAPs[i] = tbdd.getFactory().zero();
       }
     }
 
@@ -2519,6 +2476,85 @@ public class TransferBDDTest {
     paths = tbdd.computePaths(ImmutableSet.of());
 
     // all input routes satisfy the if statement now, so there is only one path
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testReadWriteCommunityUpdates() {
+    Community comm1 = StandardCommunity.parse("30:40");
+    Community comm2 = StandardCommunity.parse("50:60");
+
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm1)))),
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm2)))),
+            new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route when reading the input communities, so the first
+    // addition is lost
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    // get the atomic predicates that correspond to 30:40
+    Set<Integer> ap5060 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm2));
+
+    // each atomic predicate for 30:40 has the 1 BDD
+    for (int i : ap5060) {
+      aps[i] = tbdd.getFactory().one();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+
+    // now do the analysis again but for Juniper
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm1));
+
+    // each atomic predicate for 30:40 also has the 1 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().one();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+
+    // now do the analysis again but first setting intermediate bgp attributes
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
@@ -2923,6 +2959,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
+    // the first
     expected.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
 
     assertTrue(
