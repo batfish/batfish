@@ -73412,6 +73412,10 @@
               "definitionLines" : "200-237",
               "numReferrers" : 17
             },
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            },
             "vr" : {
               "definitionLines" : "196-199",
               "numReferrers" : 2
@@ -74042,6 +74046,12 @@
               "definitionLines" : "5,15",
               "numReferrers" : 3
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper-tcpflags" : {
@@ -74056,6 +74066,12 @@
               "definitionLines" : "4",
               "numReferrers" : 1
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_application" : {
@@ -74068,9 +74084,22 @@
               "definitionLines" : "6-7",
               "numReferrers" : 0
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
-        "configs/juniper_apply_macro" : { },
+        "configs/juniper_apply_macro" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_as_path_group" : {
           "as-path-group" : {
             "AS_PATH_GROUP1" : {
@@ -74085,6 +74114,12 @@
             },
             "AS_PATH_REGEX_NAME2" : {
               "definitionLines" : "6",
+              "numReferrers" : 1
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
               "numReferrers" : 1
             }
           }
@@ -74129,12 +74164,24 @@
               "definitionLines" : "25",
               "numReferrers" : 1
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_bgp_allow" : {
           "bgp group" : {
             "GROUP" : {
               "definitionLines" : "6-8",
+              "numReferrers" : 1
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
               "numReferrers" : 1
             }
           }
@@ -74165,6 +74212,12 @@
               "definitionLines" : "22",
               "numReferrers" : 1
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_bgp_disable" : {
@@ -74172,6 +74225,12 @@
             "GROUP" : {
               "definitionLines" : "4",
               "numReferrers" : 0
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74187,6 +74246,12 @@
               "definitionLines" : "7",
               "numReferrers" : 1
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_bgp_remove_private_as" : {
@@ -74198,6 +74263,12 @@
             "someipv6bgpgroup" : {
               "definitionLines" : "7,13-16",
               "numReferrers" : 0
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74214,6 +74285,12 @@
             "COMM_REGEX" : {
               "definitionLines" : "7",
               "numReferrers" : 0
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74277,6 +74354,12 @@
               "definitionLines" : "48-55",
               "numReferrers" : 8
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_forwarding_options" : {
@@ -74288,6 +74371,12 @@
             "test2" : {
               "definitionLines" : "26",
               "numReferrers" : 2
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74390,6 +74479,10 @@
             "SOME_INSTANCE" : {
               "definitionLines" : "24",
               "numReferrers" : 1
+            },
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -74409,13 +74502,30 @@
               "definitionLines" : "6",
               "numReferrers" : 8
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
-        "configs/juniper_l2_learning" : { },
+        "configs/juniper_l2_learning" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_misc" : {
           "routing-instance" : {
             "ROUTING_INSTANCE" : {
               "definitionLines" : "9",
+              "numReferrers" : 1
+            },
+            "master" : {
+              "definitionLines" : "0",
               "numReferrers" : 1
             }
           }
@@ -74464,6 +74574,12 @@
               "definitionLines" : "8-9,11-15,17-18,20-21",
               "numReferrers" : 0
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_ntp" : {
@@ -74471,10 +74587,21 @@
             "MGMT" : {
               "definitionLines" : "6",
               "numReferrers" : 2
+            },
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
-        "configs/juniper_ospf" : { },
+        "configs/juniper_ospf" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_ospf_disable" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -74485,10 +74612,30 @@
               "definitionLines" : "4",
               "numReferrers" : 2
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
-        "configs/juniper_ospf_stub_areas" : { },
-        "configs/juniper_passwords" : { },
+        "configs/juniper_ospf_stub_areas" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/juniper_passwords" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_policy_statement" : {
           "as-path" : {
             "ORIGINATED_IN_65535" : {
@@ -74531,6 +74678,12 @@
               "definitionLines" : "4-39",
               "numReferrers" : 36
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/juniper_relay" : {
@@ -74538,6 +74691,12 @@
             "site-dhcp" : {
               "definitionLines" : "4",
               "numReferrers" : 2
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74565,6 +74724,12 @@
             },
             "reth0.3" : {
               "definitionLines" : "8",
+              "numReferrers" : 1
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
               "numReferrers" : 1
             }
           }
@@ -74606,6 +74771,10 @@
             "ROUTING_INSTANCE_NAME" : {
               "definitionLines" : "20-25",
               "numReferrers" : 6
+            },
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74629,9 +74798,22 @@
               "definitionLines" : "11-16",
               "numReferrers" : 6
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
-        "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_options" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0" : {
@@ -74657,6 +74839,12 @@
             "POLICY-NAME TERM2" : {
               "definitionLines" : "9-10",
               "numReferrers" : 2
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -74701,6 +74889,12 @@
               "numReferrers" : 2
             }
           },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          },
           "security policy" : {
             "zone~A~to~zone~B" : {
               "definitionLines" : "19-22",
@@ -74730,9 +74924,29 @@
             }
           }
         },
-        "configs/juniper_snmp" : { },
-        "configs/juniper_syslog" : { },
+        "configs/juniper_snmp" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/juniper_syslog" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_system" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          },
           "security-profile" : {
             "ls1" : {
               "definitionLines" : "16-21",
@@ -74740,8 +74954,22 @@
             }
           }
         },
-        "configs/juniper_tacplus" : { },
-        "configs/juniper_trailing_space" : { },
+        "configs/juniper_tacplus" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/juniper_trailing_space" : {
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          }
+        },
         "configs/juniper_vlan" : {
           "interface" : {
             "xe-0/0/0" : {
@@ -74751,6 +74979,12 @@
             "xe-0/0/0.0" : {
               "definitionLines" : "10-14",
               "numReferrers" : 5
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           },
           "vlan" : {
@@ -80078,6 +80312,11 @@
                 200
               ]
             },
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            },
             "vr" : {
               "routing-instance" : [
                 196
@@ -81010,6 +81249,13 @@
                 17
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper-tcpflags" : {
@@ -81017,6 +81263,31 @@
             "foo bar" : {
               "firewall filter term" : [
                 4
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_application" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_apply_macro" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81031,6 +81302,13 @@
             "AS_PATH_REGEX_NAME2" : {
               "as-path-group as-path" : [
                 6
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81107,6 +81385,13 @@
                 39
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_bgp_allow" : {
@@ -81114,6 +81399,13 @@
             "GROUP" : {
               "bgp group allow" : [
                 8
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81154,6 +81446,22 @@
                 22
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_bgp_disable" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_bgp_enforce_fist_as" : {
@@ -81168,6 +81476,31 @@
             "1.1.1.1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 7
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_bgp_remove_private_as" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_extended_community" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81259,6 +81592,11 @@
               "firewall filter then routing-instance" : [
                 38
               ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
             }
           }
         },
@@ -81291,6 +81629,13 @@
             "xe-1/0/0.0" : {
               "fowarding-options dhcp-relay group interface" : [
                 10
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81431,6 +81776,11 @@
               "routing-instance" : [
                 24
               ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
             }
           },
           "vlan" : {
@@ -81462,6 +81812,22 @@
                 14
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_l2_learning" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_misc" : {
@@ -81476,6 +81842,11 @@
             "ROUTING_INSTANCE" : {
               "routing-instance" : [
                 9
+              ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81511,6 +81882,13 @@
                 21
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_ntp" : {
@@ -81521,6 +81899,11 @@
               ],
               "routing-instance" : [
                 6
+              ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81555,6 +81938,13 @@
                 8
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_ospf_disable" : {
@@ -81570,6 +81960,31 @@
               ],
               "ospf area interface" : [
                 6
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_ospf_stub_areas" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_passwords" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81654,6 +82069,11 @@
               "policy-statement from instance" : [
                 17
               ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
             }
           }
         },
@@ -81675,6 +82095,13 @@
             "irb.20" : {
               "fowarding-options dhcp-relay group interface" : [
                 8
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81711,6 +82138,13 @@
             "reth0.3" : {
               "interface" : [
                 8
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81786,6 +82220,11 @@
                 24,
                 25
               ]
+            },
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
             }
           }
         },
@@ -81811,6 +82250,13 @@
                 16
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_routing_options" : {
@@ -81818,6 +82264,13 @@
             "AGGREGATE_ROUTE_POLICY" : {
               "aggregate route policy" : [
                 9
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81856,6 +82309,13 @@
               "policy-statement term" : [
                 9,
                 10
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81900,6 +82360,13 @@
               ],
               "security zones security-zone interfaces" : [
                 30
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           },
@@ -81953,6 +82420,22 @@
                 5
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_syslog" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/juniper_system" : {
@@ -81960,6 +82443,31 @@
             "ls905" : {
               "security-profile logical-system" : [
                 21
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_tacplus" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          }
+        },
+        "configs/juniper_trailing_space" : {
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }
@@ -81992,6 +82500,13 @@
                 12,
                 13,
                 14
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           },
