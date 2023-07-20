@@ -5313,6 +5313,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
     String ri = toString(ctx.name);
     _currentNatPool.setOwner(ri);
+    todo(ctx);
   }
 
   @Override
