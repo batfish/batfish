@@ -42,7 +42,6 @@ import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
-import org.parboiled.common.Preconditions;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -224,8 +223,8 @@ public class ModelGeneration {
    * route map will take on the given input route announcement as well as on the output route that
    * will result (in the case that the route is permitted).
    *
-   * <p>The method raises an exception if a discrepancy is found. This indicates that either the
-   * symbolic route analysis or the concrete route simulation (or both) has a modeling error.
+   * <p>The method has an assertion failure if a discrepancy is found. This indicates that either
+   * the symbolic route analysis or the concrete route simulation (or both) has a modeling error.
    *
    * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
    *     some path
@@ -243,15 +242,11 @@ public class ModelGeneration {
       LineAction action,
       Environment.Direction direction,
       Result<BgpRoute> expectedResult) {
-    String message =
-        "The symbolic route analysis and concrete route simulation disagree on the behavior of a"
-            + " route map";
-    Preconditions.checkState(expectedResult.getAction().equals(action), message);
+    assert expectedResult.getAction().equals(action);
     if (action == PERMIT) {
       BgpRoute outputRouteFromModel =
           satAssignmentToOutputRoute(fullModel, bddRoute, configAPs, direction);
-      Preconditions.checkState(
-          expectedResult.getOutputRoute().equals(outputRouteFromModel), message);
+      assert expectedResult.getOutputRoute().equals(outputRouteFromModel);
     }
   }
 
