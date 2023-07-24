@@ -15,7 +15,7 @@ public final class BDDRouteDiff {
     AS_PATH,
     MED,
     NEXTHOP,
-    NEXTHOP_DISCARDED,
+    NEXTHOP_TYPE,
     NEXTHOP_SET,
     TAG,
     ADMIN_DIST,
@@ -45,8 +45,8 @@ public final class BDDRouteDiff {
     if (!Objects.equals(r1.getNextHop(), r2.getNextHop())) {
       result.add(DifferenceType.NEXTHOP);
     }
-    if (!Objects.equals(r1.getNextHopDiscarded(), r2.getNextHopDiscarded())) {
-      result.add(DifferenceType.NEXTHOP_DISCARDED);
+    if (!Objects.equals(r1.getNextHopType(), r2.getNextHopType())) {
+      result.add(DifferenceType.NEXTHOP_TYPE);
     }
     if (!Objects.equals(r1.getNextHopSet(), r2.getNextHopSet())) {
       result.add(DifferenceType.NEXTHOP_SET);
