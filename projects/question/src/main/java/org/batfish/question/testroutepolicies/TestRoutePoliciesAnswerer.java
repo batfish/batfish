@@ -1,5 +1,6 @@
 package org.batfish.question.testroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -10,7 +11,6 @@ import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
-import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
