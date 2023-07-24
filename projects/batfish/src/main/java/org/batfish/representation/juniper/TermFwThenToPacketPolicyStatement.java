@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.representation.juniper.JuniperConfiguration.toVrfName;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Objects;
@@ -66,7 +68,8 @@ public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<St
   public Statement visitThenRoutingInstance(FwThenRoutingInstance routingInstance) {
     return _skipRest
         ? null
-        : new Return(new FibLookup(new LiteralVrfName(routingInstance.getInstanceName())));
+        : new Return(
+            new FibLookup(new LiteralVrfName(toVrfName(routingInstance.getInstanceName()))));
   }
 
   /** Convert all "then" statements in the {@code term} to a list of packet policy statements */

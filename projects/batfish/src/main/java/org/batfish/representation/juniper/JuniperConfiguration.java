@@ -17,6 +17,7 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFa
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -220,6 +221,19 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Juniper uses AD 170 for both EBGP and IBGP routes. */
   public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
 
+  /** Juniper's default routing instance is called "master". */
+  public static final @Nonnull String DEFAULT_ROUTING_INSTANCE_NAME = "master";
+
+  /** Normalize to VI VRF name. */
+  public static @Nonnull String toVrfName(String routingInstanceName) {
+    if (routingInstanceName.equals(DEFAULT_ROUTING_INSTANCE_NAME)) {
+      // TODO: preserve Junos name, which is tricky. There's too much in Batfish that relies on
+      // default vrf being this default.
+      return Configuration.DEFAULT_VRF_NAME;
+    }
+    return routingInstanceName;
+  }
+
   private static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
       ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build();
 
@@ -405,6 +419,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem = new LogicalSystem("");
     _nodeDevices = new TreeMap<>();
     _indirectAccessPorts = new HashMap<>();
+    // Create and then self-reference the default routing instance.
+    defineSingleLineStructure(ROUTING_INSTANCE, DEFAULT_ROUTING_INSTANCE_NAME, 0);
+    referenceStructure(
+        ROUTING_INSTANCE,
+        DEFAULT_ROUTING_INSTANCE_NAME,
+        JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE,
+        0);
   }
 
   @Nonnull
@@ -3310,9 +3331,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
-    Boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
+    boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
     // TOOD: return routing-instance-level default setting instead of false
-    Boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
+    boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
 
     org.batfish.datamodel.StaticRoute.Builder rBuilder =
         org.batfish.datamodel.StaticRoute.builder()
