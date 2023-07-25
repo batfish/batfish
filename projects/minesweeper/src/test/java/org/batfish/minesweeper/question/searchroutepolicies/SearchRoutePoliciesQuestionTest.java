@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_PATH_OPTION;
+
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -21,6 +23,6 @@ public class SearchRoutePoliciesQuestionTest {
         null,
         null,
         LineAction.DENY,
-        false);
+        DEFAULT_PATH_OPTION);
   }
 }

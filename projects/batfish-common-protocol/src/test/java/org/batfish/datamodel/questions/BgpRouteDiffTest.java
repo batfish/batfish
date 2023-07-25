@@ -25,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute.Builder;
@@ -72,7 +73,8 @@ public class BgpRouteDiffTest {
     route1 = builder().setAsPath(AsPath.ofSingletonAsSets(1L, 2L)).build();
     route2 = builder().setAsPath(AsPath.ofSingletonAsSets(2L, 3L)).build();
     assertThat(
-        routeDiffs(route1, route2), contains(new BgpRouteDiff(PROP_AS_PATH, "[1, 2]", "[2, 3]")));
+        routeDiffs(route1, route2).getDiffs(),
+        contains(new BgpRouteDiff(PROP_AS_PATH, "[1, 2]", "[2, 3]")));
 
     // change communities
     route1 =
@@ -84,19 +86,21 @@ public class BgpRouteDiffTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2L), StandardCommunity.of(3L)))
             .build();
     assertThat(
-        routeDiffs(route1, route2),
+        routeDiffs(route1, route2).getDiffs(),
         contains(new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]")));
 
     // change local preference
     route1 = builder().setLocalPreference(1).build();
     route2 = builder().setLocalPreference(2).build();
     assertThat(
-        routeDiffs(route1, route2), contains(new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2")));
+        routeDiffs(route1, route2).getDiffs(),
+        contains(new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2")));
 
     // change metric
     route1 = builder().setMetric(1).build();
     route2 = builder().setMetric(2).build();
-    assertThat(routeDiffs(route1, route2), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
+    assertThat(
+        routeDiffs(route1, route2).getDiffs(), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
 
     // change all properties
     route1 =
@@ -125,7 +129,7 @@ public class BgpRouteDiffTest {
             .setWeight(2)
             .build();
     assertThat(
-        routeDiffs(route1, route2),
+        routeDiffs(route1, route2).getDiffs(),
         containsInAnyOrder(
             new BgpRouteDiff(PROP_AS_PATH, "[1, 2]", "[2, 3]"),
             new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]"),
@@ -133,8 +137,8 @@ public class BgpRouteDiffTest {
             new BgpRouteDiff(PROP_METRIC, "1", "2"),
             new BgpRouteDiff(
                 PROP_NEXT_HOP,
-                NextHopIp.of(Ip.parse("1.1.1.1")).toString(),
-                NextHopIp.of(Ip.parse("2.2.2.2")).toString()),
+                new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString(),
+                new NextHopConcrete(NextHopIp.of(Ip.parse("2.2.2.2"))).toString()),
             new BgpRouteDiff(PROP_ORIGINATOR_IP, "1.1.1.1", "2.2.2.2"),
             new BgpRouteDiff(PROP_ORIGIN_TYPE, "IGP", "EGP"),
             new BgpRouteDiff(PROP_TAG, "1", "2"),

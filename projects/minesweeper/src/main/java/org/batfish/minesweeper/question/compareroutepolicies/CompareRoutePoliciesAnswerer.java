@@ -266,7 +266,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             Result<BgpRoute> otherResult =
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
-
             Result<BgpRoute> refResult =
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());

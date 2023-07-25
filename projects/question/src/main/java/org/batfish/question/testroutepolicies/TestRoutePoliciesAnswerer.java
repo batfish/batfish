@@ -1,5 +1,6 @@
 package org.batfish.question.testroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -10,7 +11,6 @@ import static org.batfish.datamodel.questions.BgpRouteDiff.routeDiffs;
 import static org.batfish.datamodel.table.TableDiff.baseColumnName;
 import static org.batfish.datamodel.table.TableDiff.deltaColumnName;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
-import static org.parboiled.common.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -36,11 +36,11 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -191,7 +191,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     checkArgument(
-        questionsBgpRoute.getNextHop() instanceof NextHop,
+        questionsBgpRoute.getNextHop() instanceof NextHopConcrete,
         "Unexpected next-hop: " + questionsBgpRoute.getNextHop());
     return Bgpv4Route.builder()
         .setWeight(questionsBgpRoute.getWeight())
@@ -206,7 +206,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setTag(questionsBgpRoute.getTag())
         .setTunnelEncapsulationAttribute(questionsBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(questionsBgpRoute.getNetwork())
-        .setNextHop((NextHop) questionsBgpRoute.getNextHop())
+        .setNextHop(((NextHopConcrete) questionsBgpRoute.getNextHop()).getNextHop())
         .setCommunities(questionsBgpRoute.getCommunities())
         .setAsPath(questionsBgpRoute.getAsPath())
         .setReceivedFrom(ReceivedFromSelf.instance()) // TODO: support receivedFrom in input route
@@ -231,10 +231,11 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setWeight(dataplaneBgpRoute.getWeight())
         // TODO: The class NextHopDiscard is used to denote multiple different things;
         // we should distinguish these uses clearly from one another in the results returned by this
-        // question. If the simulated route map has direction OUT, NextHopDiscard indicates that the
-        // route map does not explicitly set the next hop.  But NextHopDiscard also can indicate
-        // that the route is explicitly discarded by the route map.
-        .setNextHop(dataplaneBgpRoute.getNextHop())
+        // question. If the simulated route map has direction OUT, AUTO/NONE indicates that the
+        // route map does not explicitly set the next hop.  If the simulated route map has direction
+        // IN, AUTO/NONE can indicate that the route is explicitly discarded by the route map, but
+        // it is also used in other situations (see AbstractRoute::NEXT_HOP_IP_EXTRACTOR).
+        .setNextHopConcrete(dataplaneBgpRoute.getNextHop())
         .setProtocol(dataplaneBgpRoute.getProtocol())
         .setSrcProtocol(dataplaneBgpRoute.getSrcProtocol())
         .setOriginMechanism(dataplaneBgpRoute.getOriginMechanism())
@@ -442,7 +443,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .put(COL_DIFF, permit ? routeDiffs(inputRoute, outputRoute) : null)
         .put(COL_TRACE, result.getTrace())
         .build();
   }
@@ -475,8 +476,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
     RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = snapshotResult.getInputRoute();
@@ -512,8 +512,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     boolean equalOutputRoutes = Objects.equals(referenceOutputRoute, snapshotOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
     RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
     RoutingPolicyId policyId = snapshotResult.getPolicyId();

@@ -25,17 +25,17 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
+import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.route.nh.NextHopBgpPeerAddress;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.route.nh.NextHopSelf;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
@@ -193,7 +193,7 @@ public class ModelGeneration {
         allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), fullModel);
     checkState(
         nextHopInterfaces.size() <= 1,
-        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+        "Error in symbolic route analysis: at most one next-hop interface can be set");
     if (nextHopInterfaces.isEmpty()) {
       return NextHopIp.of(ip);
     } else {
@@ -202,8 +202,8 @@ public class ModelGeneration {
   }
 
   /**
-   * Produce the concrete input route that is represented by the given assignment of values to BDD
-   * variables from the symbolic route analysis.
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete input route that is consistent with the assignment.
    *
    * @param fullModel the satisfying assignment
    * @param configAPs an object that provides information about the atomic predicates in the model
@@ -276,14 +276,14 @@ public class ModelGeneration {
             .toBuilder();
     if (direction == Environment.Direction.OUT && !bddRoute.getNextHopSet()) {
       // in the OUT direction the next hop is ignored unless explicitly set
-      builder.setNextHop(NextHopDiscard.instance());
+      builder.setNextHopConcrete(NextHopDiscard.instance());
     } else {
       switch (bddRoute.getNextHopType()) {
         case BGP_PEER_ADDRESS:
           builder.setNextHop(NextHopBgpPeerAddress.instance());
           break;
         case DISCARDED:
-          builder.setNextHop(NextHopDiscard.instance());
+          builder.setNextHopConcrete(NextHopDiscard.instance());
           break;
         case SELF:
           builder.setNextHop(NextHopSelf.instance());

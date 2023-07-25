@@ -82,6 +82,14 @@ public class TermFwThenToPacketPolicyStatementTest {
   }
 
   @Test
+  public void testVisitMasterRoutingInstance() {
+    _fwTerm.getThens().add(new FwThenRoutingInstance("master"));
+    assertThat(
+        TermFwThenToPacketPolicyStatement.convert(_fwTerm, "someVRF"),
+        equalTo(ImmutableList.of(new Return(new FibLookup(new LiteralVrfName("default"))))));
+  }
+
+  @Test
   public void testVisitRoutingInstanceAfterSkip() {
     _fwTerm
         .getThens()
