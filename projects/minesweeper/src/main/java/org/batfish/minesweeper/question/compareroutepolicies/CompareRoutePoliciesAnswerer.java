@@ -193,6 +193,27 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
   }
 
+  // Check that the results of symbolic analysis are consistent with the given concrete result from
+  // route simulation
+  private void validateModel(
+      BDD fullModel,
+      TransferReturn path,
+      ConfigAtomicPredicates configAPs,
+      Result<BgpRoute> result) {
+    // update the atomic predicates to include any prepended ASes
+    ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
+    AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
+    aps.prependAPs(path.getFirst().getPrependedASes());
+
+    ModelGeneration.validateModel(
+        fullModel,
+        path.getFirst(),
+        configAPsCopy,
+        path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
+        _direction,
+        result);
+  }
+
   /**
    * Compare two route policies for behavioral differences.
    *
@@ -274,28 +295,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             // As a sanity check, compare the simulated results above with what the symbolic route
             // analysis predicts will happen.
             BDD fullModel = constraintsToModel(finalConstraints, configAPs);
-            ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
-            // update the atomic predicates to include any prepended ASes
-            AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
-            aps.prependAPs(otherPath.getFirst().getPrependedASes());
-            ModelGeneration.validateModel(
-                fullModel,
-                otherPath.getFirst(),
-                configAPsCopy,
-                otherPath.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
-                _direction,
-                otherResult);
-            configAPsCopy = new ConfigAtomicPredicates(configAPs);
-            // update the atomic predicates to include any prepended ASes
-            aps = configAPsCopy.getAsPathRegexAtomicPredicates();
-            aps.prependAPs(path.getFirst().getPrependedASes());
-            ModelGeneration.validateModel(
-                fullModel,
-                path.getFirst(),
-                configAPsCopy,
-                path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
-                _direction,
-                refResult);
+            validateModel(fullModel, otherPath, configAPs, otherResult);
+            validateModel(fullModel, path, configAPs, refResult);
           }
         }
       }
