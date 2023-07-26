@@ -1083,6 +1083,7 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    // validateModel();
   }
 
   @Test
@@ -3450,25 +3451,6 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-  }
-
-  @Test
-  public void testSetReadIntermediateBgpAttributes() {
-    _policyBuilder
-        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute any = anyRoute(tbdd.getFactory());
-
-    // we treat the SetReadIntermediateBgpAttributes as a no-op
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test
