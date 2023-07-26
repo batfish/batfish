@@ -41,6 +41,7 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -64,6 +65,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -78,6 +80,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixExpr;
 import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -537,6 +540,23 @@ public class TransferBDD {
           itemToBDD(
               ts.getTrackName(), _configAtomicPredicates.getTracks(), p.getData().getTracks());
       finalResults.add(result.setReturnValueBDD(trackPred).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchInterface) {
+      MatchInterface mi = (MatchInterface) expr;
+      if (_useOutputAttributes && p.getData().getNextHopSet()) {
+        // we don't yet properly model the situation where a modified next-hop is later matched
+        // upon, so we check for that situation here
+        throw new UnsupportedFeatureException(expr.toString());
+      }
+      BDD[] nextHopInterfaces = p.getData().getNextHopInterfaces();
+      BDD miPred =
+          mi.getInterfaces().stream()
+              .map(
+                  nhi ->
+                      itemToBDD(
+                          nhi, _configAtomicPredicates.getNextHopInterfaces(), nextHopInterfaces))
+              .reduce(_factory.zero(), BDD::or);
+      finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedFeatureException(expr.toString());
@@ -1145,17 +1165,22 @@ public class TransferBDD {
   }
 
   private void setNextHop(NextHopExpr expr, BDDRoute route) throws UnsupportedFeatureException {
+    // record the fact that the next-hop has been explicitly set by the route-map
+    route.setNextHopSet(true);
     if (expr instanceof DiscardNextHop) {
-      route.setNextHopDiscarded(true);
+      route.setNextHopType(BDDRoute.NextHopType.DISCARDED);
     } else if (expr instanceof IpNextHop && ((IpNextHop) expr).getIps().size() == 1) {
+      route.setNextHopType(BDDRoute.NextHopType.IP);
       List<Ip> ips = ((IpNextHop) expr).getIps();
       Ip ip = ips.get(0);
       route.setNextHop(MutableBDDInteger.makeFromValue(_factory, 32, ip.asLong()));
+    } else if (expr instanceof BgpPeerAddressNextHop) {
+      route.setNextHopType(BDDRoute.NextHopType.BGP_PEER_ADDRESS);
+    } else if (expr instanceof SelfNextHop) {
+      route.setNextHopType(BDDRoute.NextHopType.SELF);
     } else {
       throw new UnsupportedFeatureException(expr.toString());
     }
-    // record the fact that the next-hop has been explicitly set by the route-map
-    route.setNextHopSet(true);
   }
 
   private void prependASPath(AsPathListExpr expr, BDDRoute route)
