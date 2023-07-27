@@ -58,6 +58,7 @@ import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.pojo.Node;
@@ -74,6 +75,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
@@ -1650,18 +1652,63 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+
+    // now do the analysis again but reading from intermediate bgp attributes
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    // this statement ensures that the route simulation initializes the intermediate
+                    // attributes
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+
+    answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .build();
+
+    diff = new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_TAG, "0", "42")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
-  public void testSetThenMatchTagWithIntermediateAttributes() {
+  public void testReadWriteCommunityUpdates() {
+    Community comm1 = StandardCommunity.parse("30:40");
+    Community comm2 = StandardCommunity.parse("50:60");
+
     List<Statement> stmts =
         ImmutableList.of(
-            new StaticStatement(Statements.SetWriteIntermediateBgpAttributes),
-            new StaticStatement(Statements.SetReadIntermediateBgpAttributes),
-            new SetTag(new LiteralLong(42)),
-            new If(
-                new MatchTag(IntComparator.EQ, new LiteralLong(42)),
-                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm1)))),
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm2)))),
+            new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
 
     SearchRoutePoliciesQuestion question =
@@ -1698,11 +1745,57 @@ public class SearchRoutePoliciesAnswererTest {
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
-            .setTag(42)
+            .setCommunities(ImmutableSet.of(StandardCommunity.parse("50:60")))
             .build();
 
     BgpRouteDiffs diff =
-        new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_TAG, "0", "42")));
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_COMMUNITIES, "[]", "[50:60]")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+
+    // now do the analysis again but reading from intermediate bgp attributes
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    // this statement ensures that the route simulation initializes the intermediate
+                    // attributes
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+
+    answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    outputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setCommunities(
+                ImmutableSet.of(StandardCommunity.parse("30:40"), StandardCommunity.parse("50:60")))
+            .build();
+
+    diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_COMMUNITIES, "[]", "[30:40, 50:60]")));
 
     assertThat(
         answer.getRows().getData(),
