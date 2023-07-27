@@ -193,25 +193,61 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     }
   }
 
-  // Check that the results of symbolic analysis are consistent with the given concrete result from
-  // route simulation
-  private void validateModel(
+  /**
+   * Check that the results of symbolic analysis are consistent with the given concrete result from
+   * route simulation.
+   *
+   * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
+   *     a given path
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of that path
+   * @param result the expected input-output behavior
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateModel(
       BDD fullModel,
-      TransferReturn path,
       ConfigAtomicPredicates configAPs,
+      TransferReturn path,
       Result<BgpRoute> result) {
-    // update the atomic predicates to include any prepended ASes
+    // update the atomic predicates to include any prepended ASes on this path
     ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
     AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
     aps.prependAPs(path.getFirst().getPrependedASes());
 
-    ModelGeneration.validateModel(
+    return ModelGeneration.validateModel(
         fullModel,
         path.getFirst(),
         configAPsCopy,
         path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
         _direction,
         result);
+  }
+
+  /**
+   * Check that the example of a behavioral difference between the two route maps the symbolic
+   * analysis finds is consistent with the results from the concrete route simulation.
+   *
+   * @param constraints representation of the set of input routes that should exhibit a difference
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of the path through the original route map
+   * @param otherPath the symbolic representation of the path through the other route map
+   * @param result the expected behavior of the original route map on an input that should exhibit a
+   *     difference
+   * @param otherResult the expected behavior of the other route map on the same input
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateDifference(
+      BDD constraints,
+      ConfigAtomicPredicates configAPs,
+      TransferReturn path,
+      TransferReturn otherPath,
+      Result<BgpRoute> result,
+      Result<BgpRoute> otherResult) {
+    BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+    return validateModel(fullModel, configAPs, path, result)
+        && validateModel(fullModel, configAPs, otherPath, otherResult);
   }
 
   /**
@@ -294,9 +330,8 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
 
             // As a sanity check, compare the simulated results above with what the symbolic route
             // analysis predicts will happen.
-            BDD fullModel = constraintsToModel(finalConstraints, configAPs);
-            validateModel(fullModel, otherPath, configAPs, otherResult);
-            validateModel(fullModel, path, configAPs, refResult);
+            assert validateDifference(
+                finalConstraints, configAPs, path, otherPath, refResult, otherResult);
           }
         }
       }
