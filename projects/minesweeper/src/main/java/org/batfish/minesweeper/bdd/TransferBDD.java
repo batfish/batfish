@@ -993,7 +993,17 @@ public class TransferBDD {
   // Produce a BDD representing conditions under which the route's next-hop address is within a
   // given prefix range.
   private static BDD isRelevantForNextHop(BDDRoute record, PrefixRange range) {
-    return record.getNextHop().toBDD(range.getPrefix());
+    BDD prefixMatch = record.getNextHop().toBDD(range.getPrefix());
+    SubRange r = range.getLengthRange();
+    int lower = r.getStart();
+    int upper = r.getEnd();
+    // the next hop has a prefix length of MAX_PREFIX_LENGTH (32); check that it is in range
+    boolean lenMatch = lower <= Prefix.MAX_PREFIX_LENGTH && Prefix.MAX_PREFIX_LENGTH <= upper;
+    if (lenMatch) {
+      return prefixMatch;
+    } else {
+      return record.getFactory().zero();
+    }
   }
 
   /*
