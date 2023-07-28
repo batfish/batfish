@@ -60,7 +60,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
     checkArgument(
         ROUTE_DIFF_FIELD_NAMES.contains(fieldName),
         "fieldName must be one of " + ROUTE_DIFF_FIELD_NAMES);
-    checkArgument(!oldValue.equals(newValue), "oldValue and newValule must be different");
+    checkArgument(!oldValue.equals(newValue), "oldValue and newValue must be different");
     _fieldName = fieldName;
     _oldValue = oldValue;
     _newValue = newValue;
