@@ -185,7 +185,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
       // As a sanity check, compare the simulated result above with what the symbolic route
       // analysis predicts will happen.
-      ModelGeneration.validateModel(fullModel, outputRoute, configAPs, _action, _direction, result);
+      assert ModelGeneration.validateModel(
+          fullModel, outputRoute, configAPs, _action, _direction, result);
 
       return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }

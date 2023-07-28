@@ -216,15 +216,12 @@ public class ModelGeneration {
   }
 
   /**
-   * Check that the results of symbolic analysis are consistent with a given concrete input-output
-   * result (which would typically come from running Batfish's route-map simulation question {@link
-   * org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}). Specifically, check that
-   * the symbolic analysis agrees with the given result, on the action (permit or deny) that the
-   * route map will take on the given input route announcement as well as on the output route that
-   * will result (in the case that the route is permitted).
-   *
-   * <p>The method has an assertion failure if a discrepancy is found. This indicates that either
-   * the symbolic route analysis or the concrete route simulation (or both) has a modeling error.
+   * Check whether the results of symbolic analysis are consistent with a given concrete
+   * input-output result (which would typically come from running Batfish's route-map simulation
+   * question {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}).
+   * Specifically, check that the symbolic analysis agrees with the given result, on the action
+   * (permit or deny) that the route map will take on the given input route announcement as well as
+   * on the output route that will result (in the case that the route is permitted).
    *
    * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
    *     some path
@@ -232,22 +229,26 @@ public class ModelGeneration {
    * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
    *     of atomic predicates in the bddRoute
    * @param action the action that the symbolic analysis determined is taken on that path
-   * @param direction whether the route map is used an import or export policy
+   * @param direction whether the route map is used as an import or export policy
    * @param expectedResult the expected input-output behavior
+   * @return a boolean indicating whether the check succeeded
    */
-  public static void validateModel(
+  public static boolean validateModel(
       BDD fullModel,
       BDDRoute bddRoute,
       ConfigAtomicPredicates configAPs,
       LineAction action,
       Environment.Direction direction,
       Result<BgpRoute> expectedResult) {
-    assert expectedResult.getAction().equals(action);
+    if (!expectedResult.getAction().equals(action)) {
+      return false;
+    }
     if (action == PERMIT) {
       BgpRoute outputRouteFromModel =
           satAssignmentToOutputRoute(fullModel, bddRoute, configAPs, direction);
-      assert expectedResult.getOutputRoute().equals(outputRouteFromModel);
+      return expectedResult.getOutputRoute().equals(outputRouteFromModel);
     }
+    return true;
   }
 
   /**
@@ -262,7 +263,7 @@ public class ModelGeneration {
    * @param bddRoute symbolic representation of the output route
    * @param configAPs an object that provides information about the atomic predicates in the
    *     fullModel and bddRoute
-   * @param direction whether the route map is used an import or export policy
+   * @param direction whether the route map is used as an import or export policy
    * @return a route
    */
   private static BgpRoute satAssignmentToOutputRoute(
