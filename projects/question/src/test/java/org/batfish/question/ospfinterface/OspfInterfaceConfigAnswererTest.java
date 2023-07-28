@@ -49,7 +49,7 @@ public class OspfInterfaceConfigAnswererTest {
             .build();
     Vrf vrf = nf.vrfBuilder().setName("test_vrf").setOwner(configuration).build();
     OspfArea ospfArea =
-        nf.ospfAreaBuilder().setInterfaces(ImmutableSet.of("int1")).setNumber(1L).build();
+        nf.ospfAreaBuilder().setInterfaces(ImmutableSet.of("int1")).setNumber(4000000000L).build();
     nf.interfaceBuilder()
         .setName("int1")
         .setOspfSettings(
@@ -69,7 +69,7 @@ public class OspfInterfaceConfigAnswererTest {
     ospfArea.addInterface("int1");
     nf.ospfProcessBuilder()
         .setProcessId("ospf_1")
-        .setAreas(ImmutableSortedMap.of(1L, ospfArea))
+        .setAreas(ImmutableSortedMap.of(4000000000L, ospfArea))
         .setRouterId(Ip.parse("1.1.1.1"))
         .setVrf(vrf)
         .build();
@@ -91,7 +91,7 @@ public class OspfInterfaceConfigAnswererTest {
                 COL_INTERFACE,
                 equalTo(NodeInterfacePair.of("test_conf", "int1")),
                 Schema.INTERFACE),
-            hasColumn(OSPF_AREA_NAME, equalTo(1), Schema.INTEGER)));
+            hasColumn(OSPF_AREA_NAME, equalTo(4000000000L), Schema.LONG)));
     assertThat(
         rows.iterator().next(),
         allOf(
