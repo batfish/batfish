@@ -18,7 +18,8 @@ s_vlan
 
 vlan_configuration
 :
-  CONFIGURATION range = vlan_id_range NEWLINE vlanc_null*
+  CONFIGURATION range = vlan_id_range NEWLINE
+  vlanc_null*
 ;
 
 vlanc_null
