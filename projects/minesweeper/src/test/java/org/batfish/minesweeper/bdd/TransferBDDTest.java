@@ -221,6 +221,17 @@ public class TransferBDDTest {
         DestinationNetwork.instance(), new ExplicitPrefixSet(new PrefixSpace(prList)));
   }
 
+  /**
+   * Compare the results of the symbolic route analysis with Batfish's concrete route simulation.
+   * For each path returned by the symbolic analysis, we solve for an input route that goes down
+   * that path, simulate it through the route map, and compare the result to what the symbolic
+   * analysis expects.
+   *
+   * @param policy the route policy being checked
+   * @param paths the results of the symbolic analysis -- a set of paths through the policy
+   * @param factory the BDD factory
+   * @return a boolean indicating whether the check succeeded
+   */
   private boolean validatePaths(
       RoutingPolicy policy, List<TransferReturn> paths, BDDFactory factory) {
     for (TransferReturn path : paths) {
@@ -232,7 +243,9 @@ public class TransferBDDTest {
       Tuple<Predicate<String>, String> env =
           ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
 
-      // simulate the input route in that environment, in both directions
+      // simulate the input route in that environment;
+      // for good measure we simulate twice, with the policy respectively considered an import and
+      // export policy
       Result<BgpRoute> inResult =
           simulatePolicy(policy, inRoute, Environment.Direction.IN, env, path.getFirst());
       Result<BgpRoute> outResult =
