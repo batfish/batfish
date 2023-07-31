@@ -2372,8 +2372,10 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: once we update TransferBDD to properly handle reading/writing from intermediate BGP
-    // attributes, then this will have the correct behavior
+    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
+    // always be seen by later reads.  However, this behavior is actually controlled by the
+    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
+    // this discrepancy.
     //    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2424,8 +2426,10 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: once we update TransferBDD to properly handle reading/writing from intermediate BGP
-    // attributes, then this will have the correct behavior
+    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
+    // always be seen by later reads.  However, this behavior is actually controlled by the
+    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
+    // this discrepancy.
     // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2512,8 +2516,10 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: once we update TransferBDD to properly handle reading/writing from intermediate BGP
-    // attributes, then this will have the correct behavior
+    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
+    // always be seen by later reads.  However, this behavior is actually controlled by the
+    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
+    // this discrepancy.
     // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
