@@ -1155,6 +1155,25 @@ public class TransferBDDTest {
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // do the analysis once more, but after a directive to read from intermediate attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
@@ -2362,39 +2381,26 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().zero();
     }
 
-    // each atomic predicate for community 5:55 has the 1 BDD
-    for (int ap :
-        tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("5:55")))) {
-      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
-    }
-
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
-    // always be seen by later reads.  However, this behavior is actually controlled by the
-    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
-    // this discrepancy.
-    //    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
   public void testAddCommunitiesTwice() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        InputCommunities.instance(),
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))))
-            .addStatement(
-                new SetCommunities(
-                    CommunitySetUnion.of(
-                        InputCommunities.instance(),
-                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55"))))))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(),
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44"))))),
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(),
+                    new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("5:55"))))),
+            new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
     _configAPs =
         new ConfigAtomicPredicates(
             _batfish,
@@ -2409,13 +2415,6 @@ public class TransferBDDTest {
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
-    // each atomic predicate for community 4:44 has the 1 BDD
-    for (int ap :
-        tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
-      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
-    }
-
     // each atomic predicate for community 5:55 has the 1 BDD
     for (int ap :
         tbdd.getCommunityAtomicPredicates()
@@ -2426,11 +2425,32 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
-    // always be seen by later reads.  However, this behavior is actually controlled by the
-    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
-    // this discrepancy.
-    // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // do the analysis once more, but after a directive to read from intermediate attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    // now additionally each atomic predicate for community 4:44 has the 1 BDD
+    for (int ap :
+        tbdd.getCommunityAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
+      expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
+    }
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
@@ -2500,27 +2520,19 @@ public class TransferBDDTest {
 
     BDD[] expectedCommAPs = expected.getCommunityAtomicPredicates();
     Set<Integer> setAPs =
-        tbdd.getCommunityAtomicPredicates().get(CommunityVar.from(StandardCommunity.parse("5:55")));
-    setAPs.addAll(
         tbdd.getCommunityAtomicPredicates()
-            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44"))));
-    // each atomic predicate for community 5:55 and 0:4:44 has the 1 BDD; all others have the 0 BDD
+            .get(CommunityVar.from(ExtendedCommunity.parse("0:4:44")));
+    // each atomic predicate for community 0:4:44 has the 1 BDD
     for (int i = 0; i < expectedCommAPs.length; i++) {
       if (setAPs.contains(i)) {
         expectedCommAPs[i] = tbdd.getFactory().one();
-      } else {
-        expectedCommAPs[i] = tbdd.getFactory().zero();
       }
     }
 
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: TransferBDD's current modeling of communities assumes that previous updates should
-    // always be seen by later reads.  However, this behavior is actually controlled by the
-    // SetReadIntermediateBgpAttributes statement. Adding support for that statement will resolve
-    // this discrepancy.
-    // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
@@ -3199,6 +3211,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
+    // the first
     expected.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
 
     assertTrue(
@@ -3605,25 +3618,6 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-  }
-
-  @Test
-  public void testSetReadIntermediateBgpAttributes() {
-    _policyBuilder
-        .addStatement(Statements.SetReadIntermediateBgpAttributes.toStaticStatement())
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute any = anyRoute(tbdd.getFactory());
-
-    // we treat the SetReadIntermediateBgpAttributes as a no-op
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test

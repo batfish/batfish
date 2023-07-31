@@ -21,7 +21,6 @@ import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -457,30 +456,25 @@ public class TransferBDD {
       }
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
-              .accept(
-                  new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
+              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p)));
       finalResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
-      BDD mtBDD =
-          matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
+      BDD mtBDD = matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchMetric) {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD =
-          matchLongComparison(
-              mm.getComparator(), mm.getMetric(), routeForMatching(p.getData()).getMed());
+          matchLongComparison(mm.getComparator(), mm.getMetric(), routeForMatching(p).getMed());
       finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchClusterListLength) {
       MatchClusterListLength mcll = (MatchClusterListLength) expr;
       BDD mcllBDD =
           matchIntComparison(
-              mcll.getComparator(),
-              mcll.getRhs(),
-              routeForMatching(p.getData()).getClusterListLength());
+              mcll.getComparator(), mcll.getRhs(), routeForMatching(p).getClusterListLength());
       finalResults.add(result.setReturnValueBDD(mcllBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -519,7 +513,7 @@ public class TransferBDD {
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
           matchAsPathSetExpr(
-              p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p.getData()));
+              p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p));
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchAsPath
@@ -528,7 +522,7 @@ public class TransferBDD {
       BDD asPathPredicate =
           matchAsPath
               .getAsPathMatchExpr()
-              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
+              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p)));
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchSourceVrf) {
@@ -707,6 +701,8 @@ public class TransferBDD {
            * future.
            */
         case SetReadIntermediateBgpAttributes:
+          curP = curP.setReadIntermediateBgpAttributes(true);
+          return ImmutableList.of(toTransferBDDState(curP, result));
         case SetWriteIntermediateBgpAttributes:
         case UnsetWriteIntermediateBgpAttributes:
           return ImmutableList.of(toTransferBDDState(curP, result));
@@ -1215,22 +1211,19 @@ public class TransferBDD {
     route.setPrependedASes(prependedASes);
   }
 
-  // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
-  // depending on the value of the boolean parameter.
-  private void addOrRemoveCommunityAPs(IntegerSpace commAPs, TransferParam curP, boolean add) {
-    BDD newCommVal = mkBDD(add);
-    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-    for (int ap : commAPs.enumerate()) {
-      curP.indent().debug("Value: %s", ap);
-      curP.indent().debug("New Value: %s", newCommVal);
-      commAPBDDs[ap] = newCommVal;
-    }
-  }
-
   // Update community atomic predicates based on the given CommunityAPDispositions object
   private void updateCommunities(CommunityAPDispositions dispositions, TransferParam curP) {
-    addOrRemoveCommunityAPs(dispositions.getMustExist(), curP, true);
-    addOrRemoveCommunityAPs(dispositions.getMustNotExist(), curP, false);
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    BDD[] currAPBDDs = routeForMatching(curP).getCommunityAtomicPredicates();
+    for (int i = 0; i < currAPBDDs.length; i++) {
+      if (dispositions.getMustExist().contains(i)) {
+        commAPBDDs[i] = mkBDD(true);
+      } else if (dispositions.getMustNotExist().contains(i)) {
+        commAPBDDs[i] = mkBDD(false);
+      } else {
+        commAPBDDs[i] = currAPBDDs[i];
+      }
+    }
   }
 
   /**
@@ -1284,8 +1277,10 @@ public class TransferBDD {
   }
 
   // Returns the appropriate route to use for matching on attributes.
-  private BDDRoute routeForMatching(BDDRoute current) {
-    return _useOutputAttributes ? current : _originalRoute;
+  private BDDRoute routeForMatching(TransferParam p) {
+    return _useOutputAttributes || p.getReadIntermediateBgpAtttributes()
+        ? p.getData()
+        : _originalRoute;
   }
 
   /**
