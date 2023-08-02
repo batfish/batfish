@@ -510,6 +510,7 @@ public class TransferBDD {
 
     } else if (expr instanceof LegacyMatchAsPath) {
       p.debug("MatchAsPath");
+      checkForAsPathMatchAfterUpdate(p);
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
           matchAsPathSetExpr(
@@ -518,6 +519,7 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
+      checkForAsPathMatchAfterUpdate(p);
       MatchAsPath matchAsPath = (MatchAsPath) expr;
       BDD asPathPredicate =
           matchAsPath
@@ -872,11 +874,6 @@ public class TransferBDD {
 
     } else if (stmt instanceof PrependAsPath) {
       curP.debug("PrependAsPath");
-      if (_useOutputAttributes) {
-        // we don't yet properly model the situation where a modified AS-path can be later matched
-        // upon, so we don't allow modifications in that case
-        throw new UnsupportedFeatureException(stmt.toString());
-      }
       PrependAsPath pap = (PrependAsPath) stmt;
       prependASPath(pap.getExpr(), curP.getData());
       return ImmutableList.of(toTransferBDDState(curP, result));
@@ -1014,6 +1011,16 @@ public class TransferBDD {
     }
     // TODO: handle other kinds of AsPathSetExprs
     throw new UnsupportedFeatureException(e.toString());
+  }
+
+  // Raise an exception if we are about to match on an as-path that has been previously updated
+  // along this path; the analysis currently does not handle that situation.
+  private void checkForAsPathMatchAfterUpdate(TransferParam p) throws UnsupportedFeatureException {
+    if ((_useOutputAttributes || p.getReadIntermediateBgpAtttributes())
+        && !p.getData().getPrependedASes().isEmpty()) {
+      throw new UnsupportedFeatureException(
+          "Matching on a modified as-path is not currently supported");
+    }
   }
 
   /* Convert an AS-path access list to a boolean formula represented as a BDD. */

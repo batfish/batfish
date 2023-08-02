@@ -1892,6 +1892,20 @@ public class TransferBDDTest {
                 new TransferReturn(anyRouteWithAPs, expectedBDD, true),
                 new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // now do the analysis again for a platform that matches on the output route;
+    // the behavior should be the same since the as-path has not been updated
+    setup(ConfigurationFormat.JUNIPER);
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
@@ -3202,6 +3216,17 @@ public class TransferBDDTest {
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(42L));
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // now do the analysis again for a platform that reads from output attributes;
+    // it should still work since we aren't later matching on the updated as-path
+    setup(ConfigurationFormat.JUNIPER);
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
 
     assertTrue(
         equalsForTesting(
