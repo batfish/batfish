@@ -27,6 +27,8 @@ public class BgpRouteCommunityDiffTest {
     BgpRouteCommunityDiff comms1 = new BgpRouteCommunityDiff(oldComms1, newComms1);
     assertEquals(comms1.getAdded(), Set.of(StandardCommunity.of(2, 2)));
     assertEquals(comms1.getRemoved(), Set.of(StandardCommunity.of(0, 0)));
+    assertEquals(comms1.getOldValue(), oldComms1);
+    assertEquals(comms1.getNewValue(), newComms1);
   }
 
   @Test
