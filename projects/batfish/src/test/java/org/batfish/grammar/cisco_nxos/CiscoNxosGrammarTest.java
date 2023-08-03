@@ -9934,4 +9934,10 @@ public final class CiscoNxosGrammarTest {
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasIpAccessList("foo", hasLines(empty())));
   }
+
+  @Test
+  public void testVlanServicePolicyExtraction() {
+    parseVendorConfig("nxos_vlan_service_policy");
+  }
+
 }
