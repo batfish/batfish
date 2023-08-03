@@ -44,6 +44,14 @@ public class BgpRouteCommunityDiff {
     return _removed;
   }
 
+  public SortedSet<Community> getOldValue() {
+    return _oldValue;
+  }
+
+  public SortedSet<Community> getNewValue() {
+    return _newValue;
+  }
+
   /**
    * The hash (and resp. the equality function) of this object only considers the _added and
    * _removed fields, ignoring the _oldValue and _newValue. This facilitates distinguishing

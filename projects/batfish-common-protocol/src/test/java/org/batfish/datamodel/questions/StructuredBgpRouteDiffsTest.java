@@ -44,4 +44,31 @@ public class StructuredBgpRouteDiffsTest {
             new StructuredBgpRouteDiffs(ImmutableSortedSet.of(), Optional.of(comms2)))
         .testEquals();
   }
+
+  @Test
+  public void testHasDifferences() {
+
+    StructuredBgpRouteDiffs d1 = new StructuredBgpRouteDiffs();
+    assert (!d1.hasDifferences());
+
+    SortedSet<Community> oldComms1 = new TreeSet<>();
+    SortedSet<Community> newComms1 = new TreeSet<>();
+
+    oldComms1.add(StandardCommunity.of(0, 0));
+    oldComms1.add(StandardCommunity.of(1, 1));
+    newComms1.add(StandardCommunity.of(1, 1));
+    newComms1.add(StandardCommunity.of(2, 2));
+    BgpRouteCommunityDiff comms1 = new BgpRouteCommunityDiff(oldComms1, newComms1);
+
+    StructuredBgpRouteDiffs d2 =
+        new StructuredBgpRouteDiffs(ImmutableSortedSet.of(), Optional.of(comms1));
+    assert (d2.hasDifferences());
+
+    StructuredBgpRouteDiffs d3 =
+        new StructuredBgpRouteDiffs(
+            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")),
+            Optional.empty());
+
+    assert (d3.hasDifferences());
+  }
 }

@@ -47,6 +47,13 @@ public class StructuredBgpRouteDiffs {
             .collect(ImmutableSortedSet.toImmutableSortedSet(natural())));
   }
 
+  /**
+   * @return true if there are some route field differences represented by this object.
+   */
+  public boolean hasDifferences() {
+    return !_diffs.isEmpty() || _communityDiff.isPresent();
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
