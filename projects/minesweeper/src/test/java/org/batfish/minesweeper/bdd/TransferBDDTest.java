@@ -1305,8 +1305,7 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
-    // TODO: MatchMetric::evaluate always uses the original route; this requires investigation
-    // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
