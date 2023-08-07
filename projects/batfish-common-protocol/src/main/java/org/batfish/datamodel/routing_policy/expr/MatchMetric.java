@@ -41,8 +41,15 @@ public final class MatchMetric extends BooleanExpr {
 
   @Override
   public Result evaluate(Environment environment) {
-    return _comparator.apply(
-        Math.toIntExact(environment.getOriginalRoute().getMetric()), _metric.evaluate(environment));
+    long metric;
+    if (environment.getUseOutputAttributes()) {
+      metric = environment.getOutputRoute().getMetric();
+    } else if (environment.getReadFromIntermediateBgpAttributes()) {
+      metric = environment.getIntermediateBgpAttributes().getMetric();
+    } else {
+      metric = environment.getOriginalRoute().getMetric();
+    }
+    return _comparator.apply(Math.toIntExact(metric), _metric.evaluate(environment));
   }
 
   @JsonProperty(PROP_COMPARATOR)

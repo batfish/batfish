@@ -50,7 +50,7 @@ public class OspfInterfacePropertySpecifier extends PropertySpecifier {
               OSPF_AREA_NAME,
               new PropertyDescriptor<>(
                   OspfInterfaceSettings::getAreaName,
-                  Schema.INTEGER,
+                  Schema.LONG,
                   "OSPF area to which the interface belongs"))
           .put(
               OSPF_COST,
