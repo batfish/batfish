@@ -4763,7 +4763,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c).setOriginalRoute(route).build();
+    return Environment.builder(c).setOriginalRoute(route).setOutputRoute(route.toBuilder()).build();
   }
 
   @Test
