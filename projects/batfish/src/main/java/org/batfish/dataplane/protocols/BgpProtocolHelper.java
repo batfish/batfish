@@ -454,7 +454,6 @@ public final class BgpProtocolHelper {
                   pathIdGenerators.compute(
                       originalRoute.getNetwork(), (p, lastId) -> lastId == null ? 1 : lastId + 1));
     }
-
     transformBgpRoutePostExport(
         routeBuilder,
         ourSessionProperties.isEbgp(),
