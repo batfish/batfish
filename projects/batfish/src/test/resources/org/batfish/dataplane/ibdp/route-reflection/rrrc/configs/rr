@@ -1,0 +1,68 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname rr
+!
+interface GigabitEthernet0/0
+ description to nrrcb
+ ip address 10.0.26.1 255.255.255.254
+!
+ip route 10.0.12.0 255.255.255.254 10.0.26.0
+!
+interface GigabitEthernet0/1
+ description to nrrcm
+ ip address 10.0.36.1 255.255.255.254
+!
+ip route 10.0.13.0 255.255.255.254 10.0.36.0
+!
+interface GigabitEthernet0/2
+ description to rrcb
+ ip address 10.0.46.1 255.255.255.254
+!
+ip route 10.0.14.0 255.255.255.254 10.0.46.0
+!
+interface GigabitEthernet0/3
+ description to rrcm
+ ip address 10.0.56.1 255.255.255.254
+!
+ip route 10.0.15.0 255.255.255.254 10.0.56.0
+!
+route-map rm-to-peers deny 100
+!
+route-map rm-from-peers permit 100
+!
+router bgp 2
+  bgp router-id 6.6.6.6
+  !
+  neighbor rrc peer-group
+  neighbor rrc remote-as 2
+  neighbor rrc route-reflector-client
+  !
+  neighbor nrrc peer-group
+  neighbor nrrc remote-as 2
+  !
+  neighbor 10.0.26.0 peer-group nrrc
+  neighbor 10.0.26.0 update-source GigabitEthernet0/0
+  !
+  neighbor 10.0.36.0 peer-group nrrc
+  neighbor 10.0.36.0 update-source GigabitEthernet0/1
+  !
+  neighbor 10.0.46.0 peer-group rrc
+  neighbor 10.0.46.0 update-source GigabitEthernet0/2
+  !
+  neighbor 10.0.56.0 peer-group rrc
+  neighbor 10.0.56.0 update-source GigabitEthernet0/3
+  !
+  address-family ipv4 unicast
+    !
+    neighbor rrc route-map rm-to-peers out
+    neighbor rrc route-map rm-from-peers in
+    !
+    neighbor nrrc route-map rm-to-peers out
+    neighbor nrrc route-map rm-from-peers in
+    !
+    neighbor 10.0.26.0 activate
+    neighbor 10.0.36.0 activate
+    neighbor 10.0.46.0 activate
+    neighbor 10.0.56.0 activate
+    !
+  !
+!

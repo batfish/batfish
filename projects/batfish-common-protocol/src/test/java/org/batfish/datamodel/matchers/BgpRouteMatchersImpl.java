@@ -99,6 +99,22 @@ final class BgpRouteMatchersImpl {
     }
   }
 
+  static final class IsReceivedFromRouteReflectorClient
+      extends FeatureMatcher<BgpRoute<?, ?>, Boolean> {
+
+    IsReceivedFromRouteReflectorClient(Matcher<? super Boolean> subMatcher) {
+      super(
+          subMatcher,
+          "A BgpRoute with receivedFromRouteReflectorClient",
+          "receivedFromRouteReflectorClient");
+    }
+
+    @Override
+    protected Boolean featureValueOf(BgpRoute<?, ?> actual) {
+      return actual.getReceivedFromRouteReflectorClient();
+    }
+  }
+
   static final class HasWeight extends FeatureMatcher<HasReadableWeight, Integer> {
     HasWeight(@Nonnull Matcher<? super Integer> subMatcher) {
       super(subMatcher, "A HasReadableWeight with weight:", "weight");
