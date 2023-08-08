@@ -100,6 +100,7 @@ public final class ReceivedFromRouteReflectorTest {
       Set<Bgpv4Route> routes, Prefix prefix) {
     assertThat(routes, hasItem(allOf(hasPrefix(prefix), isReceivedFromRouteReflectorClient())));
   }
+
   /**
    * Assert that the route with given {@code prefix} exists in {@code routes}, and that its
    * receivedFromRouteReflectorClient bit is unset.
