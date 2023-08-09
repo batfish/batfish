@@ -101,16 +101,9 @@ public final class BgpProtocolHelper {
 
     // Set originatorIP
     if (localSessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
-      // eBGP session and not iBGP route: override the originator
+      // eBGP session or not iBGP route: override the originator
       builder.setOriginatorIp(localBgpProcess.getRouterId());
     }
-
-    // note whether new route is received from route reflector client
-    AddressFamily toNeighborAf = remoteNeighbor.getAddressFamily(afType);
-    assert toNeighborAf
-        != null; // invariant of proper queue setup and route exchange for this AF type
-    builder.setReceivedFromRouteReflectorClient(
-        !localSessionProperties.isEbgp() && toNeighborAf.getRouteReflectorClient());
 
     AddressFamily af = localNeighbor.getAddressFamily(afType);
     assert af != null;
