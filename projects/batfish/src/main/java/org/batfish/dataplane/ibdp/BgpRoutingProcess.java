@@ -973,6 +973,13 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         continue;
       }
 
+      // Note whether new route is received from route reflector client
+      AddressFamily ourAfSettingsForPeer = ourBgpConfig.getIpv4UnicastAddressFamily();
+      assert ourAfSettingsForPeer
+          != null; // invariant of proper queue setup and route exchange for this AF type
+      transformedIncomingRouteBuilder.setReceivedFromRouteReflectorClient(
+          !ourSessionProperties.isEbgp() && ourAfSettingsForPeer.getRouteReflectorClient());
+
       // Process route through import policy, if one exists
       String importPolicyName = ourBgpConfig.getIpv4UnicastAddressFamily().getImportPolicy();
       boolean acceptIncoming = true;
