@@ -196,6 +196,7 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQ
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TACACS_SOURCE_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_INTERFACE;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.TRACK_IP_ROUTE_VRF;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.VLAN_CONFIGURATION_QOS;
 import static org.batfish.representation.cisco_nxos.Interface.VLAN_RANGE;
 import static org.batfish.representation.cisco_nxos.Interface.newNonVlanInterface;
 import static org.batfish.representation.cisco_nxos.Interface.newVlanInterface;
@@ -736,6 +737,7 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_shutdownContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vc_vniContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf4u_route_targetContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcaf6u_route_targetContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vcspt_qosContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vdc_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_idContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Vlan_id_rangeContext;
@@ -6941,6 +6943,16 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     }
     Integer vni = vniOrError.get();
     _currentVrf.setVni(vni);
+  }
+
+  @Override
+  public void exitVcspt_qos(Vcspt_qosContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    _c.referenceStructure(
+        POLICY_MAP_QOS, name.get(), VLAN_CONFIGURATION_QOS, ctx.getStart().getLine());
   }
 
   @Override
