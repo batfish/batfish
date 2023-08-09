@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: arista
+hostname arista
+!
+ip access-list standard SNMP_ACCESS_LIST
+   10 permit 1.2.3.4/32
+!
+snmp-server community COMM ro SNMP_ACCESS_LIST
+!

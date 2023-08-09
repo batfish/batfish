@@ -49,8 +49,7 @@ public class WorkMgrServiceV2 {
           ExceptionMapper.class,
           ServiceObjectMapper.class,
           JacksonFeature.class,
-          ApiKeyAuthenticationFilter.class,
-          VersionCompatibilityFilter.class);
+          ApiKeyAuthenticationFilter.class);
 
   private BatfishLogger _logger = Main.getLogger();
 

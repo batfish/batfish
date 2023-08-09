@@ -1,0 +1,19 @@
+!
+hostname ios-interface-cts
+!
+! grammar based on https://www.cisco.com/c/en/us/td/docs/switches/lan/trustsec/configuration/guide/trustsec/command_sum.html
+! focusing on things that can appear under the interface stanza
+!
+interface TenGigabitEthernet1/1/21
+ cts dot1x
+   default timer reauthentication
+   timer reauthentication 44
+!
+ cts layer3 ipv4 trustsec forwarding
+ cts layer3 ipv6 policy
+ cts layer3 ipv4 trustsec
+!
+ cts manual
+  policy static sgt 2 trusted
+  sap pmk 1234abcdef mode-list gcm null no-encap
+!

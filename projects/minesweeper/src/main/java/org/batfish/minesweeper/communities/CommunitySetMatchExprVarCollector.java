@@ -60,9 +60,8 @@ public class CommunitySetMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunitySetMatchRegex(
       CommunitySetMatchRegex communitySetMatchRegex, Configuration arg) {
-    // This is not supported, but rather than throw we do nothing. If we end up needing to model
-    // this structure, the later code will crash instead.
-    return ImmutableSet.of();
+    throw new UnsupportedOperationException(
+        "Currently not supporting community-set regexes: " + communitySetMatchRegex.getRegex());
   }
 
   @Override

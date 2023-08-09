@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -76,7 +75,7 @@ public class OspfProcess implements Serializable {
 
   private Set<String> _passiveInterfaces;
 
-  private Map<RoutingProtocol, OspfRedistributionPolicy> _redistributionPolicies;
+  private Map<RoutingProtocolInstance, OspfRedistributionPolicy> _redistributionPolicies;
 
   private double _referenceBandwidth;
 
@@ -139,7 +138,7 @@ public class OspfProcess implements Serializable {
     _passiveInterfaces = new HashSet<>();
     _stubs = new HashMap<>();
     _wildcardNetworks = new TreeSet<>();
-    _redistributionPolicies = new EnumMap<>(RoutingProtocol.class);
+    _redistributionPolicies = new HashMap<>();
     _summaries = new TreeMap<>();
   }
 
@@ -223,7 +222,7 @@ public class OspfProcess implements Serializable {
     return _passiveInterfaces;
   }
 
-  public Map<RoutingProtocol, OspfRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RoutingProtocolInstance, OspfRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

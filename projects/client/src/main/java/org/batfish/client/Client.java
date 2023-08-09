@@ -377,7 +377,7 @@ public class Client extends AbstractClient implements IClient {
         }
         break;
       case BOOLEAN:
-        if (!value.isBoolean()) {
+        if (!value.isBoolean() && !value.isNull()) {
           throw new BatfishException(
               String.format("It is not a valid JSON %s value", expectedType.getName()));
         }
@@ -676,7 +676,7 @@ public class Client extends AbstractClient implements IClient {
         new RoutingProtocolSpecifier(value.textValue());
         break;
       case STRING:
-        if (!value.isTextual()) {
+        if (!value.isTextual() && !value.isNull()) {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }

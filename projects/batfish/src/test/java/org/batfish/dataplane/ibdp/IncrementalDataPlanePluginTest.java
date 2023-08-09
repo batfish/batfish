@@ -345,6 +345,56 @@ public class IncrementalDataPlanePluginTest {
         r3MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.IBGP))));
   }
 
+  /*
+   Topology: R1 - R2 - R3
+
+   - R2 is a route reflector, with client R1
+   - R3 is a non-client that peers with R2
+   - R1 sends 5.5.5.5/32 to R2
+   - R2 has a static discard route for 5.5.5.5/32, so the BGP route goes into RIB-failure
+   - R2 should still reflect 5.5.5.5/32 to R3
+  */
+  @Test
+  public void testClientToNonClientRouteReflectorRibFailure() throws IOException {
+    String testrigName = "rr-rib-failure-client-non-client";
+    List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
+    Prefix advPrefix = Prefix.strict("5.5.5.5/32");
+
+    Batfish batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder()
+                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                .build(),
+            _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dataplane = batfish.loadDataPlane(batfish.getSnapshot());
+
+    // Check BGP RIB routes
+    Set<Bgpv4Route> r1BgpRibRoutes =
+        dataplane.getBgpRoutes().get("r1", Configuration.DEFAULT_VRF_NAME);
+    Set<Bgpv4Route> r2BgpRibRoutes =
+        dataplane.getBgpRoutes().get("r2", Configuration.DEFAULT_VRF_NAME);
+    Set<Bgpv4Route> r3BgpRibRoutes =
+        dataplane.getBgpRoutes().get("r3", Configuration.DEFAULT_VRF_NAME);
+    assertThat(r1BgpRibRoutes, hasItem(hasPrefix(advPrefix)));
+    assertThat(r2BgpRibRoutes, hasItem(hasPrefix(advPrefix)));
+    assertThat(r3BgpRibRoutes, hasItem(hasPrefix(advPrefix)));
+
+    // Check main RIB routes
+    Set<AbstractRoute> r2MainRibRoutes =
+        dataplane.getRibs().get("r2", Configuration.DEFAULT_VRF_NAME).getRoutes();
+    Set<AbstractRoute> r3MainRibRoutes =
+        dataplane.getRibs().get("r3", Configuration.DEFAULT_VRF_NAME).getRoutes();
+    assertThat(
+        r2MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.STATIC))));
+    assertThat(
+        r2MainRibRoutes,
+        not(hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.IBGP)))));
+    assertThat(
+        r3MainRibRoutes, hasItem(allOf(hasPrefix(advPrefix), hasProtocol(RoutingProtocol.IBGP))));
+  }
+
   @Test
   public void testEbgpAcceptSameNeighborID() throws IOException {
     String testrigName = "ebgp-accept-routerid-match";
@@ -710,6 +760,42 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
+  public void testCanEstablishBgpSession_ebgpSinglehopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = result._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
+
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(initiatorLocalIp)
+            .setPeerAddress(Ip.parse("1.0.0.1"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // the neighbor should be reachable because it is only one hop away from the initiator
+    assertTrue(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+  }
+
+  @Test
   public void testEbgpSinglehopFailure() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
@@ -755,6 +841,42 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
+  public void testCanEstablishBgpSession_ebgpSinglehopFailure() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = result._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(initiatorLocalIp)
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(false)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // the neighbor should be not be reachable because it is two hops away from the initiator
+    assertFalse(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+  }
+
+  @Test
   public void testEbgpMultihopSuccess() throws IOException {
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
 
@@ -797,6 +919,42 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
         hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
+  }
+
+  @Test
+  public void testCanEstablishBgpSession_ebgpMultihopSuccess() throws IOException {
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = result._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(initiatorLocalIp)
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // the neighbor should be reachable because multi-hops are allowed
+    assertTrue(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   @Test
@@ -847,6 +1005,44 @@ public class IncrementalDataPlanePluginTest {
   }
 
   @Test
+  public void testCanEstablishBgpSession_ebgpMultihopFailureWithAcl() throws IOException {
+    // use a network with a deny all ACL on node 3
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(true, false);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = result._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(initiatorLocalIp)
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // the neighbor should not be reachable even though multihops are allowed as traceroute would be
+    // denied in on node 3
+    assertFalse(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+  }
+
+  @Test
   public void testEbgpWithAclPermitEstablished() throws IOException {
     // use a network with an allow established connection ACL on node1
     SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, true);
@@ -891,6 +1087,44 @@ public class IncrementalDataPlanePluginTest {
     assertThat(
         Iterables.getOnlyElement(bgpSessionInitiationResult.getReverseTraces()),
         hasHops(contains(hasNodeName("node3"), hasNodeName("node2"), hasNodeName("node1"))));
+  }
+
+  @Test
+  public void testCanEstablishBgpSession_ebgpWithAclPermitEstablished() throws IOException {
+    // use a network with an allow established connection ACL on node1
+    SortedMap<String, Configuration> configs = generateNetworkWithThreeHops(false, true);
+
+    Batfish batfish = BatfishTestUtils.getBatfish(configs, _folder);
+    batfish.getSettings().setDataplaneEngineName(IncrementalDataPlanePlugin.PLUGIN_NAME);
+    DataPlanePlugin dataPlanePlugin = batfish.getDataPlanePlugin();
+    ComputeDataPlaneResult result = dataPlanePlugin.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = result._dataPlane;
+
+    BgpPeerConfigId initiator =
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+    BgpPeerConfigId listener =
+        new BgpPeerConfigId("node3", "~Vrf_2~", Prefix.parse("1.0.0.3/32"), false);
+
+    Ip initiatorLocalIp = Ip.parse("1.0.0.0");
+    BgpActivePeerConfig source =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(initiatorLocalIp)
+            .setPeerAddress(Ip.parse("1.0.0.3"))
+            .setEbgpMultihop(true)
+            .setLocalAs(1L)
+            .setRemoteAs(2L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
+    // neighbor should be reachable because ACL allows established connection back into node1 and
+    // allows everything out
+    assertTrue(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
   /**

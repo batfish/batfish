@@ -1,0 +1,97 @@
+{
+  "class" : "org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion",
+  "action" : "PERMIT",
+  "direction" : "IN",
+  "inputConstraints" : {
+    "complementPrefix" : false,
+    "prefix" : [
+      "1.1.1.0/24"
+    ]
+  },
+  "nodes" : "nodes",
+  "outputConstraints" : {
+    "complementPrefix" : false,
+    "prefix" : [
+      "2.2.2.0/24"
+    ]
+  },
+  "pathOption" : "SINGLE",
+  "policies" : "policies",
+  "differential" : false,
+  "includeOneTableKeys" : true,
+  "instance" : {
+    "description" : "Finds route announcements for which a route policy has a particular behavior.",
+    "instanceName" : "qname",
+    "longDescription" : "This question finds route announcements for which a route policy has a particular behavior. The behaviors can be: that the policy permits the route (`permit`) or that it denies the route (`deny`). Constraints can be imposed on the input route announcements of interest and, in the case of a `permit` action, also on the output route announcements of interest. Route policies are selected using node and policy specifiers, which might match multiple policies. In this case, a (possibly different) answer will be found for each policy. _Note:_ This question currently does not support all of the route policy features that Batfish supports. The question only supports common forms of matching on prefixes, communities, and AS-paths, as well as common forms of setting communities, the local preference, and the metric. The question logs all unsupported features that it encounters as warnings. Due to unsupported features, it is possible for the question to return no answers even for route policies that can in fact exhibit the specified behavior.",
+    "orderedVariableNames" : [
+      "nodes",
+      "policies",
+      "inputConstraints",
+      "action",
+      "outputConstraints",
+      "perPath",
+      "pathOption"
+    ],
+    "tags" : [
+      "routing"
+    ],
+    "variables" : {
+      "action" : {
+        "description" : "The behavior to be evaluated. Specify exactly one of `permit` or `deny`.",
+        "displayName" : "Action",
+        "optional" : true,
+        "type" : "string",
+        "value" : "permit"
+      },
+      "inputConstraints" : {
+        "description" : "Constraints on the set of input BGP route announcements to consider",
+        "displayName" : "Input Constraints",
+        "optional" : true,
+        "type" : "bgpRouteConstraints",
+        "value" : {
+          "prefix" : [
+            "1.1.1.0/24"
+          ]
+        }
+      },
+      "nodes" : {
+        "description" : "Only examine policies on nodes matching this specifier",
+        "displayName" : "Nodes",
+        "optional" : true,
+        "type" : "nodeSpec",
+        "value" : "nodes"
+      },
+      "outputConstraints" : {
+        "description" : "Constraints on the set of output BGP route announcements to consider",
+        "displayName" : "Output Constraints",
+        "optional" : true,
+        "type" : "bgpRouteConstraints",
+        "value" : {
+          "prefix" : [
+            "2.2.2.0/24"
+          ]
+        }
+      },
+      "pathOption" : {
+        "description" : "If set to 'per_path' run the analysis separately for each execution path. If set to `non_overlap` run the analysis separately for each execution path but do not produce the same route for each path.",
+        "displayName" : "Path Options",
+        "optional" : true,
+        "type" : "string",
+        "value" : "single"
+      },
+      "perPath" : {
+        "description" : "Run the analysis separately for each execution path of a route map. This option is deprecated in favor of 'pathOption'",
+        "displayName" : "Per-Path",
+        "optional" : true,
+        "type" : "boolean"
+      },
+      "policies" : {
+        "description" : "Only consider policies that match this specifier",
+        "displayName" : "Policies",
+        "optional" : true,
+        "type" : "routingPolicySpec",
+        "value" : "policies"
+      }
+    }
+  }
+}

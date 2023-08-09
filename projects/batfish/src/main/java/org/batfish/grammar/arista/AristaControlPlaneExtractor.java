@@ -484,6 +484,7 @@ import org.batfish.grammar.arista.AristaParser.Eos_rbib_additional_pathsContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_advertise_inactiveContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_allowas_inContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_always_compare_medContext;
+import org.batfish.grammar.arista.AristaParser.Eos_rbib_client_to_clientContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_cluster_idContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_enforce_first_asContext;
 import org.batfish.grammar.arista.AristaParser.Eos_rbib_missing_policyContext;
@@ -2685,6 +2686,11 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
+  public void exitEos_rbib_client_to_client(Eos_rbib_client_to_clientContext ctx) {
+    _currentAristaBgpVrf.setClientToClientReflection(true);
+  }
+
+  @Override
   public void exitEos_rbib_enforce_first_as(Eos_rbib_enforce_first_asContext ctx) {
     _currentAristaBgpVrf.setEnforceFirstAs(true);
   }
@@ -3072,7 +3078,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbino_bgp_client_to_client(Eos_rbino_bgp_client_to_clientContext ctx) {
-    todo(ctx);
+    _currentAristaBgpVrf.setClientToClientReflection(false);
   }
 
   @Override
@@ -3730,15 +3736,22 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitIp_community_list_expanded_stanza(Ip_community_list_expanded_stanzaContext ctx) {
+    LineAction action = toLineAction(ctx.action);
+    String regex = ctx.regexp.getText();
+
+    Optional<ExpandedCommunityListLine> maybeLine = ExpandedCommunityListLine.create(action, regex);
+    if (!maybeLine.isPresent()) {
+      warn(ctx, "Invalid regex");
+      return;
+    }
+    ExpandedCommunityListLine line = maybeLine.get();
+
     String name = ctx.name.getText();
     ExpandedCommunityList list =
         _configuration
             .getExpandedCommunityLists()
             .computeIfAbsent(name, ExpandedCommunityList::new);
 
-    LineAction action = toLineAction(ctx.action);
-    String regex = ctx.regexp.getText();
-    ExpandedCommunityListLine line = new ExpandedCommunityListLine(action, regex);
     list.addLine(line);
     _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }

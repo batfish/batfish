@@ -1,7 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
-import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -17,9 +16,11 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
+import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.common.bdd.MutableBDDInteger;
@@ -33,6 +34,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
@@ -67,6 +69,7 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -75,6 +78,7 @@ import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -83,27 +87,36 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
+import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
+import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
@@ -117,9 +130,10 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
-import org.hamcrest.Matchers;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link TransferBDD}. */
 public class TransferBDDTest {
@@ -131,6 +145,8 @@ public class TransferBDDTest {
   private IBatfish _batfish;
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   private static final String AS_PATH_NAME = "asPathName";
 
@@ -182,7 +198,13 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1);
+    return new BDDRoute(factory, 1, 1, 0, 0, 0);
+  }
+
+  // test whether two lists contain pairwise semantically equal TransferReturns
+  private static boolean equalsForTesting(List<TransferReturn> l1, List<TransferReturn> l2) {
+    return l1.size() == l2.size()
+        && IntStream.range(0, l1.size()).allMatch(i -> l1.get(i).equalsForTesting(l2.get(i)));
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
@@ -202,7 +224,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -217,7 +239,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -230,7 +252,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -252,12 +274,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
-            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
+                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false))));
   }
 
   @Test
@@ -282,7 +304,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -307,7 +329,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -324,7 +346,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -348,12 +370,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, false),
-            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, false),
+                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), true))));
   }
 
   @Test
@@ -385,14 +407,14 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    assertThat(paths, Matchers.hasSize(4));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute, suppressed.and(unsuppressed), true),
-            new TransferReturn(anyRoute, suppressed.and(unsuppressed.not()), false),
-            new TransferReturn(anyRoute, suppressed.not().and(unsuppressed), true),
-            new TransferReturn(anyRoute, suppressed.not().and(unsuppressed.not()), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute, suppressed.and(unsuppressed), true),
+                new TransferReturn(anyRoute, suppressed.and(unsuppressed.not()), false),
+                new TransferReturn(anyRoute, suppressed.not().and(unsuppressed), true),
+                new TransferReturn(anyRoute, suppressed.not().and(unsuppressed.not()), true))));
   }
 
   @Test
@@ -410,7 +432,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -428,7 +450,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -465,13 +487,13 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
-            new TransferReturn(localPref3, if1.not().and(if2), true),
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+                new TransferReturn(localPref3, if1.not().and(if2), true),
+                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
   }
 
   @Test
@@ -508,13 +530,13 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
-            new TransferReturn(localPref3, if1.not().and(if2), false),
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+                new TransferReturn(localPref3, if1.not().and(if2), false),
+                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
   }
 
   @Test
@@ -556,13 +578,13 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(localPref2, if1, true),
-            new TransferReturn(localPref3, if1.not().and(if2), false),
-            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(localPref2, if1, true),
+                new TransferReturn(localPref3, if1.not().and(if2), false),
+                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
   }
 
   @Test
@@ -593,13 +615,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, if1.and(if2), true),
-            new TransferReturn(any, if1.not(), false),
-            new TransferReturn(any, if1.and(if2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1.and(if2), true),
+                new TransferReturn(any, if1.and(if2.not()), false),
+                new TransferReturn(any, if1.not(), false))));
   }
 
   @Test
@@ -618,7 +640,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -638,7 +660,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -664,11 +686,11 @@ public class TransferBDDTest {
                 any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
             .not();
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, if1, true), new TransferReturn(any, if1.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1.not(), false), new TransferReturn(any, if1, true))));
   }
 
   @Test
@@ -695,12 +717,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD1.or(expectedBDD2), true),
-            new TransferReturn(any, expectedBDD1.or(expectedBDD2).not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD1.or(expectedBDD2), true),
+                new TransferReturn(any, expectedBDD1.or(expectedBDD2).not(), false))));
   }
 
   @Test
@@ -731,13 +753,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD1.not(), false),
-            new TransferReturn(any, expectedBDD1.and(expectedBDD2), true),
-            new TransferReturn(any, expectedBDD1.and(expectedBDD2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD1.not(), false),
+                new TransferReturn(any, expectedBDD1.and(expectedBDD2.not()), false),
+                new TransferReturn(any, expectedBDD1.and(expectedBDD2), true))));
   }
 
   @Test
@@ -754,7 +776,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -785,12 +807,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD, true),
-            new TransferReturn(any, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD, true),
+                new TransferReturn(any, expectedBDD.not(), false))));
   }
 
   @Test
@@ -811,7 +833,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -833,7 +855,49 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testSetOrigin() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
+    expectedRoute.getOriginType().setValue(OriginType.INCOMPLETE);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testUnsupportedSetOrigin() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOrigin(new VarOrigin("var")))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
+    expectedRoute.setUnsupported(true);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -851,8 +915,10 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E1);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -870,8 +936,10 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E2);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -892,7 +960,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -914,7 +982,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -935,7 +1003,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -954,12 +1022,12 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, any.getTag().value(42), true),
-            new TransferReturn(any, any.getTag().value(42).not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, any.getTag().value(42), true),
+                new TransferReturn(any, any.getTag().value(42).not(), false))));
   }
 
   @Test
@@ -982,12 +1050,12 @@ public class TransferBDDTest {
     MutableBDDInteger tag = expected.getTag();
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(expected, any.getTag().value(42), true),
-            new TransferReturn(expected, any.getTag().value(42).not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, any.getTag().value(42), true),
+                new TransferReturn(expected, any.getTag().value(42).not(), false))));
 
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
@@ -995,10 +1063,9 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths(ImmutableSet.of());
 
-    assertThat(paths, Matchers.hasSize(1));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1019,11 +1086,12 @@ public class TransferBDDTest {
 
     BDD tag01 = any.getTag().value(0).or(any.getTag().value(1));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, tag01, true), new TransferReturn(any, tag01.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, tag01, true),
+                new TransferReturn(any, tag01.not(), false))));
   }
 
   @Test
@@ -1042,12 +1110,12 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, any.getMed().value(42), true),
-            new TransferReturn(any, any.getMed().value(42).not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, any.getMed().value(42), true),
+                new TransferReturn(any, any.getMed().value(42).not(), false))));
   }
 
   @Test
@@ -1068,12 +1136,12 @@ public class TransferBDDTest {
 
     BDD metricGETwo = any.getMed().value(0).or(any.getMed().value(1)).not();
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, metricGETwo, true),
-            new TransferReturn(any, metricGETwo.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, metricGETwo, true),
+                new TransferReturn(any, metricGETwo.not(), false))));
   }
 
   @Test
@@ -1096,12 +1164,12 @@ public class TransferBDDTest {
     MutableBDDInteger metric = expected.getMed();
     expected.setMed(MutableBDDInteger.makeFromValue(metric.getFactory(), 32, 42));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(expected, any.getMed().value(42), true),
-            new TransferReturn(expected, any.getMed().value(42).not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, any.getMed().value(42), true),
+                new TransferReturn(expected, any.getMed().value(42).not(), false))));
 
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
@@ -1109,10 +1177,138 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths(ImmutableSet.of());
 
-    assertThat(paths, Matchers.hasSize(1));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testMatchClusterListLength() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, any.getClusterListLength().value(42), true),
+                new TransferReturn(any, any.getClusterListLength().value(42).not(), false))));
+  }
+
+  @Test
+  public void testMatchClusterListLengthLE() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.LE, new LiteralInt(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD clusterListLengthLETwo =
+        any.getClusterListLength()
+            .value(0)
+            .or(any.getClusterListLength().value(1))
+            .or(any.getClusterListLength().value(2));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, clusterListLengthLETwo, true),
+                new TransferReturn(any, clusterListLengthLETwo.not(), false))));
+  }
+
+  @Test
+  public void testTrackSucceeded() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD trackPred = any.getTracks()[0];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, trackPred, true),
+                new TransferReturn(any, trackPred.not(), false))));
+  }
+
+  @Test
+  public void testMatchSourceVrf() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("mysource"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD sourcePred = any.getSourceVrfs()[0];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, sourcePred, true),
+                new TransferReturn(any, sourcePred.not(), false))));
+  }
+
+  @Test
+  public void testMatchInterface() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1", "int2")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD intPred = any.getNextHopInterfaces()[0].or(any.getNextHopInterfaces()[1]);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, intPred, true),
+                new TransferReturn(any, intPred.not(), false))));
   }
 
   @Test
@@ -1136,12 +1332,12 @@ public class TransferBDDTest {
 
     BDD expectedBDD = any.getNextHop().toBDD(Prefix.parse("1.0.0.0/8"));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD, true),
-            new TransferReturn(any, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD, true),
+                new TransferReturn(any, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1167,7 +1363,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -1182,12 +1378,52 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopDiscarded(true);
+    expected.setNextHopType(BDDRoute.NextHopType.DISCARDED);
     expected.setNextHopSet(true);
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testSelfNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(SelfNextHop.getInstance()))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopType(BDDRoute.NextHopType.SELF);
+    expected.setNextHopSet(true);
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testPeerAddressNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopType(BDDRoute.NextHopType.BGP_PEER_ADDRESS);
+    expected.setNextHopSet(true);
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -1208,12 +1444,34 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testDiscardThenSetNextHop() {
+    _policyBuilder
+        .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+        .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
+        .addStatement(new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopSet(true);
+    expected.setNextHop(
+        MutableBDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
   public void testUnsupportedSetNextHop() {
-    _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
+    _policyBuilder.addStatement(new SetNextHop(UnchangedNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
@@ -1221,11 +1479,12 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setNextHopSet(true);
     expected.setUnsupported(true);
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -1248,12 +1507,12 @@ public class TransferBDDTest {
 
     BDD expectedBDD = protocol.value(RoutingProtocol.BGP).or(protocol.value(RoutingProtocol.OSPF));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD, true),
-            new TransferReturn(any, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD, true),
+                new TransferReturn(any, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1273,7 +1532,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1298,12 +1559,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD, true),
-            new TransferReturn(any, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD, true),
+                new TransferReturn(any, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1330,12 +1591,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, expectedBDD, false),
-            new TransferReturn(any, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, expectedBDD, false),
+                new TransferReturn(any, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1355,7 +1616,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1376,7 +1639,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -1413,12 +1676,12 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps[ap];
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1449,12 +1712,12 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps[ap1].or(aps[ap2]);
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
   }
 
   @Test
@@ -1486,13 +1749,55 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, conj1.and(conj2), true),
-            new TransferReturn(any, conj1.not(), false),
-            new TransferReturn(any, conj1.and(conj2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, conj1.not(), false),
+                new TransferReturn(any, conj1.and(conj2.not()), false),
+                new TransferReturn(any, conj1.and(conj2), true))));
+  }
+
+  @Test
+  public void testUnsupportedConjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Conjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD conj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD conj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, conj1.not(), false),
+                new TransferReturn(unsupported, conj1.and(conj2.not()), false),
+                new TransferReturn(unsupported, conj1.and(conj2), true))));
   }
 
   @Test
@@ -1529,8 +1834,10 @@ public class TransferBDDTest {
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expectedOut, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(new TransferReturn(expectedOut, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1566,7 +1873,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
   }
 
   @Test
@@ -1614,12 +1923,12 @@ public class TransferBDDTest {
     MutableBDDInteger localPref = localPref300.getLocalPref();
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, conj1.not(), true),
-            new TransferReturn(localPref300, conj1, true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, conj1.not(), true),
+                new TransferReturn(localPref300, conj1, true))));
   }
 
   @Test
@@ -1635,7 +1944,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1667,13 +1978,55 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertThat(paths, Matchers.hasSize(3));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, disj1, true),
-            new TransferReturn(any, disj1.not().and(disj2), true),
-            new TransferReturn(any, disj1.not().and(disj2.not()), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, disj1, true),
+                new TransferReturn(any, disj1.not().and(disj2), true),
+                new TransferReturn(any, disj1.not().and(disj2.not()), false))));
+  }
+
+  @Test
+  public void testUnsupportedDisjunction() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                ImmutableList.of(
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    // MatchColor is unsupported, so it should be ignored
+                    new MatchColor(0L),
+                    matchPrefixSet(
+                        ImmutableList.of(
+                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute unsupported = new BDDRoute(any);
+    unsupported.setUnsupported(true);
+
+    BDD disj1 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD disj2 =
+        isRelevantForDestination(
+            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, disj1, true),
+                new TransferReturn(unsupported, disj1.not().and(disj2), true),
+                new TransferReturn(unsupported, disj1.not().and(disj2.not()), false))));
   }
 
   @Test
@@ -1718,12 +2071,12 @@ public class TransferBDDTest {
     BDDRoute localPref32 = new BDDRoute(any);
     localPref32.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(any, firstDisjunctBDD, true),
-            new TransferReturn(localPref32, firstDisjunctBDD.not(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, firstDisjunctBDD, true),
+                new TransferReturn(localPref32, firstDisjunctBDD.not(), true))));
   }
 
   @Test
@@ -1739,7 +2092,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
   }
 
   @Test
@@ -1775,8 +2130,9 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().zero();
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1811,8 +2167,9 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1860,8 +2217,9 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1908,8 +2266,9 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1949,8 +2308,9 @@ public class TransferBDDTest {
       }
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -1990,8 +2350,9 @@ public class TransferBDDTest {
       }
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2026,8 +2387,9 @@ public class TransferBDDTest {
       }
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2059,8 +2421,9 @@ public class TransferBDDTest {
       }
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2100,8 +2463,9 @@ public class TransferBDDTest {
       }
     }
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2134,12 +2498,12 @@ public class TransferBDDTest {
     BDD expectedBDD =
         tbdd.getFactory().orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute, expectedBDD, true),
-            new TransferReturn(anyRoute, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute, expectedBDD, true),
+                new TransferReturn(anyRoute, expectedBDD.not(), false))));
   }
 
   @Test
@@ -2187,12 +2551,12 @@ public class TransferBDDTest {
         tbdd.getFactory()
             .orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(anyRoute, expectedBDD, true),
-            new TransferReturn(anyRoute, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRoute, expectedBDD, true),
+                new TransferReturn(anyRoute, expectedBDD.not(), false))));
   }
 
   @Test
@@ -2232,12 +2596,12 @@ public class TransferBDDTest {
       aps[i] = tbdd.getFactory().one();
     }
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(expected, expectedBDD, true),
-            new TransferReturn(expected, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
 
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
@@ -2246,8 +2610,125 @@ public class TransferBDDTest {
     paths = tbdd.computePaths(ImmutableSet.of());
 
     // all input routes satisfy the if statement now, so there is only one path
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testSetThenMatchOtherCommunity() {
+    Community comm1 = StandardCommunity.parse("30:40");
+    Community comm2 = StandardCommunity.parse("10:20");
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                CommunitySetUnion.of(
+                    InputCommunities.instance(), new LiteralCommunitySet(CommunitySet.of(comm1)))),
+            new If(
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(comm2))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    Set<Integer> ap1020 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm2));
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm1));
+
+    // the original route must have the community 10:20
+    BDD expectedBDD =
+        tbdd.getFactory().orAll(ap1020.stream().map(i -> aps[i]).collect(Collectors.toList()));
+
+    // each atomic predicate for 30:40 has the 1 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().one();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+  }
+
+  @Test
+  public void testDeleteThenMatchCommunity() {
+    Community comm = StandardCommunity.parse("30:40");
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetCommunities(
+                new CommunitySetDifference(InputCommunities.instance(), new CommunityIs(comm))),
+            new If(
+                new MatchCommunities(
+                    InputCommunities.instance(), new HasCommunity(new CommunityIs(comm))),
+                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    // the analysis will use the original route for matching
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = expected.getCommunityAtomicPredicates();
+    Set<Integer> ap3040 =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(comm));
+
+    // the original route must have community 30:40
+    BDD expectedBDD =
+        tbdd.getFactory().orAll(ap3040.stream().map(i -> aps[i]).collect(Collectors.toList()));
+
+    // each atomic predicate for 30:40 has the 0 BDD
+    for (int i : ap3040) {
+      aps[i] = tbdd.getFactory().zero();
+    }
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expected, expectedBDD, true),
+                new TransferReturn(expected, expectedBDD.not(), false))));
+
+    // now do the analysis again but use the output attributes for matching
+    setup(ConfigurationFormat.JUNIPER);
+    policy = _policyBuilder.setStatements(stmts).build();
+    tbdd = new TransferBDD(_configAPs, policy);
+    paths = tbdd.computePaths(ImmutableSet.of());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
   }
 
   @Test
@@ -2283,7 +2764,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -2323,7 +2804,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -2372,12 +2853,12 @@ public class TransferBDDTest {
     BDDRoute expectedOut = new BDDRoute(anyRoute);
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(expectedOut, expectedBDD, true),
-            new TransferReturn(anyRoute, expectedBDD.not(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expectedOut, expectedBDD, true),
+                new TransferReturn(anyRoute, expectedBDD.not(), false))));
   }
 
   @Test
@@ -2406,7 +2887,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertEquals(expectedPaths, paths);
+    assertTrue(equalsForTesting(expectedPaths, paths));
   }
 
   @Test
@@ -2434,8 +2915,9 @@ public class TransferBDDTest {
     MutableBDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 44));
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2451,8 +2933,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
   }
 
   @Test
@@ -2473,8 +2956,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
   }
 
   @Test
@@ -2491,8 +2975,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2509,8 +2994,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(42L));
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2530,8 +3016,347 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testFirstMatchChain() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD if1 = any.getMed().value(42);
+
+    BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1, true),
+                new TransferReturn(any, if1.not().and(if2), true),
+                new TransferReturn(any, if1.not().and(if2.not()), false))));
+  }
+
+  @Test
+  public void testFirstMatchChainReturnFalse() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ReturnFalse))))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchProtocol(RoutingProtocol.BGP),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    BDD if1 = any.getMed().value(42);
+
+    BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(any, if1, false),
+                new TransferReturn(any, if1.not().and(if2), true),
+                new TransferReturn(any, if1.not().and(if2.not()), false))));
+  }
+
+  @Test
+  public void testSetDefaultPolicy() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String defaultName = "default";
+    RoutingPolicy defaultPolicy =
+        _nf.routingPolicyBuilder()
+            .setName(defaultName)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetDefaultPolicy(defaultName))
+            .addStatement(
+                new If(
+                    new FirstMatchChain(ImmutableList.of(new CallExpr(policy1Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, defaultName, defaultPolicy, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, any.getFactory().one(), false))));
+  }
+
+  @Test
+  public void testNoDefaultPolicy() {
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(ImmutableList.of(new CallExpr(policy1Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(ImmutableMap.of(policy1Name, policy1, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    _expectedException.expect(BatfishException.class);
+    tbdd.computePaths(ImmutableSet.of());
+  }
+
+  @Test
+  public void testFirstMatchChainStateful() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(
+                new If(
+                    new MatchTag(IntComparator.EQ, new LiteralLong(42)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+
+    // the tag set in policy1 is matched upon in policy2
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testFirstMatchChainOverwrite() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.FallThrough))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(10)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 10));
+
+    // the tag set in policy1 is overwritten in policy2
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testFirstMatchChainImplicitFallThrough() {
+
+    // test proper stateful behavior for Juniper chains
+    setup(ConfigurationFormat.JUNIPER);
+
+    String policy1Name = "policy1";
+    RoutingPolicy policy1 =
+        _nf.routingPolicyBuilder()
+            .setName(policy1Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetTag(new LiteralLong(42)))
+            .build();
+
+    String policy2Name = "policy2";
+    RoutingPolicy policy2 =
+        _nf.routingPolicyBuilder()
+            .setName(policy2Name)
+            .setOwner(_baseConfig)
+            .addStatement(new SetMetric(new LiteralLong(42)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new FirstMatchChain(
+                        ImmutableList.of(new CallExpr(policy1Name), new CallExpr(policy2Name))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    _baseConfig.setRoutingPolicies(
+        ImmutableMap.of(policy1Name, policy1, policy2Name, policy2, POLICY_NAME, policy));
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    BDDRoute expected = new BDDRoute(any);
+    MutableBDDInteger tag = expected.getTag();
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
+    MutableBDDInteger med = expected.getMed();
+    expected.setMed(MutableBDDInteger.makeFromValue(med.getFactory(), 32, 42));
+
+    // the updates from both policies take effect
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2544,7 +3369,7 @@ public class TransferBDDTest {
                         new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
                 // the SelfNextHop construct is not supported
                 ImmutableList.of(
-                    new SetNextHop(SelfNextHop.getInstance()),
+                    new SetNextHop(UnchangedNextHop.getInstance()),
                     new StaticStatement(Statements.ExitAccept))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
@@ -2560,14 +3385,15 @@ public class TransferBDDTest {
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
     BDDRoute expectedOut = new BDDRoute(any);
+    expectedOut.setNextHopSet(true);
     expectedOut.setUnsupported(true);
 
-    assertThat(paths, Matchers.hasSize(2));
-    assertThat(
-        paths,
-        Matchers.containsInAnyOrder(
-            new TransferReturn(expectedOut, expectedBDD, true),
-            new TransferReturn(any, expectedBDD.not(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(expectedOut, expectedBDD, true),
+                new TransferReturn(any, expectedBDD.not(), true))));
   }
 
   @Test
@@ -2584,8 +3410,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2602,7 +3429,9 @@ public class TransferBDDTest {
     BDDRoute any = anyRoute(tbdd.getFactory());
 
     // we treat the SetReadIntermediateBgpAttributes as a no-op
-    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
   }
 
   @Test
@@ -2619,8 +3448,9 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertEquals(
-        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
   }
 
   @Test

@@ -47,6 +47,9 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
+import org.batfish.datamodel.answers.NextHopConcrete;
+import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
@@ -56,6 +59,9 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -70,6 +76,7 @@ import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
@@ -81,9 +88,13 @@ import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -511,7 +522,11 @@ public class CompareRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, "1.1.1.1", "0.0.0.1")));
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString())));
 
     assertThat(
         answer.getRows().getData(),
@@ -553,7 +568,100 @@ public class CompareRoutePoliciesAnswererTest {
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
             ImmutableSet.of(
-                new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, Ip.create(-1).toString(), "0.0.0.1")));
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopDiscard.instance()).toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString())));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that when the nexthop IP is set to the local IP the difference is captured. */
+  @Test
+  public void testSelfNexthop() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(new SetNextHop(SelfNextHop.getInstance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    NextHopSelf.instance().toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString())));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that when the nexthop IP is set to the remote IP the difference is captured. */
+  @Test
+  public void testPeerNexthop() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    NextHopBgpPeerAddress.instance().toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString())));
 
     assertThat(
         answer.getRows().getData(),
@@ -806,7 +914,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -819,7 +927,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -885,7 +993,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -948,7 +1056,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/16"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1011,7 +1119,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1023,7 +1131,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/31"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1087,7 +1195,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1158,7 +1266,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1273,7 +1381,7 @@ public class CompareRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1321,5 +1429,394 @@ public class CompareRoutePoliciesAnswererTest {
         new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
             question, _batfish);
     answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+  }
+
+  /** Tests that a difference due to tracks is properly reported. */
+  @Test
+  public void testTrackSucceeded() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitReject)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that irrelevant tracks are properly ignored. */
+  @Test
+  public void testTrackSucceededHarmless() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    assertThat("the track does not change behavior", answer.getRows().getData().isEmpty());
+  }
+
+  /** Tests that different route maps can have different tracks. */
+  @Test
+  public void testDifferentTracks() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack1"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack2"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // There is a difference whenever the two tracks have different truth values
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that a difference due to source VRFs is properly reported. */
+  @Test
+  public void testMatchSourceVrf() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("source1"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitReject)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that different route maps can have different source Vrfs. */
+  @Test
+  public void testDifferentSourceVrfs() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("source1"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("source2"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // There is a difference whenever the two source VRFs have different truth values
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that a difference due to next-hop interfaces is properly reported. */
+  @Test
+  public void testMatchInterface() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitReject)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopConcrete(NextHopInterface.of("int1", Ip.parse("0.0.0.1")))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  /** Tests that different route maps can have different next-hop interface names. */
+  @Test
+  public void testDifferentNextHopInterfaces() {
+
+    RoutingPolicy policy_reference =
+        _policyBuilderDelta
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    RoutingPolicy policy_new =
+        _policyBuilderBase
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int2")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion(
+            DEFAULT_DIRECTION, policy_new.getName(), policy_reference.getName(), HOSTNAME);
+    org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer answerer =
+        new org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer(
+            question, _batfish);
+
+    TableAnswerElement answer =
+        (TableAnswerElement)
+            answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
+
+    BgpRoute inputRoute1 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopConcrete(NextHopInterface.of("int1", Ip.parse("0.0.0.1")))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute inputRoute2 =
+        inputRoute1.toBuilder()
+            .setNextHopConcrete(NextHopInterface.of("int2", Ip.parse("0.0.0.1")))
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // There is a difference whenever the route has one of the two interface names
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute1), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute2), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 }

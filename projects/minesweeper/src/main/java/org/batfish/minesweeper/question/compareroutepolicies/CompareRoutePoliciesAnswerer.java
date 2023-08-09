@@ -2,8 +2,8 @@ package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
+import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
-import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -26,20 +27,25 @@ import org.batfish.common.Answerer;
 import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
+import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
 import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -94,28 +100,18 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Convert the results of symbolic route analysis into an answer to this question, if the
-   * resulting constraints are satisfiable.
-   *
-   * @param referencePolicy the reference route policy that we compared against.
-   * @param policy the proposed route policy.
-   * @return the concrete input route and, if the desired action is PERMIT, the concrete output
-   *     routes resulting from analyzing the given policies.
-   */
-  private Row computeDifferencesForInputRoute(
-      RoutingPolicy referencePolicy, RoutingPolicy policy, Bgpv4Route inRoute) {
-    return diffRowResultsFor(referencePolicy, policy, inRoute, _direction);
-  }
-
-  /**
    * @param constraints Logical constraints that describe a set of routes.
    * @param configAPs the atomic predicates used for communities/as-paths.
-   * @return An input route that conforms to the given constraints.
+   * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
+   *     the given constraints.
    */
-  private Bgpv4Route constraintsToInputs(BDD constraints, ConfigAtomicPredicates configAPs) {
+  private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
+      BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD fullModel = constraintsToModel(constraints, configAPs);
-    return satAssignmentToInputRoute(fullModel, configAPs);
+    return new Tuple<>(
+        satAssignmentToInputRoute(fullModel, configAPs),
+        satAssignmentToEnvironment(fullModel, configAPs));
   }
 
   /**
@@ -155,7 +151,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         case LOCAL_PREF:
         case MED:
         case NEXTHOP:
-        case NEXTHOP_DISCARDED:
+        case NEXTHOP_TYPE:
         case NEXTHOP_SET:
         case TAG:
         case ADMIN_DIST:
@@ -198,6 +194,63 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
+   * Check that the results of symbolic analysis are consistent with the given concrete result from
+   * route simulation.
+   *
+   * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
+   *     a given path
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of that path
+   * @param result the expected input-output behavior
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateModel(
+      BDD fullModel,
+      ConfigAtomicPredicates configAPs,
+      TransferReturn path,
+      Result<BgpRoute> result) {
+    // update the atomic predicates to include any prepended ASes on this path
+    ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
+    AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
+    aps.prependAPs(path.getFirst().getPrependedASes());
+
+    return ModelGeneration.validateModel(
+        fullModel,
+        path.getFirst(),
+        configAPsCopy,
+        path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
+        _direction,
+        result);
+  }
+
+  /**
+   * Check that the example of a behavioral difference between the two route maps the symbolic
+   * analysis finds is consistent with the results from the concrete route simulation.
+   *
+   * @param constraints representation of the set of input routes that should exhibit a difference
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of the path through the original route map
+   * @param otherPath the symbolic representation of the path through the other route map
+   * @param result the expected behavior of the original route map on an input that should exhibit a
+   *     difference
+   * @param otherResult the expected behavior of the other route map on the same input
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateDifference(
+      BDD constraints,
+      ConfigAtomicPredicates configAPs,
+      TransferReturn path,
+      TransferReturn otherPath,
+      Result<BgpRoute> result,
+      Result<BgpRoute> otherResult) {
+    BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+    return validateModel(fullModel, configAPs, path, result)
+        && validateModel(fullModel, configAPs, otherPath, otherResult);
+  }
+
+  /**
    * Compare two route policies for behavioral differences.
    *
    * @param referencePolicy the routing policy of the reference snapshot
@@ -208,7 +261,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private List<Row> comparePolicies(
       RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
-    List<BDD> differences = new ArrayList<>();
+    List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
 
     BDDFactory factory = JFactory.init(100000, 10000);
     TransferBDD tBDD = new TransferBDD(factory, configAPs, referencePolicy);
@@ -234,12 +287,15 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
-        // some common
-        // input routes and their behavior should match.
+        // some common input routes and their behavior should match.
         if (!intersection.isZero()) {
+          // a flag that is set if we find a behavioral difference between the two paths
+          boolean behaviorDiff = false;
+          BDD finalConstraints = null;
           // Naive check to see if both policies accepted/rejected the route(s).
           if (path.getAccepted() != otherPath.getAccepted()) {
-            differences.add(intersection);
+            behaviorDiff = true;
+            finalConstraints = intersection;
           } else {
             // If both policies perform the same action, then check that their outputs match.
             // We compute the outputs of interest, by restricting the sets of output routes to the
@@ -254,17 +310,35 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
               BDD outputConstraints =
                   counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
               if (!diff.isEmpty()) {
-                differences.add(intersection.and(outputConstraints));
+                behaviorDiff = true;
+                finalConstraints = intersection.and(outputConstraints);
               }
             }
+          }
+
+          // we have found a difference, so let's get a concrete example of the difference
+          if (behaviorDiff) {
+            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+                constraintsToInputs(finalConstraints, configAPs);
+            Result<BgpRoute> otherResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
+            Result<BgpRoute> refResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
+            differences.add(new Tuple<>(otherResult, refResult));
+
+            // As a sanity check, compare the simulated results above with what the symbolic route
+            // analysis predicts will happen.
+            assert validateDifference(
+                finalConstraints, configAPs, path, otherPath, refResult, otherResult);
           }
         }
       }
     }
     return differences.stream()
-        .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(AbstractRoute::getNetwork))
-        .map(r -> computeDifferencesForInputRoute(referencePolicy, policy, r))
+        .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()))
+        .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
         .collect(Collectors.toList());
   }
 

@@ -3,11 +3,12 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
+import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Objects;
 import java.util.Set;
@@ -20,20 +21,25 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopConcrete;
+import org.batfish.datamodel.answers.NextHopResult;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
   public static final String PROP_AS_PATH = "asPath";
+  public static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
   public static final String PROP_METRIC = "metric";
   public static final String PROP_NETWORK = "network";
-  public static final String PROP_NEXT_HOP_IP = "nextHopIp";
+  public static final String PROP_NEXT_HOP = "nextHop";
   public static final String PROP_ORIGINATOR_IP = "originatorIp";
   public static final String PROP_ORIGIN_MECHANISM = "originMechanism";
   public static final String PROP_ORIGIN_TYPE = "originType";
@@ -46,11 +52,12 @@ public final class BgpRoute {
   public static final String PROP_CLASS = "class";
 
   @Nonnull private final AsPath _asPath;
+  @Nonnull private final Set<Long> _clusterList;
   @Nonnull private final SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
   @Nonnull private final Prefix _network;
-  @Nonnull private final Ip _nextHopIp;
+  @Nonnull private final NextHopResult _nextHop;
   @Nonnull private final Ip _originatorIp;
   @Nonnull private final OriginMechanism _originMechanism;
   @Nonnull private final OriginType _originType;
@@ -63,11 +70,12 @@ public final class BgpRoute {
 
   private BgpRoute(
       AsPath asPath,
+      Set<Long> clusterList,
       SortedSet<Community> communities,
       long localPreference,
       long metric,
       Prefix network,
-      Ip nextHopIp,
+      NextHopResult nextHop,
       Ip originatorIp,
       OriginMechanism originMechanism,
       OriginType originType,
@@ -78,11 +86,12 @@ public final class BgpRoute {
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
     _asPath = asPath;
+    _clusterList = clusterList;
     _communities = communities;
     _localPreference = localPreference;
     _metric = metric;
     _network = network;
-    _nextHopIp = nextHopIp;
+    _nextHop = nextHop;
     _originatorIp = originatorIp;
     _originMechanism = originMechanism;
     _originType = originType;
@@ -97,11 +106,12 @@ public final class BgpRoute {
   @JsonCreator
   private static BgpRoute jsonCreator(
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
+      @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @Nullable @JsonProperty(PROP_NEXT_HOP) NextHopResult nextHop,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
@@ -120,11 +130,12 @@ public final class BgpRoute {
     checkArgument(protocol != null, "%s must be specified", PROP_PROTOCOL);
     return new BgpRoute(
         firstNonNull(asPath, AsPath.empty()),
+        firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSortedSet.of()),
         localPreference,
         metric,
         network,
-        firstNonNull(nextHopIp, Route.UNSET_ROUTE_NEXT_HOP_IP),
+        firstNonNull(nextHop, new NextHopConcrete(NextHopDiscard.instance())),
         originatorIp,
         firstNonNull(originMechanism, LEARNED),
         originType,
@@ -140,6 +151,12 @@ public final class BgpRoute {
   @JsonProperty(PROP_AS_PATH)
   public AsPath getAsPath() {
     return _asPath;
+  }
+
+  @Nonnull
+  @JsonProperty(PROP_CLUSTER_LIST)
+  public Set<Long> getClusterList() {
+    return _clusterList;
   }
 
   @Nonnull
@@ -164,23 +181,10 @@ public final class BgpRoute {
     return _network;
   }
 
-  /**
-   * Returns next hop IP suitable for internal consumption. See {@link #getNextHopIpJson()} for
-   * retrieving this field in a manner that is suitable for external deserialization.
-   */
   @Nonnull
-  @JsonIgnore
-  public Ip getNextHopIp() {
-    return _nextHopIp;
-  }
-
-  /**
-   * Returns next hop IP in a manner suitable for deserialization to JSON. See {@link
-   * #getNextHopIp()} for retrieving this field in a manner suitable for internal processing.
-   */
-  @JsonProperty(PROP_NEXT_HOP_IP)
-  private @Nullable Ip getNextHopIpJson() {
-    return _nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP) ? null : _nextHopIp;
+  @JsonProperty(PROP_NEXT_HOP)
+  public NextHopResult getNextHop() {
+    return _nextHop;
   }
 
   @Nonnull
@@ -249,9 +253,10 @@ public final class BgpRoute {
         && _tag == bgpRoute._tag
         && _weight == bgpRoute._weight
         && Objects.equals(_asPath, bgpRoute._asPath)
+        && Objects.equals(_clusterList, bgpRoute._clusterList)
         && Objects.equals(_communities, bgpRoute._communities)
         && Objects.equals(_network, bgpRoute._network)
-        && Objects.equals(_nextHopIp, bgpRoute._nextHopIp)
+        && Objects.equals(_nextHop, bgpRoute._nextHop)
         && Objects.equals(_originatorIp, bgpRoute._originatorIp)
         && _originMechanism == bgpRoute._originMechanism
         && _originType == bgpRoute._originType
@@ -265,11 +270,12 @@ public final class BgpRoute {
   public int hashCode() {
     return Objects.hash(
         _asPath,
+        _clusterList,
         _communities,
         _localPreference,
         _metric,
         _network,
-        _nextHopIp,
+        _nextHop,
         _originatorIp,
         _originMechanism.ordinal(),
         _originType.ordinal(),
@@ -288,11 +294,12 @@ public final class BgpRoute {
   public Builder toBuilder() {
     return builder()
         .setAsPath(_asPath)
+        .setClusterList(_clusterList)
         .setCommunities(_communities)
         .setLocalPreference(_localPreference)
         .setMetric(_metric)
         .setNetwork(_network)
-        .setNextHopIp(_nextHopIp)
+        .setNextHop(_nextHop)
         .setOriginatorIp(_originatorIp)
         .setOriginMechanism(_originMechanism)
         .setOriginType(_originType)
@@ -309,11 +316,12 @@ public final class BgpRoute {
   public static final class Builder {
 
     @Nonnull private AsPath _asPath;
+    @Nonnull private Set<Long> _clusterList;
     @Nonnull private SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
     @Nullable private Prefix _network;
-    @Nullable private Ip _nextHopIp;
+    @Nullable private NextHopResult _nextHop;
     @Nullable private Ip _originatorIp;
     @Nullable private OriginMechanism _originMechanism;
     @Nullable private OriginType _originType;
@@ -326,23 +334,23 @@ public final class BgpRoute {
 
     public Builder() {
       _asPath = AsPath.empty();
+      _clusterList = ImmutableSet.of();
       _communities = ImmutableSortedSet.of();
-      _nextHopIp = Route.UNSET_ROUTE_NEXT_HOP_IP;
     }
 
     public BgpRoute build() {
       checkArgument(_network != null, "%s must be specified", PROP_NETWORK);
-      checkArgument(_nextHopIp != null, "%s must be specified", PROP_NEXT_HOP_IP);
       checkArgument(_originatorIp != null, "%s must be specified", PROP_ORIGINATOR_IP);
       checkArgument(_originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "%s must be specified", PROP_PROTOCOL);
       return new BgpRoute(
           _asPath,
+          _clusterList,
           _communities,
           _localPreference,
           _metric,
           _network,
-          _nextHopIp,
+          firstNonNull(_nextHop, new NextHopConcrete(NextHopDiscard.instance())),
           _originatorIp,
           firstNonNull(_originMechanism, LEARNED),
           _originType,
@@ -356,6 +364,11 @@ public final class BgpRoute {
 
     public Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
+      return this;
+    }
+
+    public Builder setClusterList(Set<Long> clusterList) {
+      _clusterList = ImmutableSet.copyOf(clusterList);
       return this;
     }
 
@@ -379,8 +392,24 @@ public final class BgpRoute {
       return this;
     }
 
+    public Builder setNextHop(@Nullable NextHopResult nextHop) {
+      _nextHop = nextHop;
+      return this;
+    }
+
     public Builder setNextHopIp(Ip nextHopIp) {
-      _nextHopIp = nextHopIp;
+      NextHop nh;
+      if (nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+        nh = NextHopDiscard.instance();
+      } else {
+        nh = NextHopIp.of(nextHopIp);
+      }
+      _nextHop = new NextHopConcrete(nh);
+      return this;
+    }
+
+    public Builder setNextHopConcrete(NextHop nh) {
+      _nextHop = new NextHopConcrete(nh);
       return this;
     }
 
@@ -438,9 +467,10 @@ public final class BgpRoute {
         .add("network", _network)
         .add("metric", _metric)
         .add("asPath", _asPath)
+        .add("clusterList", _clusterList)
         .add("communities", _communities)
         .add("localPreference", _localPreference)
-        .add("nextHopIp", _nextHopIp)
+        .add("nextHop", _nextHop)
         .add("originatorIp", _originatorIp)
         .add("originMechanism", _originMechanism)
         .add("originType", _originType)

@@ -586,7 +586,6 @@ null_bgp_tail
                   | MED
                )
             )
-            | CLIENT_TO_CLIENT
             | DAMPENING
             | DEFAULT
             | DETERMINISTIC_MED
@@ -608,7 +607,6 @@ null_bgp_tail
          )
       )
       | CAPABILITY
-      | CLIENT_TO_CLIENT
       | CONNECT_RETRY
       | DAMPEN
       | DAMPEN_IGP_METRIC

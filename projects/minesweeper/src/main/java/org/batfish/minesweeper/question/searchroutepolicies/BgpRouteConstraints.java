@@ -15,6 +15,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
@@ -32,6 +33,8 @@ public class BgpRouteConstraints {
   private static final String PROP_COMMUNITIES = "communities";
   private static final String PROP_AS_PATH = "asPath";
   private static final String PROP_NEXT_HOP_IP = "nextHopIp";
+
+  private static final String PROP_ORIGIN_TYPE = "originType";
   private static final String PROP_PROTOCOL = "protocol";
 
   // the announcement's prefix must be within this space
@@ -52,6 +55,8 @@ public class BgpRouteConstraints {
   // an empty value means that any next-hop IP is ok, including
   // an unset one
   @Nonnull private final Optional<Prefix> _nextHopIp;
+  // the announcement's origin type must be a member of this set
+  @Nonnull private final Set<OriginType> _originType;
   // the announcement's protocol must be a member of this set
   @Nonnull private final Set<RoutingProtocol> _protocol;
 
@@ -68,6 +73,7 @@ public class BgpRouteConstraints {
       @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
       @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath,
       @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Prefix nextHopIp,
+      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) Set<OriginType> originType,
       @Nullable @JsonProperty(PROP_PROTOCOL) Set<RoutingProtocol> protocol) {
     this(
         prefix,
@@ -78,6 +84,7 @@ public class BgpRouteConstraints {
         communities,
         asPath,
         nextHopIp,
+        originType,
         protocol);
   }
 
@@ -90,6 +97,7 @@ public class BgpRouteConstraints {
       @Nullable RegexConstraints communities,
       @Nullable RegexConstraints asPath,
       @Nullable Prefix nextHopIp,
+      @Nullable Set<OriginType> originType,
       @Nullable Set<RoutingProtocol> protocol) {
     _prefix = firstNonNull(prefix, new PrefixSpace());
     _complementPrefix = complementPrefix;
@@ -99,6 +107,7 @@ public class BgpRouteConstraints {
     _communities = firstNonNull(communities, new RegexConstraints());
     _asPath = firstNonNull(asPath, new RegexConstraints());
     _nextHopIp = Optional.ofNullable(nextHopIp);
+    _originType = firstNonNull(originType, ImmutableSet.of());
     _protocol = firstNonNull(protocol, ImmutableSet.of());
     validate(this);
   }
@@ -153,6 +162,7 @@ public class BgpRouteConstraints {
     private RegexConstraints _communities;
     private RegexConstraints _asPath;
     private Prefix _nextHopIp;
+    private Set<OriginType> _originType;
     private Set<RoutingProtocol> _protocol;
 
     private Builder() {}
@@ -197,6 +207,11 @@ public class BgpRouteConstraints {
       return this;
     }
 
+    public Builder setOriginType(Set<OriginType> originType) {
+      _originType = originType;
+      return this;
+    }
+
     public Builder setProtocol(Set<RoutingProtocol> protocol) {
       _protocol = protocol;
       return this;
@@ -212,6 +227,7 @@ public class BgpRouteConstraints {
           _communities,
           _asPath,
           _nextHopIp,
+          _originType,
           _protocol);
     }
   }
@@ -236,6 +252,7 @@ public class BgpRouteConstraints {
         && Objects.equals(_communities, other._communities)
         && Objects.equals(_asPath, other._asPath)
         && Objects.equals(_nextHopIp, other._nextHopIp)
+        && Objects.equals(_originType, other._originType)
         && Objects.equals(_protocol, other._protocol);
   }
 
@@ -286,6 +303,12 @@ public class BgpRouteConstraints {
     return _nextHopIp;
   }
 
+  @JsonProperty(PROP_ORIGIN_TYPE)
+  @Nonnull
+  public Set<OriginType> getOriginType() {
+    return _originType;
+  }
+
   @JsonProperty(PROP_PROTOCOL)
   @Nonnull
   public Set<RoutingProtocol> getProtocol() {
@@ -303,6 +326,7 @@ public class BgpRouteConstraints {
         _communities,
         _asPath,
         _nextHopIp,
+        _originType,
         _protocol);
   }
 }

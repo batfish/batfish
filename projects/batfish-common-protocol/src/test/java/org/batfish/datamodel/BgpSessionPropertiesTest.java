@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.BgpSessionProperties.getAddressFamilyIntersection;
+import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.BgpSessionProperties.RouteExchange;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.junit.Test;
@@ -46,6 +48,7 @@ public class BgpSessionPropertiesTest {
             .setRemoteAs(as2)
             .setPeerAddress(ip2)
             .setIpv4UnicastAddressFamily(addressFamily1)
+            .setReplaceNonLocalAsesOnExport(true)
             .build();
     BgpActivePeerConfig p2 =
         BgpActivePeerConfig.builder()
@@ -54,6 +57,7 @@ public class BgpSessionPropertiesTest {
             .setRemoteAs(as1)
             .setPeerAddress(ip1)
             .setIpv4UnicastAddressFamily(addressFamily2)
+            .setReplaceNonLocalAsesOnExport(false)
             .build();
     {
       BgpSessionProperties forwardSession =
@@ -67,6 +71,7 @@ public class BgpSessionPropertiesTest {
               .setRouteExchangeSettings(
                   // Add paths false, advertise external false, advertise inactive true
                   ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, true)))
+              .setReplaceNonLocalAsesOnExport(true)
               .build();
       assertThat(BgpSessionProperties.from(p1, p2, false), equalTo(forwardSession));
     }
@@ -82,6 +87,7 @@ public class BgpSessionPropertiesTest {
               .setRouteExchangeSettings(
                   // Add paths false, advertise external false, advertise inactive true
                   ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, false)))
+              .setReplaceNonLocalAsesOnExport(false)
               .build();
       assertThat(BgpSessionProperties.from(p1, p2, true), equalTo(reverseSession));
     }
@@ -155,6 +161,79 @@ public class BgpSessionPropertiesTest {
   }
 
   @Test
+  public void testSessionCreationIbgpAcrossConfederation() {
+    Ip ip1 = Ip.parse("1.1.1.1");
+    Ip ip2 = Ip.parse("2.2.2.2");
+    long peeringAs = 1;
+    long subconfedAs = 2;
+    Ipv4UnicastAddressFamily addressFamily1 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder()
+                    .setAdditionalPathsSelectAll(true)
+                    .setAdditionalPathsSend(true)
+                    .setAdvertiseExternal(true)
+                    .build())
+            .build();
+    Ipv4UnicastAddressFamily addressFamily2 =
+        Ipv4UnicastAddressFamily.builder()
+            .setAddressFamilyCapabilities(
+                AddressFamilyCapabilities.builder().setAdditionalPathsReceive(true).build())
+            .build();
+    BgpActivePeerConfig p1 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip1)
+            .setLocalAs(subconfedAs)
+            .setRemoteAs(peeringAs)
+            .setPeerAddress(ip2)
+            .setIpv4UnicastAddressFamily(addressFamily1)
+            .setConfederation(peeringAs)
+            .build();
+    assertThat(getSessionType(p1), equalTo(SessionType.IBGP));
+    BgpActivePeerConfig p2 =
+        BgpActivePeerConfig.builder()
+            .setLocalIp(ip2)
+            .setLocalAs(peeringAs)
+            .setRemoteAs(peeringAs)
+            .setPeerAddress(ip1)
+            .setIpv4UnicastAddressFamily(addressFamily2)
+            .build();
+    assertThat(getSessionType(p2), equalTo(SessionType.IBGP));
+    {
+      BgpSessionProperties forwardSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setConfedSessionType(ConfedSessionType.ACROSS_CONFED_BORDER)
+              .setLocalAs(peeringAs)
+              .setRemoteAs(peeringAs)
+              .setLocalIp(ip1)
+              .setRemoteIp(ip2)
+              .setSessionType(SessionType.IBGP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(true, true, false)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, false), equalTo(forwardSession));
+    }
+    {
+      BgpSessionProperties reverseSession =
+          BgpSessionProperties.builder()
+              .setAddressFamilies(ImmutableList.of(addressFamily1.getType()))
+              .setConfedSessionType(ConfedSessionType.ACROSS_CONFED_BORDER)
+              .setLocalAs(peeringAs)
+              .setRemoteAs(peeringAs)
+              .setLocalIp(ip2)
+              .setRemoteIp(ip1)
+              .setSessionType(SessionType.IBGP)
+              .setRouteExchangeSettings(
+                  // Add paths false, advertise external false, advertise inactive true
+                  ImmutableMap.of(addressFamily1.getType(), new RouteExchange(false, false, false)))
+              .build();
+      assertThat(BgpSessionProperties.from(p1, p2, true), equalTo(reverseSession));
+    }
+  }
+
+  @Test
   public void testEquals() {
     Builder builder = BgpSessionProperties.builder();
     long headAs = 1;
@@ -181,7 +260,8 @@ public class BgpSessionPropertiesTest {
         // note the head/tail swap
         .addEqualityGroup(builder.setRemoteIp(tailIp).build())
         .addEqualityGroup(builder.setLocalIp(headIp).build())
-        .addEqualityGroup(builder.setSessionType(SessionType.EBGP_SINGLEHOP))
+        .addEqualityGroup(builder.setSessionType(SessionType.EBGP_SINGLEHOP).build())
+        .addEqualityGroup(builder.setReplaceNonLocalAsesOnExport(true).build())
         .addEqualityGroup(new Object())
         .testEquals();
   }
@@ -200,6 +280,7 @@ public class BgpSessionPropertiesTest {
             .setLocalIp(tailIp)
             .setRemoteIp(headIp)
             .setSessionType(SessionType.EBGP_MULTIHOP)
+            .setReplaceNonLocalAsesOnExport(true)
             .build();
     assertThat(BatfishObjectMapper.clone(bsp, BgpSessionProperties.class), equalTo(bsp));
   }

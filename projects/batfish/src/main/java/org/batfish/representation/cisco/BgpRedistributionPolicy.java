@@ -1,7 +1,6 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import org.batfish.datamodel.RoutingProtocol;
 
 public class BgpRedistributionPolicy extends RedistributionPolicy implements Serializable {
 
@@ -10,8 +9,8 @@ public class BgpRedistributionPolicy extends RedistributionPolicy implements Ser
 
   private Long _metric;
 
-  public BgpRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol);
+  public BgpRedistributionPolicy(RoutingProtocolInstance instance) {
+    super(instance);
   }
 
   public Long getMetric() {

@@ -3703,7 +3703,7 @@ F_UnquotedAsPathRegexChar
 fragment
 F_QuotedAsPathRegex
 :
-  F_QuotedAsPathRegexChar+
+  '"' F_QuotedAsPathRegexChar+ '"'
 ;
 
 fragment
@@ -3727,13 +3727,8 @@ M_AsPathDefinitionRegex_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_AsPathDefinitionRegex2;
 M_AsPathDefinitionRegex2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-M_AsPathDefinitionRegex2_DOUBLE_QUOTE: '"' -> channel(HIDDEN), mode(M_AsPathDefinitionRegexQuoted);
+M_AsPathDefinitionRegex2_QUOTED_AS_PATH_REGEX: F_QuotedAsPathRegex -> type(AS_PATH_REGEX), popMode;
 M_AsPathDefinitionRegex2_AS_PATH_REGEX: F_UnquotedAsPathRegex -> type(AS_PATH_REGEX), popMode;
-
-mode M_AsPathDefinitionRegexQuoted;
-M_AsPathDefinitionRegexQuoted_NEWLINE: F_Newline -> type(NEWLINE), popMode;
-M_AsPathDefinitionRegexQuoted_DOUBLE_QUOTE: '"' -> channel(HIDDEN), popMode;
-M_AsPathDefinitionRegexQuoted_AS_PATH_REGEX: F_QuotedAsPathRegex -> type(AS_PATH_REGEX);
 
 mode M_AsPathPrepend;
 

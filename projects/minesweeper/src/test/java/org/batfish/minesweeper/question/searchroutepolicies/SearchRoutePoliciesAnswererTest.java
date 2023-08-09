@@ -1,12 +1,14 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toClosedRange;
-import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.DENY;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ACTION;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_DIRECTION;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_PATH_OPTION;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.DEFAULT_ROUTE_CONSTRAINTS;
+import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_ACTION;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_DIFF;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_INPUT_ROUTE;
@@ -42,7 +44,6 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.OriginMechanism;
@@ -53,6 +54,9 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
+import org.batfish.datamodel.answers.NextHopConcrete;
+import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -60,6 +64,9 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopInterface;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
@@ -72,28 +79,40 @@ import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
+import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
+import org.batfish.datamodel.routing_policy.expr.Not;
+import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
+import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
+import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -157,11 +176,11 @@ public class SearchRoutePoliciesAnswererTest {
     AsPathAccessList asPath1 =
         SerializationUtils.clone(
             new AsPathAccessList(
-                AS_PATH_1, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^40$"))));
+                AS_PATH_1, ImmutableList.of(new AsPathAccessListLine(PERMIT, "^40$"))));
     AsPathAccessList asPath2 =
         SerializationUtils.clone(
             new AsPathAccessList(
-                AS_PATH_2, ImmutableList.of(new AsPathAccessListLine(LineAction.PERMIT, "^50$"))));
+                AS_PATH_2, ImmutableList.of(new AsPathAccessListLine(PERMIT, "^50$"))));
 
     baseConfig.setAsPathAccessLists(ImmutableMap.of(AS_PATH_1, asPath1, AS_PATH_2, asPath2));
 
@@ -193,7 +212,7 @@ public class SearchRoutePoliciesAnswererTest {
                 null,
                 null,
                 DEFAULT_ACTION,
-                false),
+                DEFAULT_PATH_OPTION),
             _batfish);
     assertEquals(answerer.getNodeSpecifier(), AllNodesNodeSpecifier.INSTANCE);
     assertEquals(answerer.getPolicySpecifier(), ALL_ROUTING_POLICIES);
@@ -211,8 +230,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -222,7 +241,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             // the solver will produce the lowest possible value for a field, which is 0.0.0.1 for
             // the next-hop since it is constrained to not be 0.0.0.0
@@ -256,8 +275,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -267,7 +286,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -278,7 +297,10 @@ public class SearchRoutePoliciesAnswererTest {
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
             ImmutableSet.of(
-                new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, "0.0.0.1", Ip.AUTO.toString())));
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    new NextHopConcrete(NextHopDiscard.instance()).toString())));
 
     assertThat(
         answer.getRows().getData(),
@@ -306,8 +328,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -317,7 +339,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -351,8 +373,8 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -362,7 +384,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.1.1.1/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -395,7 +417,7 @@ public class SearchRoutePoliciesAnswererTest {
             HOSTNAME,
             policy.getName(),
             DENY,
-            false);
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -421,8 +443,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -433,7 +455,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.parse("21:30")))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -468,8 +490,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -480,7 +502,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setCommunities(ImmutableSet.of(StandardCommunity.parse("0:0")))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -518,8 +540,8 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -529,7 +551,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -572,8 +594,8 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -600,8 +622,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -611,7 +633,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -623,7 +645,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -662,8 +684,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -673,7 +695,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -685,7 +707,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -725,8 +747,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -736,7 +758,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -748,7 +770,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -788,8 +810,8 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -812,8 +834,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -824,7 +846,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -862,8 +884,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -883,8 +905,8 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -894,7 +916,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(200)
@@ -929,8 +951,9 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -941,7 +964,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -976,8 +999,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -988,7 +1012,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1026,8 +1050,9 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1038,7 +1063,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L, 0L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1076,8 +1101,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1088,7 +1114,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L, 0L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1127,8 +1153,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1138,7 +1165,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.0.0.0/16"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1180,8 +1207,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1191,7 +1219,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.0.0.0/16"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1233,8 +1261,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1244,7 +1273,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.0.0.0/31"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1282,8 +1311,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.DENY,
-            false);
+            DENY,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1293,7 +1323,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1329,8 +1359,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1356,8 +1387,9 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().setPrefix(new PrefixSpace(prefixRange)).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1391,8 +1423,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1405,7 +1438,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setTag(67)
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.AGGREGATE)
             .setNextHopIp(Ip.parse("1.0.0.0"))
             .build();
@@ -1439,8 +1472,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1450,7 +1484,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1462,7 +1496,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setLocalPreference(3)
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .build();
@@ -1503,8 +1537,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1514,7 +1549,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1526,7 +1561,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(4L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1545,6 +1580,52 @@ public class SearchRoutePoliciesAnswererTest {
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testPrependAsPathDeny() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new PrependAsPath(new LiteralAsList(ImmutableList.of(new ExplicitAs(4L)))))
+            .addStatement(new StaticStatement(Statements.ExitReject))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            DENY,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -1567,8 +1648,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1579,7 +1661,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(40L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1591,7 +1673,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setAsPath(AsPath.ofSingletonAsSets(4L, 40L))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1632,8 +1714,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1656,8 +1739,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1667,7 +1751,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1679,7 +1763,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setWeight(3)
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1687,6 +1771,129 @@ public class SearchRoutePoliciesAnswererTest {
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_WEIGHT, "0", "3")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSetMetricIncr() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetMetric(new IncrementMetric(100)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setMetric(0)
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute outputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setMetric(100)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "0", "100")));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSetMetricIncrOverflow() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetMetric(new IncrementMetric(100L)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            BgpRouteConstraints.builder().setMed(LongSpace.of(0xFFFFFF9CL)).build(),
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setMetric(0xFFFFFF9CL)
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute outputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setMetric(0xFFFFFFFFL)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "4294967196", "4294967295")));
 
     assertThat(
         answer.getRows().getData(),
@@ -1723,8 +1930,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1734,7 +1942,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1773,8 +1981,9 @@ public class SearchRoutePoliciesAnswererTest {
                 .build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1796,8 +2005,9 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().setNextHopIp(nextHop).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -1806,7 +2016,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .setNextHopIp(Ip.parse("1.0.0.0"))
@@ -1832,8 +2042,9 @@ public class SearchRoutePoliciesAnswererTest {
             BgpRouteConstraints.builder().setNextHopIp(nextHop).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -1843,7 +2054,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testSetNextHopOutConstraints() {
+  public void testSetNextHopOutputConstraints() {
     Ip ip = Ip.parse("1.1.1.1");
     RoutingPolicy policy =
         _policyBuilder
@@ -1853,13 +2064,14 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            Environment.Direction.OUT,
+            DEFAULT_DIRECTION,
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder().setNextHopIp(Prefix.create(ip, 32)).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
@@ -1868,7 +2080,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1876,7 +2088,11 @@ public class SearchRoutePoliciesAnswererTest {
     BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(ip).build();
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
-            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_NEXT_HOP_IP, "0.0.0.1", "1.1.1.1")));
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString())));
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(
@@ -1890,7 +2106,7 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
-  public void testDiscardNextHopOutConstraints() {
+  public void testDiscardNextHopOutputConstraints() {
     RoutingPolicy policy =
         _policyBuilder
             .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
@@ -1899,15 +2115,397 @@ public class SearchRoutePoliciesAnswererTest {
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
-            Environment.Direction.OUT,
+            DEFAULT_DIRECTION,
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder().setNextHopIp(Prefix.parse("1.0.0.0/8")).build(),
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+    assertEquals(0, answer.getRows().size());
+  }
+
+  @Test
+  public void testDiscardNextHopNoConstraints() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRoute outputRoute =
+        inputRoute.toBuilder().setNextHopConcrete(NextHopDiscard.instance()).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    new NextHopConcrete(NextHopDiscard.instance()).toString())));
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testDiscardThenSetNextHopOutConstraints() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+            .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            BgpRouteConstraints.builder().setNextHopIp(Prefix.parse("1.0.0.0/8")).build(),
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRoute outputRoute =
+        inputRoute.toBuilder().setNextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString())));
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testUnreachableSetNextHop() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRoute outputRoute =
+        inputRoute.toBuilder().setNextHopConcrete(NextHopDiscard.instance()).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    new NextHopConcrete(NextHopDiscard.instance()).toString())));
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSelfNextHop() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(SelfNextHop.getInstance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute outputRoute = inputRoute.toBuilder().setNextHop(NextHopSelf.instance()).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    NextHopSelf.instance().toString())));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSelfNextHopConstraints() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(SelfNextHop.getInstance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            BgpRouteConstraints.builder().setNextHopIp(Prefix.parse("1.1.1.1/32")).build(),
+            BgpRouteConstraints.builder().setNextHopIp(Prefix.parse("2.2.2.2/32")).build(),
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute outputRoute = inputRoute.toBuilder().setNextHop(NextHopSelf.instance()).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString(),
+                    NextHopSelf.instance().toString())));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testBgpPeerAddressNextHop() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute outputRoute =
+        inputRoute.toBuilder().setNextHop(NextHopBgpPeerAddress.instance()).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(
+                new BgpRouteDiff(
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("0.0.0.1"))).toString(),
+                    NextHopBgpPeerAddress.instance().toString())));
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testOriginConstraints() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            BgpRouteConstraints.builder()
+                .setOriginType(ImmutableSet.of(OriginType.INCOMPLETE))
+                .build(),
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testUnsatOriginConstraints() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetOrigin(new LiteralOrigin(OriginType.INCOMPLETE, null)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            BgpRouteConstraints.builder()
+                .setOriginType(ImmutableSet.of(OriginType.EGP, OriginType.IGP))
+                .build(),
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
     assertEquals(0, answer.getRows().size());
   }
 
@@ -1956,8 +2554,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -1967,7 +2566,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.IBGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -1988,6 +2587,430 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testMatchClusterListLength() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.EQ, new LiteralInt(2)),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .setClusterList(ImmutableSet.of(0L, 1L))
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchSourceVrf() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("source1"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchSourceVrfDeny() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchSourceVrf("source1"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            DENY,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchSourceVrfAtMostOne() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchSourceVrf("source1"), new MatchSourceVrf(("source2")))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    assertEquals(answer.getRows().size(), 0);
+  }
+
+  @Test
+  public void testMatchInterface() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopConcrete(NextHopInterface.of("int1", Ip.parse("0.0.0.1")))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchInterfaceDeny() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchInterface(ImmutableSet.of("int1")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            DENY,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testMatchInterfaceAtMostOne() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new MatchInterface(ImmutableSet.of("int1")),
+                            new MatchInterface(ImmutableSet.of("int2")))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    assertEquals(answer.getRows().size(), 0);
+  }
+
+  @Test
+  public void testTrackSucceeded() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testTrackSucceededDeny() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new TrackSucceeded("mytrack"),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            DENY,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(DENY.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, nullValue(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, nullValue(), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testTrackSucceededNone() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new Conjunction(
+                        ImmutableList.of(
+                            new TrackSucceeded("mytrack"),
+                            new Not(new TrackSucceeded(("mytrack"))))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    assertEquals(answer.getRows().size(), 0);
+  }
+
+  @Test
   public void testUnsupportedStatement() {
     RoutingPolicy policy =
         _policyBuilder
@@ -2002,14 +3025,37 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    // there are no answers because all paths go through an unsupported statement (PrependAsPath)
-    assertEquals(answer.getRows().size(), 0);
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // the unsupported statement is ignored, so we still get an answer
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -2034,14 +3080,37 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
-    // there are no answers because all paths go through the unsupported If guard
-    assertEquals(answer.getRows().size(), 0);
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    // the entire if statement is ignored since its guard contains an unsupported expression
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   @Test
@@ -2067,19 +3136,21 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            // the model will avoid the path containing the unsupported PrependAsPath statement
+            // the model will prefer the path that does not encounter the unsupported ExcludeAsPath
+            // statement
             .setNetwork(Prefix.parse("1.0.0.0/24"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2107,7 +3178,8 @@ public class SearchRoutePoliciesAnswererTest {
                 ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
             ImmutableList.of(
                 new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
-                new StaticStatement(Statements.ExitReject))));
+                new StaticStatement(Statements.ExitReject)),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
     PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
@@ -2119,19 +3191,20 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.DENY,
-            false);
+            DENY,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
 
     BgpRoute inputRoute =
         BgpRoute.builder()
-            // the model will avoid the path containing the unsupported PrependAsPath statement
-            .setNetwork(Prefix.parse("1.0.0.0/24"))
+            // the model will ignore the unsupported ExcludeAsPath statement
+            .setNetwork(Prefix.parse("1.0.0.0/16"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2150,6 +3223,79 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testPermitPerPathNonOverlap() {
+    String regex1 = "^2[0-9]:30$";
+    String regex2 = "^2[0-9]:40$";
+    _policyBuilder.addStatement(
+        new If(
+            matchCommunityRegex(regex1),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    _policyBuilder.addStatement(
+        new If(
+            matchCommunityRegex(regex2),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            PathOption.NON_OVERLAP);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute1 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setCommunities(ImmutableSet.of(StandardCommunity.parse("20:30")))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRoute inputRoute2 =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("8.8.8.0/24"))
+            .setCommunities(ImmutableSet.of(StandardCommunity.parse("20:40")))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertEquals(answer.getRows().size(), 2);
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.containsInAnyOrder(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute1), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute1), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute2), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute2), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
   public void testPermitPerPath() {
     _policyBuilder.addStatement(
         new If(
@@ -2165,8 +3311,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            true);
+            PERMIT,
+            PathOption.PER_PATH);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2176,7 +3323,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.0.0.0/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2187,7 +3334,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2230,8 +3377,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.DENY,
-            true);
+            DENY,
+            PathOption.PER_PATH);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2241,7 +3389,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("1.0.0.0/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2252,7 +3400,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("10.0.0.0/8"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2292,8 +3440,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2303,7 +3452,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("128.0.0.0/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
@@ -2337,8 +3486,9 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
-            false);
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
     TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
@@ -2348,7 +3498,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setNetwork(Prefix.parse("20.0.0.0/32"))
             .setOriginatorIp(Ip.ZERO)
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setOriginType(OriginType.IGP)
+            .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)

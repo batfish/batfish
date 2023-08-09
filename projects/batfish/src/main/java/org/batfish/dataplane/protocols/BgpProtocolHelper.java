@@ -9,6 +9,7 @@ import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -149,17 +150,9 @@ public final class BgpProtocolHelper {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
-       *
-       * For route reflection: reflect everything received from
-       * clients to clients and non-clients. reflect everything
-       * received from non-clients to clients. Do not reflect to
-       * originator
        */
-      boolean remoteRouteReceivedFromRouteReflectorClient =
-          route.getReceivedFromRouteReflectorClient();
-      boolean sendingToRouteReflectorClient = af.getRouteReflectorClient();
-      if (!remoteRouteReceivedFromRouteReflectorClient
-          && !sendingToRouteReflectorClient
+      if (!isReflectable(
+              route, localBgpProcess.getClientToClientReflection(), localSessionProperties, af)
           && !routeOriginatedLocally) {
         /*
          * Neither reflecting nor originating this iBGP route, so don't send
@@ -198,6 +191,41 @@ public final class BgpProtocolHelper {
             : DEFAULT_LOCAL_PREFERENCE);
 
     return builder;
+  }
+
+  /*
+   * Ensure the remote route is iBGP and the session is iBGP. We consider whether to reflect.
+   *
+   * For route reflection: reflect everything received from
+   * clients to clients and non-clients. reflect everything
+   * received from non-clients to clients.
+   */
+  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>> boolean isReflectable(
+      BgpRoute<B, R> route,
+      boolean clientToClientReflection,
+      BgpSessionProperties session,
+      AddressFamily localAf) {
+    switch (session.getSessionType()) {
+      case IBGP:
+      case IBGP_UNNUMBERED:
+        break;
+      default:
+        return false;
+    }
+
+    if (!route.getProtocol().equals(RoutingProtocol.IBGP)) {
+      return false;
+    }
+
+    if (route.getReceivedFromRouteReflectorClient()) {
+      // Advertise routes learned from Route Reflector clients to other clients only if
+      // client-to-client reflection is enabled. Non-RR clients get reflected routes
+      // unconditionally.
+      return clientToClientReflection || !localAf.getRouteReflectorClient();
+    }
+
+    // Advertise routes from RR non-clients to RR clients only.
+    return localAf.getRouteReflectorClient();
   }
 
   /**
@@ -442,7 +470,8 @@ public final class BgpProtocolHelper {
         ourSessionProperties.getLocalAs(),
         ourSessionProperties.getLocalIp(),
         originalRouteNhip,
-        pathId);
+        pathId,
+        ourSessionProperties.getReplaceNonLocalAsesOnExport());
   }
 
   /**
@@ -457,10 +486,11 @@ public final class BgpProtocolHelper {
    * @param sendStandardCommunities whether to send standard communities to the neighbor
    * @param sendExtendedCommunities whether to send extended communities to the neighbor
    * @param confedSessionType type of confederation session, if any
-   * @param localAs local AS
+   * @param localAs local AS of the neighbor which is exporting the route, in that neighbor's config
    * @param localIp IP of the neighbor which is exporting the route
-   * @param confedSessionType sender's address family configuration
    * @param originalRouteNhip Next hop IP of the original route
+   * @param replaceAllAsesWithLocalAs whether to hide the AS path details by replacing all AsSet
+   *     elements with the localAs
    */
   @VisibleForTesting
   static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
@@ -473,9 +503,19 @@ public final class BgpProtocolHelper {
           long localAs,
           Ip localIp,
           Ip originalRouteNhip,
-          @Nullable Integer pathId) {
+          @Nullable Integer pathId,
+          boolean replaceAllAsesWithLocalAs) {
     // if eBGP, prepend as-path sender's as-path number
     if (isEbgp) {
+      // TODO: Support more exotic prepending, e.g.:
+      //       - On FRR, can prepend both ('router bgp' ASN/confed ASN) as well as 'local-as'
+      //         override ASN, or just the local AS:
+      // https://docs.frrouting.org/en/latest/bgp.html#clicmd-neighbor-PEER-local-as-AS-NUMBER-no-prepend-replace-as
+      //       - On Juniper, can choose between prepending 'routing-options autonomous-system' ASN
+      //         or 'local-as' ASN, or both
+      // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/ref/statement/local-as-edit-protocols-bgp.html
+      // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/autonomous-systems.html#id-understanding-the-bgp-local-as-attribute
+      // TODO: verify behavior of various non-FRR Cisco-like implementations of 'local-as'
       AsSet asSetToPrepend =
           confedSessionType == ConfedSessionType.WITHIN_CONFED
               ? AsSet.confed(localAs)
@@ -486,13 +526,18 @@ public final class BgpProtocolHelper {
       if (confedSessionType.equals(ConfedSessionType.ACROSS_CONFED_BORDER)) {
         routeAsPath = routeAsPath.removeConfederations();
       }
-
-      routeBuilder.setAsPath(
+      routeAsPath =
           AsPath.of(
               ImmutableList.<AsSet>builder()
                   .add(asSetToPrepend)
                   .addAll(routeAsPath.getAsSets())
-                  .build()));
+                  .build());
+      if (replaceAllAsesWithLocalAs) {
+        // Hide non-proximal AS path details by replacing all AsSet elements with the local AS
+        routeAsPath = AsPath.ofSingletonAsSets(Collections.nCopies(routeAsPath.size(), localAs));
+      }
+
+      routeBuilder.setAsPath(routeAsPath);
     }
 
     // Tags are non-transitive

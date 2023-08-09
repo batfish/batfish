@@ -8,7 +8,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
-import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A representation of one difference between two routes. */
 @ParametersAreNonnullByDefault
@@ -44,7 +45,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
           PROP_COMMUNITIES,
           PROP_LOCAL_PREFERENCE,
           PROP_METRIC,
-          PROP_NEXT_HOP_IP,
+          PROP_NEXT_HOP,
           PROP_ORIGINATOR_IP,
           PROP_ORIGIN_TYPE,
           PROP_TAG,
@@ -59,7 +60,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
     checkArgument(
         ROUTE_DIFF_FIELD_NAMES.contains(fieldName),
         "fieldName must be one of " + ROUTE_DIFF_FIELD_NAMES);
-    checkArgument(!oldValue.equals(newValue), "oldValue and newValule must be different");
+    checkArgument(!oldValue.equals(newValue), "oldValue and newValue must be different");
     _fieldName = fieldName;
     _oldValue = oldValue;
     _newValue = newValue;
@@ -111,10 +112,15 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
   }
 
   /** Compute the differences between two routes */
-  public static SortedSet<BgpRouteDiff> routeDiffs(
+  public static BgpRouteDiffs routeDiffs(@Nullable BgpRoute route1, @Nullable BgpRoute route2) {
+    return structuredRouteDiffs(route1, route2).toBgpRouteDiffs();
+  }
+
+  /** Compute the differences between two routes */
+  public static StructuredBgpRouteDiffs structuredRouteDiffs(
       @Nullable BgpRoute route1, @Nullable BgpRoute route2) {
     if (route1 == null || route2 == null || route1.equals(route2)) {
-      return ImmutableSortedSet.of();
+      return new StructuredBgpRouteDiffs();
     }
 
     checkArgument(
@@ -123,7 +129,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
             .setMetric(route2.getMetric())
-            .setNextHopIp(route2.getNextHopIp())
+            .setNextHop(route2.getNextHop())
             .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
             .setTag(route2.getTag())
@@ -136,24 +142,25 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         route1,
         route2);
 
-    return Stream.of(
-            routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
-            routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
-            routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
-            routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
-            routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
-            routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
-            routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
-            routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
-            routeDiff(
-                route1,
-                route2,
-                PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
-                BgpRoute::getTunnelEncapsulationAttribute),
-            routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(ImmutableSortedSet.toImmutableSortedSet(natural()));
+    return new StructuredBgpRouteDiffs(
+        Stream.of(
+                routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
+                routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
+                routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
+                routeDiff(route1, route2, PROP_NEXT_HOP, BgpRoute::getNextHop),
+                routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
+                routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
+                routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
+                routeDiff(
+                    route1,
+                    route2,
+                    PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                    BgpRoute::getTunnelEncapsulationAttribute),
+                routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(natural())),
+        communityRouteDiff(route1, route2, BgpRoute::getCommunities));
   }
 
   private static Optional<BgpRouteDiff> routeDiff(
@@ -165,6 +172,13 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         : Optional.of(
             new BgpRouteDiff(
                 name, o1 == null ? "null" : o1.toString(), o2 == null ? "null" : o2.toString()));
+  }
+
+  private static Optional<BgpRouteCommunityDiff> communityRouteDiff(
+      BgpRoute route1, BgpRoute route2, Function<BgpRoute, SortedSet<Community>> getter) {
+    SortedSet<Community> cs1 = getter.apply(route1);
+    SortedSet<Community> cs2 = getter.apply(route2);
+    return cs1.equals(cs2) ? Optional.empty() : Optional.of(new BgpRouteCommunityDiff(cs1, cs2));
   }
 
   @Override

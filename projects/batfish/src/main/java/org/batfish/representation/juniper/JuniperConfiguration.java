@@ -17,6 +17,7 @@ import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFa
 import static org.batfish.representation.juniper.EthernetSwitching.DEFAULT_VLAN_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
@@ -174,6 +175,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -185,6 +187,7 @@ import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
@@ -223,8 +226,38 @@ public final class JuniperConfiguration extends VendorConfiguration {
   /** Juniper uses AD 170 for both EBGP and IBGP routes. */
   public static final int DEFAULT_BGP_ADMIN_DISTANCE = 170;
 
-  public static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
+  /** Juniper's default routing instance is called "master". */
+  public static final @Nonnull String DEFAULT_ROUTING_INSTANCE_NAME = "master";
+
+  /** Normalize to VI VRF name. */
+  public static @Nonnull String toVrfName(String routingInstanceName) {
+    if (routingInstanceName.equals(DEFAULT_ROUTING_INSTANCE_NAME)) {
+      // TODO: preserve Junos name, which is tricky. There's too much in Batfish that relies on
+      // default vrf being this default.
+      return Configuration.DEFAULT_VRF_NAME;
+    }
+    return routingInstanceName;
+  }
+
+  private static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA =
       ConnectedRouteMetadata.builder().setGenerateLocalNullRouteIfDown(true).build();
+
+  /** Do not generate any routes for a loopback address. */
+  private static final ConnectedRouteMetadata JUNIPER_CONNECTED_ROUTE_METADATA_LOOPBACKS =
+      ConnectedRouteMetadata.builder()
+          .setGenerateLocalNullRouteIfDown(false)
+          .setGenerateConnectedRoute(false)
+          .setGenerateLocalRoute(false)
+          .build();
+
+  @VisibleForTesting
+  static @Nonnull ConnectedRouteMetadata getJuniperConnectedRouteMetadata(
+      ConcreteInterfaceAddress addr) {
+    if (Prefix.LOOPBACKS.containsIp(addr.getIp())) {
+      return JUNIPER_CONNECTED_ROUTE_METADATA_LOOPBACKS;
+    }
+    return JUNIPER_CONNECTED_ROUTE_METADATA;
+  }
 
   public static @Nonnull String computeFirewallFilterTermName(
       @Nonnull String filterName, @Nonnull String termName) {
@@ -391,6 +424,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem = new LogicalSystem("");
     _nodeDevices = new TreeMap<>();
     _indirectAccessPorts = new HashMap<>();
+    // Create and then self-reference the default routing instance.
+    defineSingleLineStructure(ROUTING_INSTANCE, DEFAULT_ROUTING_INSTANCE_NAME, 0);
+    referenceStructure(
+        ROUTING_INSTANCE,
+        DEFAULT_ROUTING_INSTANCE_NAME,
+        JuniperStructureUsage.ROUTING_INSTANCE_SELF_REFERENCE,
+        0);
   }
 
   @Nonnull
@@ -447,13 +487,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     initDefaultBgpExportPolicy();
     initDefaultBgpImportPolicy();
-    int ebgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
-    int ibgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
+    // On Junos, BGP routes only have one administrative distance.
+    int bgpAdmin = firstNonNull(mg.getPreference(), DEFAULT_BGP_ADMIN_DISTANCE);
     BgpProcess proc =
         bgpProcessBuilder()
             .setRouterId(getRouterId(routingInstance))
-            .setEbgpAdminCost(ebgpAdmin)
-            .setIbgpAdminCost(ibgpAdmin)
+            .setEbgpAdminCost(bgpAdmin)
+            .setIbgpAdminCost(bgpAdmin)
             .build();
 
     // https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/topic-map/basic-routing-policies.html#id-conditional-advertisement-and-import-policy-routing-table-with-certain-match-conditions
@@ -570,10 +610,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
         }
       }
 
-      if (firstNonNull(ig.getPreference(), ebgpAdmin) != ebgpAdmin) {
-        _w.redFlag("Currently do not support per-neighbor BGP preference");
-      }
-
       String authenticationKeyChainName = ig.getAuthenticationKeyChainName();
       if (ig.getAuthenticationKeyChainName() != null) {
         if (!_c.getAuthenticationKeyChains().containsKey(authenticationKeyChainName)) {
@@ -663,6 +699,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // default import policy is to accept
       peerImportPolicy.getStatements().add(new SetDefaultPolicy(DEFAULT_BGP_IMPORT_POLICY_NAME));
       peerImportPolicy.getStatements().add(Statements.SetDefaultActionAccept.toStaticStatement());
+      if (ig.getPreference() != null && ig.getPreference() != bgpAdmin) {
+        peerImportPolicy
+            .getStatements()
+            .add(new SetAdministrativeCost(new LiteralInt(ig.getPreference())));
+      }
       List<BooleanExpr> importPolicyCalls = new ArrayList<>();
       ig.getImportPolicies()
           .forEach(
@@ -1996,7 +2037,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         iface.getAllAddresses().stream()
             .collect(
                 ImmutableSortedMap.toImmutableSortedMap(
-                    Ordering.natural(), a -> a, a -> JUNIPER_CONNECTED_ROUTE_METADATA)));
+                    Ordering.natural(),
+                    a -> a,
+                    JuniperConfiguration::getJuniperConnectedRouteMetadata)));
     if (!iface.getActive()) {
       newIface.adminDown();
     }
@@ -2476,9 +2519,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 screenName -> {
                   Screen screen = _masterLogicalSystem.getScreens().get(screenName);
                   String screenAclName = ACL_NAME_SCREEN + screenName;
-                  IpAccessList screenAcl =
-                      _c.getIpAccessLists()
-                          .computeIfAbsent(screenAclName, x -> buildScreen(screen, screenAclName));
+                  IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+                  if (screenAcl == null) {
+                    screenAcl = buildScreen(screen, screenAclName);
+                    if (screenAcl != null) {
+                      _c.getIpAccessLists().put(screenAclName, screenAcl);
+                    }
+                  }
                   return screenAcl != null ? new PermittedByAcl(screenAcl.getName()) : null;
                 })
             .filter(Objects::nonNull)
@@ -2502,9 +2549,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // build a acl for each zone
     String zoneAclName = ACL_NAME_SCREEN_ZONE + zone.getName();
-    IpAccessList zoneAcl =
-        _c.getIpAccessLists()
-            .computeIfAbsent(zoneAclName, x -> buildScreensPerZone(zone, zoneAclName));
+    IpAccessList zoneAcl = _c.getIpAccessLists().get(zoneAclName);
+    if (zoneAcl == null) {
+      zoneAcl = buildScreensPerZone(zone, zoneAclName);
+      if (zoneAcl != null) {
+        _c.getIpAccessLists().put(zoneAclName, zoneAcl);
+      }
+    }
 
     return zoneAcl == null
         ? null
@@ -2517,8 +2568,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
   @Nullable
   IpAccessList buildIncomingFilter(Interface iface) {
     String screenAclName = ACL_NAME_SCREEN_INTERFACE + iface.getName();
-    IpAccessList screenAcl =
-        _c.getIpAccessLists().computeIfAbsent(screenAclName, x -> buildScreensPerInterface(iface));
+    IpAccessList screenAcl = _c.getIpAccessLists().get(screenAclName);
+    if (screenAcl == null) {
+      screenAcl = buildScreensPerInterface(iface);
+      if (screenAcl != null) {
+        _c.getIpAccessLists().put(screenAclName, screenAcl);
+      }
+    }
     // merge screen options to incoming filter
     // but keep both original filters in the config, so we can run search filter queries on them
     String inAclName = iface.getIncomingFilter();
@@ -3437,9 +3493,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
-    Boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
+    boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
     // TOOD: return routing-instance-level default setting instead of false
-    Boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
+    boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
 
     org.batfish.datamodel.StaticRoute.Builder rBuilder =
         org.batfish.datamodel.StaticRoute.builder()

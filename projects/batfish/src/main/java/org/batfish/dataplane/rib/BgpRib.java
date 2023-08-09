@@ -13,11 +13,14 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.function.BinaryOperator;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -177,22 +180,20 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (multipathCompare != 0 || isMultipath()) {
       return multipathCompare;
     } else {
-      return Comparator.comparing(Function.identity(), this::bestPathComparator).compare(lhs, rhs);
+      return this.bestPathComparator(lhs, rhs);
     }
   }
 
   @Nonnull
   @Override
   public RibDelta<R> mergeRouteGetDelta(R route) {
-    Map<NextHop, SortedSet<R>> routesByNh = null;
-    boolean multipath = isMultipath();
-    if (multipath) {
-      routesByNh = computeRoutesByNhForPrefix(route.getNetwork());
-    }
-    RibDelta<R> delta = super.mergeRouteGetDelta(route);
-    if (multipath) {
-      delta = uniqueNextHopPostProcessDelta(delta, routesByNh);
-    }
+    // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
+    // Note that trackable local routes are managed elsewhere,
+    // e.g. in Bgpv4Rib.{add,remove}LocalRoute
+    RibDelta<R> evictionDelta =
+        route.isTrackableLocalRoute() ? RibDelta.empty() : evictSamePrefixReceivedFromPathId(route);
+
+    RibDelta<R> delta = actionRouteGetDelta(route, super::mergeRouteGetDelta);
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
       _logicalArrivalTime.put(route, _logicalClock);
       _logicalClock++;
@@ -200,28 +201,51 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
     }
-    return delta;
+    return RibDelta.<R>builder().from(evictionDelta).from(delta).build();
+  }
+
+  /**
+   * Evict any distinct existing route with the same values as {@code route} for {@link
+   * BgpRoute#getNetwork()}, {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()}.
+   */
+  private @Nonnull RibDelta<R> evictSamePrefixReceivedFromPathId(R route) {
+    Prefix prefix = route.getNetwork();
+    R oldRoute =
+        getRouteSamePrefixReceivedFromPathId(
+            route, _backupRoutes != null ? _backupRoutes.get(prefix) : super.getRoutes(prefix));
+    if (oldRoute == null || route.equals(oldRoute)) {
+      return RibDelta.empty();
+    } else {
+      return removeRouteGetDelta(oldRoute);
+    }
+  }
+
+  /**
+   * Return a BGP route with the same values as {@code route} for {@link BgpRoute#getNetwork()},
+   * {@link BgpRoute#getReceivedFrom()}, and {@link BgpRoute#getPathId()} from {@code oldRoutes}.
+   *
+   * <p>If no such route is found in {@code oldRoutes}, return {@code null}.
+   */
+  protected final @Nullable R getRouteSamePrefixReceivedFromPathId(R route, Iterable<R> oldRoutes) {
+    for (R oldRoute : oldRoutes) {
+      if (route.getReceivedFrom().equals(oldRoute.getReceivedFrom())
+          && Objects.equals(route.getPathId(), oldRoute.getPathId())) {
+        return oldRoute;
+      }
+    }
+    return null;
   }
 
   @Override
   public @Nonnull Set<R> getRoutes(Prefix prefix) {
-    return computeRoutesByNhForPrefix(prefix).values().stream()
-        .map(SortedSet::last)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  /**
-   * Groups ECMP-best (modulo next-hop) routes for a prefix into a mapping from next-hop to mutable
-   * set of routes sorted by best-path comparator.
-   */
-  private @Nonnull Map<NextHop, SortedSet<R>> computeRoutesByNhForPrefix(Prefix prefix) {
-    Map<NextHop, SortedSet<R>> routesByNh = new HashMap<>();
-    for (R route : super.getRoutes(prefix)) {
-      routesByNh
-          .computeIfAbsent(route.getNextHop(), nh -> new TreeSet<>(this::bestPathComparator))
-          .add(route);
-    }
-    return routesByNh;
+    return ImmutableSet.copyOf(
+        super.getRoutes(prefix).stream()
+            .collect(
+                Collectors.toMap(
+                    BgpRoute::getNextHop,
+                    Function.identity(),
+                    BinaryOperator.maxBy(this::bestPathComparator)))
+            .values());
   }
 
   /**
@@ -230,74 +254,84 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    * respects the unique next-hop constraint.
    *
    * @param initialDelta Superclass RibDelta resulting from merging or removing a route
-   * @param routesByNh Routes for the prefix of the initially merged/removed route that were
-   *     ECMP-best (ignoring next-hop) prior to the intiial action, grouped by next-hop and sorted
-   *     by best-path comparator.
+   * @param beforeRoutes All routes for the prefix of the initially merged/removed route that were
+   *     ECMP-best (ignoring next-hop) prior to the initial action.
    */
   private @Nonnull RibDelta<R> uniqueNextHopPostProcessDelta(
-      RibDelta<R> initialDelta, Map<NextHop, SortedSet<R>> routesByNh) {
+      RibDelta<R> initialDelta, Set<R> beforeRoutes) {
     RibDelta.Builder<R> builder = RibDelta.builder();
-    initialDelta
-        .getActions()
-        .forEach(
-            action -> {
-              R route = action.getRoute();
-              NextHop nh = route.getNextHop();
-              SortedSet<R> routesForNh =
-                  routesByNh.computeIfAbsent(nh, n -> new TreeSet<>(this::bestPathComparator));
-              if (action.isWithdrawn()) {
-                // withdraw
-                assert routesForNh.contains(route);
-                R oldBest = routesForNh.last();
-                routesForNh.remove(route);
-                if (oldBest.equals(route)) {
-                  builder.from(action);
-                  if (!routesForNh.isEmpty()) {
-                    // the removed route was best, so promote the new best
-                    builder.from(action).add(routesForNh.last());
-                  } // else the removed route was the last one, so the removal is the only action
-                } // else another route was better, so no change occurred
-              } else {
-                // add
-                assert !routesForNh.contains(route);
-                if (routesForNh.isEmpty()) {
-                  routesForNh.add(route);
-                  builder.from(action);
-                  return;
+    Map<NextHop, SortedSet<R>> bestByNh = new HashMap<>(); // lazily computed
+    for (RouteAdvertisement<R> action : initialDelta.getActions()) {
+      R route = action.getRoute();
+      SortedSet<R> routesForNh =
+          bestByNh.computeIfAbsent(
+              route.getNextHop(),
+              nh -> {
+                SortedSet<R> beforeWithNh = new TreeSet<>(this::bestPathComparator);
+                for (R r : beforeRoutes) {
+                  if (r.getNextHop().equals(nh)) {
+                    beforeWithNh.add(r);
+                  }
                 }
-                R oldBest = routesForNh.last();
-                routesForNh.add(route);
-                R newBest = routesForNh.last();
-                if (newBest.equals(route)) {
-                  builder.remove(oldBest, Reason.REPLACE).from(action);
-                } // else not the best, so do nothing with this action
-              }
-            });
+                return beforeWithNh;
+              });
+
+      if (action.isWithdrawn()) {
+        // withdraw
+        assert routesForNh.contains(route);
+        R oldBest = routesForNh.last();
+        routesForNh.remove(route);
+        if (oldBest.equals(route)) {
+          builder.from(action);
+          if (!routesForNh.isEmpty()) {
+            // the removed route was best, so promote the new best
+            builder.add(routesForNh.last());
+          } // else the removed route was the last one, so the removal is the only action
+        } // else another route was better, so no change occurred
+      } else {
+        // add
+        assert !routesForNh.contains(route);
+        if (routesForNh.isEmpty()) {
+          routesForNh.add(route);
+          builder.from(action);
+          continue;
+        }
+        R oldBest = routesForNh.last();
+        routesForNh.add(route);
+        R newBest = routesForNh.last();
+        if (newBest.equals(route)) {
+          builder.remove(oldBest, Reason.REPLACE).from(action);
+        } // else not the best, so do nothing with this action
+      }
+    }
     return builder.build();
+  }
+
+  /**
+   * Compute the multipath-aware delta for taking the given action (add/remove) on the given route.
+   */
+  private RibDelta<R> actionRouteGetDelta(R route, Function<R, RibDelta<R>> actionFn) {
+    if (isMultipath()) {
+      Set<R> beforeRoutes = super.getRoutes(route.getNetwork());
+      RibDelta<R> delta = actionFn.apply(route);
+      return uniqueNextHopPostProcessDelta(delta, beforeRoutes);
+    }
+    return actionFn.apply(route);
   }
 
   @Nonnull
   @Override
   public RibDelta<R> removeRouteGetDelta(R route) {
-    Map<NextHop, SortedSet<R>> routesByNh = null;
-    boolean multipath = isMultipath();
-    if (multipath) {
-      routesByNh = computeRoutesByNhForPrefix(route.getNetwork());
-    }
-    RibDelta<R> delta = super.removeRouteGetDelta(route);
-    if (multipath) {
-      delta = uniqueNextHopPostProcessDelta(delta, routesByNh);
-    }
+    RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
-      delta
-          .getActions()
-          .forEach(
-              a -> {
-                if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER && a.isWithdrawn()) {
-                  _logicalArrivalTime.remove(a.getRoute());
-                }
-              });
+      if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+        for (RouteAdvertisement<R> a : delta.getActions()) {
+          if (a.isWithdrawn()) {
+            _logicalArrivalTime.remove(a.getRoute());
+          }
+        }
+      }
     }
     return delta;
   }

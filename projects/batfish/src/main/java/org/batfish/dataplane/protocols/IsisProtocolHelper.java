@@ -45,8 +45,7 @@ public class IsisProtocolHelper {
   public static RibDelta<IsisRoute> setOverloadOnAllRoutes(@Nonnull RibDelta<IsisRoute> delta) {
 
     RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder();
-    delta
-        .getActions()
+    delta.stream()
         .forEach(
             ra -> {
               IsisRoute newRoute = ra.getRoute().toBuilder().setOverload(true).build();

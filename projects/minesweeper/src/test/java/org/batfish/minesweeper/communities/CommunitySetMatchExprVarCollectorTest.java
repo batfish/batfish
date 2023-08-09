@@ -1,8 +1,6 @@
 package org.batfish.minesweeper.communities;
 
-import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -28,7 +26,9 @@ import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link CommunitySetMatchExprVarCollector}. */
 public class CommunitySetMatchExprVarCollectorTest {
@@ -38,6 +38,8 @@ public class CommunitySetMatchExprVarCollectorTest {
 
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -124,10 +126,8 @@ public class CommunitySetMatchExprVarCollectorTest {
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
             "^65000:123 65011:12[3]$");
-
-    Set<CommunityVar> result = cmsr.accept(_varCollector, _baseConfig);
-    // TODO: this construct is not supported yet.
-    assertThat(result, empty());
+    _expectedException.expect(UnsupportedOperationException.class);
+    cmsr.accept(_varCollector, _baseConfig);
   }
 
   @Test

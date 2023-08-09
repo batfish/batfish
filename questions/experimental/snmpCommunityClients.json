@@ -1,0 +1,40 @@
+{
+    "class": "org.batfish.question.snmpcommunityclients.SnmpCommunityClientsQuestion",
+    "differential": false,
+    "nodes": "${nodes}",
+    "community": "${community}",
+    "clients": "${clients}",
+    "instance": {
+        "description": "Checks if an SNMP community permits specified client IPs.",
+        "instanceName": "snmpCommunityClients",
+        "longDescription": "This question checks if the specified SNMP community permits the specified client IPs on specified devices. It reports if any device does not have the community or the set of permitted client IPs by the community does not match those specified in the question. If the community exists and permits exactly the specified client IPs, the device is not included in the output. The question currently only supports Arista, Cisco-NXOS, and Juniper devices. For all others, it will report an UNSUPPORTED_DEVICE status in the output.",
+        "orderedVariableNames": [
+            "community",
+            "clients",
+            "nodes"
+        ],
+        "tags": [
+            "acl"
+        ],
+        "variables": {
+            "community": {
+                "description": "The SNMP community to consider",
+                "optional": false,
+                "type": "string",
+                "displayName": "Community"
+            },
+            "clients": {
+                "description": "Client IPs expected to be permitted",
+                "optional": true,
+                "type": "ipSpaceSpec",
+                "displayName": "Clients"
+            },
+            "nodes": {
+                "description": "Only evaluate nodes matching this specifier",
+                "optional": true,
+                "type": "nodeSpec",
+                "displayName": "Nodes"
+            }
+        }
+    }
+}

@@ -11406,6 +11406,12 @@
               "definitionLines" : "47-48",
               "numReferrers" : 3
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
           }
         },
         "configs/as1border2.cfg" : {
@@ -11561,6 +11567,12 @@
             "original_prefixes" : {
               "definitionLines" : "54-55",
               "numReferrers" : 3
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           }
         },
@@ -12936,6 +12948,13 @@
                 45
               ]
             }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
           }
         },
         "configs/as1border2.cfg" : {
@@ -13153,6 +13172,13 @@
                 30,
                 32,
                 43
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           }

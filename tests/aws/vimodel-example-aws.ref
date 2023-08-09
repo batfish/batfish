@@ -4194,6 +4194,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -4226,7 +4227,8 @@
                   "localAs" : 65534,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : false,
@@ -36534,6 +36536,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -36566,7 +36569,8 @@
                   "localAs" : 65534,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : false,
@@ -36727,6 +36731,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -36759,7 +36764,8 @@
                   "localAs" : 65534,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : false,
@@ -36919,6 +36925,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -36951,7 +36958,8 @@
                   "localAs" : 65534,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : false,
@@ -37083,6 +37091,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -37115,7 +37124,8 @@
                   "localAs" : 65537,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-isp_16509",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : true,
@@ -42045,6 +42055,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -42077,7 +42088,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-Internet",
-                  "remoteAsns" : "65537"
+                  "remoteAsns" : "65537",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "To-__aws-services-gateway__-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -42102,7 +42114,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-__aws-services-gateway__-backbone",
-                  "remoteAsns" : "65534"
+                  "remoteAsns" : "65534",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "To-igw-068fee63-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -42127,7 +42140,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-igw-068fee63-backbone",
-                  "remoteAsns" : "65534"
+                  "remoteAsns" : "65534",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "To-igw-9b93ddfc-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -42152,7 +42166,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-igw-9b93ddfc-backbone",
-                  "remoteAsns" : "65534"
+                  "remoteAsns" : "65534",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "To-igw-fac5839d-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -42177,7 +42192,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-igw-fac5839d-backbone",
-                  "remoteAsns" : "65534"
+                  "remoteAsns" : "65534",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "To-vgw-81fd279f-backbone" : {
                   "class" : "org.batfish.datamodel.BgpUnnumberedPeerConfig",
@@ -42202,7 +42218,8 @@
                   "localAs" : 16509,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "To-vgw-81fd279f-backbone",
-                  "remoteAsns" : "65534"
+                  "remoteAsns" : "65534",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : true,
@@ -82402,6 +82419,7 @@
               }
             },
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -82444,7 +82462,8 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.38",
                   "peerAddress" : "10.10.10.37",
-                  "remoteAsns" : "65201"
+                  "remoteAsns" : "65201",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.10.10.45" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -82471,7 +82490,8 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.10.46",
                   "peerAddress" : "10.10.10.45",
-                  "remoteAsns" : "65202"
+                  "remoteAsns" : "65202",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.10.30.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -82501,7 +82521,8 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.30.1",
                   "peerAddress" : "10.10.30.2",
-                  "remoteAsns" : "65331"
+                  "remoteAsns" : "65331",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "10.10.255.7" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -82527,7 +82548,8 @@
                   "localAs" : 65301,
                   "localIp" : "10.10.255.8",
                   "peerAddress" : "10.10.255.7",
-                  "remoteAsns" : "65301"
+                  "remoteAsns" : "65301",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "169.254.13.237" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -82572,7 +82594,8 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.13.238",
                   "peerAddress" : "169.254.13.237",
-                  "remoteAsns" : "65401"
+                  "remoteAsns" : "65401",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "169.254.15.193" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -82617,7 +82640,8 @@
                   "localAs" : 65301,
                   "localIp" : "169.254.15.194",
                   "peerAddress" : "169.254.15.193",
-                  "remoteAsns" : "65401"
+                  "remoteAsns" : "65401",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ROUTER_ID"
@@ -85870,6 +85894,7 @@
           "default" : {
             "name" : "default",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -85906,7 +85931,8 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.13.237",
                   "peerAddress" : "169.254.13.238",
-                  "remoteAsns" : "65301"
+                  "remoteAsns" : "65301",
+                  "replaceNonLocalAsesOnExport" : false
                 },
                 "169.254.15.194" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
@@ -85932,7 +85958,8 @@
                   "localAs" : 65401,
                   "localIp" : "169.254.15.193",
                   "peerAddress" : "169.254.15.194",
-                  "remoteAsns" : "65301"
+                  "remoteAsns" : "65301",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "tieBreaker" : "ARRIVAL_ORDER"
@@ -85952,6 +85979,7 @@
           "vrf-vpn-underlay" : {
             "name" : "vrf-vpn-underlay",
             "bgpProcess" : {
+              "clientToClientReflection" : true,
               "ebgpAdminCost" : 20,
               "ibgpAdminCost" : 200,
               "localAdminCost" : 200,
@@ -85984,7 +86012,8 @@
                   "localAs" : 65534,
                   "localIp" : "169.254.0.1",
                   "peerInterface" : "backbone",
-                  "remoteAsns" : "16509"
+                  "remoteAsns" : "16509",
+                  "replaceNonLocalAsesOnExport" : false
                 }
               },
               "multipathEbgp" : false,
