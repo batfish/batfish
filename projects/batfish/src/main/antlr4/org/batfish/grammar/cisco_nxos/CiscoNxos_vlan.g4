@@ -20,12 +20,12 @@ vlan_configuration
 :
   CONFIGURATION range = vlan_id_range NEWLINE
     (
-      vc_service_policy
+      vlanc_service_policy
       | vlanc_null
-    )
+    )*
 ;
 
-vc_service_policy
+vlanc_service_policy
 :
   SERVICE_POLICY vcsp_type
 ;

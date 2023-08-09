@@ -9940,4 +9940,20 @@ public final class CiscoNxosGrammarTest {
     parseVendorConfig("nxos_vlan_service_policy");
   }
 
+  @Test
+  public void testVlanServicePolicyExtractionPolicy() throws IOException {
+    String hostname = "nxos_vlan_service_policy";
+    String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
+
+    assertThat(
+        ans,
+        hasNumReferrers(filename, CiscoNxosStructureType.POLICY_MAP_QOS, "qos-classify-used", 1));
+
+    assertThat(
+        ans,
+        hasNumReferrers(filename, CiscoNxosStructureType.POLICY_MAP_QOS, "qos-classify-unused", 0));
+  }
 }

@@ -5,9 +5,12 @@ hostname nxos_vlan_service_policy
 interface loopback0
  ip address 1.1.1.1/32
 !
-policy-map type qos qos-classify-lan
+policy-map type qos qos-classify-used
+ class class-default
+!
+policy-map type qos qos-classify-unused
  class class-default
 !
 vlan configuration 100
- service-policy type qos input qos-classify-lan
+ service-policy type qos input qos-classify-used
 !

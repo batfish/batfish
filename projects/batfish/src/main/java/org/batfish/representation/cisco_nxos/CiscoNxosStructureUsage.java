@@ -162,7 +162,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   SYSQOS_QUEUING("system qos service-policy type queuing"),
   TACACS_SOURCE_INTERFACE("ip tacacs source-interface"),
   TRACK_INTERFACE("track interface"),
-  TRACK_IP_ROUTE_VRF("track ip route vrf");
+  TRACK_IP_ROUTE_VRF("track ip route vrf"),
+  VLAN_CONFIGURATION_QOS("vlan configuration service-policy type qos");
 
   private final @Nonnull String _description;
 
