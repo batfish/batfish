@@ -26,6 +26,14 @@ import org.junit.rules.TemporaryFolder;
 public final class ReceivedFromRouteReflectorTest {
 
   /*
+  rrcm: Route-Reflector-Client that exports from the Main RIB
+  nrrcm: Non-Route-Reflector-Client that exports from the Main RIB
+  rrcb: Route-Reflector-Client that exports from the BGP RIB
+  nrrcb: Non-Route-Reflector-Client that exports from the BGP RIB
+  rr: Route-Reflector
+  AS2: AS of all the devices above
+  AS1: source of external eBGP advertisements
+
                      AS2       AS2
    Topology: AS1 <=> rrcm  <=> rr
                  <=> nrrcm <=>
@@ -54,8 +62,7 @@ public final class ReceivedFromRouteReflectorTest {
                 .setExternalBgpAnnouncements(snapshotPath)
                 .build(),
             _folder);
-    // TODO: parse neighbor xxx additional-paths send receive
-    batfish.getSettings().setDisableUnrecognized(false);
+    batfish.getSettings().setDisableUnrecognized(true);
     batfish.computeDataPlane(batfish.getSnapshot());
     _dp = batfish.loadDataPlane(batfish.getSnapshot());
   }
