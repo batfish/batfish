@@ -18,7 +18,29 @@ s_vlan
 
 vlan_configuration
 :
-  CONFIGURATION range = vlan_id_range NEWLINE vlanc_null*
+  CONFIGURATION range = vlan_id_range NEWLINE
+    (
+      vlanc_service_policy
+      | vlanc_null
+    )*
+;
+
+vlanc_service_policy
+:
+  SERVICE_POLICY vcsp_type
+;
+
+vcsp_type
+:
+  TYPE
+  (
+    vcspt_qos
+  )
+;
+
+vcspt_qos
+:
+  QOS (INPUT | OUTPUT) name = policy_map_qos_name NEWLINE
 ;
 
 vlanc_null
