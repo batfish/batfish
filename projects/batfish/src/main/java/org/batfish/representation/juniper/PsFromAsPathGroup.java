@@ -1,7 +1,5 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.representation.juniper.parboiled.AsPathRegex.convertToJavaRegex;
-
 import com.google.common.annotations.VisibleForTesting;
 import java.util.ArrayList;
 import java.util.List;
@@ -9,7 +7,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -38,8 +36,8 @@ public final class PsFromAsPathGroup extends PsFrom {
     List<BooleanExpr> asPaths = new ArrayList<>();
     for (NamedAsPath namedAsPath : asPathGroup.getAsPaths().values()) {
       try {
-        String convertedVIRegex = convertToJavaRegex(namedAsPath.getRegex());
-        asPaths.add(MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(convertedVIRegex)));
+        AsPathMatchExpr asPathMatchExpr = AsPathMatchExprParser.convertToAsPathMatchExpr(namedAsPath.getRegex());
+        asPaths.add(MatchAsPath.of(InputAsPath.instance(), asPathMatchExpr));
       } catch (Exception e) {
         w.redFlag(
             String.format(
