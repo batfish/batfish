@@ -7400,11 +7400,9 @@ public final class FlatJuniperGrammarTest {
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
     assertEquals(
         c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress(), Ip.parse("10.84.249.26"));
-    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5010).getSourceAddress());
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getSrcVrf(), "default");
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5010).getUdpPort(), 4789);
     assertEquals(c.getDefaultVrf().getLayer2Vnis().get(5020).getVlan(), 20);
-    assertNull(c.getDefaultVrf().getLayer2Vnis().get(5020).getSourceAddress());
   }
 
   @Test

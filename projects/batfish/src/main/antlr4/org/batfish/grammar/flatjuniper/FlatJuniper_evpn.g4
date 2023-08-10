@@ -71,17 +71,17 @@ evovt_auto
 
 evovt_community
 :
-    comm = vt_community
+   extended_community
 ;
 
 evovt_export
 :
-    EXPORT vt_community
+   EXPORT extended_community
 ;
 
 evovt_import
 :
-    IMPORT vt_community
+   IMPORT extended_community
 ;
 
 p_evpn
@@ -94,9 +94,4 @@ p_evpn
         | e_vni_options
         | e_duplicate_mac_detection_null
     )
-;
-
-vt_community
-:
-    TARGET COLON x = dec COLON y = dec
 ;
