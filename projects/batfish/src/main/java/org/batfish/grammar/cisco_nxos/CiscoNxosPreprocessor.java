@@ -122,7 +122,11 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
       case '9':
         return NxosMajorVersion.NXOS9;
       case '1':
-        return NxosMajorVersion.NXOS10;
+        if (version.length() >= 2 && version.charAt(1) == '0') {
+          return NxosMajorVersion.NXOS10;
+        } else {
+          return null;
+        }
       default:
         return null;
     }
