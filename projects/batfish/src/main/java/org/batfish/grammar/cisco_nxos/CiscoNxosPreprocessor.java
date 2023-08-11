@@ -302,7 +302,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/interfaces/configuration/guide/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x_chapter_011.html
             return true;
           case NXOS10:
-            // TODO: add link to doc
+            // https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/101x/configuration/interfaces/cisco-nexus-9000-nx-os-interfaces-configuration-guide-101x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-93x_chapter_0101.html#:~:text=you%20would%20use.-,Default%20Settings,Admin%20state,-Shut
             return true;
           case NXOS4:
           case UNKNOWN:
