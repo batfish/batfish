@@ -7,6 +7,7 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
+
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,8 +22,11 @@ import static com.google.common.base.Preconditions.checkArgument;
  */
 public final class AsPathMatchExprParser {
 
+    // "N" : "AS Path matches single ASN number"
+    private static final Pattern AS_PATH_EXACT_MATCH_ASN = Pattern.compile("(\\d+)");
+
     // ".* N .*" : "AS Path contains N"
-    private static final Pattern AS_PATH_CONTAINS_ASN = Pattern.compile("\\.\\* (\\d+) \\.\\*");
+    private static final Pattern AS_PATH_CONTAINS_ASN = Pattern.compile("\\.\\*\\s?(\\d+)\\s?\\.\\*");
 
     // ".* N" or ".* N$" : "AS Path ends with N"
     private static final Pattern AS_PATH_ENDS_WITH_ASN = Pattern.compile("\\.\\* (\\d+)\\$?");
@@ -31,50 +35,80 @@ public final class AsPathMatchExprParser {
     private static final Pattern AS_PATH_STARTS_WITH_ASN = Pattern.compile("\\^?(\\d+) \\.\\*");
 
     // ".* [start-end] .*" : "AS Path contains an ASN in range between start and end included
-    private static final Pattern AS_PATH_CONTAINS_ASN_RANGE = Pattern.compile("\\.\\* \\[(\\d+)-(\\d+)\\] \\.\\*");
+    private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_1 = Pattern.compile("\\.\\* \\[(\\d+)-(\\d+)\\] \\.\\*");
 
+    // ".* start-end .*" : "AS Path contains an ASN in range between start and end included
+    private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_2 = Pattern.compile("\\.\\* (\\d+)-(\\d+) \\.\\*");
+
+    // "[start-end]" : "AS Path matches single ASN number in range between start and end included
+    private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_1 = Pattern.compile("\\[(\\d+)-(\\d+)\\]");
+
+    // "start-end" : "AS Path matches single ASN number in range between start and end included
+    private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2 = Pattern.compile("(\\d+)-(\\d+)");
 
     /**
      * Converts the given Juniper AS Path regular expression to an instance of {@link AsPathMatchExpr}.
      * First match the AS path input regex against predefined AS path regexes and return VI construct {@link AsSetsMatchingRanges}
      * Else convert to java regex and return {@link  AsPathMatchRegex}
      */
-    public static AsPathMatchExpr convertToAsPathMatchExpr(String regex) {
-        Matcher m1 = AS_PATH_CONTAINS_ASN.matcher(regex);
-        if (m1.matches()) {
-            String asn = m1.group(1);
-            long asnLong = Long.parseLong(asn);
-            return AsSetsMatchingRanges.of(false, false, ImmutableList.of(Range.singleton(asnLong)));
+    public static AsPathMatchExpr convertToAsPathMatchExpr(String asPathRegex) {
+
+        Matcher asPathExactMatchAsn = AS_PATH_EXACT_MATCH_ASN.matcher(asPathRegex);
+        if (asPathExactMatchAsn.matches()) {
+            return getAsSetsMatchingRanges(asPathExactMatchAsn.group(1), true, true);
         }
 
-        Matcher m2 = AS_PATH_STARTS_WITH_ASN.matcher(regex);
-        if (m2.matches()) {
-            String asn = m2.group(1);
-            long asnLong = Long.parseLong(asn);
-            return AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.singleton(asnLong)));
+        Matcher asPathContainsAsn = AS_PATH_CONTAINS_ASN.matcher(asPathRegex);
+        if (asPathContainsAsn.matches()) {
+            return getAsSetsMatchingRanges(asPathContainsAsn.group(1), false, false);
         }
 
-        Matcher m3 = AS_PATH_ENDS_WITH_ASN.matcher(regex);
-        if (m3.matches()) {
-            String asn = m3.group(1);
-            long asnLong = Long.parseLong(asn);
-            return AsSetsMatchingRanges.of(true, false, ImmutableList.of(Range.singleton(asnLong)));
+        Matcher asPathStartsWithAsn = AS_PATH_STARTS_WITH_ASN.matcher(asPathRegex);
+        if (asPathStartsWithAsn.matches()) {
+            return getAsSetsMatchingRanges(asPathStartsWithAsn.group(1), false, true);
         }
 
-        Matcher m4 = AS_PATH_CONTAINS_ASN_RANGE.matcher(regex);
-        if (m4.matches()) {
-            String asnLowerRange = m4.group(1);
-            String asnUpperRange = m4.group(2);
-            long start = Long.parseLong(asnLowerRange);
-            long end = Long.parseLong(asnUpperRange);
-            checkArgument(start <= end, "Invalid range %s-%s", start, end);
-            return AsSetsMatchingRanges.of(false, false, ImmutableList.of(
-                    Range.closed(start, end)
-            ));
+        Matcher asPathEndsWithAsn = AS_PATH_ENDS_WITH_ASN.matcher(asPathRegex);
+        if (asPathEndsWithAsn.matches()) {
+            return getAsSetsMatchingRanges(asPathEndsWithAsn.group(1), true, false);
         }
 
-        String javaRegex = AsPathRegex.convertToJavaRegex(regex);
+        Matcher asPathContainsAsnRangeBrackets = AS_PATH_CONTAINS_ASN_RANGE_PATTERN_1.matcher(asPathRegex);
+        if (asPathContainsAsnRangeBrackets.matches()) {
+            return getAsSetsMatchingRanges(asPathContainsAsnRangeBrackets.group(1), asPathContainsAsnRangeBrackets.group(2), false, false);
+        }
+
+        Matcher asPathContainsAsnRangeNoBrackets = AS_PATH_CONTAINS_ASN_RANGE_PATTERN_2.matcher(asPathRegex);
+        if (asPathContainsAsnRangeNoBrackets.matches()) {
+            return getAsSetsMatchingRanges(asPathContainsAsnRangeNoBrackets.group(1), asPathContainsAsnRangeNoBrackets.group(2), false, false);
+        }
+
+        Matcher asPathExactMatchAsnRangeBrackets = AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_1.matcher(asPathRegex);
+        if (asPathExactMatchAsnRangeBrackets.matches()) {
+            return getAsSetsMatchingRanges(asPathExactMatchAsnRangeBrackets.group(1), asPathExactMatchAsnRangeBrackets.group(2), true, true);
+        }
+
+        Matcher asPathExactMatchAsnRangeNoBrackets = AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2.matcher(asPathRegex);
+        if (asPathExactMatchAsnRangeNoBrackets.matches()) {
+            return getAsSetsMatchingRanges(asPathExactMatchAsnRangeNoBrackets.group(1), asPathExactMatchAsnRangeNoBrackets.group(2), true, true);
+        }
+
+        String javaRegex = AsPathRegex.convertToJavaRegex(asPathRegex);
         return AsPathMatchRegex.of(javaRegex);
     }
+
+    private static AsSetsMatchingRanges getAsSetsMatchingRanges(String asn, boolean anchorEnd, boolean anchorStart) {
+        long asnLong = Long.parseLong(asn);
+        return AsSetsMatchingRanges.of(anchorEnd, anchorStart, ImmutableList.of(Range.singleton(asnLong)));
+    }
+
+    private static AsSetsMatchingRanges getAsSetsMatchingRanges(String asnLowerRange, String asnUpperRange, boolean anchorEnd, boolean anchorStart) {
+        long start = Long.parseLong(asnLowerRange);
+        long end = Long.parseLong(asnUpperRange);
+        checkArgument(start <= end, "Invalid range %s-%s", start, end);
+        return AsSetsMatchingRanges.of(anchorEnd, anchorStart, ImmutableList.of(Range.closed(start, end)));
+    }
+
+
     private AsPathMatchExprParser() {} // prevent instantiation of utility class.
 }
