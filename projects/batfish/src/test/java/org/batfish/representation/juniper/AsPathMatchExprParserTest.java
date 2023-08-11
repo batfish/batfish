@@ -7,6 +7,10 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.junit.Test;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToAsPathMatchExpr;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertTrue;
@@ -30,6 +34,18 @@ import static org.junit.Assert.assertFalse;
 
      private void assertDoesNotMatch(AsPathMatchExpr res, Long... asPath) {
          assertFalse(res.accept(evaluator, AsPath.ofSingletonAsSets(asPath)));
+     }
+
+     @Test
+     public void testMatchingSingleNumber() {
+         AsPathMatchExpr res = convertToAsPathMatchExpr("1234");
+         assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
+         assertMatches(res, 1234L);
+         assertDoesNotMatch(res);
+         assertDoesNotMatch(res, 123L);
+         assertDoesNotMatch(res, 1234L, 1L);
+         assertDoesNotMatch(res, 1L, 1234L, 1L);
+         assertDoesNotMatch(res, 1L, 2L, 3L, 4L);
      }
 
     @Test
@@ -77,24 +93,42 @@ import static org.junit.Assert.assertFalse;
 
     @Test
     public void testContainsAsnRange() {
-        AsPathMatchExpr res = convertToAsPathMatchExpr(".* [123-187] .*");
-        assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
-        assertMatches(res, 123L);
-        assertMatches(res, 135L);
-        assertMatches(res, 187L);
-        assertMatches(res, 110L, 123L, 135L, 2L);
-        assertDoesNotMatch(res);
-        assertDoesNotMatch(res, 0L);
-        assertDoesNotMatch(res, 1102L);
-        assertDoesNotMatch(res, 110L, 122L, 188L);
+        for (String regex : new String[] {".* [123-187] .*", ".* 123-187 .*"}) {
+            AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
+            assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
+            assertMatches(res, 123L);
+            assertMatches(res, 135L);
+            assertMatches(res, 187L);
+            assertMatches(res, 110L, 123L, 135L, 2L);
+            assertDoesNotMatch(res);
+            assertDoesNotMatch(res, 0L);
+            assertDoesNotMatch(res, 1102L);
+            assertDoesNotMatch(res, 110L, 122L, 188L);
+        }
     }
+
+     @Test
+     public void testSingleAsnRange() {
+         for (String regex : new String[] {"[123-187]", "123-187"}) {
+             AsPathMatchExpr res = convertToAsPathMatchExpr(regex);
+             assertThat(res, instanceOf(AsSetsMatchingRanges.class)); // did not fall back to regex
+             assertMatches(res, 123L);
+             assertMatches(res, 135L);
+             assertMatches(res, 187L);
+             assertDoesNotMatch(res, 110L, 123L, 135L, 2L);
+             assertDoesNotMatch(res);
+             assertDoesNotMatch(res, 0L);
+             assertDoesNotMatch(res, 1102L);
+             assertDoesNotMatch(res, 110L, 122L, 188L);
+         }
+     }
 
     /**
      * Test for fallback to {@link AsPathMatchRegex} for some example regexes tested in {@link AsPathRegexTest}.
      */
     @Test
     public void testAsPathMatchRegexFallback() {
-        for (String regex : new String[]{"1234", "1234?", "1234{0,1}", "12{1,4} 34", "[123-125]", "123 (56 | 78)?", "()"}) {
+        for (String regex : new String[]{"1234?", "1234{0,1}", "12{1,4} 34", "123 (56 | 78)?", "()"}) {
             AsPathMatchExpr res1 = convertToAsPathMatchExpr(regex);
             assertThat(res1, instanceOf(AsPathMatchRegex.class));
         }
