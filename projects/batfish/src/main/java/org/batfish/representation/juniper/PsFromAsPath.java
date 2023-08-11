@@ -33,7 +33,8 @@ public final class PsFromAsPath extends PsFrom {
       return BooleanExprs.FALSE;
     }
     try {
-      AsPathMatchExpr asPathMatchExpr = AsPathMatchExprParser.convertToAsPathMatchExpr(asPath.getRegex());
+      AsPathMatchExpr asPathMatchExpr =
+          AsPathMatchExprParser.convertToAsPathMatchExpr(asPath.getRegex());
       return MatchAsPath.of(InputAsPath.instance(), asPathMatchExpr);
     } catch (Exception e) {
       w.redFlag(

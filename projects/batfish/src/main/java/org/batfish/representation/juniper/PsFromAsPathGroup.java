@@ -36,7 +36,8 @@ public final class PsFromAsPathGroup extends PsFrom {
     List<BooleanExpr> asPaths = new ArrayList<>();
     for (NamedAsPath namedAsPath : asPathGroup.getAsPaths().values()) {
       try {
-        AsPathMatchExpr asPathMatchExpr = AsPathMatchExprParser.convertToAsPathMatchExpr(namedAsPath.getRegex());
+        AsPathMatchExpr asPathMatchExpr =
+            AsPathMatchExprParser.convertToAsPathMatchExpr(namedAsPath.getRegex());
         asPaths.add(MatchAsPath.of(InputAsPath.instance(), asPathMatchExpr));
       } catch (Exception e) {
         w.redFlag(
