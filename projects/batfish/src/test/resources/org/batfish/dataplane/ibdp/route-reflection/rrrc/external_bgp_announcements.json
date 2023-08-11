@@ -1,0 +1,88 @@
+{
+  "Announcements": [
+    {
+      "type": "ebgp_sent",
+      "network": "1.0.0.2/32",
+      "nextHopIp": "10.0.12.0",
+      "srcIp": "10.0.12.0",
+      "dstNode": "nrrcb",
+      "dstIp": "10.0.12.1",
+      "srcProtocol": "AGGREGATE",
+      "originType": "igp",
+      "localPreference": 0,
+      "med": 20,
+      "originatorIp": "0.0.0.0",
+      "asPath": [
+        [
+          1
+        ]
+      ],
+      "communities": [],
+      "dstVrf": "default",
+      "clusterList": []
+    },
+    {
+      "type": "ebgp_sent",
+      "network": "1.0.0.3/32",
+      "nextHopIp": "10.0.13.0",
+      "srcIp": "10.0.13.0",
+      "dstNode": "nrrcm",
+      "dstIp": "10.0.13.1",
+      "srcProtocol": "AGGREGATE",
+      "originType": "igp",
+      "localPreference": 0,
+      "med": 20,
+      "originatorIp": "0.0.0.0",
+      "asPath": [
+        [
+          1
+        ]
+      ],
+      "communities": [],
+      "dstVrf": "default",
+      "clusterList": []
+    },
+    {
+      "type": "ebgp_sent",
+      "network": "1.0.0.4/32",
+      "nextHopIp": "10.0.14.0",
+      "srcIp": "10.0.14.0",
+      "dstNode": "rrcb",
+      "dstIp": "10.0.14.1",
+      "srcProtocol": "AGGREGATE",
+      "originType": "igp",
+      "localPreference": 0,
+      "med": 20,
+      "originatorIp": "0.0.0.0",
+      "asPath": [
+        [
+          1
+        ]
+      ],
+      "communities": [],
+      "dstVrf": "default",
+      "clusterList": []
+    },
+    {
+      "type": "ebgp_sent",
+      "network": "1.0.0.5/32",
+      "nextHopIp": "10.0.15.0",
+      "srcIp": "10.0.15.0",
+      "dstNode": "rrcm",
+      "dstIp": "10.0.15.1",
+      "srcProtocol": "AGGREGATE",
+      "originType": "igp",
+      "localPreference": 0,
+      "med": 20,
+      "originatorIp": "0.0.0.0",
+      "asPath": [
+        [
+          1
+        ]
+      ],
+      "communities": [],
+      "dstVrf": "default",
+      "clusterList": []
+    }
+  ]
+}

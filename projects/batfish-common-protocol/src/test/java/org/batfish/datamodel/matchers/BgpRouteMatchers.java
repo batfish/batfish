@@ -30,6 +30,7 @@ import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.HasWeight;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsBgpv4RouteThat;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType3RouteThat;
 import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsEvpnType5RouteThat;
+import org.batfish.datamodel.matchers.BgpRouteMatchersImpl.IsReceivedFromRouteReflectorClient;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.hamcrest.Matcher;
 
@@ -96,6 +97,14 @@ public final class BgpRouteMatchers {
   public static @Nonnull Matcher<BgpRoute<?, ?>> hasReceivedFrom(
       Matcher<? super ReceivedFrom> subMatcher) {
     return new HasReceivedFrom(subMatcher);
+  }
+
+  public static @Nonnull Matcher<BgpRoute<?, ?>> isReceivedFromRouteReflectorClient() {
+    return isReceivedFromRouteReflectorClient(true);
+  }
+
+  public static @Nonnull Matcher<BgpRoute<?, ?>> isReceivedFromRouteReflectorClient(boolean b) {
+    return new IsReceivedFromRouteReflectorClient(equalTo(b));
   }
 
   /**
