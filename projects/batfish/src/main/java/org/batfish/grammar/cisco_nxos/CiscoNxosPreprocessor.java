@@ -74,9 +74,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   private static final Pattern NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN =
       Pattern.compile(".*?[A-Za-z][0-9]\\.([0-9]).*");
   private static final Pattern NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN =
-      Pattern.compile(".*nxos\\.([0-9]|10).*");
+      Pattern.compile(".*nxos\\.(10|[0-9]).*");
   private static final Pattern KICKSTART_MAJOR_VERSION_PATTERN =
-      Pattern.compile(".*kickstart\\.([0-9]|10).*");
+      Pattern.compile(".*kickstart\\.(10|[0-9]).*");
 
   /**
    * Infers {@code NexusPlatform} of a configuration based on explicit version string or names of
@@ -122,10 +122,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
       case '9':
         return NxosMajorVersion.NXOS9;
       case '1':
-        if (version.length() >= 2 && version.charAt(1) == '0') {
-          return NxosMajorVersion.NXOS10;
-        } else {
-          return null;
+        switch (version.charAt(1)) {
+          case '0':
+            return NxosMajorVersion.NXOS10;
         }
       default:
         return null;
