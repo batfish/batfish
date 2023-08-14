@@ -134,7 +134,6 @@ public class AsPathMatchExprParserTest {
     // Sanity testing that the fallback delegation AsPathMatchRegex works as expected
     AsPathMatchExpr res2 = convertToAsPathMatchExpr("1 | (2 3) | (4 (5|6))");
     assertThat(res2, instanceOf(AsPathMatchRegex.class));
-    ; // fall back to regex
     assertMatches(res2, 1L);
     assertMatches(res2, 2L, 3L);
     assertMatches(res2, 4L, 5L);
