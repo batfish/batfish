@@ -16,14 +16,14 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.15.2",
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.15.2",
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.15.2",
-    "com.github.ben-manes.caffeine:caffeine:3.1.6",
+    "com.github.ben-manes.caffeine:caffeine:3.1.8",
     "com.google.auto.service:auto-service:1.1.1",
     "com.google.auto.service:auto-service-annotations:1.1.1",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.10.1",  # managed up for CVE-2022-25647
-    "com.google.errorprone:error_prone_annotations:2.20.0",
-    "com.google.guava:guava:32.1.1-jre",
-    maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "32.1.1-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
+    "com.google.errorprone:error_prone_annotations:2.21.1",
+    "com.google.guava:guava:32.1.2-jre",
+    maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "32.1.2-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
     "com.google.re2j:re2j:1.7",
     "com.ibm.icu:icu4j:69.1",
     "commons-beanutils:commons-beanutils:1.9.4",
@@ -39,7 +39,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.antlr:antlr4-runtime:4.7.2",
     "org.apache.commons:commons-collections4:4.4",
     "org.apache.commons:commons-configuration2:2.9.0",
-    "org.apache.commons:commons-lang3:3.12.0",
+    "org.apache.commons:commons-lang3:3.13.0",
     "org.apache.commons:commons-text:1.10.0",
     "org.apache.httpcomponents:httpclient:4.5.14",  # managed up 2021-06-04 for CVE-2020-13956
     "org.apache.httpcomponents:httpcore:4.4.16",  # managed up 2021-06-04 for fixes
@@ -68,5 +68,5 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.parboiled:parboiled-core:1.4.1",
     "org.parboiled:parboiled-java:1.4.1",
     "org.skyscreamer:jsonassert:1.5.1",
-    "org.yaml:snakeyaml:2.0",
+    "org.yaml:snakeyaml:2.1",
 ]
