@@ -5,6 +5,7 @@ import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_6000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_7000;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NexusPlatform.NEXUS_9000;
+import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS10;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS5;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS6;
 import static org.batfish.datamodel.vendor_family.cisco_nxos.NxosMajorVersion.NXOS7;
@@ -162,6 +163,7 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferMajorVersionFromImage("bootflash:/poap/nxos.7.0.3.I3.1.bin"), equalTo(NXOS7));
     assertThat(inferMajorVersionFromImage("bootflash:/nxos.9.2.1.bin"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromImage("bootflash:/nxos.9.2.3.bin"), equalTo(NXOS9));
+    assertThat(inferMajorVersionFromImage("bootflash:/nxos.10.1.1.bin"), equalTo(NXOS10));
   }
 
   @Test
@@ -202,6 +204,7 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferMajorVersionFromVersion("7.3(2)N1(1)"), equalTo(NXOS7));
     assertThat(inferMajorVersionFromVersion("9.2(1) Bios:version 05.31"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromVersion("9.2(3) Bios:version"), equalTo(NXOS9));
+    assertThat(inferMajorVersionFromVersion("10.1(1) Bios:version 05.43"), equalTo(NXOS10));
   }
 
   @Test
@@ -222,6 +225,8 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferMajorVersion(vc), equalTo(NXOS7));
     vc.setVersion("9.2.3 Bios:version");
     assertThat(inferMajorVersion(vc), equalTo(NXOS9));
+    vc.setVersion("10.1(1) Bios:version 05.43");
+    assertThat(inferMajorVersion(vc), equalTo(NXOS10));
   }
 
   @Test
@@ -375,6 +380,8 @@ public final class CiscoNxosPreprocessorTest {
         equalTo(NexusPlatform.UNKNOWN));
     assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.1.bin"), equalTo(NexusPlatform.UNKNOWN));
     assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.3.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos.10.1.1.bin"), equalTo(NexusPlatform.UNKNOWN));
   }
 
   @Test

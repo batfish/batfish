@@ -74,9 +74,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   private static final Pattern NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN =
       Pattern.compile(".*?[A-Za-z][0-9]\\.([0-9]).*");
   private static final Pattern NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN =
-      Pattern.compile(".*nxos\\.([0-9]).*");
+      Pattern.compile(".*nxos\\.(10|[0-9]).*");
   private static final Pattern KICKSTART_MAJOR_VERSION_PATTERN =
-      Pattern.compile(".*kickstart\\.([0-9]).*");
+      Pattern.compile(".*kickstart\\.(10|[0-9]).*");
 
   /**
    * Infers {@code NexusPlatform} of a configuration based on explicit version string or names of
@@ -121,6 +121,13 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
         return NxosMajorVersion.NXOS7;
       case '9':
         return NxosMajorVersion.NXOS9;
+      case '1':
+        switch (version.charAt(1)) {
+          case '0':
+            return NxosMajorVersion.NXOS10;
+          default:
+            return null;
+        }
       default:
         return null;
     }
@@ -182,7 +189,12 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
     // Assume that UNKNOWN means Nexus 3000/9000. Find likely default layer-3 shutdown behavior, and
     // infer platform accordingly
     if (majorVersion == NxosMajorVersion.NXOS9) {
-      // In this case, defaults are same for Nexus 3000 and Nexus 9000. So just arbitrarily chooose
+      // In this case, defaults are same for Nexus 3000 and Nexus 9000. So just arbitrarily choose
+      // Nexus 9000.
+      return NexusPlatform.NEXUS_9000;
+    }
+    if (majorVersion == NxosMajorVersion.NXOS10) {
+      // In this case, defaults are same for Nexus 3000 and Nexus 9000. So just arbitrarily choose
       // Nexus 9000.
       return NexusPlatform.NEXUS_9000;
     }
@@ -257,6 +269,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
 
           case NXOS7:
           case NXOS9:
+          case NXOS10:
           case UNKNOWN:
             // Assume NXOS7+ behavior arbitrarily when version is unknown.
             // Value depends on model, so just make an educated guess based on statistical analysis
@@ -288,6 +301,9 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             return false;
           case NXOS9:
             // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/interfaces/configuration/guide/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x_chapter_011.html
+            return true;
+          case NXOS10:
+            // https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/101x/configuration/interfaces/cisco-nexus-9000-nx-os-interfaces-configuration-guide-101x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-93x_chapter_0101.html#:~:text=you%20would%20use.-,Default%20Settings,Admin%20state,-Shut
             return true;
           case NXOS4:
           case UNKNOWN:
