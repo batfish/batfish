@@ -27,6 +27,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.ValueGraph;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -195,9 +196,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
     // Check topologies to determine the peer's status and, if applicable, remote node
     BgpSessionStatus status = NOT_COMPATIBLE;
     Node remoteNode = null;
-    Long localAs = activePeer.getLocalAs();
-    String remoteAs = activePeer.getRemoteAsns().toString();
-    Set<Type> addressFamilies = ImmutableSet.of();
+    @Nullable BgpSessionProperties session = null;
     if (establishedTopology.nodes().contains(activeId)
         && establishedTopology.outDegree(activeId) == 1) {
       status = ESTABLISHED;
@@ -207,72 +206,64 @@ public class BgpSessionStatusAnswerer extends Answerer {
       have multiple compatible remotes of which only one turned out to be reachable.
        */
       BgpPeerConfigId remoteId = establishedTopology.adjacentNodes(activeId).iterator().next();
-      String remoteNodeName = remoteId.getHostname();
-      remoteNode = new Node(remoteNodeName);
-      localAs = getLocalAs(establishedTopology, activeId, remoteId, activePeer);
-      remoteAs = getRemoteAs(establishedTopology, activeId, remoteId, activePeer);
-      addressFamilies = getAddressFamilies(establishedTopology, activeId, remoteId);
-
+      remoteNode = new Node(remoteId.getHostname());
+      session = getSession(establishedTopology, activeId, remoteId).orElse(null);
     } else if (getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology)
         == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
       // This peer has a unique match, but it's unreachable. Show that remote peer's node.
       BgpPeerConfigId remoteId = configuredTopology.adjacentNodes(activeId).iterator().next();
-      String remoteNodeName = remoteId.getHostname();
-      remoteNode = new Node(remoteNodeName);
-      localAs = getLocalAs(configuredTopology, activeId, remoteId, activePeer);
-      remoteAs = getRemoteAs(configuredTopology, activeId, remoteId, activePeer);
-      addressFamilies = getAddressFamilies(configuredTopology, activeId, remoteId);
+      remoteNode = new Node(remoteId.getHostname());
+      session = getSession(configuredTopology, activeId, remoteId).orElse(null);
     }
     return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
-        .put(COL_ADDRESS_FAMILIES, addressFamilies)
+        .put(COL_ADDRESS_FAMILIES, getAddressFamilies(session))
         .put(COL_LOCAL_INTERFACE, null)
-        .put(COL_LOCAL_AS, localAs)
-        .put(COL_LOCAL_IP, activePeer.getLocalIp())
+        .put(COL_LOCAL_AS, getLocalAs(session, activePeer))
+        .put(COL_LOCAL_IP, getLocalIp(session, activePeer))
         .put(COL_NODE, new Node(activeId.getHostname()))
-        .put(COL_REMOTE_AS, remoteAs)
+        .put(COL_REMOTE_AS, getRemoteAs(session, activePeer))
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, null)
-        .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
+        .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, getRemoteIp(session, activePeer)))
         .put(COL_SESSION_TYPE, getSessionType(activePeer))
         .put(COL_VRF, activeId.getVrfName())
         .build();
   }
 
-  @Nullable
-  private static Long getLocalAs(
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
-      BgpPeerConfigId local,
-      BgpPeerConfigId remote,
-      BgpPeerConfig activePeer) {
-    return topology
-        .edgeValue(local, remote)
-        .map(BgpSessionProperties::getLocalAs)
-        .orElse(activePeer.getLocalAs());
+  private static @Nullable Long getLocalAs(
+      @Nullable BgpSessionProperties session, BgpPeerConfig activePeer) {
+    return session != null ? (Long) session.getLocalAs() : activePeer.getLocalAs();
   }
 
-  @Nonnull
-  private static Set<Type> getAddressFamilies(
+  private static @Nullable Ip getLocalIp(
+      @Nullable BgpSessionProperties session, BgpPeerConfig activePeer) {
+    return session != null ? session.getLocalIp() : activePeer.getLocalIp();
+  }
+
+  private static @Nullable Ip getRemoteIp(
+      @Nullable BgpSessionProperties session, BgpActivePeerConfig activePeer) {
+    return session != null ? session.getRemoteIp() : activePeer.getPeerAddress();
+  }
+
+  private @Nonnull static Set<Type> getAddressFamilies(@Nullable BgpSessionProperties session) {
+    return (session != null) ? session.getAddressFamilies() : ImmutableSet.of();
+  }
+
+  private static @Nonnull Optional<BgpSessionProperties> getSession(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
       BgpPeerConfigId local,
       BgpPeerConfigId remote) {
-    return topology
-        .edgeValue(local, remote)
-        .map(BgpSessionProperties::getAddressFamilies)
-        .orElse(ImmutableSet.of());
+    return topology.edgeValue(local, remote);
   }
 
   @Nonnull
   private static String getRemoteAs(
-      ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
-      BgpPeerConfigId local,
-      BgpPeerConfigId remote,
-      BgpPeerConfig activePeer) {
-    return topology
-        .edgeValue(local, remote)
-        .map(session -> Long.toString(session.getRemoteAs()))
-        .orElse(activePeer.getRemoteAsns().toString());
+      @Nullable BgpSessionProperties session, BgpPeerConfig activePeer) {
+    return (session != null)
+        ? Long.toString(session.getRemoteAs())
+        : activePeer.getRemoteAsns().toString();
   }
 
   @Nonnull
@@ -357,23 +348,16 @@ public class BgpSessionStatusAnswerer extends Answerer {
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology) {
     BgpSessionStatus status = NOT_COMPATIBLE;
     BgpPeerConfigId remoteId = null;
-    Long localAs = unnumPeer.getLocalAs();
-    String remoteAs = unnumPeer.getRemoteAsns().toString();
-    Set<Type> addressFamilies = ImmutableSet.of();
+    @Nullable BgpSessionProperties session = null;
     if (establishedTopology.nodes().contains(unnumId)
         && establishedTopology.outDegree(unnumId) == 1) {
       status = ESTABLISHED;
       remoteId = establishedTopology.adjacentNodes(unnumId).iterator().next();
-      localAs = getLocalAs(establishedTopology, unnumId, remoteId, unnumPeer);
-      remoteAs = getRemoteAs(establishedTopology, unnumId, remoteId, unnumPeer);
-      addressFamilies = getAddressFamilies(establishedTopology, unnumId, remoteId);
-
+      session = getSession(establishedTopology, unnumId, remoteId).orElse(null);
     } else if (getConfiguredStatus(unnumId, unnumPeer, configuredTopology) == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
       remoteId = configuredTopology.adjacentNodes(unnumId).iterator().next();
-      localAs = getLocalAs(configuredTopology, unnumId, remoteId, unnumPeer);
-      remoteAs = getRemoteAs(configuredTopology, unnumId, remoteId, unnumPeer);
-      addressFamilies = getAddressFamilies(configuredTopology, unnumId, remoteId);
+      session = getSession(configuredTopology, unnumId, remoteId).orElse(null);
     }
 
     // If there's enough info to identify a remote peer, get remote node and interface
@@ -386,14 +370,14 @@ public class BgpSessionStatusAnswerer extends Answerer {
 
     return Row.builder(METADATA_MAP)
         .put(COL_ESTABLISHED_STATUS, status)
-        .put(COL_ADDRESS_FAMILIES, addressFamilies)
+        .put(COL_ADDRESS_FAMILIES, getAddressFamilies(session))
         .put(
             COL_LOCAL_INTERFACE,
             NodeInterfacePair.of(unnumId.getHostname(), unnumPeer.getPeerInterface()))
-        .put(COL_LOCAL_AS, localAs)
+        .put(COL_LOCAL_AS, getLocalAs(session, unnumPeer))
         .put(COL_LOCAL_IP, null)
         .put(COL_NODE, new Node(unnumId.getHostname()))
-        .put(COL_REMOTE_AS, remoteAs)
+        .put(COL_REMOTE_AS, getRemoteAs(session, unnumPeer))
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, remoteInterface)
         .put(COL_REMOTE_IP, null)

@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -191,11 +192,32 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_VRF, "vrf1");
     assertThat(row, equalTo(expected.build()));
 
-    // Case 2: Peers are NOT both compatible, but session comes up (could happen if one peer is
+    // Case 2a: Peers are NOT both compatible, but session comes up (could happen if one peer is
     // missing local IP or has multiple compatible remotes)
     row = getActivePeerRow(peerId, peer, ipVrfOwners, unlinkedTopology, linkedTopology);
     expected.put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED);
     assertThat(row, equalTo(expected.build()));
+
+    // Case 2b: Reverse direction where remotePeer does NOT have localIp configured but gets
+    // populated in answer because it's in session properties.
+    assertThat(remotePeer.getLocalIp(), nullValue());
+    row = getActivePeerRow(remotePeerId, remotePeer, ipVrfOwners, unlinkedTopology, linkedTopology);
+    Row reverseExpected =
+        Row.builder()
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
+            .put(COL_LOCAL_INTERFACE, null)
+            .put(COL_LOCAL_IP, remoteIp)
+            .put(COL_LOCAL_AS, 2L)
+            .put(COL_NODE, new Node("c2"))
+            .put(COL_REMOTE_AS, LongSpace.of(1L).toString())
+            .put(COL_REMOTE_NODE, new Node("c1"))
+            .put(COL_REMOTE_INTERFACE, null)
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, localIp))
+            .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
+            .put(COL_VRF, "vrf2")
+            .build();
+    assertThat(row, equalTo(reverseExpected));
 
     // Case 3: Peers are compatible and able to reach each other
     row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, linkedTopology);
