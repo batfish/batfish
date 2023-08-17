@@ -69,7 +69,6 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
@@ -90,7 +89,6 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
-import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -103,7 +101,6 @@ import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
-import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -198,7 +195,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1, 0, 0, 0);
+    return new BDDRoute(factory, 1, 1, 0, 0);
   }
 
   // test whether two lists contain pairwise semantically equal TransferReturns
@@ -1287,31 +1284,6 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testMatchInterface() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(
-                new If(
-                    new MatchInterface(ImmutableSet.of("int1", "int2")),
-                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
-            .build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD intPred = any.getNextHopInterfaces()[0].or(any.getNextHopInterfaces()[1]);
-
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, intPred, true),
-                new TransferReturn(any, intPred.not(), false))));
-  }
-
-  @Test
   public void testMatchNextHop() {
     _policyBuilder.addStatement(
         new If(
@@ -1378,47 +1350,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopType(BDDRoute.NextHopType.DISCARDED);
-    expected.setNextHopSet(true);
-
-    List<TransferReturn> expectedPaths =
-        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
-  }
-
-  @Test
-  public void testSelfNextHop() {
-    _policyBuilder
-        .addStatement(new SetNextHop(SelfNextHop.getInstance()))
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopType(BDDRoute.NextHopType.SELF);
-    expected.setNextHopSet(true);
-
-    List<TransferReturn> expectedPaths =
-        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
-  }
-
-  @Test
-  public void testPeerAddressNextHop() {
-    _policyBuilder
-        .addStatement(new SetNextHop(BgpPeerAddressNextHop.getInstance()))
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopType(BDDRoute.NextHopType.BGP_PEER_ADDRESS);
+    expected.setNextHopDiscarded(true);
     expected.setNextHopSet(true);
 
     List<TransferReturn> expectedPaths =
@@ -1448,30 +1380,8 @@ public class TransferBDDTest {
   }
 
   @Test
-  public void testDiscardThenSetNextHop() {
-    _policyBuilder
-        .addStatement(new SetNextHop(DiscardNextHop.INSTANCE))
-        .addStatement(new SetNextHop(new IpNextHop(ImmutableList.of(Ip.parse("1.1.1.1")))))
-        .addStatement(new StaticStatement(Statements.ExitAccept));
-    RoutingPolicy policy = _policyBuilder.build();
-    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
-
-    BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopSet(true);
-    expected.setNextHop(
-        MutableBDDInteger.makeFromValue(expected.getFactory(), 32, Ip.parse("1.1.1.1").asLong()));
-
-    List<TransferReturn> expectedPaths =
-        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
-  }
-
-  @Test
   public void testUnsupportedSetNextHop() {
-    _policyBuilder.addStatement(new SetNextHop(UnchangedNextHop.getInstance()));
+    _policyBuilder.addStatement(new SetNextHop(SelfNextHop.getInstance()));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs, policy);
@@ -1479,7 +1389,6 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
-    expected.setNextHopSet(true);
     expected.setUnsupported(true);
 
     List<TransferReturn> expectedPaths =
@@ -3369,7 +3278,7 @@ public class TransferBDDTest {
                         new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
                 // the SelfNextHop construct is not supported
                 ImmutableList.of(
-                    new SetNextHop(UnchangedNextHop.getInstance()),
+                    new SetNextHop(SelfNextHop.getInstance()),
                     new StaticStatement(Statements.ExitAccept))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
@@ -3385,7 +3294,6 @@ public class TransferBDDTest {
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
     BDDRoute expectedOut = new BDDRoute(any);
-    expectedOut.setNextHopSet(true);
     expectedOut.setUnsupported(true);
 
     assertTrue(

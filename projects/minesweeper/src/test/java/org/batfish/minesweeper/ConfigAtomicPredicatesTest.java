@@ -199,8 +199,7 @@ public class ConfigAtomicPredicatesTest {
         cap.getStandardCommunityAtomicPredicates(), copy.getStandardCommunityAtomicPredicates());
     assertNotSame(cap.getNonStandardCommunityLiterals(), copy.getNonStandardCommunityLiterals());
     assertNotSame(cap.getAsPathRegexAtomicPredicates(), copy.getAsPathRegexAtomicPredicates());
-    // these lists are immutable
-    assertEquals(cap.getNextHopInterfaces(), copy.getNextHopInterfaces());
+    // the lists of tracks and source VRFs are immutable
     assertEquals(cap.getTracks(), copy.getTracks());
     assertEquals(cap.getSourceVrfs(), copy.getSourceVrfs());
   }

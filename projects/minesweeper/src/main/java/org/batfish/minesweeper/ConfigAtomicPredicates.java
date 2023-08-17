@@ -55,14 +55,11 @@ public final class ConfigAtomicPredicates {
   /** Atomic predicates for the AS-path regexes that appear in the given configuration. */
   private final AsPathRegexAtomicPredicates _asPathRegexAtomicPredicates;
 
-  /** The list of next-hop interface names that appear in the given configuration. */
-  private final ImmutableList<String> _nextHopInterfaces;
-
   /** The list of "tracks" that appear in the given configuration. */
-  private final ImmutableList<String> _tracks;
+  private final List<String> _tracks;
 
   /** The list of source VRFs that appear in the given configuration. */
-  private final ImmutableList<String> _sourceVrfs;
+  private final List<String> _sourceVrfs;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -199,17 +196,13 @@ public final class ConfigAtomicPredicates {
     }
     _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(ImmutableSet.copyOf(asPathAps));
 
-    // Collect several other items from both (if differential) configs
-    Set<String> nextHopInterfaces =
-        new HashSet<>(findAllNextHopInterfaces(policies, configuration));
+    // Collect the tracks and source VRFs from both (if differential) configs
     Set<String> tracks = new HashSet<>(findAllTracks(policies, configuration));
     Set<String> sourceVRFs = new HashSet<>(findAllSourceVrfs(policies, configuration));
     if (reference != null) {
-      nextHopInterfaces.addAll(findAllNextHopInterfaces(referencePolicies, referenceConfiguration));
       tracks.addAll(findAllTracks(referencePolicies, referenceConfiguration));
       sourceVRFs.addAll(findAllSourceVrfs(referencePolicies, referenceConfiguration));
     }
-    _nextHopInterfaces = ImmutableList.copyOf(nextHopInterfaces);
     _tracks = ImmutableList.copyOf(tracks);
     _sourceVrfs = ImmutableList.copyOf(sourceVRFs);
   }
@@ -220,9 +213,8 @@ public final class ConfigAtomicPredicates {
     _nonStandardCommunityLiterals = new HashMap<>(other._nonStandardCommunityLiterals);
     _asPathRegexAtomicPredicates =
         new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
-    _nextHopInterfaces = other._nextHopInterfaces;
-    _tracks = other._tracks;
-    _sourceVrfs = other._sourceVrfs;
+    _tracks = ImmutableList.copyOf(other._tracks);
+    _sourceVrfs = ImmutableList.copyOf(other._sourceVrfs);
   }
 
   /**
@@ -332,19 +324,6 @@ public final class ConfigAtomicPredicates {
   }
 
   /**
-   * Collect up all next-hop interface names that appear in the given policies.
-   *
-   * @param policies the set of policies to collect interface names from.
-   * @param configuration the batfish configuration
-   * @return a set of all next-hop interface names that appear
-   */
-  private static Set<String> findAllNextHopInterfaces(
-      Collection<RoutingPolicy> policies, Configuration configuration) {
-    return findAllMatchItems(
-        ImmutableSet.of(), policies, configuration, new NextHopInterfaceCollector());
-  }
-
-  /**
    * Collect up all tracks that appear in the given policies.
    *
    * @param policies the set of policies to collect tracks from.
@@ -382,15 +361,11 @@ public final class ConfigAtomicPredicates {
     return _asPathRegexAtomicPredicates;
   }
 
-  public ImmutableList<String> getNextHopInterfaces() {
-    return _nextHopInterfaces;
-  }
-
-  public ImmutableList<String> getTracks() {
+  public List<String> getTracks() {
     return _tracks;
   }
 
-  public ImmutableList<String> getSourceVrfs() {
+  public List<String> getSourceVrfs() {
     return _sourceVrfs;
   }
 }
