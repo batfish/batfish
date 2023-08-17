@@ -8,7 +8,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
-import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
@@ -45,7 +45,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
           PROP_COMMUNITIES,
           PROP_LOCAL_PREFERENCE,
           PROP_METRIC,
-          PROP_NEXT_HOP,
+          PROP_NEXT_HOP_IP,
           PROP_ORIGINATOR_IP,
           PROP_ORIGIN_TYPE,
           PROP_TAG,
@@ -60,7 +60,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
     checkArgument(
         ROUTE_DIFF_FIELD_NAMES.contains(fieldName),
         "fieldName must be one of " + ROUTE_DIFF_FIELD_NAMES);
-    checkArgument(!oldValue.equals(newValue), "oldValue and newValue must be different");
+    checkArgument(!oldValue.equals(newValue), "oldValue and newValule must be different");
     _fieldName = fieldName;
     _oldValue = oldValue;
     _newValue = newValue;
@@ -129,7 +129,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
             .setMetric(route2.getMetric())
-            .setNextHop(route2.getNextHop())
+            .setNextHopIp(route2.getNextHopIp())
             .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
             .setTag(route2.getTag())
@@ -147,7 +147,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
                 routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
                 routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
                 routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
-                routeDiff(route1, route2, PROP_NEXT_HOP, BgpRoute::getNextHop),
+                routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
                 routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
                 routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
                 routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
