@@ -968,6 +968,60 @@ public final class TopologyUtilTest {
             new Layer2Node(n1Name, access1Name, 5), new Layer2Node(n2Name, access2Name, 6)));
   }
 
+  /**
+   * Parent and children interfaces of an L1 node should be present in L2 topology.
+   */
+  @Test
+  public void testComputeLayer2Topology_includesParentAndSubinterface() {
+    _cb.setConfigurationFormat(ConfigurationFormat.CUMULUS_CONCATENATED);
+    Configuration c1 = _cb.setHostname("c1").build();
+    Configuration c2 = _cb.setHostname("c2").build();
+    Interface i1 =
+        _nf.interfaceBuilder()
+            .setOwner(c1)
+            .setName("bond1")
+            .setType(InterfaceType.AGGREGATED)
+            .build();
+    Interface i1sub =
+        _nf.interfaceBuilder()
+            .setOwner(c1)
+            .setName("bond1.100")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setDependencies(ImmutableSet.of(new Dependency("bond1", DependencyType.BIND)))
+            .build();
+    Interface i2 =
+        _nf.interfaceBuilder()
+            .setOwner(c2)
+            .setName("bond2")
+            .setType(InterfaceType.AGGREGATED)
+            .build();
+    Interface i2sub =
+        _nf.interfaceBuilder()
+            .setOwner(c2)
+            .setName("bond2.200")
+            .setType(InterfaceType.AGGREGATE_CHILD)
+            .setDependencies(ImmutableSet.of(new Dependency("bond2", DependencyType.BIND)))
+            .build();
+
+    Layer1Topology layer1Topology =
+        new Layer1Topology(
+            new Layer1Edge(
+                new Layer1Node(c1.getHostname(), i1.getName()),
+                new Layer1Node(c2.getHostname(), i2.getName())));
+    Map<String, Configuration> configs =
+        ImmutableMap.of(c1.getHostname(), c1, c2.getHostname(), c2);
+
+    Layer2Topology t = computeLayer2Topology(layer1Topology, VxlanTopology.EMPTY, configs);
+
+    assertThat(
+        t.getNodes(),
+        containsInAnyOrder(
+            new Layer2Node("c1", "bond1", null),
+            new Layer2Node("c2", "bond2", null),
+            new Layer2Node("c1", "bond1.100", null),
+            new Layer2Node("c2", "bond2.200", null)));
+  }
+
   @Test
   public void testComputeLayer3Topology() {
     String c1Name = "c1";
