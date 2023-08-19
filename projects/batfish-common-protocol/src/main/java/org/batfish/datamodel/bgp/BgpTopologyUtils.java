@@ -325,6 +325,7 @@ public final class BgpTopologyUtils {
                                     candidateId,
                                     neighbor,
                                     initiatorLocalIp,
+                                    candidate.getLocalIp(),
                                     tracerouteEngine))
                         .forEach(
                             srcIp -> addEdges(neighbor, neighborId, srcIp, candidateId, graph, nc));
@@ -628,6 +629,7 @@ public final class BgpTopologyUtils {
       @Nonnull BgpPeerConfigId listenerId,
       @Nonnull BgpActivePeerConfig initiator,
       @Nonnull Ip initiatorLocalIp,
+      @Nullable Ip listenerLocalIp,
       @Nonnull TracerouteEngine tracerouteEngine) {
     assert initiatorId.getType() == BgpPeerConfigType.ACTIVE;
     Flow flowFromSrc =
@@ -657,6 +659,8 @@ public final class BgpTopologyUtils {
             traceAndReverseFlow -> {
               Trace forwardTrace = traceAndReverseFlow.getTrace();
               return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
+                  && (listenerLocalIp == null
+                      || listenerLocalIp.equals(traceAndReverseFlow.getReverseFlow().getSrcIp()))
                   && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
             })
         .filter(
