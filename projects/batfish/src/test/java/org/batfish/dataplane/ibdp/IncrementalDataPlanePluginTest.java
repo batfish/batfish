@@ -770,9 +770,9 @@ public class IncrementalDataPlanePluginTest {
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
-        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.1/32"), false);
     BgpPeerConfigId listener =
-        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
+        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.0/32"), false);
 
     Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
@@ -792,6 +792,18 @@ public class IncrementalDataPlanePluginTest {
             listener,
             source,
             initiatorLocalIp,
+            null,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+
+    // But if the listener has a local IP configured that does not match initiator's peer, will not
+    // be created
+    assertFalse(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            initiatorLocalIp,
+            Ip.parse("2.2.2.2"),
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
@@ -873,6 +885,7 @@ public class IncrementalDataPlanePluginTest {
             listener,
             source,
             initiatorLocalIp,
+            null,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
@@ -954,6 +967,7 @@ public class IncrementalDataPlanePluginTest {
             listener,
             source,
             initiatorLocalIp,
+            null,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
@@ -1039,6 +1053,7 @@ public class IncrementalDataPlanePluginTest {
             listener,
             source,
             initiatorLocalIp,
+            null,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
@@ -1124,6 +1139,7 @@ public class IncrementalDataPlanePluginTest {
             listener,
             source,
             initiatorLocalIp,
+            null,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
 
