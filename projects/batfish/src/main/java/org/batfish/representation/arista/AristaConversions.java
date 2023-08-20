@@ -334,7 +334,7 @@ final class AristaConversions {
       }
       return address.getIp();
     } else if (dynamic) {
-      return Ip.AUTO;
+      return null;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
         vrfInterfaces.values().stream()

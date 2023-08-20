@@ -429,7 +429,6 @@ public final class BgpTopologyUtils {
 
     Ip localIp = config.getLocalIp();
     return localIp == null
-        || localIp.equals(Ip.AUTO) // dynamic
         || (ipOwners.containsKey(localIp)
             && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(vrfName));
   }

@@ -194,7 +194,13 @@ public abstract class BgpPeerConfig implements Serializable {
     return _localAs;
   }
 
-  /** The local (source) IPV4 address of this peering */
+  /**
+   * Get the IP that this peer will originate BGP sessions from and/or listen for incoming
+   * connections on.
+   *
+   * <p>If {@code null}, the IP address will be chosen dynamically among valid IPs in the vrf,
+   * perhaps by vendor's logic (e.g., lo0) or by the dest IP of an incoming BGP connection.
+   */
   @JsonProperty(PROP_LOCAL_IP)
   @Nullable
   public Ip getLocalIp() {
@@ -433,8 +439,20 @@ public abstract class BgpPeerConfig implements Serializable {
       return getThis();
     }
 
+    /**
+     * Set the IP that this peer will originate BGP sessions from and/or listen for incoming
+     * connections on.
+     *
+     * <p>If {@code null}, the IP address will be chosen dynamically among valid IPs in the vrf,
+     * perhaps by vendor's logic (e.g., lo0) or by the dest IP of an incoming BGP connection.
+     */
     public S setLocalIp(@Nullable Ip localIp) {
-      _localIp = localIp;
+      assert localIp == null || localIp.valid();
+      if (localIp != null && !localIp.valid()) {
+        _localIp = null;
+      } else {
+        _localIp = localIp;
+      }
       return getThis();
     }
 
