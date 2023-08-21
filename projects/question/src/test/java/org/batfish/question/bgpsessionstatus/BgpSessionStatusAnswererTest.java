@@ -210,7 +210,6 @@ public class BgpSessionStatusAnswererTest {
     BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", remotePrefix, true);
     BgpPassivePeerConfig peer =
         BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
@@ -244,7 +243,6 @@ public class BgpSessionStatusAnswererTest {
     BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", remotePrefix, true);
     BgpPassivePeerConfig peer =
         BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
             .setRemoteAsns(remoteAsns)
@@ -370,7 +368,6 @@ public class BgpSessionStatusAnswererTest {
     BgpPeerConfigId peerId = new BgpPeerConfigId("c1", "vrf1", remotePrefix, true);
     BgpPassivePeerConfig peer =
         BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
             .setPeerPrefix(remotePrefix)
             .setLocalAs(1L)
             .setRemoteAsns(remoteAsns)
