@@ -25,6 +25,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
@@ -59,6 +60,7 @@ import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.answers.SelfDescribingObject;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpTopology;
+import org.batfish.datamodel.bgp.BgpTopologyUtils;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.pojo.Node;
@@ -191,11 +193,32 @@ public class BgpSessionStatusAnswererTest {
             .put(COL_VRF, "vrf1");
     assertThat(row, equalTo(expected.build()));
 
-    // Case 2: Peers are NOT both compatible, but session comes up (could happen if one peer is
+    // Case 2a: Peers are NOT both compatible, but session comes up (could happen if one peer is
     // missing local IP or has multiple compatible remotes)
     row = getActivePeerRow(peerId, peer, ipVrfOwners, unlinkedTopology, linkedTopology);
     expected.put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED);
     assertThat(row, equalTo(expected.build()));
+
+    // Case 2b: Reverse direction where remotePeer does NOT have localIp configured but gets
+    // populated in answer because it's in session properties.
+    assertThat(remotePeer.getLocalIp(), nullValue());
+    row = getActivePeerRow(remotePeerId, remotePeer, ipVrfOwners, unlinkedTopology, linkedTopology);
+    Row reverseExpected =
+        Row.builder()
+            .put(COL_ESTABLISHED_STATUS, BgpSessionStatus.ESTABLISHED)
+            .put(COL_ADDRESS_FAMILIES, ImmutableSet.of(Type.IPV4_UNICAST))
+            .put(COL_LOCAL_INTERFACE, null)
+            .put(COL_LOCAL_IP, remoteIp)
+            .put(COL_LOCAL_AS, 2L)
+            .put(COL_NODE, new Node("c2"))
+            .put(COL_REMOTE_AS, LongSpace.of(1L).toString())
+            .put(COL_REMOTE_NODE, new Node("c1"))
+            .put(COL_REMOTE_INTERFACE, null)
+            .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, localIp))
+            .put(COL_SESSION_TYPE, SessionType.EBGP_SINGLEHOP)
+            .put(COL_VRF, "vrf2")
+            .build();
+    assertThat(row, equalTo(reverseExpected));
 
     // Case 3: Peers are compatible and able to reach each other
     row = getActivePeerRow(peerId, peer, ipVrfOwners, linkedTopology, linkedTopology);
@@ -379,7 +402,7 @@ public class BgpSessionStatusAnswererTest {
     BgpPeerConfigId remote1Id = new BgpPeerConfigId("c2", "vrf2", localAddress, false);
     BgpActivePeerConfig remote1 =
         BgpActivePeerConfig.builder()
-            .setLocalIp(remote1Ip)
+            // .setLocalIp(remote1Ip). Not set, but will be in the answer.
             .setPeerAddress(localIp)
             .setLocalAs(2L)
             .setRemoteAs(1L)
@@ -399,10 +422,27 @@ public class BgpSessionStatusAnswererTest {
     // Configured topology: both remote peers have edges with dynamic peer
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    configuredTopology.putEdgeValue(
-        peerId, remote1Id, BgpSessionProperties.from(remote1, peer, true));
-    configuredTopology.putEdgeValue(
-        remote1Id, peerId, BgpSessionProperties.from(remote1, peer, false));
+    BgpSessionProperties fwd1 =
+        BgpSessionProperties.from(
+            remote1,
+            remote1Ip,
+            peer,
+            false,
+            remote1.getLocalAs(),
+            peer.getLocalAs(),
+            BgpTopologyUtils.ConfedSessionType.NO_CONFED);
+    BgpSessionProperties rev1 =
+        BgpSessionProperties.from(
+            remote1,
+            remote1Ip,
+            peer,
+            true,
+            remote1.getLocalAs(),
+            peer.getLocalAs(),
+            BgpTopologyUtils.ConfedSessionType.NO_CONFED);
+
+    configuredTopology.putEdgeValue(peerId, remote1Id, fwd1);
+    configuredTopology.putEdgeValue(remote1Id, peerId, rev1);
     configuredTopology.putEdgeValue(
         peerId, remote2Id, BgpSessionProperties.from(remote2, peer, true));
     configuredTopology.putEdgeValue(
@@ -411,10 +451,8 @@ public class BgpSessionStatusAnswererTest {
     // Established topology: Only remote1 has edge with dynamic peer
     MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> establishedTopology =
         ValueGraphBuilder.directed().allowsSelfLoops(false).build();
-    establishedTopology.putEdgeValue(
-        peerId, remote1Id, BgpSessionProperties.from(remote1, peer, true));
-    establishedTopology.putEdgeValue(
-        remote1Id, peerId, BgpSessionProperties.from(remote1, peer, false));
+    establishedTopology.putEdgeValue(peerId, remote1Id, rev1);
+    establishedTopology.putEdgeValue(remote1Id, peerId, fwd1);
 
     // Build configs for remote peers because answerer needs to look up remote peers from peer IDs
     NetworkConfigurations nc =
