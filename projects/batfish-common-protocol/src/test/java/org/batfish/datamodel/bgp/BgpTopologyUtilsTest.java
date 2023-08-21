@@ -119,7 +119,6 @@ public class BgpTopologyUtilsTest {
     Prefix peer2PeerPrefix = Prefix.create(ip1, 24);
     BgpPassivePeerConfig peer2 =
         BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
             .setRemoteAs(1L)
             .setPeerPrefix(peer2PeerPrefix)
@@ -197,7 +196,6 @@ public class BgpTopologyUtilsTest {
     Prefix prefixForPeer1 = Prefix.create(ip1, 24);
     BgpPassivePeerConfig.Builder passivePeerBuilder =
         BgpPassivePeerConfig.builder()
-            .setLocalIp(Ip.AUTO)
             .setLocalAs(2L)
             .setRemoteAs(1L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
