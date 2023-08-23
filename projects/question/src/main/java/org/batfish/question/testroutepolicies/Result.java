@@ -6,23 +6,25 @@ import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.trace.TraceTree;
 
-/** A {@link TestRoutePoliciesQuestion} result for a single policy and input route. */
-final class Result {
+/**
+ * A {@link TestRoutePoliciesQuestion} result for a single policy and input route. The class is
+ * parameterized by the type used for the input and output routes.
+ */
+public final class Result<R> {
   /** A key to relate results by policy and input route. */
-  public static final class Key {
+  public static final class Key<R> {
     private final RoutingPolicyId _policyId;
-    private final Bgpv4Route _inputRoute;
+    private final R _inputRoute;
 
-    public Key(RoutingPolicyId policyId, Bgpv4Route inputRoute) {
+    public Key(RoutingPolicyId policyId, R inputRoute) {
       _policyId = policyId;
       _inputRoute = inputRoute;
     }
 
-    public @Nonnull Bgpv4Route getInputRoute() {
+    public @Nonnull R getInputRoute() {
       return _inputRoute;
     }
 
@@ -35,10 +37,10 @@ final class Result {
       if (this == o) {
         return true;
       }
-      if (!(o instanceof Key)) {
+      if (!(o instanceof Key<?>)) {
         return false;
       }
-      Key key = (Key) o;
+      Key<?> key = (Key<?>) o;
       return Objects.equals(_policyId, key._policyId)
           && Objects.equals(_inputRoute, key._inputRoute);
     }
@@ -50,16 +52,16 @@ final class Result {
   }
 
   private final RoutingPolicyId _policyId;
-  private final Bgpv4Route _inputRoute;
+  private final R _inputRoute;
   private final LineAction _action;
-  private final @Nullable Bgpv4Route _outputRoute;
+  private final @Nullable R _outputRoute;
   private final List<TraceTree> _trace;
 
   Result(
       RoutingPolicyId policyId,
-      Bgpv4Route inputRoute,
+      R inputRoute,
       LineAction action,
-      @Nullable Bgpv4Route outputRoute,
+      @Nullable R outputRoute,
       List<TraceTree> traceTrees) {
     checkArgument(
         (action == LineAction.DENY) == (outputRoute == null),
@@ -76,10 +78,10 @@ final class Result {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Result)) {
+    if (!(o instanceof Result<?>)) {
       return false;
     }
-    Result result = (Result) o;
+    Result<?> result = (Result<?>) o;
     return Objects.equals(_policyId, result._policyId)
         && _action == result._action
         && Objects.equals(_inputRoute, result._inputRoute)
@@ -91,16 +93,20 @@ final class Result {
     return _action;
   }
 
-  public Bgpv4Route getInputRoute() {
+  public R getInputRoute() {
     return _inputRoute;
   }
 
-  public Key getKey() {
-    return new Key(_policyId, _inputRoute);
+  public Result<R> setOutputRoute(R outputRoute) {
+    return new Result<>(_policyId, _inputRoute, _action, outputRoute, _trace);
+  }
+
+  public Key<R> getKey() {
+    return new Key<>(_policyId, _inputRoute);
   }
 
   @Nullable
-  public Bgpv4Route getOutputRoute() {
+  public R getOutputRoute() {
     return _outputRoute;
   }
 

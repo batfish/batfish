@@ -54,6 +54,7 @@ public class Schema {
           .put("Issue", getClassString(Issue.class))
           .put("Long", getClassString(Long.class))
           .put("NextHop", getClassString(NextHop.class))
+          .put("NextHopResult", getClassString(NextHopResult.class))
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
@@ -75,6 +76,7 @@ public class Schema {
   public static final Schema ISSUE = new Schema("Issue");
   public static final Schema LONG = new Schema("Long");
   public static final Schema NEXT_HOP = new Schema("NextHop");
+  public static final Schema NEXT_HOP_RESULT = new Schema("NextHopResult");
   public static final Schema NODE = new Schema("Node");
   public static final Schema OBJECT = new Schema("Object");
   public static final Schema PREFIX = new Schema("Prefix");

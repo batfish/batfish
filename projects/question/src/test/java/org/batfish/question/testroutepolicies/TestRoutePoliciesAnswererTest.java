@@ -45,6 +45,7 @@ import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -52,6 +53,8 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -227,9 +230,9 @@ public class TestRoutePoliciesAnswererTest {
         new BgpRouteDiffs(
             ImmutableSet.of(
                 new BgpRouteDiff(
-                    BgpRoute.PROP_NEXT_HOP_IP,
-                    "1.1.1.1",
-                    Route.UNSET_ROUTE_NEXT_HOP_IP.toString())));
+                    BgpRoute.PROP_NEXT_HOP,
+                    new NextHopConcrete(NextHopIp.of(Ip.parse("1.1.1.1"))).toString(),
+                    new NextHopConcrete(NextHopDiscard.instance()).toString())));
 
     assertThat(
         answer.getRows().getData(),
@@ -239,9 +242,7 @@ public class TestRoutePoliciesAnswererTest {
                 hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), BGP_ROUTE),
                 hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
-                // outputRoute == inputRoute
                 hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), BGP_ROUTE),
-                // no diff
                 hasColumn(COL_DIFF, equalTo(diffs), BGP_ROUTE_DIFFS))));
   }
 
