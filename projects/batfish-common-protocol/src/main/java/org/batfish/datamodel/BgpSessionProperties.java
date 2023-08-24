@@ -3,6 +3,7 @@ package org.batfish.datamodel;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.datamodel.bgp.BgpTopologyUtils.computeAsPair;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
@@ -25,6 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
+import org.batfish.datamodel.bgp.BgpTopologyUtils.AsPair;
 import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -58,6 +60,8 @@ public final class BgpSessionProperties {
   private static final String PROP_TAIL_IP = "tailIp";
   private static final String PROP_CONFEDERATION_TYPE = "confederationType";
 
+  private static final String PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT = "replaceNonLocalAsesOnExport";
+
   @JsonCreator
   private static @Nonnull BgpSessionProperties create(
       @JsonProperty(PROP_ADDRESS_FAMILIES) @Nullable Collection<Type> addressFamilies,
@@ -68,7 +72,9 @@ public final class BgpSessionProperties {
       @JsonProperty(PROP_SESSION_TYPE) @Nullable SessionType sessionType,
       @JsonProperty(PROP_TAIL_AS) @Nullable Long localAs,
       @JsonProperty(PROP_TAIL_IP) @Nullable Ip localIp,
-      @JsonProperty(PROP_CONFEDERATION_TYPE) @Nullable ConfedSessionType type) {
+      @JsonProperty(PROP_CONFEDERATION_TYPE) @Nullable ConfedSessionType type,
+      @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT) @Nullable
+          Boolean replaceNonLocalAsesOnExport) {
     checkArgument(localAs != null, "Missing %s", PROP_TAIL_AS);
     checkArgument(remoteAs != null, "Missing %s", PROP_HEAD_AS);
     checkArgument(remoteIp != null, "Missing %s", PROP_HEAD_IP);
@@ -82,7 +88,8 @@ public final class BgpSessionProperties {
         localIp,
         remoteIp,
         firstNonNull(sessionType, SessionType.UNSET),
-        type);
+        type,
+        firstNonNull(replaceNonLocalAsesOnExport, Boolean.FALSE));
   }
 
   public static final class Builder {
@@ -95,6 +102,8 @@ public final class BgpSessionProperties {
     private @Nonnull Map<AddressFamily.Type, RouteExchange> _routeExchangeSettings;
     private @Nonnull SessionType _sessionType;
     private @Nonnull ConfedSessionType _confedSessionType = ConfedSessionType.NO_CONFED;
+
+    private boolean _replaceNonLocalAsesOnExport;
 
     private Builder() {
       _routeExchangeSettings = new HashMap<>(1);
@@ -114,7 +123,8 @@ public final class BgpSessionProperties {
           _localIp,
           _remoteIp,
           _sessionType,
-          _confedSessionType);
+          _confedSessionType,
+          _replaceNonLocalAsesOnExport);
     }
 
     @Nonnull
@@ -157,6 +167,11 @@ public final class BgpSessionProperties {
       _confedSessionType = confedSessionType;
       return this;
     }
+
+    public @Nonnull Builder setReplaceNonLocalAsesOnExport(boolean replaceNonLocalAsesOnExport) {
+      _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
+      return this;
+    }
   }
 
   public static @Nonnull Builder builder() {
@@ -172,6 +187,8 @@ public final class BgpSessionProperties {
   @Nonnull private final Map<Type, RouteExchange> _routeExchangeSettings;
   @Nonnull private final ConfedSessionType _confedSessionType;
 
+  private final boolean _replaceNonLocalAsesOnExport;
+
   private BgpSessionProperties(
       Collection<Type> addressFamilies,
       Map<Type, RouteExchange> routeExchangeSettings,
@@ -180,7 +197,8 @@ public final class BgpSessionProperties {
       Ip localIp,
       Ip remoteIp,
       SessionType sessionType,
-      ConfedSessionType confedType) {
+      ConfedSessionType confedType,
+      boolean replaceNonLocalAsesOnExport) {
     _addressFamilies = Sets.immutableEnumSet(addressFamilies);
     _routeExchangeSettings = ImmutableMap.copyOf(routeExchangeSettings);
     _localAs = localAs;
@@ -189,6 +207,7 @@ public final class BgpSessionProperties {
     _remoteIp = remoteIp;
     _sessionType = sessionType;
     _confedSessionType = confedType;
+    _replaceNonLocalAsesOnExport = replaceNonLocalAsesOnExport;
   }
 
   /**
@@ -219,6 +238,15 @@ public final class BgpSessionProperties {
     return Optional.ofNullable(_routeExchangeSettings.get(Type.IPV4_UNICAST))
         .map(RouteExchange::getAdditionalPaths)
         .orElse(Boolean.FALSE);
+  }
+
+  /**
+   * When true, replace every AS-path element with the singleton element of the local AS as the last
+   * step post-export. Only applicable to eBGP sessions.
+   */
+  @JsonProperty(PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT)
+  public boolean getReplaceNonLocalAsesOnExport() {
+    return _replaceNonLocalAsesOnExport;
   }
 
   /** Whether this session is eBGP. */
@@ -359,10 +387,11 @@ public final class BgpSessionProperties {
         reverseDirection ? listenerIp : initiatorIp,
         reverseDirection ? initiatorIp : listenerIp,
         sessionType,
-        confedSessionType);
+        confedSessionType,
+        directionalSender.getReplaceNonLocalAsesOnExport());
   }
 
-  /** For test use only. Does not support confederations. */
+  /** For test use only. */
   @VisibleForTesting
   public static BgpSessionProperties from(
       BgpPeerConfig initiator, BgpPeerConfig listener, boolean reverseDirection) {
@@ -371,14 +400,23 @@ public final class BgpSessionProperties {
     long initiatorLocalAs = checkNotNull(initiator.getLocalAs());
     Ip initiatorLocalIp = checkNotNull(initiator.getLocalIp());
     long listenerLocalAs = checkNotNull(listener.getLocalAs());
+    AsPair asPair =
+        checkNotNull(
+            computeAsPair(
+                initiatorLocalAs,
+                initiator.getConfederationAsn(),
+                initiator.getRemoteAsns(),
+                listenerLocalAs,
+                listener.getConfederationAsn(),
+                listener.getRemoteAsns()));
     return from(
         initiator,
         initiatorLocalIp,
         listener,
         reverseDirection,
-        initiatorLocalAs,
-        listenerLocalAs,
-        ConfedSessionType.NO_CONFED);
+        asPair.getLocalAs(),
+        asPair.getRemoteAs(),
+        asPair.getConfedSessionType());
   }
 
   /** Computes whether two peers have compatible configuration to enable add-path */
@@ -419,15 +457,43 @@ public final class BgpSessionProperties {
    * @return a {@link SessionType} the initiator is configured to establish.
    */
   public static @Nonnull SessionType getSessionType(BgpPeerConfig initiator) {
-    if (initiator.getLocalAs() == null || initiator.getRemoteAsns().isEmpty()) {
+    LongSpace remoteAsns = initiator.getRemoteAsns();
+    if (initiator.getLocalAs() == null || remoteAsns.isEmpty()) {
       return SessionType.UNSET;
     }
+    if (initiator.getConfederationAsn() != null) {
+      // eBGP vs iBGP cases:
+      // 1. iBGP within confederation: Remote ASNs contains exactly the local (sub-confed) AS
+      // 2. iBGP across confederation boundary: Remote ASNs contains exactly the confederation AS
+      // 3. (either within or across confederation) eBGP: Remote ASNs contains anything else
+      // TODO: What if remote ASNs contains (local or confed AS) and also something else?
+      if (remoteAsns.equals(LongSpace.of(initiator.getLocalAs()))) {
+        return getSessionType(initiator, initiator.getLocalAs());
+      } else if (remoteAsns.equals(LongSpace.of(initiator.getConfederationAsn()))) {
+        return getSessionType(initiator, initiator.getConfederationAsn());
+      }
+    }
+    return getSessionType(initiator, initiator.getLocalAs());
+  }
+
+  /**
+   * Determine what type of session {@code initiator} is configured to establish under an assumption
+   * about which local AS it will use for peerings.
+   *
+   * @param initiator the {@link BgpPeerConfig} representing the connection initiator.
+   * @param initiatorAs the local AS the initiator is assumed to use
+   * @return a {@link SessionType} the initiator is configured to establish.
+   */
+  private static @Nonnull SessionType getSessionType(BgpPeerConfig initiator, long initiatorAs) {
+    assert initiator.getLocalAs() != null;
+    assert Objects.equals(initiatorAs, initiator.getLocalAs())
+        || Objects.equals(initiatorAs, initiator.getConfederationAsn());
     if (initiator instanceof BgpUnnumberedPeerConfig) {
-      return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+      return initiator.getRemoteAsns().equals(LongSpace.of(initiatorAs))
           ? SessionType.IBGP_UNNUMBERED
           : SessionType.EBGP_UNNUMBERED;
     }
-    return initiator.getRemoteAsns().equals(LongSpace.of(initiator.getLocalAs()))
+    return initiator.getRemoteAsns().equals(LongSpace.of(initiatorAs))
         ? SessionType.IBGP
         : initiator.getEbgpMultihop() ? SessionType.EBGP_MULTIHOP : SessionType.EBGP_SINGLEHOP;
   }
@@ -448,7 +514,8 @@ public final class BgpSessionProperties {
         && _sessionType == that._sessionType
         && _routeExchangeSettings.equals(that._routeExchangeSettings)
         && _addressFamilies.equals(that._addressFamilies)
-        && _confedSessionType == that._confedSessionType;
+        && _confedSessionType == that._confedSessionType
+        && _replaceNonLocalAsesOnExport == that._replaceNonLocalAsesOnExport;
   }
 
   @Override
@@ -461,7 +528,8 @@ public final class BgpSessionProperties {
         _remoteIp,
         _localIp,
         _sessionType.ordinal(),
-        _confedSessionType.ordinal());
+        _confedSessionType.ordinal(),
+        _replaceNonLocalAsesOnExport);
   }
 
   @Override
@@ -475,6 +543,7 @@ public final class BgpSessionProperties {
         .add("remoteIp", _remoteIp)
         .add("sessionType", _sessionType)
         .add("confedSessionType", _confedSessionType)
+        .add("replaceNonLocalAsesOnExport", _replaceNonLocalAsesOnExport)
         .toString();
   }
 

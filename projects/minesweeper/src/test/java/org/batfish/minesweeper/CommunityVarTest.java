@@ -1,5 +1,6 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -7,6 +8,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import dk.brics.automaton.RegExp;
 import java.util.List;
+import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -26,7 +28,8 @@ public class CommunityVarTest {
     CommunityVar cv3 = CommunityVar.from("^.*$");
     CommunityVar cv4 = CommunityVar.from("^40:");
     // the Java regex translation of _40:50_
-    CommunityVar cv5 = CommunityVar.from("(,|{|}|^|$| )" + "40:50" + "(,|{|}|^|$| )");
+    String underscore = StringEscapeUtils.unescapeJava(DEFAULT_UNDERSCORE_REPLACEMENT);
+    CommunityVar cv5 = CommunityVar.from(underscore + "40:50" + underscore);
 
     // ensure we get well-formed numbers
     CommunityVar cv6 = CommunityVar.from("^0:.0$");

@@ -2,6 +2,8 @@ package org.batfish.representation.juniper.parboiled;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.util.stream.Collectors;
 import java.util.stream.LongStream;
 import javax.annotation.Nonnull;
@@ -30,6 +32,10 @@ import org.parboiled.support.ParsingResult;
   "WeakerAccess", // access of Rule methods is needed for parser auto-generation.
 })
 public class AsPathRegex extends BaseParser<String> {
+  private static final LoadingCache<String, String> CONVERT_REGEX_CACHE =
+      Caffeine.newBuilder()
+          .maximumSize(1 << 10) // 1K instances
+          .build(AsPathRegex::convertToJavaRegexInternal);
   private static final String MAYBE_SEPARATOR = "(^| )";
 
   Rule TopLevel() {
@@ -183,8 +189,11 @@ public class AsPathRegex extends BaseParser<String> {
   }
 
   /** Converts the given Juniper AS Path regular expression to a Java regular expression. */
-  @Nonnull
-  public static String convertToJavaRegex(String regex) {
+  public static @Nonnull String convertToJavaRegex(String regex) {
+    return CONVERT_REGEX_CACHE.get(regex);
+  }
+
+  private static @Nonnull String convertToJavaRegexInternal(String regex) {
     AsPathRegex parser = Parboiled.createParser(AsPathRegex.class);
     BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
     ParsingResult<String> result = runner.run(regex);

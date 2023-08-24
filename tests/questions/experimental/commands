@@ -108,8 +108,8 @@ test -raw tests/questions/experimental/resolveNodeSpecifier.ref validate-templat
 # validate searchfilters
 test -raw tests/questions/experimental/searchfilters.ref validate-template searchfilters invertSearch=false, filters=".*", action="matchLine 0", headers={dstIps="2.2.2.2", ipProtocols="tcp", srcIps="1.1.1.1", srcPorts="0", dstPorts="0-1000,!22"}, nodes=".*", startLocation="somenode"
 
-# test searchRoutePolicies
-test -raw tests/questions/experimental/searchRoutePolicies.ref validate-template searchRoutePolicies nodes="nodes", policies="policies", inputConstraints={prefix=["1.1.1.0/24"]}, action="permit", outputConstraints={prefix=["2.2.2.0/24"]}, perPath=True
+# test searchRoutePolicies without deprecated 'perPath' parameter
+test -raw tests/questions/experimental/searchRoutePolicies.ref validate-template searchRoutePolicies nodes="nodes", policies="policies", inputConstraints={prefix=["1.1.1.0/24"]}, action="permit", outputConstraints={prefix=["2.2.2.0/24"]}, pathOption="single", perPath=null
 
 # validate subnetMultipathConsistency
 test -raw tests/questions/experimental/subnetMultipathConsistency.ref validate-template subnetMultipathConsistency maxTraces=1
@@ -131,3 +131,6 @@ test -raw tests/questions/experimental/vrrpProperties.ref validate-template vrrp
 
 # validate vxlanVniProperties
 test -raw tests/questions/experimental/vxlanVniProperties.ref validate-template vxlanVniProperties nodes="nodename", properties="VLAN"
+
+# test that we produce errors in searchRoutePolicies when both deprecated and new parameter are specified
+test tests/questions/experimental/searchRoutePoliciesDeprecated.ref -error validate-template searchRoutePolicies nodes="nodes", policies="policies", inputConstraints={prefix=["1.1.1.0/24"]}, action="permit", outputConstraints={prefix=["2.2.2.0/24"]}, pathOption="single", perPath=true

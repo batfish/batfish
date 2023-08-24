@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Flow.builder;
 import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
+import static org.batfish.datamodel.IpProtocol.UDP;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -32,6 +33,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.STATIC_NAT;
 import static org.batfish.datamodel.matchers.AaaAuthenticationLoginListMatchers.hasMethods;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasAdministrativeCost;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
@@ -329,6 +331,7 @@ import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.InitInfoAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
+import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.BgpConfederation;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
@@ -426,6 +429,7 @@ import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
 import org.batfish.representation.juniper.NatRuleMatchDstPort;
+import org.batfish.representation.juniper.NatRuleMatchProtocol;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
@@ -1039,7 +1043,7 @@ public final class FlatJuniperGrammarTest {
 
     // check layer-1 logical adjacencies
     assertThat(
-        layer1LogicalTopology.getGraph().edges(),
+        layer1LogicalTopology.edgeStream().collect(Collectors.toList()),
         hasItem(new Layer1Edge("r1", "ae0", "r2", "ae0")));
 
     // check layer-2 adjacencies
@@ -1187,6 +1191,24 @@ public final class FlatJuniperGrammarTest {
     Vrf def = c.getDefaultVrf();
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.BGP), equalTo(140));
     assertThat(def.getBgpProcess().getAdminCost(RoutingProtocol.IBGP), equalTo(140));
+
+    BgpProcess bgpProcess = def.getBgpProcess();
+    assertNotNull(bgpProcess);
+    BgpActivePeerConfig neighbor = bgpProcess.getActiveNeighbors().get(Ip.parse("1.1.1.1"));
+    assertNotNull(neighbor);
+    String inName = neighbor.getAddressFamily(AddressFamily.Type.IPV4_UNICAST).getImportPolicy();
+    assertThat(c.getRoutingPolicies(), hasKey(inName));
+    RoutingPolicy in = c.getRoutingPolicies().get(inName);
+
+    Bgpv4Route.Builder received =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .setAdmin(140);
+    in.process(received.build(), received, Direction.IN);
+    assertThat(received.build(), hasAdministrativeCost(150));
   }
 
   /** For https://github.com/batfish/batfish/issues/6710 */
@@ -4741,7 +4763,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c).setOriginalRoute(route).build();
+    return Environment.builder(c).setOriginalRoute(route).setOutputRoute(route.toBuilder()).build();
   }
 
   @Test
@@ -5184,12 +5206,12 @@ public final class FlatJuniperGrammarTest {
     JuniperConfiguration c = parseJuniperConfig("name");
     assertThat(c.getMasterLogicalSystem().getPolicyStatements(), hasKeys("XX"));
     PolicyStatement ps = c.getMasterLogicalSystem().getPolicyStatements().get("XX");
-    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name"));
+    assertThat(ps.getTerms(), hasKeys("10/8", "Colon:Name", "Dot.Name", "Plus+Name", "Comma,Name"));
 
     assertThat(
         ((ConcreteFirewallFilter) c.getMasterLogicalSystem().getFirewallFilters().get("filterName"))
             .getTerms(),
-        hasKeys("Colon:Name", "Dot.Name", "Slash/Name"));
+        hasKeys("Colon:Name", "Dot.Name", "Slash/Name", "Plus+Name", "Comma,Name"));
   }
 
   @Test
@@ -5249,7 +5271,10 @@ public final class FlatJuniperGrammarTest {
 
     Transformation ruleSetIfaceRule3Transformation =
         when(match(
-                HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(6))).build()))
+                HeaderSpace.builder()
+                    .setIpProtocols(UDP)
+                    .setSrcPorts(ImmutableList.of(SubRange.singleton(6)))
+                    .build()))
             .apply(NOOP_DEST_NAT)
             .setOrElse(ruleSetZoneRule1Transformation)
             .build();
@@ -5286,6 +5311,13 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getInterface(), equalTo("ge-0/0/0.0"));
     assertThat(fromLocation.getRoutingInstance(), nullValue());
     assertThat(fromLocation.getZone(), nullValue());
+    List<NatRule> rules = ruleSets.get("RULE-SET-IFACE").getRules();
+    assertThat(rules, hasSize(1));
+    NatRule rule1 = rules.get(0);
+    assertThat(rule1.getName(), equalTo("RULE1"));
+    assertThat(
+        rule1.getMatches(), contains(new NatRuleMatchSrcPort(6, 6), new NatRuleMatchProtocol(UDP)));
+    assertThat(rule1.getThen(), equalTo(NatRuleThenOff.INSTANCE));
 
     fromLocation = ruleSets.get("RULE-SET-RI").getFromLocation();
     assertThat(fromLocation.getInterface(), nullValue());
@@ -5298,11 +5330,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(fromLocation.getZone(), equalTo("ZONE"));
 
     // test RULE-SET-ZONE rules
-    List<NatRule> rules = ruleSets.get("RULE-SET-ZONE").getRules();
+    rules = ruleSets.get("RULE-SET-ZONE").getRules();
     assertThat(rules, hasSize(3));
 
     // test rule1
-    NatRule rule1 = rules.get(0);
+    rule1 = rules.get(0);
     assertThat(rule1.getName(), equalTo("RULE1"));
     assertThat(
         rule1.getMatches(),
@@ -5764,6 +5796,12 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testGH6307() {
     parseConfig("gh-6307");
+    // don't crash.
+  }
+
+  @Test
+  public void testGH8744() {
+    parseConfig("gh-8744");
     // don't crash.
   }
 
@@ -6760,16 +6798,24 @@ public final class FlatJuniperGrammarTest {
     assertThat(pool3.getPortAddressTranslation(), equalTo(new PatPool(10000, 20000)));
 
     Nat destNat = juniperConfiguration.getMasterLogicalSystem().getNatDestination();
-    NatPool pool4 = destNat.getPools().get("POOL4");
-    NatPool pool5 = destNat.getPools().get("POOL5");
+    Map<String, NatPool> pools = destNat.getPools();
+    assertThat(pools, hasKeys("POOL4", "POOL5", "POOL6"));
 
     // pool4 should have a pat pool ranging [6000,6000]
-    assertNotNull(pool4);
+    NatPool pool4 = pools.get("POOL4");
+    assertThat(
+        pool4.getFromAddress(), allOf(equalTo(pool4.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
     assertThat(pool4.getPortAddressTranslation(), equalTo(new PatPool(6000, 6000)));
 
     // pool5 should not have pat specified
-    assertNotNull(pool5);
+    NatPool pool5 = pools.get("POOL5");
     assertNull(pool5.getPortAddressTranslation());
+
+    // pool6 should have a pat pool ranging [6666,6666]
+    NatPool pool6 = pools.get("POOL6");
+    assertThat(
+        pool6.getFromAddress(), allOf(equalTo(pool6.getToAddress()), equalTo(Ip.parse("1.0.0.1"))));
+    assertThat(pool6.getPortAddressTranslation(), equalTo(new PatPool(6666, 6666)));
   }
 
   @Test
@@ -7728,6 +7774,19 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper_nested_multiline_comments";
     // don't crash
     parseConfig(hostname);
+  }
+
+  @Test
+  public void testInactiveInterfaceRoutes() throws IOException {
+    Configuration c = parseConfig("inactive_interface_local_route");
+    Batfish batfish =
+        BatfishTestUtils.getBatfish(ImmutableSortedMap.of(c.getHostname(), c), _folder);
+    batfish.computeDataPlane(batfish.getSnapshot());
+    DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
+    assertThat(
+        dp.getRibs().get(c.getHostname(), c.getDefaultVrf().getName()).getRoutes(),
+        contains(
+            allOf(hasPrefix(Prefix.parse("1.1.1.1/32")), hasNextHop(NextHopDiscard.instance()))));
   }
 
   @Test

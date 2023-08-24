@@ -25,7 +25,7 @@ public final class NegatedTrackMethod implements TrackMethod {
   public boolean equals(@Nullable Object o) {
     if (this == o) {
       return true;
-    } else if (!(o instanceof TrackMethod)) {
+    } else if (!(o instanceof NegatedTrackMethod)) {
       return false;
     }
     NegatedTrackMethod that = (NegatedTrackMethod) o;

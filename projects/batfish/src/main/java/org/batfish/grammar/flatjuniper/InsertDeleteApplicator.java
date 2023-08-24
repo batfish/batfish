@@ -13,6 +13,8 @@ import org.antlr.v4.runtime.tree.TerminalNode;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.BatfishCombinedParser;
 import org.batfish.grammar.BatfishListener;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_lineContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Activate_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Deactivate_line_tailContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Delete_lineContext;
@@ -37,26 +39,26 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
    * Implementation overview:
    *
    * Iterate through each child parse-tree of the configuration. Each corresponds to a set,
-   * deactivate, or delete line.
+   * activate, deactivate, or delete line.
    *
    * Each time a 'set' parse-tree is encountered:
    * - record the words following 'set'
    * - build out the set StatementTree, using each word as a key.
    * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
    *
-   * Each time a 'deactivate' parse-tree is encountered:
-   * - record the words following 'deactivate'
+   * Each time an 'activate' or 'deactivate' parse-tree is encountered:
+   * - record the words following 'activate'/'deactivate'
    * - find the StatementTree node corresponding to the recorded words
    * - add the parse-tree to the set of parse-trees stored at the node corresponding to the last word
    *
-   * Each time an 'insert' parse-tree is encounted:
+   * Each time an 'insert' parse-tree is encountered:
    * - reorder subtree at common parent by moving the named child before/after target child
    *
    * Each time a 'delete' parse-tree is encountered:
    * - record the words following 'delete'
    * - find the node corresponding to the last word
    * - remove the node (and therefore its subtrees) from the tree
-   *   - note that this removes both 'set' and 'deactivate' lines
+   *   - note that this removes 'set', 'activate', and 'deactivate' lines
    *
    * Each of these statements takes affect when it is reached, rather than after a pass. That way you don't
    * (e.g.) delete set lines that occur later in the text.
@@ -103,6 +105,22 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   @Override
   public void exitDeactivate_line(Deactivate_lineContext ctx) {
+    addStatementToTree(_statementTree, ctx);
+  }
+
+  @Override
+  public void enterActivate_line_tail(Activate_line_tailContext ctx) {
+    _enablePathRecording = true;
+    _words = new LinkedList<>();
+  }
+
+  @Override
+  public void exitActivate_line_tail(Activate_line_tailContext ctx) {
+    _enablePathRecording = false;
+  }
+
+  @Override
+  public void exitActivate_line(Activate_lineContext ctx) {
     addStatementToTree(_statementTree, ctx);
   }
 
@@ -224,7 +242,10 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     StatementTree subtree = tree;
     String lastWord = null;
     for (String word : _words) {
-      subtree = subtree.getOrAddSubtree(word);
+      subtree = subtree.getSubtree(word);
+      if (subtree == null) {
+        return;
+      }
       lastWord = word;
     }
     assert lastWord != null;
@@ -234,6 +255,7 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
             t -> {
               _statementsByTree.removeAll(t);
             });
+    assert subtree.getParent() != null;
     subtree.getParent().deleteSubtree(lastWord);
   }
 

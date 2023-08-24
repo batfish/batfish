@@ -1,5 +1,6 @@
 package org.batfish.question.bgpsessionstatus;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.BgpSessionProperties.getSessionType;
 import static org.batfish.datamodel.questions.BgpSessionStatus.ESTABLISHED;
 import static org.batfish.datamodel.questions.BgpSessionStatus.NOT_COMPATIBLE;
@@ -197,6 +198,8 @@ public class BgpSessionStatusAnswerer extends Answerer {
     Node remoteNode = null;
     Long localAs = activePeer.getLocalAs();
     String remoteAs = activePeer.getRemoteAsns().toString();
+    Ip localIp = activePeer.getLocalIp();
+    Ip remoteIp = activePeer.getPeerAddress();
     Set<Type> addressFamilies = ImmutableSet.of();
     if (establishedTopology.nodes().contains(activeId)
         && establishedTopology.outDegree(activeId) == 1) {
@@ -209,10 +212,16 @@ public class BgpSessionStatusAnswerer extends Answerer {
       BgpPeerConfigId remoteId = establishedTopology.adjacentNodes(activeId).iterator().next();
       String remoteNodeName = remoteId.getHostname();
       remoteNode = new Node(remoteNodeName);
-      localAs = getLocalAs(establishedTopology, activeId, remoteId, activePeer);
-      remoteAs = getRemoteAs(establishedTopology, activeId, remoteId, activePeer);
-      addressFamilies = getAddressFamilies(establishedTopology, activeId, remoteId);
-
+      BgpSessionProperties props = establishedTopology.edgeValue(activeId, remoteId).orElse(null);
+      if (props == null) {
+        throw new IllegalStateException(
+            String.format("Missing edge for adjacency in graph: %s->%s", activeId, remoteId));
+      }
+      localAs = props.getLocalAs();
+      remoteAs = Long.toString(props.getRemoteAs());
+      localIp = props.getLocalIp();
+      addressFamilies = props.getAddressFamilies();
+      remoteIp = props.getRemoteIp();
     } else if (getConfiguredStatus(activeId, activePeer, type, ipVrfOwners, configuredTopology)
         == UNIQUE_MATCH) {
       status = NOT_ESTABLISHED;
@@ -229,12 +238,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .put(COL_ADDRESS_FAMILIES, addressFamilies)
         .put(COL_LOCAL_INTERFACE, null)
         .put(COL_LOCAL_AS, localAs)
-        .put(COL_LOCAL_IP, activePeer.getLocalIp())
+        .put(COL_LOCAL_IP, localIp)
         .put(COL_NODE, new Node(activeId.getHostname()))
         .put(COL_REMOTE_AS, remoteAs)
         .put(COL_REMOTE_NODE, remoteNode)
         .put(COL_REMOTE_INTERFACE, null)
-        .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, activePeer.getPeerAddress()))
+        .put(COL_REMOTE_IP, new SelfDescribingObject(Schema.IP, remoteIp))
         .put(COL_SESSION_TYPE, getSessionType(activePeer))
         .put(COL_VRF, activeId.getVrfName())
         .build();
@@ -290,11 +299,12 @@ public class BgpSessionStatusAnswerer extends Answerer {
     // - remote IP
     // - session type
     // Local and remote interface will not be filled in (reserved for unnumbered peers).
+    // Local IP is set to Ip.AUTO if null, for presentation backwards compatibility.
     Row.TypedRowBuilder rb =
         Row.builder(METADATA_MAP)
             .put(COL_ADDRESS_FAMILIES, ImmutableSet.of())
             .put(COL_LOCAL_AS, passivePeer.getLocalAs())
-            .put(COL_LOCAL_IP, passivePeer.getLocalIp())
+            .put(COL_LOCAL_IP, firstNonNull(passivePeer.getLocalIp(), Ip.AUTO))
             .put(COL_NODE, new Node(passiveId.getHostname()))
             .put(COL_REMOTE_AS, passivePeer.getRemoteAsns().toString())
             .put(
@@ -333,6 +343,16 @@ public class BgpSessionStatusAnswerer extends Answerer {
               assert activeRemote != null;
               BgpSessionStatus status =
                   establishedRemotes.contains(remoteId) ? ESTABLISHED : NOT_ESTABLISHED;
+              if (status == ESTABLISHED) {
+                // Use the real session properties if they are.
+                sessionProps = establishedTopology.edgeValue(passiveId, remoteId).orElse(null);
+                if (sessionProps == null) {
+                  throw new IllegalStateException(
+                      String.format(
+                          "Established session missing from established topology %s -> %s",
+                          passiveId, remoteId));
+                }
+              }
               return rb.put(COL_ESTABLISHED_STATUS, status)
                   .put(COL_ADDRESS_FAMILIES, sessionProps.getAddressFamilies())
                   .put(COL_LOCAL_IP, sessionProps.getLocalIp())

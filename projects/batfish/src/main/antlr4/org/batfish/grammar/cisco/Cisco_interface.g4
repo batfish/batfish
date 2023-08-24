@@ -94,6 +94,16 @@ if_crypto_map
    CRYPTO MAP name = variable NEWLINE
 ;
 
+if_cts
+:
+   CTS
+   (
+      ifcts_dot1x
+      | ifcts_layer3_null
+      | ifcts_manual
+   )
+;
+
 if_default_gw
 :
    DEFAULT_GW IP_ADDRESS NEWLINE
@@ -1538,6 +1548,33 @@ if_zone_member
    ZONE_MEMBER SECURITY? name = variable_permissive NEWLINE
 ;
 
+ifcts_dot1x
+:
+   DOT1X NEWLINE
+   ifctsdot1x_null*
+;
+
+ifctsdot1x_null
+:
+    (DEFAULT | TIMER) null_rest_of_line
+;
+
+ifcts_manual
+:
+   MANUAL NEWLINE
+   ifctsmanual_null*
+;
+
+ifctsmanual_null
+:
+   (POLICY | SAP) null_rest_of_line
+;
+
+ifcts_layer3_null
+:
+   LAYER3 (IPV4 | IPV6) null_rest_of_line
+;
+
 ifipdhcp_null
 :
    (
@@ -1783,6 +1820,7 @@ if_inner
    | if_bfd
    | if_channel_group
    | if_crypto_map
+   | if_cts
    | if_default_gw
    | if_delay
    | if_description

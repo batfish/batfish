@@ -1,0 +1,8 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+hostname nxos
+!
+ip access-list SNMP_ACCESS_LIST
+  10 permit udp 1.2.3.4/32 any eq snmp
+!
+snmp-server community COMM use-acl SNMP_ACCESS_LIST
+!

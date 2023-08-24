@@ -2,7 +2,10 @@ package org.batfish.coordinator;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.common.CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY;
+import static org.batfish.common.CoordConstsV2.RSC_VERSION;
 
+import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import javax.ws.rs.container.ContainerRequestContext;
 import javax.ws.rs.container.ContainerRequestFilter;
 import javax.ws.rs.container.PreMatching;
@@ -16,8 +19,14 @@ import org.batfish.common.CoordConsts;
 @PreMatching
 @Provider
 public class ApiKeyAuthenticationFilter implements ContainerRequestFilter {
+  private static final Set<String> UNAUTH_PATHS = ImmutableSet.of(RSC_VERSION);
+
   @Override
   public void filter(ContainerRequestContext requestContext) {
+    if (UNAUTH_PATHS.contains(requestContext.getUriInfo().getPath())) {
+      // Allow unauthenticated access.
+      return;
+    }
     String apiKey =
         firstNonNull(
             requestContext.getHeaderString(HTTP_HEADER_BATFISH_APIKEY),

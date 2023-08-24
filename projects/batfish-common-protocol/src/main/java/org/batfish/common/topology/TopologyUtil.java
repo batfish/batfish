@@ -153,24 +153,23 @@ public final class TopologyUtil {
       @Nonnull Consumer<Layer2Edge> edges,
       Map<Layer1Node, Set<Layer1Node>> parentChildrenMap,
       Map<String, InterfacesByVlanRange> vlanRangesPerNode) {
+    // Each Layer1 node may have children that are subinterfaces; and on some devices the parent
+    // node may also be important (e.g., handling the untagged frames).
     Layer1Node node1 = layer1Edge.getNode1();
-    Layer1Node node2 = layer1Edge.getNode2();
+    Set<Layer1Node> children1 =
+        Sets.union(
+            ImmutableSet.of(node1), parentChildrenMap.getOrDefault(node1, ImmutableSet.of()));
 
-    // Map each layer1-node to a set of layer-1 nodes corresponding to its children. Attempt to
-    // construct a layer-2 edge between each child in the cross product of the child sets.
-    parentChildrenMap
-        .getOrDefault(node1, ImmutableSet.of(node1))
-        .forEach(
-            node1Child ->
-                parentChildrenMap
-                    .getOrDefault(node2, ImmutableSet.of(node2))
-                    .forEach(
-                        node2Child ->
-                            tryComputeLayer2EdgesForLayer1ChildEdge(
-                                new Layer1Edge(node1Child, node2Child),
-                                configurations,
-                                edges,
-                                vlanRangesPerNode)));
+    Layer1Node node2 = layer1Edge.getNode2();
+    Set<Layer1Node> children2 =
+        Sets.union(
+            ImmutableSet.of(node2), parentChildrenMap.getOrDefault(node2, ImmutableSet.of()));
+    for (Layer1Node node1Child : children1) {
+      for (Layer1Node node2Child : children2) {
+        tryComputeLayer2EdgesForLayer1ChildEdge(
+            new Layer1Edge(node1Child, node2Child), configurations, edges, vlanRangesPerNode);
+      }
+    }
   }
 
   private static void tryComputeLayer2EdgesForLayer1ChildEdge(
@@ -361,8 +360,7 @@ public final class TopologyUtil {
 
     // Pre-compute nodes that have L1 or VXLAN edges, and only compute L2 edges for those.
     Set<String> nodesWithL1Edge =
-        layer1LogicalTopology.getGraph().edges().stream()
-            .flatMap(edge -> Stream.of(edge.getNode1(), edge.getNode2()))
+        layer1LogicalTopology.nodes().stream()
             .map(Layer1Node::getHostname)
             .collect(ImmutableSet.toImmutableSet());
     Set<String> nodesWithVxlan =
@@ -392,8 +390,7 @@ public final class TopologyUtil {
 
     // Add layer2 edges for physical links.
     layer1LogicalTopology
-        .getGraph()
-        .edges()
+        .edgeStream()
         .forEach(
             layer1Edge ->
                 computeLayer2EdgesForLayer1Edge(

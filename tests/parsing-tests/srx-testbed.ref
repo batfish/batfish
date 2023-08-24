@@ -6337,6 +6337,12 @@
               "numReferrers" : 2
             }
           },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          },
           "security policy" : {
             "zone~junos-host~to~zone~untrust" : {
               "definitionLines" : "68-75",
@@ -6543,6 +6549,12 @@
               "numReferrers" : 2
             }
           },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
+            }
+          },
           "security policy" : {
             "zone~trust~to~zone~trust" : {
               "definitionLines" : "48-51",
@@ -6703,6 +6715,12 @@
             "bgp_export 1" : {
               "definitionLines" : "92-93",
               "numReferrers" : 2
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "definitionLines" : "0",
+              "numReferrers" : 1
             }
           },
           "security policy" : {
@@ -6939,6 +6957,13 @@
               "policy-statement term" : [
                 115,
                 116
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           },
@@ -7272,6 +7297,13 @@
               ]
             }
           },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
+              ]
+            }
+          },
           "security policy" : {
             "zone~trust~to~zone~trust" : {
               "security policy" : [
@@ -7498,6 +7530,13 @@
               "policy-statement term" : [
                 92,
                 93
+              ]
+            }
+          },
+          "routing-instance" : {
+            "master" : {
+              "routing-instance" : [
+                0
               ]
             }
           },

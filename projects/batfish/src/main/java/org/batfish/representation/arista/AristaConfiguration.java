@@ -14,6 +14,7 @@ import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPol
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.representation.arista.AristaConversions.getSourceInterfaceIp;
@@ -63,6 +64,7 @@ import com.google.common.primitives.Ints;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -345,8 +347,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 
@@ -836,6 +837,10 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
     newBgpProcess.setTieBreaker(tieBreaker);
 
+    // Client-to-client reflection is on by default.
+    newBgpProcess.setClientToClientReflection(
+        firstNonNull(bgpVrf.getClientToClientReflection(), true));
+
     // If confederations are present, convert
     if (bgpVrf.getConfederationIdentifier() != null) {
       LongSpace peers =
@@ -843,8 +848,7 @@ public final class AristaConfiguration extends VendorConfiguration {
               bgpVrf.getConfederationPeers(),
               LongSpace.of(firstNonNull(bgpVrf.getLocalAs(), bgpGlobal.getAsn())));
       newBgpProcess.setConfederation(
-          // Assuming peers is a small space/set in most configs, so safe to enumerate
-          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers.enumerate()));
+          new BgpConfederation(bgpVrf.getConfederationIdentifier(), peers));
     }
 
     // Process vrf-level address family configuration, such as export policy.
@@ -2585,12 +2589,12 @@ public final class AristaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(AristaStructureType.INTERFACE, ImmutableSortedMap.of())
-            .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+        _structureManager
+            .getStructureReferences(AristaStructureType.INTERFACE)
+            .getOrDefault("Null0", ImmutableMap.of())
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(AristaStructureType.INTERFACE, "Null0", firstRefToNull0.get());

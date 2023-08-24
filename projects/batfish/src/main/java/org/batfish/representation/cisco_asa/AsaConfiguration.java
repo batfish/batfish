@@ -19,6 +19,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
 import static org.batfish.representation.cisco_asa.AsaConversions.computeDistributeListPolicies;
@@ -62,6 +63,7 @@ import com.google.common.collect.Streams;
 import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
@@ -413,8 +415,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 
@@ -902,7 +903,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -3154,12 +3155,12 @@ public final class AsaConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(AsaStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(AsaStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(AsaStructureType.INTERFACE, "Null0", firstRefToNull0.get());

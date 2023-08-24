@@ -68,6 +68,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -188,7 +189,6 @@ public class CheckPointGatewayGrammarTest {
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     // crash if not serializable
     CheckPointGatewayConfiguration vc = SerializationUtils.clone(vendorConfiguration);
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     vc.setRuntimeData(SnapshotRuntimeData.EMPTY_SNAPSHOT_RUNTIME_DATA);
     vc.setWarnings(parseWarnings);
     return vc;
@@ -2224,7 +2224,7 @@ public class CheckPointGatewayGrammarTest {
         batfish.getTopologyProvider().getLayer1Topologies(batfish.getSnapshot()).getSynthesizedL1();
 
     assertThat(
-        generatedTopology.getGraph().edges(),
+        generatedTopology.edgeStream().collect(Collectors.toList()),
         containsInAnyOrder(
             new Layer1Edge(hostname1, SYNC_INTERFACE_NAME, hostname2, SYNC_INTERFACE_NAME),
             new Layer1Edge(hostname2, SYNC_INTERFACE_NAME, hostname1, SYNC_INTERFACE_NAME)));

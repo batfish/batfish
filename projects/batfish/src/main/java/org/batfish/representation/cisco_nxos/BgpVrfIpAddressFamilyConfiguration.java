@@ -22,7 +22,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   public static final int DEFAULT_DISTANCE_LOCAL_BGP = 220;
 
   public BgpVrfIpAddressFamilyConfiguration() {
-    _clientToClientReflection = false; // disabled by default
+    _clientToClientReflection = true; // enabled by default
     _defaultMetric = null; // there is no default, and metric must be set to redistribute routes
     _defaultInformationOriginate = false; // disabled by default
     _distanceEbgp = DEFAULT_DISTANCE_EBGP;

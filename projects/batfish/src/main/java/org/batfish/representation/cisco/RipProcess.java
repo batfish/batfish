@@ -1,12 +1,11 @@
 package org.batfish.representation.cisco;
 
 import java.io.Serializable;
-import java.util.SortedMap;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.SortedSet;
-import java.util.TreeMap;
 import java.util.TreeSet;
 import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.RoutingProtocol;
 
 public class RipProcess implements Serializable {
 
@@ -34,14 +33,14 @@ public class RipProcess implements Serializable {
 
   private final SortedSet<String> _passiveInterfaceList;
 
-  private final SortedMap<RoutingProtocol, RipRedistributionPolicy> _redistributionPolicies;
+  private final Map<RoutingProtocolInstance, RipRedistributionPolicy> _redistributionPolicies;
 
   public RipProcess() {
     _activeInterfaceList = new TreeSet<>();
     _defaultInformationMetric = DEFAULT_DEFAULT_INFORMATION_METRIC;
     _networks = new TreeSet<>();
     _passiveInterfaceList = new TreeSet<>();
-    _redistributionPolicies = new TreeMap<>();
+    _redistributionPolicies = new HashMap<>();
   }
 
   public SortedSet<String> getActiveInterfaceList() {
@@ -88,7 +87,7 @@ public class RipProcess implements Serializable {
     return _passiveInterfaceList;
   }
 
-  public SortedMap<RoutingProtocol, RipRedistributionPolicy> getRedistributionPolicies() {
+  public Map<RoutingProtocolInstance, RipRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 

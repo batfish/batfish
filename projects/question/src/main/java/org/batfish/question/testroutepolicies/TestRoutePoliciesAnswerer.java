@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.SortedSet;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.ReceivedFromSelf;
@@ -54,7 +56,7 @@ import org.batfish.specifier.SpecifierFactories;
 public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_NODE = "Node";
   public static final String COL_POLICY_NAME = "Policy_Name";
-  public static final String COL_PROPOSED_POLICY_NAME = "Proposed_Policy_Name";
+  public static final String COL_REFERENCE_POLICY_NAME = "Reference_Policy_Name";
   public static final String COL_INPUT_ROUTE = "Input_Route";
   public static final String COL_ACTION = "Action";
   public static final String COL_OUTPUT_ROUTE = "Output_Route";
@@ -103,10 +105,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
    * @return a table row containing the results of the simulation
    */
-  public static Row rowResultFor(RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return toRow(testPolicy(policy, inputRoute, direction));
+  public static Row rowResultFor(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+    return toRow(testPolicy(policy, inputRoute, direction, successfulTrack, sourceVrf));
   }
 
   /**
@@ -122,14 +130,25 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy referencePolicy,
       RoutingPolicy proposedPolicy,
       Bgpv4Route inputRoute,
-      Direction direction) {
+      Direction direction,
+      Predicate<String> successfulTracks,
+      @Nullable String sourceVrf) {
     return toCompareRow(
-        testPolicy(proposedPolicy, inputRoute, direction),
-        testPolicy(referencePolicy, inputRoute, direction));
+        testPolicy(proposedPolicy, inputRoute, direction, successfulTracks, sourceVrf),
+        testPolicy(referencePolicy, inputRoute, direction, successfulTracks, sourceVrf));
   }
 
   private static Result testPolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
+    return testPolicy(policy, inputRoute, direction, null, null);
+  }
+
+  private static Result testPolicy(
+      RoutingPolicy policy,
+      Bgpv4Route inputRoute,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
 
     Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
     if (direction == Direction.OUT) {
@@ -139,7 +158,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
     Tracer tracer = new Tracer();
     tracer.newSubTrace();
-    boolean permit = policy.process(inputRoute, outputRoute, direction, tracer);
+    boolean permit =
+        policy.process(
+            // include the source VRF in the route if it is not null
+            sourceVrf == null ? inputRoute : new AnnotatedRoute<>(inputRoute, sourceVrf),
+            outputRoute,
+            direction,
+            successfulTrack,
+            tracer);
     tracer.endSubTrace();
     return new Result(
         new RoutingPolicyId(policy.getOwner().getHostname(), policy.getName()),
@@ -223,6 +249,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .setTunnelEncapsulationAttribute(dataplaneBgpRoute.getTunnelEncapsulationAttribute())
         .setNetwork(dataplaneBgpRoute.getNetwork())
         .setCommunities(dataplaneBgpRoute.getCommunities().getCommunities())
+        .setClusterList(dataplaneBgpRoute.getClusterList())
         .setAsPath(dataplaneBgpRoute.getAsPath())
         .build();
   }
@@ -333,7 +360,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
             new ColumnMetadata(COL_NODE, NODE, "The node that has the policy", true, false),
             new ColumnMetadata(COL_POLICY_NAME, STRING, "The name of this policy", true, false),
             new ColumnMetadata(
-                COL_PROPOSED_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
+                COL_REFERENCE_POLICY_NAME, STRING, "The name of the proposed policy", true, false),
             new ColumnMetadata(COL_INPUT_ROUTE, BGP_ROUTE, "The input route", true, false),
             new ColumnMetadata(
                 baseColumnName(COL_ACTION),
@@ -401,12 +428,20 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .put(COL_INPUT_ROUTE, inputRoute)
         .put(COL_ACTION, action)
         .put(COL_OUTPUT_ROUTE, permit ? outputRoute : null)
-        .put(COL_DIFF, permit ? new BgpRouteDiffs(routeDiffs(inputRoute, outputRoute)) : null)
+        .put(COL_DIFF, permit ? routeDiffs(inputRoute, outputRoute) : null)
         .put(COL_TRACE, result.getTrace())
         .build();
   }
 
-  private static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
+  /**
+   * Returns a {@link Row} describing the difference between the two results, in the case where the
+   * actual outcome of the policy is different, or {@code null} otherwise.
+   *
+   * <p>Note that no difference in the outcome includes the case when, e.g., only the name of a
+   * policy changed but the action and output attributes are identical across the two snapshots.
+   */
+  @VisibleForTesting
+  static @Nullable Row toDiffRow(Result snapshotResult, Result referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -420,10 +455,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
-    assert !(equalAction && equalOutputRoutes);
+    if (equalAction && equalOutputRoutes) {
+      // This can happen if the trace is different.
+      return null;
+    }
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
     RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = snapshotResult.getInputRoute();
@@ -459,16 +496,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     boolean equalOutputRoutes = Objects.equals(referenceOutputRoute, snapshotOutputRoute);
     assert !(equalAction && equalOutputRoutes);
 
-    BgpRouteDiffs routeDiffs =
-        new BgpRouteDiffs(routeDiffs(referenceOutputRoute, snapshotOutputRoute));
+    BgpRouteDiffs routeDiffs = routeDiffs(referenceOutputRoute, snapshotOutputRoute);
 
-    RoutingPolicyId policyId = referenceResult.getPolicyId();
-    RoutingPolicyId proposedPolicyId = snapshotResult.getPolicyId();
+    RoutingPolicyId referencePolicyId = referenceResult.getPolicyId();
+    RoutingPolicyId policyId = snapshotResult.getPolicyId();
     Bgpv4Route inputRoute = referenceResult.getInputRoute();
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_PROPOSED_POLICY_NAME, proposedPolicyId.getPolicy())
+        .put(COL_REFERENCE_POLICY_NAME, referencePolicyId.getPolicy())
         .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())

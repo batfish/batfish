@@ -10,15 +10,16 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
+import java.util.stream.LongStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginMechanism;
-import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
@@ -30,6 +31,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.utils.Tuple;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -172,12 +174,12 @@ public class ModelGeneration {
    */
   public static Bgpv4Route satAssignmentToInputRoute(
       BDD fullModel, ConfigAtomicPredicates configAPs) {
+
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
             .setOriginatorIp(Ip.ZERO) /* dummy value until supported */
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
-            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */
-            .setOriginType(OriginType.IGP) /* dummy value until supported */;
+            .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
     BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
 
@@ -189,7 +191,13 @@ public class ModelGeneration {
     builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
     builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
     builder.setTag(r.getTag().satAssignmentToLong(fullModel));
+    builder.setOriginType(r.getOriginType().satAssignmentToValue(fullModel));
     builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
+
+    // if the cluster list length is N, create the cluster list 0,...,N-1
+    long clusterListLength = r.getClusterListLength().satAssignmentToLong(fullModel);
+    builder.setClusterList(
+        LongStream.range(0, clusterListLength).boxed().collect(ImmutableSet.toImmutableSet()));
 
     Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
     builder.setCommunities(communities);
@@ -206,6 +214,58 @@ public class ModelGeneration {
     return builder.build();
   }
 
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
+   * consistent with the assignment.
+   *
+   * @param fullModel the satisfying assignment
+   * @param configAPs an object that provides information about the community atomic predicates
+   * @return a pair of a predicate on tracks and an optional source VRF
+   */
+  public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
+      BDD fullModel, ConfigAtomicPredicates configAPs) {
+
+    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+
+    List<String> successfulTracks =
+        allSatisfyingItems(configAPs.getTracks(), r.getTracks(), fullModel);
+    List<String> sourceVrfs =
+        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), fullModel);
+    checkState(
+        sourceVrfs.size() <= 1,
+        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+
+    return new Tuple<>(successfulTracks::contains, sourceVrfs.isEmpty() ? null : sourceVrfs.get(0));
+  }
+
+  // Return a list of all items whose corresponding BDD is consistent with the given variable
+  // assignment.
+  private static List<String> allSatisfyingItems(
+      List<String> items, BDD[] itemBDDs, BDD fullModel) {
+    return IntStream.range(0, itemBDDs.length)
+        .filter(i -> itemBDDs[i].andSat(fullModel))
+        .mapToObj(items::get)
+        .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Tries to "add" constraint c to constraints; if the result is not inconsistent returns it,
+   * otherwise returns constraints.
+   *
+   * @param c a constraint expressed as a BDD
+   * @param constraints the set of constraints to augment
+   * @return the augmented constraints if consistent, otherwise the original constraints.
+   */
+  private static BDD tryAddingConstraint(BDD c, BDD constraints) {
+    BDD augmentedConstraints = constraints.and(c);
+    if (!augmentedConstraints.isZero()) {
+      return augmentedConstraints;
+    } else {
+      return constraints;
+    }
+  }
+
   // Produces a full model of the given constraints, which represents a concrete route announcement
   // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
   // the constraints.  The same approach could be used to provide default values for other fields in
@@ -214,11 +274,33 @@ public class ModelGeneration {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
     BDD isBGP = route.getProtocolHistory().value(RoutingProtocol.BGP);
-    BDD augmentedConstraints = constraints.and(isBGP);
-    if (!augmentedConstraints.isZero()) {
-      return augmentedConstraints.fullSatOne();
-    } else {
-      return constraints.fullSatOne();
-    }
+    BDD defaultLP = route.getLocalPref().value(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE);
+
+    // Set the prefixes to one of the well-known ones
+    BDD googlePrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("8.8.8.0").asLong())
+            .and(route.getPrefixLength().value(24));
+    BDD amazonPrefix =
+        route
+            .getPrefix()
+            .value(Ip.parse("52.0.0.0").asLong())
+            .and(route.getPrefixLength().value(10));
+    BDD rfc1918 =
+        route
+            .getPrefix()
+            .value(Ip.parse("10.0.0.0").asLong())
+            .and(route.getPrefixLength().value(8));
+    BDD prefixes = googlePrefix.or(amazonPrefix).or(rfc1918);
+    // Alternatively, if the above fails set the prefix to something >= 10.0.0.0 and the length to
+    // something >= 16.
+    BDD lessPreferredPrefixes =
+        route.getPrefix().geq(167772160).and(route.getPrefixLength().geq(16));
+    BDD augmentedConstraints = tryAddingConstraint(isBGP, constraints);
+    augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
+    augmentedConstraints = tryAddingConstraint(lessPreferredPrefixes, augmentedConstraints);
+    return augmentedConstraints.fullSatOne();
   }
 }

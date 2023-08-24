@@ -3,18 +3,18 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.Map;
 import java.util.TreeMap;
-import org.batfish.datamodel.RoutingProtocol;
+import javax.annotation.Nonnull;
 
 public abstract class RedistributionPolicy implements Serializable {
 
   protected String _routeMap;
 
-  protected final RoutingProtocol _sourceProtocol;
+  private final @Nonnull RoutingProtocolInstance _instance;
 
   protected final Map<String, Object> _specialAttributes;
 
-  public RedistributionPolicy(RoutingProtocol sourceProtocol) {
-    _sourceProtocol = sourceProtocol;
+  public RedistributionPolicy(RoutingProtocolInstance instance) {
+    _instance = instance;
     _specialAttributes = new TreeMap<>();
   }
 
@@ -22,8 +22,8 @@ public abstract class RedistributionPolicy implements Serializable {
     return _routeMap;
   }
 
-  public RoutingProtocol getSourceProtocol() {
-    return _sourceProtocol;
+  public @Nonnull RoutingProtocolInstance getInstance() {
+    return _instance;
   }
 
   public Map<String, Object> getSpecialAttributes() {

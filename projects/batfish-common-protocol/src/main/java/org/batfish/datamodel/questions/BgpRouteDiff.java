@@ -27,6 +27,7 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.bgp.community.Community;
 
 /** A representation of one difference between two routes. */
 @ParametersAreNonnullByDefault
@@ -111,10 +112,15 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
   }
 
   /** Compute the differences between two routes */
-  public static SortedSet<BgpRouteDiff> routeDiffs(
+  public static BgpRouteDiffs routeDiffs(@Nullable BgpRoute route1, @Nullable BgpRoute route2) {
+    return structuredRouteDiffs(route1, route2).toBgpRouteDiffs();
+  }
+
+  /** Compute the differences between two routes */
+  public static StructuredBgpRouteDiffs structuredRouteDiffs(
       @Nullable BgpRoute route1, @Nullable BgpRoute route2) {
     if (route1 == null || route2 == null || route1.equals(route2)) {
-      return ImmutableSortedSet.of();
+      return new StructuredBgpRouteDiffs();
     }
 
     checkArgument(
@@ -136,24 +142,25 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         route1,
         route2);
 
-    return Stream.of(
-            routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
-            routeDiff(route1, route2, PROP_COMMUNITIES, BgpRoute::getCommunities),
-            routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
-            routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
-            routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
-            routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
-            routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
-            routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
-            routeDiff(
-                route1,
-                route2,
-                PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
-                BgpRoute::getTunnelEncapsulationAttribute),
-            routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
-        .filter(Optional::isPresent)
-        .map(Optional::get)
-        .collect(ImmutableSortedSet.toImmutableSortedSet(natural()));
+    return new StructuredBgpRouteDiffs(
+        Stream.of(
+                routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
+                routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
+                routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
+                routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
+                routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
+                routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
+                routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),
+                routeDiff(
+                    route1,
+                    route2,
+                    PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE,
+                    BgpRoute::getTunnelEncapsulationAttribute),
+                routeDiff(route1, route2, PROP_WEIGHT, BgpRoute::getWeight))
+            .filter(Optional::isPresent)
+            .map(Optional::get)
+            .collect(ImmutableSortedSet.toImmutableSortedSet(natural())),
+        communityRouteDiff(route1, route2, BgpRoute::getCommunities));
   }
 
   private static Optional<BgpRouteDiff> routeDiff(
@@ -165,6 +172,13 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
         : Optional.of(
             new BgpRouteDiff(
                 name, o1 == null ? "null" : o1.toString(), o2 == null ? "null" : o2.toString()));
+  }
+
+  private static Optional<BgpRouteCommunityDiff> communityRouteDiff(
+      BgpRoute route1, BgpRoute route2, Function<BgpRoute, SortedSet<Community>> getter) {
+    SortedSet<Community> cs1 = getter.apply(route1);
+    SortedSet<Community> cs2 = getter.apply(route2);
+    return cs1.equals(cs2) ? Optional.empty() : Optional.of(new BgpRouteCommunityDiff(cs1, cs2));
   }
 
   @Override

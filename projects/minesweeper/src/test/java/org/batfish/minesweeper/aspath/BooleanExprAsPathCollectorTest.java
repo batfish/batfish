@@ -103,7 +103,7 @@ public class BooleanExprAsPathCollectorTest {
         _collector.visitDisjunction(d, new Tuple<>(new HashSet<>(), _baseConfig));
 
     Set<SymbolicAsPathRegex> expected =
-        ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2));
+        ImmutableSet.of(new SymbolicAsPathRegex("(" + ASPATH1 + ")" + "|(" + ASPATH2 + ")"));
 
     assertEquals(expected, result);
   }

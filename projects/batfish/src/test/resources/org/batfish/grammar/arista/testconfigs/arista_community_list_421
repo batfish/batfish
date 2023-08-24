@@ -10,3 +10,4 @@ ip community-list standard STANDARD_CL deny 459123 internet local-as no-advertis
 ! An expanded community-list [expanded < 4.23]
 ip community-list expanded EXPANDED_CL deny _3$
 ip community-list expanded EXPANDED_CL permit .*
+ip community-list expanded INVALID_EXPANDED_CL permit *.12345

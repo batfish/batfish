@@ -16,6 +16,7 @@ import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.datamodel.routing_policy.Common.generateSuppressionPolicy;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitAccept;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ExitReject;
 import static org.batfish.representation.cisco_xr.CiscoXrConfiguration.DEFAULT_EBGP_ADMIN;
@@ -117,7 +118,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExprs;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
@@ -133,7 +133,6 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -774,17 +773,13 @@ public class CiscoXrConversions {
     public CommunitySetMatchExpr visitCommunitySetDfaRegex(
         XrCommunitySetDfaRegex communitySetDfaRegex, Configuration arg) {
       // TODO: properly differentiate from ios-regex
-      return new CommunitySetMatchRegex(
-          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-          toJavaRegex(communitySetDfaRegex.getRegex()));
+      return toMatchExpr(toJavaRegex(communitySetDfaRegex.getRegex()));
     }
 
     @Override
     public CommunitySetMatchExpr visitCommunitySetIosRegex(
         XrCommunitySetIosRegex communitySetIosRegex, Configuration arg) {
-      return new CommunitySetMatchRegex(
-          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-          toJavaRegex(communitySetIosRegex.getRegex()));
+      return toMatchExpr(toJavaRegex(communitySetIosRegex.getRegex()));
     }
 
     @Override

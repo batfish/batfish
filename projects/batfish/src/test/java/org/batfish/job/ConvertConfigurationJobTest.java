@@ -2,12 +2,14 @@ package org.batfish.job;
 
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.StaticRouteMatchers.hasTrack;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.job.ConvertConfigurationJob.assertVendorStructureIdsValid;
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
 import static org.batfish.job.ConvertConfigurationJob.removeInvalidVendorStructureIds;
+import static org.batfish.job.ConvertConfigurationJob.saveStructureInfo;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -25,7 +27,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.SortedMap;
+import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclAclLine;
@@ -34,7 +40,6 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.DefinedStructureInfo;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
@@ -61,6 +66,7 @@ import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.references.StructureManager;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -71,6 +77,8 @@ import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.job.ConvertConfigurationJob.CollectIpSpaceReferences;
 import org.batfish.representation.cisco.CiscoConfiguration;
+import org.batfish.representation.cisco.CiscoStructureType;
+import org.batfish.vendor.StructureType;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
 import org.junit.Rule;
@@ -85,7 +93,6 @@ public final class ConvertConfigurationJobTest {
   private VendorConfiguration baseVendorConfig() {
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename("filename");
-    vc.setAnswerElement(new ConvertConfigurationAnswerElement());
     return vc;
   }
 
@@ -559,7 +566,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testRemoveInvalidVendorStructureIds() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     String invalidStructureName = "invalidStructureName";
     Warnings w = new Warnings(false, true, false);
@@ -593,24 +601,14 @@ public final class ConvertConfigurationJobTest {
     // VS configuration with a structure definition for only the valid Vendor Structure ID
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     removeInvalidVendorStructureIds(c, vc, w);
     IpAccessList acl = Iterables.getOnlyElement(c.getIpAccessLists().values());
     assertThat(acl.getLines(), iterableWithSize(2));
-    AclLine line0 = acl.getLines().get(0);
-    AclLine line1 = acl.getLines().get(1);
-
     // Valid VSID persists and invalid one is removed
-    assertTrue(line0.getVendorStructureId().isPresent());
-    assertFalse(line1.getVendorStructureId().isPresent());
+    assertTrue(acl.getLines().get(0).getVendorStructureId().isPresent());
+    assertFalse(acl.getLines().get(1).getVendorStructureId().isPresent());
   }
 
   @Test
@@ -665,8 +663,6 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
 
     // No matching defined structure, should fail assertion
     _thrown.expect(AssertionError.class);
@@ -676,7 +672,8 @@ public final class ConvertConfigurationJobTest {
   @Test
   public void testAssertVendorStructureIdsValidValid() {
     String filename = "configs/config";
-    String structureType = "structureType";
+    StructureType type = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureType = type.getDescription();
     String validStructureName = "validStructureName";
     Warnings w = new Warnings(false, true, false);
 
@@ -696,17 +693,95 @@ public final class ConvertConfigurationJobTest {
     IpAccessList.builder().setName("acl").setOwner(c).setLines(lineValidVsid).build();
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
-    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
-    vc.setAnswerElement(ccae);
-    ccae.setDefinedStructures(
-        ImmutableSortedMap.of(
-            filename,
-            ImmutableSortedMap.of(
-                structureType,
-                ImmutableSortedMap.of(validStructureName, new DefinedStructureInfo()))));
+    vc.defineSingleLineStructure(type, validStructureName, 1);
 
     // Matching defined structure, should not fail assertion
     assertVendorStructureIdsValid(c, vc, w);
+  }
+
+  private static class SaveStructureInfoSingleFileTestVendorConfiguration
+      extends VendorConfiguration {
+    @Override
+    public String getHostname() {
+      return null;
+    }
+
+    @Override
+    public void setHostname(String hostname) {}
+
+    @Override
+    public void setVendor(ConfigurationFormat format) {}
+
+    @Override
+    public List<Configuration> toVendorIndependentConfigurations()
+        throws VendorConversionException {
+      return null;
+    }
+  }
+
+  private static final class SaveStructureInfoMultipleFileTestVendorConfiguration
+      extends SaveStructureInfoSingleFileTestVendorConfiguration {
+
+    private final VendorConfiguration[] _vcs;
+
+    public SaveStructureInfoMultipleFileTestVendorConfiguration(VendorConfiguration... vcs) {
+      _vcs = vcs;
+    }
+
+    /**
+     * Returns filename -> structuremanager for each {@link VendorConfiguration} it was constructed
+     * with.
+     */
+    @Override
+    public @Nonnull Map<String, StructureManager> getStructureManagerByFilename() {
+      return Arrays.stream(_vcs)
+          .collect(
+              ImmutableMap.toImmutableMap(
+                  VendorConfiguration::getFilename, VendorConfiguration::getStructureManager));
+    }
+  }
+
+  @Test
+  public void testSaveStructureInfo() {
+    String file1 = "configs/f1";
+    String file2 = "configs/f2";
+    StructureType structureType = CiscoStructureType.AAA_SERVER_GROUP;
+    String structureName = "s";
+
+    VendorConfiguration vcFile1 = new SaveStructureInfoSingleFileTestVendorConfiguration();
+    vcFile1.setFilename(file1);
+    vcFile1.defineSingleLineStructure(structureType, structureName, 1);
+
+    VendorConfiguration vcFile2 = new SaveStructureInfoSingleFileTestVendorConfiguration();
+    vcFile2.setFilename(file2);
+    vcFile2.defineSingleLineStructure(structureType, structureName, 2);
+
+    VendorConfiguration vcMultifile =
+        new SaveStructureInfoMultipleFileTestVendorConfiguration(vcFile1, vcFile2);
+
+    {
+      // Single file case
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      saveStructureInfo(ccae, vcFile1);
+
+      assertThat(ccae.getDefinedStructures(), hasKeys(file1));
+      assertThat(
+          ccae,
+          hasDefinedStructureWithDefinitionLines(file1, structureType, structureName, contains(1)));
+    }
+    {
+      // Multiple file case
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      saveStructureInfo(ccae, vcMultifile);
+
+      assertThat(ccae.getDefinedStructures(), hasKeys(file1, file2));
+      assertThat(
+          ccae,
+          hasDefinedStructureWithDefinitionLines(file1, structureType, structureName, contains(1)));
+      assertThat(
+          ccae,
+          hasDefinedStructureWithDefinitionLines(file2, structureType, structureName, contains(2)));
+    }
   }
 
   @Test

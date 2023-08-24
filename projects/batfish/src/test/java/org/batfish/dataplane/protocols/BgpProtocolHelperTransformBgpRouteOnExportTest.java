@@ -2,6 +2,7 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
+import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasAsPath;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
@@ -105,6 +106,18 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
    * @param ibgp Whether to make the peer relationship IBGP
    */
   private void setUpPeers(boolean ibgp) {
+    setUpPeers(ibgp, false);
+  }
+
+  /**
+   * Sets up the class variables to represent a BGP peer relationship. Then they may be used as
+   * parameters to {@link BgpProtocolHelper#transformBgpRoutePreExport}.
+   *
+   * @param ibgp Whether to make the peer relationship IBGP
+   * @param replaceNonLocalAsesOnExport Whether the sender replaces non-local ASes in the AS with
+   *     its local AS on export (only effective if {@code ibgp} is {@code false})
+   */
+  private void setUpPeers(boolean ibgp, boolean replaceNonLocalAsesOnExport) {
     Configuration c1 =
         _nf.configurationBuilder().setConfigurationFormat(ConfigurationFormat.CISCO_IOS).build();
     Configuration c2 =
@@ -114,6 +127,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
             .setLocalAs(AS1)
             .setRemoteAs(ibgp ? AS1 : AS2)
             .setLocalIp(SOURCE_IP)
+            .setReplaceNonLocalAsesOnExport(replaceNonLocalAsesOnExport)
             .build();
     _toNeighbor =
         _nf.bgpNeighborBuilder()
@@ -200,7 +214,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         _fromNeighbor.getLocalAs(),
         Ip.parse("1.1.1.1"),
         Ip.parse("1.1.1.1"),
-        null);
+        null,
+        _sessionProperties.getReplaceNonLocalAsesOnExport());
   }
 
   /**
@@ -273,6 +288,53 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
       beingExported = bgpv4Route.toBuilder();
       runTransformBgpRoutePostExport(beingExported);
       assertThat(beingExported, hasCommunities(communities));
+    }
+  }
+
+  /**
+   * Test that non-local ASes in the AS path are replaced with the local AS on export for eBGP if
+   * that behavior is configured.
+   */
+  @Test
+  public void testReplaceAllAsesWithLocalAs_true_ebgp() {
+    setUpPeers(false, true);
+    AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(preExportAsPath).build();
+
+    Bgpv4Route.Builder beingExported = bgpv4Route.toBuilder();
+    runTransformBgpRoutePostExport(beingExported);
+    assertThat(beingExported, hasAsPath(equalTo(AsPath.ofSingletonAsSets(AS1, AS1))));
+  }
+
+  /**
+   * Test that non-local ASes in the AS path are NOT replaced with the local AS on export for eBGP
+   * if that behavior is NOT configured.
+   */
+  @Test
+  public void testReplaceAllAsesWithLocalAs_false_ebgp() {
+    setUpPeers(false, false);
+    AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
+    Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(preExportAsPath).build();
+
+    Bgpv4Route.Builder beingExported = bgpv4Route.toBuilder();
+    runTransformBgpRoutePostExport(beingExported);
+    assertThat(beingExported, hasAsPath(equalTo(AsPath.ofSingletonAsSets(AS1, 5L))));
+  }
+
+  /**
+   * Test that non-local ASes in the AS path are replaced with the local AS on export for eBGP if
+   * that behavior is configured.
+   */
+  @Test
+  public void testReplaceAllAsesWithLocalAs_ibgp() {
+    for (boolean replaceNonLocalAsesOnExport : ImmutableList.of(false, true)) {
+      setUpPeers(true, replaceNonLocalAsesOnExport);
+      AsPath preExportAsPath = AsPath.ofSingletonAsSets(5L);
+      Bgpv4Route bgpv4Route = _baseBgpRouteBuilder.setAsPath(preExportAsPath).build();
+
+      Bgpv4Route.Builder beingExported = bgpv4Route.toBuilder();
+      runTransformBgpRoutePostExport(beingExported);
+      assertThat(beingExported, hasAsPath(equalTo(AsPath.ofSingletonAsSets(5L))));
     }
   }
 
@@ -521,7 +583,8 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
         1,
         Ip.parse("1.1.1.1"),
         Ip.ZERO,
-        null);
+        null,
+        false);
     assertThat(
         "Protocol overriden to BGP", routeBuilder.getProtocol(), equalTo(RoutingProtocol.BGP));
   }

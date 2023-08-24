@@ -60,6 +60,12 @@ public final class MutableBDDInteger extends BDDInteger {
     return bdd;
   }
 
+  public static MutableBDDInteger makeMaxValue(BDDFactory factory, int length) {
+    MutableBDDInteger bdd = new MutableBDDInteger(factory, length);
+    bdd.setValue(bdd._maxVal);
+    return bdd;
+  }
+
   /** Set this BDD to have an exact value */
   public void setValue(long val) {
     checkArgument(val >= 0, "Cannot set a negative value");
@@ -157,6 +163,26 @@ public final class MutableBDDInteger extends BDDInteger {
     }
     cs[0] = as[0].xor(bs[0]).xor(carry);
     return sum;
+  }
+
+  /*
+   * Add two BDDs bitwise to create a new BDD. Clips to MAX_VALUE in case of overflow.
+   */
+  public MutableBDDInteger addClipping(MutableBDDInteger other) {
+    BDD[] as = _bitvec;
+    BDD[] bs = other._bitvec;
+
+    checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
+    checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
+
+    BDD carry = _factory.zero();
+    MutableBDDInteger sum = new MutableBDDInteger(_factory, as.length);
+    BDD[] cs = sum._bitvec;
+    for (int i = cs.length - 1; i >= 0; --i) {
+      cs[i] = as[i].xor(bs[i]).xor(carry);
+      carry = as[i].and(bs[i]).or(carry.and(as[i].or(bs[i])));
+    }
+    return sum.ite(carry.not(), makeMaxValue(_factory, _bitvec.length));
   }
 
   /*

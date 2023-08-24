@@ -1,13 +1,10 @@
 package org.batfish.representation.cisco;
 
-import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.ospf.OspfMetricType;
 
 public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   public static final String BGP_AS = "BGP_AS";
-
-  public static final String EIGRP_AS_NUMBER = "EIGRP_AS_NUMBER";
 
   public static final OspfMetricType DEFAULT_METRIC_TYPE = OspfMetricType.E2;
 
@@ -19,8 +16,8 @@ public class OspfRedistributionPolicy extends RedistributionPolicy {
 
   private Long _tag;
 
-  public OspfRedistributionPolicy(RoutingProtocol sourceProtocol) {
-    super(sourceProtocol);
+  public OspfRedistributionPolicy(RoutingProtocolInstance instance) {
+    super(instance);
   }
 
   public Long getMetric() {

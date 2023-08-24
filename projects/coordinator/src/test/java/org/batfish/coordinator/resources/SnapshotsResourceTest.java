@@ -18,7 +18,6 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.datamodel.SnapshotMetadataEntry;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -36,8 +35,7 @@ public final class SnapshotsResourceTest extends WorkMgrServiceV2TestBase {
         .path(CoordConstsV2.RSC_SNAPSHOTS)
         .queryParam(CoordConstsV2.QP_VERBOSE, verbose)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before

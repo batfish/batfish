@@ -28,9 +28,9 @@ public class JuniperFlattenerTest {
   public void testFlatLinesDoNotNest() {
     String hostname = "flatten-flat-lines-no-nesting";
 
-    List<String> copies =
-        Collections.nCopies(
-            FlatStatementTree.MAX_DEPTH + 1, "set routing-options autonomous-system 5");
+    int numCopies = 33;
+
+    List<String> copies = Collections.nCopies(numCopies, "set routing-options autonomous-system 5");
 
     String text =
         String.join(
@@ -54,6 +54,33 @@ public class JuniperFlattenerTest {
 
     // All the copies should still be there in sequence
     assertThat(flatText, containsString(String.join("\n", copies)));
+  }
+
+  /** Test that configurations with `apply-flags omit` are flattened correctly. */
+  @Test
+  public void testFlattenWithApplyFlagsOmit() {
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + "flatten-with-apply-flags-omit", UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assert flattener instanceof JuniperFlattener;
+    String flatText = flattener.getFlattenedConfigurationText();
+    assertThat(
+        flatText,
+        equalTo(
+            String.join(
+                    "\n",
+                    new String[] {
+                      "####BATFISH FLATTENED JUNIPER CONFIG####",
+                      "set system login",
+                      "set system root-authentication",
+                      "set system host-name flatten-with-apply-flags-omit"
+                    })
+                + '\n'));
   }
 
   /** Test for https://github.com/batfish/batfish/issues/6149. */

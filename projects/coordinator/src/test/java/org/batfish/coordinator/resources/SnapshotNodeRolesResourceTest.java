@@ -16,7 +16,6 @@ import org.batfish.coordinator.Main;
 import org.batfish.coordinator.WorkMgrServiceV2TestBase;
 import org.batfish.coordinator.WorkMgrTestUtils;
 import org.batfish.role.NodeRolesData;
-import org.batfish.version.BatfishVersion;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -33,8 +32,7 @@ public final class SnapshotNodeRolesResourceTest extends WorkMgrServiceV2TestBas
         .path(snapshot)
         .path(inferred ? CoordConstsV2.RSC_INFERRED_NODE_ROLES : CoordConstsV2.RSC_NODE_ROLES)
         .request()
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY)
-        .header(CoordConstsV2.HTTP_HEADER_BATFISH_VERSION, BatfishVersion.getVersionStatic());
+        .header(CoordConstsV2.HTTP_HEADER_BATFISH_APIKEY, CoordConsts.DEFAULT_API_KEY);
   }
 
   @Before

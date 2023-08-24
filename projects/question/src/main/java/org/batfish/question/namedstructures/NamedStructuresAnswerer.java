@@ -1,9 +1,8 @@
 package org.batfish.question.namedstructures;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
+import com.google.common.collect.ImmutableSortedSet;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -75,13 +74,13 @@ public class NamedStructuresAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Multiset<Row> rawAnswer(
+  static List<Row> rawAnswer(
       NamedStructuresQuestion question,
       Set<String> nodes,
       Map<String, Configuration> configurations,
       Map<String, ColumnMetadata> columns) {
 
-    Multiset<Row> rows = HashMultiset.create();
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
 
     for (String structureType : question.getStructureTypeSpecifier().getMatchingProperties()) {
       RowBuilder row = Row.builder(columns).put(COL_STRUCTURE_TYPE, structureType);
@@ -89,7 +88,9 @@ public class NamedStructuresAnswerer extends Answerer {
       Function<Configuration, Object> structTypeMapGetter =
           NamedStructurePropertySpecifier.JAVA_MAP.get(structureType).getGetter();
 
-      Set<String> structNames = getAllStructureNamesOfType(structureType, nodes, configurations);
+      Set<String> structNames =
+          ImmutableSortedSet.copyOf(
+              getAllStructureNamesOfType(structureType, nodes, configurations));
 
       for (String structName : structNames) {
         if (!question.getStructureNamePattern().matcher(structName).matches()) {
@@ -124,7 +125,7 @@ public class NamedStructuresAnswerer extends Answerer {
         }
       }
     }
-    return rows;
+    return rows.build();
   }
 
   @Override
@@ -135,7 +136,7 @@ public class NamedStructuresAnswerer extends Answerer {
 
     TableMetadata tableMetadata = createMetadata(question);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         rawAnswer(question, nodes, configurations, tableMetadata.toColumnMap());
 
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);

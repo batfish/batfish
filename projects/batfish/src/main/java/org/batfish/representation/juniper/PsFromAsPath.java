@@ -5,7 +5,7 @@ import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
@@ -33,8 +33,9 @@ public final class PsFromAsPath extends PsFrom {
       return BooleanExprs.FALSE;
     }
     try {
-      String javaRegex = AsPathRegex.convertToJavaRegex(asPath.getRegex());
-      return MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(javaRegex));
+      AsPathMatchExpr asPathMatchExpr =
+          AsPathMatchExprParser.convertToAsPathMatchExpr(asPath.getRegex());
+      return MatchAsPath.of(InputAsPath.instance(), asPathMatchExpr);
     } catch (Exception e) {
       w.redFlag(
           String.format(

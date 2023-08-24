@@ -100,8 +100,10 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // NOTE: when implementing, update CommunitySetMatchExprVarCollector#visitCommunitySetMatchRegex
-    throw new UnsupportedOperationException("Currently not supporting community set regexes");
+    // We've already ensured in CommunitySetMatchExprVarCollector that there are no community-set
+    // regexes, so this code should be unreachable.
+    throw new IllegalStateException(
+        String.format("Unexpected community set match regex %s", communitySetMatchRegex));
   }
 
   @Override
@@ -111,30 +113,46 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
-    BDD matchExprBDD = hasCommunity.getExpr().accept(new CommunityMatchExprToBDD(), arg);
+
     /**
-     * the above BDD applies to a single community so we can't treat it as a BDD for a community
-     * set, or else its constraints could be satisfied by multiple communities in the set that each
-     * satisfy some of the constraints. therefore, we instead return the largest disjunction of
-     * atomic predicates that satisfies the BDD. hence any community set that satisfies this
-     * disjunction must contain at least one community that satisfies our original BDD.
+     * we can't treat a BDD for a single community as a BDD for a community set, or else its
+     * constraints could be satisfied by multiple communities in the set, which each satisfy some of
+     * the constraints. therefore, we instead determine the largest disjunction of atomic predicates
+     * that each satisfies all the single-community constraints. any community set that satisfies
+     * this disjunction must contain at least one community that suffices.
      */
-    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+
     /**
-     * first figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
+     * first get a BDD for the single community constraints. we use the original route here so that
+     * the constraint will be in terms of the community APs.
+     */
+    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
+    BDD matchExprBDD =
+        hasCommunity
+            .getExpr()
+            .accept(
+                new CommunityMatchExprToBDD(),
+                new Arg(arg.getTransferBDD(), arg.getTransferBDD().getOriginalRoute()));
+
+    /**
+     * now figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
      * predicate, we use the exactlyOneAP helper function to include the fact that all other atomic
      * predicates will be false, which must be the case since atomic predicates are disjoint.
      * otherwise, we would not be able to show that ap1 satisfies the community constraint (ap1 /\
      * !ap2), for example.
      */
     IntStream disjuncts =
-        IntStream.range(0, aps.length)
-            .filter(i -> !exactlyOneAP(aps, i, arg).diffSat(matchExprBDD));
+        IntStream.range(0, originalAPs.length)
+            .filter(i -> !exactlyOneAP(originalAPs, i, arg).diffSat(matchExprBDD));
+
     /**
-     * now return a disjunction of all of the satisfying atomic predicates. here we do NOT use the
-     * exactlyOneAP function, because we are returning a BDD for a community set, which can satisfy
-     * multiple atomic predicates due to multiple elements of the set.
+     * finally return a disjunction of all the satisfying atomic predicates. two important notes.
+     * first, here we do NOT use the exactlyOneAP function, because we are returning a BDD for a
+     * community set, which can satisfy multiple atomic predicates due to multiple elements of the
+     * set. second, we now use the APs in the arg, which properly handles configuration formats like
+     * Juniper that require matching on the current route rather than the original input route.
      */
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
     return arg.getTransferBDD()
         .getFactory()
         .orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));

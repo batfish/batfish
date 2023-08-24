@@ -236,6 +236,18 @@ public class RoutingPolicy implements Serializable {
     return process(inputRoute, outputRoute, null, null, direction, successfulTrack, null);
   }
 
+  /**
+   * @return True if the policy accepts the route.
+   */
+  public boolean process(
+      AbstractRouteDecorator inputRoute,
+      AbstractRouteBuilder<?, ?> outputRoute,
+      Direction direction,
+      Predicate<String> successfulTrack,
+      Tracer tracer) {
+    return process(inputRoute, outputRoute, null, null, direction, successfulTrack, tracer);
+  }
+
   public boolean process(
       @Nonnull AbstractRouteDecorator inputRoute,
       @Nonnull AbstractRouteBuilder<?, ?> outputRoute,

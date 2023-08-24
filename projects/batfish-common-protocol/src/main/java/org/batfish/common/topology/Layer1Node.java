@@ -6,7 +6,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Comparator;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -70,9 +69,17 @@ public final class Layer1Node implements Comparable<Layer1Node> {
     return _interfaceName;
   }
 
+  /* Cache the hashcode */
+  private transient int _hashCode = 0;
+
   @Override
   public int hashCode() {
-    return Objects.hash(_hostname, _interfaceName);
+    int h = _hashCode;
+    if (h == 0) {
+      h = _hostname.hashCode() * 31 + _interfaceName.hashCode();
+      _hashCode = h;
+    }
+    return h;
   }
 
   @Override

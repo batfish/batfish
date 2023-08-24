@@ -2,14 +2,13 @@ package org.batfish.question.namedstructures;
 
 import static org.batfish.question.namedstructures.NamedStructuresAnswerer.getAllStructureNamesOfType;
 import static org.batfish.question.namedstructures.NamedStructuresAnswerer.insertedObject;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.HashMultiset;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
+import java.util.List;
 import java.util.Map;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -67,38 +66,36 @@ public class NamedStructuresAnswererTest {
         new NamedStructuresQuestion(
             ALL_NODES, NamedStructurePropertySpecifier.ROUTING_POLICY, null, null, false);
 
-    Multiset<Row> rows =
+    List<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
             question,
             configurations.keySet(),
             configurations,
             NamedStructuresAnswerer.createMetadata(question).toColumnMap());
 
-    Multiset<Row> expected =
-        HashMultiset.create(
-            ImmutableList.of(
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
-                    .build(),
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp2")
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp2, NamedStructurePropertySpecifier.ROUTING_POLICY))
-                    .build()));
-
-    assertThat(rows, equalTo(expected));
+    assertThat(
+        rows,
+        contains(
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                    insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
+                .build(),
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp2")
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                    insertedObject(rp2, NamedStructurePropertySpecifier.ROUTING_POLICY))
+                .build()));
   }
 
   @Test
@@ -115,28 +112,26 @@ public class NamedStructuresAnswererTest {
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(ALL_NODES, "/.*/", null, true, null);
 
-    Multiset<Row> rows =
+    List<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
             question,
             configurations.keySet(),
             configurations,
             NamedStructuresAnswerer.createMetadata(question).toColumnMap());
 
-    Multiset<Row> expected =
-        HashMultiset.create(
-            ImmutableList.of(
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
-                    .build()));
-
-    assertThat(rows, equalTo(expected));
+    assertThat(
+        rows,
+        contains(
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                    insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
+                .build()));
   }
 
   @Test
@@ -155,34 +150,32 @@ public class NamedStructuresAnswererTest {
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(ALL_NODES, "/.*/", null, null, true);
 
-    Multiset<Row> rows =
+    List<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
             question,
             configurations.keySet(),
             configurations,
             NamedStructuresAnswerer.createMetadata(question).toColumnMap());
 
-    Multiset<Row> expected =
-        HashMultiset.create(
-            ImmutableList.of(
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, true)
-                    .build(),
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node2"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
-                    .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, false)
-                    .build()));
-
-    assertThat(rows, equalTo(expected));
+    assertThat(
+        rows,
+        contains(
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, true)
+                .build(),
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node2"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "rp1")
+                .put(NamedStructuresAnswerer.COL_PRESENT_ON_NODE, false)
+                .build()));
   }
 
   @Test
@@ -199,27 +192,25 @@ public class NamedStructuresAnswererTest {
     NamedStructuresQuestion question =
         new NamedStructuresQuestion(ALL_NODES, "/.*/", "selected.*", false, null);
 
-    Multiset<Row> rows =
+    List<Row> rows =
         NamedStructuresAnswerer.rawAnswer(
             question,
             configurations.keySet(),
             configurations,
             NamedStructuresAnswerer.createMetadata(question).toColumnMap());
 
-    Multiset<Row> expected =
-        HashMultiset.create(
-            ImmutableList.of(
-                Row.builder()
-                    .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
-                        NamedStructurePropertySpecifier.ROUTING_POLICY)
-                    .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "selected-rp1")
-                    .put(
-                        NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
-                        insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
-                    .build()));
-
-    assertThat(rows, equalTo(expected));
+    assertThat(
+        rows,
+        contains(
+            Row.builder()
+                .put(NamedStructuresAnswerer.COL_NODE, new Node("node1"))
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_TYPE,
+                    NamedStructurePropertySpecifier.ROUTING_POLICY)
+                .put(NamedStructuresAnswerer.COL_STRUCTURE_NAME, "selected-rp1")
+                .put(
+                    NamedStructuresAnswerer.COL_STRUCTURE_DEFINITION,
+                    insertedObject(rp1, NamedStructurePropertySpecifier.ROUTING_POLICY))
+                .build()));
   }
 }

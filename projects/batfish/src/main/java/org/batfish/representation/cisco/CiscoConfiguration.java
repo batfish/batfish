@@ -827,7 +827,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -1022,9 +1022,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
             RoutingProtocol.CONNECTED,
             RoutingProtocol.OSPF,
             RoutingProtocol.EIGRP)
-        .map(redistProtocol -> matchRedistributedRoutes(proc, redistProtocol))
-        .filter(Objects::nonNull)
-        .forEach(redistributionPolicy::addStatement);
+        .forEach(
+            redistProtocol -> matchRedistributedRoutes(proc, redistProtocol, redistributionPolicy));
 
     // cause ip peer groups to inherit unset fields from owning named peer
     // group if it exists, and then always from process master peer group
@@ -1190,25 +1189,38 @@ public final class CiscoConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Creates a {@link Statement} that matches and accepts routes of the given protocol that should
-   * be redistributed into the given {@link BgpProcess}. Returns {@code null} if no routes of this
-   * protocol should be redistributed, i.e. if the BGP process is not configured to redistribute it
-   * or the redistribution route-map is undefined.
+   * Iterates through the redistribution policies of the given BgpProcess for the given source
+   * protocol, creates corresponding statements using {@link #createRedistributionStatements} method
+   * and adds them to the given redistributionPolicy builder.
    */
-  private @Nullable Statement matchRedistributedRoutes(
-      BgpProcess bgpProcess, RoutingProtocol srcProtocol) {
-    RedistributionPolicy redistributionPolicy =
-        bgpProcess.getRedistributionPolicies().get(srcProtocol);
-    if (redistributionPolicy == null) {
-      // Process does not redistribute this protocol
-      return null;
-    }
+  private void matchRedistributedRoutes(
+      BgpProcess bgpProcess,
+      RoutingProtocol srcProtocol,
+      RoutingPolicy.Builder redistributionPolicy) {
+    bgpProcess.getRedistributionPolicies().entrySet().stream()
+        .filter(entry -> entry.getKey().getProtocol().equals(srcProtocol))
+        .sorted(Entry.comparingByKey())
+        .map(Map.Entry::getValue)
+        .map(policy -> createRedistributionStatements(bgpProcess, policy))
+        .filter(Objects::nonNull)
+        .forEach(redistributionPolicy::addStatement);
+  }
+
+  /**
+   * Creates a {@link Statement} for the given {@link BgpProcess} and {@link RedistributionPolicy}
+   * that matches and accepts routes of the corresponding protocol that should be redistributed into
+   * the BGP process. Returns {@code null} if no routes of this protocol should be redistributed,
+   * i.e. if the route-map is undefined.
+   */
+  private @Nullable Statement createRedistributionStatements(
+      BgpProcess bgpProcess, RedistributionPolicy redistributionPolicy) {
     String mapName = redistributionPolicy.getRouteMap();
     if (mapName != null && !_routeMaps.containsKey(mapName)) {
       // Route-map is undefined. No redistribution will occur.
       return null;
     }
     MatchProtocol matchProtocol;
+    RoutingProtocol srcProtocol = redistributionPolicy.getInstance().getProtocol();
     switch (srcProtocol) {
       case RIP:
       case STATIC:
@@ -1529,8 +1541,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
         return "1";
       case VERSION_2:
         return "2";
+      default:
+        throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
     }
-    throw new IllegalArgumentException(String.format("Invalid HsrpVersion: %s", hsrpVersion));
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, Long asn) {
@@ -1670,7 +1683,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   // For testing.
   If convertOspfRedistributionPolicy(OspfRedistributionPolicy policy, OspfProcess proc) {
-    RoutingProtocol protocol = policy.getSourceProtocol();
+    RoutingProtocol protocol = policy.getInstance().getProtocol();
     // All redistribution must match the specified protocol.
     Conjunction ospfExportConditions = new Conjunction();
     if (protocol == RoutingProtocol.EIGRP) {
@@ -1946,8 +1959,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
     // policies for redistributing routes
     ospfExportStatements.addAll(
-        proc.getRedistributionPolicies().values().stream()
-            .map(policy -> convertOspfRedistributionPolicy(policy, proc))
+        proc.getRedistributionPolicies().entrySet().stream()
+            .sorted(Entry.comparingByKey())
+            .map(e -> convertOspfRedistributionPolicy(e.getValue(), proc))
             .collect(Collectors.toList()));
 
     return newProcess;
@@ -2076,7 +2090,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy for redistributing connected routes
-    RipRedistributionPolicy rcp = proc.getRedistributionPolicies().get(RoutingProtocol.CONNECTED);
+    RipRedistributionPolicy rcp =
+        proc.getRedistributionPolicies().get(RoutingProtocolInstance.connected());
     if (rcp != null) {
       If ripExportConnected = new If();
       ripExportConnected.setComment("RIP export connected routes");
@@ -2106,7 +2121,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy map for redistributing static routes
-    RipRedistributionPolicy rsp = proc.getRedistributionPolicies().get(RoutingProtocol.STATIC);
+    RipRedistributionPolicy rsp =
+        proc.getRedistributionPolicies().get(RoutingProtocolInstance.staticRoutingProtocol());
+
     if (rsp != null) {
       If ripExportStatic = new If();
       ripExportStatic.setComment("RIP export static routes");
@@ -2135,7 +2152,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     }
 
     // policy map for redistributing bgp routes
-    RipRedistributionPolicy rbp = proc.getRedistributionPolicies().get(RoutingProtocol.BGP);
+    RipRedistributionPolicy rbp =
+        proc.getRedistributionPolicies().entrySet().stream()
+            .filter(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.BGP))
+            .findFirst()
+            .map(Map.Entry::getValue)
+            .orElse(null);
     if (rbp != null) {
       If ripExportBgp = new If();
       ripExportBgp.setComment("RIP export bgp routes");
@@ -2916,12 +2938,12 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // Define the Null0 interface if it has been referenced. Otherwise, these show as undefined
     // references.
     Optional<Integer> firstRefToNull0 =
-        _structureReferences
-            .getOrDefault(CiscoStructureType.INTERFACE, ImmutableSortedMap.of())
+        _structureManager
+            .getStructureReferences(CiscoStructureType.INTERFACE)
             .getOrDefault("Null0", ImmutableSortedMap.of())
-            .entrySet()
+            .values()
             .stream()
-            .flatMap(e -> e.getValue().stream())
+            .flatMap(Collection::stream)
             .min(Integer::compare);
     if (firstRefToNull0.isPresent()) {
       defineSingleLineStructure(CiscoStructureType.INTERFACE, "Null0", firstRefToNull0.get());

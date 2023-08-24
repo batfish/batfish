@@ -15,7 +15,7 @@
       "2.2.2.0/24"
     ]
   },
-  "perPath" : true,
+  "pathOption" : "SINGLE",
   "policies" : "policies",
   "differential" : false,
   "includeOneTableKeys" : true,
@@ -29,7 +29,8 @@
       "inputConstraints",
       "action",
       "outputConstraints",
-      "perPath"
+      "perPath",
+      "pathOption"
     ],
     "tags" : [
       "routing"
@@ -71,12 +72,18 @@
           ]
         }
       },
+      "pathOption" : {
+        "description" : "If set to 'per_path' run the analysis separately for each execution path. If set to `non_overlap` run the analysis separately for each execution path but greedily attempt to produce a different prefix for each advertisement to cover each path. This analysis may not produce results for all paths. If set to `single` (or null) the analysis will produce a single advertisement that meets the input and output constraints along one path through the route map.",
+        "displayName" : "Path Options",
+        "optional" : true,
+        "type" : "string",
+        "value" : "single"
+      },
       "perPath" : {
-        "description" : "Run the analysis separately for each execution path of a route map",
+        "description" : "(deprecated) Run the analysis separately for each execution path of a route map. This option is deprecated in favor of 'pathOption'",
         "displayName" : "Per-Path",
         "optional" : true,
-        "type" : "boolean",
-        "value" : true
+        "type" : "boolean"
       },
       "policies" : {
         "description" : "Only consider policies that match this specifier",

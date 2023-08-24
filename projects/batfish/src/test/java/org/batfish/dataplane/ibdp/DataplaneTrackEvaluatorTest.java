@@ -2,15 +2,18 @@ package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.ConfigurationFormat.CISCO_IOS;
+import static org.batfish.datamodel.tracking.TrackMethods.all;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysFalse;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
+import static org.batfish.datamodel.tracking.TrackMethods.negated;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.datamodel.tracking.TrackMethods.reference;
 import static org.batfish.datamodel.tracking.TrackMethods.route;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import org.batfish.datamodel.Configuration;
@@ -98,6 +101,23 @@ public final class DataplaneTrackEvaluatorTest {
         new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
 
     assertFalse(e.visit(alwaysFalse()));
+  }
+
+  @Test
+  public void testVisitTrackAll() {
+    Configuration c =
+        Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
+    DataplaneTrackEvaluator e =
+        new DataplaneTrackEvaluator(c, ImmutableMap.of(), ImmutableMap.of());
+
+    // vacuously true
+    assertTrue(e.visit(all(ImmutableList.of())));
+    // singleton
+    assertTrue(e.visit(all(ImmutableList.of(alwaysTrue()))));
+    assertFalse(e.visit(all(ImmutableList.of(negated(alwaysTrue())))));
+    // multiple
+    assertTrue(e.visit(all(ImmutableList.of(alwaysTrue(), alwaysTrue()))));
+    assertFalse(e.visit(all(ImmutableList.of(alwaysTrue(), negated(alwaysTrue())))));
   }
 
   @Test

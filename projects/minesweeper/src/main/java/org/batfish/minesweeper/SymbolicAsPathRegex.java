@@ -50,7 +50,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * that when we solve for AS paths that match regexes, we will get examples that are sensible and
    * also able to be parsed by Batfish.
    */
-  @Nonnull static final Automaton AS_PATH_FSM = new RegExp(AS_PATH_REGEX).toAutomaton();
+  @Nonnull private static final Automaton AS_PATH_FSM = new RegExp(AS_PATH_REGEX).toAutomaton();
 
   public SymbolicAsPathRegex(String regex) {
     super(regex);

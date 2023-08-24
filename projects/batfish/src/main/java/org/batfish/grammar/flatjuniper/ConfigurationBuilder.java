@@ -581,6 +581,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rs_ruleContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_destination_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_address_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rsrm_source_portContext;
@@ -847,6 +848,7 @@ import org.batfish.representation.juniper.NatRule;
 import org.batfish.representation.juniper.NatRuleMatchDstAddr;
 import org.batfish.representation.juniper.NatRuleMatchDstAddrName;
 import org.batfish.representation.juniper.NatRuleMatchDstPort;
+import org.batfish.representation.juniper.NatRuleMatchProtocol;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddr;
 import org.batfish.representation.juniper.NatRuleMatchSrcAddrName;
 import org.batfish.representation.juniper.NatRuleMatchSrcPort;
@@ -5265,6 +5267,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Prefix prefix = toPrefix(ctx.prefix);
       _currentNatPool.setFromAddress(prefix.getFirstHostIp());
       _currentNatPool.setToAddress(prefix.getLastHostIp());
+      if (ctx.port_num != null) {
+        int port = toInt(ctx.port_num);
+        _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      }
     } else {
       assert ctx.port_num != null;
       // this command can only happen for destination nat, and when port is given we need to enable
@@ -5307,6 +5313,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitNatp_routing_instance(Natp_routing_instanceContext ctx) {
     String ri = toString(ctx.name);
     _currentNatPool.setOwner(ri);
+    todo(ctx);
   }
 
   @Override
@@ -5976,6 +5983,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_EXPORT, getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
@@ -5983,6 +5991,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = toString(ctx.name);
     _configuration.referenceStructure(
         POLICY_STATEMENT, name, ROUTING_INSTANCE_VRF_IMPORT, getLine(ctx.name.getStart()));
+    todo(ctx);
   }
 
   @Override
@@ -5990,6 +5999,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String ifaceName = getInterfaceFullName(ctx.iface);
     _configuration.referenceStructure(
         INTERFACE, ifaceName, VTEP_SOURCE_INTERFACE, getLine(ctx.iface.getStart()));
+    todo(ctx);
   }
 
   @Override
@@ -6293,6 +6303,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     int fromPort = toInt(ctx.from);
     int toPort = ctx.TO() != null ? toInt(ctx.to) : fromPort;
     _currentNatRule.getMatches().add(new NatRuleMatchDstPort(fromPort, toPort));
+  }
+
+  @Override
+  public void exitRsrm_protocol(Rsrm_protocolContext ctx) {
+    IpProtocol protocol = toIpProtocol(ctx.p);
+    _currentNatRule.getMatches().add(new NatRuleMatchProtocol(protocol));
   }
 
   @Override
@@ -7094,7 +7110,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String name = maybeName.get();
     _currentBridgeDomain = _currentRoutingInstance.getOrAddBridgeDomain(name);
     _configuration.referenceStructure(
-        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, ctx.getStart().getLine());
+        BRIDGE_DOMAIN, name, BRIDGE_DOMAIN_SELF_REF, getLine(ctx.getStart()));
     _configuration.defineFlattenedStructure(BRIDGE_DOMAIN, name, ctx, _parser);
     // until we support bridge domains generally
     todo(ctx);
@@ -7113,7 +7129,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     _configuration.referenceStructure(
-        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, ctx.getStart().getLine());
+        INTERFACE, iface, BRIDGE_DOMAINS_ROUTING_INTERFACE, getLine(ctx.getStart()));
     _currentBridgeDomain.setRoutingInterface(iface);
   }
 
@@ -7177,7 +7193,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitBfiuas_prefix_policy(Bfiuas_prefix_policyContext ctx) {
     String name = toString(ctx.policy);
     _configuration.referenceStructure(
-        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, ctx.getStart().getLine());
+        POLICY_STATEMENT, name, ADD_PATH_SEND_PREFIX_POLICY, getLine(ctx.getStart()));
     _currentBgpGroup.getAddPath().getSend().setPrefixPolicy(name);
   }
 

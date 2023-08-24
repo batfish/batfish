@@ -32,12 +32,12 @@ import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link RoutePolicyStatementAsPathCollector}. */
-public class RoutePolicyStatementAsPathCollectorTest {
+/** Tests for {@link RoutePolicyStatementMatchCollector}. */
+public class RoutePolicyStatementMatchCollectorTest {
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
   private NetworkFactory _nf;
-  private RoutePolicyStatementAsPathCollector _asPathCollector;
+  private RoutePolicyStatementMatchCollector<SymbolicAsPathRegex> _asPathCollector;
 
   private static final String ASPATH1 = " 40$";
   private static final String ASPATH2 = "^$";
@@ -59,7 +59,7 @@ public class RoutePolicyStatementAsPathCollectorTest {
     _baseConfig = cb.build();
     _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
-    _asPathCollector = new RoutePolicyStatementAsPathCollector();
+    _asPathCollector = new RoutePolicyStatementMatchCollector<>(new BooleanExprAsPathCollector());
   }
 
   @Test

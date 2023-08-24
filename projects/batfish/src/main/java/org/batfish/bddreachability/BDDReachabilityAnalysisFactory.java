@@ -2,6 +2,7 @@ package org.batfish.bddreachability;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Predicates.alwaysTrue;
+import static org.batfish.bddreachability.BDDReachabilityUtils.dispositionState;
 import static org.batfish.bddreachability.BidirectionalReachabilityReturnPassInstrumentation.instrumentReturnPassEdges;
 import static org.batfish.bddreachability.SessionInstrumentation.sessionInstrumentation;
 import static org.batfish.bddreachability.transition.Transitions.IDENTITY;
@@ -52,7 +53,6 @@ import org.apache.logging.log4j.Logger;
 import org.batfish.bddreachability.IpsRoutedOutInterfacesFactory.IpsRoutedOutInterfaces;
 import org.batfish.bddreachability.transition.TransformationToTransition;
 import org.batfish.bddreachability.transition.Transition;
-import org.batfish.common.BatfishException;
 import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
@@ -535,34 +535,7 @@ public final class BDDReachabilityAnalysisFactory {
   }
 
   private static Stream<Edge> generateQueryEdges(Set<FlowDisposition> actions) {
-    return actions.stream()
-        .map(
-            action -> {
-              switch (action) {
-                case ACCEPTED:
-                  return new Edge(Accept.INSTANCE, Query.INSTANCE);
-                case DENIED_IN:
-                  return new Edge(DropAclIn.INSTANCE, Query.INSTANCE);
-                case DENIED_OUT:
-                  return new Edge(DropAclOut.INSTANCE, Query.INSTANCE);
-                case LOOP:
-                  throw new BatfishException("FlowDisposition LOOP is unsupported");
-                case NEIGHBOR_UNREACHABLE:
-                  return new Edge(NeighborUnreachable.INSTANCE, Query.INSTANCE);
-                case DELIVERED_TO_SUBNET:
-                  return new Edge(DeliveredToSubnet.INSTANCE, Query.INSTANCE);
-                case EXITS_NETWORK:
-                  return new Edge(ExitsNetwork.INSTANCE, Query.INSTANCE);
-                case INSUFFICIENT_INFO:
-                  return new Edge(InsufficientInfo.INSTANCE, Query.INSTANCE);
-                case NO_ROUTE:
-                  return new Edge(DropNoRoute.INSTANCE, Query.INSTANCE);
-                case NULL_ROUTED:
-                  return new Edge(DropNullRoute.INSTANCE, Query.INSTANCE);
-                default:
-                  throw new BatfishException("Unknown FlowDisposition " + action);
-              }
-            });
+    return actions.stream().map(action -> new Edge(dispositionState(action), Query.INSTANCE));
   }
 
   private Stream<Edge> generateRootEdges_OriginateInterfaceLink_PreInInterface(

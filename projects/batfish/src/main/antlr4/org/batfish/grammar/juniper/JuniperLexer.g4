@@ -4,6 +4,8 @@ options {
    superClass = 'org.batfish.grammar.juniper.parsing.JuniperBaseLexer';
 }
 
+ACTIVE: 'active:';
+
 REPLACE
 :
   'replace:'
@@ -70,7 +72,7 @@ OPEN_PAREN
 
 SEMICOLON
 :
-   ';' F_SECRET_DATA?
+   F_OMITTED? ';' F_SECRET_DATA?
 ;
 
 WORD
@@ -131,6 +133,10 @@ F_QuotedString
 :
    '"' ~'"'* '"'
 ;
+
+// This may appear before a semicolon if settings are present to hide certain secrets.
+// For example: set system login apply-flags omit
+F_OMITTED: '{ /* OMITTED */ }';
 
 // This may appear after a semicolon when there is a secret key in the file
 // Search for examples online.

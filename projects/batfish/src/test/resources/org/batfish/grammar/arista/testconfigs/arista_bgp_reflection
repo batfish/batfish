@@ -1,0 +1,12 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_reflection
+!
+vrf instance vrf2
+vrf instance vrf3
+!
+router bgp 1
+  no bgp client-to-client reflection
+  vrf vrf2
+  vrf vrf3
+    bgp client-to-client reflection

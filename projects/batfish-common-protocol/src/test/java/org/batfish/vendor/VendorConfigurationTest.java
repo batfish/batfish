@@ -87,7 +87,6 @@ public final class VendorConfigurationTest {
   private static VendorConfiguration buildVendorConfiguration() {
     VendorConfiguration c = new TestVendorConfiguration();
     c.setFilename(FILENAME);
-    c.setAnswerElement(new ConvertConfigurationAnswerElement());
     c.setWarnings(new Warnings(true, true, true));
     return c;
   }
@@ -110,7 +109,8 @@ public final class VendorConfigurationTest {
       assertFalse(c.deleteStructure(origName, _testStructureType1));
 
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
       // Should produce an appropriate warning and indicate the rename did not succeed
       assertThat(
           c.getWarnings(),
@@ -118,7 +118,7 @@ public final class VendorConfigurationTest {
 
       // Reference should be unaffected since the delete did not succeed
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
     }
 
@@ -132,7 +132,8 @@ public final class VendorConfigurationTest {
       assertFalse(c.deleteStructure(origName, _testStructureType1));
 
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
       // Should produce an appropriate warning and indicate the rename did not succeed
       assertThat(
           c.getWarnings(),
@@ -140,7 +141,7 @@ public final class VendorConfigurationTest {
 
       // Reference should be unaffected since the delete did not succeed
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType1, otherName, _testStructureUsage));
     }
   }
@@ -164,23 +165,23 @@ public final class VendorConfigurationTest {
     assertTrue(c.deleteStructure(origName, _testStructureType1));
 
     // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-    c.setAnswerElement(new ConvertConfigurationAnswerElement());
+    ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+    c.getStructureManager().saveInto(ccae, c.getFilename());
     // No warnings
     assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
     // Has no definition or reference for the old name
+    assertThat(ccae, not(hasDefinedStructure(FILENAME, _testStructureType1, origName)));
     assertThat(
-        c.getAnswerElement(), not(hasDefinedStructure(FILENAME, _testStructureType1, origName)));
-    assertThat(
-        c.getAnswerElement(),
+        ccae,
         not(hasReferencedStructure(FILENAME, _testStructureType1, origName, _testStructureUsage)));
 
     // Unaffected reference and definition should persist
     assertThat(
-        c.getAnswerElement(),
+        ccae,
         hasDefinedStructureWithDefinitionLines(
             FILENAME, _testStructureType1, unaffectedName, contains(otherLine)));
     assertThat(
-        c.getAnswerElement(),
+        ccae,
         hasReferencedStructure(FILENAME, _testStructureType1, unaffectedName, _testStructureUsage));
   }
 
@@ -226,7 +227,8 @@ public final class VendorConfigurationTest {
               ImmutableList.of(_testStructureType1, _testStructureType2));
 
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
 
       // Should produce an appropriate warning and indicate the rename did not succeed
       assertThat(
@@ -237,7 +239,7 @@ public final class VendorConfigurationTest {
       assertFalse(succeeded);
       // Reference should be unaffected since the rename did not succeed
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType2, origName, _testStructureUsage));
     }
   }
@@ -270,12 +272,14 @@ public final class VendorConfigurationTest {
       assertFalse(succeeded);
 
       // Both org and new structure defs persist
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, origName, contains(origLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, newName, contains(otherLine)));
     }
@@ -305,12 +309,14 @@ public final class VendorConfigurationTest {
       assertFalse(succeeded);
 
       // Both org and new structure defs persist
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType2, origName, contains(origLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, newName, contains(otherLine)));
     }
@@ -337,26 +343,27 @@ public final class VendorConfigurationTest {
           c.renameStructure(
               origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
 
       // No warnings
       assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
       assertTrue(succeeded);
       // Has a definition and reference for the new structure name
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, newName, contains(origLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType1, newName, _testStructureUsage));
       // Unaffected reference and definition should persist
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, unaffectedName, contains(otherLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(
               FILENAME, _testStructureType1, unaffectedName, _testStructureUsage));
     }
@@ -373,26 +380,27 @@ public final class VendorConfigurationTest {
           c.renameStructure(
               origName, newName, _testStructureType1, ImmutableList.of(_testStructureType1));
       // Need to call setAnswerElement to trigger population of CCAE / answerElement (for refs)
-      c.setAnswerElement(new ConvertConfigurationAnswerElement());
+      ConvertConfigurationAnswerElement ccae = new ConvertConfigurationAnswerElement();
+      c.getStructureManager().saveInto(ccae, c.getFilename());
 
       // No warnings
       assertThat(c.getWarnings(), hasRedFlags(emptyIterable()));
       assertTrue(succeeded);
       // Has a definition and reference for the new structure name
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType1, newName, contains(origLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType1, newName, _testStructureUsage));
       // Unaffected reference and definition should persist
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasDefinedStructureWithDefinitionLines(
               FILENAME, _testStructureType2, newName, contains(otherLine)));
       assertThat(
-          c.getAnswerElement(),
+          ccae,
           hasReferencedStructure(FILENAME, _testStructureType2, newName, _testStructureUsage));
     }
   }

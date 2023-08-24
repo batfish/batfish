@@ -18,9 +18,11 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NETWORK;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
+import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.batfish.datamodel.routing_policy.Common.initDenyAllBgpRedistributionPolicy;
 import static org.batfish.datamodel.routing_policy.Common.matchDefaultRoute;
 import static org.batfish.datamodel.routing_policy.Common.suppressSummarizedPrefixes;
+import static org.batfish.datamodel.routing_policy.communities.CommunitySetExprs.toMatchExpr;
 import static org.batfish.datamodel.tracking.TrackMethods.alwaysTrue;
 import static org.batfish.datamodel.tracking.TrackMethods.interfaceActive;
 import static org.batfish.datamodel.tracking.TrackMethods.negatedReference;
@@ -171,14 +173,12 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExpr;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
-import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
 import org.batfish.datamodel.routing_policy.expr.AutoAs;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
@@ -370,8 +370,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     } else {
       withoutQuotes = ciscoRegex;
     }
-    String underscoreReplacement = "(,|\\\\{|\\\\}|^|\\$| )";
-    String output = withoutQuotes.replaceAll("_", underscoreReplacement);
+    String output = withoutQuotes.replaceAll("_", DEFAULT_UNDERSCORE_REPLACEMENT);
     return output;
   }
 
@@ -554,24 +553,29 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     }
 
     // Admin distances are per-AF on NX-OS. Use the v4 unicast values for now.
+    Optional<BgpVrfIpv4AddressFamilyConfiguration> ipv4u =
+        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily());
     int ebgpAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceEbgp)
             .orElse(DEFAULT_DISTANCE_EBGP);
     int ibgpAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceIbgp)
             .orElse(DEFAULT_DISTANCE_IBGP);
     int localAdmin =
-        Optional.ofNullable(nxBgpVrf.getIpv4UnicastAddressFamily())
+        ipv4u
             .map(BgpVrfIpAddressFamilyConfiguration::getDistanceLocal)
             .orElse(DEFAULT_DISTANCE_LOCAL_BGP);
+    boolean clientToClientReflection =
+        ipv4u.map(BgpVrfIpAddressFamilyConfiguration::getClientToClientReflection).orElse(true);
     org.batfish.datamodel.BgpProcess newBgpProcess =
         bgpProcessBuilder()
             .setRouterId(Conversions.getBgpRouterId(nxBgpVrf, _c, v, _w))
             .setEbgpAdminCost(ebgpAdmin)
             .setIbgpAdminCost(ibgpAdmin)
             .setLocalAdminCost(localAdmin)
+            .setClientToClientReflection(clientToClientReflection)
             .build();
     newBgpProcess.setClusterListAsIbgpCost(true);
     if (nxBgpVrf.getBestpathCompareRouterId()) {
@@ -1236,11 +1240,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
       IpCommunityListExpandedLine line) {
-    return new CommunitySetAclLine(
-        line.getAction(),
-        new CommunitySetMatchRegex(
-            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
-            toJavaRegex(line.getRegex())));
+    return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
   private static CommunitySetMatchExpr toCommunitySetMatchExpr(

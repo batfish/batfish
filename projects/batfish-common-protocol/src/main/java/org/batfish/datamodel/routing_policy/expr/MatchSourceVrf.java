@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -55,6 +56,11 @@ public final class MatchSourceVrf extends BooleanExpr {
   @Override
   public int hashCode() {
     return _sourceVrf.hashCode();
+  }
+
+  @JsonProperty(PROP_SOURCE_VRF)
+  public @Nonnull String getSourceVrf() {
+    return _sourceVrf;
   }
 
   @Override
