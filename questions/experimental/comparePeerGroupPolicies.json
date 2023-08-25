@@ -1,0 +1,15 @@
+{
+  "class": "org.batfish.minesweeper.question.comparepeergrouppolicies.ComparePeerGroupPoliciesQuestion",
+  "differential": true,
+  "instance": {
+    "description": "Compares the behavior of routing policies across a network change.",
+    "instanceName": "comparePeerGroupPolicies",
+    "longDescription": "This is a differential question that compares the behavior of routing policies across a network change.  For each peer group, the associated routing policy is semantically compared before and after the change using CRP.",
+    "orderedVariableNames": [],
+    "tags": [
+      "routing"
+    ],
+    "variables": {
+    }
+  }
+}
