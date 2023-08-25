@@ -123,10 +123,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
       BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
-    BDD fullModel = constraintsToModel(constraints, configAPs);
+    BDD model = constraintsToModel(constraints, configAPs);
     return new Tuple<>(
-        satAssignmentToInputRoute(fullModel, configAPs),
-        satAssignmentToEnvironment(fullModel, configAPs));
+        satAssignmentToInputRoute(model, configAPs), satAssignmentToEnvironment(model, configAPs));
   }
 
   /**
