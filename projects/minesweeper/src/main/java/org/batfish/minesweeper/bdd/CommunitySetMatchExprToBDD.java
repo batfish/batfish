@@ -125,7 +125,6 @@ public class CommunitySetMatchExprToBDD
      * first get a BDD for the single community constraints. we use the original route here so that
      * the constraint will be in terms of the community APs.
      */
-    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
     BDD matchExprBDD =
         hasCommunity
             .getExpr()
@@ -133,38 +132,8 @@ public class CommunitySetMatchExprToBDD
                 new CommunityMatchExprToBDD(),
                 new Arg(arg.getTransferBDD(), arg.getTransferBDD().getOriginalRoute()));
 
-    /**
-     * now figure out which atomic predicates satisfy matchExprBDD. it's a bit more complicated than
-     * just checking that the atomic predicate implies the matchExprBDD -- if we did that, then we
-     * would not be able to show that ap1 satisfies the community constraint (ap1 /\ !ap2), for
-     * example. since all APs are disjoint, however, ap1 should be considered to satisfy this
-     * constraint.
-     */
-    IntStream disjuncts =
-        IntStream.range(0, originalAPs.length)
-            .filter(
-                i -> {
-                  // check that the ith AP is compatible with matchExprBDD
-                  BDD model = matchExprBDD.and(originalAPs[i]).satOne();
-                  if (model.isZero()) {
-                    return false;
-                  }
-                  // if so, check that all other variables in the produced model are negated;
-                  // this implies that the ith AP on its own is sufficient
-                  return allNegativeLiterals(model.exist(originalAPs[i]));
-                });
-
-    /**
-     * finally return a disjunction of all the satisfying atomic predicates. two important notes.
-     * first, here we do NOT use the exactlyOneAP function, because we are returning a BDD for a
-     * community set, which can satisfy multiple atomic predicates due to multiple elements of the
-     * set. second, we now use the APs in the arg, which properly handles configuration formats like
-     * Juniper that require matching on the current route rather than the original input route.
-     */
-    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
-    return arg.getTransferBDD()
-        .getFactory()
-        .orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+    // convert a constraint on individual communities to a constraint on a community set
+    return toCommunitySetConstraint(matchExprBDD, arg);
   }
 
   @Override
@@ -181,6 +150,48 @@ public class CommunitySetMatchExprToBDD
     return bddRoute
         .getFactory()
         .orAll(commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+  }
+
+  /**
+   * Converts a constraint on individual communities to a constraint on community sets. This
+   * involves figuring out which community atomic predicates satisfy the given community constraint,
+   * and then producing a disjunction of them.
+   *
+   * @param commConstraint the community constraint
+   * @param arg provides access to the context that we need, such as the atomic predicates
+   * @return a community set constraint
+   */
+  public static BDD toCommunitySetConstraint(BDD commConstraint, Arg arg) {
+    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
+    /*
+     * this is a bit more complicated than just checking that an atomic predicate implies the
+     * commConstraint -- if we did that, then we would not be able to show that ap1 satisfies the
+     * community constraint (ap1 /\ !ap2), for example. since all APs are disjoint, however, ap1
+     * should be considered to satisfy this constraint.
+     */
+    IntStream satisfyingAPs =
+        IntStream.range(0, originalAPs.length)
+            .filter(
+                i -> {
+                  // check that the ith AP is compatible with commConstraint
+                  BDD model = commConstraint.and(originalAPs[i]).satOne();
+                  if (model.isZero()) {
+                    return false;
+                  }
+                  // if so, check that all other variables in the produced model are negated;
+                  // this implies that the ith AP on its own is sufficient
+                  return allNegativeLiterals(model.exist(originalAPs[i]));
+                });
+
+    /**
+     * finally return a disjunction of all the satisfying atomic predicates. we now use the APs in
+     * the arg, which properly handles configuration formats like Juniper that require matching on
+     * the current route rather than the original input route.
+     */
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(satisfyingAPs.mapToObj(i -> aps[i]).collect(Collectors.toList()));
   }
 
   // Checks whether all variables in the given variable assignment are negated.
