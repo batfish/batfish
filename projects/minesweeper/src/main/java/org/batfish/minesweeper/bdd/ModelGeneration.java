@@ -51,6 +51,19 @@ public class ModelGeneration {
   }
 
   /**
+   * Determine whether a given boolean formula must be true according to the given satisfying
+   * assignment. This method properly handles assignments that are partial (missing truth values for
+   * some variables).
+   *
+   * @param b the boolean formula, represented as a BDD
+   * @param model the model
+   * @return a boolean
+   */
+  static boolean mustBeTrueInModel(BDD b, BDD model) {
+    return !model.diffSat(b);
+  }
+
+  /**
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
    * set of communities for a given symbolic route that is consistent with the assignment.
    *
@@ -71,7 +84,7 @@ public class ModelGeneration {
     int numStandardAPs = configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
     // handle standard community literals and regexes
     for (int i = 0; i < numStandardAPs; i++) {
-      if (!model.diffSat(aps[i])) {
+      if (mustBeTrueInModel(aps[i], model)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
         // see RegexAtomicPredicates::initAtomicPredicates
@@ -96,7 +109,7 @@ public class ModelGeneration {
     // handle extended/large community literals
     for (Map.Entry<Integer, CommunityVar> entry :
         configAPs.getNonStandardCommunityLiterals().entrySet()) {
-      if (!model.diffSat(aps[entry.getKey()])) {
+      if (mustBeTrueInModel(aps[entry.getKey()], model)) {
         assert entry.getValue().getLiteralValue() != null;
         comms.add(entry.getValue().getLiteralValue());
       }
@@ -122,7 +135,7 @@ public class ModelGeneration {
     // find all atomic predicates that are required to be true in the given model
     List<Integer> trueAPs =
         IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-            .filter(i -> !model.diffSat(aps[i]))
+            .filter(i -> mustBeTrueInModel(aps[i], model))
             .boxed()
             .collect(Collectors.toList());
 
@@ -241,7 +254,7 @@ public class ModelGeneration {
   // assignment.
   private static List<String> allSatisfyingItems(List<String> items, BDD[] itemBDDs, BDD model) {
     return IntStream.range(0, itemBDDs.length)
-        .filter(i -> !model.diffSat(itemBDDs[i]))
+        .filter(i -> mustBeTrueInModel(itemBDDs[i], model))
         .mapToObj(items::get)
         .collect(ImmutableList.toImmutableList());
   }

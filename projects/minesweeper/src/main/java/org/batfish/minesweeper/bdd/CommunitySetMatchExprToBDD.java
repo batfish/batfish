@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -135,15 +134,25 @@ public class CommunitySetMatchExprToBDD
                 new Arg(arg.getTransferBDD(), arg.getTransferBDD().getOriginalRoute()));
 
     /**
-     * now figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
-     * predicate, we use the exactlyOneAP helper function to include the fact that all other atomic
-     * predicates will be false, which must be the case since atomic predicates are disjoint.
-     * otherwise, we would not be able to show that ap1 satisfies the community constraint (ap1 /\
-     * !ap2), for example.
+     * now figure out which atomic predicates satisfy matchExprBDD. it's a bit more complicated than
+     * just checking that the atomic predicate implies the matchExprBDD -- if we did that, then we
+     * would not be able to show that ap1 satisfies the community constraint (ap1 /\ !ap2), for
+     * example. since all APs are disjoint, however, ap1 should be considered to satisfy this
+     * constraint.
      */
     IntStream disjuncts =
         IntStream.range(0, originalAPs.length)
-            .filter(i -> !exactlyOneAP(originalAPs, i, arg).diffSat(matchExprBDD));
+            .filter(
+                i -> {
+                  // check that the ith AP is compatible with matchExprBDD
+                  BDD model = matchExprBDD.and(originalAPs[i]).satOne();
+                  if (model.isZero()) {
+                    return false;
+                  }
+                  // if so, check that all other variables in the produced model are negated;
+                  // this implies that the ith AP on its own is sufficient
+                  return allNegativeLiterals(model.exist(originalAPs[i]));
+                });
 
     /**
      * finally return a disjunction of all the satisfying atomic predicates. two important notes.
@@ -174,13 +183,14 @@ public class CommunitySetMatchExprToBDD
         .orAll(commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
   }
 
-  /*
-  Return a BDD that represents the scenario where the ith BDD in aps is satisfied and all others
-  are falsified.
-   */
-  static BDD exactlyOneAP(BDD[] aps, int i, Arg arg) {
-    ArrayList<BDD> negs = new ArrayList<>(Arrays.asList(aps));
-    negs.remove(i);
-    return aps[i].diff(arg.getTransferBDD().getFactory().orAll(negs));
+  // Checks whether all variables in the given variable assignment are negated.
+  static boolean allNegativeLiterals(BDD model) {
+    if (model.isZero() || model.isOne()) {
+      return true;
+    } else if (model.high().isZero()) {
+      return allNegativeLiterals(model.low());
+    } else {
+      return false;
+    }
   }
 }
