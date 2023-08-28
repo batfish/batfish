@@ -321,6 +321,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -2983,6 +2984,22 @@ public final class FlatJuniperGrammarTest {
             .getCommunities()
             .getCommunities(),
         contains(StandardCommunity.of(65537L)));
+  }
+
+  /**
+   * When local-address of a BGP peer group is unconfigured and default-address-selection flag is
+   * on, BGP peer local IP is null and the VRF's source IP inference is set to use loopback IP.
+   */
+  @Test
+  public void testBgpDefaultAddressSelection() throws IOException {
+    Configuration config =
+        BatfishTestUtils.parseTextConfigs(
+                _folder, "org/batfish/grammar/juniper/testconfigs/bgp-default-address-selection")
+            .get("bgp-default-address-selection");
+    Ip loopback = Ip.parse("1.1.1.1");
+    assertEquals(config.getDefaultVrf().getSourceIpInference(), UseConstantIp.create(loopback));
+    assertNull(
+        getOnlyElement(config.getDefaultVrf().getBgpProcess().getAllPeerConfigs()).getLocalIp());
   }
 
   @Test
