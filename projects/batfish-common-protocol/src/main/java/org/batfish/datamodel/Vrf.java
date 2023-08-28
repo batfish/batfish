@@ -101,6 +101,7 @@ public class Vrf extends ComparableStructure<String> {
   private static final String PROP_RIP_PROCESS = "ripProcess";
   private static final String PROP_STATIC_ROUTES = "staticRoutes";
   private static final String PROP_VRF_LEAK_CONFIG = "vrfLeakConfig";
+  private static final String PROP_SOURCE_IP_INFERENCE = "sourceIpInference";
 
   public static @Nonnull Builder builder() {
     return new Builder(null);
@@ -126,6 +127,7 @@ public class Vrf extends ComparableStructure<String> {
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
   @Nullable private VrfLeakConfig _vrfLeakConfig;
+  @Nonnull private SourceIpInference _sourceIpInference;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -137,6 +139,7 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
+    _sourceIpInference = SourceIpInference.InferFromFib.instance();
   }
 
   @JsonCreator
@@ -388,5 +391,19 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_STATIC_ROUTES)
   public void setStaticRoutes(SortedSet<StaticRoute> staticRoutes) {
     _staticRoutes = staticRoutes;
+  }
+
+  /**
+   * Source IP inference of locally generated IP packets, defaults to {@link
+   * SourceIpInference.InferFromFib}.
+   */
+  @JsonProperty(PROP_SOURCE_IP_INFERENCE)
+  @Nonnull
+  public SourceIpInference getSourceIpInference() {
+    return _sourceIpInference;
+  }
+
+  public void setSourceIpInference(@Nonnull SourceIpInference sourceIpInference) {
+    _sourceIpInference = sourceIpInference;
   }
 }

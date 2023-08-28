@@ -113,6 +113,7 @@ import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SnmpCommunity;
 import org.batfish.datamodel.SnmpServer;
+import org.batfish.datamodel.SourceIpInference;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
@@ -817,18 +818,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ipv4AfSettingsBuilder.setSendCommunity(true).setSendExtendedCommunity(true);
 
       // inherit update-source
-      Ip localIp = ig.getLocalAddress();
-
-      // When local IP is not explicitly set, the source address is dynamically picked based on the
-      // outgoing interface (done in VI land, so we don't need to do anything more here).
-      // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
-      // default-address-selection is set.
-      if (localIp == null
-          && _masterLogicalSystem.getDefaultAddressSelection()
-          && (ibgp || firstNonNull(ig.getEbgpMultihop(), false))) {
-        localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
-      }
-      neighbor.setLocalIp(localIp);
+      neighbor.setLocalIp(ig.getLocalAddress());
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
@@ -3852,6 +3842,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ri.getNamedBgpGroups().size() > 0 || ri.getIpBgpGroups().size() > 0) {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
+      }
+      if (_masterLogicalSystem.getDefaultAddressSelection()) {
+        // When local IP is not explicitly set, the source address is dynamically picked based on
+        // the outgoing interface (done in VI land, so we don't need to do anything more here).
+        // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
+        // default-address-selection is set.
+        getDefaultSourceAddress(ri, _c)
+            .ifPresent(ip -> vrf.setSourceIpInference(SourceIpInference.UseConstantIp.create(ip)));
       }
       convertResolution(ri);
     }
