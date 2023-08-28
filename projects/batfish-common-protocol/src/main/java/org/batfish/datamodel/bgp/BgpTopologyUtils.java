@@ -49,6 +49,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.SourceIpInference;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
@@ -198,9 +199,19 @@ public final class BgpTopologyUtils {
 
           if (config.getLocalIp() != null) {
             localIpsBuilder.put(neighborId, config.getLocalIp());
-          } else if (fib != null) {
-            // No explicitly configured local IP. Check for dynamically resolvable local IPs.
-            localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
+          } else {
+            SourceIpInference sourceInference = vrf.getSourceIpInference();
+            if (sourceInference instanceof SourceIpInference.InferFromFib) {
+              if (fib != null) {
+                // No explicitly configured local IP. Check for dynamically resolvable local IPs.
+                localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
+              }
+            } else if (sourceInference instanceof SourceIpInference.UseConstantIp) {
+              Ip defaultLocalIp = ((SourceIpInference.UseConstantIp) sourceInference).getIp();
+              if (defaultLocalIp != null) {
+                localIpsBuilder.put(neighborId, defaultLocalIp);
+              }
+            }
           }
         }
         // Dynamic peers: map of prefix to BgpPassivePeerConfig

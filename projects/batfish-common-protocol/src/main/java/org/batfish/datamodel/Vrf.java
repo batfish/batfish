@@ -126,6 +126,7 @@ public class Vrf extends ComparableStructure<String> {
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
   @Nullable private VrfLeakConfig _vrfLeakConfig;
+  private SourceIpInference _sourceIpInference;
 
   public Vrf(@Nonnull String name) {
     super(name);
@@ -137,6 +138,7 @@ public class Vrf extends ComparableStructure<String> {
     _staticRoutes = new TreeSet<>();
     _layer2Vnis = ImmutableMap.of();
     _layer3Vnis = ImmutableMap.of();
+    _sourceIpInference = new SourceIpInference.InferFromFib();
   }
 
   @JsonCreator
@@ -388,5 +390,13 @@ public class Vrf extends ComparableStructure<String> {
   @JsonProperty(PROP_STATIC_ROUTES)
   public void setStaticRoutes(SortedSet<StaticRoute> staticRoutes) {
     _staticRoutes = staticRoutes;
+  }
+
+  public SourceIpInference getSourceIpInference() {
+    return _sourceIpInference;
+  }
+
+  public void setSourceIpInference(SourceIpInference sourceIpInference) {
+    _sourceIpInference = sourceIpInference;
   }
 }
