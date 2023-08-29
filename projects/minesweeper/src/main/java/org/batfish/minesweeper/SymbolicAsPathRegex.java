@@ -96,8 +96,18 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
     return "(" + setAsString + ")";
   }
 
-  public SymbolicAsPathRegex union(SymbolicAsPathRegex other) {
-    return new SymbolicAsPathRegex("(" + this._regex + ")|(" + other.getRegex() + ")");
+  /**
+   * Construct a single symbolic as-path regex that represents the union of a given list of such
+   * regexes. The list of regexes is assumed to be non-empty
+   *
+   * @param regexes the regexes to union
+   * @return a regex representing the union of the given regexes
+   */
+  public static SymbolicAsPathRegex union(List<SymbolicAsPathRegex> regexes) {
+    checkArgument(!regexes.isEmpty());
+    String regex =
+        regexes.stream().map(r -> "(" + r.getRegex() + ")").collect(Collectors.joining("|"));
+    return new SymbolicAsPathRegex(regex);
   }
 
   /**

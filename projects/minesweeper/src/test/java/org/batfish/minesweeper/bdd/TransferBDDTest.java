@@ -2007,6 +2007,47 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testDisjunctionForAsPathGroup() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(" 40$")),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of("^$"))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    // get the unique atomic predicate that corresponds to the union of " 40$" and "^$"
+    Integer ap =
+        regexMap
+            .get(
+                SymbolicAsPathRegex.union(
+                    ImmutableList.of(
+                        new SymbolicAsPathRegex(" 40$"), new SymbolicAsPathRegex("^$"))))
+            .iterator()
+            .next();
+
+    BDD expectedBDD = aps[ap];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+  }
+
+  @Test
   public void testDeleteCommunity() {
     RoutingPolicy policy =
         _policyBuilder

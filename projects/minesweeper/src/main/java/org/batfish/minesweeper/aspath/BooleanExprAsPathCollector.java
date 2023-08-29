@@ -51,17 +51,18 @@ public class BooleanExprAsPathCollector extends BooleanExprMatchCollector<Symbol
   public Set<SymbolicAsPathRegex> visitDisjunction(
       Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
     Set<SymbolicAsPathRegex> disjuncts = visitAll(this, disjunction.getDisjuncts(), arg);
+    /*
+     If this is a disjunction of as-path matches, create a single regex representing their
+     disjunction, rather than having one regex per disjunct. AS-path groups get translated to such
+     disjunctions, and large groups can cause the latter approach to produce many atomic predicates
+     unnecessarily, which hurts performance.
+    */
     if (disjunction.getDisjuncts().stream().allMatch(d -> d instanceof MatchAsPath)) {
       List<SymbolicAsPathRegex> disjuncts_list = new ArrayList<>(disjuncts);
       if (disjuncts_list.isEmpty()) {
         return ImmutableSet.of();
       }
-
-      SymbolicAsPathRegex acc = disjuncts_list.get(0);
-      for (int i = 1; i < disjuncts_list.size(); i++) {
-        acc = acc.union(disjuncts_list.get(i));
-      }
-      return ImmutableSet.of(acc);
+      return ImmutableSet.of(SymbolicAsPathRegex.union(disjuncts_list));
     } else {
       return disjuncts;
     }

@@ -102,9 +102,11 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
+import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion;
 import org.batfish.minesweeper.utils.PrefixUtils;
+import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * @author Ryan Beckett
@@ -287,35 +289,56 @@ public class TransferBDD {
 
     } else if (expr instanceof Disjunction) {
       Disjunction disj = (Disjunction) expr;
-      List<TransferResult> currResults = new ArrayList<>();
-      // the default result is false
-      currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
-      for (BooleanExpr e : disj.getDisjuncts()) {
-        List<TransferResult> nextResults = new ArrayList<>();
-        try {
-          for (TransferResult curr : currResults) {
-            BDD currBDD = curr.getReturnValue().getSecond();
-            compute(e, toTransferBDDState(p.indent(), curr))
-                .forEach(
-                    r -> {
-                      TransferResult updated =
-                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
-                      // if we're on a path where e evaluates to true, then this path is done;
-                      // otherwise we will evaluate the next disjunct in the next iteration
-                      if (updated.getReturnValue().getAccepted()) {
-                        finalResults.add(updated);
-                      } else {
-                        nextResults.add(updated);
-                      }
-                    });
+      /*
+      Disjunctions of as-path matches are handled specially when building as-path atomic
+      predicates, for performance reasons. See BooleanExprAsPathCollector::visitDisjunction. We
+      have to check for that special case here in order to access the correct atomic predicates.
+      */
+      if (disj.getDisjuncts().stream()
+          .allMatch(
+              d ->
+                  d instanceof MatchAsPath
+                      && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+        // get the optimized as-path regexes, and produce the corresponding BDD
+        Set<SymbolicAsPathRegex> asPathRegexes =
+            disj.accept(
+                new BooleanExprAsPathCollector(),
+                new Tuple<>(Collections.singleton(_policy.getName()), _conf));
+        finalResults.add(
+            result
+                .setReturnValueBDD(asPathRegexesToBDD(asPathRegexes, routeForMatching(p.getData())))
+                .setReturnValueAccepted(true));
+      } else {
+        List<TransferResult> currResults = new ArrayList<>();
+        // the default result is false
+        currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
+        for (BooleanExpr e : disj.getDisjuncts()) {
+          List<TransferResult> nextResults = new ArrayList<>();
+          try {
+            for (TransferResult curr : currResults) {
+              BDD currBDD = curr.getReturnValue().getSecond();
+              compute(e, toTransferBDDState(p.indent(), curr))
+                  .forEach(
+                      r -> {
+                        TransferResult updated =
+                            r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                        // if we're on a path where e evaluates to true, then this path is done;
+                        // otherwise we will evaluate the next disjunct in the next iteration
+                        if (updated.getReturnValue().getAccepted()) {
+                          finalResults.add(updated);
+                        } else {
+                          nextResults.add(updated);
+                        }
+                      });
+            }
+            currResults = nextResults;
+          } catch (UnsupportedFeatureException ufe) {
+            // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
+            currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
           }
-          currResults = nextResults;
-        } catch (UnsupportedFeatureException ufe) {
-          // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
-          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
         }
+        finalResults.addAll(currResults);
       }
-      finalResults.addAll(currResults);
 
       // TODO: This code is here for backward-compatibility reasons but has not been tested and is
       // not currently maintained
