@@ -1,11 +1,19 @@
 package org.batfish.minesweeper;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 
 @ParametersAreNonnullByDefault
 public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<SymbolicAsPathRegex> {
@@ -54,6 +62,38 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   public SymbolicAsPathRegex(String regex) {
     super(regex);
+  }
+
+  /**
+   * Construct a symbolic representation of an {@link AsSetsMatchingRanges} expression, which
+   * represents certain common kinds of AS-path regexes.
+   *
+   * @param asExpr the AS-path expression
+   */
+  public SymbolicAsPathRegex(AsSetsMatchingRanges asExpr) {
+    super(toRegex(asExpr));
+  }
+
+  // Produce a Java regex that is equivalent to the given AS path expression.
+  private static String toRegex(AsSetsMatchingRanges asExpr) {
+    boolean start = asExpr.getAnchorStart();
+    boolean end = asExpr.getAnchorEnd();
+    List<Range<Long>> ranges = asExpr.getAsRanges();
+    String pre = start ? "^" : "(^| )";
+    String post = end ? "$" : "( |$)";
+    String asns =
+        ranges.stream().map(SymbolicAsPathRegex::toRegex).collect(Collectors.joining(" "));
+    return pre + asns + post;
+  }
+
+  // Produce a Java regex that is equivalent to the given range of longs.
+  private static String toRegex(Range<Long> r) {
+    checkArgument(
+        r.hasLowerBound() && r.hasUpperBound(),
+        "Unexpected unbounded ASN range in an AS-path expression");
+    ContiguousSet<Long> cs = ContiguousSet.create(r, DiscreteDomain.longs());
+    String setAsString = cs.stream().map(l -> "(" + l + ")").collect(Collectors.joining("|"));
+    return "(" + setAsString + ")";
   }
 
   public SymbolicAsPathRegex union(SymbolicAsPathRegex other) {

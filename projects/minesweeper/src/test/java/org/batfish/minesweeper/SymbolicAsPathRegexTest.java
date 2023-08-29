@@ -4,8 +4,11 @@ import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REP
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Range;
 import dk.brics.automaton.RegExp;
 import org.apache.commons.text.StringEscapeUtils;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.junit.Test;
 
 /** Tests for the {@link org.batfish.minesweeper.SymbolicAsPathRegex} class. */
@@ -52,5 +55,23 @@ public class SymbolicAsPathRegexTest {
     assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
     assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
     assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+  }
+
+  @Test
+  public void testConstructorFromAsSetsMatchingRanges() {
+    AsSetsMatchingRanges a1 =
+        AsSetsMatchingRanges.of(false, false, ImmutableList.of(Range.closed(11L, 11L)));
+    AsSetsMatchingRanges a2 =
+        AsSetsMatchingRanges.of(true, false, ImmutableList.of(Range.open(11L, 14L)));
+    AsSetsMatchingRanges a3 =
+        AsSetsMatchingRanges.of(
+            false, true, ImmutableList.of(Range.closed(11L, 11L), Range.closed(130L, 132L)));
+    AsSetsMatchingRanges a4 =
+        AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(11L, 14L)));
+
+    assertThat(new SymbolicAsPathRegex(a1).getRegex(), equalTo("(^| )((11))( |$)"));
+    assertThat(new SymbolicAsPathRegex(a2).getRegex(), equalTo("(^| )((12)|(13))$"));
+    assertThat(new SymbolicAsPathRegex(a3).getRegex(), equalTo("^((11)) ((130)|(131)|(132))( |$)"));
+    assertThat(new SymbolicAsPathRegex(a4).getRegex(), equalTo("^((11)|(12)|(13)|(14))$"));
   }
 }

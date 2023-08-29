@@ -54,7 +54,9 @@ public class AsPathMatchExprToBDD
   @Override
   public BDD visitAsSetsMatchingRanges(
       AsSetsMatchingRanges asSetsMatchingRanges, CommunitySetMatchExprToBDD.Arg arg) {
-    throw new UnsupportedOperationException("Currently not supporting matching on AS ranges");
+    return arg.getTransferBDD()
+        .asPathRegexesToBDD(
+            ImmutableSet.of(new SymbolicAsPathRegex(asSetsMatchingRanges)), arg.getBDDRoute());
   }
 
   @Override
