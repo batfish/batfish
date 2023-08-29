@@ -244,7 +244,6 @@ public abstract class BooleanExprMatchCollector<T>
    * @param exprs the list of expressions
    * @param arg the argument that the visitor expects
    * @return a set containing the results of visiting each expression
-   * @param <T>
    */
   public static <T> Set<T> visitAll(
       BooleanExprMatchCollector<T> visitor,
