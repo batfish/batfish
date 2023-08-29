@@ -298,7 +298,8 @@ public class TransferBDD {
                   d ->
                       d instanceof MatchAsPath
                           && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
-        // produce the optimized as-path regex, and then create the corresponding BDD
+        // collect all as-path regexes, produce a single regex that is their union, and then create
+        // the corresponding BDD
         BDDRoute currRoute = routeForMatching(p.getData());
         Set<SymbolicAsPathRegex> asPathRegexes =
             disj.getDisjuncts().stream()
