@@ -1,8 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
-import net.sf.javabdd.BDD;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
@@ -14,26 +14,24 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 
 /**
- * Create a BDD from a {@link AsPathMatchExpr} expression, such that the models of the BDD represent
- * all and only AS-paths that match the expression. This BDD is used as part of symbolic route
- * analysis of the {@link MatchAsPath} expression.
+ * Create a set of {@link SymbolicAsPathRegex} objects from a {@link AsPathMatchExpr} expression,
+ * such that the disjunction of these regexes represent all and only AS-paths that match the
+ * expression. This set is used as part of symbolic route analysis of the {@link MatchAsPath}
+ * expression.
  */
 @ParametersAreNonnullByDefault
-public class AsPathMatchExprToBDD
-    implements AsPathMatchExprVisitor<BDD, CommunitySetMatchExprToBDD.Arg> {
+public class AsPathMatchExprToRegexes
+    implements AsPathMatchExprVisitor<Set<SymbolicAsPathRegex>, CommunitySetMatchExprToBDD.Arg> {
   @Override
-  public BDD visitAsPathMatchAny(
+  public Set<SymbolicAsPathRegex> visitAsPathMatchAny(
       AsPathMatchAny asPathMatchAny, CommunitySetMatchExprToBDD.Arg arg) {
-    return arg.getBDDRoute()
-        .getFactory()
-        .orAll(
-            asPathMatchAny.getDisjuncts().stream()
-                .map(matchExpr -> matchExpr.accept(this, arg))
-                .collect(ImmutableSet.toImmutableSet()));
+    return asPathMatchAny.getDisjuncts().stream()
+        .flatMap(matchExpr -> matchExpr.accept(this, arg).stream())
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @Override
-  public BDD visitAsPathMatchExprReference(
+  public Set<SymbolicAsPathRegex> visitAsPathMatchExprReference(
       AsPathMatchExprReference asPathMatchExprReference, CommunitySetMatchExprToBDD.Arg arg) {
     return arg.getTransferBDD()
         .getConfiguration()
@@ -43,24 +41,19 @@ public class AsPathMatchExprToBDD
   }
 
   @Override
-  public BDD visitAsPathMatchRegex(
+  public Set<SymbolicAsPathRegex> visitAsPathMatchRegex(
       AsPathMatchRegex asPathMatchRegex, CommunitySetMatchExprToBDD.Arg arg) {
-    return arg.getTransferBDD()
-        .asPathRegexesToBDD(
-            ImmutableSet.of(new SymbolicAsPathRegex(asPathMatchRegex.getRegex())),
-            arg.getBDDRoute());
+    return ImmutableSet.of(new SymbolicAsPathRegex(asPathMatchRegex.getRegex()));
   }
 
   @Override
-  public BDD visitAsSetsMatchingRanges(
+  public Set<SymbolicAsPathRegex> visitAsSetsMatchingRanges(
       AsSetsMatchingRanges asSetsMatchingRanges, CommunitySetMatchExprToBDD.Arg arg) {
-    return arg.getTransferBDD()
-        .asPathRegexesToBDD(
-            ImmutableSet.of(new SymbolicAsPathRegex(asSetsMatchingRanges)), arg.getBDDRoute());
+    return ImmutableSet.of(new SymbolicAsPathRegex(asSetsMatchingRanges));
   }
 
   @Override
-  public BDD visitHasAsPathLength(
+  public Set<SymbolicAsPathRegex> visitHasAsPathLength(
       HasAsPathLength hasAsPathLength, CommunitySetMatchExprToBDD.Arg arg) {
     throw new UnsupportedOperationException("Currently not supporting matching on AS path length");
   }

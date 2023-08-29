@@ -102,11 +102,9 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
-import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion;
 import org.batfish.minesweeper.utils.PrefixUtils;
-import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * @author Ryan Beckett
@@ -294,19 +292,29 @@ public class TransferBDD {
       predicates, for performance reasons. See BooleanExprAsPathCollector::visitDisjunction. We
       have to check for that special case here in order to access the correct atomic predicates.
       */
-      if (disj.getDisjuncts().stream()
-          .allMatch(
-              d ->
-                  d instanceof MatchAsPath
-                      && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
-        // get the optimized as-path regexes, and produce the corresponding BDD
+      if (!disj.getDisjuncts().isEmpty()
+          && disj.getDisjuncts().stream()
+              .allMatch(
+                  d ->
+                      d instanceof MatchAsPath
+                          && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+        // produce the optimized as-path regex, and then create the corresponding BDD
+        BDDRoute currRoute = routeForMatching(p.getData());
         Set<SymbolicAsPathRegex> asPathRegexes =
-            disj.accept(
-                new BooleanExprAsPathCollector(),
-                new Tuple<>(Collections.singleton(_policy.getName()), _conf));
+            disj.getDisjuncts().stream()
+                .flatMap(
+                    d ->
+                        ((MatchAsPath) d)
+                                .getAsPathMatchExpr()
+                                .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute))
+                                .stream())
+                .collect(ImmutableSet.toImmutableSet());
         finalResults.add(
             result
-                .setReturnValueBDD(asPathRegexesToBDD(asPathRegexes, routeForMatching(p.getData())))
+                .setReturnValueBDD(
+                    asPathRegexesToBDD(
+                        ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                        routeForMatching(p.getData())))
                 .setReturnValueAccepted(true));
       } else {
         List<TransferResult> currResults = new ArrayList<>();
@@ -545,10 +553,13 @@ public class TransferBDD {
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
       MatchAsPath matchAsPath = (MatchAsPath) expr;
+      BDDRoute currRoute = routeForMatching(p.getData());
       BDD asPathPredicate =
-          matchAsPath
-              .getAsPathMatchExpr()
-              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
+          asPathRegexesToBDD(
+              matchAsPath
+                  .getAsPathMatchExpr()
+                  .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute)),
+              currRoute);
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchSourceVrf) {

@@ -7,6 +7,7 @@ import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
+import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -97,13 +98,13 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
   }
 
   /**
-   * Construct a single symbolic as-path regex that represents the union of a given list of such
-   * regexes. The list of regexes is assumed to be non-empty
+   * Construct a single symbolic as-path regex that represents the union of a given collection of
+   * such regexes. The collection of regexes is assumed to be non-empty
    *
    * @param regexes the regexes to union
    * @return a regex representing the union of the given regexes
    */
-  public static SymbolicAsPathRegex union(List<SymbolicAsPathRegex> regexes) {
+  public static SymbolicAsPathRegex union(Collection<SymbolicAsPathRegex> regexes) {
     checkArgument(!regexes.isEmpty());
     String regex =
         regexes.stream().map(r -> "(" + r.getRegex() + ")").collect(Collectors.joining("|"));
