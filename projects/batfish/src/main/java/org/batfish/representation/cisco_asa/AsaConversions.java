@@ -188,8 +188,7 @@ public class AsaConversions {
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
       // TODO: Confirm that an undefined attribute-map can be treated as unset
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     return BgpAggregate.of(
@@ -698,7 +697,7 @@ public class AsaConversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(

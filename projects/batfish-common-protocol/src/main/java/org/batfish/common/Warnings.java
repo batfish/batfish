@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.errorprone.annotations.FormatMethod;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -176,6 +177,14 @@ public class Warnings implements Serializable {
     _redFlagWarnings.add(new Warning(msg, TAG_RED_FLAG));
   }
 
+  @FormatMethod
+  public void redFlagf(String format, Object... args) {
+    if (!_settings._redFlagRecord) {
+      return;
+    }
+    redFlag(String.format(format, args));
+  }
+
   /**
    * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
    * will include the text of the given {@code line} and, for debugging/implementation, the current
@@ -228,6 +237,14 @@ public class Warnings implements Serializable {
       return;
     }
     _unimplementedWarnings.add(new Warning(msg, TAG_UNIMPLEMENTED));
+  }
+
+  @FormatMethod
+  public void unimplementedf(String format, Object... args) {
+    if (!_settings._unimplementedRecord) {
+      return;
+    }
+    unimplemented(String.format(format, args));
   }
 
   /** A class to represent a parse warning in a file. */

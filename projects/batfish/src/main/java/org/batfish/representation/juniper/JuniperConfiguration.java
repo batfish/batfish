@@ -3005,8 +3005,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // We only support IPv4 unicast
     if (!addressFamily.equals("inet") && w != null) {
-      w.unimplemented(
-          String.format("Rib name conversion: %s address family is not supported", addressFamily));
+      w.unimplementedf("Rib name conversion: %s address family is not supported", addressFamily);
       return null;
     }
     return new RibId(hostname, vrfName, ribName);
@@ -3306,8 +3305,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         return ImmutableSet.of();
       }
       if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
-        _w.unimplemented(
-            String.format("next-table support is currently limited to %s", RIB_IPV4_UNICAST));
+        _w.unimplementedf("next-table support is currently limited to %s", RIB_IPV4_UNICAST);
         return ImmutableSet.of();
       }
       nextVrf = ribId.getVrfName();

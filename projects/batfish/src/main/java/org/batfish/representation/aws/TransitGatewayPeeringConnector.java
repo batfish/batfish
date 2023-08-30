@@ -51,8 +51,7 @@ class TransitGatewayPeeringConnector {
                   .filter(attachment -> arePeers(sendSideAttachment, attachment))
                   .collect(ImmutableSet.toImmutableSet());
           if (peers.isEmpty()) {
-            warnings.redFlag(
-                String.format("Matching peer for TGW attachment %s not found", sendSideAttachment));
+            warnings.redFlagf("Matching peer for TGW attachment %s not found", sendSideAttachment);
           } else if (peers.size() > 1) {
             warnings.redFlag(
                 String.format(
@@ -80,15 +79,13 @@ class TransitGatewayPeeringConnector {
       Warnings warnings) {
     Configuration sendSideTgw = viConfigs.getNode(sendSideAttachment.getGatewayId());
     if (sendSideTgw == null) {
-      warnings.redFlag(
-          String.format("Configuration not found for TGW %s", sendSideAttachment.getGatewayId()));
+      warnings.redFlagf("Configuration not found for TGW %s", sendSideAttachment.getGatewayId());
       return;
     }
 
     Configuration recvSideTgw = viConfigs.getNode(recvSideAttachment.getGatewayId());
     if (recvSideTgw == null) {
-      warnings.redFlag(
-          String.format("Configuration not found for TGW %s", recvSideAttachment.getGatewayId()));
+      warnings.redFlagf("Configuration not found for TGW %s", recvSideAttachment.getGatewayId());
       return;
     }
 

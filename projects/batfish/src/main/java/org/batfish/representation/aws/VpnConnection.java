@@ -156,8 +156,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       case "transport":
         return IpsecEncapsulationMode.TRANSPORT;
       default:
-        warnings.redFlag(
-            String.format("No IPsec encapsulation mode for string '%s'", ipsecEncapsulationMode));
+        warnings.redFlagf("No IPsec encapsulation mode for string '%s'", ipsecEncapsulationMode);
         return null;
     }
   }
@@ -439,13 +438,11 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         ImmutableSortedMap.naturalOrder();
 
     if (gwCfg.getVrfs().get(VPN_UNDERLAY_VRF_NAME) == null) {
-      warnings.redFlag(
-          String.format("Underlay VRF does not exist on gateway %s", gwCfg.getHostname()));
+      warnings.redFlagf("Underlay VRF does not exist on gateway %s", gwCfg.getHostname());
       return;
     }
     if (gwCfg.getVrfs().get(tunnelVrf.getName()) == null) {
-      warnings.redFlag(
-          String.format("Tunnel VRF does not exist on gateway %s", gwCfg.getHostname()));
+      warnings.redFlagf("Tunnel VRF does not exist on gateway %s", gwCfg.getHostname());
       return;
     }
 

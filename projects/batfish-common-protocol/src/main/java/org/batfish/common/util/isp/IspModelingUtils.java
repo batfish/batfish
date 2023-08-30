@@ -415,8 +415,7 @@ public final class IspModelingUtils {
             .findFirst()
             .orElse(null);
     if (snapshotIface == null) {
-      warnings.redFlag(
-          String.format("ISP Modeling: Non-existent border interface %s", nodeInterfacePair));
+      warnings.redFlagf("ISP Modeling: Non-existent border interface %s", nodeInterfacePair);
       return ImmutableList.of();
     }
 
@@ -519,8 +518,7 @@ public final class IspModelingUtils {
     // 0a. Resolve the device indicated by the BgpPeerInfo.
     Configuration snapshotBgpHost = configurations.get(bgpPeerInfo.getHostname());
     if (snapshotBgpHost == null) {
-      warnings.redFlag(
-          String.format("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname()));
+      warnings.redFlagf("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname());
       return Optional.empty();
     }
 

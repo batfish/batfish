@@ -33,7 +33,7 @@ public class FwFromInterfaceSet implements FwFrom {
     InterfaceSet interfaceSet =
         jc.getMasterLogicalSystem().getInterfaceSets().get(_interfaceSetName);
     if (interfaceSet == null) {
-      w.redFlag(String.format("Missing firewall interface-set '%s'", _interfaceSetName));
+      w.redFlagf("Missing firewall interface-set '%s'", _interfaceSetName);
       return AclLineMatchExprs.FALSE;
     }
 
