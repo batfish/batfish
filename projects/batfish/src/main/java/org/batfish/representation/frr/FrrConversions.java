@@ -1241,7 +1241,7 @@ public final class FrrConversions {
                 return;
               }
               if (!vniToIndex.containsKey(l3Vni)) {
-                w.redFlag(String.format("vni %s for vrf %s does not exist", l3Vni, innerVrfName));
+                w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
                 return;
               }
               RouteDistinguisher rd =
@@ -1326,7 +1326,7 @@ public final class FrrConversions {
               org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
 
               if (vrf == null) {
-                w.redFlag(String.format("Vrf %s is not found.", ospfVrf.getVrfName()));
+                w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
                 return;
               }
 

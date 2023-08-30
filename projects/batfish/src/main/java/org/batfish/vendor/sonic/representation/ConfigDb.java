@@ -230,19 +230,18 @@ public class ConfigDb implements Serializable {
 
           // warn about unimplemented properties
           if (interfaceKeyProperties.getForcedMgmtRoutes() != null) {
-            warnings.unimplemented(
-                String.format("Property 'forced_mgmt_routes' of '%s' is not implemented", key));
+            warnings.unimplementedf(
+                "Property 'forced_mgmt_routes' of '%s' is not implemented", key);
           }
           if (interfaceKeyProperties.getGwAddr() != null) {
-            warnings.unimplemented(
-                String.format("Property 'gwaddr' of '%s' is not implemented", key));
+            warnings.unimplementedf("Property 'gwaddr' of '%s' is not implemented", key);
           }
           continue;
         }
         // it is not v4 prefix; try to parse as prefix6 and warn if it isn't that either
         Optional<Prefix6> prefix6 = Prefix6.tryParse(parts[1]);
         if (!prefix6.isPresent()) {
-          warnings.redFlag(String.format("Could not parse interface key '%s", key));
+          warnings.redFlagf("Could not parse interface key '%s", key);
         }
       }
     }
@@ -512,11 +511,11 @@ public class ConfigDb implements Serializable {
               break;
             default:
               if (!IGNORED_PROPERTIES.contains(field)) {
-                _warnings.unimplemented(String.format("Unimplemented configdb table '%s'", field));
+                _warnings.unimplementedf("Unimplemented configdb table '%s'", field);
               }
           }
         } catch (IllegalArgumentException e) { // thrown by convertValue
-          _warnings.redFlag(String.format("Failed to deserialize %s: %s", field, e.getMessage()));
+          _warnings.redFlagf("Failed to deserialize %s: %s", field, e.getMessage());
         }
       }
       return configDb.build();
