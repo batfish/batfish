@@ -43,7 +43,7 @@ public final class FwFromSourcePrefixList implements FwFrom {
     IpSpace space = pl.toIpSpace();
     // if referenced prefix list is empty, it should not match anything
     if (space instanceof EmptyIpSpace && !pl.getHasIpv6()) {
-      w.redFlag(String.format("source-prefix-list \"%s\" is empty", _name));
+      w.redFlagf("source-prefix-list \"%s\" is empty", _name);
     }
 
     return HeaderSpace.builder().setSrcIps(space).build();

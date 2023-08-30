@@ -76,7 +76,7 @@ final class CiscoIosNatUtil {
       RouteMap routeMap, Set<String> validAclNames, String ifaceName, Warnings w) {
     List<AclLineMatchExpr> clauseExprs = new ArrayList<>();
     if (routeMap.getClauses().isEmpty()) {
-      w.redFlag(String.format("Ignoring NAT rule with empty route-map %s", routeMap.getName()));
+      w.redFlagf("Ignoring NAT rule with empty route-map %s", routeMap.getName());
       return Optional.empty();
     }
     for (RouteMapClause clause : routeMap.getClauses().values()) {

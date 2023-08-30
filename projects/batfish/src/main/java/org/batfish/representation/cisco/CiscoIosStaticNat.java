@@ -176,7 +176,7 @@ public class CiscoIosStaticNat extends CiscoIosNat {
     assert routeMap != null; // this method should only be called if a route-map is configured.
     RouteMap rm = routeMaps.get(routeMap);
     if (rm == null) {
-      w.redFlag(String.format("Ignoring NAT rule with undefined route-map %s", routeMap));
+      w.redFlagf("Ignoring NAT rule with undefined route-map %s", routeMap);
       return Optional.empty();
     }
     return toMatchExpr(rm, ipAccessLists.keySet(), ifaceName, w);

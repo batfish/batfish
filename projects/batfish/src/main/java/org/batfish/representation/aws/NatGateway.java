@@ -186,8 +186,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     Subnet subnet = region.getSubnets().get(_subnetId);
     if (subnet == null) {
-      warnings.redFlag(
-          String.format("Subnet %s not found for NAT gateway %s.", _subnetId, _natGatewayId));
+      warnings.redFlagf("Subnet %s not found for NAT gateway %s.", _subnetId, _natGatewayId);
       return cfgNode;
     }
     Interface ifaceToSubnet =
@@ -278,7 +277,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     String vrfNameOnVpc = Vpc.vrfNameForLink(_natGatewayId);
 
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, _vpcId));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, _vpcId);
       return null;
     }
 

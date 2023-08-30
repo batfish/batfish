@@ -42,7 +42,7 @@ public class ResolvConf implements Serializable {
           nameservers6.add(ip6.get());
           continue;
         }
-        warnings.redFlag(String.format("'%s' is neither IPv4 nor IPv6 address", address));
+        warnings.redFlagf("'%s' is neither IPv4 nor IPv6 address", address);
       }
     }
     if (!foundNameserverLine) {

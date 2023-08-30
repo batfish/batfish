@@ -749,7 +749,7 @@ public class CiscoConversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(

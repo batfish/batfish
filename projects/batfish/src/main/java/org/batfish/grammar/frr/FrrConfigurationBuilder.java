@@ -1915,8 +1915,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     } else {
       String vrfName = ctx.vrf.getText();
       if (!_vc.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
-        _w.redFlag(
-            String.format("the static route is ignored since vrf %s is not defined", vrfName));
+        _w.redFlagf("the static route is ignored since vrf %s is not defined", vrfName);
         return;
       }
       _frr.getOrCreateVrf(vrfName).getStaticRoutes().add(route);

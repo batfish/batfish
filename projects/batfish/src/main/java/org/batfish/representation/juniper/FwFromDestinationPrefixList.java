@@ -43,7 +43,7 @@ public final class FwFromDestinationPrefixList implements FwFrom {
     IpSpace space = pl.toIpSpace();
     // if referenced prefix list is empty, it should not match anything
     if (space instanceof EmptyIpSpace && !pl.getHasIpv6()) {
-      w.redFlag(String.format("destination-prefix-list \"%s\" is empty", _name));
+      w.redFlagf("destination-prefix-list \"%s\" is empty", _name);
     }
 
     return HeaderSpace.builder().setDstIps(space).build();
