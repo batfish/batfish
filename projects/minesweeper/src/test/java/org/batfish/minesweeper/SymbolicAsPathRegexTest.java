@@ -69,9 +69,26 @@ public class SymbolicAsPathRegexTest {
     AsSetsMatchingRanges a4 =
         AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(11L, 14L)));
 
-    assertThat(new SymbolicAsPathRegex(a1).getRegex(), equalTo("(^| )((11))( |$)"));
-    assertThat(new SymbolicAsPathRegex(a2).getRegex(), equalTo("(^| )((12)|(13))$"));
-    assertThat(new SymbolicAsPathRegex(a3).getRegex(), equalTo("^((11)) ((130)|(131)|(132))( |$)"));
-    assertThat(new SymbolicAsPathRegex(a4).getRegex(), equalTo("^((11)|(12)|(13)|(14))$"));
+    assertThat(new SymbolicAsPathRegex(a1).getRegex(), equalTo("(^| )11( |$)"));
+    assertThat(new SymbolicAsPathRegex(a2).getRegex(), equalTo("(^| )<12-13>$"));
+    assertThat(new SymbolicAsPathRegex(a3).getRegex(), equalTo("^11 <130-132>( |$)"));
+    assertThat(new SymbolicAsPathRegex(a4).getRegex(), equalTo("^<11-14>$"));
+  }
+
+  @Test
+  public void testToRegex() {
+    String r1 = SymbolicAsPathRegex.toRegex(0L, Integer.MAX_VALUE);
+    String r2 = SymbolicAsPathRegex.toRegex(500L, (long) Integer.MAX_VALUE + 20);
+    String r3 =
+        SymbolicAsPathRegex.toRegex((long) Integer.MAX_VALUE + 20, (long) Integer.MAX_VALUE + 500);
+    String r4 = SymbolicAsPathRegex.toRegex(0L, (long) Math.pow(2, 32) - 1);
+
+    assertThat(r1, equalTo("<0-2147483647>"));
+    assertThat(r2, equalTo("((<500-2147483647>)|(2<147483648-147483667>))"));
+    assertThat(r3, equalTo("((2<147483667-147484147>))"));
+    assertThat(
+        r4,
+        equalTo(
+            "((<0-2147483647>)|(2<147483648-999999999>)|(3<000000000-999999999>)|(4<000000000-294967295>))"));
   }
 }

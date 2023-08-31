@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Range;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +53,7 @@ import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -2036,6 +2038,40 @@ public class TransferBDDTest {
                         new SymbolicAsPathRegex(" 40$"), new SymbolicAsPathRegex("^$"))))
             .iterator()
             .next();
+
+    BDD expectedBDD = aps[ap];
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+  }
+
+  @Test
+  public void testAsSetsMatchingRanges() {
+    AsSetsMatchingRanges asExpr =
+        AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(10L, 15L)));
+    _policyBuilder.addStatement(
+        new If(
+            MatchAsPath.of(InputAsPath.instance(), asExpr),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    // get the unique atomic predicate that corresponds to the AsSetsMatchingRanges constraint
+    Integer ap = regexMap.get(new SymbolicAsPathRegex(asExpr)).iterator().next();
 
     BDD expectedBDD = aps[ap];
 
