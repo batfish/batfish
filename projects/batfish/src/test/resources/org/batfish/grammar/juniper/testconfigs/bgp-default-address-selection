@@ -1,0 +1,9 @@
+#
+set system host-name bgp-default-address-selection
+set system default-address-selection
+#
+set interfaces lo0 unit 0 family inet address 1.1.1.1/32 primary
+#
+set routing-options autonomous-system 1
+#
+set protocols bgp group G neighbor 2.2.2.2
