@@ -183,7 +183,7 @@ public class CommunitySetMatchExprToBDD
                   return allNegativeLiterals(model.exist(originalAPs[i]));
                 });
 
-    /**
+    /*
      * finally return a disjunction of all the satisfying atomic predicates. we now use the APs in
      * the arg, which properly handles configuration formats like Juniper that require matching on
      * the current route rather than the original input route.
@@ -194,14 +194,19 @@ public class CommunitySetMatchExprToBDD
         .orAll(satisfyingAPs.mapToObj(i -> aps[i]).collect(Collectors.toList()));
   }
 
-  // Checks whether all variables in the given variable assignment are negated.
+  /**
+   * Checks whether all variables in the given variable assignment are negated.
+   *
+   * @param model the variable assignment
+   * @return a boolean indicating whether the check succeeded
+   */
   static boolean allNegativeLiterals(BDD model) {
     if (model.isZero() || model.isOne()) {
       return true;
-    } else if (model.high().isZero()) {
-      return allNegativeLiterals(model.low());
-    } else {
-      return false;
     }
+    if (model.high().isZero()) {
+      return allNegativeLiterals(model.low());
+    }
+    return false;
   }
 }
