@@ -92,7 +92,7 @@ public class BooleanExprAsPathCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  public void testVisitDisjunctionOfAsPathMatches() {
 
     Disjunction d =
         new Disjunction(
@@ -110,7 +110,7 @@ public class BooleanExprAsPathCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction2() {
+  public void testVisitDisjunctionOfNotAllAsPathMatches() {
 
     Disjunction d =
         new Disjunction(

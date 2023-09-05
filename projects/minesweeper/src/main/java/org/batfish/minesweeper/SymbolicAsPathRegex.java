@@ -3,7 +3,9 @@ package org.batfish.minesweeper;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.BoundType;
+import com.google.common.base.Strings;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
@@ -12,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -77,7 +78,12 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
     super(toRegex(asExpr));
   }
 
-  // Produce a regex for the automaton library that is equivalent to the given AS path expression.
+  /**
+   * Produce a regex for the automaton library that is equivalent to the given AS path expression.
+   *
+   * @param asExpr the AS-path expression
+   * @return an equivalent regex as a String
+   */
   private static String toRegex(AsSetsMatchingRanges asExpr) {
     boolean start = asExpr.getAnchorStart();
     boolean end = asExpr.getAnchorEnd();
@@ -89,64 +95,78 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
     return pre + asns + post;
   }
 
-  // Produce a regex for the automaton library that is equivalent to the given range of longs.
+  /**
+   * Produce a regex for the automaton library that is equivalent to the given range of longs.
+   *
+   * @param r the range
+   * @return an equivalent regex as a String
+   */
   private static String toRegex(Range<Long> r) {
     checkArgument(
         r.hasLowerBound() && r.hasUpperBound(),
         "Unexpected unbounded ASN range in an AS-path expression");
-    long lower = r.lowerBoundType() == BoundType.CLOSED ? r.lowerEndpoint() : r.lowerEndpoint() + 1;
-    long upper = r.upperBoundType() == BoundType.CLOSED ? r.upperEndpoint() : r.upperEndpoint() - 1;
-    return toRegex(lower, upper);
+    ContiguousSet<Long> set = ContiguousSet.create(r, DiscreteDomain.longs());
+    return toRegex(set.first(), set.last());
   }
 
-  // Produce a regex for the automaton library that represents a closed range from lower to upper.
-  // Since these numbers represent AS numbers, they are assumed to be no larger than 2^32 - 1.
+  /**
+   * Produce a regex for the automaton library that represents a closed range from lower to upper.
+   * Since these numbers represent AS numbers, they are assumed to be no larger than 2^32 - 1.
+   *
+   * @param lower the lower bound of the range
+   * @param upper the upper bound of the range
+   * @return an equivalent regex as a String
+   */
   @VisibleForTesting
   static String toRegex(long lower, long upper) {
+    assert lower >= 0;
     if (lower == upper) {
       return String.valueOf(lower);
-    } else if (upper <= Integer.MAX_VALUE) {
-      return toRegexRange(String.valueOf(lower), String.valueOf(upper));
-    } else {
-      // handle the case when the given interval is outside the range of Java integers
-      List<String> disjuncts = new ArrayList<>();
-      long currLower = lower;
-      if (currLower <= Integer.MAX_VALUE) {
-        // make a range expression for the part of the interval that is in the range of Java
-        // integers
-        disjuncts.add(toRegexRange(String.valueOf(currLower), String.valueOf(Integer.MAX_VALUE)));
-        currLower = Integer.MAX_VALUE + 1L;
-      }
-      // now lower and upper are both beyond the range of Java ints
-      // therefore they also have the same length in decimal
-      String lowerS = String.valueOf(currLower);
-      String upperS = String.valueOf(upper);
-      // create a separate range expression for each interval of values that all start with the same
-      // decimal number
-      while (lowerS.charAt(0) < upperS.charAt(0)) {
-        disjuncts.add(
-            lowerS.charAt(0)
-                + toRegexRange(lowerS.substring(1), stringCopies("9", lowerS.length() - 1)));
-        lowerS =
-            (Character.getNumericValue(lowerS.charAt(0)) + 1)
-                + stringCopies("0", lowerS.length() - 1);
-      }
-      // one last range expression for the remaining values up to and including upper
-      disjuncts.add(lowerS.charAt(0) + toRegexRange(lowerS.substring(1), upperS.substring(1)));
-
-      // OR all of these range expressions together
-      return "("
-          + disjuncts.stream().map(s -> "(" + s + ")").collect(Collectors.joining("|"))
-          + ")";
     }
+    if (upper <= Integer.MAX_VALUE) {
+      return toNumericInterval(String.valueOf(lower), String.valueOf(upper));
+    }
+    // specially handle the case when the given interval is outside the range of Java ints,
+    // since the automaton library only supports range expressions for Java ints
+    List<String> disjuncts = new ArrayList<>();
+    long currLower = lower;
+    if (currLower <= Integer.MAX_VALUE) {
+      // make a range expression for the part of the interval that is in the range of Java
+      // integers
+      disjuncts.add(
+          toNumericInterval(String.valueOf(currLower), String.valueOf(Integer.MAX_VALUE)));
+      currLower = Integer.MAX_VALUE + 1L;
+    }
+    // now lower and upper are both beyond the range of Java ints
+    // therefore they also have the same length in decimal
+    String lowerS = String.valueOf(currLower);
+    String upperS = String.valueOf(upper);
+    // create a separate range expression for each interval of values that all start with the same
+    // decimal number
+    while (lowerS.charAt(0) < upperS.charAt(0)) {
+      disjuncts.add(
+          lowerS.charAt(0)
+              + toNumericInterval(lowerS.substring(1), Strings.repeat("9", lowerS.length() - 1)));
+      lowerS =
+          (Character.getNumericValue(lowerS.charAt(0)) + 1)
+              + Strings.repeat("0", lowerS.length() - 1);
+    }
+    // one last range expression for the remaining values up to and including upper
+    disjuncts.add(lowerS.charAt(0) + toNumericInterval(lowerS.substring(1), upperS.substring(1)));
+
+    // OR all of these range expressions together
+    return "(" + disjuncts.stream().map(s -> "(" + s + ")").collect(Collectors.joining("|")) + ")";
   }
 
-  private static String toRegexRange(String lower, String upper) {
+  /**
+   * Produce an numeric interval expression for the Automaton library. See {@link RegExp#INTERVAL}.
+   *
+   * @param lower the lower bound of the interval
+   * @param upper the upper bound of the interval
+   * @return the range expression as a String
+   */
+  private static String toNumericInterval(String lower, String upper) {
     return "<" + lower + "-" + upper + ">";
-  }
-
-  private static String stringCopies(String s, int n) {
-    return IntStream.range(0, n).mapToObj(i -> s).collect(Collectors.joining());
   }
 
   /**

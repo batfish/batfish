@@ -3,10 +3,16 @@ package org.batfish.minesweeper;
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ContiguousSet;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
+import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
+import java.util.Set;
 import org.apache.commons.text.StringEscapeUtils;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.junit.Test;
@@ -90,5 +96,96 @@ public class SymbolicAsPathRegexTest {
         r4,
         equalTo(
             "((<0-2147483647>)|(2<147483648-999999999>)|(3<000000000-999999999>)|(4<000000000-294967295>))"));
+  }
+
+  @Test
+  public void testAsSetsMatchingRangesRegexBehavior() {
+    SymbolicAsPathRegex r1 = singletonAsPathRegexForClosedInterval(50, 155);
+    testRegexBehavior(
+        r1,
+        ContiguousSet.closed(50L, 155),
+        ImmutableSet.<Long>builder()
+            .addAll(ContiguousSet.closed(1L, 49))
+            .addAll(ContiguousSet.closed(156L, 255))
+            .build());
+
+    SymbolicAsPathRegex r2 = singletonAsPathRegexForClosedInterval(500, Integer.MAX_VALUE + 20L);
+    testRegexBehavior(
+        r2,
+        ImmutableSet.<Long>builder()
+            .add(500L)
+            .add(50000L)
+            .add((long) Integer.MAX_VALUE)
+            .add(Integer.MAX_VALUE + 20L)
+            .build(),
+        ImmutableSet.<Long>builder()
+            .addAll(ContiguousSet.closed(1L, 200))
+            .add(Integer.MAX_VALUE + 21L)
+            .add(Integer.MAX_VALUE + 2111L)
+            .build());
+
+    SymbolicAsPathRegex r3 =
+        singletonAsPathRegexForClosedInterval(Integer.MAX_VALUE + 20L, 3333333333L);
+    testRegexBehavior(
+        r3,
+        ImmutableSet.<Long>builder()
+            .add(Integer.MAX_VALUE + 21L)
+            .add(Integer.MAX_VALUE + 2111L)
+            .add(2999999999L)
+            .add(3000000000L)
+            .add(3333333333L)
+            .build(),
+        ImmutableSet.<Long>builder()
+            .addAll(ContiguousSet.closed(1L, 200))
+            .add(500L)
+            .add(50000L)
+            .add((long) Integer.MAX_VALUE + 19L)
+            .add(3333333334L)
+            .add(3999999999L)
+            .build());
+
+    SymbolicAsPathRegex r4 =
+        singletonAsPathRegexForClosedInterval(400L, (long) Math.pow(2, 32) - 1);
+    testRegexBehavior(
+        r4,
+        ImmutableSet.<Long>builder()
+            .add(400L)
+            .add(400000L)
+            .add((long) Integer.MAX_VALUE)
+            .add(Integer.MAX_VALUE + 21L)
+            .add(Integer.MAX_VALUE + 2111L)
+            .add(2999999999L)
+            .add(3000000000L)
+            .add(3333333333L)
+            .add(3999999999L)
+            .add(4000000000L)
+            .add(4294967295L)
+            .build(),
+        ContiguousSet.closed(1L, 399));
+  }
+
+  private SymbolicAsPathRegex singletonAsPathRegexForClosedInterval(long lower, long upper) {
+    return new SymbolicAsPathRegex(
+        AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(lower, upper))));
+  }
+
+  /**
+   * Check that a {@link SymbolicAsPathRegex} accepts and rejects the given set of positive/negative
+   * examples.
+   *
+   * @param regex the symbolic regex
+   * @param accepted a set of longs, each of which should be accepted as a singleton AS path
+   * @param rejected a set of longs, each of which should be rejected as a singleton AS path
+   */
+  private void testRegexBehavior(
+      SymbolicAsPathRegex regex, Set<Long> accepted, Set<Long> rejected) {
+    Automaton a = regex.toAutomaton();
+    for (long l : accepted) {
+      // internally we always use two start-of-character symbols; see SymbolicAsPathRegex
+      assertTrue(a.run("^^" + String.valueOf(l) + "$"));
+    }
+    for (long l : rejected) {
+      assertFalse(a.run("^^" + String.valueOf(l) + "$"));
+    }
   }
 }

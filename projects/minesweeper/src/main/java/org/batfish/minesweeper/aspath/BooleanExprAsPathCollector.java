@@ -1,8 +1,6 @@
 package org.batfish.minesweeper.aspath;
 
 import com.google.common.collect.ImmutableSet;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.AsPathAccessList;
@@ -57,12 +55,9 @@ public class BooleanExprAsPathCollector extends BooleanExprMatchCollector<Symbol
      disjunctions, and large groups can cause the latter approach to produce many atomic predicates
      unnecessarily, which hurts performance.
     */
-    if (disjunction.getDisjuncts().stream().allMatch(d -> d instanceof MatchAsPath)) {
-      List<SymbolicAsPathRegex> disjuncts_list = new ArrayList<>(disjuncts);
-      if (disjuncts_list.isEmpty()) {
-        return ImmutableSet.of();
-      }
-      return ImmutableSet.of(SymbolicAsPathRegex.union(disjuncts_list));
+    if (!disjuncts.isEmpty()
+        && disjunction.getDisjuncts().stream().allMatch(d -> d instanceof MatchAsPath)) {
+      return ImmutableSet.of(SymbolicAsPathRegex.union(disjuncts));
     } else {
       return disjuncts;
     }
