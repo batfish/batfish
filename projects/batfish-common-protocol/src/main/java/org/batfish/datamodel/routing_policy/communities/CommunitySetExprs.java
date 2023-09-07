@@ -23,9 +23,11 @@ public final class CommunitySetExprs {
    * that explicit by using {@link CommunityMatchRegex} instead of {@link CommunitySetMatchRegex}.
    *
    * @param regex the regex
+   * @param communityRendering the String rendering to use for each community
    * @return an expression that represents a community-set match on the regex
    */
-  public static @Nonnull CommunitySetMatchExpr toMatchExpr(String regex) {
+  public static @Nonnull CommunitySetMatchExpr toMatchExpr(
+      String regex, CommunityRendering communityRendering) {
     String trimmedRegex = regex;
     // a conservative check to determine if the regex only matches on the existence of a single
     // community in the set: the regex optionally starts with _, optionally ends with _, and in
@@ -40,10 +42,21 @@ public final class CommunitySetExprs {
     Automaton trimmedRegexAuto = new RegExp(trimmedRegex).toAutomaton();
     Automaton digitsAndColons = new RegExp("[0-9:]+").toAutomaton();
     if (trimmedRegexAuto.intersection(digitsAndColons).equals(trimmedRegexAuto)) {
-      return new HasCommunity(new CommunityMatchRegex(ColonSeparatedRendering.instance(), regex));
+      return new HasCommunity(new CommunityMatchRegex(communityRendering, regex));
     } else {
       return new CommunitySetMatchRegex(
-          new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), regex);
+          new TypesFirstAscendingSpaceSeparated(communityRendering), regex);
     }
+  }
+
+  /**
+   * Returns {@link #toMatchExpr(String, CommunityRendering)} using {@link
+   * ColonSeparatedRendering#instance()} as the {@link CommunityRendering}.
+   *
+   * <p>New clients of this class should use {@link #toMatchExpr(String, CommunityRendering)}
+   * directly.
+   */
+  public static @Nonnull CommunitySetMatchExpr toMatchExpr(String regex) {
+    return toMatchExpr(regex, ColonSeparatedRendering.instance());
   }
 }

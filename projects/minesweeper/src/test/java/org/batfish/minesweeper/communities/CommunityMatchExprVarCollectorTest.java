@@ -27,9 +27,11 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalA
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAdministratorMatch;
+import org.batfish.datamodel.routing_policy.communities.IntegerValueRendering;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
+import org.batfish.datamodel.routing_policy.communities.SpecialCasesRendering;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
@@ -40,7 +42,9 @@ import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LongComparison;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link CommunityMatchExprVarCollector}. */
 public class CommunityMatchExprVarCollectorTest {
@@ -144,14 +148,30 @@ public class CommunityMatchExprVarCollectorTest {
   }
 
   @Test
-  public void testVisitCommunityMatchRegex() {
+  public void testVisitCommunityMatchRegex_ColonSeparatedRendering() {
     CommunityMatchRegex cmr = new CommunityMatchRegex(ColonSeparatedRendering.instance(), "^20:");
-
     Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
-
     CommunityVar cvar = CommunityVar.from("^20:");
-
     assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunityMatchRegex_SpecialCasesRendering() {
+    CommunityMatchRegex cmr =
+        new CommunityMatchRegex(
+            SpecialCasesRendering.of(ColonSeparatedRendering.instance(), ImmutableMap.of()),
+            "^20:");
+    Set<CommunityVar> result = _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
+    CommunityVar cvar = CommunityVar.from("^20:");
+    assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitCommunityMatchRegex_IntegerValueRendering() {
+    CommunityMatchRegex cmr = new CommunityMatchRegex(IntegerValueRendering.instance(), "^20:");
+
+    _thrown.expect(IllegalArgumentException.class);
+    _varCollector.visitCommunityMatchRegex(cmr, _baseConfig);
   }
 
   @Test
@@ -270,4 +290,6 @@ public class CommunityMatchExprVarCollectorTest {
         _varCollector.visitVpnDistinguisherExtendedCommunities(ec, _baseConfig);
     assertEquals(ImmutableSet.of(), result);
   }
+
+  @Rule public ExpectedException _thrown = ExpectedException.none();
 }
