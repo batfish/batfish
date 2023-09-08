@@ -23,6 +23,7 @@ public final class SpecialCasesRendering implements CommunityRendering {
     return new SpecialCasesRendering(fallbackRendering, specialCases);
   }
 
+  @Override
   public <T, U> T accept(CommunityRenderingVisitor<T, U> visitor, U arg) {
     return visitor.visitSpecialCasesRendering(this, arg);
   }
