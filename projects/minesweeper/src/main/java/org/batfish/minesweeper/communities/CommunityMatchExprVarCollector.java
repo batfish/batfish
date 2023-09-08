@@ -25,7 +25,6 @@ import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprRefere
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprVisitor;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunityNot;
-import org.batfish.datamodel.routing_policy.communities.CommunityRendering;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorHighMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorLowMatch;
 import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityGlobalAdministratorMatch;
@@ -33,7 +32,6 @@ import org.batfish.datamodel.routing_policy.communities.ExtendedCommunityLocalAd
 import org.batfish.datamodel.routing_policy.communities.OpaqueExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.RouteTargetExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.SiteOfOriginExtendedCommunities;
-import org.batfish.datamodel.routing_policy.communities.SpecialCasesRendering;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighMatch;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityLowMatch;
 import org.batfish.datamodel.routing_policy.communities.VpnDistinguisherExtendedCommunities;
@@ -112,15 +110,9 @@ public class CommunityMatchExprVarCollector
   @Override
   public Set<CommunityVar> visitCommunityMatchRegex(
       CommunityMatchRegex communityMatchRegex, Configuration arg) {
-    CommunityRendering r = communityMatchRegex.getCommunityRendering();
     checkArgument(
-        r.equals(ColonSeparatedRendering.instance())
-            || (communityMatchRegex.getCommunityRendering() instanceof SpecialCasesRendering
-                && ((SpecialCasesRendering) r)
-                    .getFallbackRendering()
-                    .equals(ColonSeparatedRendering.instance())),
-        "Currently only supporting community regexes using the colon-separated rendering or"
-            + " special-cases rendering with colon-separated rendering as a fallback");
+        communityMatchRegex.getCommunityRendering().equals(ColonSeparatedRendering.instance()),
+        "Currently only supporting community regexes using the colon-separated rendering");
     return ImmutableSet.of(CommunityVar.from(communityMatchRegex.getRegex()));
   }
 
