@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
 import java.util.Set;
@@ -17,6 +18,7 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
  * Represents a BGP unnumbered config, which allows peering over a layer-3-capable interface without
  * IP configuration.
  */
+@JsonIgnoreProperties(BgpPeerConfig.PROP_CHECK_LOCAL_IP_ON_ACCEPT) // not relevant
 public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpUnnumberedPeerConfig> {
@@ -30,6 +32,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
     @Nonnull
     public BgpUnnumberedPeerConfig build() {
       checkArgument(_peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
+      checkArgument(_checkLocalIpOnAccept == null, "Unsupported %s", PROP_CHECK_LOCAL_IP_ON_ACCEPT);
       BgpUnnumberedPeerConfig bgpPeerConfig =
           new BgpUnnumberedPeerConfig(
               _appliedRibGroup,
@@ -137,6 +140,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
     super(
         appliedRibGroup,
         authenticationSettings,
+        false,
         clusterId,
         confederation,
         defaultMetric,
