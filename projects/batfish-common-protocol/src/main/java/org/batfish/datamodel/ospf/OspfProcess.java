@@ -261,6 +261,7 @@ public final class OspfProcess implements Serializable {
   @Nullable private Long _maxMetricSummaryNetworks;
   @Nullable private Long _maxMetricTransitLinks;
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
+
   /** Mapping from interface name to an OSPF config */
   @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _ospfNeighborConfigs;
 

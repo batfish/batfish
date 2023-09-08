@@ -47,21 +47,25 @@ public abstract class BgpPeerConfig implements Serializable {
 
   @Nullable private final RibGroup _appliedRibGroup;
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
+
   /** The cluster id associated with this peer to be used in route reflection */
   @Nullable private final Long _clusterId;
 
   @Nullable private final Long _confederationAsn;
+
   /** The default metric associated with routes sent to this peer */
   private final int _defaultMetric;
 
   protected final String _description;
   private final boolean _ebgpMultihop;
   private final boolean _enforceFirstAs;
+
   /**
    * The set of generated and/or aggregate routes to be potentially sent to this peer before
    * outbound policies are taken into account
    */
   @Nonnull private final Set<GeneratedRoute> _generatedRoutes;
+
   /**
    * The group name associated with this peer in the vendor-specific configuration from which the
    * containing configuration is derived. This field is OPTIONAL and should not impact the
@@ -71,6 +75,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   /** The autonomous system number of the containing BGP process as reported to this peer */
   @Nullable private final Long _localAs;
+
   /** The ip address of the containing router as reported to this peer */
   @Nullable private final Ip _localIp;
 

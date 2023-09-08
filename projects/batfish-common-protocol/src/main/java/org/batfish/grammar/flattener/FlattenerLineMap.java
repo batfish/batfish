@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 
 public final class FlattenerLineMap {
   public static final int UNMAPPED_LINE_NUMBER = -1;
+
   /**
    * Map of new line number to word map, where word map is map of a word's starting-position in
    * new/flattened line to original line number

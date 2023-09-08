@@ -124,6 +124,7 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?, ?>> {
   /** Configuration for this process */
   @Nonnull private final BgpProcess _process;
+
   /** Parent node configuration */
   @Deprecated @Nonnull private final Configuration _c;
 
@@ -149,6 +150,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * indicate the last path ID generated for a route with the keyed prefix.
    */
   @Nonnull private final ConcurrentMap<Prefix, Integer> _pathIdGenerators;
+
   /**
    * Map indicating what path ID this process uses when exporting a given route. Keys can be:
    *
@@ -165,12 +167,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   @Nonnull private final RoutingPolicies _policies;
   @Nonnull private final String _hostname;
+
   /** Name of our VRF */
   @Nonnull private final String _vrfName;
+
   /** Reference to the parent {@link VirtualRouter} main RIB (read-only). */
   @Nonnull private final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
+
   /** Current BGP topology */
   @Nonnull private BgpTopology _topology;
+
   /** Metadata about propagated prefixes to/from neighbors */
   @Nonnull private PrefixTracer _prefixTracer;
 
@@ -178,14 +184,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull
   BgpRouteDependencyTracker<Bgpv4Route, AbstractRoute> _bgpAggDeps =
       new BgpRouteDependencyTracker<>();
+
   /** All BGP neighbor that speaks IPv4 unicast address family that we know of */
   @Nonnull ImmutableSortedSet<EdgeId> _bgpv4Edges;
+
   /**
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
    */
   @Nonnull @VisibleForTesting
   SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
+
   /**
    * Incoming EVPN type 5 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
@@ -202,6 +211,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   // RIBs and RIB delta builders
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
   @Nonnull final Bgpv4Rib _ebgpv4Rib;
+
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
   @Nonnull final Bgpv4Rib _ibgpv4Rib;
 
@@ -225,20 +235,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Combined BGP (both iBGP and eBGP) RIB, for IPv4 unicast */
   @Nonnull Bgpv4Rib _bgpv4Rib;
+
   /** {@link RibDelta} representing changes to {@link #_bgpv4Rib} in the current iteration */
   @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBuilder = RibDelta.builder();
+
   /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
   @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
+
   /**
    * {@link RibDelta} representing changes to {@link #_bgpv4Rib} best path routes in the current
    * iteration
    */
   @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBestPathBuilder = RibDelta.builder();
+
   /**
    * {@link RibDelta} representing changes to {@link #_ebgpv4Rib} best path routes in the current
    * iteration
    */
   @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBestPathBuilder = RibDelta.builder();
+
   /**
    * Keep track of routes we had imported from other VRF during leaking, to avoid exporting them
    * again (chain leaking).
@@ -247,23 +262,31 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** eBGP RIB for EVPN type 3 routes */
   @Nonnull private EvpnMasterRib<EvpnType3Route> _ebgpType3EvpnRib;
+
   /** iBGP RIB for EVPN type 3 routes */
   @Nonnull private EvpnMasterRib<EvpnType3Route> _ibgpType3EvpnRib;
+
   /** Combined RIB for EVPN type 3 routes */
   @Nonnull private EvpnMasterRib<EvpnType3Route> _evpnType3Rib;
+
   /** eBGP RIB for EVPN type 5 routes */
   @Nonnull private EvpnMasterRib<EvpnType5Route> _ebgpType5EvpnRib;
+
   /** iBGP RIB for EVPN type 5 routes */
   @Nonnull private EvpnMasterRib<EvpnType5Route> _ibgpType5EvpnRib;
+
   /** Combined RIB for EVPN type 5 routes */
   @Nonnull private EvpnMasterRib<EvpnType5Route> _evpnType5Rib;
 
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType3Rib} */
   @Nonnull private Builder<EvpnType3Route> _evpnType3DeltaBuilder = RibDelta.builder();
+
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType5Rib} */
   @Nonnull private Builder<EvpnType5Route> _evpnType5DeltaBuilder = RibDelta.builder();
+
   /** {@link RibDelta} representing last round's changes to {@link #_evpnType3Rib} */
   @Nonnull private RibDelta<EvpnType3Route> _evpnType3DeltaPrev = RibDelta.empty();
+
   /** {@link RibDelta} representing last round's changes to {@link #_evpnType5Rib} */
   @Nonnull private RibDelta<EvpnType5Route> _evpnType5DeltaPrev = RibDelta.empty();
 
@@ -297,6 +320,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * come up, we can easily send out the updates
    */
   @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
+
   /** Type 5 route advertisements that have been sent to neighbors. */
   @Nonnull
   private final RibDelta.Builder<EvpnType5Route> _evpnType5Advertisements = RibDelta.builder();

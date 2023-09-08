@@ -32,6 +32,7 @@ class TestParser extends CommonParser {
   Rule getInputRule(Grammar grammar) {
     return input(TestSpec());
   }
+
   /**
    * Test grammar
    *

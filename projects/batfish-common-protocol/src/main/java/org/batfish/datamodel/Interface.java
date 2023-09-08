@@ -929,8 +929,10 @@ public final class Interface extends ComparableStructure<String> {
   private @Nonnull IntegerSpace _allowedVlans;
   @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
   @Nonnull private SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
+
   /** Cache of all concrete addresses */
   @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+
   /** Cache of all link-local addresses */
   @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
 
@@ -941,6 +943,7 @@ public final class Interface extends ComparableStructure<String> {
   private SortedSet<String> _channelGroupMembers;
   private String _cryptoMap;
   private SortedSet<String> _declaredNames;
+
   /** Set of interface dependencies required for this interface to active */
   @Nonnull private Set<Dependency> _dependencies;
 

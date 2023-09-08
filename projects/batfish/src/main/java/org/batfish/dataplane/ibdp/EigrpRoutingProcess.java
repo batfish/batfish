@@ -65,10 +65,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   /** Parent process containing configuration */
   @Nonnull private final EigrpProcess _process;
+
   /** All routing policies present at our parent node */
   @Nonnull private final RoutingPolicies _routingPolicies;
+
   /** Name of the VRF in which this process resides */
   @Nonnull private final String _vrfName;
+
   /** Our AS number */
   private final long _asn;
 
@@ -76,10 +79,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
 
   /** Helper RIB containing EIGRP external paths */
   @Nonnull private final EigrpExternalRib _externalRib;
+
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
   @Nonnull private final EigrpInternalRib _internalRib;
+
   /** Helper RIBs containing EIGRP internal and external paths. */
   @Nonnull private final EigrpRib _rib;
+
   /** A {@link RibDelta} indicating which internal routes we initialized */
   @Nonnull private RibDelta<EigrpInternalRoute> _initializationDelta;
 
@@ -98,12 +104,14 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   @Nonnull
   private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
       _incomingInternalRoutes;
+
   /** Incoming external route messages into this router from each EIGRP adjacency */
   @Nonnull @VisibleForTesting
   SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingExternalRoutes;
 
   /** Current known EIGRP topology */
   @Nonnull private EigrpTopology _topology;
+
   /** Set of edges in the topology that are new in the current iteration */
   private Collection<EigrpEdge> _edgesWentUp = ImmutableSet.of();
 
