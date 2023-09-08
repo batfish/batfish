@@ -27,8 +27,9 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
       @JsonProperty(PROP_APPLIED_RIB_GROUP) @Nullable RibGroup appliedRibGroup,
       @JsonProperty(PROP_AUTHENTICATION_SETTINGS) @Nullable
           BgpAuthenticationSettings authenticationSettings,
+      @JsonProperty(PROP_CHECK_LOCAL_IP_ON_ACCEPT) @Nullable Boolean checkLocalIpOnAccept,
       @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
-      @Nullable @JsonProperty(PROP_CONFEDERATION_AS) Long confederation,
+      @JsonProperty(PROP_CONFEDERATION_AS) @Nullable Long confederation,
       @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
       @JsonProperty(PROP_EBGP_MULTIHOP) boolean ebgpMultihop,
@@ -46,6 +47,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     return new BgpPassivePeerConfig(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -66,6 +68,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   private BgpPassivePeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Boolean checkLocalIpOnAccept,
       @Nullable Long clusterId,
       @Nullable Long confederation,
       int defaultMetric,
@@ -84,6 +87,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     super(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -144,6 +148,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
           new BgpPassivePeerConfig(
               _appliedRibGroup,
               _authenticationSettings,
+              _checkLocalIpOnAccept,
               _clusterId,
               _confederation,
               _defaultMetric,
