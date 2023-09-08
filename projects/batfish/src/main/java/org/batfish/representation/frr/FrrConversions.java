@@ -618,6 +618,8 @@ public final class FrrConversions {
       assert localAddress instanceof ConcreteInterfaceAddress;
       peerConfigBuilder =
           BgpActivePeerConfig.builder()
+              // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+              .setCheckLocalIpOnAccept(false)
               .setLocalIp(((ConcreteInterfaceAddress) localAddress).getIp())
               .setPeerAddress(inferredIp.get());
     } else {
@@ -729,6 +731,8 @@ public final class FrrConversions {
       Warnings w) {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder()
+            // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+            .setCheckLocalIpOnAccept(false)
             .setLocalIp(
                 Optional.ofNullable(
                         resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
@@ -750,6 +754,8 @@ public final class FrrConversions {
       Warnings w) {
     BgpPassivePeerConfig.Builder peerConfigBuilder =
         BgpPassivePeerConfig.builder()
+            // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+            .setCheckLocalIpOnAccept(false)
             .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
             .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
