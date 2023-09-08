@@ -29,6 +29,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   static final String PROP_APPLIED_RIB_GROUP = "appliedRibGroup";
   static final String PROP_AUTHENTICATION_SETTINGS = "authenticationSettings";
+  static final String PROP_CHECK_LOCAL_IP_ON_ACCEPT = "checkLocalIpOnAccept";
   static final String PROP_CLUSTER_ID = "clusterId";
   static final String PROP_CONFEDERATION_AS = "confederationAs";
   static final String PROP_DEFAULT_METRIC = "defaultMetric";
@@ -47,6 +48,12 @@ public abstract class BgpPeerConfig implements Serializable {
 
   @Nullable private final RibGroup _appliedRibGroup;
   @Nullable private final BgpAuthenticationSettings _authenticationSettings;
+
+  /**
+   * Whether this peer will check local IP, if configured, when accepting a connection. Not all
+   * devices do.
+   */
+  private final boolean _checkLocalIpOnAccept;
 
   /** The cluster id associated with this peer to be used in route reflection */
   @Nullable private final Long _clusterId;
@@ -90,6 +97,7 @@ public abstract class BgpPeerConfig implements Serializable {
   protected BgpPeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Boolean checkLocalIpOnAccept,
       @Nullable Long clusterId,
       @Nullable Long confederationAsn,
       int defaultMetric,
@@ -106,6 +114,7 @@ public abstract class BgpPeerConfig implements Serializable {
       boolean replaceNonLocalAsesOnExport) {
     _appliedRibGroup = appliedRibGroup;
     _authenticationSettings = authenticationSettings;
+    _checkLocalIpOnAccept = firstNonNull(checkLocalIpOnAccept, true);
     _clusterId = clusterId;
     _confederationAsn = confederationAsn;
     _defaultMetric = defaultMetric;
@@ -133,6 +142,15 @@ public abstract class BgpPeerConfig implements Serializable {
   @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
   public BgpAuthenticationSettings getAuthenticationSettings() {
     return _authenticationSettings;
+  }
+
+  /**
+   * Returns true if this device will reject an incoming BGP session where the destination IP is in
+   * this VRF, but does not match the configured local IP.
+   */
+  @JsonProperty(PROP_CHECK_LOCAL_IP_ON_ACCEPT)
+  public boolean getCheckLocalIpOnAccept() {
+    return _checkLocalIpOnAccept;
   }
 
   /** Route-reflection cluster-id for this peer */
@@ -288,7 +306,8 @@ public abstract class BgpPeerConfig implements Serializable {
       return false;
     }
     BgpPeerConfig that = (BgpPeerConfig) o;
-    return _defaultMetric == that._defaultMetric
+    return _checkLocalIpOnAccept == that._checkLocalIpOnAccept
+        && _defaultMetric == that._defaultMetric
         && _ebgpMultihop == that._ebgpMultihop
         && _enforceFirstAs == that._enforceFirstAs
         && Objects.equals(_appliedRibGroup, that._appliedRibGroup)
@@ -311,6 +330,7 @@ public abstract class BgpPeerConfig implements Serializable {
     return Objects.hash(
         _appliedRibGroup,
         _authenticationSettings,
+        _checkLocalIpOnAccept,
         _clusterId,
         _confederationAsn,
         _defaultMetric,
@@ -332,6 +352,7 @@ public abstract class BgpPeerConfig implements Serializable {
     return MoreObjects.toStringHelper(this)
         .add("_appliedRibGroup", _appliedRibGroup)
         .add("_authenticationSettings", _authenticationSettings)
+        .add("_checkLocalIpOnAccept", _checkLocalIpOnAccept)
         .add("_clusterId", _clusterId)
         .add("_confederationAsn", _confederationAsn)
         .add("_defaultMetric", _defaultMetric)
@@ -353,6 +374,7 @@ public abstract class BgpPeerConfig implements Serializable {
     @Nullable protected RibGroup _appliedRibGroup;
     @Nullable protected BgpAuthenticationSettings _authenticationSettings;
     @Nullable protected BgpProcess _bgpProcess;
+    @Nullable protected Boolean _checkLocalIpOnAccept;
     @Nullable protected Long _clusterId;
     @Nullable protected Long _confederation;
     protected int _defaultMetric;
@@ -396,6 +418,11 @@ public abstract class BgpPeerConfig implements Serializable {
      */
     public S setBgpProcess(@Nonnull BgpProcess bgpProcess) {
       _bgpProcess = bgpProcess;
+      return getThis();
+    }
+
+    public S setCheckLocalIpOnAccept(@Nullable Boolean checkLocalIpOnAccept) {
+      _checkLocalIpOnAccept = checkLocalIpOnAccept;
       return getThis();
     }
 
