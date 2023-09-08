@@ -22,8 +22,10 @@ public class AristaEosVxlan implements Serializable {
   private Ip _multicastGroup;
   private String _sourceInterface;
   private Integer _udpPort;
+
   /** Map of VLAN number to VLAN-specific flood addresses */
   private SortedMap<Integer, SortedSet<Ip>> _vlanFloodAddresses;
+
   /** Map of VLAN number to VXLAN segment id (VNI) */
   private SortedMap<Integer, Integer> _vlanVnis;
 

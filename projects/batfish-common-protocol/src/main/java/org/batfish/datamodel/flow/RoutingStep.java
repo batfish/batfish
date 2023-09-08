@@ -36,13 +36,16 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
     /** The name of the VRF in which routing was done. */
     @Nonnull private final String _vrf;
+
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
     @Nonnull private final List<RouteInfo> _routes;
+
     /** ARP IP which was resolved using the {@code _routes} */
     @Nullable private final Ip _arpIp;
+
     /** Output interface which was resolved using the {@code _routes} */
     @Nullable private final String _outputInterface;
 

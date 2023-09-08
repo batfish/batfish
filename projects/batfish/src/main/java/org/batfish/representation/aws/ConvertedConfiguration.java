@@ -24,6 +24,7 @@ class ConvertedConfiguration implements Serializable {
   @Nonnull private final Map<String, Configuration> _configurationNodes;
 
   @Nonnull private final Set<Layer1Edge> _layer1Edges;
+
   /**
    * Multimap of subnet IDs to {@link Instance} in that subnet used as targets by some {@link
    * LoadBalancer}

@@ -992,6 +992,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   private String _hostname;
 
   private Map<String, Interface> _interfaces;
+
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;
 
