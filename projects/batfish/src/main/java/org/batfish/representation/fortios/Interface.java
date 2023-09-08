@@ -241,8 +241,10 @@ public final class Interface implements InterfaceOrZone, Serializable {
   @Nullable private Integer _mtu;
   @Nullable private String _description;
   @Nullable private String _interface;
+
   /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
   @Nullable private Boolean _secondaryIp;
+
   /** Map of name/number to {@code SecondaryIp} */
   @Nonnull private Map<String, SecondaryIp> _secondaryip;
 

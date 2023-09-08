@@ -229,6 +229,7 @@ class FlowTracer {
   private final int _origNewSessionsSize; // size of _newSessions at construction
   private final Flow _originalFlow;
   private final @Nonnull String _vrfName;
+
   /** Only create one in-memory instance of the same breadcrumb. */
   private final @Nonnull Interner<Breadcrumb> _breadcrumbInterner;
 

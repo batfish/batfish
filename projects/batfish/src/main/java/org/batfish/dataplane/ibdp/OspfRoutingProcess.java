@@ -79,17 +79,22 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   /* Provided configuration */
   /** The configuration/datamodel process */
   @Nonnull private final OspfProcess _process;
+
   /** The parent {@link Configuration} */
   @Nonnull private final Configuration _c;
+
   /** The name of the VRF we are in */
   @Nonnull private final String _vrfName;
+
   /** The current known topology */
   @Nonnull private OspfTopology _topology;
+
   /** The area summary filter for each area, if present. */
   @Nonnull private final Map<Long, RouteFilterList> _areaFilters;
 
   /* Computed configuration & cached variables */
   private final boolean _useMinMetricForSummaries;
+
   /** Export policy for external routes */
   @Nonnull private final RoutingPolicy _exportPolicy;
 
@@ -124,10 +129,13 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Delta that captures process initialization (creating intra-area routes based on interfaces) */
   @Nonnull private InternalDelta _initializationDelta;
+
   /** Delta to pass to the main RIB */
   @Nonnull private RibDelta.Builder<OspfRoute> _changeset;
+
   /** Delta of routes we have locally queued for re-distribution */
   @Nonnull private ExternalDelta _queuedForRedistribution;
+
   /**
    * Delta of external routes we have activated in current iteration (but haven't advertised yet)
    */

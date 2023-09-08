@@ -270,10 +270,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html#ariaid-title14
   /** On NX-OS, there is a pre-populated VRF named "default". */
   public static final String DEFAULT_VRF_NAME = "default";
+
   /** On NX-OS, default VRF has id 1. */
   public static final int DEFAULT_VRF_ID = 1;
+
   /** On NX-OS, there is a pre-populated VRF named "management". */
   public static final String MANAGEMENT_VRF_NAME = "management";
+
   /** On NX-OS, management VRF has id 2. */
   public static final int MANAGEMENT_VRF_ID = 2;
 
@@ -283,11 +286,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
   // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/qos/config/cisco_nexus7000_qos_config_guide_8x/configuring_classification.html
   /** On NX-OS, there is an implicit QoS class-map "class-default". */
   public static final String DEFAULT_CLASS_MAP_NAME = "class-default";
+
   /**
    * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
    * on type.
    */
   public static final String DEFAULT_POLICY_MAP_IN = "default-in-policy";
+
   /**
    * On NX-OS, there are implicit policy-maps "default-in-policy" and "default-out-policy" depending
    * on type.

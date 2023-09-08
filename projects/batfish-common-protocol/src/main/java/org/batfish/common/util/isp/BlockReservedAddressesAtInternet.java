@@ -55,6 +55,7 @@ public final class BlockReservedAddressesAtInternet implements IspTrafficFilteri
           .put("224.0.0.0/4", "Multicast")
           .put("240.0.0.0/4", "Future use")
           .build();
+
   /*
    * Having ISPs block documentation IPs hurts our examples. TBD how we resolve this.
    *

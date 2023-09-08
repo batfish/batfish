@@ -1302,6 +1302,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private NamedBgpPeerGroup _currentNamedPeerGroup;
   private OspfArea _currentOspfArea;
   private OspfProcess _currentOspfProcess;
+
   /**
    * OSPF settings to edit in current context. May belong to an {@link OspfProcess}, {@link
    * OspfArea}, or {@link OspfInterfaceSettings}.

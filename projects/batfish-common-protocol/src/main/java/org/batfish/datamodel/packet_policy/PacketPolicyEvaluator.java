@@ -38,6 +38,7 @@ public final class PacketPolicyEvaluator {
   // Start state
   @Nonnull private final String _srcInterface;
   @Nonnull private final String _srcInterfaceVrf;
+
   /** Vrf name to FIB mapping */
   @Nonnull private final Map<String, Fib> _fibs;
 

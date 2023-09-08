@@ -15,6 +15,7 @@ import org.batfish.specifier.SpecifierFactories;
 public class DefinedStructuresQuestion extends Question {
   /** An optional filename for all defined structures returned. */
   private static final String PROP_FILENAME = "filename";
+
   /** A filter on nodes for which to return files defining structures. */
   private static final String PROP_NODES = "nodes";
 

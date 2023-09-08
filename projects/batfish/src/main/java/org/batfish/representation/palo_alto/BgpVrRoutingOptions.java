@@ -12,6 +12,7 @@ import org.batfish.datamodel.Ip;
 public class BgpVrRoutingOptions implements Serializable {
   /** From PAN admin UI and verified. */
   private static final Long DEFAULT_DEFAULT_LOCAL_PREFERENCE = 100L;
+
   /** From PAN admin UI and verified. */
   private static final AsFormat DEFAULT_AS_FORMAT = AsFormat.TWO_BYTE_AS;
 
@@ -81,6 +82,7 @@ public class BgpVrRoutingOptions implements Serializable {
   public void setReflectorClusterId(@Nullable Ip reflectorClusterId) {
     _reflectorClusterId = reflectorClusterId;
   }
+
   // private implementation details
 
   private @Nullable Boolean _aggregateMed;

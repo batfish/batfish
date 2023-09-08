@@ -24,28 +24,35 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
 
   /** If true, this NAT rule is inactive and will not be used. */
   private boolean _inactive;
+
   /** NATs optionally specify an inside, or 'real', interface. May be ANY_INTERFACE */
   private String _insideInterface;
+
   /** Indicates the order in which this NAT was specified in the configuration */
   private int _line;
+
   /** NATs optionally specify an outside, or 'mapped', interface. May be ANY_INTERFACE */
   private String _outsideInterface;
+
   /**
    * NATs specify 'any' address, a network object, or a network object-group as the real address of
    * sources for inside-to-outside flows.
    */
   private AccessListAddressSpecifier _realSource;
+
   /**
    * Object NATs depend on the actual network object that they were declared in for sorting. This
    * network object must have a valid start (and end) IP.
    */
   @Nullable private NetworkObject _realSourceObject;
+
   /**
    * NATs are sorted into sections. There are three sections (in decreasing order of precedence):
    * BEFORE, OBJECT, and AFTER. Twice NATs are in BEFORE by default and can be configured to be in
    * AFTER. Object NATs are always in the OBJECT section.
    */
   private Section _section;
+
   /**
    * If this NAT has an optional destination transformation, it is configured with 'any' address, a
    * network object, a network object-group, or 'interface' as the translated mapping of
@@ -53,20 +60,24 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
    * NAT does not have a destination transformation or if interface NAT was configured.
    */
   @Nullable private AccessListAddressSpecifier _mappedDestination;
+
   /**
    * NATs specify 'any' address, a network object, a network object-group, 'interface', a PAT pool,
    * or an inline IP as the translated mapping of sources for inside-to-outside flows. PAT and
    * interface NAT are not supported. Value is null if interface NAT or a PAT pool was configured.
    */
   @Nullable private AccessListAddressSpecifier _mappedSource;
+
   /**
    * If this NAT has an optional destination transformation, it is configured with 'any' address, a
    * network object, or a network object-group as the real address of destinations for
    * inside-to-outside flows. Value is null if this NAT does not have a destination transformation.
    */
   @Nullable private AccessListAddressSpecifier _realDestination;
+
   /** Whether this NAT includes a destination NAT */
   private boolean _twice;
+
   /** Whether this NAT is dynamic or static */
   private boolean _dynamic;
 

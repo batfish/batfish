@@ -177,10 +177,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /////
     /** Non-null */
     protected final byte _originMechanism;
+
     /** Non-null */
     protected final byte _originType;
+
     /** Non-null */
     protected final byte _protocol;
+
     /** -1 for null */
     protected final byte _srcProtocol;
 
