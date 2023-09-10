@@ -7,9 +7,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
-import java.util.Map;
+import com.google.common.collect.Range;
 import java.util.Set;
-import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -17,23 +16,24 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link org.batfish.minesweeper.bdd.AsPathMatchExprToBDD}. */
-public class AsPathMatchExprToBDDTest {
+/** Tests for {@link AsPathMatchExprToRegexes}. */
+public class AsPathMatchExprToRegexesTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_NAME = "policy";
   private Configuration _baseConfig;
   private CommunitySetMatchExprToBDD.Arg _arg;
-  private AsPathMatchExprToBDD _matchExprToBDD;
+  private AsPathMatchExprToRegexes _matchExprToRegexes;
 
   private static final String ASPATH1 = " 40$";
   private static final String ASPATH2 = "^$";
-  private BDD _asPath1BDD;
-  private BDD _asPath2BDD;
+  private SymbolicAsPathRegex _asPath1Regex;
+  private SymbolicAsPathRegex _asPath2Regex;
 
   @Before
   public void setup() {
@@ -57,24 +57,21 @@ public class AsPathMatchExprToBDDTest {
             nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
     _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
-    _matchExprToBDD = new AsPathMatchExprToBDD();
+    _matchExprToRegexes = new AsPathMatchExprToRegexes();
 
-    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
-        configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
-    BDD[] asPathAPs = bddRoute.getAsPathRegexAtomicPredicates();
-    _asPath1BDD = asPathAPs[regexMap.get(new SymbolicAsPathRegex(ASPATH1)).iterator().next()];
-    _asPath2BDD = asPathAPs[regexMap.get(new SymbolicAsPathRegex(ASPATH2)).iterator().next()];
+    _asPath1Regex = new SymbolicAsPathRegex(ASPATH1);
+    _asPath2Regex = new SymbolicAsPathRegex(ASPATH2);
   }
 
   @Test
   public void testVisitAsPathMatchAny() {
-    assertTrue(AsPathMatchAny.of(ImmutableList.of()).accept(_matchExprToBDD, _arg).isZero());
+    assertTrue(AsPathMatchAny.of(ImmutableList.of()).accept(_matchExprToRegexes, _arg).isEmpty());
 
-    BDD result =
+    Set<SymbolicAsPathRegex> result =
         AsPathMatchAny.of(
                 ImmutableList.of(AsPathMatchRegex.of(ASPATH1), AsPathMatchRegex.of(ASPATH2)))
-            .accept(_matchExprToBDD, _arg);
-    assertEquals(_asPath1BDD.or(_asPath2BDD), result);
+            .accept(_matchExprToRegexes, _arg);
+    assertEquals(ImmutableSet.of(_asPath1Regex, _asPath2Regex), result);
   }
 
   @Test
@@ -85,11 +82,21 @@ public class AsPathMatchExprToBDDTest {
 
     AsPathMatchExprReference reference = AsPathMatchExprReference.of(name);
 
-    assertEquals(_asPath1BDD, reference.accept(_matchExprToBDD, _arg));
+    assertEquals(ImmutableSet.of(_asPath1Regex), reference.accept(_matchExprToRegexes, _arg));
   }
 
   @Test
   public void testAsPathMatchRegex() {
-    assertEquals(_asPath1BDD, AsPathMatchRegex.of(ASPATH1).accept(_matchExprToBDD, _arg));
+    assertEquals(
+        ImmutableSet.of(_asPath1Regex),
+        AsPathMatchRegex.of(ASPATH1).accept(_matchExprToRegexes, _arg));
+  }
+
+  @Test
+  public void testAsSetsMatchingRanges() {
+    AsSetsMatchingRanges expr =
+        AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.closed(11L, 14L)));
+    assertEquals(
+        ImmutableSet.of(new SymbolicAsPathRegex(expr)), expr.accept(_matchExprToRegexes, _arg));
   }
 }

@@ -1,11 +1,23 @@
 package org.batfish.minesweeper;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
+import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Strings;
+import com.google.common.collect.ContiguousSet;
+import com.google.common.collect.DiscreteDomain;
+import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 
 @ParametersAreNonnullByDefault
 public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<SymbolicAsPathRegex> {
@@ -57,6 +69,121 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
   }
 
   /**
+   * Construct a symbolic representation of an {@link AsSetsMatchingRanges} expression, which
+   * represents certain common kinds of AS-path regexes.
+   *
+   * @param asExpr the AS-path expression
+   */
+  public SymbolicAsPathRegex(AsSetsMatchingRanges asExpr) {
+    super(toRegex(asExpr));
+  }
+
+  /**
+   * Produce a regex for the automaton library that is equivalent to the given AS path expression.
+   *
+   * @param asExpr the AS-path expression
+   * @return an equivalent regex as a String
+   */
+  private static String toRegex(AsSetsMatchingRanges asExpr) {
+    boolean start = asExpr.getAnchorStart();
+    boolean end = asExpr.getAnchorEnd();
+    List<Range<Long>> ranges = asExpr.getAsRanges();
+    String pre = start ? "^" : "(^| )";
+    String post = end ? "$" : "( |$)";
+    String asns =
+        ranges.stream().map(SymbolicAsPathRegex::toRegex).collect(Collectors.joining(" "));
+    return pre + asns + post;
+  }
+
+  /**
+   * Produce a regex for the automaton library that is equivalent to the given range of longs.
+   *
+   * @param r the range
+   * @return an equivalent regex as a String
+   */
+  private static String toRegex(Range<Long> r) {
+    checkArgument(
+        r.hasLowerBound() && r.hasUpperBound(),
+        "Unexpected unbounded ASN range in an AS-path expression");
+    ContiguousSet<Long> set = ContiguousSet.create(r, DiscreteDomain.longs());
+    return toRegex(set.first(), set.last());
+  }
+
+  /**
+   * Produce a regex for the automaton library that represents a closed range from lower to upper.
+   * Since these numbers represent AS numbers, they are assumed to be no larger than 2^32 - 1.
+   *
+   * @param lower the lower bound of the range
+   * @param upper the upper bound of the range
+   * @return an equivalent regex as a String
+   */
+  @VisibleForTesting
+  static String toRegex(long lower, long upper) {
+    assert lower >= 0;
+    if (lower == upper) {
+      return String.valueOf(lower);
+    }
+    if (upper <= Integer.MAX_VALUE) {
+      return toNumericInterval(String.valueOf(lower), String.valueOf(upper));
+    }
+    // specially handle the case when the given interval is outside the range of Java ints,
+    // since the automaton library only supports range expressions for Java ints
+    List<String> disjuncts = new ArrayList<>();
+    long currLower = lower;
+    if (currLower <= Integer.MAX_VALUE) {
+      // make a range expression for the part of the interval that is in the range of Java
+      // integers
+      disjuncts.add(
+          toNumericInterval(String.valueOf(currLower), String.valueOf(Integer.MAX_VALUE)));
+      currLower = Integer.MAX_VALUE + 1L;
+    }
+    // now lower and upper are both beyond the range of Java ints
+    // therefore they also have the same length in decimal
+    String lowerS = String.valueOf(currLower);
+    String upperS = String.valueOf(upper);
+    // create a separate range expression for each interval of values that all start with the same
+    // decimal number
+    while (lowerS.charAt(0) < upperS.charAt(0)) {
+      disjuncts.add(
+          lowerS.charAt(0)
+              + toNumericInterval(lowerS.substring(1), Strings.repeat("9", lowerS.length() - 1)));
+      lowerS =
+          (Character.getNumericValue(lowerS.charAt(0)) + 1)
+              + Strings.repeat("0", lowerS.length() - 1);
+    }
+    // one last range expression for the remaining values up to and including upper
+    disjuncts.add(lowerS.charAt(0) + toNumericInterval(lowerS.substring(1), upperS.substring(1)));
+
+    // OR all of these range expressions together
+    return "(" + disjuncts.stream().map(s -> "(" + s + ")").collect(Collectors.joining("|")) + ")";
+  }
+
+  /**
+   * Produce an numeric interval expression for the Automaton library. See {@link RegExp#INTERVAL}.
+   *
+   * @param lower the lower bound of the interval
+   * @param upper the upper bound of the interval
+   * @return the range expression as a String
+   */
+  private static String toNumericInterval(String lower, String upper) {
+    return "<" + lower + "-" + upper + ">";
+  }
+
+  /**
+   * Construct a single symbolic as-path regex that represents the union of a given collection of
+   * such regexes. The collection of regexes is assumed to be non-empty
+   *
+   * @param regexes the regexes to union
+   * @return a regex representing the union of the given regexes
+   */
+  public static SymbolicAsPathRegex union(Collection<SymbolicAsPathRegex> regexes) {
+    checkArgument(!regexes.isEmpty());
+    String regex =
+        regexes.stream().map(r -> "(" + r.getRegex() + ")").collect(Collectors.joining("|"));
+    return new SymbolicAsPathRegex(regex);
+  }
+
+  /**
    * Convert this community variable into an equivalent finite-state automaton.
    *
    * @return the automaton
@@ -74,12 +201,12 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
      * these as ordinary characters.
      */
     String regex = ".*" + "(" + _regex + ")" + ".*";
-    return new RegExp(regex).toAutomaton().intersection(AS_PATH_FSM);
+    return new RegExp(regex, RegExp.INTERVAL).toAutomaton().intersection(AS_PATH_FSM);
   }
 
   @Override
   public String toString() {
-    return _regex.toString();
+    return _regex;
   }
 
   @Override
