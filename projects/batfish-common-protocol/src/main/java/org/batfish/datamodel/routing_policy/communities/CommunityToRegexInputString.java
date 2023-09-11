@@ -27,6 +27,13 @@ public final class CommunityToRegexInputString
     return arg.accept(INTEGER_VALUE_RENDERER);
   }
 
+  @Override
+  public String visitSpecialCasesRendering(
+      SpecialCasesRendering specialCasesRendering, Community arg) {
+    String ret = specialCasesRendering.getSpecialCases().get(arg);
+    return ret != null ? ret : visit(specialCasesRendering.getFallbackRendering(), arg);
+  }
+
   private static final class ColonSeparatedRenderer implements CommunityVisitor<String> {
     @Override
     public String visitExtendedCommunity(ExtendedCommunity extendedCommunity) {
