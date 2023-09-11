@@ -28,6 +28,7 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
   private final String _header;
   private boolean _inBrackets;
   private FlattenerLineMap _lineMap;
+
   /**
    * Number of lines in the output text, used for line mapping. This needs to be updated as the
    * output set statement list is being populated.

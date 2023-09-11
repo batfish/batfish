@@ -903,7 +903,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -3054,7 +3054,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig

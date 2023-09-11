@@ -60,22 +60,28 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   /** Main RIB to use for IGP cost estimation and next hop resolution */
   @Nullable protected final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
+
   /** Tie breaker to use if all route attributes appear to be equal */
   @Nonnull protected final BgpTieBreaker _tieBreaker;
+
   /** Maximum number of paths to install. Unconstrained (infinite) if {@code null} */
   @Nullable protected final Integer _maxPaths;
+
   /**
    * For multipath: how strict should the comparison of AS Path be for paths to be considered equal
    */
   @Nullable protected final MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
+
   // Best BGP paths. Invariant: must be re-evaluated (per prefix) each time a route is added or
   // evicted
   @Nonnull protected final Map<Prefix, R> _bestPaths;
+
   /**
    * This logical clock helps us keep track when routes were merged into the RIB to determine their
    * age. It's incremented each time a route is merged into the RIB.
    */
   protected long _logicalClock;
+
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 

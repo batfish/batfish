@@ -859,7 +859,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         continue;
       }
       if (i.getSwitchport() && !i.getAllAddresses().isEmpty()) {
-        w.redFlag(String.format("Interface %s is a switchport, but it has L3 addresses", name));
+        w.redFlagf("Interface %s is a switchport, but it has L3 addresses", name);
         c.getAllInterfaces().remove(name);
         continue;
       }
@@ -868,7 +868,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           continue;
         }
         if (i.getInterfaceType() == InterfaceType.VLAN && i.getVlan() == null) {
-          w.redFlag(String.format("Interface %s is a VLAN interface but has no vlan set", name));
+          w.redFlagf("Interface %s is a VLAN interface but has no vlan set", name);
           c.getAllInterfaces().remove(name);
           continue;
         }
@@ -945,8 +945,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       return true;
     }
     String name = i.getName();
-    w.redFlag(
-        String.format("Interface %s has an undefined channel group %s", name, channelGroupName));
+    w.redFlagf("Interface %s has an undefined channel group %s", name, channelGroupName);
     c.getAllInterfaces().remove(name);
     return false;
   }

@@ -288,8 +288,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     if (lbListener != null) {
       listeners = lbListener.getListeners();
     } else {
-      warnings.redFlag(
-          String.format("Listeners not found for load balancer %s (%s).", _name, _arn));
+      warnings.redFlagf("Listeners not found for load balancer %s (%s).", _name, _arn);
     }
 
     IpAccessList incomingFilter = computeListenerFilter(listeners);
@@ -492,7 +491,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     TargetGroup targetGroup = region.getTargetGroups().get(targetGroupArn);
     if (targetGroup == null) {
-      warnings.redFlag(String.format("Target group ARN %s not found", targetGroupArn));
+      warnings.redFlagf("Target group ARN %s not found", targetGroupArn);
       return null;
     }
 
@@ -559,7 +558,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     Ip targetIp = getTargetIp(target, targetGroupType, region);
     if (targetIp == null) {
-      warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
+      warnings.redFlagf("Could not determine IP for load balancer target %s", target);
       return null;
     }
     TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);

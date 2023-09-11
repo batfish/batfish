@@ -119,8 +119,7 @@ public class ParseVendorConfigurationResult
       }
       if (_duplicateHostnames.containsKey(hostname)) {
         String modifiedNewName = getModifiedName(hostname, _vc.getFilename());
-        _warnings.redFlag(
-            String.format("Duplicate hostname %s. Changed to %s", hostname, modifiedNewName));
+        _warnings.redFlagf("Duplicate hostname %s. Changed to %s", hostname, modifiedNewName);
         _vc.setHostname(modifiedNewName);
         _duplicateHostnames.put(hostname, modifiedNewName);
         hostname = modifiedNewName;

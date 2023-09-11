@@ -17,6 +17,11 @@ public final class CommunitySetExprsTest {
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
             "^65000:123 65011:12[3]$"));
     assertEquals(
+        toMatchExpr("^65000:123 65011:12[3]$", IntegerValueRendering.instance()),
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(IntegerValueRendering.instance()),
+            "^65000:123 65011:12[3]$"));
+    assertEquals(
         toMatchExpr("^$"),
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()), "^$"));
@@ -51,5 +56,9 @@ public final class CommunitySetExprsTest {
         toMatchExpr("[0-9]+:[123]*"),
         new HasCommunity(
             new CommunityMatchRegex(ColonSeparatedRendering.instance(), "[0-9]+:[123]*")));
+    assertEquals(
+        toMatchExpr("[0-9]+:[123]*", IntegerValueRendering.instance()),
+        new HasCommunity(
+            new CommunityMatchRegex(IntegerValueRendering.instance(), "[0-9]+:[123]*")));
   }
 }

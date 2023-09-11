@@ -46,8 +46,7 @@ public final class FwFromDestinationAddressBookEntry implements FwFrom {
     String addressBookName = addressBook.getAddressBookName(_addressBookEntryName);
     IpSpace referencedIpSpace;
     if (addressBookName == null) {
-      w.redFlag(
-          String.format("Missing destination address-book entry '%s'", _addressBookEntryName));
+      w.redFlagf("Missing destination address-book entry '%s'", _addressBookEntryName);
       // match nothing
       referencedIpSpace = EmptyIpSpace.INSTANCE;
     } else {

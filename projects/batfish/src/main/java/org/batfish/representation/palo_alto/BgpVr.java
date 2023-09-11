@@ -15,8 +15,10 @@ import org.batfish.datamodel.Ip;
 public class BgpVr implements Serializable {
   /** From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
+
   /** From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_INSTALL_ROUTE = false;
+
   /** From PAN admin UI - only shows in running config if unchecked (as no). */
   private static final boolean DEFAULT_REJECT_DEFAULT_ROUTE = true;
 
@@ -118,6 +120,7 @@ public class BgpVr implements Serializable {
   private Map<String, PolicyRule> _importPolicyRules;
   private @Nullable Long _localAs;
   private @Nonnull final Map<String, BgpPeerGroup> _peerGroups;
+
   /**
    * Redist rules used by this BGP process, keyed by the referred redist profile name or by the
    * prefix used for filtering

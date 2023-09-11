@@ -182,11 +182,11 @@ public class SonicConversions {
                 "%s|%s", vlanName, memberName); // how members are encoded in configdb data
         VlanMember vlanMember = vlanMembers.get(memberKey);
         if (vlanMember == null) {
-          w.redFlag(String.format("Vlan member %s is not configured", memberKey));
+          w.redFlagf("Vlan member %s is not configured", memberKey);
           continue;
         }
         if (!vlanMember.getTaggingMode().isPresent()) {
-          w.redFlag(String.format("tagging_mode is not configured for vlan member %s", memberKey));
+          w.redFlagf("tagging_mode is not configured for vlan member %s", memberKey);
           continue;
         }
         switch (vlanMember.getTaggingMode().get()) {
@@ -226,8 +226,7 @@ public class SonicConversions {
               try {
                 return Ip.parse(server);
               } catch (IllegalArgumentException e) {
-                w.redFlag(
-                    String.format("Cannot add a non-IP address value '%s' as DHCP server", server));
+                w.redFlagf("Cannot add a non-IP address value '%s' as DHCP server", server);
                 return null;
               }
             })
@@ -247,7 +246,7 @@ public class SonicConversions {
   @VisibleForTesting
   static boolean checkVlanId(String vlanName, @Nullable Integer vlanId, Warnings w) {
     if (vlanId == null) {
-      w.redFlag(String.format("%s ignored: vlanid is not configured.", vlanName));
+      w.redFlagf("%s ignored: vlanid is not configured.", vlanName);
       return false;
     }
     if (vlanId < 1 || vlanId > 4094) {
@@ -385,14 +384,12 @@ public class SonicConversions {
       Map<String, SortedSet<AclRuleWithName>> aclNameToRules,
       Set<String> aclTableNames,
       Warnings w) {
-    rulesWithBadKeys.forEach(
-        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Badly formatted name", key)));
-    rulesWithoutPriority.forEach(
-        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PRIORITY", key)));
+    rulesWithBadKeys.forEach(key -> w.redFlagf("Ignored ACL_RULE %s: Badly formatted name", key));
+    rulesWithoutPriority.forEach(key -> w.redFlagf("Ignored ACL_RULE %s: Missing PRIORITY", key));
     rulesWithoutPacketAction.forEach(
-        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Missing PACKET_ACTION", key)));
+        key -> w.redFlagf("Ignored ACL_RULE %s: Missing PACKET_ACTION", key));
     rulesWithNonIpEtherType.forEach(
-        key -> w.redFlag(String.format("Ignored ACL_RULE %s: Non-IPv4 ETHER_TYPE", key)));
+        key -> w.redFlagf("Ignored ACL_RULE %s: Non-IPv4 ETHER_TYPE", key));
     Sets.difference(aclNameToRules.keySet(), aclTableNames) // missing acl tables
         .forEach(
             aclName ->
@@ -544,7 +541,7 @@ public class SonicConversions {
             .collect(ImmutableList.toImmutableList());
     if (snmpTableNames.size() > 1) {
       // don't know what to do when we find multiple tables; warn and ignore all
-      w.redFlag(String.format("Found multiple SNMP ACL tables: %s. Ignored all.", snmpTableNames));
+      w.redFlagf("Found multiple SNMP ACL tables: %s. Ignored all.", snmpTableNames);
       return;
     }
     if (snmpTableNames.isEmpty()) { // no table found
@@ -553,7 +550,7 @@ public class SonicConversions {
     String snmpTableName = snmpTableNames.get(0);
     SortedSet<AclRuleWithName> aclRules = aclNameToRules.get(snmpTableName);
     if (aclRules == null) {
-      w.redFlag(String.format("ACL rules not found for SNMP table '%s'.", snmpTableName));
+      w.redFlagf("ACL rules not found for SNMP table '%s'.", snmpTableName);
       return;
     }
 

@@ -104,7 +104,7 @@ public final class FwFromTcpFlags implements FwFrom {
         break;
       default:
         tcpFlagString = "unknown";
-        w.redFlag(String.format("tcp-flag %s is not recognized", _commandType.name()));
+        w.redFlagf("tcp-flag %s is not recognized", _commandType.name());
     }
 
     return TraceElement.of(String.format("Matched tcp-flags %s", tcpFlagString));

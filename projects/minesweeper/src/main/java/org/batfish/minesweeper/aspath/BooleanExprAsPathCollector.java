@@ -10,6 +10,7 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
@@ -41,6 +42,24 @@ public class BooleanExprAsPathCollector extends BooleanExprMatchCollector<Symbol
           .collect(ImmutableSet.toImmutableSet());
     } else {
       return ImmutableSet.of();
+    }
+  }
+
+  @Override
+  public Set<SymbolicAsPathRegex> visitDisjunction(
+      Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
+    Set<SymbolicAsPathRegex> disjuncts = visitAll(this, disjunction.getDisjuncts(), arg);
+    /*
+     If this is a disjunction of as-path matches, create a single regex representing their
+     disjunction, rather than having one regex per disjunct. AS-path groups get translated to such
+     disjunctions, and large groups can cause the latter approach to produce many atomic predicates
+     unnecessarily, which hurts performance.
+    */
+    if (!disjuncts.isEmpty()
+        && disjunction.getDisjuncts().stream().allMatch(d -> d instanceof MatchAsPath)) {
+      return ImmutableSet.of(SymbolicAsPathRegex.union(disjuncts));
+    } else {
+      return disjuncts;
     }
   }
 }

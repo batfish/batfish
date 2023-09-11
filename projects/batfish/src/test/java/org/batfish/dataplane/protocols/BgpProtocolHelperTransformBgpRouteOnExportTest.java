@@ -73,6 +73,7 @@ public final class BgpProtocolHelperTransformBgpRouteOnExportTest {
 
   /** AS for both source and dest peers if IBGP, or only source peer if EBGP */
   private static final Long AS1 = 1L;
+
   /** AS for dest peer if EBGP */
   private static final Long AS2 = 2L;
 

@@ -60,7 +60,7 @@ public final class RouteMapMatchSourceProtocol implements RouteMapMatch {
       case STATIC:
         return new MatchProtocol(RoutingProtocol.STATIC);
       default:
-        w.unimplemented(String.format("Matching protocol %s", _protocol));
+        w.unimplementedf("Matching protocol %s", _protocol);
         return BooleanExprs.FALSE;
     }
   }

@@ -290,35 +290,67 @@ public class TransferBDD {
 
     } else if (expr instanceof Disjunction) {
       Disjunction disj = (Disjunction) expr;
-      List<TransferResult> currResults = new ArrayList<>();
-      // the default result is false
-      currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
-      for (BooleanExpr e : disj.getDisjuncts()) {
-        List<TransferResult> nextResults = new ArrayList<>();
-        try {
-          for (TransferResult curr : currResults) {
-            BDD currBDD = curr.getReturnValue().getSecond();
-            compute(e, toTransferBDDState(p.indent(), curr))
-                .forEach(
-                    r -> {
-                      TransferResult updated =
-                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
-                      // if we're on a path where e evaluates to true, then this path is done;
-                      // otherwise we will evaluate the next disjunct in the next iteration
-                      if (updated.getReturnValue().getAccepted()) {
-                        finalResults.add(updated);
-                      } else {
-                        nextResults.add(updated);
-                      }
-                    });
+      /*
+      Disjunctions of as-path matches are handled specially when building as-path atomic
+      predicates, for performance reasons. See BooleanExprAsPathCollector::visitDisjunction. We
+      have to check for that special case here in order to access the correct atomic predicates.
+      */
+      if (!disj.getDisjuncts().isEmpty()
+          && disj.getDisjuncts().stream()
+              .allMatch(
+                  d ->
+                      d instanceof MatchAsPath
+                          && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+        // collect all as-path regexes, produce a single regex that is their union, and then create
+        // the corresponding BDD
+        BDDRoute currRoute = routeForMatching(p.getData());
+        Set<SymbolicAsPathRegex> asPathRegexes =
+            disj.getDisjuncts().stream()
+                .flatMap(
+                    d ->
+                        ((MatchAsPath) d)
+                                .getAsPathMatchExpr()
+                                .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute))
+                                .stream())
+                .collect(ImmutableSet.toImmutableSet());
+        finalResults.add(
+            result
+                .setReturnValueBDD(
+                    asPathRegexesToBDD(
+                        ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                        routeForMatching(p.getData())))
+                .setReturnValueAccepted(true));
+      } else {
+        List<TransferResult> currResults = new ArrayList<>();
+        // the default result is false
+        currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
+        for (BooleanExpr e : disj.getDisjuncts()) {
+          List<TransferResult> nextResults = new ArrayList<>();
+          try {
+            for (TransferResult curr : currResults) {
+              BDD currBDD = curr.getReturnValue().getSecond();
+              compute(e, toTransferBDDState(p.indent(), curr))
+                  .forEach(
+                      r -> {
+                        TransferResult updated =
+                            r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                        // if we're on a path where e evaluates to true, then this path is done;
+                        // otherwise we will evaluate the next disjunct in the next iteration
+                        if (updated.getReturnValue().getAccepted()) {
+                          finalResults.add(updated);
+                        } else {
+                          nextResults.add(updated);
+                        }
+                      });
+            }
+            currResults = nextResults;
+          } catch (UnsupportedFeatureException ufe) {
+            // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
+            currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
           }
-          currResults = nextResults;
-        } catch (UnsupportedFeatureException ufe) {
-          // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
-          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
         }
+        finalResults.addAll(currResults);
       }
-      finalResults.addAll(currResults);
 
       // TODO: This code is here for backward-compatibility reasons but has not been tested and is
       // not currently maintained
@@ -525,10 +557,13 @@ public class TransferBDD {
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
       MatchAsPath matchAsPath = (MatchAsPath) expr;
+      BDDRoute currRoute = routeForMatching(p.getData());
       BDD asPathPredicate =
-          matchAsPath
-              .getAsPathMatchExpr()
-              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
+          asPathRegexesToBDD(
+              matchAsPath
+                  .getAsPathMatchExpr()
+                  .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute)),
+              currRoute);
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchSourceVrf) {

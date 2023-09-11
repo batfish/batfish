@@ -383,7 +383,7 @@ public class CiscoXrConversions {
     // undefined -> null for best effort on invalid config
     String routePolicy = vsAggregate.getRoutePolicy();
     if (routePolicy != null && !c.getRoutingPolicies().containsKey(routePolicy)) {
-      w.redFlag(String.format("Ignoring undefined aggregate-address route-policy %s", routePolicy));
+      w.redFlagf("Ignoring undefined aggregate-address route-policy %s", routePolicy);
       routePolicy = null;
     }
     // TODO: handle as-set by generating generation policy wrapping route-policy
@@ -1130,7 +1130,7 @@ public class CiscoXrConversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(
@@ -1968,8 +1968,7 @@ public class CiscoXrConversions {
       case POINT_TO_MULTIPOINT:
         return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
-        warnings.redFlag(
-            String.format("Conversion of CiscoXr OSPF network type '%s' is not handled.", type));
+        warnings.redFlagf("Conversion of CiscoXr OSPF network type '%s' is not handled.", type);
         return null;
     }
   }

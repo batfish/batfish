@@ -181,6 +181,7 @@ public final class VirtualRouter {
 
   /** The VRF name for this virtual router */
   @Nonnull private final String _name;
+
   /** Parent {@link Node} on which this virtual router resides */
   @Nonnull private final Node _node;
 
@@ -209,6 +210,7 @@ public final class VirtualRouter {
    * based on EVPN route advertisements).
    */
   private Set<Layer2Vni> _layer2Vnis;
+
   /**
    * Map of VNI to Layer 3 VNI settings that are updated dynamically as the dataplane is being
    * computed (e.g., based on EVPN route advertisements).

@@ -695,7 +695,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -1344,8 +1344,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
             .filter(Objects::nonNull)
             .findFirst();
     if (!bw.isPresent()) {
-      _w.redFlag(
-          String.format("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName()));
+      _w.redFlagf("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName());
     }
     EigrpMetricValues values =
         EigrpMetricValues.builder()
@@ -2132,7 +2131,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig

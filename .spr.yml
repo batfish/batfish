@@ -7,3 +7,5 @@ githubRemote: origin
 githubBranch: master
 remoteBranches: []
 mergeMethod: squash
+mergeQueue: false
+forceFetchTags: false

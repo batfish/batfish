@@ -230,8 +230,7 @@ final class AristaConversions {
     // TODO: verify undefined attribute-map can be treated as omitted
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     return BgpAggregate.of(
@@ -334,7 +333,7 @@ final class AristaConversions {
       }
       return address.getIp();
     } else if (dynamic) {
-      return Ip.AUTO;
+      return null;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
         vrfInterfaces.values().stream()

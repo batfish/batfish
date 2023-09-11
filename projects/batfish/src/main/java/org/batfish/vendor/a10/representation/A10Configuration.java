@@ -1219,6 +1219,7 @@ public final class A10Configuration extends VendorConfiguration {
   private @Nullable Ha _ha;
   @Nonnull private Map<String, HealthMonitor> _healthMonitors;
   private String _hostname;
+
   /** Hostname as it appears in the config, uncanonicalized */
   private String _rawHostname;
 

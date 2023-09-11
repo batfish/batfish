@@ -2489,6 +2489,8 @@ SHA_384: 'sha-384';
 
 SHA1: 'sha1';
 
+SHARED_BUFFER: 'shared-buffer';
+
 SHARED_IKE_ID: 'shared-ike-id';
 
 SHIM6_HEADER: 'shim6-header';

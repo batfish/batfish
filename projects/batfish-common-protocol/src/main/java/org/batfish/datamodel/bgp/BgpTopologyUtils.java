@@ -34,16 +34,10 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.BgpSessionProperties.SessionType;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Fib;
-import org.batfish.datamodel.FibEntry;
-import org.batfish.datamodel.FibForward;
-import org.batfish.datamodel.FibNextVrf;
-import org.batfish.datamodel.FibNullRoute;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LongSpace;
@@ -55,7 +49,6 @@ import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
 import org.batfish.datamodel.flow.Trace;
 import org.batfish.datamodel.flow.TraceAndReverseFlow;
-import org.batfish.datamodel.visitors.FibActionVisitor;
 
 /** Utility functions for computing BGP topology */
 public final class BgpTopologyUtils {
@@ -198,9 +191,11 @@ public final class BgpTopologyUtils {
 
           if (config.getLocalIp() != null) {
             localIpsBuilder.put(neighborId, config.getLocalIp());
-          } else if (fib != null) {
+          } else {
             // No explicitly configured local IP. Check for dynamically resolvable local IPs.
-            localIpsBuilder.putAll(neighborId, getPotentialSrcIps(peerAddress, fib, node));
+            localIpsBuilder.putAll(
+                neighborId,
+                vrf.getSourceIpInference().getPotentialSourceIps(peerAddress, fib, node));
           }
         }
         // Dynamic peers: map of prefix to BgpPassivePeerConfig
@@ -307,6 +302,7 @@ public final class BgpTopologyUtils {
                       neighborId, neighbor, candidateId, candidate)) {
                     return;
                   }
+                  assert candidate != null; // guaranteed by bgpCandidatePassesSanityChecks
                   // Check if neighbor has any feasible local IPs compatible with this candidate
                   Set<Ip> feasibleLocalIpsForPeeringWithCandidate =
                       getFeasibleLocalIps(potentialLocalIps, candidate);
@@ -324,6 +320,7 @@ public final class BgpTopologyUtils {
                                     neighborId,
                                     candidateId,
                                     neighbor,
+                                    candidate,
                                     initiatorLocalIp,
                                     tracerouteEngine))
                         .forEach(
@@ -412,7 +409,7 @@ public final class BgpTopologyUtils {
    * given {@link BgpPeerConfig} either:
    *
    * <ul>
-   *   <li>is dynamic; or
+   *   <li>is unnumbered, so does not use local IP; or
    *   <li>has no local IP (still viable because local IP may be determined dynamically, or other
    *       peers could initiate a session); or
    *   <li>has a local IP associated with the config's hostname, according to {@code ipOwners}
@@ -429,7 +426,6 @@ public final class BgpTopologyUtils {
 
     Ip localIp = config.getLocalIp();
     return localIp == null
-        || localIp.equals(Ip.AUTO) // dynamic
         || (ipOwners.containsKey(localIp)
             && ipOwners.get(localIp).getOrDefault(hostname, ImmutableSet.of()).contains(vrfName));
   }
@@ -523,55 +519,6 @@ public final class BgpTopologyUtils {
         && bgpCandidateHasCompatibleAs(neighbor, candidate);
   }
 
-  /**
-   * Returns the names of source interface(s) of a packet with the given {@code dstIp} originating
-   * on the given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM
-   * routes for {@code dstIp} and returns those routes' forwarding interfaces.
-   */
-  public static Set<Interface> getSrcInterfaces(Ip dstIp, Fib fib, Configuration c) {
-    return fib.get(dstIp).stream()
-        .map(FibEntry::getAction)
-        // Find forwarding interface for this FIB entry, if any
-        .map(
-            action ->
-                action.accept(
-                    new FibActionVisitor<String>() {
-                      @Override
-                      public String visitFibForward(FibForward fibForward) {
-                        return fibForward.getInterfaceName();
-                      }
-
-                      @Override
-                      public String visitFibNextVrf(FibNextVrf fibNextVrf) {
-                        // TODO Can BGP peers initiate via interfaces in other VRFs? If
-                        //  so, need to return such interfaces here.
-                        return null;
-                      }
-
-                      @Override
-                      public String visitFibNullRoute(FibNullRoute fibNullRoute) {
-                        return null;
-                      }
-                    }))
-        .filter(Objects::nonNull)
-        .map(forwardingIfaceName -> c.getActiveInterfaces().get(forwardingIfaceName))
-        .filter(Objects::nonNull)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
-  /**
-   * Returns the potential source IPs of a packet with the given {@code dstIp} originating on the
-   * given {@link Configuration} in a VRF with the given {@link Fib}. Concretely, finds LPM routes
-   * for {@code dstIp} and returns the IPs of those routes' forwarding interfaces.
-   */
-  public static Set<Ip> getPotentialSrcIps(Ip dstIp, Fib fib, Configuration c) {
-    return getSrcInterfaces(dstIp, fib, c).stream()
-        .map(Interface::getConcreteAddress)
-        .filter(Objects::nonNull)
-        .map(ConcreteInterfaceAddress::getIp)
-        .collect(ImmutableSet.toImmutableSet());
-  }
-
   private static final class ReverseFlowAndFirewallSessions {
     @Nonnull final Flow _reverseFlow;
     @Nonnull final Set<FirewallSessionTraceInfo> _firewallSessions;
@@ -628,6 +575,7 @@ public final class BgpTopologyUtils {
       @Nonnull BgpPeerConfigId initiatorId,
       @Nonnull BgpPeerConfigId listenerId,
       @Nonnull BgpActivePeerConfig initiator,
+      @Nonnull BgpPeerConfig listener,
       @Nonnull Ip initiatorLocalIp,
       @Nonnull TracerouteEngine tracerouteEngine) {
     assert initiatorId.getType() == BgpPeerConfigType.ACTIVE;
@@ -657,20 +605,34 @@ public final class BgpTopologyUtils {
         .filter(
             traceAndReverseFlow -> {
               Trace forwardTrace = traceAndReverseFlow.getTrace();
-              return forwardTrace.getDisposition() == FlowDisposition.ACCEPTED
-                  && (!bgpSingleHop || forwardTrace.getHops().size() <= 2);
+              if (forwardTrace.getDisposition() != FlowDisposition.ACCEPTED) {
+                // The flow wasn't accepted, so BGP stack didn't get it.
+                return false;
+              }
+
+              // Make sure the listener will accept this TCP connection.
+              Flow reverseFlow = traceAndReverseFlow.getReverseFlow();
+              assert traceAndReverseFlow.getReverseFlow() != null; // success implies return flow
+              assert reverseFlow.getIngressVrf() != null; // accepted
+              if (!reverseFlow.getIngressNode().equals(listenerId.getHostname())
+                  || !reverseFlow.getIngressVrf().equals(listenerId.getVrfName())) {
+                // This trace is success at the wrong device or in the wrong VRF.
+                return false;
+              } else if (listener.getCheckLocalIpOnAccept() && listener.getLocalIp() != null) {
+                // The destination IP must match the listener's local IP, otherwise the listener
+                // will reject the connection.
+                //
+                // The src IP on the reverse flow is the actual destination IP (post any NAT)
+                // used in the forward flow. Looking at IPs as seen by listener is most
+                // accurate way to check this.
+                if (!listener.getLocalIp().equals(reverseFlow.getSrcIp())) {
+                  return false;
+                }
+              }
+
+              // Check the path count in case of ebgp singlehop session.
+              return !bgpSingleHop || forwardTrace.getHops().size() <= 2;
             })
-        .filter(
-            traceAndReverseFlow ->
-                traceAndReverseFlow.getReverseFlow() != null
-                    && traceAndReverseFlow
-                        .getReverseFlow()
-                        .getIngressNode()
-                        .equals(listenerId.getHostname())
-                    && traceAndReverseFlow
-                        .getReverseFlow()
-                        .getIngressVrf()
-                        .equals(listenerId.getVrfName()))
         // many traces can have the same reverse flow and firewall sessions. dedup
         .map(
             tarf ->

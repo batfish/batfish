@@ -633,7 +633,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     newIface.setVlan(vlanId);
     if (vlanId == null) {
       // TODO: perhaps there should be a default based on the name?
-      _w.redFlag(String.format("Deactivating vlan %s which has no vlan-id set", vlan.getName()));
+      _w.redFlagf("Deactivating vlan %s which has no vlan-id set", vlan.getName());
       newIface.deactivate(InactiveReason.INCOMPLETE);
     }
 

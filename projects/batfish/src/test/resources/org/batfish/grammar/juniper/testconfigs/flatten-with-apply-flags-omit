@@ -1,0 +1,6 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    login { /* OMITTED */ };
+    root-authentication { /* OMITTED */ };
+    host-name flatten-with-apply-flags-omit;
+}

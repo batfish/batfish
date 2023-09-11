@@ -338,20 +338,19 @@ public final class Utils {
 
     Vpc vpc = region.getVpcs().get(vpcId);
     if (vpc == null) {
-      warnings.redFlag(
-          String.format("VPC with id %s not found in region %s", vpcId, region.getName()));
+      warnings.redFlagf("VPC with id %s not found in region %s", vpcId, region.getName());
       return null;
     }
 
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
-      warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
+      warnings.redFlagf("Configuration for VPC with id %s not found", vpcId);
       return null;
     }
 
     String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId);
       return null;
     }
 
@@ -475,8 +474,7 @@ public final class Utils {
     }
     Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
     if (ifaceAddresses.isEmpty()) {
-      warnings.redFlag(
-          String.format("No valid address found for interface '%s'", netInterface.getId()));
+      warnings.redFlagf("No valid address found for interface '%s'", netInterface.getId());
     }
     @Nullable
     ConcreteInterfaceAddress primaryAddress =

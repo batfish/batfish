@@ -454,7 +454,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       return;
     }
 
-    _w.redFlag(String.format("Unable to determine interface type for %s", i.getName()));
+    _w.redFlagf("Unable to determine interface type for %s", i.getName());
     // Leave as UNKNOWN.
   }
 

@@ -58,6 +58,7 @@ public final class BDDOutgoingOriginalFlowFilterManager implements Serializable 
 
   private final BDDFiniteDomain<String> _finiteDomain;
   private final Map<String, BDD> _filterBdds;
+
   /**
    * BDD assignments for interfaces with {@link Interface#getOutgoingOriginalFlowFilter()
    * outgoingOriginalFlowFilters}. (Does not include entry for {@link
