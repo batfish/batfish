@@ -839,7 +839,7 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
+            PERMIT,
             DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
@@ -889,7 +889,7 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             HOSTNAME,
             policy.getName(),
-            Action.PERMIT,
+            PERMIT,
             DEFAULT_PATH_OPTION);
     SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
 
