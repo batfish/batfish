@@ -203,6 +203,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     return Bgpv4Route.builder()
+        .setAdmin(questionsBgpRoute.getAdminDist())
         .setWeight(questionsBgpRoute.getWeight())
         .setNextHopIp(questionsBgpRoute.getNextHopIp())
         .setProtocol(questionsBgpRoute.getProtocol())
@@ -229,6 +230,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
+        .setAdminDist(dataplaneBgpRoute.getAdministrativeCost())
         .setWeight(dataplaneBgpRoute.getWeight())
         // TODO: The next-hop IP AUTO/NONE (Ip.AUTO) is used to denote multiple different things;
         // we should distinguish these uses clearly from one another in the results returned by this
