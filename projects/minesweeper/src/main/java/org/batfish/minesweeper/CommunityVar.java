@@ -43,7 +43,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
   @Nonnull private final Type _type;
   @Nullable private final Community _literalValue;
 
-  @Nonnull private static final String NUM_REGEX = "(0|[1-9][0-9]*)";
+  @Nonnull private static final String NUM_REGEX = "((0|[1-9][0-9]*)&<0-65535>)";
 
   // a regex that represents the syntax of standard community literals supported by Batfish
   // see StandardCommunity::matchString()

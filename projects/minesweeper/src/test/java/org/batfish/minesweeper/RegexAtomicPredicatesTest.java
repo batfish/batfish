@@ -64,6 +64,35 @@ public class RegexAtomicPredicatesTest {
   }
 
   @Test
+  public void testNoOutOfIntegerRangeCommunities() {
+    // check that we don't create atomic predicates that represent ill-formed communities, due to
+    // out-of-range community values
+
+    // these two community regexes are equivalent because adding any prefix to the number 12345
+    // yields a number that is out of range (beyond 16 bits)
+    Set<CommunityVar> cvars =
+        ImmutableSet.of(CommunityVar.from("12345:67$"), CommunityVar.from("^12345:67$"));
+
+    RegexAtomicPredicates<CommunityVar> commAPs =
+        new RegexAtomicPredicates<>(cvars, CommunityVar.ALL_STANDARD_COMMUNITIES);
+
+    assertEquals(commAPs.getNumAtomicPredicates(), 2);
+
+    Automaton a1 = new RegExp("^12345:67$").toAutomaton();
+
+    assertEquals(commAPs.getAtomicPredicateAutomata().size(), 2);
+    assertThat(commAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
+
+    assertEquals(commAPs.getRegexAtomicPredicates().size(), 3);
+    assertThat(
+        commAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(CommunityVar.from("12345:67$")), iterableWithSize(1)));
+    assertThat(
+        commAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(CommunityVar.from(".*")), iterableWithSize(2)));
+  }
+
+  @Test
   public void testInitAtomicPredicatesAsPath() {
     Set<SymbolicAsPathRegex> asPathRegexes =
         ImmutableSet.of(

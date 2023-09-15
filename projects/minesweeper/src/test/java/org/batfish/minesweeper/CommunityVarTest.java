@@ -39,7 +39,8 @@ public class CommunityVarTest {
     assertThat(cv2.toAutomaton(), equalTo(new RegExp("^large:10:20:30$").toAutomaton()));
 
     assertThat(cv3.toAutomaton(), equalTo(CommunityVar.COMMUNITY_FSM));
-    assertThat(cv4.toAutomaton(), equalTo(new RegExp("^40:(0|[1-9][0-9]*)$").toAutomaton()));
+    assertThat(
+        cv4.toAutomaton(), equalTo(new RegExp("^40:((0|[1-9][0-9]*)&<0-65535>)$").toAutomaton()));
     assertThat(cv5.toAutomaton(), equalTo(new RegExp("^40:50$").toAutomaton()));
 
     assertThat(cv6.toAutomaton(), equalTo(new RegExp("^0:[1-9]0$").toAutomaton()));

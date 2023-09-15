@@ -102,6 +102,7 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
       }
       mmap = newMMap;
     }
+
     // assign a unique integer to each automaton.
     // create a mapping from each integer to its corresponding automaton
     // and a mapping from each regex to its corresponding set of integers.

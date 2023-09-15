@@ -24,7 +24,9 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
-  @Nonnull private static final String AS_NUM_REGEX = "(0|[1-9][0-9]*)";
+  @Nonnull
+  private static final String AS_NUM_REGEX =
+      "((0|[1-9][0-9]*)&(<0-2147483647>|2<147483648-999999999>|3<000000000-999999999>|4<000000000-294967295>))";
 
   /**
    * A regex that represents the language of AS paths: a space-separated list of AS numbers,
@@ -201,7 +203,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
      * these as ordinary characters.
      */
     String regex = ".*" + "(" + _regex + ")" + ".*";
-    return new RegExp(regex, RegExp.INTERVAL).toAutomaton().intersection(AS_PATH_FSM);
+    return new RegExp(regex).toAutomaton().intersection(AS_PATH_FSM);
   }
 
   @Override
