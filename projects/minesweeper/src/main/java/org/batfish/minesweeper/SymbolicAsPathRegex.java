@@ -24,8 +24,8 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
-  @Nonnull
-  private static final String AS_NUM_REGEX =
+  @VisibleForTesting @Nonnull
+  static final String AS_NUM_REGEX =
       "((0|[1-9][0-9]*)&(<0-2147483647>|2<147483648-999999999>|3<000000000-999999999>|4<000000000-294967295>))";
 
   /**
