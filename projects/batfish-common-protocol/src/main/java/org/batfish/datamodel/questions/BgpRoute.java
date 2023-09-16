@@ -29,6 +29,9 @@ import org.batfish.datamodel.bgp.community.Community;
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
+
+  public static final int DEFAULT_AD = 0;
+  public static final String PROP_ADMINISTRATIVE_DISTANCE = "adminDistance";
   public static final String PROP_AS_PATH = "asPath";
   public static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
@@ -47,6 +50,7 @@ public final class BgpRoute {
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
+  @Nullable private final Integer _adminDist;
   @Nonnull private final AsPath _asPath;
   @Nonnull private final Set<Long> _clusterList;
   @Nonnull private final SortedSet<Community> _communities;
@@ -65,6 +69,7 @@ public final class BgpRoute {
   private final int _weight;
 
   private BgpRoute(
+      @Nullable Integer adminDist,
       AsPath asPath,
       Set<Long> clusterList,
       SortedSet<Community> communities,
@@ -81,6 +86,7 @@ public final class BgpRoute {
       long tag,
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
+    _adminDist = adminDist;
     _asPath = asPath;
     _clusterList = clusterList;
     _communities = communities;
@@ -101,6 +107,7 @@ public final class BgpRoute {
 
   @JsonCreator
   private static BgpRoute jsonCreator(
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) Integer adminDist,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
@@ -125,6 +132,7 @@ public final class BgpRoute {
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "%s must be specified", PROP_PROTOCOL);
     return new BgpRoute(
+        firstNonNull(adminDist, DEFAULT_AD),
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSortedSet.of()),
@@ -141,6 +149,12 @@ public final class BgpRoute {
         tag,
         tunnelEncapsulationAttribute,
         weight);
+  }
+
+  @Nullable
+  @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE)
+  public Integer getAdminDist() {
+    return _adminDist;
   }
 
   @Nonnull
@@ -261,6 +275,7 @@ public final class BgpRoute {
         && _metric == bgpRoute._metric
         && _tag == bgpRoute._tag
         && _weight == bgpRoute._weight
+        && Objects.equals(_adminDist, bgpRoute._adminDist)
         && Objects.equals(_asPath, bgpRoute._asPath)
         && Objects.equals(_clusterList, bgpRoute._clusterList)
         && Objects.equals(_communities, bgpRoute._communities)
@@ -278,6 +293,7 @@ public final class BgpRoute {
   @Override
   public int hashCode() {
     return Objects.hash(
+        _adminDist,
         _asPath,
         _clusterList,
         _communities,
@@ -302,6 +318,7 @@ public final class BgpRoute {
 
   public Builder toBuilder() {
     return builder()
+        .setAdminDist(_adminDist)
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
@@ -324,6 +341,7 @@ public final class BgpRoute {
   @ParametersAreNonnullByDefault
   public static final class Builder {
 
+    @Nullable private Integer _adminDist;
     @Nonnull private AsPath _asPath;
     @Nonnull private Set<Long> _clusterList;
     @Nonnull private SortedSet<Community> _communities;
@@ -355,6 +373,7 @@ public final class BgpRoute {
       checkArgument(_originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "%s must be specified", PROP_PROTOCOL);
       return new BgpRoute(
+          firstNonNull(_adminDist, DEFAULT_AD),
           _asPath,
           _clusterList,
           _communities,
@@ -371,6 +390,11 @@ public final class BgpRoute {
           _tag,
           _tunnelEncapsulationAttribute,
           _weight);
+    }
+
+    public Builder setAdminDist(@Nullable Integer adminDist) {
+      _adminDist = adminDist;
+      return this;
     }
 
     public Builder setAsPath(AsPath asPath) {
@@ -475,6 +499,7 @@ public final class BgpRoute {
         .add("tag", _tag)
         .add("tunnelEncapsulationAttribute", _tunnelEncapsulationAttribute)
         .add("weight", _weight)
+        .add("adminDist", _adminDist)
         .toString();
   }
 }
