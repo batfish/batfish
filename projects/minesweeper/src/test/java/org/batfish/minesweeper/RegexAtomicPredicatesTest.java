@@ -1,5 +1,6 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.minesweeper.SymbolicAsPathRegex.AS_NUM_REGEX;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -107,11 +108,21 @@ public class RegexAtomicPredicatesTest {
 
     Automaton a1 = new RegExp("^^$").toAutomaton();
     // starts with 5 and ends with 4
-    Automaton a2 = new RegExp("^^5 ((0|[1-9][0-9]*) )*4$").toAutomaton();
+    Automaton a2 = new RegExp("^^5 (" + AS_NUM_REGEX + " )*4$").toAutomaton();
     // ends with 4 but does not start with 5
-    Automaton a3 = new RegExp("^^([0-4]|[6-9]|[1-9][0-9]+) ((0|[1-9][0-9]*) )*4$").toAutomaton();
+    Automaton a3 =
+        new RegExp(
+                "^^(([0-4]|[6-9]|[1-9][0-9]+)&"
+                    + AS_NUM_REGEX
+                    + ")"
+                    + " ("
+                    + AS_NUM_REGEX
+                    + " )*4$")
+            .toAutomaton();
     // starts with 5 but does not end with 4
-    Automaton a4 = new RegExp("^^5( (0|[1-9][0-9]*))* ([0-3]|[5-9]|[1-9][0-9]+)$").toAutomaton();
+    Automaton a4 =
+        new RegExp("^^5( " + AS_NUM_REGEX + ")* (([0-3]|[5-9]|[1-9][0-9]+)&" + AS_NUM_REGEX + ")$")
+            .toAutomaton();
 
     assertEquals(asPathAPs.getAtomicPredicateAutomata().size(), 5);
     assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
@@ -132,6 +143,40 @@ public class RegexAtomicPredicatesTest {
     assertThat(
         asPathAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(new SymbolicAsPathRegex(".*")), iterableWithSize(5)));
+  }
+
+  @Test
+  public void testNoOutOfRangeASNs() {
+    Set<SymbolicAsPathRegex> asPathRegexes =
+        ImmutableSet.of(
+            new SymbolicAsPathRegex("3333333333$"), new SymbolicAsPathRegex("^3333333333$"));
+
+    RegexAtomicPredicates<SymbolicAsPathRegex> asPathAPs =
+        new RegexAtomicPredicates<>(asPathRegexes, SymbolicAsPathRegex.ALL_AS_PATHS);
+
+    assertEquals(asPathAPs.getNumAtomicPredicates(), 3);
+
+    // only 10 3s
+    Automaton a1 = new RegExp("^^3333333333$").toAutomaton();
+    // ends with 10 3s and has at least one other ASN;
+    // we can't create a large ASN by prepending to 10 3s because that would be out of ASN range
+    Automaton a2 =
+        new RegExp("^^(" + AS_NUM_REGEX + " )*" + AS_NUM_REGEX + " 3333333333$").toAutomaton();
+
+    assertEquals(asPathAPs.getAtomicPredicateAutomata().size(), 3);
+    assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a1));
+    assertThat(asPathAPs.getAtomicPredicateAutomata().values(), hasItem(a2));
+
+    assertEquals(asPathAPs.getRegexAtomicPredicates().size(), 3);
+    assertThat(
+        asPathAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(new SymbolicAsPathRegex("3333333333$")), iterableWithSize(2)));
+    assertThat(
+        asPathAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(new SymbolicAsPathRegex("^3333333333$")), iterableWithSize(1)));
+    assertThat(
+        asPathAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(new SymbolicAsPathRegex(".*")), iterableWithSize(3)));
   }
 
   @Test
