@@ -90,6 +90,9 @@ public class RegexAtomicPredicatesTest {
         hasEntry(equalTo(CommunityVar.from("12345:67$")), iterableWithSize(1)));
     assertThat(
         commAPs.getRegexAtomicPredicates(),
+        hasEntry(equalTo(CommunityVar.from("^12345:67$")), iterableWithSize(1)));
+    assertThat(
+        commAPs.getRegexAtomicPredicates(),
         hasEntry(equalTo(CommunityVar.from(".*")), iterableWithSize(2)));
   }
 

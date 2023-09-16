@@ -43,6 +43,11 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
   @Nonnull private final Type _type;
   @Nullable private final Community _literalValue;
 
+  /**
+   * A regex representing numbers that can be part of communities. The first conjunct of the regex
+   * ensures there are no leading zeros. The second conjunct of the regex ensures that the number is
+   * at most 16 bits, using the numeric interval syntax of the automaton library.
+   */
   @Nonnull private static final String NUM_REGEX = "((0|[1-9][0-9]*)&<0-65535>)";
 
   // a regex that represents the syntax of standard community literals supported by Batfish
