@@ -48,7 +48,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * over sets is apparently vendor-dependent. for now we do not support them.
    */
   @Nonnull
-  static final String AS_PATH_REGEX =
+  private static final String AS_PATH_REGEX =
       // the empty AS-path
       "^^$"
           + "|"
