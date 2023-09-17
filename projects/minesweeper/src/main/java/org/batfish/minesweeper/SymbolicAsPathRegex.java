@@ -24,6 +24,10 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
+  /** A regex representing integers in the range 0 to 2^32 - 1. */
+  @VisibleForTesting @Nonnull
+  static final String INT_32_REGEX = toRegex(0L, (long) Math.pow(2, 32) - 1);
+
   /**
    * A regex representing AS numbers. The first conjunct of the regex ensures there are no leading
    * zeros. The second conjunct of the regex ensures that the number is at most 32 bits, using the
@@ -31,8 +35,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * only supports numbers in the Java int range.
    */
   @VisibleForTesting @Nonnull
-  static final String AS_NUM_REGEX =
-      "((0|[1-9][0-9]*)&(<0-2147483647>|2<147483648-999999999>|3<000000000-999999999>|4<000000000-294967295>))";
+  static final String AS_NUM_REGEX = "((0|[1-9][0-9]*)" + "&" + INT_32_REGEX + ")";
 
   /**
    * A regex that represents the language of AS paths: a space-separated list of AS numbers,
