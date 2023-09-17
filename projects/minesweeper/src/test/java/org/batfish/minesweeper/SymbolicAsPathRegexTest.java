@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
+import static org.batfish.minesweeper.SymbolicAsPathRegex.AS_NUM_REGEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -40,11 +41,16 @@ public class SymbolicAsPathRegexTest {
 
     assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
     assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
-    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
-    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+    assertThat(
+        r3.toAutomaton(),
+        equalTo(new RegExp("^^" + "(" + AS_NUM_REGEX + " )*" + "40$").toAutomaton()));
+
+    assertThat(
+        r4.toAutomaton(), equalTo(new RegExp("^^40( " + AS_NUM_REGEX + ")*$").toAutomaton()));
     assertThat(
         r5.toAutomaton(),
-        equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40 50( (0|[1-9][0-9]*))*$").toAutomaton()));
+        equalTo(
+            new RegExp("^^(" + AS_NUM_REGEX + " )*40 50( " + AS_NUM_REGEX + ")*$").toAutomaton()));
   }
 
   @Test
@@ -59,8 +65,10 @@ public class SymbolicAsPathRegexTest {
 
     assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
     assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
-    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
-    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+    assertThat(
+        r3.toAutomaton(), equalTo(new RegExp("^^(" + AS_NUM_REGEX + " )*40$").toAutomaton()));
+    assertThat(
+        r4.toAutomaton(), equalTo(new RegExp("^^40( " + AS_NUM_REGEX + ")*$").toAutomaton()));
   }
 
   @Test

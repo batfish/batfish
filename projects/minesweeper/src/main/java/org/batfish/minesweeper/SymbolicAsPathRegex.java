@@ -24,7 +24,18 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
 
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
-  @Nonnull private static final String AS_NUM_REGEX = "(0|[1-9][0-9]*)";
+  /** A regex representing integers in the range 0 to 2^32 - 1. */
+  @VisibleForTesting @Nonnull
+  static final String INT_32_REGEX = toRegex(0L, (long) Math.pow(2, 32) - 1);
+
+  /**
+   * A regex representing AS numbers. The first conjunct of the regex ensures there are no leading
+   * zeros. The second conjunct of the regex ensures that the number is at most 32 bits, using the
+   * numeric interval syntax of the automaton library. It's a bit complicated because that syntax
+   * only supports numbers in the Java int range.
+   */
+  @VisibleForTesting @Nonnull
+  static final String AS_NUM_REGEX = "((0|[1-9][0-9]*)" + "&" + INT_32_REGEX + ")";
 
   /**
    * A regex that represents the language of AS paths: a space-separated list of AS numbers,
@@ -159,7 +170,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
   }
 
   /**
-   * Produce an numeric interval expression for the Automaton library. See {@link RegExp#INTERVAL}.
+   * Produce a numeric interval expression for the Automaton library. See {@link RegExp#INTERVAL}.
    *
    * @param lower the lower bound of the interval
    * @param upper the upper bound of the interval
@@ -201,7 +212,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
      * these as ordinary characters.
      */
     String regex = ".*" + "(" + _regex + ")" + ".*";
-    return new RegExp(regex, RegExp.INTERVAL).toAutomaton().intersection(AS_PATH_FSM);
+    return new RegExp(regex).toAutomaton().intersection(AS_PATH_FSM);
   }
 
   @Override
