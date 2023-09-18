@@ -17,7 +17,7 @@ public class StaticRoute implements Serializable {
 
   private @Nonnull Prefix _prefix;
 
-  @Nullable private Integer _track;
+  private @Nullable Integer _track;
 
   public StaticRoute(Prefix prefix, NextHop nextHop, int distance, @Nullable Integer track) {
     _prefix = prefix;

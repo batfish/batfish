@@ -87,7 +87,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static class NetworkInterfaceId {
 
-    @Nonnull private final String _id;
+    private final @Nonnull String _id;
 
     @JsonCreator
     private static NetworkInterfaceId create(
@@ -100,8 +100,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
       _id = id;
     }
 
-    @Nonnull
-    public String getId() {
+    public @Nonnull String getId() {
       return _id;
     }
   }
@@ -110,7 +109,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static class SecurityGroupId {
 
-    @Nonnull private final String _id;
+    private final @Nonnull String _id;
 
     @JsonCreator
     private static SecurityGroupId create(@Nullable @JsonProperty(JSON_KEY_GROUP_ID) String id) {
@@ -122,8 +121,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
       _id = id;
     }
 
-    @Nonnull
-    public String getId() {
+    public @Nonnull String getId() {
       return _id;
     }
   }
@@ -132,7 +130,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static class State {
 
-    @Nonnull private final Status _name;
+    private final @Nonnull Status _name;
 
     @JsonCreator
     private static State create(@Nullable @JsonProperty("Name") String name) {
@@ -144,28 +142,27 @@ public final class Instance implements AwsVpcEntity, Serializable {
       _name = name;
     }
 
-    @Nonnull
-    public Status getName() {
+    public @Nonnull Status getName() {
       return _name;
     }
   }
 
-  @Nonnull private final String _instanceId;
+  private final @Nonnull String _instanceId;
 
-  @Nonnull private final List<String> _networkInterfaces;
+  private final @Nonnull List<String> _networkInterfaces;
 
-  @Nullable private final Ip _primaryPrivateIpAddress;
+  private final @Nullable Ip _primaryPrivateIpAddress;
 
   // Should be unused - this is redundant with {@link NetworkInterface#getGroups()}
-  @Nonnull private final List<String> _securityGroups;
+  private final @Nonnull List<String> _securityGroups;
 
-  @Nonnull private final Status _status;
+  private final @Nonnull Status _status;
 
-  @Nullable private final String _subnetId;
+  private final @Nullable String _subnetId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
-  @Nullable private final String _vpcId;
+  private final @Nullable String _vpcId;
 
   @JsonCreator
   private static Instance create(
@@ -246,38 +243,31 @@ public final class Instance implements AwsVpcEntity, Serializable {
     return _instanceId;
   }
 
-  @Nonnull
-  public List<String> getNetworkInterfaces() {
+  public @Nonnull List<String> getNetworkInterfaces() {
     return _networkInterfaces;
   }
 
-  @Nullable
-  public Ip getPrimaryPrivateIpAddress() {
+  public @Nullable Ip getPrimaryPrivateIpAddress() {
     return _primaryPrivateIpAddress;
   }
 
-  @Nonnull
-  public List<String> getSecurityGroups() {
+  public @Nonnull List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
-  @Nonnull
-  public Status getStatus() {
+  public @Nonnull Status getStatus() {
     return _status;
   }
 
-  @Nullable
-  public String getSubnetId() {
+  public @Nullable String getSubnetId() {
     return _subnetId;
   }
 
-  @Nonnull
-  public Map<String, String> getTags() {
+  public @Nonnull Map<String, String> getTags() {
     return _tags;
   }
 
-  @Nullable
-  public String getVpcId() {
+  public @Nullable String getVpcId() {
     return _vpcId;
   }
 

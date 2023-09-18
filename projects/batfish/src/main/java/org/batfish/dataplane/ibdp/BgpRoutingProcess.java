@@ -123,10 +123,10 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 @ParametersAreNonnullByDefault
 final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?, ?>> {
   /** Configuration for this process */
-  @Nonnull private final BgpProcess _process;
+  private final @Nonnull BgpProcess _process;
 
   /** Parent node configuration */
-  @Deprecated @Nonnull private final Configuration _c;
+  @Deprecated private final @Nonnull Configuration _c;
 
   /**
    * Whether routes should be exported from the BGP RIB (as opposed to directly from the main RIB).
@@ -149,7 +149,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Source for assigning path IDs to routes upon export when sending additional paths. The values
    * indicate the last path ID generated for a route with the keyed prefix.
    */
-  @Nonnull private final ConcurrentMap<Prefix, Integer> _pathIdGenerators;
+  private final @Nonnull ConcurrentMap<Prefix, Integer> _pathIdGenerators;
 
   /**
    * Map indicating what path ID this process uses when exporting a given route. Keys can be:
@@ -161,24 +161,24 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *       {@link BgpPeerConfig#getGeneratedRoutes() neighbor-specific generated routes}
    * </ul>
    */
-  @Nonnull private final ConcurrentMap<AbstractRouteDecorator, Integer> _routesToPathIds;
+  private final @Nonnull ConcurrentMap<AbstractRouteDecorator, Integer> _routesToPathIds;
 
-  @Nonnull private final PrefixTrieMultiMap<BgpAggregate> _aggregates;
+  private final @Nonnull PrefixTrieMultiMap<BgpAggregate> _aggregates;
 
-  @Nonnull private final RoutingPolicies _policies;
-  @Nonnull private final String _hostname;
+  private final @Nonnull RoutingPolicies _policies;
+  private final @Nonnull String _hostname;
 
   /** Name of our VRF */
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   /** Reference to the parent {@link VirtualRouter} main RIB (read-only). */
-  @Nonnull private final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
+  private final @Nonnull GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
 
   /** Current BGP topology */
-  @Nonnull private BgpTopology _topology;
+  private @Nonnull BgpTopology _topology;
 
   /** Metadata about propagated prefixes to/from neighbors */
-  @Nonnull private PrefixTracer _prefixTracer;
+  private @Nonnull PrefixTracer _prefixTracer;
 
   /** Route dependency tracker for BGP IPv4 aggregate routes */
   @Nonnull
@@ -210,16 +210,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   // RIBs and RIB delta builders
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
-  @Nonnull final Bgpv4Rib _ebgpv4Rib;
+  final @Nonnull Bgpv4Rib _ebgpv4Rib;
 
   /** RIB containing paths obtained with iBGP, for IPv4 unicast */
-  @Nonnull final Bgpv4Rib _ibgpv4Rib;
+  final @Nonnull Bgpv4Rib _ibgpv4Rib;
 
   // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
-  @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
-  @Nonnull private RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
-  @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
-  @Nonnull private RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
   private @Nonnull Set<Bgpv4Route> _ebgpv4Prev;
@@ -237,77 +237,77 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nonnull Bgpv4Rib _bgpv4Rib;
 
   /** {@link RibDelta} representing changes to {@link #_bgpv4Rib} in the current iteration */
-  @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBuilder = RibDelta.builder();
+  private @Nonnull Builder<Bgpv4Route> _bgpv4DeltaBuilder = RibDelta.builder();
 
   /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
-  @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
+  private @Nonnull Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
 
   /**
    * {@link RibDelta} representing changes to {@link #_bgpv4Rib} best path routes in the current
    * iteration
    */
-  @Nonnull private Builder<Bgpv4Route> _bgpv4DeltaBestPathBuilder = RibDelta.builder();
+  private @Nonnull Builder<Bgpv4Route> _bgpv4DeltaBestPathBuilder = RibDelta.builder();
 
   /**
    * {@link RibDelta} representing changes to {@link #_ebgpv4Rib} best path routes in the current
    * iteration
    */
-  @Nonnull private Builder<Bgpv4Route> _ebgpv4DeltaBestPathBuilder = RibDelta.builder();
+  private @Nonnull Builder<Bgpv4Route> _ebgpv4DeltaBestPathBuilder = RibDelta.builder();
 
   /**
    * Keep track of routes we had imported from other VRF during leaking, to avoid exporting them
    * again (chain leaking).
    */
-  @Nonnull private final Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
+  private final @Nonnull Set<Bgpv4Route> _importedFromOtherVrfs = new HashSet<>(0);
 
   /** eBGP RIB for EVPN type 3 routes */
-  @Nonnull private EvpnMasterRib<EvpnType3Route> _ebgpType3EvpnRib;
+  private @Nonnull EvpnMasterRib<EvpnType3Route> _ebgpType3EvpnRib;
 
   /** iBGP RIB for EVPN type 3 routes */
-  @Nonnull private EvpnMasterRib<EvpnType3Route> _ibgpType3EvpnRib;
+  private @Nonnull EvpnMasterRib<EvpnType3Route> _ibgpType3EvpnRib;
 
   /** Combined RIB for EVPN type 3 routes */
-  @Nonnull private EvpnMasterRib<EvpnType3Route> _evpnType3Rib;
+  private @Nonnull EvpnMasterRib<EvpnType3Route> _evpnType3Rib;
 
   /** eBGP RIB for EVPN type 5 routes */
-  @Nonnull private EvpnMasterRib<EvpnType5Route> _ebgpType5EvpnRib;
+  private @Nonnull EvpnMasterRib<EvpnType5Route> _ebgpType5EvpnRib;
 
   /** iBGP RIB for EVPN type 5 routes */
-  @Nonnull private EvpnMasterRib<EvpnType5Route> _ibgpType5EvpnRib;
+  private @Nonnull EvpnMasterRib<EvpnType5Route> _ibgpType5EvpnRib;
 
   /** Combined RIB for EVPN type 5 routes */
-  @Nonnull private EvpnMasterRib<EvpnType5Route> _evpnType5Rib;
+  private @Nonnull EvpnMasterRib<EvpnType5Route> _evpnType5Rib;
 
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType3Rib} */
-  @Nonnull private Builder<EvpnType3Route> _evpnType3DeltaBuilder = RibDelta.builder();
+  private @Nonnull Builder<EvpnType3Route> _evpnType3DeltaBuilder = RibDelta.builder();
 
   /** Builder for constructing {@link RibDelta} for routes in {@link #_evpnType5Rib} */
-  @Nonnull private Builder<EvpnType5Route> _evpnType5DeltaBuilder = RibDelta.builder();
+  private @Nonnull Builder<EvpnType5Route> _evpnType5DeltaBuilder = RibDelta.builder();
 
   /** {@link RibDelta} representing last round's changes to {@link #_evpnType3Rib} */
-  @Nonnull private RibDelta<EvpnType3Route> _evpnType3DeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<EvpnType3Route> _evpnType3DeltaPrev = RibDelta.empty();
 
   /** {@link RibDelta} representing last round's changes to {@link #_evpnType5Rib} */
-  @Nonnull private RibDelta<EvpnType5Route> _evpnType5DeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<EvpnType5Route> _evpnType5DeltaPrev = RibDelta.empty();
 
   /** Keep track of EVPN type 3 routes initialized from our own VNI settings */
-  @Nonnull private RibDelta<EvpnType3Route> _evpnInitializationDelta;
+  private @Nonnull RibDelta<EvpnType3Route> _evpnInitializationDelta;
 
   /**
    * Delta builder for vendors that announce networks to all neighbors regardless of whether they
    * have that network in their main RIB
    */
-  @Nonnull
-  private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibIndependentNetworkInitializationDelta;
+  private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>>
+      _mainRibIndependentNetworkInitializationDelta;
 
   /** Delta builder for routes that must be propagated to the main RIB */
-  @Nonnull private RibDelta.Builder<BgpRoute<?, ?>> _toMainRib = RibDelta.builder();
+  private @Nonnull RibDelta.Builder<BgpRoute<?, ?>> _toMainRib = RibDelta.builder();
 
   /* Indicates whether this BGP process has been initialized. */
   private boolean _initialized = false;
 
   /** Changed main RIB routes to be redistributed. Unused if {@link #_exportFromBgpRib} is set. */
-  @Nonnull private RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDelta;
+  private @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDelta;
 
   /** Set of edges (sessions) that came up since previous topology update */
   private Set<EdgeId> _evpnEdgesWentUp = ImmutableSet.of();
@@ -319,11 +319,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Type 3 routes that were created locally (across all VRFs). Save them so that if new sessions
    * come up, we can easily send out the updates
    */
-  @Nonnull private RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
+  private @Nonnull RibDelta<EvpnType3Route> _localType3Routes = RibDelta.empty();
 
   /** Type 5 route advertisements that have been sent to neighbors. */
-  @Nonnull
-  private final RibDelta.Builder<EvpnType5Route> _evpnType5Advertisements = RibDelta.builder();
+  private final @Nonnull RibDelta.Builder<EvpnType5Route> _evpnType5Advertisements =
+      RibDelta.builder();
 
   /**
    * The values of BGP-process-specific watched tracks for the current iteration. Used with {@link
@@ -1288,8 +1288,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * @param generatedRoute route to process
    * @return a new {@link Bgpv4Route} if the {@code generatedRoute} was activated.
    */
-  @Nullable
-  private Bgpv4Route processNeighborSpecificGeneratedRoute(
+  private @Nullable Bgpv4Route processNeighborSpecificGeneratedRoute(
       @Nonnull GeneratedRoute generatedRoute, Ip nextHopIp) {
     String policyName = generatedRoute.getGenerationPolicy();
     RoutingPolicy policy = policyName != null ? _policies.get(policyName).orElse(null) : null;
@@ -1657,8 +1656,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .enqueueEvpnType5Routes(outgoingEdge, evpnAdvertisements);
   }
 
-  @Nonnull
-  private <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
+  private @Nonnull <B extends EvpnRoute.Builder<B, R>, R extends EvpnRoute<B, R>>
       Stream<RouteAdvertisement<R>> getEvpnTransformedRouteStream(
           EdgeId outgoingEdge,
           RibDelta<R> evpnDelta,
@@ -2180,8 +2178,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
   }
 
-  @Nonnull
-  private static BgpSessionProperties getSessionProperties(BgpTopology bgpTopology, EdgeId edge) {
+  private static @Nonnull BgpSessionProperties getSessionProperties(
+      BgpTopology bgpTopology, EdgeId edge) {
     Optional<BgpSessionProperties> session =
         bgpTopology.getGraph().edgeValue(edge.tail(), edge.head());
     // BGP topology edge guaranteed to exist since the session is established
@@ -2526,8 +2524,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         () -> new IllegalArgumentException(String.format("No BGP edge %s in BGP topology", edge)));
   }
 
-  @Nonnull
-  public Ip getRouterId() {
+  public @Nonnull Ip getRouterId() {
     return _process.getRouterId();
   }
 
@@ -2561,8 +2558,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Return a BGP routing process for a given {@link BgpPeerConfigId} */
-  @Nonnull
-  private static BgpRoutingProcess getNeighborBgpProcess(
+  private static @Nonnull BgpRoutingProcess getNeighborBgpProcess(
       BgpPeerConfigId id, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
         allNodes
@@ -2574,8 +2570,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /** Return a BGP routing process for a sibling VRF on our node */
-  @Nonnull
-  private BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
+  private @Nonnull BgpRoutingProcess getVrfProcess(String vrf, Map<String, Node> allNodes) {
     BgpRoutingProcess proc =
         allNodes.get(_hostname).getVirtualRouterOrThrow(vrf).getBgpRoutingProcess();
     assert proc != null;
@@ -2646,21 +2641,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private static final class BgpDelta<R extends BgpRoute<?, ?>> {
 
     private static final BgpDelta<?> EMPTY = new BgpDelta<>(RibDelta.empty(), RibDelta.empty());
-    @Nonnull private final RibDelta<R> _ebgpDelta;
-    @Nonnull private final RibDelta<R> _ibgpDelta;
+    private final @Nonnull RibDelta<R> _ebgpDelta;
+    private final @Nonnull RibDelta<R> _ibgpDelta;
 
     private BgpDelta(@Nonnull RibDelta<R> ebgpDelta, @Nonnull RibDelta<R> ibgpDelta) {
       _ebgpDelta = ebgpDelta;
       _ibgpDelta = ibgpDelta;
     }
 
-    @Nonnull
-    public RibDelta<R> getEbgpDelta() {
+    public @Nonnull RibDelta<R> getEbgpDelta() {
       return _ebgpDelta;
     }
 
-    @Nonnull
-    public RibDelta<R> getIbgpDelta() {
+    public @Nonnull RibDelta<R> getIbgpDelta() {
       return _ibgpDelta;
     }
 
@@ -2675,8 +2668,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
 
     @SuppressWarnings("unchecked") // fully variant, will never store any Ts
-    @Nonnull
-    public static <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>> BgpDelta<R> empty() {
+    public static @Nonnull <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>>
+        BgpDelta<R> empty() {
       return (BgpDelta<R>) EMPTY;
     }
   }
@@ -2688,8 +2681,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private static final class DeltaPair<R extends BgpRoute<?, ?>> {
     private static final DeltaPair<?> EMPTY =
         new DeltaPair<Bgpv4Route>(BgpDelta.empty(), BgpDelta.empty());
-    @Nonnull private final BgpDelta<R> _toAdvertise;
-    @Nonnull private final BgpDelta<R> _toMerge;
+    private final @Nonnull BgpDelta<R> _toAdvertise;
+    private final @Nonnull BgpDelta<R> _toMerge;
 
     private DeltaPair(BgpDelta<R> toAdvertise, BgpDelta<R> toMerge) {
       _toAdvertise = toAdvertise;
@@ -2697,23 +2690,20 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
 
     /** Returns all advertisements in {@link #_toAdvertise} in a single {@link RibDelta} */
-    @Nonnull
-    private RibDelta<R> getAllToAdvertise() {
+    private @Nonnull RibDelta<R> getAllToAdvertise() {
       return RibDelta.<R>builder()
           .from(_toAdvertise.getEbgpDelta())
           .from(_toAdvertise.getIbgpDelta())
           .build();
     }
 
-    @Nonnull
-    private DeltaPair<R> union(DeltaPair<R> other) {
+    private @Nonnull DeltaPair<R> union(DeltaPair<R> other) {
       return new DeltaPair<>(
           _toAdvertise.union(other._toAdvertise), _toMerge.union(other._toMerge));
     }
 
     @SuppressWarnings("unchecked") // fully variant, will never store any Ts
-    @Nonnull
-    private static <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>>
+    private static @Nonnull <B extends BgpRoute.Builder<B, R>, R extends BgpRoute<B, R>>
         DeltaPair<R> empty() {
       return (DeltaPair<R>) EMPTY;
     }

@@ -1299,7 +1299,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private AaaAuthenticationLoginList _currentAaaAuthenticationLoginList;
 
-  @Nullable private AsaNat _currentAsaNat;
+  private @Nullable AsaNat _currentAsaNat;
 
   private IpAsPathAccessList _currentAsPathAcl;
 
@@ -1313,9 +1313,9 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
-  @Nullable private String _currentEigrpInterface;
+  private @Nullable String _currentEigrpInterface;
 
-  @Nullable private EigrpProcess _currentEigrpProcess;
+  private @Nullable EigrpProcess _currentEigrpProcess;
 
   private ExtendedAccessList _currentExtendedAcl;
 
@@ -1382,7 +1382,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private String _currentVrf;
 
-  @Nullable private VrfAddressFamily _currentVrfAddressFamily;
+  private @Nullable VrfAddressFamily _currentVrfAddressFamily;
 
   private Integer _currentVrrpGroupNum;
 
@@ -1392,7 +1392,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private boolean _no;
 
-  @Nullable private EigrpProcess _parentEigrpProcess;
+  private @Nullable EigrpProcess _parentEigrpProcess;
 
   private final AsaCombinedParser _parser;
 
@@ -1402,7 +1402,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -3256,8 +3256,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _currentLineNames = names;
   }
 
-  @Nonnull
-  private List<String> getLineNames(S_lineContext ctx) {
+  private @Nonnull List<String> getLineNames(S_lineContext ctx) {
     String lineType = ctx.line_type().getText();
     if (lineType.equals("")) {
       lineType = "<UNNAMED>";
@@ -5834,8 +5833,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     list.addLine(line);
   }
 
-  @Nonnull
-  private static String toString(Community_regexContext ctx) {
+  private static @Nonnull String toString(Community_regexContext ctx) {
     return unquote(ctx.getText().trim());
   }
 
@@ -5858,8 +5856,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     list.getLines().add(line);
   }
 
-  @Nonnull
-  private static String toString(Community_list_nameContext ctx) {
+  private static @Nonnull String toString(Community_list_nameContext ctx) {
     return ctx.getText();
   }
 
@@ -9057,8 +9054,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
   }
 
-  @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
+  private @Nullable String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
     } else {
@@ -9066,8 +9062,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     }
   }
 
-  @Nullable
-  private Interface getAsaInterfaceByAlias(String alias) {
+  private @Nullable Interface getAsaInterfaceByAlias(String alias) {
     return _configuration.getInterfaces().values().stream()
         .filter(i -> alias.equals(i.getAlias()))
         .findFirst()
@@ -9210,8 +9205,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
         .build();
   }
 
-  @Nonnull
-  private EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
      * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
      * the K constants are configured.
@@ -10160,8 +10154,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     return defaultReturnValue;
   }
 
-  @Nonnull
-  private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
+  private @Nonnull RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
     long dec = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
@@ -10170,8 +10163,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     return RouteDistinguisher.from(toAsNum(ctx.bgp_asn()), dec);
   }
 
-  @Nonnull
-  private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
+  private @Nonnull ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
     long la = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
@@ -10184,8 +10176,7 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     warn(outer, "Object group defined multiple times: '" + name.getText() + "'.");
   }
 
-  @Nullable
-  private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
+  private @Nullable ServiceObjectGroup.ServiceProtocol toServiceProtocol(
       Service_group_protocolContext protocol) {
     if (protocol == null) {
       return null;

@@ -46,14 +46,12 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
-    @Nonnull
-    public NodeInterfacePair getOutputInterface() {
+    public @Nonnull NodeInterfacePair getOutputInterface() {
       return _outputInterface;
     }
 
     @JsonProperty(PROP_TRANSFORMED_FLOW)
-    @Nullable
-    public Flow getTransformedFlow() {
+    public @Nullable Flow getTransformedFlow() {
       return _transformedFlow;
     }
 

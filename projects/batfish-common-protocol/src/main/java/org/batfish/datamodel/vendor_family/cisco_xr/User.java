@@ -10,9 +10,9 @@ public class User extends ComparableStructure<String> {
   private static final String PROP_PASSWORD = "password";
   private static final String PROP_ROLE = "role";
 
-  @Nullable private String _password;
+  private @Nullable String _password;
 
-  @Nullable private String _role;
+  private @Nullable String _role;
 
   @JsonCreator
   public User(@Nullable @JsonProperty(PROP_NAME) String name) {
@@ -20,14 +20,12 @@ public class User extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_PASSWORD)
-  @Nullable
-  public String getPassword() {
+  public @Nullable String getPassword() {
     return _password;
   }
 
   @JsonProperty(PROP_ROLE)
-  @Nullable
-  public String getRole() {
+  public @Nullable String getRole() {
     return _role;
   }
 

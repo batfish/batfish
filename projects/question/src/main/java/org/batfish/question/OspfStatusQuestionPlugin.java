@@ -221,11 +221,11 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
     private static final String PROP_NODES = "nodes";
     private static final String PROP_STATUS = "status";
 
-    @Nullable private String _interfaces;
+    private @Nullable String _interfaces;
 
-    @Nullable private String _nodes;
+    private @Nullable String _nodes;
 
-    @Nonnull private Pattern _statusRegex;
+    private @Nonnull Pattern _statusRegex;
 
     @JsonCreator
     private static OspfStatusQuestion create(

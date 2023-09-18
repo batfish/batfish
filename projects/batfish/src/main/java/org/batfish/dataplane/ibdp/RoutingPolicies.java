@@ -18,8 +18,7 @@ final class RoutingPolicies {
   }
 
   /** Return a routing policy of a given name */
-  @Nonnull
-  public Optional<RoutingPolicy> get(String name) {
+  public @Nonnull Optional<RoutingPolicy> get(String name) {
     return Optional.ofNullable(_policies.get(name));
   }
 
@@ -28,8 +27,7 @@ final class RoutingPolicies {
    *
    * @throws IllegalStateException if the routing policy does not exist
    */
-  @Nonnull
-  public RoutingPolicy getOrThrow(String name) {
+  public @Nonnull RoutingPolicy getOrThrow(String name) {
     return get(name)
         .orElseThrow(
             () ->
@@ -37,12 +35,11 @@ final class RoutingPolicies {
                     String.format("Routing policy %s does not exist on node %s", name, _hostname)));
   }
 
-  @Nonnull
-  static RoutingPolicies from(Configuration c) {
+  static @Nonnull RoutingPolicies from(Configuration c) {
     return new RoutingPolicies(c.getRoutingPolicies(), c.getHostname());
   }
 
-  @Nonnull private final Map<String, RoutingPolicy> _policies;
+  private final @Nonnull Map<String, RoutingPolicy> _policies;
   // For internal informational purposes only
-  @Nonnull private final String _hostname;
+  private final @Nonnull String _hostname;
 }

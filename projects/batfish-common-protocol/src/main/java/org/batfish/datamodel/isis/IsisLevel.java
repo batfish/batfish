@@ -11,8 +11,7 @@ public enum IsisLevel {
     return equals(union(this, other));
   }
 
-  @Nullable
-  public static IsisLevel intersection(IsisLevel... levels) {
+  public static @Nullable IsisLevel intersection(IsisLevel... levels) {
     if (levels.length == 0) {
       return null;
     }
@@ -23,8 +22,8 @@ public enum IsisLevel {
     return overlap;
   }
 
-  @Nullable
-  private static IsisLevel intersection(@Nullable IsisLevel first, @Nullable IsisLevel second) {
+  private static @Nullable IsisLevel intersection(
+      @Nullable IsisLevel first, @Nullable IsisLevel second) {
     if (first == second) {
       return first;
     }
@@ -37,8 +36,7 @@ public enum IsisLevel {
     return null;
   }
 
-  @Nullable
-  public static IsisLevel union(@Nullable IsisLevel first, @Nullable IsisLevel second) {
+  public static @Nullable IsisLevel union(@Nullable IsisLevel first, @Nullable IsisLevel second) {
     if (first == second || second == null) {
       return first;
     } else if (first == null) {

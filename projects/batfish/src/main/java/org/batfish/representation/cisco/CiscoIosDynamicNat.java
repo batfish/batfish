@@ -63,8 +63,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   }
 
   /** ACL specifying matching traffic (mutually exclusive with {@link #getRouteMap() route-map}) */
-  @Nullable
-  public String getAclName() {
+  public @Nullable String getAclName() {
     return _aclName;
   }
 
@@ -151,8 +150,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   }
 
   /** Converts given ACL name to an int if possible, otherwise returns null. */
-  @Nullable
-  private static Integer toIntOrNull(@Nullable String aclName) {
+  private static @Nullable Integer toIntOrNull(@Nullable String aclName) {
     try {
       return Integer.parseInt(aclName); // throws same error for null and non-numeric names
     } catch (NumberFormatException e) {

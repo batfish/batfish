@@ -16,7 +16,7 @@ public class DefinedStructureInfo implements Serializable {
   private static final String PROP_DEFINITION_LINES = "definitionLines";
   private static final String PROP_NUM_REFERRERS = "numReferrers";
 
-  @Nonnull private final RangeSet<Integer> _definitionLines;
+  private final @Nonnull RangeSet<Integer> _definitionLines;
   private int _numReferrers;
 
   public DefinedStructureInfo() {

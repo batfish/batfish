@@ -758,8 +758,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
-  @Nullable
-  private String getIOSSecurityZoneName(Interface iface) {
+  private @Nullable String getIOSSecurityZoneName(Interface iface) {
     String zoneName = iface.getSecurityZone();
     if (zoneName == null) {
       return null;
@@ -1554,8 +1553,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(
+      Interface iface, EigrpProcessMode mode) {
     Long bw =
         Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
             .filter(Objects::nonNull)
@@ -3241,8 +3240,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)

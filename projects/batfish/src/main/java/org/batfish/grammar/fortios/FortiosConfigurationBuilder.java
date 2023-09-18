@@ -2131,8 +2131,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * descendants and uses the provided collection of groups to expand indirect descendants/map UUIDs
    * to objects.
    */
-  @Nullable
-  private static Addrgrp getParentAddrgrp(
+  private static @Nullable Addrgrp getParentAddrgrp(
       BatfishUUID childUuid,
       Collection<BatfishUUID> candidateParents,
       Collection<Addrgrp> allAddrgrps) {
@@ -2177,8 +2176,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * UUIDs and their descendants and uses the provided collection of service groups to expand
    * indirect descendants/map UUIDs to objects.
    */
-  @Nullable
-  private static ServiceGroup getParentServiceGroup(
+  private static @Nullable ServiceGroup getParentServiceGroup(
       BatfishUUID childUuid,
       Collection<BatfishUUID> candidateParents,
       Collection<ServiceGroup> allServiceGroups) {

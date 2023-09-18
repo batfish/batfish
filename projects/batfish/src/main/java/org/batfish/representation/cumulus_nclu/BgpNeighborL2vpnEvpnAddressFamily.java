@@ -6,12 +6,11 @@ import javax.annotation.Nullable;
 
 /** L2VPN EVPN settings for BGP neighbor (or peer group) */
 public class BgpNeighborL2vpnEvpnAddressFamily implements Serializable {
-  @Nullable private Boolean _activated;
-  @Nullable private Boolean _routeReflectorClient;
+  private @Nullable Boolean _activated;
+  private @Nullable Boolean _routeReflectorClient;
 
   /** Whether this address family has been explicitly activated for this neighbor */
-  @Nullable
-  public Boolean getActivated() {
+  public @Nullable Boolean getActivated() {
     return _activated;
   }
 
@@ -20,8 +19,7 @@ public class BgpNeighborL2vpnEvpnAddressFamily implements Serializable {
   }
 
   /** Whether the neighbor is a route reflector client */
-  @Nullable
-  public Boolean getRouteReflectorClient() {
+  public @Nullable Boolean getRouteReflectorClient() {
     return _routeReflectorClient;
   }
 

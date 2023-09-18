@@ -10,13 +10,13 @@ import javax.annotation.Nonnull;
 
 public class DefinedStructureRow implements Comparable<DefinedStructureRow> {
 
-  @Nonnull private final SortedSet<Integer> _definitionLines;
+  private final @Nonnull SortedSet<Integer> _definitionLines;
 
-  @Nonnull private final String _filename;
+  private final @Nonnull String _filename;
 
-  @Nonnull private final String _structType;
+  private final @Nonnull String _structType;
 
-  @Nonnull private final String _structName;
+  private final @Nonnull String _structName;
 
   public DefinedStructureRow(
       String filename, String structType, String structName, SortedSet<Integer> definitionLines) {
@@ -38,23 +38,19 @@ public class DefinedStructureRow implements Comparable<DefinedStructureRow> {
     _definitionLines = firstNonNull(definitionLines, ImmutableSortedSet.of());
   }
 
-  @Nonnull
-  public SortedSet<Integer> getDefinitionLines() {
+  public @Nonnull SortedSet<Integer> getDefinitionLines() {
     return _definitionLines;
   }
 
-  @Nonnull
-  public String getFilename() {
+  public @Nonnull String getFilename() {
     return _filename;
   }
 
-  @Nonnull
-  public String getStructName() {
+  public @Nonnull String getStructName() {
     return _structName;
   }
 
-  @Nonnull
-  public String getStructType() {
+  public @Nonnull String getStructType() {
     return _structType;
   }
 

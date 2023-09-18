@@ -24,8 +24,7 @@ public final class Service extends ServiceGroupMember implements Serializable {
   }
 
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -40,37 +39,31 @@ public final class Service extends ServiceGroupMember implements Serializable {
   }
 
   @VisibleForTesting
-  @Nullable
-  public Protocol getProtocol() {
+  public @Nullable Protocol getProtocol() {
     return _protocol;
   }
 
-  @Nonnull
-  public Protocol getProtocolEffective() {
+  public @Nonnull Protocol getProtocolEffective() {
     if (_protocol == null) {
       return DEFAULT_PROTOCOL;
     }
     return _protocol;
   }
 
-  @Nullable
-  public Integer getIcmpCode() {
+  public @Nullable Integer getIcmpCode() {
     return _icmpCode;
   }
 
-  @Nullable
-  public Integer getIcmpType() {
+  public @Nullable Integer getIcmpType() {
     return _icmpType;
   }
 
-  @Nullable
-  public IpRange getIpRange() {
+  public @Nullable IpRange getIpRange() {
     return _ipRange;
   }
 
   @VisibleForTesting
-  @Nullable
-  public Integer getProtocolNumber() {
+  public @Nullable Integer getProtocolNumber() {
     return _protocolNumber;
   }
 
@@ -78,51 +71,42 @@ public final class Service extends ServiceGroupMember implements Serializable {
     return _protocolNumber == null ? DEFAULT_PROTOCOL_NUMBER : _protocolNumber;
   }
 
-  @Nullable
-  public IntegerSpace getTcpPortRangeDst() {
+  public @Nullable IntegerSpace getTcpPortRangeDst() {
     return _tcpPortRangeDst;
   }
 
   @VisibleForTesting
-  @Nullable
-  public IntegerSpace getTcpPortRangeSrc() {
+  public @Nullable IntegerSpace getTcpPortRangeSrc() {
     return _tcpPortRangeSrc;
   }
 
-  @Nullable
-  public IntegerSpace getTcpPortRangeSrcEffective() {
+  public @Nullable IntegerSpace getTcpPortRangeSrcEffective() {
     return _tcpPortRangeSrc == null ? DEFAULT_SOURCE_PORT_RANGE : _tcpPortRangeSrc;
   }
 
-  @Nullable
-  public IntegerSpace getUdpPortRangeDst() {
+  public @Nullable IntegerSpace getUdpPortRangeDst() {
     return _udpPortRangeDst;
   }
 
   @VisibleForTesting
-  @Nullable
-  public IntegerSpace getUdpPortRangeSrc() {
+  public @Nullable IntegerSpace getUdpPortRangeSrc() {
     return _udpPortRangeSrc;
   }
 
-  @Nullable
-  public IntegerSpace getUdpPortRangeSrcEffective() {
+  public @Nullable IntegerSpace getUdpPortRangeSrcEffective() {
     return _udpPortRangeSrc == null ? DEFAULT_SOURCE_PORT_RANGE : _udpPortRangeSrc;
   }
 
-  @Nullable
-  public IntegerSpace getSctpPortRangeDst() {
+  public @Nullable IntegerSpace getSctpPortRangeDst() {
     return _sctpPortRangeDst;
   }
 
   @VisibleForTesting
-  @Nullable
-  public IntegerSpace getSctpPortRangeSrc() {
+  public @Nullable IntegerSpace getSctpPortRangeSrc() {
     return _sctpPortRangeSrc;
   }
 
-  @Nullable
-  public IntegerSpace getSctpPortRangeSrcEffective() {
+  public @Nullable IntegerSpace getSctpPortRangeSrcEffective() {
     return _sctpPortRangeSrc == null ? DEFAULT_SOURCE_PORT_RANGE : _sctpPortRangeSrc;
   }
 
@@ -187,17 +171,17 @@ public final class Service extends ServiceGroupMember implements Serializable {
     _uuid = uuid;
   }
 
-  @Nonnull private String _name;
-  @Nonnull private final BatfishUUID _uuid;
-  @Nullable private Protocol _protocol;
-  @Nullable private Integer _protocolNumber;
-  @Nullable private Integer _icmpCode;
-  @Nullable private Integer _icmpType;
-  @Nullable private IpRange _ipRange;
-  @Nullable private IntegerSpace _tcpPortRangeDst;
-  @Nullable private IntegerSpace _tcpPortRangeSrc;
-  @Nullable private IntegerSpace _udpPortRangeDst;
-  @Nullable private IntegerSpace _udpPortRangeSrc;
-  @Nullable private IntegerSpace _sctpPortRangeDst;
-  @Nullable private IntegerSpace _sctpPortRangeSrc;
+  private @Nonnull String _name;
+  private final @Nonnull BatfishUUID _uuid;
+  private @Nullable Protocol _protocol;
+  private @Nullable Integer _protocolNumber;
+  private @Nullable Integer _icmpCode;
+  private @Nullable Integer _icmpType;
+  private @Nullable IpRange _ipRange;
+  private @Nullable IntegerSpace _tcpPortRangeDst;
+  private @Nullable IntegerSpace _tcpPortRangeSrc;
+  private @Nullable IntegerSpace _udpPortRangeDst;
+  private @Nullable IntegerSpace _udpPortRangeSrc;
+  private @Nullable IntegerSpace _sctpPortRangeDst;
+  private @Nullable IntegerSpace _sctpPortRangeSrc;
 }

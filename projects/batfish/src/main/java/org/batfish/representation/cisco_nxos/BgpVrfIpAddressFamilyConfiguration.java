@@ -50,8 +50,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
     _defaultInformationOriginate = defaultInformationOriginate;
   }
 
-  @Nullable
-  public final Long getDefaultMetric() {
+  public final @Nullable Long getDefaultMetric() {
     return _defaultMetric;
   }
 
@@ -132,7 +131,7 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   }
 
   private boolean _clientToClientReflection;
-  @Nullable private Long _defaultMetric;
+  private @Nullable Long _defaultMetric;
   private boolean _defaultInformationOriginate;
   private int _distanceEbgp;
   private int _distanceIbgp;

@@ -216,8 +216,7 @@ public final class VxlanTopologyUtils {
    * VrfId}, VNI).
    */
   @VisibleForTesting
-  @Nonnull
-  static <V extends Vni> Table<VrfId, Integer, V> computeInitialVniSettingsTable(
+  static @Nonnull <V extends Vni> Table<VrfId, Integer, V> computeInitialVniSettingsTable(
       Map<String, Configuration> configurations, Function<Vrf, Map<Integer, V>> vniGetter) {
     Table<VrfId, Integer, V> table = HashBasedTable.create();
     for (Configuration c : configurations.values()) {
@@ -234,9 +233,9 @@ public final class VxlanTopologyUtils {
    * Convert VNI setting table indexed by (node, vrf) obtained from the dataplane into a table
    * indexed by ({@link VrfId}, VNI).
    */
-  @Nonnull
-  private static <V extends Vni> Table<VrfId, Integer, V> computeVniIndexedVniSettingsTable(
-      Table<String, String, ? extends Collection<V>> nodeVrfIndexedVniSettingsTable) {
+  private static @Nonnull <V extends Vni>
+      Table<VrfId, Integer, V> computeVniIndexedVniSettingsTable(
+          Table<String, String, ? extends Collection<V>> nodeVrfIndexedVniSettingsTable) {
     Table<VrfId, Integer, V> table = HashBasedTable.create();
     for (Cell<String, String, ? extends Collection<V>> cell :
         nodeVrfIndexedVniSettingsTable.cellSet()) {
@@ -423,21 +422,19 @@ public final class VxlanTopologyUtils {
   /** A unique identifier for a {@link Vrf} in a network */
   static final class VrfId {
 
-    @Nonnull private final String _hostname;
-    @Nonnull private final String _vrfName;
+    private final @Nonnull String _hostname;
+    private final @Nonnull String _vrfName;
 
     VrfId(String hostname, String vrfName) {
       _hostname = hostname;
       _vrfName = vrfName;
     }
 
-    @Nonnull
-    public String getHostname() {
+    public @Nonnull String getHostname() {
       return _hostname;
     }
 
-    @Nonnull
-    public String getVrfName() {
+    public @Nonnull String getVrfName() {
       return _vrfName;
     }
 

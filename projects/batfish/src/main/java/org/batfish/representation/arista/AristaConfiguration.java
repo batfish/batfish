@@ -351,7 +351,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return output;
   }
 
-  @Nullable private AristaBgpProcess _aristaBgp;
+  private @Nullable AristaBgpProcess _aristaBgp;
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
@@ -371,7 +371,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private AristaEosVxlan _eosVxlan;
 
-  @Nullable private MlagConfiguration _eosMlagConfiguration;
+  private @Nullable MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -534,8 +534,7 @@ public final class AristaConfiguration extends VendorConfiguration {
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
-  @Nullable
-  public AristaBgpProcess getAristaBgp() {
+  public @Nullable AristaBgpProcess getAristaBgp() {
     return _aristaBgp;
   }
 
@@ -575,8 +574,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _eosVxlan;
   }
 
-  @Nullable
-  public MlagConfiguration getEosMlagConfiguration() {
+  public @Nullable MlagConfiguration getEosMlagConfiguration() {
     return _eosMlagConfiguration;
   }
 
@@ -1668,8 +1666,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     iface.setOspfSettings(ospfSettings.build());
   }
 
-  @Nullable
-  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
+  private @Nullable Mlag toMlag(@Nullable MlagConfiguration mlag) {
     if (mlag == null || mlag.getDomainId() == null) {
       return null;
     }
@@ -2713,8 +2710,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)

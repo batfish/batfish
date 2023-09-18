@@ -5,7 +5,7 @@ import org.batfish.datamodel.Ip;
 
 /** IP to hide behind for a NAT hide rule. */
 public class NatHideBehindIp extends NatHideBehind {
-  @Nonnull private final Ip _ip;
+  private final @Nonnull Ip _ip;
 
   public NatHideBehindIp(@Nonnull Ip ip) {
     _ip = ip;

@@ -21,13 +21,13 @@ public class OspfSessionCompatibilityQuestion extends Question {
   private static final String PROP_REMOTE_NODES = "remoteNodes";
   private static final String PROP_STATUSES = "statuses";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
-  @Nullable private String _remoteNodes;
+  private @Nullable String _remoteNodes;
 
-  @Nullable private String _statuses;
+  private @Nullable String _statuses;
 
-  @Nonnull private final Set<OspfSessionStatus> _expandedStatuses;
+  private final @Nonnull Set<OspfSessionStatus> _expandedStatuses;
 
   @JsonCreator
   public OspfSessionCompatibilityQuestion(
@@ -62,20 +62,17 @@ public class OspfSessionCompatibilityQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_REMOTE_NODES)
-  @Nullable
-  public String getremoteNodes() {
+  public @Nullable String getremoteNodes() {
     return _remoteNodes;
   }
 
   @JsonProperty(PROP_STATUSES)
-  @Nullable
-  public String getStatuses() {
+  public @Nullable String getStatuses() {
     return _statuses;
   }
 

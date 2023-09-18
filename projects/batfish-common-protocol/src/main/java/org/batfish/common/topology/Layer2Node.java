@@ -85,8 +85,7 @@ public final class Layer2Node implements Serializable {
   }
 
   @JsonProperty(PROP_SWITCHPORT_VLAN_RANGE)
-  @Nullable
-  public Range<Integer> getSwitchportVlanRange() {
+  public @Nullable Range<Integer> getSwitchportVlanRange() {
     return _switchportVlanRange;
   }
 

@@ -28,7 +28,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 @ParametersAreNonnullByDefault
 public final class SnapshotRuntimeData {
   public static final class Builder {
-    @Nonnull private Map<String, RuntimeData> _runtimeData;
+    private @Nonnull Map<String, RuntimeData> _runtimeData;
 
     public SnapshotRuntimeData build() {
       return new SnapshotRuntimeData(_runtimeData);
@@ -118,7 +118,7 @@ public final class SnapshotRuntimeData {
 
   private static final String PROP_RUNTIME_DATA = "runtimeData";
 
-  @Nonnull private final Map<String, RuntimeData> _runtimeData;
+  private final @Nonnull Map<String, RuntimeData> _runtimeData;
 
   @VisibleForTesting
   SnapshotRuntimeData(Map<String, RuntimeData> runtimeData) {
@@ -149,8 +149,7 @@ public final class SnapshotRuntimeData {
    * InterfaceRuntimeData#getLineUp() lineUp} set to {@code false}.
    */
   @JsonIgnore
-  @Nonnull
-  public Set<NodeInterfacePair> getBlacklistedInterfaces() {
+  public @Nonnull Set<NodeInterfacePair> getBlacklistedInterfaces() {
     return _runtimeData.entrySet().stream()
         .flatMap(
             nodeEntry ->

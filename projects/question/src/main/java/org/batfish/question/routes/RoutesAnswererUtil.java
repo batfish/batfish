@@ -134,8 +134,7 @@ public class RoutesAnswererUtil {
   }
 
   /** Compute the next hop node for a given next hop IP. */
-  @Nullable
-  static String computeNextHopNode(
+  static @Nullable String computeNextHopNode(
       @Nullable Ip nextHopIp, @Nullable Map<Ip, Set<String>> ipOwners) {
     if (nextHopIp == null || ipOwners == null) {
       return null;

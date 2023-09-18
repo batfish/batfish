@@ -44,11 +44,11 @@ public enum Protocol {
     return map.build();
   }
 
-  @Nonnull private final IpProtocol _ipProtocol;
+  private final @Nonnull IpProtocol _ipProtocol;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final Integer _port;
+  private final @Nonnull Integer _port;
 
   Protocol(@Nonnull String name, @Nonnull IpProtocol ipProtocol, @Nonnull Integer port) {
     _name = name;
@@ -56,8 +56,7 @@ public enum Protocol {
     _port = port;
   }
 
-  @Nonnull
-  public IpProtocol getIpProtocol() {
+  public @Nonnull IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
@@ -67,8 +66,7 @@ public enum Protocol {
     return _name;
   }
 
-  @Nonnull
-  public Integer getPort() {
+  public @Nonnull Integer getPort() {
     return _port;
   }
 

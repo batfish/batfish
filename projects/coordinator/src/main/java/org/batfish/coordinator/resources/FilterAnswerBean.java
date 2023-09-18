@@ -20,18 +20,15 @@ public final class FilterAnswerBean {
 
   /** Name of the snapshot the question was run on */
   @JsonProperty(PROP_SNAPSHOT)
-  @Nonnull
-  public final String snapshot;
+  public final @Nonnull String snapshot;
 
   /** Name of the reference snapshot for the differential question, if applicable */
   @JsonProperty(PROP_REFERENCE_SNAPSHOT)
-  @Nullable
-  public final String referenceSnapshot;
+  public final @Nullable String referenceSnapshot;
 
   /** Filtering options to be applied to the retrieved answer */
   @JsonProperty(PROP_FILTER_OPTIONS)
-  @Nonnull
-  public final AnswerRowsOptions filterOptions;
+  public final @Nonnull AnswerRowsOptions filterOptions;
 
   @JsonCreator
   @VisibleForTesting

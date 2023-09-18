@@ -12,8 +12,7 @@ public class NexthopAddress implements NexthopTarget {
     _address = address;
   }
 
-  @Nonnull
-  public Ip getAddress() {
+  public @Nonnull Ip getAddress() {
     return _address;
   }
 
@@ -34,5 +33,5 @@ public class NexthopAddress implements NexthopTarget {
     return Objects.hash(_address);
   }
 
-  @Nonnull private final Ip _address;
+  private final @Nonnull Ip _address;
 }

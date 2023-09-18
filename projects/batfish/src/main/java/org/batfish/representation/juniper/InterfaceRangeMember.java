@@ -33,10 +33,10 @@ public class InterfaceRangeMember implements Serializable {
           String.format(
               "^([a-z][a-z])-(%s)/(%s)/(%s)$", COMPONENT_REGEX, COMPONENT_REGEX, COMPONENT_REGEX));
 
-  @Nonnull private final String _type;
-  @Nonnull private final String _fpc;
-  @Nonnull private final String _pic;
-  @Nonnull private final String _port;
+  private final @Nonnull String _type;
+  private final @Nonnull String _fpc;
+  private final @Nonnull String _pic;
+  private final @Nonnull String _port;
 
   public InterfaceRangeMember(String memberId) {
     Matcher matcher = MEMBER_ID_PATTERN.matcher(memberId);

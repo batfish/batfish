@@ -20,8 +20,8 @@ public final class InterfaceSpecifierFilterSpecifier implements FilterSpecifier 
     OUT_FILTER
   }
 
-  @Nonnull private final InterfaceSpecifier _interfaceSpecifier;
-  @Nonnull private final Type _type;
+  private final @Nonnull InterfaceSpecifier _interfaceSpecifier;
+  private final @Nonnull Type _type;
 
   public InterfaceSpecifierFilterSpecifier(Type type, InterfaceSpecifier interfaceSpecifier) {
     _type = type;

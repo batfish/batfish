@@ -38,8 +38,7 @@ public final class ServiceOrServiceGroupReference
 
   /** Return the name of the referenced Service or ServiceGroup */
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -68,5 +67,5 @@ public final class ServiceOrServiceGroupReference
     }
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

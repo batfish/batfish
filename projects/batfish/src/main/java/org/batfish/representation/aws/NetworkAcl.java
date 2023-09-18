@@ -37,7 +37,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   public static final class NetworkAclAssociation implements Serializable {
 
-    @Nonnull private final String _subnetId;
+    private final @Nonnull String _subnetId;
 
     @JsonCreator
     private static NetworkAclAssociation create(
@@ -73,13 +73,13 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final List<NetworkAclEntry> _entries;
+  private final @Nonnull List<NetworkAclEntry> _entries;
 
-  @Nonnull private final List<NetworkAclAssociation> _networkAclAssociations;
+  private final @Nonnull List<NetworkAclAssociation> _networkAclAssociations;
 
-  @Nonnull private final String _networkAclId;
+  private final @Nonnull String _networkAclId;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   private final boolean _isDefault;
 
@@ -222,8 +222,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
     return _isDefault;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 

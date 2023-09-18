@@ -9,8 +9,7 @@ public class NexthopLogical implements NexthopTarget {
     _interface = iface;
   }
 
-  @Nonnull
-  public String getInterface() {
+  public @Nonnull String getInterface() {
     return _interface;
   }
 
@@ -31,5 +30,5 @@ public class NexthopLogical implements NexthopTarget {
     return Objects.hash(_interface);
   }
 
-  @Nonnull private final String _interface;
+  private final @Nonnull String _interface;
 }

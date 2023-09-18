@@ -19,7 +19,7 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 public final class SetAdministrativeCost extends Statement {
   private static final String PROP_ADMIN = "admin";
 
-  @Nonnull private final IntExpr _admin;
+  private final @Nonnull IntExpr _admin;
 
   @JsonCreator
   private static SetAdministrativeCost jsonCreator(
@@ -60,8 +60,7 @@ public final class SetAdministrativeCost extends Statement {
   }
 
   @JsonProperty(PROP_ADMIN)
-  @Nonnull
-  public IntExpr getAdmin() {
+  public @Nonnull IntExpr getAdmin() {
     return _admin;
   }
 

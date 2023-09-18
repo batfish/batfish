@@ -210,7 +210,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _domain;
 
-  @Nullable private HighAvailability _highAvailability;
+  private @Nullable HighAvailability _highAvailability;
 
   private String _hostname;
   private String _rawHostname;
@@ -1588,8 +1588,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         rejecting(matchExternalFromZoneInterface));
   }
 
-  @Nullable
-  private IpSpace ipSpaceFromRuleEndpoints(
+  private @Nullable IpSpace ipSpaceFromRuleEndpoints(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
     return AclIpSpace.union(
         endpoints.stream()
@@ -1597,8 +1596,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
-  @Nonnull
-  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
+  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -1609,8 +1607,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
+  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -1621,8 +1618,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  private RangeSet<Ip> ipRangeSetFromRuleEndpoints(
+  private @Nonnull RangeSet<Ip> ipRangeSetFromRuleEndpoints(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
     RangeSet<Ip> rangeSet = TreeRangeSet.create();
     endpoints.stream()
@@ -2879,8 +2875,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     viIface.setOspfSettings(ospfSettings.build());
   }
 
-  @Nullable
-  private OspfNetworkType toNetworkType(@Nullable LinkType linkType) {
+  private @Nullable OspfNetworkType toNetworkType(@Nullable LinkType linkType) {
     if (linkType == null) {
       return null;
     }
@@ -3651,13 +3646,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _shared = shared;
   }
 
-  @Nullable
-  public HighAvailability getHighAvailability() {
+  public @Nullable HighAvailability getHighAvailability() {
     return _highAvailability;
   }
 
-  @Nonnull
-  public HighAvailability getOrCreateHighAvailability() {
+  public @Nonnull HighAvailability getOrCreateHighAvailability() {
     if (_highAvailability == null) {
       _highAvailability = new HighAvailability();
     }

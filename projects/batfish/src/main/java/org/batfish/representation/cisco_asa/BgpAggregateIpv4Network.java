@@ -10,7 +10,7 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public class BgpAggregateIpv4Network extends BgpAggregateNetwork {
 
-  @Nonnull private final Prefix _prefix;
+  private final @Nonnull Prefix _prefix;
 
   public BgpAggregateIpv4Network(Prefix prefix) {
     _prefix = prefix;

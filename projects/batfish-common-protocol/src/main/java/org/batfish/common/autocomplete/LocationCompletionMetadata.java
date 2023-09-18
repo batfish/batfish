@@ -19,7 +19,7 @@ public final class LocationCompletionMetadata implements Serializable {
   private static final String PROP_SOURCE_WITH_IPS = "sourceWithIps";
   private static final String PROP_TRACEROUTE_SOURCE = "tracerouteSource";
 
-  @Nonnull private final Location _location;
+  private final @Nonnull Location _location;
   private final boolean _isSourceWithIps;
   private final boolean _isTracerouteSource;
 

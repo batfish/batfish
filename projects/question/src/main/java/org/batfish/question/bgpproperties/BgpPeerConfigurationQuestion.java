@@ -22,10 +22,10 @@ public class BgpPeerConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private final String _nodes;
-  @Nullable private final String _properties;
+  private final @Nullable String _nodes;
+  private final @Nullable String _properties;
 
-  @Nonnull private BgpPeerPropertySpecifier _propertySpecifier;
+  private @Nonnull BgpPeerPropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static BgpPeerConfigurationQuestion create(
@@ -63,8 +63,7 @@ public class BgpPeerConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
@@ -75,14 +74,12 @@ public class BgpPeerConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  @Nullable
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 
   @JsonIgnore
-  @Nonnull
-  public BgpPeerPropertySpecifier getPropertySpecifier() {
+  public @Nonnull BgpPeerPropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
   }
 

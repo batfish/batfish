@@ -24,8 +24,7 @@ public class IpTablesGrammarTest {
 
   private static final String TESTCONFIGS_PREFIX = "org/batfish/grammar/iptables/testconfigs/";
 
-  @Nonnull
-  private static IptablesVendorConfiguration parseVendorConfig(String filename) {
+  private static @Nonnull IptablesVendorConfiguration parseVendorConfig(String filename) {
     String filepath = TESTCONFIGS_PREFIX + filename;
     String src = readResource(filepath, UTF_8);
     Settings settings = new Settings();

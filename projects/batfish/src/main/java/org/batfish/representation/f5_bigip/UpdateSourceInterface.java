@@ -9,8 +9,7 @@ public final class UpdateSourceInterface implements UpdateSource {
     _name = name;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -19,5 +18,5 @@ public final class UpdateSourceInterface implements UpdateSource {
     return visitor.visitUpdateSourceInterface(this);
   }
 
-  private @Nonnull final String _name;
+  private final @Nonnull String _name;
 }

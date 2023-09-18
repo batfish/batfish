@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** Clause of set comm-list delete in route map. */
 public class RouteMapSetCommListDelete implements RouteMapSet {
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public RouteMapSetCommListDelete(@Nonnull String name) {
     _name = name;

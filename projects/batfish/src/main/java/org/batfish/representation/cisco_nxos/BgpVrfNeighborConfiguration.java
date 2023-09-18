@@ -32,23 +32,19 @@ public class BgpVrfNeighborConfiguration implements Serializable {
         af, a -> new BgpVrfNeighborAddressFamilyConfiguration());
   }
 
-  @Nullable
-  public BgpVrfNeighborAddressFamilyConfiguration getIpv4UnicastAddressFamily() {
+  public @Nullable BgpVrfNeighborAddressFamilyConfiguration getIpv4UnicastAddressFamily() {
     return _addressFamilies.get("ipv4-unicast");
   }
 
-  @Nullable
-  public BgpVrfNeighborAddressFamilyConfiguration getIpv6UnicastAddressFamily() {
+  public @Nullable BgpVrfNeighborAddressFamilyConfiguration getIpv6UnicastAddressFamily() {
     return _addressFamilies.get("ipv6-unicast");
   }
 
-  @Nullable
-  public BgpVrfNeighborAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
+  public @Nullable BgpVrfNeighborAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
     return _addressFamilies.get("l2vpn-evpn");
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -56,8 +52,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _description = description;
   }
 
-  @Nullable
-  public Integer getEbgpMultihopTtl() {
+  public @Nullable Integer getEbgpMultihopTtl() {
     return _ebgpMultihopTtl;
   }
 
@@ -65,8 +60,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _ebgpMultihopTtl = ttl;
   }
 
-  @Nullable
-  public String getInheritPeer() {
+  public @Nullable String getInheritPeer() {
     return _inheritPeer;
   }
 
@@ -78,8 +72,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _inheritPeerSession = peerSession;
   }
 
-  @Nullable
-  public Long getLocalAs() {
+  public @Nullable Long getLocalAs() {
     return _localAs;
   }
 
@@ -87,8 +80,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _localAs = localAs;
   }
 
-  @Nullable
-  public Long getRemoteAs() {
+  public @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
 
@@ -96,8 +88,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _remoteAs = remoteAs;
   }
 
-  @Nullable
-  public String getRemoteAsRouteMap() {
+  public @Nullable String getRemoteAsRouteMap() {
     return _remoteAsRouteMap;
   }
 
@@ -105,8 +96,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _remoteAsRouteMap = remoteAsRouteMap;
   }
 
-  @Nullable
-  public RemovePrivateAsMode getRemovePrivateAs() {
+  public @Nullable RemovePrivateAsMode getRemovePrivateAs() {
     return _removePrivateAs;
   }
 
@@ -114,8 +104,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _removePrivateAs = mode;
   }
 
-  @Nullable
-  public Boolean getShutdown() {
+  public @Nullable Boolean getShutdown() {
     return _shutdown;
   }
 
@@ -123,8 +112,7 @@ public class BgpVrfNeighborConfiguration implements Serializable {
     _shutdown = shutdown;
   }
 
-  @Nullable
-  public String getUpdateSource() {
+  public @Nullable String getUpdateSource() {
     return _updateSource;
   }
 
@@ -133,16 +121,16 @@ public class BgpVrfNeighborConfiguration implements Serializable {
   }
 
   private final Map<String, BgpVrfNeighborAddressFamilyConfiguration> _addressFamilies;
-  @Nullable private String _description;
-  @Nullable private Integer _ebgpMultihopTtl;
-  @Nullable private String _inheritPeer;
-  @Nullable private String _inheritPeerSession;
-  @Nullable private Long _localAs;
-  @Nullable private Long _remoteAs;
-  @Nullable private String _remoteAsRouteMap;
-  @Nullable private RemovePrivateAsMode _removePrivateAs;
-  @Nullable private Boolean _shutdown;
-  @Nullable private String _updateSource;
+  private @Nullable String _description;
+  private @Nullable Integer _ebgpMultihopTtl;
+  private @Nullable String _inheritPeer;
+  private @Nullable String _inheritPeerSession;
+  private @Nullable Long _localAs;
+  private @Nullable Long _remoteAs;
+  private @Nullable String _remoteAsRouteMap;
+  private @Nullable RemovePrivateAsMode _removePrivateAs;
+  private @Nullable Boolean _shutdown;
+  private @Nullable String _updateSource;
 
   private void inheritFrom(
       BgpGlobalConfiguration nxBgpGlobal, Warnings warnings, BgpVrfNeighborConfiguration peer) {

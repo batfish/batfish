@@ -19,11 +19,11 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class PrefixList implements AwsVpcEntity, Serializable {
 
-  @Nonnull private final List<Prefix> _cidrs;
+  private final @Nonnull List<Prefix> _cidrs;
 
-  @Nonnull private final String _prefixListId;
+  private final @Nonnull String _prefixListId;
 
-  @Nonnull private final String _prefixListName;
+  private final @Nonnull String _prefixListName;
 
   @JsonCreator
   private static PrefixList create(
@@ -43,8 +43,7 @@ public final class PrefixList implements AwsVpcEntity, Serializable {
     _prefixListName = prefixListName;
   }
 
-  @Nonnull
-  public List<Prefix> getCidrs() {
+  public @Nonnull List<Prefix> getCidrs() {
     return _cidrs;
   }
 
@@ -53,8 +52,7 @@ public final class PrefixList implements AwsVpcEntity, Serializable {
     return _prefixListId;
   }
 
-  @Nonnull
-  public String getPrefixListName() {
+  public @Nonnull String getPrefixListName() {
     return _prefixListName;
   }
 

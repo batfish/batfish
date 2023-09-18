@@ -50,7 +50,7 @@ public final class OspfTopology {
     return new OspfTopology(graph);
   }
 
-  @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
+  private final @Nonnull ValueGraph<OspfNeighborConfigId, OspfSessionProperties> _graph;
 
   public OspfTopology(ValueGraph<OspfNeighborConfigId, OspfSessionProperties> graph) {
     _graph = ImmutableValueGraph.copyOf(graph);
@@ -60,8 +60,7 @@ public final class OspfTopology {
    * Return a set of neighbors adjacent to a given node. If the node is not in a graph, an empty set
    * is returned.
    */
-  @Nonnull
-  public Set<OspfNeighborConfigId> neighbors(OspfNeighborConfigId node) {
+  public @Nonnull Set<OspfNeighborConfigId> neighbors(OspfNeighborConfigId node) {
     if (!_graph.nodes().contains(node)) {
       return ImmutableSet.of();
     }
@@ -69,8 +68,7 @@ public final class OspfTopology {
   }
 
   /** Return edges present in the topology */
-  @Nonnull
-  public Set<EdgeId> edges() {
+  public @Nonnull Set<EdgeId> edges() {
     return _graph.edges().stream()
         .map(pair -> makeEdge(pair.nodeU(), pair.nodeV()))
         .collect(ImmutableSet.toImmutableSet());
@@ -95,13 +93,11 @@ public final class OspfTopology {
    * @return {@link Set} of {@link OspfNeighborConfigId}s
    */
   @JsonProperty(PROP_NODES)
-  @Nonnull
-  public Set<OspfNeighborConfigId> getNodes() {
+  public @Nonnull Set<OspfNeighborConfigId> getNodes() {
     return _graph.nodes();
   }
 
-  @Nonnull
-  public Optional<OspfSessionProperties> getSession(EdgeId id) {
+  public @Nonnull Optional<OspfSessionProperties> getSession(EdgeId id) {
     return _graph.edgeValue(id.getTail(), id.getHead());
   }
 
@@ -110,8 +106,7 @@ public final class OspfTopology {
    *
    * <p>Returns the empty set if the neighbor is not in the graph.
    */
-  @Nonnull
-  public Set<EdgeId> incomingEdges(OspfNeighborConfigId head) {
+  public @Nonnull Set<EdgeId> incomingEdges(OspfNeighborConfigId head) {
     if (!_graph.nodes().contains(head)) {
       return ImmutableSet.of();
     }
@@ -156,8 +151,8 @@ public final class OspfTopology {
     private static final String PROP_TAIL = "tail";
     private static final String PROP_HEAD = "head";
 
-    @Nonnull private final OspfNeighborConfigId _tail;
-    @Nonnull private final OspfNeighborConfigId _head;
+    private final @Nonnull OspfNeighborConfigId _tail;
+    private final @Nonnull OspfNeighborConfigId _head;
 
     private static final Comparator<OspfNeighborConfigId> ID_COMPARATOR =
         Comparator.comparing(OspfNeighborConfigId::getHostname)

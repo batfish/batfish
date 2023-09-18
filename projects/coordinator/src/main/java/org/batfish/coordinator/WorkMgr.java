@@ -286,8 +286,7 @@ public class WorkMgr extends AbstractCoordinator {
     return _storage.loadCompletionMetadata(networkId, snapshotId);
   }
 
-  @Nullable
-  public List<AutocompleteSuggestion> autoComplete(
+  public @Nullable List<AutocompleteSuggestion> autoComplete(
       String network,
       @Nullable String snapshot,
       Variable.Type completionType,
@@ -710,12 +709,11 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Load and return the log file for a given work item ID in a given snapshot.
    *
-   * @throws IOException if the log could not be read successfully.
    * @return Content of the log file as a string; {@code null} if the network, snapshot or log file
    *     is not available
+   * @throws IOException if the log could not be read successfully.
    */
-  @Nullable
-  public String getWorkLog(String networkName, String snapshotName, String workId)
+  public @Nullable String getWorkLog(String networkName, String snapshotName, String workId)
       throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
     if (!networkIdOpt.isPresent()) {
@@ -736,12 +734,11 @@ public class WorkMgr extends AbstractCoordinator {
   /**
    * Load and return the answer JSON file for a given work item ID in a given snapshot.
    *
-   * @throws IOException if the JSON could not be read successfully.
    * @return Content of the JSON file as a string; {@code null} if the network, snapshot or log file
    *     is not available
+   * @throws IOException if the JSON could not be read successfully.
    */
-  @Nullable
-  public String getWorkJson(String networkName, String snapshotName, String workId)
+  public @Nullable String getWorkJson(String networkName, String snapshotName, String workId)
       throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(networkName);
     if (!networkIdOpt.isPresent()) {
@@ -1134,8 +1131,8 @@ public class WorkMgr extends AbstractCoordinator {
    * <p>TODO Delete method when {@link BfConsts#RELPATH_INTERFACE_BLACKLIST_FILE} is removed.
    */
   @VisibleForTesting
-  @Nonnull
-  static List<NodeInterfacePair> deserializeAndDeleteInterfaceBlacklist(Path blacklistPath) {
+  static @Nonnull List<NodeInterfacePair> deserializeAndDeleteInterfaceBlacklist(
+      Path blacklistPath) {
     if (!blacklistPath.toFile().exists()) {
       return ImmutableList.of();
     }
@@ -1829,8 +1826,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @throws IOException if there is an error reading the object
    */
   @MustBeClosed
-  @Nullable
-  public InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
+  public @Nullable InputStream getNetworkObject(@Nonnull String network, @Nonnull String key)
       throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     checkArgument(networkIdOpt.isPresent(), "Missing network '%s'", network);
@@ -1906,8 +1902,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @throws IOException if there is an error reading the object
    */
   @MustBeClosed
-  @Nullable
-  public InputStream getSnapshotObject(
+  public @Nullable InputStream getSnapshotObject(
       @Nonnull String network, @Nonnull String snapshot, @Nonnull String key) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -2028,9 +2023,8 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  @Nullable
-  public List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(String network, String snapshot)
-      throws IOException {
+  public @Nullable List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
+      String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
       return null;
@@ -2050,8 +2044,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
-  @Nullable
-  public List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
+  public @Nullable List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
       String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -2127,8 +2120,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Provides the results of validating the user supplied input */
-  @Nullable
-  public InputValidationNotes validateInput(
+  public @Nullable InputValidationNotes validateInput(
       String network, @Nullable String snapshot, Variable.Type varType, String query)
       throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);

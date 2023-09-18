@@ -10,10 +10,10 @@ import javax.annotation.Nullable;
 public final class AristaBgpProcess implements Serializable {
   public static final String DEFAULT_VRF = "default";
   private final long _asn;
-  @Nonnull private Map<String, AristaBgpPeerGroupNeighbor> _peerGroups;
-  @Nonnull private final Map<String, AristaBgpVlanAwareBundle> _vlanAwareBundles;
-  @Nonnull private final Map<Integer, AristaBgpVlan> _vlans;
-  @Nonnull private final Map<String, AristaBgpVrf> _vrfs;
+  private @Nonnull Map<String, AristaBgpPeerGroupNeighbor> _peerGroups;
+  private final @Nonnull Map<String, AristaBgpVlanAwareBundle> _vlanAwareBundles;
+  private final @Nonnull Map<Integer, AristaBgpVlan> _vlans;
+  private final @Nonnull Map<String, AristaBgpVrf> _vrfs;
 
   public AristaBgpProcess(long asn) {
     _asn = asn;
@@ -29,13 +29,11 @@ public final class AristaBgpProcess implements Serializable {
     return _asn;
   }
 
-  @Nonnull
-  public Map<String, AristaBgpPeerGroupNeighbor> getPeerGroups() {
+  public @Nonnull Map<String, AristaBgpPeerGroupNeighbor> getPeerGroups() {
     return _peerGroups;
   }
 
-  @Nonnull
-  public AristaBgpPeerGroupNeighbor getOrCreatePeerGroup(String name) {
+  public @Nonnull AristaBgpPeerGroupNeighbor getOrCreatePeerGroup(String name) {
     return _peerGroups.computeIfAbsent(name, AristaBgpPeerGroupNeighbor::new);
   }
 
@@ -43,28 +41,23 @@ public final class AristaBgpProcess implements Serializable {
     return _peerGroups.remove(name);
   }
 
-  @Nullable
-  public AristaBgpPeerGroupNeighbor getPeerGroup(String name) {
+  public @Nullable AristaBgpPeerGroupNeighbor getPeerGroup(String name) {
     return _peerGroups.get(name);
   }
 
-  @Nonnull
-  public Map<String, AristaBgpVlanAwareBundle> getVlanAwareBundles() {
+  public @Nonnull Map<String, AristaBgpVlanAwareBundle> getVlanAwareBundles() {
     return _vlanAwareBundles;
   }
 
-  @Nonnull
-  public Map<Integer, AristaBgpVlan> getVlans() {
+  public @Nonnull Map<Integer, AristaBgpVlan> getVlans() {
     return _vlans;
   }
 
-  @Nonnull
-  public Map<String, AristaBgpVrf> getVrfs() {
+  public @Nonnull Map<String, AristaBgpVrf> getVrfs() {
     return _vrfs;
   }
 
-  @Nonnull
-  public AristaBgpVrf getDefaultVrf() {
+  public @Nonnull AristaBgpVrf getDefaultVrf() {
     assert _vrfs.containsKey(DEFAULT_VRF); // populated in constructor
     return _vrfs.get(DEFAULT_VRF);
   }

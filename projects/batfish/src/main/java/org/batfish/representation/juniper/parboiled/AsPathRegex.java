@@ -205,8 +205,7 @@ public class AsPathRegex extends BaseParser<String> {
 
   /** Like {@link #convertToJavaRegex(String)}, but for debugging. */
   @SuppressWarnings("unused") // leaving here for future debugging.
-  @Nonnull
-  static String debugConvertToJavaRegex(String regex) {
+  static @Nonnull String debugConvertToJavaRegex(String regex) {
     AsPathRegex parser = Parboiled.createParser(AsPathRegex.class);
     TracingParseRunner<String> runner =
         new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());

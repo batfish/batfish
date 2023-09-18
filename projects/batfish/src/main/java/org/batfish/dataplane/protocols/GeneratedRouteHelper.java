@@ -26,8 +26,7 @@ public class GeneratedRouteHelper {
    *     Usually a set of routes from the Main RIB.
    * @return A generated route builder, or {@code null} if the route should not be activated.
    */
-  @Nullable
-  public static GeneratedRoute.Builder activateGeneratedRoute(
+  public static @Nullable GeneratedRoute.Builder activateGeneratedRoute(
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy policy,
       Set<AnnotatedRoute<AbstractRoute>> contributingRoutes,

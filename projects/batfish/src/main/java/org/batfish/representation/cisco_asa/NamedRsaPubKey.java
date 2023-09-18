@@ -8,16 +8,15 @@ import org.batfish.datamodel.Ip;
 /** Used during IKE phase 1 negotiation for authentication */
 public class NamedRsaPubKey implements Serializable {
 
-  @Nonnull private String _name;
-  @Nullable private Ip _address;
-  @Nullable private String _key;
+  private @Nonnull String _name;
+  private @Nullable Ip _address;
+  private @Nullable String _key;
 
   public NamedRsaPubKey(@Nonnull String name) {
     _name = name;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -25,8 +24,7 @@ public class NamedRsaPubKey implements Serializable {
     _name = name;
   }
 
-  @Nullable
-  public Ip getAddress() {
+  public @Nullable Ip getAddress() {
     return _address;
   }
 
@@ -34,8 +32,7 @@ public class NamedRsaPubKey implements Serializable {
     _address = address;
   }
 
-  @Nullable
-  public String getKey() {
+  public @Nullable String getKey() {
     return _key;
   }
 

@@ -94,8 +94,7 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
 
   /** Generate a row for a {@link Layer3VniConfig} */
   @VisibleForTesting
-  @Nonnull
-  static Row generateRow(
+  static @Nonnull Row generateRow(
       Layer3VniConfig vniConfig, String nodeName, Map<String, ColumnMetadata> columns) {
     return Row.builder(columns)
         .put(COL_NODE, nodeName)
@@ -116,8 +115,7 @@ public final class EvpnL3VniPropertiesAnswerer extends Answerer {
    * @return A multiset of {@link Row}s where each row corresponds to a node and columns correspond
    *     to property values.
    */
-  @Nonnull
-  public static Set<Row> getRows(
+  public static @Nonnull Set<Row> getRows(
       Set<String> nodes, NetworkConfigurations nc, Map<String, ColumnMetadata> columns) {
     Builder<Row> rows = ImmutableSet.builder();
 

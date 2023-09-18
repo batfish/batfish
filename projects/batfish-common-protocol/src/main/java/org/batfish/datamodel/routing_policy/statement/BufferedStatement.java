@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class BufferedStatement extends Statement {
   private static final String PROP_STATEMENT = "statement";
 
-  @Nonnull private Statement _statement;
+  private @Nonnull Statement _statement;
 
   @JsonCreator
   private static BufferedStatement jsonCreator(
@@ -60,8 +60,7 @@ public final class BufferedStatement extends Statement {
   }
 
   @JsonProperty(PROP_STATEMENT)
-  @Nonnull
-  public Statement getStatement() {
+  public @Nonnull Statement getStatement() {
     return _statement;
   }
 

@@ -9,7 +9,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** A {@link NodeSpecifier} that matches on node names (case insensitive). */
 @ParametersAreNonnullByDefault
 public final class NameNodeSpecifier implements NodeSpecifier {
-  private @Nonnull final String _name;
+  private final @Nonnull String _name;
 
   public NameNodeSpecifier(String name) {
     _name = name;

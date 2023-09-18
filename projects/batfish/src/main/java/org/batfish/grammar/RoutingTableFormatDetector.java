@@ -20,8 +20,7 @@ public final class RoutingTableFormatDetector {
     _fileText = fileText;
   }
 
-  @Nullable
-  private RoutingTableFormat checkEmpty() {
+  private @Nullable RoutingTableFormat checkEmpty() {
     String trimmedText = _fileText.trim();
     if (trimmedText.length() == 0) {
       return RoutingTableFormat.EMPTY;
@@ -30,8 +29,7 @@ public final class RoutingTableFormatDetector {
     return null;
   }
 
-  @Nullable
-  private RoutingTableFormat checkEos() {
+  private @Nullable RoutingTableFormat checkEos() {
     Matcher eosMatcher =
         Pattern.compile("(?m)Codes: C - connected, S - static, K - kernel,").matcher(_fileText);
     if (eosMatcher.find()) {
@@ -40,8 +38,7 @@ public final class RoutingTableFormatDetector {
     return null;
   }
 
-  @Nullable
-  private RoutingTableFormat checkIos() {
+  private @Nullable RoutingTableFormat checkIos() {
     Matcher iosMatcher =
         Pattern.compile(
                 "(?m)Codes: L - local, C - connected, S - static, R - RIP, M - mobile, B - BGP")
@@ -52,8 +49,7 @@ public final class RoutingTableFormatDetector {
     return null;
   }
 
-  @Nullable
-  private RoutingTableFormat checkNxos() {
+  private @Nullable RoutingTableFormat checkNxos() {
     Matcher nxosMatcher = Pattern.compile("(?m)IP Route Table for VRF \"").matcher(_fileText);
     if (nxosMatcher.find()) {
       return RoutingTableFormat.NXOS;

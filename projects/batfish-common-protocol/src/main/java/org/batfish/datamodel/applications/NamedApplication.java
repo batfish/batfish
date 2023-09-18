@@ -45,9 +45,9 @@ public enum NamedApplication {
     return map.build();
   }
 
-  @Nonnull private final Application _application;
+  private final @Nonnull Application _application;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   NamedApplication(@Nonnull String name, @Nonnull Application application) {
     _name = name;
@@ -60,8 +60,7 @@ public enum NamedApplication {
     return _name;
   }
 
-  @Nonnull
-  public Application getApplication() {
+  public @Nonnull Application getApplication() {
     return _application;
   }
 

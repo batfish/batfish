@@ -14,13 +14,11 @@ public final class RedistProfileFilter implements Serializable {
     _destinationPrefixes = new HashSet<>();
   }
 
-  @Nonnull
-  public Set<RoutingProtocol> getRoutingProtocols() {
+  public @Nonnull Set<RoutingProtocol> getRoutingProtocols() {
     return _routingProtocols;
   }
 
-  @Nonnull
-  public Set<Prefix> getDestinationPrefixes() {
+  public @Nonnull Set<Prefix> getDestinationPrefixes() {
     return _destinationPrefixes;
   }
 

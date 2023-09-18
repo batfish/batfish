@@ -21,10 +21,10 @@ public class EdgesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_REMOTE_NODES = "remoteNodes";
 
-  @Nonnull private final EdgeType _edgeType;
+  private final @Nonnull EdgeType _edgeType;
   private final boolean _initial;
-  @Nullable private final String _nodes;
-  @Nullable private final String _remoteNodes;
+  private final @Nullable String _nodes;
+  private final @Nullable String _remoteNodes;
 
   @JsonCreator
   private static EdgesQuestion create(

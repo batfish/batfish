@@ -50,22 +50,22 @@ public final class BgpRoute {
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
-  @Nullable private final Integer _adminDist;
-  @Nonnull private final AsPath _asPath;
-  @Nonnull private final Set<Long> _clusterList;
-  @Nonnull private final SortedSet<Community> _communities;
+  private final @Nullable Integer _adminDist;
+  private final @Nonnull AsPath _asPath;
+  private final @Nonnull Set<Long> _clusterList;
+  private final @Nonnull SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
-  @Nonnull private final Prefix _network;
-  @Nonnull private final Ip _nextHopIp;
-  @Nonnull private final Ip _originatorIp;
-  @Nonnull private final OriginMechanism _originMechanism;
-  @Nonnull private final OriginType _originType;
-  @Nullable private final Integer _pathId;
-  @Nonnull private final RoutingProtocol _protocol;
-  @Nullable private final RoutingProtocol _srcProtocol;
+  private final @Nonnull Prefix _network;
+  private final @Nonnull Ip _nextHopIp;
+  private final @Nonnull Ip _originatorIp;
+  private final @Nonnull OriginMechanism _originMechanism;
+  private final @Nonnull OriginType _originType;
+  private final @Nullable Integer _pathId;
+  private final @Nonnull RoutingProtocol _protocol;
+  private final @Nullable RoutingProtocol _srcProtocol;
   private final long _tag;
-  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
   private BgpRoute(
@@ -341,22 +341,22 @@ public final class BgpRoute {
   @ParametersAreNonnullByDefault
   public static final class Builder {
 
-    @Nullable private Integer _adminDist;
-    @Nonnull private AsPath _asPath;
-    @Nonnull private Set<Long> _clusterList;
-    @Nonnull private SortedSet<Community> _communities;
+    private @Nullable Integer _adminDist;
+    private @Nonnull AsPath _asPath;
+    private @Nonnull Set<Long> _clusterList;
+    private @Nonnull SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
-    @Nullable private Prefix _network;
-    @Nullable private Ip _nextHopIp;
-    @Nullable private Ip _originatorIp;
-    @Nullable private OriginMechanism _originMechanism;
-    @Nullable private OriginType _originType;
-    @Nullable private Integer _pathId;
-    @Nullable private RoutingProtocol _protocol;
-    @Nullable private RoutingProtocol _srcProtocol;
+    private @Nullable Prefix _network;
+    private @Nullable Ip _nextHopIp;
+    private @Nullable Ip _originatorIp;
+    private @Nullable OriginMechanism _originMechanism;
+    private @Nullable OriginType _originType;
+    private @Nullable Integer _pathId;
+    private @Nullable RoutingProtocol _protocol;
+    private @Nullable RoutingProtocol _srcProtocol;
     private long _tag;
-    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
     public Builder() {

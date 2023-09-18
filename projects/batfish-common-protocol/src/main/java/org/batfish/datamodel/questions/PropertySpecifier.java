@@ -33,18 +33,15 @@ public abstract class PropertySpecifier {
       _description = description;
     }
 
-    @Nonnull
-    public String getDescription() {
+    public @Nonnull String getDescription() {
       return _description;
     }
 
-    @Nonnull
-    public Function<T, Object> getGetter() {
+    public @Nonnull Function<T, Object> getGetter() {
       return _getter;
     }
 
-    @Nonnull
-    public Schema getSchema() {
+    public @Nonnull Schema getSchema() {
       return _schema;
     }
   }

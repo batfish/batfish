@@ -34,8 +34,7 @@ public final class IncomingSessionScope implements SessionScope {
   }
 
   @JsonProperty(PROP_INCOMING_INTERFACES)
-  @Nonnull
-  public Set<String> getIncomingInterfaces() {
+  public @Nonnull Set<String> getIncomingInterfaces() {
     return _incomingInterfaces;
   }
 

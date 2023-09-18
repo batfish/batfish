@@ -1081,8 +1081,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return (Long.parseLong(parts[0]) << 16) + Long.parseLong(parts[1]);
   }
 
-  @Nonnull
-  private static LongSpace toAsSpace(Eos_as_rangeContext rangeContext) {
+  private static @Nonnull LongSpace toAsSpace(Eos_as_rangeContext rangeContext) {
     if (rangeContext.hi == null) {
       return LongSpace.of(toAsNum(rangeContext.lo));
     } else {
@@ -1090,8 +1089,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  @Nonnull
-  private static LongSpace toAsSpace(Eos_as_range_listContext asns) {
+  private static @Nonnull LongSpace toAsSpace(Eos_as_range_listContext asns) {
     LongSpace.Builder builder = LongSpace.builder();
     for (Eos_as_rangeContext rangeContext : asns.aslist) {
       builder.including(toAsSpace(rangeContext));
@@ -1099,8 +1097,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return builder.build();
   }
 
-  @Nonnull
-  private static IntegerSpace toIntegerSpace(Eos_vlan_idContext ctx) {
+  private static @Nonnull IntegerSpace toIntegerSpace(Eos_vlan_idContext ctx) {
     return ctx.vlan_ids.stream()
         .map(innerctx -> IntegerSpace.of(toSubRange(innerctx)))
         .reduce(IntegerSpace::union)
@@ -1265,7 +1262,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private OspfProcess _currentOspfProcess;
 
-  @Nullable private AristaBgpPeerFilter _currentPeerFilter;
+  private @Nullable AristaBgpPeerFilter _currentPeerFilter;
 
   private Prefix6List _currentPrefix6List;
 
@@ -1285,7 +1282,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private User _currentUser;
 
-  @Nonnull private List<Vlan> _currentVlans = ImmutableList.of();
+  private @Nonnull List<Vlan> _currentVlans = ImmutableList.of();
 
   private Integer _currentVxlanVlanNum;
 
@@ -1303,7 +1300,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private String _currentTrackingGroup;
 
@@ -7115,18 +7112,15 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
                 ctx.getStart().getLine()));
   }
 
-  @Nonnull
-  private static String toString(Community_list_nameContext ctx) {
+  private static @Nonnull String toString(Community_list_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private String toString(VariableContext ctx) {
+  private @Nonnull String toString(VariableContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Vrf_nameContext ctx) {
+  private static @Nonnull String toString(Vrf_nameContext ctx) {
     return ctx.getText();
   }
 
@@ -7831,8 +7825,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  @Nonnull
-  private static StandardCommunity toStandardCommunity(Literal_standard_communityContext ctx) {
+  private static @Nonnull StandardCommunity toStandardCommunity(
+      Literal_standard_communityContext ctx) {
     if (ctx.u32 != null) {
       return StandardCommunity.of(toLong(ctx.u32));
     } else if (ctx.lo != null) {
@@ -8423,8 +8417,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return Optional.of(num);
   }
 
-  @Nonnull
-  private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
+  private @Nonnull RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
     long dec = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
@@ -8433,8 +8426,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     return RouteDistinguisher.from(toAsNum(ctx.bgp_asn()), dec);
   }
 
-  @Nonnull
-  private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
+  private @Nonnull ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
     long la = toInteger(ctx.uint16());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);

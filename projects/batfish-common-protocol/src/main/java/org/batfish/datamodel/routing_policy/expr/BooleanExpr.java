@@ -23,7 +23,7 @@ public abstract class BooleanExpr implements Serializable {
 
   protected transient BooleanExpr _simplified;
 
-  @Nullable private String _comment;
+  private @Nullable String _comment;
 
   /**
    * Get all the routing-policies referenced by this expression.
@@ -44,8 +44,7 @@ public abstract class BooleanExpr implements Serializable {
   public abstract Result evaluate(Environment environment);
 
   @JsonProperty(PROP_COMMENT)
-  @Nullable
-  public String getComment() {
+  public @Nullable String getComment() {
     return _comment;
   }
 

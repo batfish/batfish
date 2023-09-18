@@ -6,8 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PrivateAs implements Uint16RangeExpr {
 
-  @Nonnull
-  public static PrivateAs instance() {
+  public static @Nonnull PrivateAs instance() {
     return INSTANCE;
   }
 

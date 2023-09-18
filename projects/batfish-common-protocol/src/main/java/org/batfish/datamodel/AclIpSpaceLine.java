@@ -71,9 +71,9 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     return builder().setIpSpace(ipSpace).setAction(LineAction.DENY).build();
   }
 
-  @Nonnull private final LineAction _action;
+  private final @Nonnull LineAction _action;
 
-  @Nonnull private final IpSpace _ipSpace;
+  private final @Nonnull IpSpace _ipSpace;
 
   @JsonCreator
   private static AclIpSpaceLine jsonCreator(

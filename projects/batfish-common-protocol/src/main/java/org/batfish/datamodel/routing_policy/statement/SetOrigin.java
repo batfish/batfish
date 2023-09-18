@@ -18,7 +18,7 @@ import org.batfish.datamodel.routing_policy.expr.OriginExpr;
 public final class SetOrigin extends Statement {
   private static final String PROP_ORIGIN_TYPE = "originType";
 
-  @Nonnull private OriginExpr _origin;
+  private @Nonnull OriginExpr _origin;
 
   @JsonCreator
   private static SetOrigin jsonCreator(@Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginExpr expr) {
@@ -53,8 +53,7 @@ public final class SetOrigin extends Statement {
   }
 
   @Override
-  @Nonnull
-  public Result execute(Environment environment) {
+  public @Nonnull Result execute(Environment environment) {
     if (!(environment.getOutputRoute() instanceof HasWritableOriginType<?, ?>)) {
       // Do nothing for routes without origin type
       return new Result();

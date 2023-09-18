@@ -111,11 +111,11 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
 
   private static final class Node<T> implements Serializable {
 
-    @Nonnull private final Prefix _prefix;
-    @Nonnull private ImmutableSet<T> _elements;
+    private final @Nonnull Prefix _prefix;
+    private @Nonnull ImmutableSet<T> _elements;
 
-    @Nullable private Node<T> _left;
-    @Nullable private Node<T> _right;
+    private @Nullable Node<T> _left;
+    private @Nullable Node<T> _right;
 
     Node(Prefix prefix) {
       this(prefix, ImmutableSet.of());
@@ -156,8 +156,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     }
 
     /** Find or create a node for a given prefix (must be an exact match) */
-    @Nonnull
-    private Node<T> findOrCreateNode(Prefix prefix) {
+    private @Nonnull Node<T> findOrCreateNode(Prefix prefix) {
       assert _prefix.containsPrefix(prefix);
 
       Node<T> node = findLongestPrefixMatchNode(prefix);
@@ -390,8 +389,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    *
    * @return null if the prefix is not contained in the trie.
    */
-  @Nonnull
-  public Set<T> get(Prefix p) {
+  public @Nonnull Set<T> get(Prefix p) {
     Node<T> node = exactMatchNode(p);
     return node == null ? ImmutableSet.of() : node._elements;
   }
@@ -399,8 +397,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   /**
    * @return all elements in the trie.
    */
-  @Nonnull
-  public Set<T> getAllElements() {
+  public @Nonnull Set<T> getAllElements() {
     Builder<T> b = ImmutableSet.builder();
     traverseNodes(node -> b.addAll(node._elements));
     return b.build();
@@ -428,8 +425,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
   }
 
   /** Find the elements associated with the longest matching prefix of a given IP address. */
-  @Nonnull
-  public Set<T> longestPrefixMatch(Ip address) {
+  public @Nonnull Set<T> longestPrefixMatch(Ip address) {
     // TODO: remove once Route.UNSET_NEXT_HOP_IP and Ip.AUTO are killed
     assert !Route.UNSET_ROUTE_NEXT_HOP_IP.equals(address);
     return longestPrefixMatch(address, Prefix.MAX_PREFIX_LENGTH);
@@ -439,8 +435,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    * Find the elements associated with the longest matching prefix of a given IP address, up to the
    * given maximum length.
    */
-  @Nonnull
-  public Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
+  public @Nonnull Set<T> longestPrefixMatch(Ip address, int maxPrefixLength) {
     Node<T> node = longestMatchNonEmptyNode(address, maxPrefixLength);
     assert node == null || !node._elements.isEmpty();
     return node == null ? ImmutableSet.of() : node._elements;
@@ -451,8 +446,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
    * a {@link Stream} in post-order, so if prefix p1 contains p2, values for p2 will be returned
    * before values for p1.
    */
-  @Nonnull
-  public Stream<Map.Entry<Prefix, Set<T>>> getOverlappingEntries(RangeSet<Ip> ips) {
+  public @Nonnull Stream<Map.Entry<Prefix, Set<T>>> getOverlappingEntries(RangeSet<Ip> ips) {
     if (_root == null) {
       return Stream.of();
     }

@@ -16,9 +16,9 @@ public final class SubRangeExpr implements Serializable {
   private static final String PROP_FIRST = "first";
   private static final String PROP_LAST = "last";
 
-  @Nonnull private IntExpr _first;
+  private @Nonnull IntExpr _first;
 
-  @Nonnull private IntExpr _last;
+  private @Nonnull IntExpr _last;
 
   @JsonCreator
   private static SubRangeExpr jsonCreator(
@@ -52,14 +52,12 @@ public final class SubRangeExpr implements Serializable {
   }
 
   @JsonProperty(PROP_FIRST)
-  @Nonnull
-  public IntExpr getFirst() {
+  public @Nonnull IntExpr getFirst() {
     return _first;
   }
 
   @JsonProperty(PROP_LAST)
-  @Nonnull
-  public IntExpr getLast() {
+  public @Nonnull IntExpr getLast() {
     return _last;
   }
 

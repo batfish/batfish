@@ -33,8 +33,7 @@ public class OspfInterface implements Serializable {
     _cost = cost;
   }
 
-  @Nullable
-  public Long getOspfArea() {
+  public @Nullable Long getOspfArea() {
     return _ospfArea;
   }
 
@@ -42,8 +41,7 @@ public class OspfInterface implements Serializable {
     _ospfArea = ospfArea;
   }
 
-  @Nullable
-  public Boolean getPassive() {
+  public @Nullable Boolean getPassive() {
     return _passive;
   }
 
@@ -51,13 +49,11 @@ public class OspfInterface implements Serializable {
     _passive = passive;
   }
 
-  @Nullable
-  public Integer getDeadInterval() {
+  public @Nullable Integer getDeadInterval() {
     return _deadInterval;
   }
 
-  @Nullable
-  public Integer getHelloInterval() {
+  public @Nullable Integer getHelloInterval() {
     return _helloInterval;
   }
 

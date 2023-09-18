@@ -307,7 +307,7 @@ public class NodePropertySpecifier extends PropertySpecifier {
 
   public static final NodePropertySpecifier ALL = new NodePropertySpecifier(JAVA_MAP.keySet());
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   /**
    * Create a node property specifier from provided expression. If the expression is null or empty,

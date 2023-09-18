@@ -12,8 +12,8 @@ public class SnmpYml implements Serializable {
   private static final String SNMP_ROCOMMUNITY = "snmp_rocommunity";
   private static final String SNMP_ROCOMMUNITY6 = "snmp_rocommunity6";
 
-  private @Nullable final String _roCommunity;
-  private @Nullable final String _roCommunity6;
+  private final @Nullable String _roCommunity;
+  private final @Nullable String _roCommunity6;
 
   private SnmpYml(@Nullable String roCommunity, @Nullable String roCommunity6) {
     _roCommunity = roCommunity;

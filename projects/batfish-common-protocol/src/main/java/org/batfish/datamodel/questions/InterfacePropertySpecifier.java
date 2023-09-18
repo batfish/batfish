@@ -330,14 +330,13 @@ public class InterfacePropertySpecifier extends PropertySpecifier {
     return JAVA_MAP.get(property);
   }
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   /**
    * Create a node property specifier from provided expression. If the expression is null or empty,
    * a specifier with all properties is returned.
    */
-  @Nonnull
-  public static InterfacePropertySpecifier create(@Nullable String expression) {
+  public static @Nonnull InterfacePropertySpecifier create(@Nullable String expression) {
     // by default, exclude interface type
     Set<String> properties = new HashSet<>(JAVA_MAP.keySet());
     properties.remove(INTERFACE_TYPE);

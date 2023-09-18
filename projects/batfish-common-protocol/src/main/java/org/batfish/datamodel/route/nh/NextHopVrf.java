@@ -20,8 +20,7 @@ public final class NextHopVrf implements NextHop {
 
   /** VRF in which to resolve the destination */
   @JsonProperty(PROP_VRF)
-  @Nonnull
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 
@@ -54,7 +53,7 @@ public final class NextHopVrf implements NextHop {
 
   private static final String PROP_VRF = "vrf";
 
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   @JsonCreator
   private static @Nonnull NextHopVrf create(@JsonProperty(PROP_VRF) @Nullable String vrfName) {

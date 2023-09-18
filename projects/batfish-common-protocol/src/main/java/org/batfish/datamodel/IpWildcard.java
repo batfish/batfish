@@ -24,7 +24,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   private static final LoadingCache<IpWildcard, IpWildcard> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
 
-  @Nonnull private final Ip _ip;
+  private final @Nonnull Ip _ip;
   // Set bits are "don't care" bits
   private final long _wildcardMask;
 
@@ -129,13 +129,11 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
     return 31 * _ip.hashCode() + Long.hashCode(_wildcardMask);
   }
 
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
-  @Nonnull
-  public Ip getWildcardMaskAsIp() {
+  public @Nonnull Ip getWildcardMaskAsIp() {
     return Ip.create(_wildcardMask);
   }
 
@@ -191,8 +189,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
         && (wildToThis & differentIpBits) == differentIpBits;
   }
 
-  @Nonnull
-  public IpWildcardIpSpace toIpSpace() {
+  public @Nonnull IpWildcardIpSpace toIpSpace() {
     return IpWildcardIpSpace.create(this);
   }
 

@@ -21,19 +21,17 @@ public class RoleEdge implements Comparable<RoleEdge> {
   }
 
   @JsonProperty(PROP_ROLE1)
-  @Nonnull
-  public String getRole1() {
+  public @Nonnull String getRole1() {
     return _role1;
   }
 
   @JsonProperty(PROP_ROLE2)
-  @Nonnull
-  public String getRole2() {
+  public @Nonnull String getRole2() {
     return _role2;
   }
 
-  @Nonnull private final String _role1;
-  @Nonnull private final String _role2;
+  private final @Nonnull String _role1;
+  private final @Nonnull String _role2;
 
   @JsonCreator
   private static RoleEdge jsonCreator(

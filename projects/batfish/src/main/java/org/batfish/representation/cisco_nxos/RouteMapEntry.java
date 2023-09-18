@@ -188,8 +188,7 @@ public final class RouteMapEntry implements Serializable {
     return _setTag;
   }
 
-  @Nullable
-  public RouteMapSetWeight getSetWeight() {
+  public @Nullable RouteMapSetWeight getSetWeight() {
     return _setWeight;
   }
 

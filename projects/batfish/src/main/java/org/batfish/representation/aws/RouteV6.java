@@ -11,7 +11,7 @@ import org.batfish.datamodel.Prefix6;
 @ParametersAreNonnullByDefault
 final class RouteV6 extends Route {
 
-  @Nonnull private final Prefix6 _destinationCidrBlock;
+  private final @Nonnull Prefix6 _destinationCidrBlock;
 
   RouteV6(
       Prefix6 destinationCidrBlock, State state, @Nullable String target, TargetType targetType) {
@@ -19,8 +19,7 @@ final class RouteV6 extends Route {
     _destinationCidrBlock = destinationCidrBlock;
   }
 
-  @Nonnull
-  public Prefix6 getDestinationCidrBlock() {
+  public @Nonnull Prefix6 getDestinationCidrBlock() {
     return _destinationCidrBlock;
   }
 

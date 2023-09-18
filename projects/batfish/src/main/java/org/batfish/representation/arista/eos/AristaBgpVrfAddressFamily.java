@@ -13,12 +13,12 @@ import org.batfish.datamodel.Prefix;
  * Address family settings that are common to all address families and can be set at the VRF level
  */
 public abstract class AristaBgpVrfAddressFamily implements Serializable {
-  @Nullable protected AristaBgpAdditionalPathsConfig _additionalPaths;
-  @Nonnull private final Map<String, AristaBgpNeighborAddressFamily> _peerGroups;
-  @Nonnull private final Map<Ip, AristaBgpNeighborAddressFamily> _v4Neighbors;
-  @Nonnull private final Map<Prefix, AristaBgpNeighborAddressFamily> _v4DynamicNeighbors;
-  @Nonnull private final Map<Ip6, AristaBgpNeighborAddressFamily> _v6Neighbors;
-  @Nullable protected Boolean _nextHopUnchanged;
+  protected @Nullable AristaBgpAdditionalPathsConfig _additionalPaths;
+  private final @Nonnull Map<String, AristaBgpNeighborAddressFamily> _peerGroups;
+  private final @Nonnull Map<Ip, AristaBgpNeighborAddressFamily> _v4Neighbors;
+  private final @Nonnull Map<Prefix, AristaBgpNeighborAddressFamily> _v4DynamicNeighbors;
+  private final @Nonnull Map<Ip6, AristaBgpNeighborAddressFamily> _v6Neighbors;
+  protected @Nullable Boolean _nextHopUnchanged;
 
   public AristaBgpVrfAddressFamily() {
     _peerGroups = new HashMap<>();
@@ -27,21 +27,18 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
     _v6Neighbors = new HashMap<>();
   }
 
-  @Nullable
-  public AristaBgpAdditionalPathsConfig getAdditionalPaths() {
+  public @Nullable AristaBgpAdditionalPathsConfig getAdditionalPaths() {
     return _additionalPaths;
   }
 
-  @Nonnull
-  public AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
+  public @Nonnull AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
     if (_additionalPaths == null) {
       _additionalPaths = new AristaBgpAdditionalPathsConfig();
     }
     return _additionalPaths;
   }
 
-  @Nullable
-  public Boolean getNextHopUnchanged() {
+  public @Nullable Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
   }
 
@@ -49,43 +46,35 @@ public abstract class AristaBgpVrfAddressFamily implements Serializable {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
-  @Nullable
-  public AristaBgpNeighborAddressFamily getNeighbor(Ip neighbor) {
+  public @Nullable AristaBgpNeighborAddressFamily getNeighbor(Ip neighbor) {
     return _v4Neighbors.get(neighbor);
   }
 
-  @Nonnull
-  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip neighbor) {
+  public @Nonnull AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip neighbor) {
     return _v4Neighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
   }
 
-  @Nullable
-  public AristaBgpNeighborAddressFamily getNeighbor(Prefix neighbor) {
+  public @Nullable AristaBgpNeighborAddressFamily getNeighbor(Prefix neighbor) {
     return _v4DynamicNeighbors.get(neighbor);
   }
 
-  @Nonnull
-  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Prefix neighbor) {
+  public @Nonnull AristaBgpNeighborAddressFamily getOrCreateNeighbor(Prefix neighbor) {
     return _v4DynamicNeighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
   }
 
-  @Nullable
-  public AristaBgpNeighborAddressFamily getNeighbor(Ip6 neighbor) {
+  public @Nullable AristaBgpNeighborAddressFamily getNeighbor(Ip6 neighbor) {
     return _v6Neighbors.get(neighbor);
   }
 
-  @Nonnull
-  public AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip6 neighbor) {
+  public @Nonnull AristaBgpNeighborAddressFamily getOrCreateNeighbor(Ip6 neighbor) {
     return _v6Neighbors.computeIfAbsent(neighbor, n -> new AristaBgpNeighborAddressFamily());
   }
 
-  @Nullable
-  public AristaBgpNeighborAddressFamily getPeerGroup(String peerGroup) {
+  public @Nullable AristaBgpNeighborAddressFamily getPeerGroup(String peerGroup) {
     return _peerGroups.get(peerGroup);
   }
 
-  @Nonnull
-  public AristaBgpNeighborAddressFamily getOrCreatePeerGroup(String peerGroup) {
+  public @Nonnull AristaBgpNeighborAddressFamily getOrCreatePeerGroup(String peerGroup) {
     return _peerGroups.computeIfAbsent(peerGroup, n -> new AristaBgpNeighborAddressFamily());
   }
 }

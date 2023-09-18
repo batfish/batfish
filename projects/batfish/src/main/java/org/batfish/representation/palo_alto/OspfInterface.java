@@ -31,8 +31,7 @@ public class OspfInterface implements Serializable {
     _deadCounts = DEFAULT_DEAD_COUNTS;
   }
 
-  @Nonnull
-  public Integer getDeadCounts() {
+  public @Nonnull Integer getDeadCounts() {
     return _deadCounts;
   }
 
@@ -40,8 +39,7 @@ public class OspfInterface implements Serializable {
     _deadCounts = deadCounts;
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
@@ -49,8 +47,7 @@ public class OspfInterface implements Serializable {
     _enable = enable;
   }
 
-  @Nonnull
-  public LinkType getLinkType() {
+  public @Nonnull LinkType getLinkType() {
     return _linkType;
   }
 
@@ -58,8 +55,7 @@ public class OspfInterface implements Serializable {
     _linkType = linkType;
   }
 
-  @Nonnull
-  public Integer getHelloInterval() {
+  public @Nonnull Integer getHelloInterval() {
     return _helloInterval;
   }
 
@@ -67,8 +63,7 @@ public class OspfInterface implements Serializable {
     _helloInterval = helloInterval;
   }
 
-  @Nullable
-  public Integer getMetric() {
+  public @Nullable Integer getMetric() {
     return _metric;
   }
 
@@ -76,13 +71,11 @@ public class OspfInterface implements Serializable {
     _metric = metric;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Boolean getPassive() {
+  public @Nullable Boolean getPassive() {
     return _passive;
   }
 
@@ -91,8 +84,7 @@ public class OspfInterface implements Serializable {
   }
 
   /** Priority for the router to be elected as a DR or BDR */
-  @Nullable
-  public Integer getPriority() {
+  public @Nullable Integer getPriority() {
     return _priority;
   }
 
@@ -104,8 +96,7 @@ public class OspfInterface implements Serializable {
    * Length of time, in seconds, that OSPF waits to receive a link-state advertisement (LSA) from a
    * neighbor before OSPF retransmits the LSA
    */
-  @Nullable
-  public Integer getRetransmitInterval() {
+  public @Nullable Integer getRetransmitInterval() {
     return _retransmitInterval;
   }
 
@@ -114,8 +105,7 @@ public class OspfInterface implements Serializable {
   }
 
   /** Length of time, in seconds, that an LSA is delayed before it is sent out of an interface */
-  @Nullable
-  public Integer getTransitDelay() {
+  public @Nullable Integer getTransitDelay() {
     return _transitDelay;
   }
 
@@ -126,14 +116,14 @@ public class OspfInterface implements Serializable {
   //////////////////////////////////////////
   ///// Private implementation details /////
   //////////////////////////////////////////
-  @Nonnull private Integer _deadCounts;
-  @Nullable private Boolean _enable;
-  @Nonnull private LinkType _linkType;
-  @Nonnull private Integer _helloInterval;
-  @Nullable private Integer _metric;
-  @Nonnull private String _name;
-  @Nullable private Boolean _passive;
-  @Nullable private Integer _priority;
-  @Nullable private Integer _retransmitInterval;
-  @Nullable private Integer _transitDelay;
+  private @Nonnull Integer _deadCounts;
+  private @Nullable Boolean _enable;
+  private @Nonnull LinkType _linkType;
+  private @Nonnull Integer _helloInterval;
+  private @Nullable Integer _metric;
+  private @Nonnull String _name;
+  private @Nullable Boolean _passive;
+  private @Nullable Integer _priority;
+  private @Nullable Integer _retransmitInterval;
+  private @Nullable Integer _transitDelay;
 }

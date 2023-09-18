@@ -22,8 +22,7 @@ public final class VirtualServerTargetAddress implements VirtualServerTarget {
     return _address.equals(o._address);
   }
 
-  @Nonnull
-  public Ip getAddress() {
+  public @Nonnull Ip getAddress() {
     return _address;
   }
 
@@ -31,7 +30,7 @@ public final class VirtualServerTargetAddress implements VirtualServerTarget {
     _address = address;
   }
 
-  @Nonnull private final Ip _address;
+  private final @Nonnull Ip _address;
 
   @Override
   public <T> T accept(VirtualServerTargetVisitor<T> visitor) {

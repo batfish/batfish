@@ -140,8 +140,7 @@ public class SessionInstrumentation {
         NodeInterfaceNeighborUnreachable::new);
   }
 
-  @Nonnull
-  private static Set<String> computeNodesWithFibLookup(
+  private static @Nonnull Set<String> computeNodesWithFibLookup(
       Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions) {
     return initializedSessions.entrySet().stream()
         .filter(
@@ -155,8 +154,7 @@ public class SessionInstrumentation {
   }
 
   /** For each input edge, apply an additional constraint from the map if any. */
-  @Nonnull
-  private static Stream<Edge> constrainOutEdges(
+  private static @Nonnull Stream<Edge> constrainOutEdges(
       Stream<Edge> originalEdges, Map<StateExpr, BDD> existingOutEdgeConstraints) {
     return originalEdges.map(
         edge -> {
@@ -206,8 +204,7 @@ public class SessionInstrumentation {
         .flatMap(this::computeNewEdges);
   }
 
-  @Nonnull
-  private Stream<Edge> computeNewEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+  private @Nonnull Stream<Edge> computeNewEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return Streams.concat(
         computeNewSuccessEdges(sessionInfo),
         nodeDropAclInEdges(sessionInfo),
@@ -215,8 +212,7 @@ public class SessionInstrumentation {
         fibLookupSessionEdges(sessionInfo));
   }
 
-  @Nonnull
-  private Stream<Edge> computeNewSuccessEdges(BDDFirewallSessionTraceInfo sessionInfo) {
+  private @Nonnull Stream<Edge> computeNewSuccessEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return sessionInfo
         .getAction()
         .accept(

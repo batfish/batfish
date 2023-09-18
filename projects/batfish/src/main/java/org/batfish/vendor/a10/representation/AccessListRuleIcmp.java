@@ -41,8 +41,8 @@ public class AccessListRuleIcmp implements AccessListRule {
     _lineText = lineText;
   }
 
-  @Nonnull private final Action _action;
-  @Nonnull private final AccessListAddress _source;
-  @Nonnull private final AccessListAddress _destination;
-  @Nonnull private final String _lineText;
+  private final @Nonnull Action _action;
+  private final @Nonnull AccessListAddress _source;
+  private final @Nonnull AccessListAddress _destination;
+  private final @Nonnull String _lineText;
 }

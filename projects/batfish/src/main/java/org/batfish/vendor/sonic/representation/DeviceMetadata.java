@@ -16,7 +16,7 @@ public class DeviceMetadata implements Serializable {
 
   private static final String PROP_HOSTNAME = "hostname";
 
-  private @Nullable final String _hostname;
+  private final @Nullable String _hostname;
 
   public @Nonnull Optional<String> getHostname() {
     return Optional.ofNullable(_hostname);

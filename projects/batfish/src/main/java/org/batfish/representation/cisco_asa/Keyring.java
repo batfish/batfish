@@ -11,9 +11,9 @@ import org.batfish.datamodel.IpWildcard;
 
 public class Keyring implements Serializable {
 
-  @Nullable private Ip _localAddress;
+  private @Nullable Ip _localAddress;
 
-  @Nonnull private String _localInterfaceName;
+  private @Nonnull String _localInterfaceName;
 
   private IpWildcard _remoteIdentity;
 
@@ -30,8 +30,7 @@ public class Keyring implements Serializable {
     return _key;
   }
 
-  @Nullable
-  public Ip getLocalAddress() {
+  public @Nullable Ip getLocalAddress() {
     return _localAddress;
   }
 

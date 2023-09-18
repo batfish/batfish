@@ -10,8 +10,7 @@ import org.batfish.datamodel.Ip;
 /** A gateway or server cluster with members. */
 public abstract class Cluster extends GatewayOrServer {
 
-  @Nonnull
-  public List<String> getClusterMemberNames() {
+  public @Nonnull List<String> getClusterMemberNames() {
     return _clusterMemberNames;
   }
 

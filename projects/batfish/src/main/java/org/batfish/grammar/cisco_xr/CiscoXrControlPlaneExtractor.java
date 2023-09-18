@@ -1179,8 +1179,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return Integer.parseInt(ctx.getText());
   }
 
-  @Nonnull
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Vlan_idContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "VLAN ID");
   }
 
@@ -1278,8 +1277,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private NamedRsaPubKey _currentNamedRsaPubKey;
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
   private DynamicIpv6BgpPeerGroup _currentDynamicIpv6PeerGroup;
-  @Nullable private String _currentEigrpInterface;
-  @Nullable private EigrpProcess _currentEigrpProcess;
+  private @Nullable String _currentEigrpInterface;
+  private @Nullable EigrpProcess _currentEigrpProcess;
   private ExtcommunitySetRt _currentExtcommunitySetRt;
   private HsrpAddressFamily _currentHsrpAddressFamily;
   private HsrpGroup _currentHsrpGroup;
@@ -1332,12 +1331,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private boolean _inBlockNeighbor;
   private Boolean _inMplsLdpAddressFamilyIpv4;
   private boolean _no;
-  @Nullable private EigrpProcess _parentEigrpProcess;
+  private @Nullable EigrpProcess _parentEigrpProcess;
   private final CiscoXrCombinedParser _parser;
   private final List<BgpPeerGroup> _peerGroupStack;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private NetworkObjectGroup _currentNetworkObjectGroup;
   private String _currentTrackingGroup;
   /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
@@ -1425,8 +1424,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _currentVrfAddressFamily = null;
   }
 
-  @Nonnull
-  private static AddressFamilyType toAddressFamilyType(Vrf_address_family_typeContext ctx) {
+  private static @Nonnull AddressFamilyType toAddressFamilyType(
+      Vrf_address_family_typeContext ctx) {
     if (ctx.IPV4() != null) {
       if (ctx.FLOWSPEC() != null) {
         return AddressFamilyType.IPV4_FLOWSPEC;
@@ -1940,8 +1939,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
                         .collect(ImmutableList.toImmutableList())));
   }
 
-  @Nullable
-  private RdSetElem toRdSetElem(Rd_set_elemContext ctx) {
+  private @Nullable RdSetElem toRdSetElem(Rd_set_elemContext ctx) {
     if (ctx.rd_set_elem_asdot() != null) {
       @Nullable
       Entry<Uint16RangeExpr, Uint16RangeExpr> as = toUint32HighLowExpr(ctx.rd_set_elem_asdot());
@@ -1972,8 +1970,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Uint32RangeExpr toUint32RangeExpr(Rd_set_elem_32Context ctx) {
+  private @Nonnull Uint32RangeExpr toUint32RangeExpr(Rd_set_elem_32Context ctx) {
     if (ctx.ASTERISK() != null) {
       return WildcardUint32RangeExpr.instance();
     } else {
@@ -1982,8 +1979,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Uint16RangeExpr toUint16RangeExpr(Rd_set_elem_lo16Context ctx) {
+  private @Nonnull Uint16RangeExpr toUint16RangeExpr(Rd_set_elem_lo16Context ctx) {
     if (ctx.ASTERISK() != null) {
       return WildcardUint16RangeExpr.instance();
     } else {
@@ -1992,8 +1988,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nullable
-  private Entry<Uint16RangeExpr, Uint16RangeExpr> toUint32HighLowExpr(
+  private @Nullable Entry<Uint16RangeExpr, Uint16RangeExpr> toUint32HighLowExpr(
       Rd_set_elem_asdotContext ctx) {
     Optional<Integer> maybeHi;
     Uint16RangeExpr hi;
@@ -3048,8 +3043,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Prefix toPrefix(CiscoXrParser.Aggregate_address_prefixContext ctx) {
+  private @Nonnull Prefix toPrefix(CiscoXrParser.Aggregate_address_prefixContext ctx) {
     if (ctx.network != null) {
       Ip network = toIp(ctx.network);
       Ip subnet = toIp(ctx.subnet);
@@ -3060,8 +3054,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return Prefix.parse(ctx.prefix.getText());
   }
 
-  @Nonnull
-  private Prefix6 toPrefix6(CiscoXrParser.Ipv6_aggregate_address_prefixContext ctx) {
+  private @Nonnull Prefix6 toPrefix6(CiscoXrParser.Ipv6_aggregate_address_prefixContext ctx) {
     return Prefix6.parse(ctx.ipv6_prefix.getText());
   }
 
@@ -4642,18 +4635,15 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         INTERFACE, ifaceName, BRIDGE_DOMAIN_ROUTED_INTERFACE, ctx.start.getLine());
   }
 
-  @Nonnull
-  private static String toSeverity(Logging_buffered_severityContext ctx) {
+  private static @Nonnull String toSeverity(Logging_buffered_severityContext ctx) {
     return ctx.getText().toLowerCase();
   }
 
-  @Nonnull
-  private static String toSeverity(Logging_console_severityContext ctx) {
+  private static @Nonnull String toSeverity(Logging_console_severityContext ctx) {
     return ctx.getText().toLowerCase();
   }
 
-  @Nonnull
-  private static String toSeverity(Logging_trap_severityContext ctx) {
+  private static @Nonnull String toSeverity(Logging_trap_severityContext ctx) {
     return ctx.getText().toLowerCase();
   }
 
@@ -4668,8 +4658,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         messageCtx, ctx.uint32(), LOGGING_BUFFER_SIZE_RANGE, "logging buffer size");
   }
 
-  @Nonnull
-  private Buffered getOrCreateBuffered() {
+  private @Nonnull Buffered getOrCreateBuffered() {
     Logging logging = _configuration.getCf().getLogging();
     Buffered buffered = logging.getBuffered();
     if (buffered == null) {
@@ -4711,8 +4700,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     getOrCreateTrap().setSeverityNum(toLoggingSeverityNum(ctx.logging_trap_severity()));
   }
 
-  @Nonnull
-  private LoggingType getOrCreateTrap() {
+  private @Nonnull LoggingType getOrCreateTrap() {
     Logging logging = _configuration.getCf().getLogging();
     LoggingType trap = logging.getTrap();
     if (trap == null) {
@@ -6528,8 +6516,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     todo(ctx);
   }
 
-  @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
+  private @Nullable String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
     } else {
@@ -6914,8 +6901,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         .build();
   }
 
-  @Nonnull
-  private EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
      * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
      * the K constants are configured.
@@ -6975,8 +6961,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private XrCommunitySetElem toXrCommunitySetElem(Community_set_expr_elemContext ctx) {
+  private @Nonnull XrCommunitySetElem toXrCommunitySetElem(Community_set_expr_elemContext ctx) {
     if (ctx.literal != null) {
       long value = toLong(ctx.literal);
       return XrCommunitySetHighLowRangeExprs.of(value);
@@ -6989,8 +6974,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private XrCommunitySetElem toXrCommunitySetElem(Community_set_match_expr_elemContext ctx) {
+  private @Nonnull XrCommunitySetElem toXrCommunitySetElem(
+      Community_set_match_expr_elemContext ctx) {
     if (ctx.ASTERISK() != null) {
       return XrWildcardCommunitySetElem.instance();
     } else if (ctx.literal_community() != null) {
@@ -7010,8 +6995,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private XrCommunitySetElem toXrCommunitySetElem(Community_set_elemContext ctx) {
+  private @Nonnull XrCommunitySetElem toXrCommunitySetElem(Community_set_elemContext ctx) {
     if (ctx.ASTERISK() != null) {
       return XrWildcardCommunitySetElem.instance();
     } else if (ctx.literal_community() != null) {
@@ -7031,8 +7015,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Uint16RangeExpr toUint16RangeExpr(Community_set_expr_elem_halfContext ctx) {
+  private @Nonnull Uint16RangeExpr toUint16RangeExpr(Community_set_expr_elem_halfContext ctx) {
     if (ctx.value != null) {
       int value = toInteger(ctx.value);
       return new LiteralUint16(value);
@@ -7046,8 +7029,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Uint16RangeExpr toUint16RangeExpr(Community_set_match_expr_elem_halfContext ctx) {
+  private @Nonnull Uint16RangeExpr toUint16RangeExpr(
+      Community_set_match_expr_elem_halfContext ctx) {
     if (ctx.ASTERISK() != null) {
       return WildcardUint16RangeExpr.instance();
     } else if (ctx.value != null) {
@@ -7072,13 +7055,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private static String toString(ParameterContext ctx) {
+  private static @Nonnull String toString(ParameterContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private Uint16RangeExpr toUint16RangeExpr(Community_set_elem_halfContext ctx) {
+  private @Nonnull Uint16RangeExpr toUint16RangeExpr(Community_set_elem_halfContext ctx) {
     if (ctx.ASTERISK() != null) {
       return WildcardUint16RangeExpr.instance();
     } else if (ctx.value != null) {
@@ -7163,8 +7144,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private Optional<Integer> toDscpType(ParserRuleContext messageCtx, Dscp_typeContext ctx) {
+  private @Nonnull Optional<Integer> toDscpType(
+      ParserRuleContext messageCtx, Dscp_typeContext ctx) {
     int val;
     if (ctx.dscp_num() != null) {
       return toInteger(messageCtx, ctx.dscp_num());
@@ -7215,8 +7196,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return Optional.of(val);
   }
 
-  @Nonnull
-  private Optional<Integer> toInteger(ParserRuleContext messageCtx, Dscp_numContext ctx) {
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Dscp_numContext ctx) {
     return toIntegerInSpace(messageCtx, ctx.uint8(), DSCP_RANGE, "DSCP number");
   }
 
@@ -7469,8 +7449,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private static String toString(Host_nameContext ctx) {
+  private static @Nonnull String toString(Host_nameContext ctx) {
     return ctx.getText();
   }
 
@@ -7537,8 +7516,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private static long toLong(Literal_communityContext ctx) {
+  private static @Nonnull long toLong(Literal_communityContext ctx) {
     if (ctx.ACCEPT_OWN() != null) {
       return WellKnownCommunity.ACCEPT_OWN;
     } else if (ctx.hi != null) {
@@ -8311,14 +8289,12 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     throw convError(RoutePolicyBoolean.class, ctx);
   }
 
-  @Nonnull
-  private RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rd_in_rp_stanzaContext ctx) {
+  private @Nonnull RoutePolicyBoolean toRoutePolicyBoolean(Boolean_rd_in_rp_stanzaContext ctx) {
     todo(ctx);
     return new RoutePolicyBooleanRdIn(toRdMatchExpr(ctx.rd_match_expr()));
   }
 
-  @Nonnull
-  private RdMatchExpr toRdMatchExpr(Rd_match_exprContext ctx) {
+  private @Nonnull RdMatchExpr toRdMatchExpr(Rd_match_exprContext ctx) {
     // TODO: add case for inline rd match expression
     if (ctx.name != null) {
       String name = toString(ctx.name);
@@ -8331,8 +8307,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private static String toString(Rd_set_nameContext name) {
+  private static @Nonnull String toString(Rd_set_nameContext name) {
     return name.getText();
   }
 
@@ -8735,8 +8710,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     todo(ctx);
   }
 
-  @Nonnull
-  private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
+  private @Nonnull ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
     long la = toLong(ctx.uint_legacy());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
@@ -8792,23 +8766,19 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
   }
 
-  @Nonnull
-  private static String toString(Vrf_nameContext ctx) {
+  private static @Nonnull String toString(Vrf_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Route_policy_nameContext ctx) {
+  private static @Nonnull String toString(Route_policy_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Access_list_nameContext ctx) {
+  private static @Nonnull String toString(Access_list_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Prefix_list_nameContext ctx) {
+  private static @Nonnull String toString(Prefix_list_nameContext ctx) {
     return ctx.getText();
   }
 
@@ -9047,18 +9017,15 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     _configuration.referenceStructure(SAMPLER_MAP, toString(ctx.sampler_map_name()), sUsage, line);
   }
 
-  @Nonnull
-  private static String toString(Flow_exporter_map_nameContext ctx) {
+  private static @Nonnull String toString(Flow_exporter_map_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Flow_monitor_map_nameContext ctx) {
+  private static @Nonnull String toString(Flow_monitor_map_nameContext ctx) {
     return ctx.getText();
   }
 
-  @Nonnull
-  private static String toString(Sampler_map_nameContext ctx) {
+  private static @Nonnull String toString(Sampler_map_nameContext ctx) {
     return ctx.getText();
   }
 

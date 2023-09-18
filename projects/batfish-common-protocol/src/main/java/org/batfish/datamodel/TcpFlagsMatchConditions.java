@@ -200,8 +200,7 @@ public final class TcpFlagsMatchConditions
   }
 
   @JsonProperty(PROP_TCP_FLAGS)
-  @Nonnull
-  public TcpFlags getTcpFlags() {
+  public @Nonnull TcpFlags getTcpFlags() {
     return _tcpFlags;
   }
 

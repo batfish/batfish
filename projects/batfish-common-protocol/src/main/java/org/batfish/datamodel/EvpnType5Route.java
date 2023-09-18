@@ -75,8 +75,7 @@ public final class EvpnType5Route extends EvpnRoute<EvpnType5Route.Builder, Evpn
     }
 
     @Override
-    @Nonnull
-    public Builder getThis() {
+    public @Nonnull Builder getThis() {
       return this;
     }
   }

@@ -132,13 +132,13 @@ public class PerRoleQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLES = "roles";
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
-    @Nonnull private NodesSpecifier _nodeRegex;
+    private @Nonnull NodesSpecifier _nodeRegex;
 
-    @Nonnull private Question _question;
+    private @Nonnull Question _question;
 
     private List<String> _roles;
 
-    @Nullable private String _roleDimension;
+    private @Nullable String _roleDimension;
 
     @JsonCreator
     public PerRoleQuestion(

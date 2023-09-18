@@ -174,8 +174,7 @@ public class TracerouteEngineImplContext {
   }
 
   /** Get all fibs for a given node */
-  @Nonnull
-  public Map<String, Fib> getFibs(String node) {
+  public @Nonnull Map<String, Fib> getFibs(String node) {
     return _fibs.getOrDefault(node, ImmutableMap.of());
   }
 

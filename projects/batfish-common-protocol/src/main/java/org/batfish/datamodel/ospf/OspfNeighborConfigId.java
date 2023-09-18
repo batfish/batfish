@@ -24,11 +24,11 @@ public final class OspfNeighborConfigId implements Serializable {
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_ADDRESS = "address";
 
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _vrfName;
-  @Nonnull private final String _procName;
-  @Nonnull private final String _interfaceName;
-  @Nonnull private final ConcreteInterfaceAddress _address;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _vrfName;
+  private final @Nonnull String _procName;
+  private final @Nonnull String _interfaceName;
+  private final @Nonnull ConcreteInterfaceAddress _address;
 
   /**
    * Create a new unique identifier for an OSPF process

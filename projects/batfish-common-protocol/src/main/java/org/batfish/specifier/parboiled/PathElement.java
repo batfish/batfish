@@ -19,7 +19,7 @@ import org.parboiled.support.MatcherPath.Element;
 final class PathElement {
 
   /** The anchor type of this element */
-  @Nullable private final Anchor.Type _anchorType;
+  private final @Nullable Anchor.Type _anchorType;
 
   /** The parboiled label for this element */
   private String _label;

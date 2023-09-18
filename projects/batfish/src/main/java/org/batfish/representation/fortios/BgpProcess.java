@@ -76,6 +76,6 @@ public final class BgpProcess implements Serializable {
   private @Nullable Boolean _ebgpMultipath;
   private @Nullable Boolean _ibgpMultipath;
   private @Nullable Ip _routerId;
-  private @Nonnull final Map<Ip, BgpNeighbor> _neighbors;
-  private @Nonnull final Map<Long, BgpNetwork> _networks;
+  private final @Nonnull Map<Ip, BgpNeighbor> _neighbors;
+  private final @Nonnull Map<Long, BgpNetwork> _networks;
 }

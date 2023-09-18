@@ -7,7 +7,7 @@ import org.batfish.datamodel.Prefix;
 
 /** Represents an address-prefix used in match policy rules */
 public class AddressPrefix implements Serializable {
-  @Nonnull private Prefix _prefix;
+  private @Nonnull Prefix _prefix;
   private boolean _exact;
 
   public AddressPrefix(Prefix prefix, boolean exact) {
@@ -15,8 +15,7 @@ public class AddressPrefix implements Serializable {
     _exact = exact;
   }
 
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
 

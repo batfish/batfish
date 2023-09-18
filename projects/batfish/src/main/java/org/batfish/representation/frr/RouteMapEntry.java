@@ -46,8 +46,7 @@ public final class RouteMapEntry implements Serializable {
     return _action;
   }
 
-  @Nullable
-  public RouteMapCall getCall() {
+  public @Nullable RouteMapCall getCall() {
     return _call;
   }
 
@@ -101,8 +100,7 @@ public final class RouteMapEntry implements Serializable {
     _matchSourceProtocol = matchSourceProtocol;
   }
 
-  @Nullable
-  public RouteMapMatchTag getMatchTag() {
+  public @Nullable RouteMapMatchTag getMatchTag() {
     return _matchTag;
   }
 
@@ -220,8 +218,7 @@ public final class RouteMapEntry implements Serializable {
     _setCommunity = setCommunity;
   }
 
-  @Nullable
-  public RouteMapSetLocalPreference getSetLocalPreference() {
+  public @Nullable RouteMapSetLocalPreference getSetLocalPreference() {
     return _setLocalPreference;
   }
 
@@ -229,8 +226,7 @@ public final class RouteMapEntry implements Serializable {
     _setLocalPreference = setLocalPreference;
   }
 
-  @Nullable
-  public RouteMapSetTag getSetTag() {
+  public @Nullable RouteMapSetTag getSetTag() {
     return _setTag;
   }
 
@@ -238,8 +234,7 @@ public final class RouteMapEntry implements Serializable {
     _setTag = setTag;
   }
 
-  @Nullable
-  public RouteMapContinue getContinue() {
+  public @Nullable RouteMapContinue getContinue() {
     return _continue;
   }
 

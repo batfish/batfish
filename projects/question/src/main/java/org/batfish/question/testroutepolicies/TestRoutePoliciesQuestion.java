@@ -26,10 +26,10 @@ public final class TestRoutePoliciesQuestion extends Question {
   private static final Direction DEFAULT_DIRECTION = Direction.IN;
   private static final List<BgpRoute> DEFAULT_INPUT_ROUTES = ImmutableList.of();
 
-  @Nonnull private final Direction _direction;
-  @Nullable private final String _nodes;
-  @Nullable private final String _policies;
-  @Nonnull private final List<BgpRoute> _inputRoutes;
+  private final @Nonnull Direction _direction;
+  private final @Nullable String _nodes;
+  private final @Nullable String _policies;
+  private final @Nonnull List<BgpRoute> _inputRoutes;
 
   public TestRoutePoliciesQuestion() {
     this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, null, null);
@@ -82,14 +82,12 @@ public final class TestRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_POLICIES)
-  @Nullable
-  public String getPolicies() {
+  public @Nullable String getPolicies() {
     return _policies;
   }
 }

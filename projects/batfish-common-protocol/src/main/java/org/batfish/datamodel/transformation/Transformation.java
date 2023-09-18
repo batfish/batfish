@@ -112,29 +112,25 @@ public final class Transformation implements Serializable {
 
   /** A predicate specifying which flows should be transformed. */
   @JsonProperty(PROP_GUARD)
-  @Nonnull
-  public AclLineMatchExpr getGuard() {
+  public @Nonnull AclLineMatchExpr getGuard() {
     return _guard;
   }
 
   /** A list of transformation steps to apply if the guard matches the flow. */
   @JsonProperty(PROP_TRANSFORMATION_STEPS)
-  @Nonnull
-  public List<TransformationStep> getTransformationSteps() {
+  public @Nonnull List<TransformationStep> getTransformationSteps() {
     return _transformationSteps;
   }
 
   /** The next transformation to apply (if any) when this one matches and transforms. */
   @JsonProperty(PROP_AND_THEN)
-  @Nullable
-  public Transformation getAndThen() {
+  public @Nullable Transformation getAndThen() {
     return _andThen;
   }
 
   /** The next transformation to apply (if any) when this one does not match. */
   @JsonProperty(PROP_OR_ELSE)
-  @Nullable
-  public Transformation getOrElse() {
+  public @Nullable Transformation getOrElse() {
     return _orElse;
   }
 

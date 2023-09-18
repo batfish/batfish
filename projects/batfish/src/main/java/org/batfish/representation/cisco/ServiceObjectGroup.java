@@ -19,7 +19,7 @@ public class ServiceObjectGroup extends ObjectGroup {
   }
 
   private final List<ServiceObjectGroupLine> _lines;
-  @Nullable private ServiceProtocol _protocol;
+  private @Nullable ServiceProtocol _protocol;
 
   public ServiceObjectGroup(String name, @Nullable ServiceProtocol protocol) {
     super(name);
@@ -31,8 +31,7 @@ public class ServiceObjectGroup extends ObjectGroup {
     return _lines;
   }
 
-  @Nullable
-  public ServiceProtocol getProtocol() {
+  public @Nullable ServiceProtocol getProtocol() {
     return _protocol;
   }
 

@@ -17,9 +17,9 @@ public class ServiceEndpoint implements Comparable<ServiceEndpoint>, Serializabl
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICE = "service";
 
-  @Nonnull private String _address;
-  @Nonnull private String _name;
-  @Nonnull private String _service;
+  private @Nonnull String _address;
+  private @Nonnull String _name;
+  private @Nonnull String _service;
 
   @JsonCreator
   public ServiceEndpoint(

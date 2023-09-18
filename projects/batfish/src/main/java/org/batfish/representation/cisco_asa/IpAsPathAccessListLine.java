@@ -9,9 +9,9 @@ import org.batfish.datamodel.LineAction;
 @ParametersAreNonnullByDefault
 public class IpAsPathAccessListLine implements Serializable {
 
-  @Nonnull private LineAction _action;
+  private @Nonnull LineAction _action;
 
-  @Nonnull private String _regex;
+  private @Nonnull String _regex;
 
   public IpAsPathAccessListLine(LineAction action, String regex) {
     _action = action;

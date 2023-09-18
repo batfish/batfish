@@ -23,7 +23,7 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
 
   private final int _type;
 
-  @Nonnull private final List<SubRange> _codes;
+  private final @Nonnull List<SubRange> _codes;
 
   public IcmpTypeCodesApplication(int type, int code) {
     this(type, ImmutableList.of(SubRange.singleton(code)));
@@ -38,8 +38,7 @@ public final class IcmpTypeCodesApplication extends IcmpApplication {
     return _type;
   }
 
-  @Nonnull
-  public List<SubRange> getCodes() {
+  public @Nonnull List<SubRange> getCodes() {
     return _codes;
   }
 

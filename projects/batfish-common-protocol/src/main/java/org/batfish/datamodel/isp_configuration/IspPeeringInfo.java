@@ -63,8 +63,8 @@ public class IspPeeringInfo {
     }
   }
 
-  @Nonnull private final Peer _peer1;
-  @Nonnull private final Peer _peer2;
+  private final @Nonnull Peer _peer1;
+  private final @Nonnull Peer _peer2;
 
   public IspPeeringInfo(Peer peer1, Peer peer2) {
     checkArgument(

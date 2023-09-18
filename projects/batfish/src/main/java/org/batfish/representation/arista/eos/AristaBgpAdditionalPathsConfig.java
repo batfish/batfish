@@ -11,14 +11,13 @@ public class AristaBgpAdditionalPathsConfig implements Serializable {
     NONE,
   }
 
-  @Nullable private Boolean _install;
-  @Nullable private Boolean _receive;
-  @Nullable private SendType _send;
+  private @Nullable Boolean _install;
+  private @Nullable Boolean _receive;
+  private @Nullable SendType _send;
 
   public AristaBgpAdditionalPathsConfig() {}
 
-  @Nullable
-  public Boolean getInstall() {
+  public @Nullable Boolean getInstall() {
     return _install;
   }
 
@@ -26,8 +25,7 @@ public class AristaBgpAdditionalPathsConfig implements Serializable {
     _install = install;
   }
 
-  @Nullable
-  public Boolean getReceive() {
+  public @Nullable Boolean getReceive() {
     return _receive;
   }
 
@@ -35,8 +33,7 @@ public class AristaBgpAdditionalPathsConfig implements Serializable {
     _receive = receive;
   }
 
-  @Nullable
-  public SendType getSend() {
+  public @Nullable SendType getSend() {
     return _send;
   }
 

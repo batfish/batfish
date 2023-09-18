@@ -11,10 +11,10 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 /** Represents runtime data for an interface */
 public final class InterfaceRuntimeData {
   public static final class Builder {
-    @Nullable private ConcreteInterfaceAddress _address;
-    @Nullable private Double _bandwidth;
-    @Nullable private Boolean _lineUp;
-    @Nullable private Double _speed;
+    private @Nullable ConcreteInterfaceAddress _address;
+    private @Nullable Double _bandwidth;
+    private @Nullable Boolean _lineUp;
+    private @Nullable Double _speed;
 
     private Builder() {}
 
@@ -55,10 +55,10 @@ public final class InterfaceRuntimeData {
   private static final String PROP_SPEED = "speed";
 
   // All properties should be nullable since a given interface may have runtime data for any/all
-  @Nullable private final ConcreteInterfaceAddress _address;
-  @Nullable private final Double _bandwidth;
-  @Nullable private final Boolean _lineUp;
-  @Nullable private final Double _speed;
+  private final @Nullable ConcreteInterfaceAddress _address;
+  private final @Nullable Double _bandwidth;
+  private final @Nullable Boolean _lineUp;
+  private final @Nullable Double _speed;
 
   @JsonCreator
   @VisibleForTesting
@@ -74,20 +74,17 @@ public final class InterfaceRuntimeData {
   }
 
   @JsonProperty(PROP_ADDRESS)
-  @Nullable
-  public ConcreteInterfaceAddress getAddress() {
+  public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
   @JsonProperty(PROP_BANDWIDTH)
-  @Nullable
-  public Double getBandwidth() {
+  public @Nullable Double getBandwidth() {
     return _bandwidth;
   }
 
   @JsonProperty(PROP_LINE_UP)
-  @Nullable
-  public Boolean getLineUp() {
+  public @Nullable Boolean getLineUp() {
     return _lineUp;
   }
 
@@ -100,8 +97,7 @@ public final class InterfaceRuntimeData {
   }
 
   @JsonProperty(PROP_SPEED)
-  @Nullable
-  public Double getSpeed() {
+  public @Nullable Double getSpeed() {
     return _speed;
   }
 

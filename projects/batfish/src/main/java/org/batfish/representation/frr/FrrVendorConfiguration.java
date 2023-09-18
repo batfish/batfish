@@ -33,8 +33,7 @@ public abstract class FrrVendorConfiguration extends VendorConfiguration {
    *
    * @throws java.util.NoSuchElementException if the interface does not exist.
    */
-  @Nonnull
-  public abstract List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName);
+  public @Nonnull abstract List<ConcreteInterfaceAddress> getInterfaceAddresses(String ifaceName);
 
   // TODO: Simplify and unbundle what is happening in this method
   public abstract Map<String, Vxlan> getVxlans();

@@ -75,11 +75,11 @@ public class InterfaceKeyProperties implements Serializable {
   private static final String PROP_GWADDR = "gwaddr";
   private static final String PROP_SECONDARY = "secondary";
 
-  private @Nullable final List<String> _forcedMgmtRoutes;
-  private @Nullable final String _gwAddr;
-  private @Nullable final Boolean _secondary;
+  private final @Nullable List<String> _forcedMgmtRoutes;
+  private final @Nullable String _gwAddr;
+  private final @Nullable Boolean _secondary;
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

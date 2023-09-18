@@ -12,8 +12,7 @@ public class ServiceGroupMember implements Serializable {
    * member.
    */
   public static class NameAndPort implements Serializable {
-    @Nonnull
-    public String getName() {
+    public @Nonnull String getName() {
       return _name;
     }
 
@@ -46,13 +45,11 @@ public class ServiceGroupMember implements Serializable {
     private final int _port;
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -60,8 +57,7 @@ public class ServiceGroupMember implements Serializable {
     return _port;
   }
 
-  @Nullable
-  public Integer getPriority() {
+  public @Nullable Integer getPriority() {
     return _priority;
   }
 
@@ -78,8 +74,8 @@ public class ServiceGroupMember implements Serializable {
     _port = port;
   }
 
-  @Nullable private Boolean _enable;
-  @Nonnull final String _name;
+  private @Nullable Boolean _enable;
+  final @Nonnull String _name;
   private final int _port;
-  @Nullable private Integer _priority;
+  private @Nullable Integer _priority;
 }

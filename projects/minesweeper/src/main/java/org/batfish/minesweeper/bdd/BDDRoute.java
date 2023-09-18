@@ -117,7 +117,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
    * prepend the same exact sequence of ASes to the AS-path.
    */
-  @Nonnull private List<Long> _prependedASes;
+  private @Nonnull List<Long> _prependedASes;
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 

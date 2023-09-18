@@ -66,11 +66,10 @@ public final class RouteMapSetCommunityList extends RouteMapSetLine {
     return _additive;
   }
 
-  @Nonnull
-  public List<String> getCommunityLists() {
+  public @Nonnull List<String> getCommunityLists() {
     return _communityLists;
   }
 
   private final boolean _additive;
-  @Nonnull private final List<String> _communityLists;
+  private final @Nonnull List<String> _communityLists;
 }

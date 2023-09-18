@@ -65,17 +65,17 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
   static final TraceElement DENIED_UNASSOCIATED_PRIVATE_IP_TRACE =
       TraceElement.of("Denied private instance IPs NOT associated with a public IP");
 
-  @Nonnull private final List<String> _attachmentVpcIds;
+  private final @Nonnull List<String> _attachmentVpcIds;
 
-  @Nonnull private String _internetGatewayId;
+  private @Nonnull String _internetGatewayId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class Attachment {
 
-    @Nonnull private final String _vpcId;
+    private final @Nonnull String _vpcId;
 
     @JsonCreator
     private static Attachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
@@ -87,8 +87,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
       _vpcId = vpcId;
     }
 
-    @Nonnull
-    public String getVpcId() {
+    public @Nonnull String getVpcId() {
       return _vpcId;
     }
   }
@@ -120,8 +119,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     return _internetGatewayId;
   }
 
-  @Nonnull
-  public List<String> getAttachmentVpcIds() {
+  public @Nonnull List<String> getAttachmentVpcIds() {
     return _attachmentVpcIds;
   }
 
@@ -232,8 +230,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     bbInterface.setIncomingTransformation(chain(incomingNatRules.build()));
   }
 
-  @Nullable
-  private static Transformation chain(List<Transformation.Builder> rules) {
+  private static @Nullable Transformation chain(List<Transformation.Builder> rules) {
     Transformation tail = null;
     for (Transformation.Builder t : rules) {
       tail = t.setOrElse(tail).build();

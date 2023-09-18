@@ -16,9 +16,9 @@ public class FileLines {
   private static final String PROP_FILENAME = "filename";
   private static final String PROP_LINES = "lines";
 
-  @Nonnull private final String _filename;
+  private final @Nonnull String _filename;
 
-  @Nonnull private SortedSet<Integer> _lines;
+  private @Nonnull SortedSet<Integer> _lines;
 
   @JsonCreator
   public FileLines(

@@ -44,7 +44,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
    * Object NATs depend on the actual network object that they were declared in for sorting. This
    * network object must have a valid start (and end) IP.
    */
-  @Nullable private NetworkObject _realSourceObject;
+  private @Nullable NetworkObject _realSourceObject;
 
   /**
    * NATs are sorted into sections. There are three sections (in decreasing order of precedence):
@@ -59,21 +59,21 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
    * destinations for inside-to-outside flows. Interface NAT is not supported. Value is null if this
    * NAT does not have a destination transformation or if interface NAT was configured.
    */
-  @Nullable private AccessListAddressSpecifier _mappedDestination;
+  private @Nullable AccessListAddressSpecifier _mappedDestination;
 
   /**
    * NATs specify 'any' address, a network object, a network object-group, 'interface', a PAT pool,
    * or an inline IP as the translated mapping of sources for inside-to-outside flows. PAT and
    * interface NAT are not supported. Value is null if interface NAT or a PAT pool was configured.
    */
-  @Nullable private AccessListAddressSpecifier _mappedSource;
+  private @Nullable AccessListAddressSpecifier _mappedSource;
 
   /**
    * If this NAT has an optional destination transformation, it is configured with 'any' address, a
    * network object, or a network object-group as the real address of destinations for
    * inside-to-outside flows. Value is null if this NAT does not have a destination transformation.
    */
-  @Nullable private AccessListAddressSpecifier _realDestination;
+  private @Nullable AccessListAddressSpecifier _realDestination;
 
   /** Whether this NAT includes a destination NAT */
   private boolean _twice;
@@ -113,8 +113,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
     _line = line;
   }
 
-  @Nullable
-  public AccessListAddressSpecifier getMappedDestination() {
+  public @Nullable AccessListAddressSpecifier getMappedDestination() {
     return _mappedDestination;
   }
 
@@ -122,8 +121,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
     _mappedDestination = mappedDestination;
   }
 
-  @Nullable
-  public AccessListAddressSpecifier getMappedSource() {
+  public @Nullable AccessListAddressSpecifier getMappedSource() {
     return _mappedSource;
   }
 
@@ -139,8 +137,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
     _outsideInterface = outsideInterface;
   }
 
-  @Nullable
-  public AccessListAddressSpecifier getRealDestination() {
+  public @Nullable AccessListAddressSpecifier getRealDestination() {
     return _realDestination;
   }
 
@@ -156,8 +153,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
     _realSource = realSource;
   }
 
-  @Nullable
-  public NetworkObject getRealSourceObject() {
+  public @Nullable NetworkObject getRealSourceObject() {
     return _realSourceObject;
   }
 

@@ -51,8 +51,7 @@ import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 @ParametersAreNonnullByDefault
 final class TransitGateway implements AwsVpcEntity, Serializable {
 
-  @Nonnull
-  public TransitGatewayOptions getOptions() {
+  public @Nonnull TransitGatewayOptions getOptions() {
     return _options;
   }
 
@@ -64,11 +63,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     private final boolean _defaultRouteTableAssociation;
 
-    @Nonnull private final String _associationDefaultRouteTableId;
+    private final @Nonnull String _associationDefaultRouteTableId;
 
     private final boolean _defaultRouteTablePropagation;
 
-    @Nonnull private final String _propagationDefaultRouteTableId;
+    private final @Nonnull String _propagationDefaultRouteTableId;
 
     private final boolean _vpnEcmpSupport;
 
@@ -153,8 +152,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return _defaultRouteTableAssociation;
     }
 
-    @Nonnull
-    public String getAssociationDefaultRouteTableId() {
+    public @Nonnull String getAssociationDefaultRouteTableId() {
       return _associationDefaultRouteTableId;
     }
 
@@ -162,8 +160,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return _defaultRouteTablePropagation;
     }
 
-    @Nonnull
-    public String getPropagationDefaultRouteTableId() {
+    public @Nonnull String getPropagationDefaultRouteTableId() {
       return _propagationDefaultRouteTableId;
     }
 
@@ -214,10 +211,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _gatewayId;
-  @Nonnull private final TransitGatewayOptions _options;
-  @Nonnull private final String _ownerId;
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull String _gatewayId;
+  private final @Nonnull TransitGatewayOptions _options;
+  private final @Nonnull String _ownerId;
+  private final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
   private static TransitGateway create(
@@ -833,8 +830,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     return _gatewayId;
   }
 
-  @Nonnull
-  public String getOwnerId() {
+  public @Nonnull String getOwnerId() {
     return _ownerId;
   }
 

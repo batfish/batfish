@@ -12,8 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class Account implements Serializable {
 
-  @Nonnull private final String _id;
-  @Nonnull private final Map<String, Region> _regions;
+  private final @Nonnull String _id;
+  private final @Nonnull Map<String, Region> _regions;
 
   public Account(String id) {
     this(id, new HashMap<>());
@@ -24,8 +24,7 @@ public class Account implements Serializable {
     _regions = regions;
   }
 
-  @Nonnull
-  public Region addOrGetRegion(String region) {
+  public @Nonnull Region addOrGetRegion(String region) {
     return _regions.computeIfAbsent(region, Region::new);
   }
 
@@ -38,8 +37,7 @@ public class Account implements Serializable {
     return _regions.values();
   }
 
-  @Nonnull
-  public String getId() {
+  public @Nonnull String getId() {
     return _id;
   }
 }

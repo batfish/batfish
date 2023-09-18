@@ -28,7 +28,7 @@ import org.batfish.datamodel.flow.TransformationStep.TransformationType;
 /** Evaluates a {@link Transformation} on an input {@link Flow}. */
 public class TransformationEvaluator {
   private final Flow.Builder _flowBuilder;
-  @Nullable private final String _srcInterface;
+  private final @Nullable String _srcInterface;
   private final Map<String, IpAccessList> _namedAcls;
   private final Map<String, IpSpace> _namedIpSpaces;
   private final ImmutableList.Builder<Step<?>> _traceSteps;

@@ -17,13 +17,11 @@ public class ServiceGroup implements Serializable {
     SERVICE_LEAST_CONNECTION,
   }
 
-  @Nullable
-  public String getHealthCheck() {
+  public @Nullable String getHealthCheck() {
     return _healthCheck;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -31,8 +29,7 @@ public class ServiceGroup implements Serializable {
    * Returns a map of {@link ServiceGroupMember.NameAndPort} (which uniquely identifies a {@link
    * ServiceGroupMember}) to {@link ServiceGroupMember}.
    */
-  @Nonnull
-  public Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> getMembers() {
+  public @Nonnull Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> getMembers() {
     return Collections.unmodifiableMap(_members);
   }
 
@@ -40,24 +37,20 @@ public class ServiceGroup implements Serializable {
    * Get an existing {@link ServiceGroupMember} with the specified {@code name} and {@code port}, or
    * create and add one if it doesn't already exist.
    */
-  @Nonnull
-  public ServiceGroupMember getOrCreateMember(String name, int port) {
+  public @Nonnull ServiceGroupMember getOrCreateMember(String name, int port) {
     return _members.computeIfAbsent(
         new ServiceGroupMember.NameAndPort(name, port), nap -> new ServiceGroupMember(name, port));
   }
 
-  @Nullable
-  public Method getMethod() {
+  public @Nullable Method getMethod() {
     return _method;
   }
 
-  @Nullable
-  public Boolean getStatsDataEnable() {
+  public @Nullable Boolean getStatsDataEnable() {
     return _statsDataEnable;
   }
 
-  @Nonnull
-  public ServerPort.Type getType() {
+  public @Nonnull ServerPort.Type getType() {
     return _type;
   }
 
@@ -73,8 +66,7 @@ public class ServiceGroup implements Serializable {
     _statsDataEnable = statsDataEnable;
   }
 
-  @Nullable
-  public Boolean getHealthCheckDisable() {
+  public @Nullable Boolean getHealthCheckDisable() {
     return _healthCheckDisable;
   }
 
@@ -82,8 +74,7 @@ public class ServiceGroup implements Serializable {
     _healthCheckDisable = healthCheckDisable;
   }
 
-  @Nullable
-  public Integer getMinActiveMember() {
+  public @Nullable Integer getMinActiveMember() {
     return _minActiveMember;
   }
 
@@ -105,13 +96,13 @@ public class ServiceGroup implements Serializable {
     _members = new HashMap<>();
   }
 
-  @Nullable private String _healthCheck;
-  @Nullable private Boolean _healthCheckDisable;
-  @Nonnull private final Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> _members;
-  @Nonnull private final String _name;
-  @Nullable private Method _method;
-  @Nullable private Integer _minActiveMember;
-  @Nonnull private final ServerPort.Type _type;
-  @Nullable private Boolean _statsDataEnable;
-  @Nullable private String _templatePort;
+  private @Nullable String _healthCheck;
+  private @Nullable Boolean _healthCheckDisable;
+  private final @Nonnull Map<ServiceGroupMember.NameAndPort, ServiceGroupMember> _members;
+  private final @Nonnull String _name;
+  private @Nullable Method _method;
+  private @Nullable Integer _minActiveMember;
+  private final @Nonnull ServerPort.Type _type;
+  private @Nullable Boolean _statsDataEnable;
+  private @Nullable String _templatePort;
 }

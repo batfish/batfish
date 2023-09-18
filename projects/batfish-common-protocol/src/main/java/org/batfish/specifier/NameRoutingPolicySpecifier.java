@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 /** A {@link RoutingPolicySpecifier} that matches RoutingPolicy names (case insensitive). */
 @ParametersAreNonnullByDefault
 public final class NameRoutingPolicySpecifier implements RoutingPolicySpecifier {
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public NameRoutingPolicySpecifier(String name) {
     _name = name;

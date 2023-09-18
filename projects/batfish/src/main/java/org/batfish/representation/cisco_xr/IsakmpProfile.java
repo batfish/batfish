@@ -12,15 +12,15 @@ public class IsakmpProfile implements Serializable {
 
   private String _keyring;
 
-  @Nullable private Ip _localAddress;
+  private @Nullable Ip _localAddress;
 
-  @Nonnull private String _localInterfaceName;
+  private @Nonnull String _localInterfaceName;
 
   private IpWildcard _matchIdentity;
 
   private final String _name;
 
-  @Nullable private Ip _selfIdentity;
+  private @Nullable Ip _selfIdentity;
 
   public IsakmpProfile(String name) {
     _name = name;
@@ -31,13 +31,11 @@ public class IsakmpProfile implements Serializable {
     return _keyring;
   }
 
-  @Nullable
-  public Ip getLocalAddress() {
+  public @Nullable Ip getLocalAddress() {
     return _localAddress;
   }
 
-  @Nonnull
-  public String getLocalInterfaceName() {
+  public @Nonnull String getLocalInterfaceName() {
     return _localInterfaceName;
   }
 

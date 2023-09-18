@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class HasRoute extends BooleanExpr {
   private static final String PROP_EXPR = "expr";
 
-  @Nonnull private final PrefixSetExpr _expr;
+  private final @Nonnull PrefixSetExpr _expr;
 
   @JsonCreator
   private static HasRoute jsonCreator(@Nullable @JsonProperty(PROP_EXPR) PrefixSetExpr expr) {
@@ -39,8 +39,7 @@ public final class HasRoute extends BooleanExpr {
   }
 
   @JsonProperty(PROP_EXPR)
-  @Nonnull
-  public PrefixSetExpr getExpr() {
+  public @Nonnull PrefixSetExpr getExpr() {
     return _expr;
   }
 

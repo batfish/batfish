@@ -23,13 +23,13 @@ public class NodePropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
-  @Nonnull private NodeSpecifier _nodeSpecifier;
+  private @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nullable private String _properties;
+  private @Nullable String _properties;
 
-  @Nonnull private NodePropertySpecifier _propertySpecifier;
+  private @Nonnull NodePropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static NodePropertiesQuestion create(

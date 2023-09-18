@@ -43,8 +43,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the {@link BgpPeerConfig} has a {@link
    * Ipv4UnicastAddressFamily} that matches {@code submatcher}.
    */
-  @Nonnull
-  public static Matcher<BgpPeerConfig> hasIpv4UnicastAddressFamily(
+  public static @Nonnull Matcher<BgpPeerConfig> hasIpv4UnicastAddressFamily(
       @Nonnull Matcher<? super Ipv4UnicastAddressFamily> subMatcher) {
     return new HasIpv4UnicastAddressFamily(subMatcher);
   }
@@ -53,8 +52,7 @@ public class BgpNeighborMatchers {
    * Provides a matcher that matches if the {@link BgpPeerConfig} has a {@link EvpnAddressFamily}
    * that matches {@code submatcher}.
    */
-  @Nonnull
-  public static Matcher<BgpPeerConfig> hasEvpnAddressFamily(
+  public static @Nonnull Matcher<BgpPeerConfig> hasEvpnAddressFamily(
       @Nonnull Matcher<? super EvpnAddressFamily> subMatcher) {
     return new HasEvpnAddressFamily(subMatcher);
   }

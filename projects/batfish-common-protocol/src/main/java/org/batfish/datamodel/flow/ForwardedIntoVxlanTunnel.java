@@ -51,8 +51,7 @@ public final class ForwardedIntoVxlanTunnel implements ForwardingDetail {
   }
 
   @JsonProperty(PROP_VTEP)
-  @Nonnull
-  public Ip getVtep() {
+  public @Nonnull Ip getVtep() {
     return _vtep;
   }
 

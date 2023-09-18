@@ -6,12 +6,11 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public abstract class AristaBgpVlanBase implements Serializable {
-  @Nullable private RouteDistinguisher _rd;
-  @Nullable private ExtendedCommunity _rtImport;
-  @Nullable private ExtendedCommunity _rtExport;
+  private @Nullable RouteDistinguisher _rd;
+  private @Nullable ExtendedCommunity _rtImport;
+  private @Nullable ExtendedCommunity _rtExport;
 
-  @Nullable
-  public RouteDistinguisher getRd() {
+  public @Nullable RouteDistinguisher getRd() {
     return _rd;
   }
 
@@ -19,8 +18,7 @@ public abstract class AristaBgpVlanBase implements Serializable {
     _rd = rd;
   }
 
-  @Nullable
-  public ExtendedCommunity getRtImport() {
+  public @Nullable ExtendedCommunity getRtImport() {
     return _rtImport;
   }
 
@@ -28,8 +26,7 @@ public abstract class AristaBgpVlanBase implements Serializable {
     _rtImport = rtImport;
   }
 
-  @Nullable
-  public ExtendedCommunity getRtExport() {
+  public @Nullable ExtendedCommunity getRtExport() {
     return _rtExport;
   }
 

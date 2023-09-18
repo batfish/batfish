@@ -15,31 +15,30 @@ public abstract class AristaBgpNeighbor implements Serializable {
     REPLACE_AS,
   }
 
-  @Nullable private Integer _allowAsIn;
-  @Nullable private Boolean _autoLocalAddr;
-  @Nullable private AristaBgpDefaultOriginate _defaultOriginate;
-  @Nullable private String _description;
-  @Nullable private Boolean _dontCapabilityNegotiate;
-  @Nullable private Integer _ebgpMultihop;
-  @Nullable private Boolean _enforceFirstAs;
-  @Nullable private Long _exportLocalPref;
-  @Nullable private Long _localAs;
-  @Nullable private Boolean _nextHopPeer;
-  @Nullable private Boolean _nextHopSelf;
-  @Nullable private Boolean _nextHopUnchanged;
+  private @Nullable Integer _allowAsIn;
+  private @Nullable Boolean _autoLocalAddr;
+  private @Nullable AristaBgpDefaultOriginate _defaultOriginate;
+  private @Nullable String _description;
+  private @Nullable Boolean _dontCapabilityNegotiate;
+  private @Nullable Integer _ebgpMultihop;
+  private @Nullable Boolean _enforceFirstAs;
+  private @Nullable Long _exportLocalPref;
+  private @Nullable Long _localAs;
+  private @Nullable Boolean _nextHopPeer;
+  private @Nullable Boolean _nextHopSelf;
+  private @Nullable Boolean _nextHopUnchanged;
   // Whether this neighbor will initiate a BGP connection. If false, will listen only.
-  @Nullable private Boolean _passive;
-  @Nullable private Long _remoteAs;
-  @Nullable private RemovePrivateAsMode _removePrivateAsMode;
-  @Nullable private Boolean _routeReflectorClient;
-  @Nullable private Boolean _sendCommunity;
-  @Nullable private Boolean _sendExtendedCommunity;
-  @Nullable private Boolean _shutdown;
-  @Nullable private String _updateSource;
-  @Nonnull private AristaBgpNeighborAddressFamily _genericAddressFamily;
+  private @Nullable Boolean _passive;
+  private @Nullable Long _remoteAs;
+  private @Nullable RemovePrivateAsMode _removePrivateAsMode;
+  private @Nullable Boolean _routeReflectorClient;
+  private @Nullable Boolean _sendCommunity;
+  private @Nullable Boolean _sendExtendedCommunity;
+  private @Nullable Boolean _shutdown;
+  private @Nullable String _updateSource;
+  private @Nonnull AristaBgpNeighborAddressFamily _genericAddressFamily;
 
-  @Nullable
-  public Integer getAllowAsIn() {
+  public @Nullable Integer getAllowAsIn() {
     return _allowAsIn;
   }
 
@@ -47,8 +46,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _allowAsIn = allowAsIn;
   }
 
-  @Nullable
-  public Boolean getAutoLocalAddr() {
+  public @Nullable Boolean getAutoLocalAddr() {
     return _autoLocalAddr;
   }
 
@@ -56,8 +54,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _autoLocalAddr = autoLocalAddr;
   }
 
-  @Nullable
-  public AristaBgpDefaultOriginate getDefaultOriginate() {
+  public @Nullable AristaBgpDefaultOriginate getDefaultOriginate() {
     return _defaultOriginate;
   }
 
@@ -65,8 +62,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _defaultOriginate = defaultOriginate;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -74,8 +70,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _description = description;
   }
 
-  @Nullable
-  public Boolean getDontCapabilityNegotiate() {
+  public @Nullable Boolean getDontCapabilityNegotiate() {
     return _dontCapabilityNegotiate;
   }
 
@@ -83,8 +78,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _dontCapabilityNegotiate = dontCapabilityNegotiate;
   }
 
-  @Nullable
-  public Integer getEbgpMultihop() {
+  public @Nullable Integer getEbgpMultihop() {
     return _ebgpMultihop;
   }
 
@@ -92,8 +86,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _ebgpMultihop = ebgpMultihop;
   }
 
-  @Nullable
-  public Boolean getEnforceFirstAs() {
+  public @Nullable Boolean getEnforceFirstAs() {
     return _enforceFirstAs;
   }
 
@@ -109,13 +102,11 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _exportLocalPref = exportLocalPref;
   }
 
-  @Nonnull
-  public AristaBgpNeighborAddressFamily getGenericAddressFamily() {
+  public @Nonnull AristaBgpNeighborAddressFamily getGenericAddressFamily() {
     return _genericAddressFamily;
   }
 
-  @Nullable
-  public Long getLocalAs() {
+  public @Nullable Long getLocalAs() {
     return _localAs;
   }
 
@@ -123,8 +114,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _localAs = localAs;
   }
 
-  @Nullable
-  public Boolean getNextHopPeer() {
+  public @Nullable Boolean getNextHopPeer() {
     return _nextHopPeer;
   }
 
@@ -132,8 +122,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _nextHopPeer = nextHopPeer;
   }
 
-  @Nullable
-  public Boolean getNextHopSelf() {
+  public @Nullable Boolean getNextHopSelf() {
     return _nextHopSelf;
   }
 
@@ -141,8 +130,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _nextHopSelf = nextHopSelf;
   }
 
-  @Nullable
-  public Boolean getNextHopUnchanged() {
+  public @Nullable Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
   }
 
@@ -150,8 +138,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
-  @Nullable
-  public Boolean getPassive() {
+  public @Nullable Boolean getPassive() {
     return _passive;
   }
 
@@ -159,8 +146,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _passive = passive;
   }
 
-  @Nullable
-  public Long getRemoteAs() {
+  public @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
 
@@ -168,8 +154,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _remoteAs = remoteAs;
   }
 
-  @Nullable
-  public RemovePrivateAsMode getRemovePrivateAsMode() {
+  public @Nullable RemovePrivateAsMode getRemovePrivateAsMode() {
     return _removePrivateAsMode;
   }
 
@@ -177,8 +162,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _removePrivateAsMode = removePrivateAsMode;
   }
 
-  @Nullable
-  public Boolean getRouteReflectorClient() {
+  public @Nullable Boolean getRouteReflectorClient() {
     return _routeReflectorClient;
   }
 
@@ -186,8 +170,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _routeReflectorClient = routeReflectorClient;
   }
 
-  @Nullable
-  public Boolean getSendCommunity() {
+  public @Nullable Boolean getSendCommunity() {
     return _sendCommunity;
   }
 
@@ -195,8 +178,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _sendCommunity = sendCommunity;
   }
 
-  @Nullable
-  public Boolean getSendExtendedCommunity() {
+  public @Nullable Boolean getSendExtendedCommunity() {
     return _sendExtendedCommunity;
   }
 
@@ -204,8 +186,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _sendExtendedCommunity = sendExtendedCommunity;
   }
 
-  @Nullable
-  public Boolean getShutdown() {
+  public @Nullable Boolean getShutdown() {
     return _shutdown;
   }
 
@@ -213,8 +194,7 @@ public abstract class AristaBgpNeighbor implements Serializable {
     _shutdown = shutdown;
   }
 
-  @Nullable
-  public String getUpdateSource() {
+  public @Nullable String getUpdateSource() {
     return _updateSource;
   }
 

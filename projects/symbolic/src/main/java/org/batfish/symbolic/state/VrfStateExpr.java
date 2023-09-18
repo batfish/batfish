@@ -10,21 +10,19 @@ import javax.annotation.Nonnull;
  * where {@link #hashCode()} is different for different types.
  */
 public abstract class VrfStateExpr implements StateExpr {
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _vrf;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _vrf;
 
   public VrfStateExpr(@Nonnull String hostname, @Nonnull String vrf) {
     _hostname = hostname;
     _vrf = vrf;
   }
 
-  @Nonnull
-  public final String getHostname() {
+  public final @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
-  public final String getVrf() {
+  public final @Nonnull String getVrf() {
     return _vrf;
   }
 

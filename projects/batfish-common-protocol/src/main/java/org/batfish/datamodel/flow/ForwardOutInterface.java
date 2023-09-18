@@ -50,15 +50,13 @@ public final class ForwardOutInterface implements SessionAction {
    * delivered to the attached subnet of the outgoing interface, or else should exit the network.
    */
   @JsonProperty(PROP_NEXT_HOP)
-  @Nullable
-  public NodeInterfacePair getNextHop() {
+  public @Nullable NodeInterfacePair getNextHop() {
     return _nextHop;
   }
 
   /** The interface out which return traffic should be sent. */
   @JsonProperty(PROP_OUTGOING_INTERFACE)
-  @Nonnull
-  public String getOutgoingInterface() {
+  public @Nonnull String getOutgoingInterface() {
     return _outgoingInterface;
   }
 

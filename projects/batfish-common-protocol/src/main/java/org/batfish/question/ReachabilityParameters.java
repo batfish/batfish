@@ -169,18 +169,15 @@ public final class ReachabilityParameters {
     return _actions;
   }
 
-  @Nonnull
-  public IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
+  public @Nonnull IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
     return _destinationIpSpaceSpecifier;
   }
 
-  @Nonnull
-  public NodeSpecifier getFinalNodesSpecifier() {
+  public @Nonnull NodeSpecifier getFinalNodesSpecifier() {
     return _finalNodesSpecifier;
   }
 
-  @Nonnull
-  public NodeSpecifier getForbiddenTransitNodesSpecifier() {
+  public @Nonnull NodeSpecifier getForbiddenTransitNodesSpecifier() {
     return _forbiddenTransitNodesSpecifier;
   }
 
@@ -208,8 +205,7 @@ public final class ReachabilityParameters {
     return _sourceNatted;
   }
 
-  @Nonnull
-  public NodeSpecifier getRequiredTransitNodesSpecifier() {
+  public @Nonnull NodeSpecifier getRequiredTransitNodesSpecifier() {
     return _requiredTransitNodesSpecifier;
   }
 
@@ -218,8 +214,8 @@ public final class ReachabilityParameters {
    *
    * @throws IllegalArgumentException if the set of supported dispositions is empty.
    */
-  @Nonnull
-  public static Set<FlowDisposition> filterDispositions(Set<FlowDisposition> dispositions) {
+  public static @Nonnull Set<FlowDisposition> filterDispositions(
+      Set<FlowDisposition> dispositions) {
     checkArgument(!dispositions.isEmpty(), "Invalid empty set of actions specified");
     return dispositions;
   }

@@ -20,14 +20,14 @@ public class VlanMember implements Serializable {
 
   private static final String PROP_TAGGING_MODE = "tagging_mode";
 
-  private @Nullable final TaggingMode _taggingMode;
+  private final @Nullable TaggingMode _taggingMode;
 
   public @Nonnull Optional<TaggingMode> getTaggingMode() {
     return Optional.ofNullable(_taggingMode);
   }
 
   @JsonCreator
-  private @Nonnull static VlanMember create(
+  private static @Nonnull VlanMember create(
       @Nullable @JsonProperty(PROP_TAGGING_MODE) String taggingModeStr) {
     TaggingMode taggingMode = null;
     if ("tagged".equals(taggingModeStr)) {
@@ -69,7 +69,7 @@ public class VlanMember implements Serializable {
         .toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

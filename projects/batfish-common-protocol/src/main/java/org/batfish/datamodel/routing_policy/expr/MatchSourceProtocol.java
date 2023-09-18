@@ -26,7 +26,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchSourceProtocol extends BooleanExpr {
   private static final String PROP_PROTOCOLS = "protocols";
 
-  @Nonnull private final EnumSet<RoutingProtocol> _protocols;
+  private final @Nonnull EnumSet<RoutingProtocol> _protocols;
 
   public MatchSourceProtocol(RoutingProtocol... protocols) {
     this(Arrays.asList(protocols));

@@ -14,9 +14,9 @@ public class FilterTableQuestion extends Question {
   private static final String PROP_FILTER = "filter";
   private static final String PROP_INNER_QUESTION = "innerQuestion";
 
-  @Nullable private Set<String> _columns;
+  private @Nullable Set<String> _columns;
 
-  @Nullable private Filter _filter;
+  private @Nullable Filter _filter;
 
   private Question _innerQuestion;
 

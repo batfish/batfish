@@ -98,9 +98,9 @@ public class RoleConsistencyQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
     private static final String PROP_PROPERTY_NAME = "propertyName";
 
-    @Nullable private String _roleDimension;
+    private @Nullable String _roleDimension;
 
-    @Nullable private String _propertyName;
+    private @Nullable String _propertyName;
 
     @JsonCreator
     public RoleConsistencyQuestion(

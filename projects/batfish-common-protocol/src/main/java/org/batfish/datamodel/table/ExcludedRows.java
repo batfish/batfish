@@ -16,7 +16,7 @@ public class ExcludedRows {
   private static final String PROP_EXCLUSION_NAME = "exclusionName";
   private static final String PROP_ROWS = "rows";
 
-  private @Nonnull final String _exclusionName;
+  private final @Nonnull String _exclusionName;
 
   private @Nonnull Rows _rows;
 

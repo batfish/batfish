@@ -16,8 +16,8 @@ public final class MultipliedAs extends AsPathListExpr {
   private static final String PROP_EXPR = "expr";
   private static final String PROP_NUMBER = "number";
 
-  @Nonnull private final AsExpr _expr;
-  @Nonnull private final IntExpr _number;
+  private final @Nonnull AsExpr _expr;
+  private final @Nonnull IntExpr _number;
 
   @JsonCreator
   private static MultipliedAs jsonCreator(
@@ -56,14 +56,12 @@ public final class MultipliedAs extends AsPathListExpr {
   }
 
   @JsonProperty(PROP_EXPR)
-  @Nonnull
-  public AsExpr getExpr() {
+  public @Nonnull AsExpr getExpr() {
     return _expr;
   }
 
   @JsonProperty(PROP_NUMBER)
-  @Nonnull
-  public IntExpr getNumber() {
+  public @Nonnull IntExpr getNumber() {
     return _number;
   }
 

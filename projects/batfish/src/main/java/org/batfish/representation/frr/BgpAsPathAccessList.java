@@ -22,13 +22,11 @@ public class BgpAsPathAccessList implements Serializable {
     _lines.add(line);
   }
 
-  @Nonnull
-  public List<BgpAsPathAccessListLine> getLines() {
+  public @Nonnull List<BgpAsPathAccessListLine> getLines() {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 }

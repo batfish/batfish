@@ -51,14 +51,14 @@ public final class SpecifiersQuestion extends Question {
   private static final String PROP_SPECIFIER_FACTORY_VERSION = "specifierFactoryVersion";
   private static final String PROP_QUERY_TYPE = "queryType";
 
-  @Nullable private String _filterSpecifierInput;
-  @Nullable private String _interfaceSpecifierInput;
-  @Nullable private String _ipSpaceSpecifierInput;
-  @Nullable private String _locationSpecifierInput;
-  @Nullable private String _nodeSpecifierInput;
+  private @Nullable String _filterSpecifierInput;
+  private @Nullable String _interfaceSpecifierInput;
+  private @Nullable String _ipSpaceSpecifierInput;
+  private @Nullable String _locationSpecifierInput;
+  private @Nullable String _nodeSpecifierInput;
 
-  @Nonnull private QueryType _queryType;
-  @Nonnull private Version _specifierFactoryVersion;
+  private @Nonnull QueryType _queryType;
+  private @Nonnull Version _specifierFactoryVersion;
 
   @JsonCreator
   static SpecifiersQuestion create(

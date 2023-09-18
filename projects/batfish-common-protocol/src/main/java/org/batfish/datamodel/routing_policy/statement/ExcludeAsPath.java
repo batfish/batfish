@@ -21,7 +21,7 @@ public final class ExcludeAsPath extends Statement {
   private static final String PROP_EXPR = "expr";
 
   /** Expression that holds the information of the statement */
-  @Nonnull private AsPathListExpr _expr;
+  private @Nonnull AsPathListExpr _expr;
 
   @JsonCreator
   private static ExcludeAsPath jsonCreator(@Nullable @JsonProperty(PROP_EXPR) AsPathListExpr expr) {
@@ -67,8 +67,7 @@ public final class ExcludeAsPath extends Statement {
   }
 
   @JsonProperty(PROP_EXPR)
-  @Nonnull
-  public AsPathListExpr getExpr() {
+  public @Nonnull AsPathListExpr getExpr() {
     return _expr;
   }
 
