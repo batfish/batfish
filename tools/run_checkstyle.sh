@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-CHECKSTYLE_VERSION=8.19
+CHECKSTYLE_VERSION=8.45.1
 JAR_NAME="checkstyle-${CHECKSTYLE_VERSION}-all.jar"
 JAR_URL="https://github.com/checkstyle/checkstyle/releases/download/checkstyle-${CHECKSTYLE_VERSION}/${JAR_NAME}"
 
