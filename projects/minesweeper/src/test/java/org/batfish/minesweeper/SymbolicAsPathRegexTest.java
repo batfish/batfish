@@ -95,7 +95,7 @@ public class SymbolicAsPathRegexTest {
     String r2 = SymbolicAsPathRegex.toRegex(500L, (long) Integer.MAX_VALUE + 20);
     String r3 =
         SymbolicAsPathRegex.toRegex((long) Integer.MAX_VALUE + 20, (long) Integer.MAX_VALUE + 500);
-    String r4 = SymbolicAsPathRegex.toRegex(0L, (long) Math.pow(2, 32) - 1);
+    String r4 = SymbolicAsPathRegex.toRegex(0L, (1L << 32) - 1);
 
     assertThat(r1, equalTo("<0-2147483647>"));
     assertThat(r2, equalTo("((<500-2147483647>)|(2<147483648-147483667>))"));
@@ -152,8 +152,7 @@ public class SymbolicAsPathRegexTest {
             .add(3999999999L)
             .build());
 
-    SymbolicAsPathRegex r4 =
-        singletonAsPathRegexForClosedInterval(400L, (long) Math.pow(2, 32) - 1);
+    SymbolicAsPathRegex r4 = singletonAsPathRegexForClosedInterval(400L, (1L << 32) - 1);
     testRegexBehavior(
         r4,
         ImmutableSet.<Long>builder()

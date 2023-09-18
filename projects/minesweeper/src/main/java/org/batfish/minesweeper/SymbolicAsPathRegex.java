@@ -25,8 +25,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
   /** A regex representing integers in the range 0 to 2^32 - 1. */
-  @VisibleForTesting @Nonnull
-  static final String INT_32_REGEX = toRegex(0L, (long) Math.pow(2, 32) - 1);
+  @VisibleForTesting @Nonnull static final String INT_32_REGEX = toRegex(0L, (1L << 32) - 1);
 
   /**
    * A regex representing AS numbers. The first conjunct of the regex ensures there are no leading
