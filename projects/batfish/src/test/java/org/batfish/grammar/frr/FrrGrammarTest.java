@@ -82,6 +82,7 @@ import org.batfish.common.runtime.SnapshotRuntimeData;
 import org.batfish.config.Settings;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.BgpPeerConfigId;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -669,6 +670,23 @@ public class FrrGrammarTest {
     assertThat(
         _frr.getBgpProcess().getDefaultVrf().getIpv4UnicastConfiguration("N").getAllowAsIn(),
         equalTo(5));
+  }
+
+  @Test
+  public void testBgpNeighborDoesntCheckLocalIp() {
+    parseLines(
+        "router bgp 1",
+        "neighbor 10.0.0.1 remote-as 1",
+        "neighbor PG peer-group",
+        "neighbor PG remote-as 3",
+        "bgp listen range 20.0.0.0/8 peer-group PG");
+    Configuration c = _config.toVendorIndependentConfigurations().get(0);
+    BgpProcess p = c.getDefaultVrf().getBgpProcess();
+    assertThat(
+        p.getActiveNeighbors().get(Ip.parse("10.0.0.1")).getCheckLocalIpOnAccept(), equalTo(false));
+    assertThat(
+        p.getPassiveNeighbors().get(Prefix.parse("20.0.0.0/8")).getCheckLocalIpOnAccept(),
+        equalTo(false));
   }
 
   @Test

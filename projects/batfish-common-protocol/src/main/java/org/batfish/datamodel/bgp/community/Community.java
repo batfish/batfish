@@ -39,6 +39,17 @@ public abstract class Community implements Serializable, Comparable<Community> {
           String.format("Invalid value for BGP community: %s", node));
     }
     String str = node.textValue();
+    return fromString(str);
+  }
+
+  /**
+   * Parse a community from its {@link #toString()} representation
+   *
+   * <p>This method is also used by Jackson to deserialize a {@link Community} used as a Map key
+   * (encoded as a String).
+   */
+  @JsonCreator
+  private static @Nonnull Community fromString(String str) {
     // Try each possible type
     switch (str.split(":").length) {
       case 2:

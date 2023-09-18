@@ -1,5 +1,6 @@
 package org.batfish.question.testroutepolicies;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -36,6 +37,7 @@ import org.batfish.datamodel.Route;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -202,7 +204,15 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     if (questionsBgpRoute == null) {
       return null;
     }
+
+    // We set the administrative distance to the default value chosen by BgpRoute. The more
+    // principled thing to do would be
+    // to use the value based on the vendor but since this is only used to convert the input route
+    // to
+    // the internal representation and AD is never matched as a field the default value does not
+    // really matter.
     return Bgpv4Route.builder()
+        .setAdmin(firstNonNull(questionsBgpRoute.getAdminDist(), BgpRoute.DEFAULT_AD))
         .setWeight(questionsBgpRoute.getWeight())
         .setNextHopIp(questionsBgpRoute.getNextHopIp())
         .setProtocol(questionsBgpRoute.getProtocol())
@@ -229,6 +239,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       return null;
     }
     return org.batfish.datamodel.questions.BgpRoute.builder()
+        .setAdminDist(dataplaneBgpRoute.getAdministrativeCost())
         .setWeight(dataplaneBgpRoute.getWeight())
         // TODO: The next-hop IP AUTO/NONE (Ip.AUTO) is used to denote multiple different things;
         // we should distinguish these uses clearly from one another in the results returned by this

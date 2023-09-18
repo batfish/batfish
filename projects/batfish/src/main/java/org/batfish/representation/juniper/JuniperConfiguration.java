@@ -117,6 +117,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -817,18 +818,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ipv4AfSettingsBuilder.setSendCommunity(true).setSendExtendedCommunity(true);
 
       // inherit update-source
-      Ip localIp = ig.getLocalAddress();
-
-      // When local IP is not explicitly set, the source address is dynamically picked based on the
-      // outgoing interface (done in VI land, so we don't need to do anything more here).
-      // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
-      // default-address-selection is set.
-      if (localIp == null
-          && _masterLogicalSystem.getDefaultAddressSelection()
-          && (ibgp || firstNonNull(ig.getEbgpMultihop(), false))) {
-        localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
-      }
-      neighbor.setLocalIp(localIp);
+      neighbor.setLocalIp(ig.getLocalAddress());
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
@@ -3005,8 +2995,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // We only support IPv4 unicast
     if (!addressFamily.equals("inet") && w != null) {
-      w.unimplemented(
-          String.format("Rib name conversion: %s address family is not supported", addressFamily));
+      w.unimplementedf("Rib name conversion: %s address family is not supported", addressFamily);
       return null;
     }
     return new RibId(hostname, vrfName, ribName);
@@ -3306,8 +3295,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         return ImmutableSet.of();
       }
       if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
-        _w.unimplemented(
-            String.format("next-table support is currently limited to %s", RIB_IPV4_UNICAST));
+        _w.unimplementedf("next-table support is currently limited to %s", RIB_IPV4_UNICAST);
         return ImmutableSet.of();
       }
       nextVrf = ribId.getVrfName();
@@ -3852,6 +3840,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ri.getNamedBgpGroups().size() > 0 || ri.getIpBgpGroups().size() > 0) {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
+      }
+      if (_masterLogicalSystem.getDefaultAddressSelection()) {
+        // When local IP is not explicitly set, the source address is dynamically picked based on
+        // the outgoing interface (done in VI land, so we don't need to do anything more here).
+        // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
+        // default-address-selection is set.
+        getDefaultSourceAddress(ri, _c)
+            .ifPresent(ip -> vrf.setSourceIpInference(UseConstantIp.create(ip)));
       }
       convertResolution(ri);
     }

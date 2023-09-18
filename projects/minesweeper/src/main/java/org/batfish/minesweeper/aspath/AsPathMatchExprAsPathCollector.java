@@ -41,7 +41,7 @@ public class AsPathMatchExprAsPathCollector
   @Override
   public Set<SymbolicAsPathRegex> visitAsSetsMatchingRanges(
       AsSetsMatchingRanges asSetsMatchingRanges, Configuration arg) {
-    return ImmutableSet.of();
+    return ImmutableSet.of(new SymbolicAsPathRegex(asSetsMatchingRanges));
   }
 
   @Override

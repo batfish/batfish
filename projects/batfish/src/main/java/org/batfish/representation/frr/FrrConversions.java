@@ -163,6 +163,7 @@ public final class FrrConversions {
   static final Statement REJECT_DEFAULT_ROUTE =
       new If(
           Common.matchDefaultRoute(), ImmutableList.of(Statements.ReturnFalse.toStaticStatement()));
+
   /**
    * Conversion factor for interface speed units. In the config Mbps are used, VI model expects bps
    */
@@ -617,6 +618,8 @@ public final class FrrConversions {
       assert localAddress instanceof ConcreteInterfaceAddress;
       peerConfigBuilder =
           BgpActivePeerConfig.builder()
+              // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+              .setCheckLocalIpOnAccept(false)
               .setLocalIp(((ConcreteInterfaceAddress) localAddress).getIp())
               .setPeerAddress(inferredIp.get());
     } else {
@@ -728,6 +731,8 @@ public final class FrrConversions {
       Warnings w) {
     BgpActivePeerConfig.Builder peerConfigBuilder =
         BgpActivePeerConfig.builder()
+            // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+            .setCheckLocalIpOnAccept(false)
             .setLocalIp(
                 Optional.ofNullable(
                         resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
@@ -749,6 +754,8 @@ public final class FrrConversions {
       Warnings w) {
     BgpPassivePeerConfig.Builder peerConfigBuilder =
         BgpPassivePeerConfig.builder()
+            // https://github.com/FRRouting/frr/commit/8ed9dca7fb2b06834d7effeba94676ad928b1ce9
+            .setCheckLocalIpOnAccept(false)
             .setLocalIp(resolveLocalIpFromUpdateSource(neighbor.getBgpNeighborSource(), c, w))
             .setPeerPrefix(neighbor.getListenRange());
     generateBgpCommonPeerConfig(
@@ -1241,7 +1248,7 @@ public final class FrrConversions {
                 return;
               }
               if (!vniToIndex.containsKey(l3Vni)) {
-                w.redFlag(String.format("vni %s for vrf %s does not exist", l3Vni, innerVrfName));
+                w.redFlagf("vni %s for vrf %s does not exist", l3Vni, innerVrfName);
                 return;
               }
               RouteDistinguisher rd =
@@ -1326,7 +1333,7 @@ public final class FrrConversions {
               org.batfish.datamodel.Vrf vrf = c.getVrfs().get(ospfVrf.getVrfName());
 
               if (vrf == null) {
-                w.redFlag(String.format("Vrf %s is not found.", ospfVrf.getVrfName()));
+                w.redFlagf("Vrf %s is not found.", ospfVrf.getVrfName());
                 return;
               }
 

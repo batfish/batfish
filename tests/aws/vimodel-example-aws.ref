@@ -82435,6 +82435,7 @@
               "neighbors" : {
                 "10.10.10.37" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -82467,6 +82468,7 @@
                 },
                 "10.10.10.45" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -82495,6 +82497,7 @@
                 },
                 "10.10.30.2" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -82526,6 +82529,7 @@
                 },
                 "10.10.255.7" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -82553,6 +82557,7 @@
                 },
                 "169.254.13.237" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -82599,6 +82604,7 @@
                 },
                 "169.254.15.193" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "clusterId" : 168492808,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
@@ -85909,6 +85915,7 @@
               "neighbors" : {
                 "169.254.13.238" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,
@@ -85936,6 +85943,7 @@
                 },
                 "169.254.15.194" : {
                   "class" : "org.batfish.datamodel.BgpActivePeerConfig",
+                  "checkLocalIpOnAccept" : true,
                   "defaultMetric" : 0,
                   "ebgpMultihop" : false,
                   "enforceFirstAs" : false,

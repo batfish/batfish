@@ -55,9 +55,11 @@ import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -438,6 +440,60 @@ public class TestRoutePoliciesAnswererTest {
         new BgpRouteDiffs(ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "4", "42")));
 
     // the route is accepted since we match on the output attributes
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), BGP_ROUTE),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(outputRoute), BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
+  public void testSetAdministrativeDistance() {
+
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetAdministrativeCost(new LiteralInt(255)),
+            new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setAsPath(AsPath.ofSingletonAsSets(1L))
+            .setCommunities(ImmutableSet.of(StandardCommunity.of(2L)))
+            .setLocalPreference(3L)
+            .setMetric(4L)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.IGP)
+            .setPathId(5)
+            .setProtocol(RoutingProtocol.BGP)
+            .setSrcProtocol(RoutingProtocol.AGGREGATE)
+            .setTag(34)
+            .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2")))
+            .setWeight(19)
+            .setAdminDist(0)
+            .build();
+
+    BgpRoute outputRoute = inputRoute.toBuilder().setAdminDist(255).build();
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSortedSet.of(
+                new BgpRouteDiff(BgpRoute.PROP_ADMINISTRATIVE_DISTANCE, "0", "255")));
+
+    TestRoutePoliciesQuestion question =
+        new TestRoutePoliciesQuestion(
+            Direction.IN, ImmutableList.of(inputRoute), HOSTNAME, policy.getName());
+
+    TableAnswerElement answer =
+        (new TestRoutePoliciesAnswerer(question, _batfish)).answer(_batfish.getSnapshot());
+
     assertThat(
         answer.getRows().getData(),
         Matchers.contains(

@@ -414,7 +414,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId()));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId());
       return;
     }
 
@@ -468,8 +468,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     String vrfNameOnTgw = vrfNameForRouteTable(routeTableId);
     if (!tgwCfg.getVrfs().containsKey(vrfNameOnTgw)) {
-      warnings.redFlag(
-          String.format("VRF %s not found on TGW %s", vrfNameOnTgw, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfNameOnTgw, tgwCfg.getHostname());
       return;
     }
     connect(awsConfiguration, tgwCfg, vrfNameOnTgw, vpcCfg, vrfNameOnVpc, routeTableId);
@@ -503,7 +502,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
     if (!tgwCfg.getVrfs().containsKey(vrfName)) {
-      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
       return;
     }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
@@ -637,28 +636,28 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
-      warnings.redFlag(String.format("VPC configuration node for VPC %s not found", vpc.getId()));
+      warnings.redFlagf("VPC configuration node for VPC %s not found", vpc.getId());
       return;
     }
 
     Interface localIface =
         tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, table.getId()));
     if (localIface == null) {
-      warnings.redFlag(String.format("Interface facing VPC %s not found on TGW", vpc.getId()));
+      warnings.redFlagf("Interface facing VPC %s not found on TGW", vpc.getId());
       return;
     }
 
     Interface remoteIface =
         vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, table.getId()));
     if (remoteIface == null) {
-      warnings.redFlag(String.format("Interface facing TGW not found on VPC %s", vpc.getId()));
+      warnings.redFlagf("Interface facing TGW not found on VPC %s", vpc.getId());
       return;
     }
 
     String vrfName = vrfNameForRouteTable(table.getId());
     Vrf tgwVrf = tgwCfg.getVrfs().get(vrfName);
     if (tgwVrf == null) {
-      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
       return;
     }
 

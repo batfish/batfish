@@ -617,8 +617,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
 
     vc.setVendor(format);
     if (Strings.isNullOrEmpty(vc.getHostname())) {
-      _warnings.redFlag(
-          String.format("No hostname set in %s\n", jobFilenamesToString(_fileTexts.keySet())));
+      _warnings.redFlagf("No hostname set in %s\n", jobFilenamesToString(_fileTexts.keySet()));
       String guessedHostname =
           Paths.get(vc.getFilename()) // use the primary file for guessing filename
               .getFileName()
@@ -691,15 +690,15 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
     String jobFiles = jobFilenamesToString(_fileTexts.keySet());
     // Handle specially some cases that will not produce a vendor configuration file.
     if (format == ConfigurationFormat.EMPTY) {
-      _warnings.redFlag(String.format("Empty file(s): %s\n", jobFiles));
+      _warnings.redFlagf("Empty file(s): %s\n", jobFiles);
       setParseStatus(ParseStatus.EMPTY);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.IGNORED) {
-      _warnings.redFlag(String.format("Ignored file(s): %s\n", jobFiles));
+      _warnings.redFlagf("Ignored file(s): %s\n", jobFiles);
       setParseStatus(ParseStatus.IGNORED);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (format == ConfigurationFormat.UNKNOWN) {
-      _warnings.redFlag(String.format("Unable to detect format for file(s): %s\n", jobFiles));
+      _warnings.redFlagf("Unable to detect format for file(s): %s\n", jobFiles);
       setParseStatus(ParseStatus.UNKNOWN);
       return new ParseResult(null, null, _fileResults, format, _warnings);
     } else if (UNIMPLEMENTED_FORMATS.contains(format)) {

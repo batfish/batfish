@@ -1159,7 +1159,7 @@ public enum JunosApplication implements Application {
     TraceElement builtinApplicationTraceElement =
         getTraceElementForBuiltInApplication(getJuniperName());
     if (!hasDefinition()) {
-      w.redFlag(String.format("Built-in application %s is not implemented", getJuniperName()));
+      w.redFlagf("Built-in application %s is not implemented", getJuniperName());
       return new FalseExpr(builtinApplicationTraceElement);
     }
     return _baseApplication.get().toAclLineMatchExpr(builtinApplicationTraceElement);

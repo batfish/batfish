@@ -33,7 +33,7 @@ public class FwFromInterface implements FwFrom {
         && configuredIfaces.values().stream()
             .flatMap(iface -> iface.getUnits().keySet().stream())
             .noneMatch(_interfaceName::equals)) {
-      w.redFlag(String.format("Missing interface '%s'", _interfaceName));
+      w.redFlagf("Missing interface '%s'", _interfaceName);
       return AclLineMatchExprs.FALSE;
     }
     return new MatchSrcInterface(

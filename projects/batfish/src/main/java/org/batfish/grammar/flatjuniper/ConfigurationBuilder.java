@@ -5805,7 +5805,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (type == 2) {
       _currentPsThens.add(new PsThenExternal(OspfMetricType.E2));
     } else {
-      _w.redFlag(String.format("unimplemented: then %s", getFullText(ctx)));
+      _w.redFlagf("unimplemented: then %s", getFullText(ctx));
     }
   }
 
@@ -5888,7 +5888,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (ctx.INCOMPLETE() != null) {
       origin = OriginType.INCOMPLETE;
     } else {
-      _w.redFlag(String.format("unimplemented origin type: %s", getFullText(ctx)));
+      _w.redFlagf("unimplemented origin type: %s", getFullText(ctx));
       return;
     }
     _currentPsThens.add(new PsThenOrigin(origin));
@@ -6998,7 +6998,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (JuniperUtils.isJuniper9CipherText(text)) {
       return JuniperUtils.decryptAndHashJuniper9CipherText(text);
     } else {
-      _w.redFlag(String.format("Unencrypted key stored at line: %d", line));
+      _w.redFlagf("Unencrypted key stored at line: %d", line);
       return saltAndHash(text);
     }
   }

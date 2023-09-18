@@ -976,7 +976,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         continue;
       }
       if (protocolConversions.get(type) == null) {
-        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
+        _w.redFlagf("Redistribution of %s routes is not yet supported", type);
         continue;
       }
       ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
@@ -2445,7 +2445,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (!iface.getShutdown() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig

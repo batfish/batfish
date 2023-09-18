@@ -262,8 +262,7 @@ public final class Conversions {
     // TODO: verify undefined route-map can be treated as omitted
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     attributeMap = generateAttributeMap(bgpGlobal, bgpVrf, attributeMap, c);

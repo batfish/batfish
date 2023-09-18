@@ -82,6 +82,7 @@ import org.batfish.version.BatfishVersion;
 final class IncrementalBdpEngine {
 
   private static final Logger LOGGER = LogManager.getLogger(IncrementalBdpEngine.class);
+
   /**
    * Maximum amount of topology iterations to do before deciding that the dataplane computation
    * cannot converge (there is some sort of flap)

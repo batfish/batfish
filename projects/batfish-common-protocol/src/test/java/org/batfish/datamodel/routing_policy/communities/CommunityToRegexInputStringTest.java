@@ -3,6 +3,8 @@ package org.batfish.datamodel.routing_policy.communities;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
+import com.google.common.collect.ImmutableMap;
+import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
@@ -44,5 +46,26 @@ public final class CommunityToRegexInputStringTest {
         IntegerValueRendering.instance()
             .accept(CommunityToRegexInputString.instance(), LargeCommunity.of(0L, 0L, 0L)),
         equalTo("0"));
+  }
+
+  @Test
+  public void testVisitSpecialCasesRendering() {
+    Community specialCase = StandardCommunity.of(3, 4);
+    String specialCaseString = "foo";
+    SpecialCasesRendering r =
+        SpecialCasesRendering.of(
+            ColonSeparatedRendering.instance(), ImmutableMap.of(specialCase, specialCaseString));
+
+    // special case
+    assertThat(
+        CommunityToRegexInputString.instance().visit(r, specialCase), equalTo(specialCaseString));
+
+    Community regularCase = StandardCommunity.of(5, 6);
+    String expectedRegularCaseString = "5:6";
+
+    // regular case
+    assertThat(
+        CommunityToRegexInputString.instance().visit(r, regularCase),
+        equalTo(expectedRegularCaseString));
   }
 }

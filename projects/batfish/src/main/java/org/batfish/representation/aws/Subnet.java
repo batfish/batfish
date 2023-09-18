@@ -319,8 +319,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
     // process route tables to get outbound traffic going
     if (!routeTable.isPresent()) {
-      warnings.redFlag(
-          String.format("Route table not found for subnet %s in vpc %s", _subnetId, _vpcId));
+      warnings.redFlagf("Route table not found for subnet %s in vpc %s", _subnetId, _vpcId);
     } else {
       routeTable
           .get()
@@ -605,8 +604,7 @@ public class Subnet implements AwsVpcEntity, Serializable {
         case VpcPeeringConnection:
           String connectionId = route.getTarget();
           if (connectionId == null) {
-            warnings.redFlag(
-                String.format("Route target is null for a VPC peering connection type: %s", route));
+            warnings.redFlagf("Route target is null for a VPC peering connection type: %s", route);
             return;
           }
           nexthopInterfaceName = Utils.interfaceNameToRemote(vpcNode, vrfNameForLink(connectionId));
