@@ -1,8 +1,8 @@
 package org.batfish.dataplane.matchers;
 
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
 
 import java.util.Map;
 import java.util.Set;

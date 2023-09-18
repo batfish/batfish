@@ -54,8 +54,13 @@
     </module>
 
     <module name="RegexpSinglelineJava">
-      <property name="format" value="import org.parboiled.common.Immutable.*"/>
-      <property name="message" value="Import Guava from Guava"/>
+      <property name="format" value="org.hamcrest.collection.(IsCollectionWithSize|IsEmptyCollection|IsIterableContaining|IsMapContaining|IsMapWithSize)"/>
+      <property name="message" value="Static import from org.hamcrest.Matchers"/>
+    </module>
+
+    <module name="RegexpSinglelineJava">
+      <property name="format" value="org.hamcrest.core.(AllOf|Is)"/>
+      <property name="message" value="Static import from org.hamcrest.Matchers"/>
     </module>
 
     <module name="RegexpSinglelineJava">

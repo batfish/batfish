@@ -1,11 +1,10 @@
 package org.batfish.datamodel;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -72,6 +71,6 @@ public class RipInternalRouteTest {
             .setMetric(1L)
             .setNextHop(NextHopDiscard.instance())
             .build();
-    assertThat(r.toBuilder().build(), Matchers.equalTo(r));
+    assertThat(r.toBuilder().build(), equalTo(r));
   }
 }
