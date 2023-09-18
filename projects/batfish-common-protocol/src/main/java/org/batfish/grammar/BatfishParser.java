@@ -40,8 +40,7 @@ public abstract class BatfishParser extends Parser {
     return _lastConsumedToken;
   }
 
-  @Nullable
-  public String getStateInfo() {
+  public @Nullable String getStateInfo() {
     return null;
   }
 

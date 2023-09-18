@@ -8,14 +8,13 @@ import org.batfish.datamodel.Ip;
 /** Class for `update-source ADDRESS` in bgp neighbor */
 @ParametersAreNonnullByDefault
 public class BgpNeighborSourceAddress implements BgpNeighborSource {
-  @Nonnull private final Ip _address;
+  private final @Nonnull Ip _address;
 
   public BgpNeighborSourceAddress(Ip address) {
     _address = address;
   }
 
-  @Nonnull
-  public Ip getAddress() {
+  public @Nonnull Ip getAddress() {
     return _address;
   }
 

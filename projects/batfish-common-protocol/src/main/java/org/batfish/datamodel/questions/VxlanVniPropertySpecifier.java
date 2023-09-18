@@ -80,7 +80,7 @@ public class VxlanVniPropertySpecifier extends PropertySpecifier {
     return JAVA_MAP.get(property);
   }
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   public static VxlanVniPropertySpecifier create(@Nullable String expression) {
     return new VxlanVniPropertySpecifier(

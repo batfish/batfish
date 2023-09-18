@@ -76,8 +76,8 @@ public final class EvpnToBgpv4VrfLeakConfig implements Serializable {
   private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
   private static final String PROP_IMPORT_POLICY = "importPolicy";
 
-  @Nonnull private final String _importFromVrf;
-  @Nullable private final String _importPolicy;
+  private final @Nonnull String _importFromVrf;
+  private final @Nullable String _importPolicy;
 
   public static final class Builder {
     public @Nonnull EvpnToBgpv4VrfLeakConfig build() {
@@ -90,14 +90,13 @@ public final class EvpnToBgpv4VrfLeakConfig implements Serializable {
       return this;
     }
 
-    @Nonnull
-    public Builder setImportFromVrf(@Nullable String importFromVrf) {
+    public @Nonnull Builder setImportFromVrf(@Nullable String importFromVrf) {
       _importFromVrf = importFromVrf;
       return this;
     }
 
-    @Nullable private String _importPolicy;
-    @Nullable private String _importFromVrf;
+    private @Nullable String _importPolicy;
+    private @Nullable String _importFromVrf;
 
     private Builder() {}
   }

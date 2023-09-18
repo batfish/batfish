@@ -20,11 +20,11 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
   private static final String PROP_TYPE = "type";
   private static final String PROP_DYNAMIC = "dynamic";
 
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _vrfName;
-  @Nullable private final String _peerInterface;
-  @Nullable private final Prefix _remotePeerPrefix;
-  @Nonnull private final BgpPeerConfigType _type;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _vrfName;
+  private final @Nullable String _peerInterface;
+  private final @Nullable Prefix _remotePeerPrefix;
+  private final @Nonnull BgpPeerConfigType _type;
 
   /** Create a new ID. */
   public BgpPeerConfigId(

@@ -25,9 +25,9 @@ public class TableMetadata {
   private static final String PROP_DISPLAY_HINTS = "displayHints";
   private static final String PROP_TEXT_DESC = "textDesc";
 
-  @Nonnull private final List<ColumnMetadata> _columnMetadata;
+  private final @Nonnull List<ColumnMetadata> _columnMetadata;
 
-  @Nonnull private final String _textDesc;
+  private final @Nonnull String _textDesc;
 
   public TableMetadata(List<ColumnMetadata> columnMetadata) {
     this(columnMetadata, (String) null);
@@ -126,14 +126,13 @@ public class TableMetadata {
   }
 
   /** Returns a map from column name to {@link ColumnMetadata} */
-  @Nonnull
-  public Map<String, ColumnMetadata> toColumnMap() {
+  public @Nonnull Map<String, ColumnMetadata> toColumnMap() {
     return toColumnMap(_columnMetadata);
   }
 
   /** Returns a map from column name to {@link ColumnMetadata} */
-  @Nonnull
-  public static Map<String, ColumnMetadata> toColumnMap(List<ColumnMetadata> columnMetadata) {
+  public static @Nonnull Map<String, ColumnMetadata> toColumnMap(
+      List<ColumnMetadata> columnMetadata) {
     return columnMetadata.stream()
         .collect(ImmutableMap.toImmutableMap(ColumnMetadata::getName, Function.identity()));
   }

@@ -37,8 +37,7 @@ final class MlagMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Ip featureValueOf(Mlag mlag) {
+    protected @Nullable Ip featureValueOf(Mlag mlag) {
       return mlag.getPeerAddress();
     }
   }

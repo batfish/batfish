@@ -842,8 +842,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
-  @Nullable
-  private String getASASecurityLevelZoneName(Interface iface) {
+  private @Nullable String getASASecurityLevelZoneName(Interface iface) {
     Integer level = iface.getSecurityLevel();
     if (level == null) {
       return null;
@@ -1728,8 +1727,8 @@ public final class AsaConfiguration extends VendorConfiguration {
     return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(
+      Interface iface, EigrpProcessMode mode) {
     Long bw =
         Stream.of(
                 iface.getBandwidth(),
@@ -1886,8 +1885,7 @@ public final class AsaConfiguration extends VendorConfiguration {
    * have an inbound ACL. Note: this could be shared among out-interfaces in the same security
    * level, but for now we're recomputing it for each one.
    */
-  @Nonnull
-  private List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
+  private @Nonnull List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
     return _interfacesBySecurityLevel.keySet().stream()
         .filter(l -> l < level)
         .map(
@@ -3434,8 +3432,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)

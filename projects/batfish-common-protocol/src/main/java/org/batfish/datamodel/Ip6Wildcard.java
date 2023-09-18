@@ -92,13 +92,11 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
     return maskedIpAsBigInteger.equals(maskedWildcard);
   }
 
-  @Nonnull
-  public Ip6 getIp() {
+  public @Nonnull Ip6 getIp() {
     return _ip;
   }
 
-  @Nonnull
-  public Ip6 getWildcard() {
+  public @Nonnull Ip6 getWildcard() {
     return _wildcardMask;
   }
 
@@ -119,8 +117,8 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
     }
   }
 
-  @Nonnull private final Ip6 _ip;
-  @Nonnull private final Ip6 _wildcardMask;
+  private final @Nonnull Ip6 _ip;
+  private final @Nonnull Ip6 _wildcardMask;
 
   @Override
   public int compareTo(Ip6Wildcard o) {

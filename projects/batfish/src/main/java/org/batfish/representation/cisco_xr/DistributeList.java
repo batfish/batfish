@@ -13,8 +13,8 @@ public final class DistributeList implements Serializable {
     ROUTE_POLICY,
   }
 
-  @Nonnull private final DistributeListFilterType _filterType;
-  @Nonnull private final String _filterName;
+  private final @Nonnull DistributeListFilterType _filterType;
+  private final @Nonnull String _filterName;
 
   public DistributeList(
       @Nonnull String filterName, @Nonnull DistributeListFilterType distributeListFilterType) {

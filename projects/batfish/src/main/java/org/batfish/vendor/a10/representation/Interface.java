@@ -16,28 +16,23 @@ public class Interface implements Serializable {
 
   public static final int DEFAULT_MTU = 1500;
 
-  @Nullable
-  public String getAccessListIn() {
+  public @Nullable String getAccessListIn() {
     return _accessListIn;
   }
 
-  @Nullable
-  public Boolean getEnabled() {
+  public @Nullable Boolean getEnabled() {
     return _enabled;
   }
 
-  @Nullable
-  public ConcreteInterfaceAddress getIpAddress() {
+  public @Nullable ConcreteInterfaceAddress getIpAddress() {
     return _ipAddress;
   }
 
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -49,8 +44,7 @@ public class Interface implements Serializable {
     return _trunkGroup;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
@@ -78,14 +72,12 @@ public class Interface implements Serializable {
     _trunkGroup = trunkGroup;
   }
 
-  @Nullable
-  public InterfaceLldp getLldp() {
+  public @Nullable InterfaceLldp getLldp() {
     return _lldp;
   }
 
   /** Get LLDP configuration object for this interface, creating one if it doesn't already exist. */
-  @Nonnull
-  public InterfaceLldp getOrCreateLldp() {
+  public @Nonnull InterfaceLldp getOrCreateLldp() {
     if (_lldp == null) {
       _lldp = new InterfaceLldp();
     }
@@ -97,13 +89,13 @@ public class Interface implements Serializable {
     _type = type;
   }
 
-  @Nullable private String _accessListIn;
-  @Nullable private Boolean _enabled;
-  @Nonnull private final Type _type;
-  @Nullable private ConcreteInterfaceAddress _ipAddress;
-  @Nullable private InterfaceLldp _lldp;
-  @Nullable private Integer _mtu;
-  @Nullable private String _name;
+  private @Nullable String _accessListIn;
+  private @Nullable Boolean _enabled;
+  private final @Nonnull Type _type;
+  private @Nullable ConcreteInterfaceAddress _ipAddress;
+  private @Nullable InterfaceLldp _lldp;
+  private @Nullable Integer _mtu;
+  private @Nullable String _name;
   private final int _number;
-  @Nullable private TrunkGroup _trunkGroup;
+  private @Nullable TrunkGroup _trunkGroup;
 }

@@ -61,18 +61,15 @@ public final class FibImpl implements Fib {
       return new ResolutionTreeNode(route, null, new LinkedList<>());
     }
 
-    @Nonnull
-    public AbstractRoute getRoute() {
+    public @Nonnull AbstractRoute getRoute() {
       return _route;
     }
 
-    @Nullable
-    public Ip getFinalNextHopIp() {
+    public @Nullable Ip getFinalNextHopIp() {
       return _finalNextHopIp;
     }
 
-    @Nonnull
-    public List<ResolutionTreeNode> getChildren() {
+    public @Nonnull List<ResolutionTreeNode> getChildren() {
       return _children;
     }
 
@@ -92,7 +89,7 @@ public final class FibImpl implements Fib {
   private static final int MAX_DEPTH = 10;
 
   /** This trie is the source of truth for all resolved FIB routes */
-  @Nonnull private final PrefixTrieMultiMap<FibEntry> _root;
+  private final @Nonnull PrefixTrieMultiMap<FibEntry> _root;
 
   private transient Supplier<Set<FibEntry>> _entries;
 

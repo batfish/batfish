@@ -15,8 +15,8 @@ import org.batfish.common.BatfishException;
  */
 @ParametersAreNonnullByDefault
 public final class RouteAdvertisement<T> {
-  @Nonnull private final T _route;
-  @Nonnull private final Reason _reason;
+  private final @Nonnull T _route;
+  private final @Nonnull Reason _reason;
 
   private transient int _hashCode = 0;
 
@@ -65,13 +65,11 @@ public final class RouteAdvertisement<T> {
   }
 
   /** Get the underlying route that's being advertised (or withdrawn) */
-  @Nonnull
-  public T getRoute() {
+  public @Nonnull T getRoute() {
     return _route;
   }
 
-  @Nonnull
-  public Reason getReason() {
+  public @Nonnull Reason getReason() {
     return _reason;
   }
 
@@ -122,13 +120,11 @@ public final class RouteAdvertisement<T> {
     return MoreObjects.toStringHelper(this).add("route", _route).add("reason", _reason).toString();
   }
 
-  @Nonnull
-  public static <T> Builder<T> builder() {
+  public static @Nonnull <T> Builder<T> builder() {
     return new Builder<>();
   }
 
-  @Nonnull
-  public Builder<T> toBuilder() {
+  public @Nonnull Builder<T> toBuilder() {
     return RouteAdvertisement.<T>builder().setRoute(_route).setReason(_reason);
   }
 
@@ -149,8 +145,7 @@ public final class RouteAdvertisement<T> {
       return this;
     }
 
-    @Nonnull
-    public RouteAdvertisement<T> build() {
+    public @Nonnull RouteAdvertisement<T> build() {
       checkArgument(_route != null, "Route advertisement missing the route");
       return new RouteAdvertisement<>(_route, _reason);
     }

@@ -118,13 +118,13 @@ public class PerRoleOutliersQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
     private static final String PROP_ROLES = "roles";
 
-    @Nonnull private OutliersHypothesis _hypothesis;
+    private @Nonnull OutliersHypothesis _hypothesis;
 
-    @Nonnull private SortedSet<String> _namedStructTypes;
+    private @Nonnull SortedSet<String> _namedStructTypes;
 
-    @Nullable private String _roleDimension;
+    private @Nullable String _roleDimension;
 
-    @Nullable private List<String> _roles;
+    private @Nullable List<String> _roles;
 
     @JsonCreator
     public PerRoleOutliersQuestion(

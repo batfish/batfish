@@ -59,28 +59,23 @@ public final class BidirectionalTrace {
     return Objects.hash(_forwardFlow, _forwardTrace, _newSessions, _reverseFlow, _reverseTrace);
   }
 
-  @Nonnull
-  public Flow getForwardFlow() {
+  public @Nonnull Flow getForwardFlow() {
     return _forwardFlow;
   }
 
-  @Nonnull
-  public Trace getForwardTrace() {
+  public @Nonnull Trace getForwardTrace() {
     return _forwardTrace;
   }
 
-  @Nonnull
-  public Set<FirewallSessionTraceInfo> getNewSessions() {
+  public @Nonnull Set<FirewallSessionTraceInfo> getNewSessions() {
     return _newSessions;
   }
 
-  @Nullable
-  public Flow getReverseFlow() {
+  public @Nullable Flow getReverseFlow() {
     return _reverseFlow;
   }
 
-  @Nullable
-  public Trace getReverseTrace() {
+  public @Nullable Trace getReverseTrace() {
     return _reverseTrace;
   }
 }

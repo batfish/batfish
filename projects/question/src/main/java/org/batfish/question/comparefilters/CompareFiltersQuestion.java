@@ -27,9 +27,9 @@ public final class CompareFiltersQuestion extends Question {
   private static final Boolean DEFAULT_IGNORE_COMPOSITES = Boolean.TRUE;
   private static final NodeSpecifier DEFAULT_NODE_SPECIFIER = AllNodesNodeSpecifier.INSTANCE;
 
-  @Nullable private final String _filters;
+  private final @Nullable String _filters;
   private final boolean _ignoreComposites;
-  @Nullable private final String _nodes;
+  private final @Nullable String _nodes;
 
   CompareFiltersQuestion() {
     this(null, null, null);

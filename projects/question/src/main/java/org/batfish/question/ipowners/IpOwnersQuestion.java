@@ -20,7 +20,7 @@ public class IpOwnersQuestion extends Question {
   private static final String QUESTION_NAME = "ipOwners";
 
   /** Return results for only these IPs */
-  private @Nullable final String _ipSpec;
+  private final @Nullable String _ipSpec;
 
   /** Whether to return duplicate IPs (owned by multiple nodes) only. */
   private final boolean _duplicatesOnly;

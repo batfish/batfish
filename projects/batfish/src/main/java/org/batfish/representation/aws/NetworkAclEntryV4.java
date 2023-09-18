@@ -9,7 +9,7 @@ import org.batfish.datamodel.Prefix;
 /** Represents an IPv4 network ACL entry in AWS */
 final class NetworkAclEntryV4 extends NetworkAclEntry {
 
-  @Nonnull private final Prefix _cidrBlock;
+  private final @Nonnull Prefix _cidrBlock;
 
   NetworkAclEntryV4(
       Prefix prefix,

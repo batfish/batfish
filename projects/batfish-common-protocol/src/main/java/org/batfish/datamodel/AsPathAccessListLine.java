@@ -15,9 +15,9 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
   private static final String PROP_ACTION = "action";
   private static final String PROP_REGEX = "regex";
 
-  @Nonnull private LineAction _action;
+  private @Nonnull LineAction _action;
 
-  @Nonnull private String _regex;
+  private @Nonnull String _regex;
 
   @JsonCreator
   private static AsPathAccessListLine jsonCreator(
@@ -52,15 +52,13 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
 
   /** The action the underlying access-list will take when this line matches a route. */
   @JsonProperty(PROP_ACTION)
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
   /** The regex against which a route's AS-path will be compared. */
   @JsonProperty(PROP_REGEX)
-  @Nonnull
-  public String getRegex() {
+  public @Nonnull String getRegex() {
     return _regex;
   }
 

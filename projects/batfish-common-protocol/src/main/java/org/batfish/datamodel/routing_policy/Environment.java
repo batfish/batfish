@@ -89,7 +89,7 @@ public class Environment {
   private boolean _defaultAction;
   private String _defaultPolicy;
   private final @Nonnull Direction _direction;
-  @Nullable private final EigrpProcess _eigrpProcess;
+  private final @Nullable EigrpProcess _eigrpProcess;
   private boolean _error;
   private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
   private final Map<String, IpAccessList> _ipAccessLists;
@@ -103,11 +103,11 @@ public class Environment {
   private final Map<String, RoutingPolicy> _routingPolicies;
   private boolean _readFromIntermediateBgpAttributes;
   private final Map<String, RouteFilterList> _routeFilterLists;
-  @Nullable private final String _routeSourceVrf;
+  private final @Nullable String _routeSourceVrf;
   private final boolean _useOutputAttributes;
   private boolean _writeToIntermediateBgpAttributes;
   private Boolean _suppressed;
-  @Nullable private final Tracer _tracer;
+  private final @Nullable Tracer _tracer;
 
   private Environment(
       Map<String, AsPathAccessList> asPathAccessLists,
@@ -180,8 +180,7 @@ public class Environment {
    * The {@link BgpSessionProperties} representing the session <em>from</em> the remote node
    * <em>to</em> the node processing the policy. (Note direction is unintuitive for route exports.)
    */
-  @Nullable
-  public BgpSessionProperties getBgpSessionProperties() {
+  public @Nullable BgpSessionProperties getBgpSessionProperties() {
     return _bgpSessionProperties;
   }
 
@@ -233,8 +232,7 @@ public class Environment {
     return _direction;
   }
 
-  @Nullable
-  public EigrpProcess getEigrpProcess() {
+  public @Nullable EigrpProcess getEigrpProcess() {
     return _eigrpProcess;
   }
 
@@ -331,8 +329,7 @@ public class Environment {
     return _writeToIntermediateBgpAttributes;
   }
 
-  @Nullable
-  public Tracer getTracer() {
+  public @Nullable Tracer getTracer() {
     return _tracer;
   }
 
@@ -384,7 +381,7 @@ public class Environment {
     private Map<String, AsPathAccessList> _asPathAccessLists;
     private Map<String, AsPathExpr> _asPathExprs;
     private Map<String, AsPathMatchExpr> _asPathMatchExprs;
-    @Nullable private BgpSessionProperties _bgpSessionProperties;
+    private @Nullable BgpSessionProperties _bgpSessionProperties;
     private boolean _buffered;
     private boolean _callExprContext;
     private boolean _callStatementContext;
@@ -395,7 +392,7 @@ public class Environment {
     private boolean _defaultAction;
     private String _defaultPolicy;
     private @Nonnull Direction _direction = Direction.OUT;
-    @Nullable private EigrpProcess _eigrpProcess;
+    private @Nullable EigrpProcess _eigrpProcess;
     private boolean _error;
     private BgpRoute.Builder<?, ?> _intermediateBgpAttributes;
     private Map<String, IpAccessList> _ipAccessLists;

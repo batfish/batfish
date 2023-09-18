@@ -13,8 +13,8 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
 
-  @Nonnull private final EigrpNeighborConfigId _node1;
-  @Nonnull private final EigrpNeighborConfigId _node2;
+  private final @Nonnull EigrpNeighborConfigId _node1;
+  private final @Nonnull EigrpNeighborConfigId _node2;
 
   @JsonCreator
   public EigrpEdge(
@@ -60,8 +60,7 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     return Objects.hash(_node1, _node2);
   }
 
-  @Nonnull
-  public EigrpEdge reverse() {
+  public @Nonnull EigrpEdge reverse() {
     return new EigrpEdge(_node2, _node1);
   }
 

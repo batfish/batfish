@@ -69,14 +69,12 @@ public class MockSpecifierContext implements SpecifierContext {
   }
 
   @Override
-  @Nonnull
-  public Map<String, Configuration> getConfigs() {
+  public @Nonnull Map<String, Configuration> getConfigs() {
     return _configs;
   }
 
   @Override
-  @Nonnull
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
     return _nodeRoleDimensions.stream().filter(dim -> dim.getName().equals(dimension)).findAny();
   }
 

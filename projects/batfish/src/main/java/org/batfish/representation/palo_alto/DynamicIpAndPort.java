@@ -12,7 +12,7 @@ import org.batfish.representation.palo_alto.RuleEndpoint.Type;
 /** PAN NAT source-translation clause (dynamic-ip-and-port) */
 public class DynamicIpAndPort implements Serializable {
 
-  @Nonnull private final List<RuleEndpoint> _translatedAddress;
+  private final @Nonnull List<RuleEndpoint> _translatedAddress;
 
   public DynamicIpAndPort() {
     _translatedAddress = new ArrayList<>();
@@ -24,8 +24,7 @@ public class DynamicIpAndPort implements Serializable {
     _translatedAddress.add(ruleEndpoint);
   }
 
-  @Nonnull
-  public List<RuleEndpoint> getTranslatedAddresses() {
+  public @Nonnull List<RuleEndpoint> getTranslatedAddresses() {
     return ImmutableList.copyOf(_translatedAddress);
   }
 }

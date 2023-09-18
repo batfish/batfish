@@ -39,13 +39,11 @@ public class ServerPort implements Serializable {
     UDP
   }
 
-  @Nullable
-  public Integer getConnLimit() {
+  public @Nullable Integer getConnLimit() {
     return _connLimit;
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
@@ -53,28 +51,23 @@ public class ServerPort implements Serializable {
     return _number;
   }
 
-  @Nullable
-  public String getPortTemplate() {
+  public @Nullable String getPortTemplate() {
     return _portTemplate;
   }
 
-  @Nullable
-  public Integer getRange() {
+  public @Nullable Integer getRange() {
     return _range;
   }
 
-  @Nullable
-  public Boolean getStatsDataEnable() {
+  public @Nullable Boolean getStatsDataEnable() {
     return _statsDataEnable;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
-  @Nullable
-  public Integer getWeight() {
+  public @Nullable Integer getWeight() {
     return _weight;
   }
 
@@ -102,8 +95,7 @@ public class ServerPort implements Serializable {
     _weight = weight;
   }
 
-  @Nullable
-  public String getHealthCheck() {
+  public @Nullable String getHealthCheck() {
     return _healthCheck;
   }
 
@@ -111,8 +103,7 @@ public class ServerPort implements Serializable {
     _healthCheck = healthCheck;
   }
 
-  @Nullable
-  public Boolean getHealthCheckDisable() {
+  public @Nullable Boolean getHealthCheckDisable() {
     return _healthCheckDisable;
   }
 
@@ -126,14 +117,14 @@ public class ServerPort implements Serializable {
     _range = range;
   }
 
-  @Nullable private Integer _connLimit;
-  @Nullable private Boolean _enable;
-  @Nullable private String _healthCheck;
-  @Nullable private Boolean _healthCheckDisable;
+  private @Nullable Integer _connLimit;
+  private @Nullable Boolean _enable;
+  private @Nullable String _healthCheck;
+  private @Nullable Boolean _healthCheckDisable;
   private final int _number;
-  @Nullable private String _portTemplate;
-  @Nullable private Integer _range;
-  @Nullable private Boolean _statsDataEnable;
-  @Nonnull private Type _type;
-  @Nullable private Integer _weight;
+  private @Nullable String _portTemplate;
+  private @Nullable Integer _range;
+  private @Nullable Boolean _statsDataEnable;
+  private @Nonnull Type _type;
+  private @Nullable Integer _weight;
 }

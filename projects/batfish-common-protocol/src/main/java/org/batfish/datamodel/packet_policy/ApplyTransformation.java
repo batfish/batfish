@@ -15,7 +15,7 @@ public class ApplyTransformation implements Statement {
 
   private static final String PROP_TRANSFORMATION = "transformation";
 
-  @Nonnull private final Transformation _transformation;
+  private final @Nonnull Transformation _transformation;
 
   public ApplyTransformation(Transformation transformation) {
     _transformation = transformation;

@@ -32,7 +32,7 @@ public final class MatchBgpSessionType extends BooleanExpr {
     IBGP,
   }
 
-  @Nonnull private final EnumSet<Type> _types;
+  private final @Nonnull EnumSet<Type> _types;
 
   public MatchBgpSessionType(Type... types) {
     this(Arrays.asList(types));

@@ -68,34 +68,28 @@ public final class HeaderSpaceToBDD {
     return _srcIpSpaceToBdd;
   }
 
-  @Nullable
-  private BDD toBDD(Collection<Integer> ints, BDDInteger var) {
+  private @Nullable BDD toBDD(Collection<Integer> ints, BDDInteger var) {
     return mapAndOrAllNull(ints, i -> var.value((long) i));
   }
 
   @VisibleForTesting
-  @Nullable
-  static BDD toBDD(@Nullable IpSpace ipSpace, IpSpaceToBDD toBdd) {
+  static @Nullable BDD toBDD(@Nullable IpSpace ipSpace, IpSpaceToBDD toBdd) {
     return ipSpace == null ? null : toBdd.visit(ipSpace);
   }
 
-  @Nullable
-  private BDD toBDD(Set<IpProtocol> ipProtocols) {
+  private @Nullable BDD toBDD(Set<IpProtocol> ipProtocols) {
     return mapAndOrAllNull(ipProtocols, _bddPacket.getIpProtocol()::value);
   }
 
-  @Nullable
-  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
+  private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
     return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 
-  @Nullable
-  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
+  private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
     return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 
-  @Nullable
-  private BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
+  private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
     return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
   }
 

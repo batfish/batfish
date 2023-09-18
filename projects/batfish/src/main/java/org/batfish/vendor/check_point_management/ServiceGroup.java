@@ -16,8 +16,7 @@ public final class ServiceGroup extends TypedManagementObject implements Service
     return visitor.visitServiceGroup(this, arg);
   }
 
-  @Nonnull
-  public List<Uid> getMembers() {
+  public @Nonnull List<Uid> getMembers() {
     return _members;
   }
 
@@ -59,5 +58,5 @@ public final class ServiceGroup extends TypedManagementObject implements Service
 
   private static final String PROP_MEMBERS = "members";
 
-  @Nonnull private final List<Uid> _members;
+  private final @Nonnull List<Uid> _members;
 }

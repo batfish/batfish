@@ -27,9 +27,9 @@ import org.batfish.datamodel.Interface;
 @ParametersAreNonnullByDefault
 final class VpcEndpointInterface extends VpcEndpoint {
 
-  @Nonnull private final List<String> _networkInterfaceIds;
+  private final @Nonnull List<String> _networkInterfaceIds;
 
-  @Nonnull private final List<String> _subnetIds;
+  private final @Nonnull List<String> _subnetIds;
 
   VpcEndpointInterface(
       String id,
@@ -104,13 +104,11 @@ final class VpcEndpointInterface extends VpcEndpoint {
     return String.format("%s-%s", vpcEndpointId, subnetId);
   }
 
-  @Nonnull
-  public List<String> getNetworkInterfaceIds() {
+  public @Nonnull List<String> getNetworkInterfaceIds() {
     return _networkInterfaceIds;
   }
 
-  @Nonnull
-  public List<String> getSubnetIds() {
+  public @Nonnull List<String> getSubnetIds() {
     return _subnetIds;
   }
 

@@ -28,11 +28,11 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static final class Propagation implements Serializable {
 
-    @Nonnull private final String _attachmentId;
+    private final @Nonnull String _attachmentId;
 
-    @Nonnull private final ResourceType _resourceType;
+    private final @Nonnull ResourceType _resourceType;
 
-    @Nonnull private final String _resourceId;
+    private final @Nonnull String _resourceId;
 
     private final boolean _enabled;
 
@@ -65,8 +65,7 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       _enabled = enabled;
     }
 
-    @Nonnull
-    public String getAttachmentId() {
+    public @Nonnull String getAttachmentId() {
       return _attachmentId;
     }
 
@@ -74,13 +73,11 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
       return _enabled;
     }
 
-    @Nonnull
-    public ResourceType getResourceType() {
+    public @Nonnull ResourceType getResourceType() {
       return _resourceType;
     }
 
-    @Nonnull
-    public String getResourceId() {
+    public @Nonnull String getResourceId() {
       return _resourceId;
     }
 
@@ -105,9 +102,9 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _routeTableId;
+  private final @Nonnull String _routeTableId;
 
-  @Nonnull private final List<Propagation> _propagations;
+  private final @Nonnull List<Propagation> _propagations;
 
   @JsonCreator
   private static TransitGatewayPropagations create(
@@ -125,8 +122,7 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
     _propagations = propagations;
   }
 
-  @Nonnull
-  public List<Propagation> getPropagations() {
+  public @Nonnull List<Propagation> getPropagations() {
     return _propagations;
   }
 

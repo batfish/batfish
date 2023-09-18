@@ -14,11 +14,11 @@ import org.batfish.datamodel.IpWildcard;
 @ParametersAreNonnullByDefault
 public final class AddressBook implements Serializable {
 
-  @Nonnull private final Map<String, AddressBookEntry> _entries;
+  private final @Nonnull Map<String, AddressBookEntry> _entries;
 
-  @Nullable private final AddressBook _parentBook; // null for global address book
+  private final @Nullable AddressBook _parentBook; // null for global address book
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public AddressBook(String name, @Nullable AddressBook parentBook) {
     _name = name;
@@ -43,8 +43,7 @@ public final class AddressBook implements Serializable {
     return (addressBook == null) ? null : addressBook.getName();
   }
 
-  @Nonnull
-  public Map<String, AddressBookEntry> getEntries() {
+  public @Nonnull Map<String, AddressBookEntry> getEntries() {
     return _entries;
   }
 
@@ -67,8 +66,7 @@ public final class AddressBook implements Serializable {
     }
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

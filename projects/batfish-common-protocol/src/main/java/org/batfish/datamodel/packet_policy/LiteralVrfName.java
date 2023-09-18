@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public final class LiteralVrfName implements VrfExpr {
   private static final String PROP_VRF_NAME = "vrfName";
 
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   public LiteralVrfName(String vrfName) {
     _vrfName = vrfName;

@@ -13,7 +13,7 @@ import org.batfish.datamodel.questions.Question;
 public final class EvpnL3VniPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
   @Override
   public boolean getDataPlane() {

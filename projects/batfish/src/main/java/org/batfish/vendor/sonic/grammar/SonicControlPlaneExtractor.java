@@ -37,11 +37,11 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
     SNMP_YML
   }
 
-  private @Nonnull final Map<String, String> _fileTexts;
-  private @Nonnull final Map<SonicFileType, String> _fileTypes;
-  private @Nonnull final Map<String, FileParseResult> _fileResults;
-  private @Nonnull final FrrCombinedParser _frrParser;
-  private @Nonnull final SonicConfiguration _configuration;
+  private final @Nonnull Map<String, String> _fileTexts;
+  private final @Nonnull Map<SonicFileType, String> _fileTypes;
+  private final @Nonnull Map<String, FileParseResult> _fileResults;
+  private final @Nonnull FrrCombinedParser _frrParser;
+  private final @Nonnull SonicConfiguration _configuration;
 
   public SonicControlPlaneExtractor(
       Map<SonicFileType, String> fileTypes,
@@ -124,7 +124,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
    * <p>Throws {@link IllegalArgumentException} if these expectations are violated or if the type of
    * a file cannot be determined.
    */
-  public @Nonnull static Map<SonicFileType, String> getSonicFileMap(Map<String, String> fileTexts) {
+  public static @Nonnull Map<SonicFileType, String> getSonicFileMap(Map<String, String> fileTexts) {
     Map<SonicFileType, String> fileTypeMap = new HashMap<>();
 
     // Filetype detection is based on the tail of the filename
@@ -189,8 +189,7 @@ public class SonicControlPlaneExtractor implements ControlPlaneExtractor {
    * <p>This method is deprecated. Use {@link #getSonicFileMap(Map)}.
    */
   @VisibleForTesting
-  @Nonnull
-  static String getSonicFrrFilename(Map<String, String> fileTexts) {
+  static @Nonnull String getSonicFrrFilename(Map<String, String> fileTexts) {
     if (fileTexts.size() != 2) {
       // Batfish pairs up files -- but we double check
       throw new IllegalArgumentException(

@@ -24,9 +24,9 @@ public class IpCompletionRelevance implements Serializable {
   private static final String PROP_DISPLAY = "display";
   private static final String PROP_MATCH_TAGS = "tags";
 
-  @Nonnull private final String _display;
+  private final @Nonnull String _display;
 
-  @Nonnull private final List<String> _matchTags;
+  private final @Nonnull List<String> _matchTags;
 
   @JsonCreator
   private static IpCompletionRelevance jsonCreator(

@@ -17,7 +17,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 public final class SetDefaultPolicy extends Statement {
   private static final String PROP_DEFAULT_POLICY = "defaultPolicy";
 
-  @Nonnull private final String _defaultPolicy;
+  private final @Nonnull String _defaultPolicy;
 
   @JsonCreator
   private static SetDefaultPolicy jsonCreator(
@@ -58,8 +58,7 @@ public final class SetDefaultPolicy extends Statement {
   }
 
   @JsonProperty(PROP_DEFAULT_POLICY)
-  @Nonnull
-  public String getDefaultPolicy() {
+  public @Nonnull String getDefaultPolicy() {
     return _defaultPolicy;
   }
 }

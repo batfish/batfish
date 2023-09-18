@@ -28,7 +28,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
 
   private Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public MrvControlPlaneExtractor(
       String fileText,
@@ -42,8 +42,7 @@ public class MrvControlPlaneExtractor extends MrvParserBaseListener
   }
 
   @Override
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

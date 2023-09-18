@@ -24,7 +24,7 @@ public final class NatRule implements Serializable {
 
   private final String _name;
 
-  @Nullable private NatRuleThen _then;
+  private @Nullable NatRuleThen _then;
 
   public NatRule(String name) {
     _matches = new LinkedList<>();
@@ -32,18 +32,15 @@ public final class NatRule implements Serializable {
     _then = null;
   }
 
-  @Nonnull
-  public List<NatRuleMatch> getMatches() {
+  public @Nonnull List<NatRuleMatch> getMatches() {
     return _matches;
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
-  @Nullable
-  public NatRuleThen getThen() {
+  public @Nullable NatRuleThen getThen() {
     return _then;
   }
 

@@ -249,8 +249,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .build();
   }
 
-  @Nullable
-  private static Long getLocalAs(
+  private static @Nullable Long getLocalAs(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
       BgpPeerConfigId local,
       BgpPeerConfigId remote,
@@ -261,8 +260,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .orElse(activePeer.getLocalAs());
   }
 
-  @Nonnull
-  private static Set<Type> getAddressFamilies(
+  private static @Nonnull Set<Type> getAddressFamilies(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
       BgpPeerConfigId local,
       BgpPeerConfigId remote) {
@@ -272,8 +270,7 @@ public class BgpSessionStatusAnswerer extends Answerer {
         .orElse(ImmutableSet.of());
   }
 
-  @Nonnull
-  private static String getRemoteAs(
+  private static @Nonnull String getRemoteAs(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> topology,
       BgpPeerConfigId local,
       BgpPeerConfigId remote,

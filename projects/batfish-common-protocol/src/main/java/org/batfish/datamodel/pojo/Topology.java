@@ -21,15 +21,15 @@ import org.batfish.datamodel.vendor_family.VendorFamily;
 public class Topology extends BfObject {
   private static final String PROP_TESTRIG_NAME = "testrigName";
 
-  @Nonnull private Set<Aggregate> _aggregates;
+  private @Nonnull Set<Aggregate> _aggregates;
 
-  @Nonnull private Set<Interface> _interfaces;
+  private @Nonnull Set<Interface> _interfaces;
 
-  @Nonnull private Set<Link> _links;
+  private @Nonnull Set<Link> _links;
 
-  @Nonnull private Set<Node> _nodes;
+  private @Nonnull Set<Node> _nodes;
 
-  @Nonnull private final String _testrigName;
+  private final @Nonnull String _testrigName;
 
   public static Topology create(
       String testrigName,

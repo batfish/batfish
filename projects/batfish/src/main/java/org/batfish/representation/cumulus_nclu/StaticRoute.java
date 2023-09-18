@@ -43,8 +43,7 @@ public class StaticRoute implements Serializable {
     return _nextHopIp;
   }
 
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 

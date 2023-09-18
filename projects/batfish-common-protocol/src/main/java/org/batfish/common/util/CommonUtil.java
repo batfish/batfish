@@ -154,8 +154,7 @@ public class CommonUtil {
     }
   }
 
-  @Nonnull
-  public static String readFile(Path file) throws BatfishException {
+  public static @Nonnull String readFile(Path file) throws BatfishException {
     String text;
     try {
       byte[] bytes = Files.readAllBytes(file);

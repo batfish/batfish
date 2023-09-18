@@ -20,13 +20,13 @@ public abstract class AddressFamily implements Serializable {
   static final String PROP_IMPORT_POLICY_SOURCES = "importPolicySources";
   static final String ROUTE_REFLECTOR_CLIENT = "routeReflectorClient";
 
-  @Nonnull protected final AddressFamilyCapabilities _addressFamilyCapabilities;
+  protected final @Nonnull AddressFamilyCapabilities _addressFamilyCapabilities;
   // Policies
-  @Nullable protected final String _exportPolicy;
-  @Nullable protected final String _importPolicy;
+  protected final @Nullable String _exportPolicy;
+  protected final @Nullable String _importPolicy;
   // Policy sources
-  @Nonnull protected SortedSet<String> _importPolicySources;
-  @Nonnull protected SortedSet<String> _exportPolicySources;
+  protected @Nonnull SortedSet<String> _importPolicySources;
+  protected @Nonnull SortedSet<String> _exportPolicySources;
   protected final boolean _routeReflectorClient;
 
   protected AddressFamily(
@@ -45,8 +45,7 @@ public abstract class AddressFamily implements Serializable {
   }
 
   @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
-  @Nonnull
-  public AddressFamilyCapabilities getAddressFamilyCapabilities() {
+  public @Nonnull AddressFamilyCapabilities getAddressFamilyCapabilities() {
     return _addressFamilyCapabilities;
   }
 
@@ -117,55 +116,47 @@ public abstract class AddressFamily implements Serializable {
   @ParametersAreNonnullByDefault
   public abstract static class Builder<B extends Builder<B, F>, F extends AddressFamily> {
 
-    @Nullable protected AddressFamilyCapabilities _addressFamilyCapabilities;
-    @Nullable protected String _exportPolicy;
-    @Nullable protected String _importPolicy;
-    @Nonnull protected SortedSet<String> _importPolicySources = ImmutableSortedSet.of();
-    @Nonnull protected SortedSet<String> _exportPolicySources = ImmutableSortedSet.of();
+    protected @Nullable AddressFamilyCapabilities _addressFamilyCapabilities;
+    protected @Nullable String _exportPolicy;
+    protected @Nullable String _importPolicy;
+    protected @Nonnull SortedSet<String> _importPolicySources = ImmutableSortedSet.of();
+    protected @Nonnull SortedSet<String> _exportPolicySources = ImmutableSortedSet.of();
     protected boolean _routeReflectorClient;
 
-    @Nonnull
-    public B setAddressFamilyCapabilities(
+    public @Nonnull B setAddressFamilyCapabilities(
         @Nullable AddressFamilyCapabilities addressFamilyCapabilities) {
       _addressFamilyCapabilities = addressFamilyCapabilities;
       return getThis();
     }
 
-    @Nonnull
-    public B setExportPolicy(@Nullable String exportPolicy) {
+    public @Nonnull B setExportPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
       return getThis();
     }
 
-    @Nonnull
-    public B setImportPolicy(@Nullable String importPolicy) {
+    public @Nonnull B setImportPolicy(@Nullable String importPolicy) {
       _importPolicy = importPolicy;
       return getThis();
     }
 
-    @Nonnull
-    public B setImportPolicySources(SortedSet<String> importPolicySources) {
+    public @Nonnull B setImportPolicySources(SortedSet<String> importPolicySources) {
       _importPolicySources = importPolicySources;
       return getThis();
     }
 
-    @Nonnull
-    public B setExportPolicySources(SortedSet<String> exportPolicySources) {
+    public @Nonnull B setExportPolicySources(SortedSet<String> exportPolicySources) {
       _exportPolicySources = exportPolicySources;
       return getThis();
     }
 
-    @Nonnull
-    public B setRouteReflectorClient(boolean routeReflectorClient) {
+    public @Nonnull B setRouteReflectorClient(boolean routeReflectorClient) {
       _routeReflectorClient = routeReflectorClient;
       return getThis();
     }
 
-    @Nonnull
-    public abstract B getThis();
+    public @Nonnull abstract B getThis();
 
-    @Nonnull
-    public abstract F build();
+    public @Nonnull abstract F build();
   }
 
   /** BGP address family type */

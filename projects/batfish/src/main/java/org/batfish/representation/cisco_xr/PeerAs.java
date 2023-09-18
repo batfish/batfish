@@ -6,8 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PeerAs implements Uint16RangeExpr {
 
-  @Nonnull
-  public static PeerAs instance() {
+  public static @Nonnull PeerAs instance() {
     return INSTANCE;
   }
 

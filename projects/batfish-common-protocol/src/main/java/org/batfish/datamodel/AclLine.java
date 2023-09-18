@@ -15,9 +15,9 @@ public abstract class AclLine implements Serializable {
   protected static final String PROP_TRACE_ELEMENT = "traceElement";
   protected static final String PROP_VENDOR_STRUCTURE_ID = "vendorStructureId";
 
-  @Nullable protected final String _name;
-  @Nullable protected final TraceElement _traceElement;
-  @Nullable protected final VendorStructureId _vendorStructureId;
+  protected final @Nullable String _name;
+  protected final @Nullable TraceElement _traceElement;
+  protected final @Nullable VendorStructureId _vendorStructureId;
 
   AclLine(
       @Nullable String name,

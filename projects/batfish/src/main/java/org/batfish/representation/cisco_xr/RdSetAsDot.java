@@ -41,7 +41,7 @@ public final class RdSetAsDot implements RdSetElem {
     return Objects.hash(_asHigh16, _asLow16, _low16);
   }
 
-  @Nonnull private final Uint16RangeExpr _asHigh16;
-  @Nonnull private final Uint16RangeExpr _asLow16;
-  @Nonnull private final Uint16RangeExpr _low16;
+  private final @Nonnull Uint16RangeExpr _asHigh16;
+  private final @Nonnull Uint16RangeExpr _asLow16;
+  private final @Nonnull Uint16RangeExpr _low16;
 }

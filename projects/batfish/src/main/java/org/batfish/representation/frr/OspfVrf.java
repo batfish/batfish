@@ -32,8 +32,7 @@ public class OspfVrf implements Serializable {
     return Collections.unmodifiableMap(_areas);
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -41,8 +40,7 @@ public class OspfVrf implements Serializable {
     _routerId = routerId;
   }
 
-  @Nonnull
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 }

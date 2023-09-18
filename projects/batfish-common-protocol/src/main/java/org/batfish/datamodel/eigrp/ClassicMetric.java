@@ -26,7 +26,7 @@ public final class ClassicMetric implements EigrpMetric {
   private static final int BANDWIDTH_FACTOR = 10_000_000;
   private static final int PICO_TO_TENS_OF_MS_FACTOR = 10_000_000;
 
-  @Nonnull private final EigrpMetricValues _values;
+  private final @Nonnull EigrpMetricValues _values;
   private final short _k1;
   private final short _k2; // default to 0, https://github.com/batfish/batfish/issues/1946
   private final short _k3;
@@ -198,48 +198,42 @@ public final class ClassicMetric implements EigrpMetric {
   }
 
   public static final class Builder {
-    @Nullable private EigrpMetricValues _values;
+    private @Nullable EigrpMetricValues _values;
     private short _k1 = 1;
     private short _k3 = 1;
 
     private Builder() {}
 
-    @Nonnull
-    public Builder setValues(@Nonnull EigrpMetricValues values) {
+    public @Nonnull Builder setValues(@Nonnull EigrpMetricValues values) {
       _values = values;
       return this;
     }
 
-    @Nonnull
-    public Builder setK1(short k1) {
+    public @Nonnull Builder setK1(short k1) {
       checkArgument(k1 <= 255);
       _k1 = k1;
       return this;
     }
 
-    @Nonnull
-    public Builder setK1(int k1) {
+    public @Nonnull Builder setK1(int k1) {
       checkArgument(k1 <= 255);
       _k1 = (short) k1;
       return this;
     }
 
-    @Nonnull
-    public Builder setK3(short k3) {
+    public @Nonnull Builder setK3(short k3) {
       checkArgument(k3 <= 255);
       _k3 = k3;
       return this;
     }
 
-    @Nonnull
-    public Builder setK3(int k3) {
+    public @Nonnull Builder setK3(int k3) {
       checkArgument(k3 <= 255);
       _k3 = (short) k3;
       return this;
     }
 
-    @Nonnull
-    public ClassicMetric build() {
+    public @Nonnull ClassicMetric build() {
       checkArgument(_values != null, "Missing %s", PROP_VALUES);
       return new ClassicMetric(_values, _k1, (short) 0, _k3, (short) 0, (short) 0);
     }

@@ -329,8 +329,7 @@ public class CiscoConversions {
    * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
    * in the given configuration's routing policies.
    */
-  @Nullable
-  static String generateBgpImportPolicy(
+  static @Nullable String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
     // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
@@ -1042,8 +1041,7 @@ public class CiscoConversions {
    * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
-  @Nullable
-  static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
+  static @Nullable IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
     List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (AclLine line : ipAccessList.getLines()) {
@@ -1091,8 +1089,7 @@ public class CiscoConversions {
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
-  @Nullable
-  private static String getIkePhase1Policy(
+  private static @Nullable String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
@@ -1147,8 +1144,7 @@ public class CiscoConversions {
     return ipsecPhase2Policy;
   }
 
-  @Nullable
-  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+  static @Nullable org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
       EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
@@ -1203,8 +1199,7 @@ public class CiscoConversions {
   }
 
   /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
-  @Nonnull
-  static BooleanExpr matchOwnAsn(long localAsn) {
+  static @Nonnull BooleanExpr matchOwnAsn(long localAsn) {
     return new Conjunction(
         ImmutableList.of(
             new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
@@ -1230,8 +1225,7 @@ public class CiscoConversions {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
-  private static If convertEigrpRedistributionPolicy(
+  private static @Nullable If convertEigrpRedistributionPolicy(
       EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoConfiguration oldConfig) {
     RoutingProtocol protocol = policy.getInstance().getProtocol();
     // All redistribution must match the specified protocol.
@@ -1714,8 +1708,7 @@ public class CiscoConversions {
 
   /** Helper to convert Cisco VS OSPF network type to VI model type. */
   @VisibleForTesting
-  @Nullable
-  static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings warnings) {
     if (type == null) {
       // default is broadcast for all Ethernet interfaces

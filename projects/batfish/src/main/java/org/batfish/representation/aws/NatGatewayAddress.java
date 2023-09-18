@@ -20,10 +20,10 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 final class NatGatewayAddress implements Serializable {
 
-  @Nonnull private final String _allocationId;
-  @Nonnull private final String _networkInterfaceId;
-  @Nonnull private final Ip _privateIp;
-  @Nonnull private final Ip _publicIp;
+  private final @Nonnull String _allocationId;
+  private final @Nonnull String _networkInterfaceId;
+  private final @Nonnull Ip _privateIp;
+  private final @Nonnull Ip _publicIp;
 
   @JsonCreator
   private static NatGatewayAddress create(

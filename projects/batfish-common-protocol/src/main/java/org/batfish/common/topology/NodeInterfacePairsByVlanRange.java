@@ -57,8 +57,7 @@ class NodeInterfacePairsByVlanRange {
   }
 
   /** Return the mapping of all ranges to sets of node-interface pairs as an unmodifiable map */
-  @Nonnull
-  public Map<Range<Integer>, Set<NodeInterfacePair>> asMap() {
+  public @Nonnull Map<Range<Integer>, Set<NodeInterfacePair>> asMap() {
     return _ranges.asMapOfRanges();
   }
 
@@ -68,8 +67,7 @@ class NodeInterfacePairsByVlanRange {
    * modifications; all keys in each mapping of VLAN ranges to interfaces (in {@link
    * InterfacesByVlanRange}) are also present in {@link #asMap()}.
    */
-  @Nonnull
-  public Map<String, InterfacesByVlanRange> splitByNode() {
+  public @Nonnull Map<String, InterfacesByVlanRange> splitByNode() {
     // hostname -> VLAN range -> interfaces on hostname in VLAN range
     Map<String, Map<Range<Integer>, ImmutableSet.Builder<String>>> byNode = new HashMap<>();
     asMap()

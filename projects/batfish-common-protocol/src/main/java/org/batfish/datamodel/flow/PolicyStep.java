@@ -20,14 +20,13 @@ public class PolicyStep extends Step<PolicyStepDetail> {
 
   public static final class PolicyStepDetail {
     private static final String PROP_POLICY = "policy";
-    @Nonnull private final String _policy;
+    private final @Nonnull String _policy;
 
     public PolicyStepDetail(String policy) {
       _policy = policy;
     }
 
-    @Nonnull
-    public String getPolicy() {
+    public @Nonnull String getPolicy() {
       return _policy;
     }
 

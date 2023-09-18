@@ -25,14 +25,12 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
 
   /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
   @JsonIgnore
-  @Nonnull
-  public Set<ExtendedCommunity> getAttachRouteTargets() {
+  public @Nonnull Set<ExtendedCommunity> getAttachRouteTargets() {
     return _attachRouteTargets;
   }
 
   @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
-  @Nonnull
-  private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
+  private @Nonnull SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
     return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
   }
 
@@ -110,9 +108,9 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
   private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
   private static final String PROP_SRC_VRF_ROUTE_DISTINGUISHER = "srcVrfRouteDistinguisher";
 
-  @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
-  @Nonnull private final String _importFromVrf;
-  @Nonnull private final RouteDistinguisher _srcVrfRouteDistinguisher;
+  private final @Nonnull Set<ExtendedCommunity> _attachRouteTargets;
+  private final @Nonnull String _importFromVrf;
+  private final @Nonnull RouteDistinguisher _srcVrfRouteDistinguisher;
 
   public static final class Builder {
     public @Nonnull Bgpv4ToEvpnVrfLeakConfig build() {
@@ -123,32 +121,28 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
           _importFromVrf, _srcVrfRouteDistinguisher, _attachRouteTargets);
     }
 
-    @Nonnull
-    public Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
+    public @Nonnull Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
       _attachRouteTargets = ImmutableSet.copyOf(attachRouteTargets);
       return this;
     }
 
-    @Nonnull
-    public Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
+    public @Nonnull Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
       return setAttachRouteTargets(Arrays.asList(attachRouteTargets));
     }
 
-    @Nonnull
-    public Builder setImportFromVrf(@Nullable String importFromVrf) {
+    public @Nonnull Builder setImportFromVrf(@Nullable String importFromVrf) {
       _importFromVrf = importFromVrf;
       return this;
     }
 
-    @Nonnull
-    public Builder setSrcVrfRouteDistinguisher(@Nullable RouteDistinguisher rd) {
+    public @Nonnull Builder setSrcVrfRouteDistinguisher(@Nullable RouteDistinguisher rd) {
       _srcVrfRouteDistinguisher = rd;
       return this;
     }
 
-    @Nonnull private Set<ExtendedCommunity> _attachRouteTargets;
-    @Nullable private String _importFromVrf;
-    @Nullable private RouteDistinguisher _srcVrfRouteDistinguisher;
+    private @Nonnull Set<ExtendedCommunity> _attachRouteTargets;
+    private @Nullable String _importFromVrf;
+    private @Nullable RouteDistinguisher _srcVrfRouteDistinguisher;
 
     private Builder() {
       _attachRouteTargets = ImmutableSet.of();

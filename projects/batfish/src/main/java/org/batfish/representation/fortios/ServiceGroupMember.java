@@ -7,8 +7,7 @@ import javax.annotation.Nullable;
  * FortiOS datamodel interface representing objects which can be a member of firewall service groups
  */
 public abstract class ServiceGroupMember implements FortiosRenameableObject, Serializable {
-  @Nullable
-  public String getComment() {
+  public @Nullable String getComment() {
     return _comment;
   }
 
@@ -16,5 +15,5 @@ public abstract class ServiceGroupMember implements FortiosRenameableObject, Ser
     _comment = comment;
   }
 
-  @Nullable private String _comment;
+  private @Nullable String _comment;
 }

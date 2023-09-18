@@ -111,8 +111,8 @@ import org.batfish.vendor.VendorStructureId;
 public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResult> {
 
   private final Object _configObject;
-  @Nonnull private final ConversionContext _conversionContext;
-  @Nonnull private final SnapshotRuntimeData _runtimeData;
+  private final @Nonnull ConversionContext _conversionContext;
+  private final @Nonnull SnapshotRuntimeData _runtimeData;
   private final String _name;
 
   public ConvertConfigurationJob(

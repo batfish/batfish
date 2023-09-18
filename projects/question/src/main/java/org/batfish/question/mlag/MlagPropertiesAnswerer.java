@@ -61,8 +61,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static TableAnswerElement computeAnswer(
+  static @Nonnull TableAnswerElement computeAnswer(
       Set<String> nodes, Set<String> mlagIds, SortedMap<String, Configuration> configs) {
     ImmutableList<NodeToMlags> mlagConfigs =
         nodes.stream()
@@ -85,8 +84,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static TableMetadata getMetadata() {
+  static @Nonnull TableMetadata getMetadata() {
     Builder<ColumnMetadata> b = ImmutableList.builder();
     b.add(
         new ColumnMetadata(COL_NODE, Schema.NODE, "Node name", true, false),
@@ -108,8 +106,7 @@ public final class MlagPropertiesAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static Row configToRow(String hostname, Mlag mlag) {
+  static @Nonnull Row configToRow(String hostname, Mlag mlag) {
     return Row.builder(getMetadata().toColumnMap())
         .put(COL_NODE, new Node(hostname))
         .put(COL_MLAG_ID, mlag.getId())

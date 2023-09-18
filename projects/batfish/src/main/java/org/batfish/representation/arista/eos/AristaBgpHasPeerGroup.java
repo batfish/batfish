@@ -5,8 +5,7 @@ import org.batfish.common.Warnings;
 
 /** Interface for neighbors that can inherit settings from a peer group */
 public interface AristaBgpHasPeerGroup {
-  @Nullable
-  public String getPeerGroup();
+  public @Nullable String getPeerGroup();
 
   public void setPeerGroup(@Nullable String peerGroup);
 

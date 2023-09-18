@@ -20,7 +20,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   private static final String PROP_PEER_PREFIX = "peerPrefix";
 
   /** The prefix from which remote peers can connect. */
-  @Nullable private Prefix _peerPrefix;
+  private @Nullable Prefix _peerPrefix;
 
   @JsonCreator
   private static @Nonnull BgpPassivePeerConfig create(
@@ -135,15 +135,14 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpPassivePeerConfig> {
-    @Nullable private Prefix _peerPrefix;
+    private @Nullable Prefix _peerPrefix;
 
     protected Builder() {
       super();
     }
 
     @Override
-    @Nonnull
-    public BgpPassivePeerConfig build() {
+    public @Nonnull BgpPassivePeerConfig build() {
       BgpPassivePeerConfig bgpPeerConfig =
           new BgpPassivePeerConfig(
               _appliedRibGroup,

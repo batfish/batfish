@@ -19,25 +19,25 @@ public final class NatRule implements Serializable {
   }
 
   // For HA systems, determines which system the rule is installed on
-  @Nullable private ActiveActiveDeviceBinding _activeActiveDeviceBinding;
+  private @Nullable ActiveActiveDeviceBinding _activeActiveDeviceBinding;
 
   // Name of the rule
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   // Zones (both required to commit)
-  @Nonnull private final SortedSet<String> _from;
-  @Nullable private String _to;
+  private final @Nonnull SortedSet<String> _from;
+  private @Nullable String _to;
 
   // IPs (both required to commit)
-  @Nonnull private final List<RuleEndpoint> _source;
-  @Nonnull private final List<RuleEndpoint> _destination;
+  private final @Nonnull List<RuleEndpoint> _source;
+  private final @Nonnull List<RuleEndpoint> _destination;
 
   // Services
-  @Nullable private ServiceOrServiceGroupReference _service;
+  private @Nullable ServiceOrServiceGroupReference _service;
 
   // Translations
-  @Nullable private SourceTranslation _sourceTranslation;
-  @Nullable private DestinationTranslation _destinationTranslation;
+  private @Nullable SourceTranslation _sourceTranslation;
+  private @Nullable DestinationTranslation _destinationTranslation;
 
   private boolean _disabled;
 
@@ -49,8 +49,7 @@ public final class NatRule implements Serializable {
     _disabled = false;
   }
 
-  @Nullable
-  public ActiveActiveDeviceBinding getActiveActiveDeviceBinding() {
+  public @Nullable ActiveActiveDeviceBinding getActiveActiveDeviceBinding() {
     return _activeActiveDeviceBinding;
   }
 
@@ -59,13 +58,11 @@ public final class NatRule implements Serializable {
     _activeActiveDeviceBinding = activeActiveDeviceBinding;
   }
 
-  @Nonnull
-  public List<RuleEndpoint> getDestination() {
+  public @Nonnull List<RuleEndpoint> getDestination() {
     return _destination;
   }
 
-  @Nullable
-  public DestinationTranslation getDestinationTranslation() {
+  public @Nullable DestinationTranslation getDestinationTranslation() {
     return _destinationTranslation;
   }
 
@@ -73,33 +70,27 @@ public final class NatRule implements Serializable {
     return _disabled;
   }
 
-  @Nonnull
-  public SortedSet<String> getFrom() {
+  public @Nonnull SortedSet<String> getFrom() {
     return _from;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public ServiceOrServiceGroupReference getService() {
+  public @Nullable ServiceOrServiceGroupReference getService() {
     return _service;
   }
 
-  @Nonnull
-  public List<RuleEndpoint> getSource() {
+  public @Nonnull List<RuleEndpoint> getSource() {
     return _source;
   }
 
-  @Nullable
-  public SourceTranslation getSourceTranslation() {
+  public @Nullable SourceTranslation getSourceTranslation() {
     return _sourceTranslation;
   }
 
-  @Nullable
-  public String getTo() {
+  public @Nullable String getTo() {
     return _to;
   }
 

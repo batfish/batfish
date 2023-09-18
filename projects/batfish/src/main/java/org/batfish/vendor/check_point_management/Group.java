@@ -16,8 +16,7 @@ public final class Group extends TypedManagementObject implements AddressSpace {
     return visitor.visitGroup(this);
   }
 
-  @Nonnull
-  public List<Uid> getMembers() {
+  public @Nonnull List<Uid> getMembers() {
     return _members;
   }
 
@@ -59,5 +58,5 @@ public final class Group extends TypedManagementObject implements AddressSpace {
 
   private static final String PROP_MEMBERS = "members";
 
-  @Nonnull private final List<Uid> _members;
+  private final @Nonnull List<Uid> _members;
 }

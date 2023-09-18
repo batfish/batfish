@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PortObjectGroupPortSpec implements PortSpec {
 
-  private @Nonnull final String _name;
+  private final @Nonnull String _name;
 
   public PortObjectGroupPortSpec(String name) {
     _name = name;

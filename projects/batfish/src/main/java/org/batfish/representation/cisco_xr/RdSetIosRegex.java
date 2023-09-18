@@ -36,5 +36,5 @@ public final class RdSetIosRegex implements RdSetElem {
     return _regex.hashCode();
   }
 
-  @Nonnull private final String _regex;
+  private final @Nonnull String _regex;
 }

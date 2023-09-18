@@ -29,7 +29,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static final class Attachment implements Serializable {
 
-    @Nonnull private final String _attachmentId;
+    private final @Nonnull String _attachmentId;
 
     @JsonCreator
     private static Attachment create(
@@ -43,8 +43,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
       _attachmentId = attachmentId;
     }
 
-    @Nonnull
-    public String getAttachmentId() {
+    public @Nonnull String getAttachmentId() {
       return _attachmentId;
     }
 
@@ -66,9 +65,9 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _routeTableId;
+  private final @Nonnull String _routeTableId;
 
-  @Nonnull private final List<TransitGatewayRoute> _routes;
+  private final @Nonnull List<TransitGatewayRoute> _routes;
 
   @JsonCreator
   private static TransitGatewayStaticRoutes create(
@@ -90,8 +89,7 @@ final class TransitGatewayStaticRoutes implements AwsVpcEntity, Serializable {
     _routes = routes;
   }
 
-  @Nonnull
-  public List<TransitGatewayRoute> getRoutes() {
+  public @Nonnull List<TransitGatewayRoute> getRoutes() {
     return _routes;
   }
 

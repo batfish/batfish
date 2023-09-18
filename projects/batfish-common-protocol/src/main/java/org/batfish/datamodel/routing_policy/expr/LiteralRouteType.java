@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralRouteType extends RouteTypeExpr {
   private static final String PROP_TYPE = "type";
 
-  @Nonnull private RouteType _type;
+  private @Nonnull RouteType _type;
 
   @JsonCreator
   private static LiteralRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteType type) {
@@ -42,8 +42,7 @@ public final class LiteralRouteType extends RouteTypeExpr {
   }
 
   @JsonProperty(PROP_TYPE)
-  @Nonnull
-  public RouteType getType() {
+  public @Nonnull RouteType getType() {
     return _type;
   }
 

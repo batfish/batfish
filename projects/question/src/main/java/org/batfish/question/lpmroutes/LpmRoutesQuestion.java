@@ -28,10 +28,10 @@ public class LpmRoutesQuestion extends Question {
   private static final String PROP_VRFS = "vrfs";
   private static final String VRFS_ALL = ".*";
 
-  @Nonnull private final Ip _ip;
-  @Nullable private final String _nodes;
-  @Nonnull private final String _vrfs;
-  @Nonnull private final RibProtocol _ribProtocol;
+  private final @Nonnull Ip _ip;
+  private final @Nullable String _nodes;
+  private final @Nonnull String _vrfs;
+  private final @Nonnull RibProtocol _ribProtocol;
 
   /**
    * Create a new question.
@@ -75,26 +75,22 @@ public class LpmRoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_IP)
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  private String getNodes() {
+  private @Nullable String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_VRFS)
-  @Nonnull
-  public String getVrfs() {
+  public @Nonnull String getVrfs() {
     return _vrfs;
   }
 
   @JsonProperty(PROP_RIB)
-  @Nonnull
-  public RibProtocol getRibProtocol() {
+  public @Nonnull RibProtocol getRibProtocol() {
     return _ribProtocol;
   }
 

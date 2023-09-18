@@ -25,18 +25,15 @@ final class LoadBalancerTransformation {
     _step = step;
   }
 
-  @Nonnull
-  public AclLineMatchExpr getGuard() {
+  public @Nonnull AclLineMatchExpr getGuard() {
     return _guard;
   }
 
-  @Nonnull
-  public TransformationStep getStep() {
+  public @Nonnull TransformationStep getStep() {
     return _step;
   }
 
-  @Nonnull
-  public Transformation toTransformation(@Nullable Transformation elseTransformation) {
+  public @Nonnull Transformation toTransformation(@Nullable Transformation elseTransformation) {
     return new Transformation(_guard, ImmutableList.of(_step), null, elseTransformation);
   }
 

@@ -10,13 +10,11 @@ import org.batfish.datamodel.transformation.TransformationStep;
  */
 final class SimpleTransformation {
 
-  @Nonnull
-  public AclLineMatchExpr getGuard() {
+  public @Nonnull AclLineMatchExpr getGuard() {
     return _guard;
   }
 
-  @Nonnull
-  public TransformationStep getStep() {
+  public @Nonnull TransformationStep getStep() {
     return _step;
   }
 
@@ -25,6 +23,6 @@ final class SimpleTransformation {
     _step = step;
   }
 
-  @Nonnull private final AclLineMatchExpr _guard;
-  @Nonnull private final TransformationStep _step;
+  private final @Nonnull AclLineMatchExpr _guard;
+  private final @Nonnull TransformationStep _step;
 }

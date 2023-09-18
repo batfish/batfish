@@ -43,13 +43,13 @@ public class A10ControlPlaneExtractor extends A10ParserBaseListener
         new A10ConfigurationBuilder(_parser, _text, _w, _configuration, _silentSyntax), tree);
   }
 
-  @Nonnull private A10Configuration _configuration;
+  private @Nonnull A10Configuration _configuration;
 
-  @Nonnull private final A10CombinedParser _parser;
+  private final @Nonnull A10CombinedParser _parser;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
-  @Nonnull private final String _text;
+  private final @Nonnull String _text;
 
-  @Nonnull private final Warnings _w;
+  private final @Nonnull Warnings _w;
 }

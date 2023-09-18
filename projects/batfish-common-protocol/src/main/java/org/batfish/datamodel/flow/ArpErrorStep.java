@@ -42,14 +42,12 @@ public final class ArpErrorStep extends Step<ArpErrorStepDetail> {
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
-    @Nonnull
-    public NodeInterfacePair getOutputInterface() {
+    public @Nonnull NodeInterfacePair getOutputInterface() {
       return _outputInterface;
     }
 
     @JsonProperty(PROP_RESOLVED_NEXTHOP_IP)
-    @Nullable
-    public Ip getResolvedNexthopIp() {
+    public @Nullable Ip getResolvedNexthopIp() {
       return _resolvedNexthopIp;
     }
 

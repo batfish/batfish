@@ -28,18 +28,18 @@ public final class Interface implements Serializable {
   public static final int DEFAULT_INTERFACE_MTU = 1500;
 
   private boolean _active;
-  @Nullable private InterfaceAddress _address;
-  @Nullable private String _aggregateGroup;
-  @Nonnull private final Set<InterfaceAddress> _allAddresses;
-  @Nullable private String _comment;
-  @Nullable private Boolean _ha;
-  @Nullable private Integer _mtu;
-  @Nonnull private final String _name;
-  @Nullable private Interface _parent;
-  @Nullable private Integer _tag;
-  @Nonnull private final Type _type;
-  @Nonnull private final SortedMap<String, Interface> _units;
-  @Nullable private Zone _zone;
+  private @Nullable InterfaceAddress _address;
+  private @Nullable String _aggregateGroup;
+  private final @Nonnull Set<InterfaceAddress> _allAddresses;
+  private @Nullable String _comment;
+  private @Nullable Boolean _ha;
+  private @Nullable Integer _mtu;
+  private final @Nonnull String _name;
+  private @Nullable Interface _parent;
+  private @Nullable Integer _tag;
+  private final @Nonnull Type _type;
+  private final @Nonnull SortedMap<String, Interface> _units;
+  private @Nullable Zone _zone;
 
   public Interface(String name, Type type) {
     _active = true;
@@ -61,13 +61,11 @@ public final class Interface implements Serializable {
     _allAddresses.add(address);
   }
 
-  @Nullable
-  public InterfaceAddress getAddress() {
+  public @Nullable InterfaceAddress getAddress() {
     return _address;
   }
 
-  @Nullable
-  public String getAggregateGroup() {
+  public @Nullable String getAggregateGroup() {
     return _aggregateGroup;
   }
 
@@ -75,18 +73,15 @@ public final class Interface implements Serializable {
     _aggregateGroup = aggregateGroup;
   }
 
-  @Nonnull
-  public Set<InterfaceAddress> getAllAddresses() {
+  public @Nonnull Set<InterfaceAddress> getAllAddresses() {
     return Collections.unmodifiableSet(_allAddresses);
   }
 
-  @Nullable
-  public String getComment() {
+  public @Nullable String getComment() {
     return _comment;
   }
 
-  @Nullable
-  public Boolean getHa() {
+  public @Nullable Boolean getHa() {
     return _ha;
   }
 
@@ -94,38 +89,31 @@ public final class Interface implements Serializable {
     _ha = ha;
   }
 
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Interface getParent() {
+  public @Nullable Interface getParent() {
     return _parent;
   }
 
-  @Nullable
-  public Integer getTag() {
+  public @Nullable Integer getTag() {
     return _tag;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
-  @Nonnull
-  public SortedMap<String, Interface> getUnits() {
+  public @Nonnull SortedMap<String, Interface> getUnits() {
     return _units;
   }
 
-  @Nullable
-  public Zone getZone() {
+  public @Nullable Zone getZone() {
     return _zone;
   }
 

@@ -20,8 +20,7 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s allowLocalAsIn is
    * {@code value}.
    */
-  @Nonnull
-  public static Matcher<AddressFamilyCapabilities> hasAllowLocalAsIn(boolean value) {
+  public static @Nonnull Matcher<AddressFamilyCapabilities> hasAllowLocalAsIn(boolean value) {
     return new HasAllowLocalAsIn(equalTo(value));
   }
 
@@ -29,8 +28,8 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s allowRemoteAsOut is
    * {@code value}.
    */
-  @Nonnull
-  public static Matcher<AddressFamilyCapabilities> hasAllowRemoteAsOut(AllowRemoteAsOutMode value) {
+  public static @Nonnull Matcher<AddressFamilyCapabilities> hasAllowRemoteAsOut(
+      AllowRemoteAsOutMode value) {
     return new HasAllowRemoteAsOut(equalTo(value));
   }
 
@@ -38,8 +37,7 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s sendCommunity is
    * equal to the given value.
    */
-  @Nonnull
-  public static Matcher<AddressFamilyCapabilities> hasSendCommunity(boolean value) {
+  public static @Nonnull Matcher<AddressFamilyCapabilities> hasSendCommunity(boolean value) {
     return new HasSendCommunity(equalTo(value));
   }
 
@@ -47,8 +45,8 @@ public final class AddressFamilyCapabilitiesMatchers {
    * Provides a matcher that matches if the {@link AddressFamilyCapabilities}'s
    * sendExtendedCommunity is equal to the given value.
    */
-  @Nonnull
-  public static Matcher<AddressFamilyCapabilities> hasSendExtendedCommunity(boolean value) {
+  public static @Nonnull Matcher<AddressFamilyCapabilities> hasSendExtendedCommunity(
+      boolean value) {
     return new HasSendExtendedCommunity(equalTo(value));
   }
 

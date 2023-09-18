@@ -84,14 +84,12 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   }
 
   @Override
-  @Nonnull
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
     return _evpnRoutes;
   }
 
   @Override
-  @Nonnull
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
     return _evpnBackupRoutes;
   }
 
@@ -118,8 +116,8 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
 
   public static class Builder {
 
-    @Nullable private Map<String, Node> _nodes;
-    @Nullable private PartialDataplane _partialDataplane;
+    private @Nullable Map<String, Node> _nodes;
+    private @Nullable PartialDataplane _partialDataplane;
 
     public Builder setNodes(@Nonnull Map<String, Node> nodes) {
       _nodes = ImmutableMap.copyOf(nodes);
@@ -144,23 +142,22 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
   // Private implementation
   /////////////////////////
 
-  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
-  @Nonnull private final Map<String, Map<String, Fib>> _fibs;
-  @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
-  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
-  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
-  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
-  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+  private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
+  private final @Nonnull Map<String, Map<String, Fib>> _fibs;
+  private final @Nonnull ForwardingAnalysis _forwardingAnalysis;
+  private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+  private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
+  private final @Nonnull Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  private final @Nonnull Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
 
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
+  private final @Nonnull SortedMap<
+          String, SortedMap<String, GenericRib<AnnotatedRoute<AbstractRoute>>>>
       _annotatedRibs;
 
-  @Nonnull private final Table<String, String, FinalMainRib> _ribs;
+  private final @Nonnull Table<String, String, FinalMainRib> _ribs;
 
-  @Nonnull
-  private final SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+  private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracerSummary;
 
   private IncrementalDataPlane(Builder builder) {

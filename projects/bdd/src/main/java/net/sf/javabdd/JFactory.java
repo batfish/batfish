@@ -4394,7 +4394,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int supportID; /* Current ID (true value) for support */
   private transient int supportMin; /* Min. used level in support calc. */
   private transient int supportMax; /* Max. used level in support calc. */
-  @Nonnull private transient int[] supportSet; /* The found support set */
+  private @Nonnull transient int[] supportSet; /* The found support set */
   private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private transient BddCache quantcache; /* Cache for exist/forall results */
   private transient BddCache appexcache; /* Cache for appex/appall results */

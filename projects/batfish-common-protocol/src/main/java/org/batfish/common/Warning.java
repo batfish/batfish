@@ -18,8 +18,8 @@ public class Warning implements Serializable, Comparable<Warning> {
   private static final String PROP_TAG = "tag";
   private static final String PROP_TEXT = "text";
 
-  @Nonnull private final String _text;
-  @Nullable private final String _tag;
+  private final @Nonnull String _text;
+  private final @Nullable String _tag;
 
   public Warning(String text, @Nullable String tag) {
     _text = text;
@@ -27,14 +27,12 @@ public class Warning implements Serializable, Comparable<Warning> {
   }
 
   @JsonProperty(PROP_TAG)
-  @Nullable
-  public String getTag() {
+  public @Nullable String getTag() {
     return _tag;
   }
 
   @JsonProperty(PROP_TEXT)
-  @Nonnull
-  public String getText() {
+  public @Nonnull String getText() {
     return _text;
   }
 

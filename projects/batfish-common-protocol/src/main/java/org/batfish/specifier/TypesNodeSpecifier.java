@@ -13,7 +13,7 @@ import org.batfish.datamodel.DeviceType;
  */
 @ParametersAreNonnullByDefault
 public final class TypesNodeSpecifier implements NodeSpecifier {
-  private @Nonnull final Set<DeviceType> _types;
+  private final @Nonnull Set<DeviceType> _types;
 
   public TypesNodeSpecifier(Set<DeviceType> types) {
     _types = types;

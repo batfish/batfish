@@ -34,13 +34,13 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   private final RibTree<R> _tree;
 
   /** Memoized set of all routes in this RIB */
-  @Nullable private transient Set<R> _allRoutes;
+  private @Nullable transient Set<R> _allRoutes;
 
   /**
    * Keep a (insert ordered) set of alternative routes. Used to update the RIB if best routes are
    * withdrawn.
    */
-  @Nullable protected final LinkedHashMultimap<Prefix, R> _backupRoutes;
+  protected final @Nullable LinkedHashMultimap<Prefix, R> _backupRoutes;
 
   protected AbstractRib(boolean withBackupRoutes) {
     _allRoutes = ImmutableSet.of();
@@ -61,8 +61,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @param <U> type of {@link AbstractRoute} in importing RIB
    * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    */
-  @Nonnull
-  public static <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
+  public static @Nonnull <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
     RibDelta.Builder<U> builder = RibDelta.builder();
     exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
@@ -78,9 +77,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @param <U> type of {@link AbstractRoute} in importing RIB
    * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    */
-  @Nonnull
-  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
-      AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib, String vrfName) {
+  public static @Nonnull <U extends AbstractRoute, T extends U>
+      RibDelta<AnnotatedRoute<U>> importRib(
+          AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib, String vrfName) {
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
         .getTypedRoutes()
@@ -98,9 +97,9 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @param <T> type of {@link AbstractRoute} in exporting RIB; must extend {@code U}
    * @return a {@link RibDelta}
    */
-  @Nonnull
-  public static <U extends AbstractRoute, T extends U> RibDelta<AnnotatedRoute<U>> importRib(
-      AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
+  public static @Nonnull <U extends AbstractRoute, T extends U>
+      RibDelta<AnnotatedRoute<U>> importRib(
+          AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
         .getTypedRoutes()
@@ -141,8 +140,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  @Nonnull
-  public Set<AbstractRoute> getRoutes() {
+  public @Nonnull Set<AbstractRoute> getRoutes() {
     return getTypedRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .collect(ImmutableSet.toImmutableSet());
@@ -154,8 +152,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * <p>Does not collect routes for any other prefixes. Does not alter memoized routes.
    */
   @Override
-  @Nonnull
-  public Set<R> getRoutes(Prefix prefix) {
+  public @Nonnull Set<R> getRoutes(Prefix prefix) {
     return _tree.getRoutes(prefix);
   }
 
@@ -172,8 +169,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  @Nonnull
-  public Set<R> getTypedBackupRoutes() {
+  public @Nonnull Set<R> getTypedBackupRoutes() {
     return Optional.ofNullable(_backupRoutes)
         .map(Multimap::values)
         .map(ImmutableSet::copyOf)
@@ -215,8 +211,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @return {@link RibDelta} with the route if it was added, or empty if the route already existed
    *     or was discarded due to preference comparisons.
    */
-  @Nonnull
-  public RibDelta<R> mergeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> mergeRouteGetDelta(R route) {
     RibDelta<R> delta = _tree.mergeRoute(route);
     addBackupRoute(route);
     if (!delta.isEmpty()) {
@@ -245,8 +240,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
    * @return a {@link RibDelta} object indicating that the route was removed or @{code null} if the
    *     route was not present in the RIB
    */
-  @Nonnull
-  public RibDelta<R> removeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> removeRouteGetDelta(R route) {
     // Remove the backup route first, then remove route from rib
     removeBackupRoute(route);
     RibDelta<R> delta = _tree.removeRouteGetDelta(route, Reason.WITHDRAW);

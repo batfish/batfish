@@ -23,9 +23,9 @@ final class NameSetNoMatchMessages implements NoMatchMessages {
   @ParametersAreNonnullByDefault
   private final class Checker implements NameSetAstNodeVisitor<List<String>> {
 
-    @Nonnull private final Set<String> _allNames;
+    private final @Nonnull Set<String> _allNames;
 
-    @Nonnull private final String _nameType;
+    private final @Nonnull String _nameType;
 
     Checker(Set<String> allNames, String nameType) {
       _allNames = allNames;
@@ -58,9 +58,9 @@ final class NameSetNoMatchMessages implements NoMatchMessages {
     }
   }
 
-  @Nonnull private final NameSetAstNode _ast;
+  private final @Nonnull NameSetAstNode _ast;
 
-  @Nonnull private final Grammar _grammar;
+  private final @Nonnull Grammar _grammar;
 
   NameSetNoMatchMessages(NameSetAstNode ast, Grammar grammar) {
     _ast = ast;

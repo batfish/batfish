@@ -125,9 +125,9 @@ public class UniqueIpAssignmentsQuestionPlugin extends QuestionPlugin {
 
     private final boolean _enabledIpsOnly;
 
-    @Nullable private final String _interfaces;
+    private final @Nullable String _interfaces;
 
-    @Nullable private final String _nodes;
+    private final @Nullable String _nodes;
 
     @JsonCreator
     private static UniqueIpAssignmentsQuestion create(

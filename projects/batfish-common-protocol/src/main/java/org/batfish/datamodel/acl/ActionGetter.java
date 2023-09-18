@@ -11,8 +11,7 @@ import org.batfish.datamodel.LineAction;
 public class ActionGetter implements GenericAclLineVisitor<LineAction> {
   private static final ActionGetter INSTANCE = new ActionGetter();
 
-  @Nullable
-  public static LineAction getAction(AclLine aclLine) {
+  public static @Nullable LineAction getAction(AclLine aclLine) {
     return INSTANCE.visit(aclLine);
   }
 
@@ -21,8 +20,7 @@ public class ActionGetter implements GenericAclLineVisitor<LineAction> {
    * {@link LineBehavior#VARIABLE} for any {@link AclAclLine}, even if its referenced ACL can only
    * take one action, because {@link ActionGetter} has no ACL environment context.
    */
-  @Nonnull
-  public static LineBehavior getLineBehavior(AclLine aclLine) {
+  public static @Nonnull LineBehavior getLineBehavior(AclLine aclLine) {
     LineAction lineAction = getAction(aclLine);
     return lineAction == null ? LineBehavior.VARIABLE : LineBehavior.fromLineAction(lineAction);
   }
@@ -36,8 +34,7 @@ public class ActionGetter implements GenericAclLineVisitor<LineAction> {
     /** Line can permit and deny */
     VARIABLE;
 
-    @Nonnull
-    public static LineBehavior fromLineAction(@Nonnull LineAction lineAction) {
+    public static @Nonnull LineBehavior fromLineAction(@Nonnull LineAction lineAction) {
       switch (lineAction) {
         case PERMIT:
           return PERMIT;

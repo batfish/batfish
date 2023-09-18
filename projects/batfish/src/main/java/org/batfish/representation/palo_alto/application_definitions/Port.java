@@ -18,8 +18,7 @@ import javax.annotation.Nullable;
  */
 public final class Port {
   /** Get the list of protocol/port combinations that make up this "port". */
-  @Nonnull
-  public List<String> getMember() {
+  public @Nonnull List<String> getMember() {
     return _member;
   }
 
@@ -44,5 +43,5 @@ public final class Port {
     _member = member;
   }
 
-  @Nonnull private final List<String> _member;
+  private final @Nonnull List<String> _member;
 }

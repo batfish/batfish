@@ -32,14 +32,12 @@ public final class BgpVrfLeakConfig implements Serializable {
 
   /** Additional route-targets to attach to a leaked route, on top of any set by policy. */
   @JsonIgnore
-  @Nonnull
-  public Set<ExtendedCommunity> getAttachRouteTargets() {
+  public @Nonnull Set<ExtendedCommunity> getAttachRouteTargets() {
     return _attachRouteTargets;
   }
 
   @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
-  @Nonnull
-  private SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
+  private @Nonnull SortedSet<ExtendedCommunity> getAttachRouteTargetsSorted() {
     return ImmutableSortedSet.copyOf(Comparator.naturalOrder(), _attachRouteTargets);
   }
 
@@ -140,9 +138,9 @@ public final class BgpVrfLeakConfig implements Serializable {
   }
 
   private final int _admin;
-  @Nonnull private final Set<ExtendedCommunity> _attachRouteTargets;
-  @Nullable private final String _importPolicy;
-  @Nonnull private final String _importFromVrf;
+  private final @Nonnull Set<ExtendedCommunity> _attachRouteTargets;
+  private final @Nullable String _importPolicy;
+  private final @Nonnull String _importFromVrf;
   private final int _weight;
 
   @ParametersAreNonnullByDefault
@@ -165,14 +163,12 @@ public final class BgpVrfLeakConfig implements Serializable {
       return this;
     }
 
-    @Nonnull
-    public Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
+    public @Nonnull Builder setAttachRouteTargets(Iterable<ExtendedCommunity> attachRouteTargets) {
       _attachRouteTargets = ImmutableSet.copyOf(attachRouteTargets);
       return this;
     }
 
-    @Nonnull
-    public Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
+    public @Nonnull Builder setAttachRouteTargets(ExtendedCommunity... attachRouteTargets) {
       return setAttachRouteTargets(Arrays.asList(attachRouteTargets));
     }
 
@@ -191,11 +187,11 @@ public final class BgpVrfLeakConfig implements Serializable {
       return this;
     }
 
-    @Nullable private Integer _admin;
-    @Nonnull private Set<ExtendedCommunity> _attachRouteTargets;
-    @Nullable private String _importPolicy;
-    @Nullable private String _importFromVrf;
-    @Nullable private Integer _weight;
+    private @Nullable Integer _admin;
+    private @Nonnull Set<ExtendedCommunity> _attachRouteTargets;
+    private @Nullable String _importPolicy;
+    private @Nullable String _importFromVrf;
+    private @Nullable Integer _weight;
 
     private Builder() {
       _attachRouteTargets = ImmutableSet.of();

@@ -148,7 +148,7 @@ public class UndefinedReferencesQuestionPlugin extends QuestionPlugin {
   public static class UndefinedReferencesQuestion extends Question {
     private static final String PROP_NODES = "nodes";
 
-    @Nullable private final String _nodes;
+    private final @Nullable String _nodes;
 
     @JsonCreator
     private static UndefinedReferencesQuestion create(@JsonProperty(PROP_NODES) String nodes) {

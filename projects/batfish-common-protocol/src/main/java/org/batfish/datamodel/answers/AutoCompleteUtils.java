@@ -72,8 +72,7 @@ public final class AutoCompleteUtils {
    *     returned
    * @return a list of AutocompleteSuggestion
    */
-  @Nonnull
-  public static List<AutocompleteSuggestion> autoComplete(
+  public static @Nonnull List<AutocompleteSuggestion> autoComplete(
       @Nullable String network,
       @Nullable String snapshot,
       Variable.Type completionType,
@@ -197,8 +196,7 @@ public final class AutoCompleteUtils {
     return limitedSuggestions;
   }
 
-  @Nonnull
-  private static List<AutocompleteSuggestion> getPotentialMatches(
+  private static @Nonnull List<AutocompleteSuggestion> getPotentialMatches(
       @Nullable String network,
       @Nullable String snapshot,
       Variable.Type completionType,
@@ -774,8 +772,7 @@ public final class AutoCompleteUtils {
    * "natural" source locations (per location info) with IPs are considered. Otherwise, traceroute
    * sources are considered. In the latter mode, natural sources are ranked higher.
    */
-  @Nonnull
-  public static List<AutocompleteSuggestion> autoCompleteSourceLocation(
+  public static @Nonnull List<AutocompleteSuggestion> autoCompleteSourceLocation(
       String query, boolean tracerouteSource, @Nullable CompletionMetadata completionMetadata) {
     checkNotNull(
         completionMetadata, "Cannot autocomplete source locations without completion metadata");
@@ -820,8 +817,7 @@ public final class AutoCompleteUtils {
    *
    * <p>TODO: Get rid of this method in favor of methods below. Stop doing implicit regexes.
    */
-  @Nonnull
-  public static List<AutocompleteSuggestion> baseAutoComplete(
+  public static @Nonnull List<AutocompleteSuggestion> baseAutoComplete(
       @Nullable String query, Set<String> allProperties) {
 
     String finalQuery = firstNonNull(query, "").toLowerCase();
@@ -848,8 +844,7 @@ public final class AutoCompleteUtils {
    *
    * <p>The search is case-insensitive and looks for a substring match.
    */
-  @Nonnull
-  public static List<AutocompleteSuggestion> stringAutoComplete(
+  public static @Nonnull List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Set<String> strings) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
@@ -866,8 +861,7 @@ public final class AutoCompleteUtils {
    * <p>The search is case-insensitive and looks for a substring match.
    */
   @VisibleForTesting
-  @Nonnull
-  static List<AutocompleteSuggestion> stringAutoComplete(
+  static @Nonnull List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions) {
     return stringAutoComplete(query, stringsWithDescriptions, AutocompleteSuggestion.DEFAULT_RANK);
   }
@@ -877,8 +871,7 @@ public final class AutoCompleteUtils {
    *
    * <p>The search is case-insensitive and looks for a substring match.
    */
-  @Nonnull
-  private static List<AutocompleteSuggestion> stringAutoComplete(
+  private static @Nonnull List<AutocompleteSuggestion> stringAutoComplete(
       @Nullable String query, Map<String, Optional<String>> stringsWithDescriptions, int rank) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
@@ -902,8 +895,7 @@ public final class AutoCompleteUtils {
    * then matches on {@link IpCompletionMetadata} (and includes only matching {@link
    * IpCompletionRelevance} in hints).
    */
-  @Nonnull
-  public static ImmutableList<AutocompleteSuggestion> ipStringAutoComplete(
+  public static @Nonnull ImmutableList<AutocompleteSuggestion> ipStringAutoComplete(
       @Nullable String query, PrefixTrieMultiMap<IpCompletionMetadata> ips) {
 
     String testQuery = query == null ? "" : query.toLowerCase();
@@ -1011,8 +1003,7 @@ public final class AutoCompleteUtils {
   }
 
   /** Returns the Pattern if {@code candidateRegex} is a valid regex, and null otherwise */
-  @Nullable
-  private static Pattern safeGetPattern(String candidateRegex) {
+  private static @Nullable Pattern safeGetPattern(String candidateRegex) {
     try {
       return Pattern.compile(candidateRegex);
     } catch (PatternSyntaxException e) {

@@ -46,8 +46,7 @@ public final class LocationIpSpaceSpecifier implements IpSpaceSpecifier {
     return computeIpSpace(locations, ctxt);
   }
 
-  @Nonnull
-  public static IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
+  public static @Nonnull IpSpace computeIpSpace(Set<Location> locations, SpecifierContext ctxt) {
     return firstNonNull(
         AclIpSpace.union(
             InferFromLocationIpSpaceAssignmentSpecifier.INSTANCE

@@ -12,7 +12,7 @@ import org.batfish.datamodel.Prefix;
 public class BgpNetwork implements Serializable {
 
   private final @Nonnull Prefix _network;
-  @Nullable private final String _routeMap;
+  private final @Nullable String _routeMap;
 
   public BgpNetwork(Prefix network, @Nullable String routeMap) {
     _network = network;
@@ -27,8 +27,7 @@ public class BgpNetwork implements Serializable {
     return _network;
   }
 
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 

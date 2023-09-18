@@ -11,8 +11,8 @@ import org.batfish.datamodel.route.nh.NextHop;
  */
 @ParametersAreNonnullByDefault
 public abstract class RouteRowSecondaryKey {
-  @Nonnull protected final NextHop _nextHop;
-  @Nonnull protected final String _protocol;
+  protected final @Nonnull NextHop _nextHop;
+  protected final @Nonnull String _protocol;
 
   protected RouteRowSecondaryKey(NextHop nextHop, String protocol) {
     _nextHop = nextHop;

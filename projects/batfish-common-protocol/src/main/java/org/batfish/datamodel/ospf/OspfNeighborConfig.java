@@ -23,11 +23,11 @@ public final class OspfNeighborConfig implements Serializable {
   private static final String PROP_VRF = "vrf";
 
   private final long _area;
-  @Nonnull private final String _interfaceName;
-  @Nonnull private final Ip _ip;
+  private final @Nonnull String _interfaceName;
+  private final @Nonnull Ip _ip;
   private final boolean _isPassive;
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _vrfName;
 
   private OspfNeighborConfig(
       long area, String interfaceName, boolean isPassive, String hostname, String vrfName, Ip ip) {
@@ -96,12 +96,12 @@ public final class OspfNeighborConfig implements Serializable {
 
   /** Builder for {@link OspfNeighborConfig} */
   public static final class Builder {
-    @Nullable private Long _area;
-    @Nullable private String _interfaceName;
-    @Nullable private Ip _ip;
-    @Nullable private Boolean _isPassive;
-    @Nullable private String _hostname;
-    @Nullable private String _vrfName;
+    private @Nullable Long _area;
+    private @Nullable String _interfaceName;
+    private @Nullable Ip _ip;
+    private @Nullable Boolean _isPassive;
+    private @Nullable String _hostname;
+    private @Nullable String _vrfName;
 
     private Builder() {}
 

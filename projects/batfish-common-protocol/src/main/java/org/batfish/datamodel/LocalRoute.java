@@ -76,7 +76,7 @@ public final class LocalRoute extends AbstractRoute {
   /** Builder for {@link org.batfish.datamodel.LocalRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, LocalRoute> {
 
-    @Nullable private Integer _sourcePrefixLength;
+    private @Nullable Integer _sourcePrefixLength;
 
     @Nonnull
     @Override

@@ -39,6 +39,6 @@ public final class RdSetIpAddress implements RdSetElem {
     return Objects.hash(_ip, _low);
   }
 
-  @Nonnull private final Ip _ip;
-  @Nonnull private final Uint16RangeExpr _low;
+  private final @Nonnull Ip _ip;
+  private final @Nonnull Uint16RangeExpr _low;
 }

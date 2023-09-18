@@ -19,8 +19,8 @@ public class PrefixTracerQuestion extends Question {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_NODES = "nodes";
 
-  @Nullable private String _nodes;
-  @Nullable private Prefix _prefix;
+  private @Nullable String _nodes;
+  private @Nullable Prefix _prefix;
 
   @JsonCreator
   private static PrefixTracerQuestion create(

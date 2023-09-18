@@ -38,6 +38,6 @@ public final class RdSetAsPlain16 implements RdSetElem {
     return Objects.hash(_high, _low);
   }
 
-  @Nonnull private final Uint16RangeExpr _high;
-  @Nonnull private final Uint32RangeExpr _low;
+  private final @Nonnull Uint16RangeExpr _high;
+  private final @Nonnull Uint32RangeExpr _low;
 }

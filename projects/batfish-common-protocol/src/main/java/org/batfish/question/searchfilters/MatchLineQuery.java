@@ -29,8 +29,8 @@ public class MatchLineQuery implements SearchFiltersQuery {
   }
 
   @Override
-  @Nonnull
-  public BDD getMatchingBdd(IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, BDDPacket pkt) {
+  public @Nonnull BDD getMatchingBdd(
+      IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, BDDPacket pkt) {
     checkArgument(canQuery(acl), "ACL %s is too short to apply match line query", acl.getName());
 
     // Generate BDD matching all flows that would match the target line, then subtract out the BDD

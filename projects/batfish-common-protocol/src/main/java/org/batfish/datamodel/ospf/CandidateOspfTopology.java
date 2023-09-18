@@ -11,7 +11,7 @@ import javax.annotation.Nonnull;
 
 /** Candidate OSPF topology, including unestablished/incompatible OSPF neighbors. */
 public final class CandidateOspfTopology {
-  @Nonnull private final ValueGraph<OspfNeighborConfigId, OspfSessionStatus> _graph;
+  private final @Nonnull ValueGraph<OspfNeighborConfigId, OspfSessionStatus> _graph;
 
   public static final CandidateOspfTopology EMPTY =
       new CandidateOspfTopology(ValueGraphBuilder.directed().build());
@@ -30,8 +30,7 @@ public final class CandidateOspfTopology {
    * Get the session status for the edge between the specified neighbors. If the specified edge is
    * not in the graph, an empty Optional is returned.
    */
-  @Nonnull
-  public Optional<OspfSessionStatus> getSessionStatus(
+  public @Nonnull Optional<OspfSessionStatus> getSessionStatus(
       OspfNeighborConfigId n, OspfNeighborConfigId n1) {
     return _graph.edgeValue(n, n1);
   }
@@ -40,8 +39,7 @@ public final class CandidateOspfTopology {
    * Return a set of neighbors adjacent to a given node. If the node is not in the graph, an empty
    * set is returned.
    */
-  @Nonnull
-  public Set<OspfNeighborConfigId> neighbors(OspfNeighborConfigId node) {
+  public @Nonnull Set<OspfNeighborConfigId> neighbors(OspfNeighborConfigId node) {
     if (!_graph.nodes().contains(node)) {
       return ImmutableSet.of();
     }

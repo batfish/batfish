@@ -67,8 +67,7 @@ public class BgpVrfAddressFamilyAggregateNetworkConfiguration implements Seriali
         .toString();
   }
 
-  @Nullable
-  public String getAdvertiseMap() {
+  public @Nullable String getAdvertiseMap() {
     return _advertiseMap;
   }
 
@@ -84,8 +83,7 @@ public class BgpVrfAddressFamilyAggregateNetworkConfiguration implements Seriali
     _asSet = asSet;
   }
 
-  @Nullable
-  public String getAttributeMap() {
+  public @Nullable String getAttributeMap() {
     return _attributeMap;
   }
 
@@ -101,8 +99,7 @@ public class BgpVrfAddressFamilyAggregateNetworkConfiguration implements Seriali
     _summaryOnly = summaryOnly;
   }
 
-  @Nullable
-  public String getSuppressMap() {
+  public @Nullable String getSuppressMap() {
     return _suppressMap;
   }
 
@@ -111,8 +108,8 @@ public class BgpVrfAddressFamilyAggregateNetworkConfiguration implements Seriali
   }
 
   private boolean _asSet;
-  @Nullable private String _advertiseMap;
-  @Nullable private String _attributeMap;
+  private @Nullable String _advertiseMap;
+  private @Nullable String _attributeMap;
   private boolean _summaryOnly;
-  @Nullable private String _suppressMap;
+  private @Nullable String _suppressMap;
 }

@@ -31,21 +31,21 @@ import org.batfish.datamodel.questions.BgpRouteStatus;
  */
 @ParametersAreNullableByDefault
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
-  @Nullable private final String _nextHopInterface;
-  @Nullable private final AsPath _asPath;
-  @Nullable private final Integer _adminDistance;
-  @Nonnull private final Set<Long> _clusterList;
-  @Nonnull private final List<String> _communities;
-  @Nullable private final Long _localPreference;
-  @Nullable private final Long _metric;
-  @Nullable private final String _originProtocol;
-  @Nullable private final OriginMechanism _originMechanism;
-  @Nullable private final OriginType _originType;
-  @Nullable private final Ip _originatorIp;
-  @Nullable private final Long _tag;
-  @Nullable private final BgpRouteStatus _status;
-  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
-  @Nullable private final Integer _weight;
+  private final @Nullable String _nextHopInterface;
+  private final @Nullable AsPath _asPath;
+  private final @Nullable Integer _adminDistance;
+  private final @Nonnull Set<Long> _clusterList;
+  private final @Nonnull List<String> _communities;
+  private final @Nullable Long _localPreference;
+  private final @Nullable Long _metric;
+  private final @Nullable String _originProtocol;
+  private final @Nullable OriginMechanism _originMechanism;
+  private final @Nullable OriginType _originType;
+  private final @Nullable Ip _originatorIp;
+  private final @Nullable Long _tag;
+  private final @Nullable BgpRouteStatus _status;
+  private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  private final @Nullable Integer _weight;
 
   private RouteRowAttribute(
       String nextHopInterface,
@@ -80,78 +80,63 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _weight = weight;
   }
 
-  @Nullable
-  public Integer getAdminDistance() {
+  public @Nullable Integer getAdminDistance() {
     return _adminDistance;
   }
 
-  @Nullable
-  public Long getMetric() {
+  public @Nullable Long getMetric() {
     return _metric;
   }
 
-  @Nullable
-  public AsPath getAsPath() {
+  public @Nullable AsPath getAsPath() {
     return _asPath;
   }
 
-  @Nullable
-  public Long getLocalPreference() {
+  public @Nullable Long getLocalPreference() {
     return _localPreference;
   }
 
-  @Nonnull
-  public Set<Long> getClusterList() {
+  public @Nonnull Set<Long> getClusterList() {
     return _clusterList;
   }
 
-  @Nonnull
-  public List<String> getCommunities() {
+  public @Nonnull List<String> getCommunities() {
     return _communities;
   }
 
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
-  @Nullable
-  public String getOriginProtocol() {
+  public @Nullable String getOriginProtocol() {
     return _originProtocol;
   }
 
-  @Nullable
-  public OriginMechanism getOriginMechanism() {
+  public @Nullable OriginMechanism getOriginMechanism() {
     return _originMechanism;
   }
 
-  @Nullable
-  public OriginType getOriginType() {
+  public @Nullable OriginType getOriginType() {
     return _originType;
   }
 
-  @Nullable
-  public Ip getOriginatorIp() {
+  public @Nullable Ip getOriginatorIp() {
     return _originatorIp;
   }
 
-  @Nullable
-  public Long getTag() {
+  public @Nullable Long getTag() {
     return _tag;
   }
 
-  @Nullable
-  public BgpRouteStatus getStatus() {
+  public @Nullable BgpRouteStatus getStatus() {
     return _status;
   }
 
-  @Nullable
-  public TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+  public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
     return _tunnelEncapsulationAttribute;
   }
 
-  @Nullable
-  public Integer getWeight() {
+  public @Nullable Integer getWeight() {
     return _weight;
   }
 
@@ -259,21 +244,21 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
-    @Nullable private String _nextHopInterface;
-    @Nullable private Integer _adminDistance;
-    @Nullable private Long _metric;
-    @Nullable private AsPath _asPath;
-    @Nullable private Long _localPreference;
-    @Nullable private Set<Long> _clusterList;
-    @Nullable private List<String> _communities;
-    @Nullable private String _originProtocol;
-    @Nullable private OriginMechanism _originMechanism;
-    @Nullable private OriginType _originType;
-    @Nullable private Ip _originatorIp;
-    @Nullable private Long _tag;
-    @Nullable private BgpRouteStatus _status;
-    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
-    @Nullable private Integer _weight;
+    private @Nullable String _nextHopInterface;
+    private @Nullable Integer _adminDistance;
+    private @Nullable Long _metric;
+    private @Nullable AsPath _asPath;
+    private @Nullable Long _localPreference;
+    private @Nullable Set<Long> _clusterList;
+    private @Nullable List<String> _communities;
+    private @Nullable String _originProtocol;
+    private @Nullable OriginMechanism _originMechanism;
+    private @Nullable OriginType _originType;
+    private @Nullable Ip _originatorIp;
+    private @Nullable Long _tag;
+    private @Nullable BgpRouteStatus _status;
+    private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    private @Nullable Integer _weight;
 
     public RouteRowAttribute build() {
       if (_tag != null && _tag == Route.UNSET_ROUTE_TAG) {

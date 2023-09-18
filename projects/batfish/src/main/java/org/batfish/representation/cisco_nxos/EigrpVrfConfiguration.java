@@ -25,8 +25,7 @@ public final class EigrpVrfConfiguration implements Serializable {
     _asn = asn;
   }
 
-  @Nullable
-  public Integer getDistanceInternal() {
+  public @Nullable Integer getDistanceInternal() {
     return _distanceInternal;
   }
 
@@ -34,8 +33,7 @@ public final class EigrpVrfConfiguration implements Serializable {
     _distanceInternal = distanceInternal;
   }
 
-  @Nullable
-  public Integer getDistanceExternal() {
+  public @Nullable Integer getDistanceExternal() {
     return _distanceExternal;
   }
 

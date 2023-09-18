@@ -37,12 +37,12 @@ public class Vrf extends ComparableStructure<String> {
 
   public static class Builder {
 
-    @Nullable private String _name;
-    @Nullable private Supplier<String> _nameGenerator;
-    @Nullable private Configuration _owner;
-    @Nullable private String _resolutionPolicy;
-    @Nonnull private Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
-    @Nullable private VrfLeakConfig _vrfLeakConfig;
+    private @Nullable String _name;
+    private @Nullable Supplier<String> _nameGenerator;
+    private @Nullable Configuration _owner;
+    private @Nullable String _resolutionPolicy;
+    private @Nonnull Map<Long, EigrpProcess> _eigrpProcesses = ImmutableMap.of();
+    private @Nullable VrfLeakConfig _vrfLeakConfig;
 
     private Builder(Supplier<String> nameGenerator) {
       _nameGenerator = nameGenerator;
@@ -118,14 +118,14 @@ public class Vrf extends ComparableStructure<String> {
   private SortedMap<Long, EigrpProcess> _eigrpProcesses;
   private IsisProcess _isisProcess;
   private SortedSet<KernelRoute> _kernelRoutes;
-  @Nonnull private SortedMap<String, OspfProcess> _ospfProcesses;
-  @Nullable private String _resolutionPolicy;
+  private @Nonnull SortedMap<String, OspfProcess> _ospfProcesses;
+  private @Nullable String _resolutionPolicy;
   private RipProcess _ripProcess;
   private SnmpServer _snmpServer;
   private SortedSet<StaticRoute> _staticRoutes;
   private Map<Integer, Layer2Vni> _layer2Vnis;
   private Map<Integer, Layer3Vni> _layer3Vnis;
-  @Nullable private VrfLeakConfig _vrfLeakConfig;
+  private @Nullable VrfLeakConfig _vrfLeakConfig;
   private @Nonnull SourceIpInference _sourceIpInference;
 
   public Vrf(@Nonnull String name) {
@@ -220,8 +220,7 @@ public class Vrf extends ComparableStructure<String> {
 
   /** OSPF routing processes for this VRF, keyed on {@link OspfProcess#getProcessId()}. */
   @JsonProperty(PROP_OSPF_PROCESSES)
-  @Nonnull
-  public Map<String, OspfProcess> getOspfProcesses() {
+  public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
 
@@ -275,8 +274,7 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_VRF_LEAK_CONFIG)
-  @Nullable
-  public VrfLeakConfig getVrfLeakConfig() {
+  public @Nullable VrfLeakConfig getVrfLeakConfig() {
     return _vrfLeakConfig;
   }
 
@@ -368,8 +366,7 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_RESOLUTION_POLICY)
-  @Nullable
-  public String getResolutionPolicy() {
+  public @Nullable String getResolutionPolicy() {
     return _resolutionPolicy;
   }
 

@@ -98,5 +98,5 @@ public final class XrRoutePolicySetCommunity extends RoutePolicySetStatement {
   }
 
   private final boolean _additive;
-  @Nonnull private final XrCommunitySetExpr _expr;
+  private final @Nonnull XrCommunitySetExpr _expr;
 }

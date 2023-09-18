@@ -16,9 +16,9 @@ public class ReferencedStructuresQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_TYPES = "types";
 
-  @Nonnull private final String _names;
-  @Nonnull private final NodesSpecifier _nodes;
-  @Nonnull private final String _types;
+  private final @Nonnull String _names;
+  private final @Nonnull NodesSpecifier _nodes;
+  private final @Nonnull String _types;
 
   @JsonCreator
   private static ReferencedStructuresQuestion jsonCreator(
@@ -49,20 +49,17 @@ public class ReferencedStructuresQuestion extends Question {
   }
 
   @JsonProperty(PROP_NAMES)
-  @Nonnull
-  public String getNames() {
+  public @Nonnull String getNames() {
     return _names;
   }
 
   @JsonProperty(PROP_NODES)
-  @Nonnull
-  public NodesSpecifier getNodes() {
+  public @Nonnull NodesSpecifier getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_TYPES)
-  @Nonnull
-  public String getTypes() {
+  public @Nonnull String getTypes() {
     return _types;
   }
 }

@@ -43,8 +43,7 @@ public class NetworkObjectGroupAddressSpecifier implements AccessListAddressSpec
   }
 
   @Override
-  @Nonnull
-  public IpSpace toIpSpace() {
+  public @Nonnull IpSpace toIpSpace() {
     return new IpSpaceReference(_name, String.format("Match network object-group: '%s'", _name));
   }
 }

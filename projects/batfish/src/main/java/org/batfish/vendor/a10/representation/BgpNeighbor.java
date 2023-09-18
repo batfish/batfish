@@ -13,8 +13,7 @@ public class BgpNeighbor implements Serializable {
     STANDARD,
   }
 
-  @Nullable
-  public Boolean getActivate() {
+  public @Nullable Boolean getActivate() {
     return _activate;
   }
 
@@ -22,8 +21,7 @@ public class BgpNeighbor implements Serializable {
     _activate = activate;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -31,13 +29,11 @@ public class BgpNeighbor implements Serializable {
     _description = description;
   }
 
-  @Nonnull
-  public BgpNeighborId getId() {
+  public @Nonnull BgpNeighborId getId() {
     return _id;
   }
 
-  @Nullable
-  public Integer getMaximumPrefix() {
+  public @Nullable Integer getMaximumPrefix() {
     return _maximumPrefix;
   }
 
@@ -45,8 +41,7 @@ public class BgpNeighbor implements Serializable {
     _maximumPrefix = maximumPrefix;
   }
 
-  @Nullable
-  public Integer getMaximumPrefixThreshold() {
+  public @Nullable Integer getMaximumPrefixThreshold() {
     return _maximumPrefixThreshold;
   }
 
@@ -54,8 +49,7 @@ public class BgpNeighbor implements Serializable {
     _maximumPrefixThreshold = maximumPrefixThreshold;
   }
 
-  @Nullable
-  public Long getRemoteAs() {
+  public @Nullable Long getRemoteAs() {
     return _remoteAs;
   }
 
@@ -63,8 +57,7 @@ public class BgpNeighbor implements Serializable {
     _remoteAs = remoteAs;
   }
 
-  @Nullable
-  public SendCommunity getSendCommunity() {
+  public @Nullable SendCommunity getSendCommunity() {
     return _sendCommunity;
   }
 
@@ -72,8 +65,7 @@ public class BgpNeighbor implements Serializable {
     _sendCommunity = sendCommunity;
   }
 
-  @Nullable
-  public Integer getWeight() {
+  public @Nullable Integer getWeight() {
     return _weight;
   }
 
@@ -81,8 +73,7 @@ public class BgpNeighbor implements Serializable {
     _weight = weight;
   }
 
-  @Nullable
-  public BgpNeighborUpdateSource getUpdateSource() {
+  public @Nullable BgpNeighborUpdateSource getUpdateSource() {
     return _updateSource;
   }
 
@@ -94,13 +85,13 @@ public class BgpNeighbor implements Serializable {
     _id = id;
   }
 
-  @Nullable private Boolean _activate;
-  @Nullable private String _description;
-  @Nonnull private final BgpNeighborId _id;
-  @Nullable private Integer _maximumPrefix;
-  @Nullable private Integer _maximumPrefixThreshold;
-  @Nullable private Long _remoteAs;
-  @Nullable private SendCommunity _sendCommunity;
-  @Nullable private Integer _weight;
-  @Nullable private BgpNeighborUpdateSource _updateSource;
+  private @Nullable Boolean _activate;
+  private @Nullable String _description;
+  private final @Nonnull BgpNeighborId _id;
+  private @Nullable Integer _maximumPrefix;
+  private @Nullable Integer _maximumPrefixThreshold;
+  private @Nullable Long _remoteAs;
+  private @Nullable SendCommunity _sendCommunity;
+  private @Nullable Integer _weight;
+  private @Nullable BgpNeighborUpdateSource _updateSource;
 }

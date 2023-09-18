@@ -200,8 +200,7 @@ public final class CheckPointGatewayConversions {
    * Convert specified {@link AccessRule} to an {@link AclLine}. Returns {@link Optional#empty()} if
    * the rule does not generate an {@link AclLine} (i.e. is not enabled).
    */
-  @Nonnull
-  static Optional<AclLine> toAclLine(
+  static @Nonnull Optional<AclLine> toAclLine(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
@@ -233,8 +232,7 @@ public final class CheckPointGatewayConversions {
    * Convert specified {@link AccessRule} into an {@link AclLineMatchExpr} representing the match
    * conditions of the rule.
    */
-  @Nonnull
-  static AclLineMatchExpr toMatchExpr(
+  static @Nonnull AclLineMatchExpr toMatchExpr(
       AccessRule rule,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
@@ -267,8 +265,7 @@ public final class CheckPointGatewayConversions {
    * Ignores {@link Uid}s for undefined or non-{@link Service} objects.
    */
   @VisibleForTesting
-  @Nonnull
-  static AclLineMatchExpr servicesToMatchExpr(
+  static @Nonnull AclLineMatchExpr servicesToMatchExpr(
       List<Uid> services,
       Map<Uid, NamedManagementObject> objs,
       ServiceToMatchExpr serviceToMatchExpr,
@@ -294,8 +291,7 @@ public final class CheckPointGatewayConversions {
   }
 
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
-  @Nonnull
-  static LineAction toAction(@Nullable NamedManagementObject obj, Uid uid, Warnings w) {
+  static @Nonnull LineAction toAction(@Nullable NamedManagementObject obj, Uid uid, Warnings w) {
     if (obj == null) {
       w.redFlag(
           String.format(
@@ -335,8 +331,7 @@ public final class CheckPointGatewayConversions {
    * existing for each of the supplied objects.
    */
   @VisibleForTesting
-  @Nonnull
-  static AclLineMatchExpr toAddressMatchExpr(
+  static @Nonnull AclLineMatchExpr toAddressMatchExpr(
       List<Uid> targets,
       Map<Uid, NamedManagementObject> objs,
       AddressSpaceToMatchExpr addressSpaceToMatchExpr,

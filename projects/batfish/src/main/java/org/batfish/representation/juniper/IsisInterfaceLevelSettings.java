@@ -8,40 +8,35 @@ public class IsisInterfaceLevelSettings implements Serializable {
 
   // Enabled by default
   private boolean _enabled = true;
-  @Nullable private String _helloAuthenticationKey;
-  @Nullable private IsisHelloAuthenticationType _helloAuthenticationType;
-  @Nullable private Integer _helloInterval;
-  @Nullable private Integer _holdTime;
-  @Nullable private Long _metric;
+  private @Nullable String _helloAuthenticationKey;
+  private @Nullable IsisHelloAuthenticationType _helloAuthenticationType;
+  private @Nullable Integer _helloInterval;
+  private @Nullable Integer _holdTime;
+  private @Nullable Long _metric;
   private boolean _passive;
-  @Nullable private Long _teMetric;
+  private @Nullable Long _teMetric;
 
   public boolean getEnabled() {
     return _enabled;
   }
 
-  @Nullable
-  public String getHelloAuthenticationKey() {
+  public @Nullable String getHelloAuthenticationKey() {
     return _helloAuthenticationKey;
   }
 
-  @Nullable
-  public IsisHelloAuthenticationType getHelloAuthenticationType() {
+  public @Nullable IsisHelloAuthenticationType getHelloAuthenticationType() {
     return _helloAuthenticationType;
   }
 
-  @Nullable
-  public Integer getHelloInterval() {
+  public @Nullable Integer getHelloInterval() {
     return _helloInterval;
   }
 
-  @Nullable
-  public Integer getHoldTime() {
+  public @Nullable Integer getHoldTime() {
     return _holdTime;
   }
 
-  @Nullable
-  public Long getMetric() {
+  public @Nullable Long getMetric() {
     return _metric;
   }
 
@@ -49,8 +44,7 @@ public class IsisInterfaceLevelSettings implements Serializable {
     return _passive;
   }
 
-  @Nullable
-  public Long getTeMetric() {
+  public @Nullable Long getTeMetric() {
     return _teMetric;
   }
 

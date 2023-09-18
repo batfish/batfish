@@ -25,13 +25,13 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
   @ParametersAreNonnullByDefault
   private static final class EnumValueSets<T> {
     /** The values that are included in this enum set. If null, unspecified. */
-    @Nullable private final Set<T> _including;
+    private final @Nullable Set<T> _including;
 
     /** The values that are excluded from this enum set. If null, unspecified. */
-    @Nullable private final Set<T> _excluding;
+    private final @Nullable Set<T> _excluding;
 
-    @Nonnull private final Collection<T> _allValues;
-    @Nonnull private final Map<T, Set<T>> _groupValues;
+    private final @Nonnull Collection<T> _allValues;
+    private final @Nonnull Map<T, Set<T>> _groupValues;
 
     EnumValueSets(Collection<T> allValues, Map<T, Set<T>> groupValues) {
       this(null, null, allValues, groupValues);
@@ -157,8 +157,8 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
   static final class EnumSetAstNodeToEnumValues<T>
       implements EnumSetAstNodeVisitor<EnumValueSets<T>> {
 
-    @Nonnull private final Collection<T> _allValues;
-    @Nonnull private final EnumValueSets<T> _enumValueSets;
+    private final @Nonnull Collection<T> _allValues;
+    private final @Nonnull EnumValueSets<T> _enumValueSets;
 
     EnumSetAstNodeToEnumValues(Collection<T> allValues, Map<T, Set<T>> groupValues) {
       _allValues = allValues;

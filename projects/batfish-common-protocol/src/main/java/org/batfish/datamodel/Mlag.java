@@ -25,9 +25,9 @@ public final class Mlag implements Serializable {
   private static final String PROP_PEER_INTERFACE = "peerInterface";
 
   private final String _id;
-  @Nullable private final Ip _peerAddress;
-  @Nullable private final String _peerInterface;
-  @Nullable private final String _localInterface;
+  private final @Nullable Ip _peerAddress;
+  private final @Nullable String _peerInterface;
+  private final @Nullable String _localInterface;
 
   private Mlag(
       String id,
@@ -98,10 +98,10 @@ public final class Mlag implements Serializable {
   }
 
   public static final class Builder {
-    @Nullable private String _id;
-    @Nullable private Ip _peerAddress;
-    @Nullable private String _peerInterface;
-    @Nullable private String _localInterface;
+    private @Nullable String _id;
+    private @Nullable Ip _peerAddress;
+    private @Nullable String _peerInterface;
+    private @Nullable String _localInterface;
 
     private Builder() {}
 

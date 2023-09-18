@@ -24,26 +24,22 @@ public class Interface implements Serializable {
     _name = name;
   }
 
-  @Nullable
-  public ConcreteInterfaceAddress getAddress() {
+  public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
   /**
    * Boolean representation of {@code auto-negotiate}, where {@code true} corresponds to {@code on}.
    */
-  @Nullable
-  public Boolean getAutoNegotiate() {
+  public @Nullable Boolean getAutoNegotiate() {
     return _autoNegotiate;
   }
 
-  @Nullable
-  public String getComments() {
+  public @Nullable String getComments() {
     return _comments;
   }
 
-  @Nullable
-  public LinkSpeed getLinkSpeed() {
+  public @Nullable LinkSpeed getLinkSpeed() {
     return _linkSpeed;
   }
 
@@ -69,8 +65,7 @@ public class Interface implements Serializable {
     }
   }
 
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
@@ -79,8 +74,7 @@ public class Interface implements Serializable {
     return _mtu != null ? _mtu : getDefaultMtu(_name);
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -147,13 +141,13 @@ public class Interface implements Serializable {
     return null;
   }
 
-  @Nullable private ConcreteInterfaceAddress _address;
-  @Nullable private Boolean _autoNegotiate;
-  @Nullable private String _comments;
-  @Nullable private LinkSpeed _linkSpeed;
-  @Nullable private Integer _mtu;
-  @Nonnull private final String _name;
-  @Nullable private String _parentInterface;
+  private @Nullable ConcreteInterfaceAddress _address;
+  private @Nullable Boolean _autoNegotiate;
+  private @Nullable String _comments;
+  private @Nullable LinkSpeed _linkSpeed;
+  private @Nullable Integer _mtu;
+  private final @Nonnull String _name;
+  private @Nullable String _parentInterface;
   private boolean _state;
-  @Nullable private Integer _vlanId;
+  private @Nullable Integer _vlanId;
 }

@@ -16,12 +16,11 @@ import org.batfish.datamodel.Ip;
 /** Metadata about an Ip needed for autocomplete. */
 @ParametersAreNonnullByDefault
 public final class IpCompletionMetadata implements Serializable {
-  @Nullable private final RangeSet<Ip> _ipSubset;
+  private final @Nullable RangeSet<Ip> _ipSubset;
 
   // TODO: Why does insertion order matter?
   @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
-  @Nonnull
-  private final LinkedHashSet<IpCompletionRelevance> _relevances;
+  private final @Nonnull LinkedHashSet<IpCompletionRelevance> _relevances;
 
   public IpCompletionMetadata() {
     this(null, ImmutableList.of());
@@ -77,8 +76,7 @@ public final class IpCompletionMetadata implements Serializable {
   }
 
   /** List of reasons why this IP is relevant */
-  @Nonnull
-  public List<IpCompletionRelevance> getRelevances() {
+  public @Nonnull List<IpCompletionRelevance> getRelevances() {
     return ImmutableList.copyOf(_relevances);
   }
 }

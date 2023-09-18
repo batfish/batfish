@@ -212,8 +212,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_JOBS);
   }
 
-  @Nullable
-  public String getLogFile() {
+  public @Nullable String getLogFile() {
     if (getTaskId() == null) {
       return null;
     }
@@ -302,8 +301,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return Paths.get(storageBase);
   }
 
-  @Nullable
-  public String getTaskId() {
+  public @Nullable String getTaskId() {
     return _config.getString(TASK_ID);
   }
 

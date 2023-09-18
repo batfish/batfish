@@ -19,8 +19,8 @@ public class ServiceObjectGroup implements Comparable<ServiceObjectGroup>, Seria
   private static final String PROP_NAME = "name";
   private static final String PROP_SERVICES = "services";
 
-  @Nonnull private String _name;
-  @Nonnull private SortedSet<String> _services;
+  private @Nonnull String _name;
+  private @Nonnull SortedSet<String> _services;
 
   @JsonCreator
   public ServiceObjectGroup(

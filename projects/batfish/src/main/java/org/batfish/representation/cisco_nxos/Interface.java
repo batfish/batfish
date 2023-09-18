@@ -377,8 +377,7 @@ public final class Interface implements Serializable {
     return _parentInterface;
   }
 
-  @Nullable
-  public String getPbrPolicy() {
+  public @Nullable String getPbrPolicy() {
     return _pbrPolicy;
   }
 
@@ -425,8 +424,7 @@ public final class Interface implements Serializable {
     _speedMbps = speedMbps;
   }
 
-  @Nullable
-  public SwitchportMode getSwitchportMode() {
+  public @Nullable SwitchportMode getSwitchportMode() {
     return _switchportMode;
   }
 

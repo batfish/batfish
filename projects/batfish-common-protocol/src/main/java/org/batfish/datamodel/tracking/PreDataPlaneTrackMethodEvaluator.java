@@ -68,5 +68,5 @@ public class PreDataPlaneTrackMethodEvaluator implements TrackMethodEvaluator {
     return true;
   }
 
-  @Nonnull private final Configuration _configuration;
+  private final @Nonnull Configuration _configuration;
 }

@@ -5,8 +5,7 @@ import org.batfish.datamodel.Ip;
 
 /** Data model class representing an IP-address-based update-source for a BGP neighbor. */
 public class BgpNeighborUpdateSourceAddress implements BgpNeighborUpdateSource {
-  @Nonnull
-  public Ip getAddress() {
+  public @Nonnull Ip getAddress() {
     return _address;
   }
 
@@ -31,5 +30,5 @@ public class BgpNeighborUpdateSourceAddress implements BgpNeighborUpdateSource {
     _address = address;
   }
 
-  @Nonnull private Ip _address;
+  private @Nonnull Ip _address;
 }

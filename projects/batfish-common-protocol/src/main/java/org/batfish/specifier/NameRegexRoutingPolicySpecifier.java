@@ -16,7 +16,7 @@ public final class NameRegexRoutingPolicySpecifier implements RoutingPolicySpeci
   public static final NameRegexRoutingPolicySpecifier ALL_ROUTING_POLICIES =
       new NameRegexRoutingPolicySpecifier(Pattern.compile(".*"));
 
-  @Nonnull private final Pattern _pattern;
+  private final @Nonnull Pattern _pattern;
 
   public NameRegexRoutingPolicySpecifier(Pattern pattern) {
     _pattern = pattern;

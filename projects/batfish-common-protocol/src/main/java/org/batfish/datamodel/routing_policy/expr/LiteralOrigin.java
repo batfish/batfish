@@ -9,7 +9,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public class LiteralOrigin extends OriginExpr {
   private static final String PROP_ORIGIN_TYPE = "originType";
 
-  @Nullable private Long _asNum;
+  private @Nullable Long _asNum;
 
   private OriginType _originType;
 
@@ -51,8 +51,7 @@ public class LiteralOrigin extends OriginExpr {
     return _originType;
   }
 
-  @Nullable
-  public Long getAsNum() {
+  public @Nullable Long getAsNum() {
     return _asNum;
   }
 

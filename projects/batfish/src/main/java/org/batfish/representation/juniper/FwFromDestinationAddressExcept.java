@@ -14,8 +14,8 @@ import org.batfish.representation.juniper.FwTerm.Field;
 /** Class for firewall filter from destination-address except */
 public final class FwFromDestinationAddressExcept implements FwFrom {
 
-  @Nonnull private final String _description;
-  @Nonnull private final IpWildcard _ipWildcard;
+  private final @Nonnull String _description;
+  private final @Nonnull IpWildcard _ipWildcard;
 
   /**
    * Creates a new {@link FwFromDestinationAddressExcept}, matching everything except the given

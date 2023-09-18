@@ -283,7 +283,7 @@ public class AclIpSpace extends IpSpace {
     return builder().thenPermitting(nonEmptySpaces).build();
   }
 
-  @Nonnull private final List<AclIpSpaceLine> _lines;
+  private final @Nonnull List<AclIpSpaceLine> _lines;
 
   @JsonCreator
   private AclIpSpace(@Nullable @JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {

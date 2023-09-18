@@ -11,7 +11,7 @@ import org.batfish.datamodel.SubRange;
 @ParametersAreNonnullByDefault
 public final class PortObjectGroupLine implements Serializable {
 
-  private @Nonnull final List<SubRange> _ranges;
+  private final @Nonnull List<SubRange> _ranges;
 
   public PortObjectGroupLine(Iterable<SubRange> ranges) {
     _ranges = ImmutableList.copyOf(ranges);

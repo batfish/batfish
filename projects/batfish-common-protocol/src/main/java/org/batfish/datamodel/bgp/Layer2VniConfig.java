@@ -89,11 +89,11 @@ public class Layer2VniConfig extends VniConfig
   }
 
   public static final class Builder {
-    @Nullable protected Integer _vni;
-    @Nullable protected String _vrf;
-    @Nullable protected RouteDistinguisher _rd;
-    @Nullable protected ExtendedCommunity _routeTarget;
-    @Nullable protected String _importRouteTarget;
+    protected @Nullable Integer _vni;
+    protected @Nullable String _vrf;
+    protected @Nullable RouteDistinguisher _rd;
+    protected @Nullable ExtendedCommunity _routeTarget;
+    protected @Nullable String _importRouteTarget;
 
     private Builder() {}
 

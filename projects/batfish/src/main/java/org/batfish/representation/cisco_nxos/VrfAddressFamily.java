@@ -26,8 +26,7 @@ public final class VrfAddressFamily implements Serializable {
     _exportRtEvpn = exportRtEvpn;
   }
 
-  @Nullable
-  public ExtendedCommunityOrAuto getImportRt() {
+  public @Nullable ExtendedCommunityOrAuto getImportRt() {
     return _importRt;
   }
 
@@ -35,8 +34,7 @@ public final class VrfAddressFamily implements Serializable {
     _importRt = importRt;
   }
 
-  @Nullable
-  public ExtendedCommunityOrAuto getImportRtEvpn() {
+  public @Nullable ExtendedCommunityOrAuto getImportRtEvpn() {
     return _importRtEvpn;
   }
 

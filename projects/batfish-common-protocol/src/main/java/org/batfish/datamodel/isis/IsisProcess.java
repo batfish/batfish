@@ -128,19 +128,19 @@ public class IsisProcess implements Serializable {
         referenceBandwidth);
   }
 
-  @Nullable private final String _exportPolicy;
+  private final @Nullable String _exportPolicy;
 
-  @Nonnull private final Set<GeneratedRoute> _generatedRoutes;
+  private final @Nonnull Set<GeneratedRoute> _generatedRoutes;
 
-  @Nullable private final IsisLevelSettings _level1;
+  private final @Nullable IsisLevelSettings _level1;
 
-  @Nullable private final IsisLevelSettings _level2;
+  private final @Nullable IsisLevelSettings _level2;
 
-  @Nonnull private final IsoAddress _netAddress;
+  private final @Nonnull IsoAddress _netAddress;
 
   private final boolean _overload;
 
-  @Nullable private final Double _referenceBandwidth;
+  private final @Nullable Double _referenceBandwidth;
 
   private IsisProcess(
       @Nullable String exportPolicy,
@@ -177,8 +177,7 @@ public class IsisProcess implements Serializable {
   }
 
   @JsonProperty(PROP_EXPORT_POLICY)
-  @Nullable
-  public String getExportPolicy() {
+  public @Nullable String getExportPolicy() {
     return _exportPolicy;
   }
 
@@ -187,27 +186,23 @@ public class IsisProcess implements Serializable {
    * the main RIB.
    */
   @JsonProperty(PROP_GENERATED_ROUTES)
-  @Nonnull
-  public Set<GeneratedRoute> getGeneratedRoutes() {
+  public @Nonnull Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
   @JsonProperty(PROP_LEVEL1)
-  @Nullable
-  public IsisLevelSettings getLevel1() {
+  public @Nullable IsisLevelSettings getLevel1() {
     return _level1;
   }
 
   @JsonProperty(PROP_LEVEL2)
-  @Nullable
-  public IsisLevelSettings getLevel2() {
+  public @Nullable IsisLevelSettings getLevel2() {
     return _level2;
   }
 
   /** The net address is an ISO address representing the IS-IS router ID. */
   @JsonProperty(PROP_NET_ADDRESS)
-  @Nonnull
-  public IsoAddress getNetAddress() {
+  public @Nonnull IsoAddress getNetAddress() {
     return _netAddress;
   }
 
@@ -217,8 +212,7 @@ public class IsisProcess implements Serializable {
   }
 
   @JsonProperty(PROP_REFERENCE_BANDWIDTH)
-  @Nullable
-  public Double getReferenceBandwidth() {
+  public @Nullable Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
 

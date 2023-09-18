@@ -58,27 +58,27 @@ public class PacketHeaderConstraints {
    * All fields are nullable to allow being "not set", and therefore, unconstrained
    */
   // Ip fields, unlikely to be specified
-  @Nullable private final IntegerSpace _dscps;
-  @Nullable private final IntegerSpace _ecns;
-  @Nullable private final IntegerSpace _packetLengths;
-  @Nullable private final IntegerSpace _fragmentOffsets;
+  private final @Nullable IntegerSpace _dscps;
+  private final @Nullable IntegerSpace _ecns;
+  private final @Nullable IntegerSpace _packetLengths;
+  private final @Nullable IntegerSpace _fragmentOffsets;
 
   // Ip fields, likely to be specified
-  @Nullable private final Set<IpProtocol> _ipProtocols;
-  @Nullable private final String _srcIp;
-  @Nullable private final String _dstIp;
+  private final @Nullable Set<IpProtocol> _ipProtocols;
+  private final @Nullable String _srcIp;
+  private final @Nullable String _dstIp;
 
   // ICMP fields
-  @Nullable private final IntegerSpace _icmpCode;
-  @Nullable private final IntegerSpace _icmpType;
+  private final @Nullable IntegerSpace _icmpCode;
+  private final @Nullable IntegerSpace _icmpType;
 
   // UDP/TCP fields
-  @Nullable private final IntegerSpace _srcPorts;
-  @Nullable private final IntegerSpace _dstPorts;
+  private final @Nullable IntegerSpace _srcPorts;
+  private final @Nullable IntegerSpace _dstPorts;
 
   // Shorthands for UDP/TCP fields
-  @Nullable private final String _applications;
-  @Nullable private final Set<TcpFlagsMatchConditions> _tcpFlags;
+  private final @Nullable String _applications;
+  private final @Nullable Set<TcpFlagsMatchConditions> _tcpFlags;
 
   @VisibleForTesting
   static final IntegerSpace VALID_DSCP =
@@ -175,8 +175,7 @@ public class PacketHeaderConstraints {
         .resolve();
   }
 
-  @Nullable
-  static String parseApplicationJsonToString(JsonNode applications) {
+  static @Nullable String parseApplicationJsonToString(JsonNode applications) {
     if (applications == null || applications.isNull()) {
       return null;
     }
@@ -224,8 +223,7 @@ public class PacketHeaderConstraints {
         .resolve();
   }
 
-  @Nullable
-  private static IntegerSpace processBuilder(
+  private static @Nullable IntegerSpace processBuilder(
       @Nullable IntegerSpace.Builder field, @Nonnull IntegerSpace validRange) {
     if (field == null) {
       return null;
@@ -266,14 +264,12 @@ public class PacketHeaderConstraints {
     return _fragmentOffsets;
   }
 
-  @Nullable
-  public Set<IpProtocol> getIpProtocols() {
+  public @Nullable Set<IpProtocol> getIpProtocols() {
     return _ipProtocols;
   }
 
   @JsonProperty(PROP_IP_PROTOCOLS)
-  @Nullable
-  private String getIpProtocolsString() {
+  private @Nullable String getIpProtocolsString() {
     if (_ipProtocols == null) {
       return null;
     }
@@ -319,8 +315,7 @@ public class PacketHeaderConstraints {
   }
 
   @JsonProperty(PROP_APPLICATIONS)
-  @Nullable
-  public String getApplicationsString() {
+  public @Nullable String getApplicationsString() {
     return _applications;
   }
 
@@ -335,8 +330,7 @@ public class PacketHeaderConstraints {
   }
 
   /** Return the set of allowed IP protocols */
-  @Nullable
-  public Set<IpProtocol> resolveIpProtocols() {
+  public @Nullable Set<IpProtocol> resolveIpProtocols() {
     return resolveIpProtocols(
         getIpProtocols(),
         getSrcPorts(),
@@ -348,8 +342,7 @@ public class PacketHeaderConstraints {
   }
 
   /** Return the set of allowed destination port values */
-  @Nullable
-  public IntegerSpace resolveDstPorts() {
+  public @Nullable IntegerSpace resolveDstPorts() {
     return resolvePorts(getDstPorts(), getApplications());
   }
 

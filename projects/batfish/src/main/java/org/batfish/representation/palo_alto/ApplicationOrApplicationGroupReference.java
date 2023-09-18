@@ -37,10 +37,9 @@ public final class ApplicationOrApplicationGroupReference
 
   /** Return the name of the referenced Application or ApplicationGroup */
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

@@ -66,34 +66,29 @@ public final class InterfacesInterface implements Serializable {
         ImmutableList.<ConcreteInterfaceAddress>builder().addAll(_addresses).add(address).build();
   }
 
-  @Nonnull
-  public InterfaceBridgeSettings createOrGetBridgeSettings() {
+  public @Nonnull InterfaceBridgeSettings createOrGetBridgeSettings() {
     if (_bridgeSettings == null) {
       _bridgeSettings = new InterfaceBridgeSettings();
     }
     return _bridgeSettings;
   }
 
-  @Nonnull
-  public InterfaceClagSettings createOrGetClagSettings() {
+  public @Nonnull InterfaceClagSettings createOrGetClagSettings() {
     if (_clagSettings == null) {
       _clagSettings = new InterfaceClagSettings();
     }
     return _clagSettings;
   }
 
-  @Nonnull
-  public List<ConcreteInterfaceAddress> getAddresses() {
+  public @Nonnull List<ConcreteInterfaceAddress> getAddresses() {
     return _addresses;
   }
 
-  @Nullable
-  public Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
+  public @Nullable Map<MacAddress, Set<InterfaceAddress>> getAddressVirtuals() {
     return _addressVirtuals;
   }
 
-  @Nullable
-  public Set<String> getBondSlaves() {
+  public @Nullable Set<String> getBondSlaves() {
     return _bondSlaves;
   }
 
@@ -101,48 +96,39 @@ public final class InterfacesInterface implements Serializable {
     return _bridgePorts;
   }
 
-  @Nullable
-  public InterfaceBridgeSettings getBridgeSettings() {
+  public @Nullable InterfaceBridgeSettings getBridgeSettings() {
     return _bridgeSettings;
   }
 
-  @Nullable
-  public Integer getClagId() {
+  public @Nullable Integer getClagId() {
     return _clagId;
   }
 
-  @Nullable
-  public InterfaceClagSettings getClagSettings() {
+  public @Nullable InterfaceClagSettings getClagSettings() {
     return _clagSettings;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public String getVrfTable() {
+  public @Nullable String getVrfTable() {
     return _vrfTable;
   }
 
-  @Nullable
-  public Integer getLinkSpeed() {
+  public @Nullable Integer getLinkSpeed() {
     return _linkSpeed;
   }
 
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public CumulusStructureType getType() {
+  public @Nonnull CumulusStructureType getType() {
     CumulusStructureType type = null;
     if (VLAN_INTERFACE_PATTERN.matcher(_name).matches()) {
       type = VLAN;
@@ -166,28 +152,23 @@ public final class InterfacesInterface implements Serializable {
     return firstNonNull(type, INTERFACE);
   }
 
-  @Nullable
-  public Integer getVlanId() {
+  public @Nullable Integer getVlanId() {
     return _vlanId;
   }
 
-  @Nullable
-  public String getVlanRawDevice() {
+  public @Nullable String getVlanRawDevice() {
     return _vlanRawDevice;
   }
 
-  @Nullable
-  public String getVrf() {
+  public @Nullable String getVrf() {
     return _vrf;
   }
 
-  @Nullable
-  public Integer getVxlanId() {
+  public @Nullable Integer getVxlanId() {
     return _vxlanId;
   }
 
-  @Nullable
-  public Ip getVxlanLocalTunnelIp() {
+  public @Nullable Ip getVxlanLocalTunnelIp() {
     return _vxlanLocalTunnelIp;
   }
 
@@ -254,8 +235,7 @@ public final class InterfacesInterface implements Serializable {
     return VLAN_INTERFACE_PATTERN.matcher(ifaceName).matches();
   }
 
-  @Nonnull
-  public List<StaticRoute> getPostUpIpRoutes() {
+  public @Nonnull List<StaticRoute> getPostUpIpRoutes() {
     return _postUpIpRoutes;
   }
 
@@ -263,8 +243,7 @@ public final class InterfacesInterface implements Serializable {
     _postUpIpRoutes = ImmutableList.<StaticRoute>builder().addAll(_postUpIpRoutes).add(sr).build();
   }
 
-  @Nullable
-  public Ip getClagVxlanAnycastIp() {
+  public @Nullable Ip getClagVxlanAnycastIp() {
     return _clagVxlanAnycastIp;
   }
 

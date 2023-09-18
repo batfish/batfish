@@ -25,7 +25,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
   public static final SymbolicAsPathRegex ALL_AS_PATHS = new SymbolicAsPathRegex(".*");
 
   /** A regex representing integers in the range 0 to 2^32 - 1. */
-  @VisibleForTesting @Nonnull static final String INT_32_REGEX = toRegex(0L, (1L << 32) - 1);
+  @VisibleForTesting static final @Nonnull String INT_32_REGEX = toRegex(0L, (1L << 32) - 1);
 
   /**
    * A regex representing AS numbers. The first conjunct of the regex ensures there are no leading
@@ -33,8 +33,8 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * numeric interval syntax of the automaton library. It's a bit complicated because that syntax
    * only supports numbers in the Java int range.
    */
-  @VisibleForTesting @Nonnull
-  static final String AS_NUM_REGEX = "((0|[1-9][0-9]*)" + "&" + INT_32_REGEX + ")";
+  @VisibleForTesting
+  static final @Nonnull String AS_NUM_REGEX = "((0|[1-9][0-9]*)" + "&" + INT_32_REGEX + ")";
 
   /**
    * A regex that represents the language of AS paths: a space-separated list of AS numbers,
@@ -49,8 +49,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * <p>Note: in general an AS path is a list of *sets* of AS numbers. but the format of regexes
    * over sets is apparently vendor-dependent. for now we do not support them.
    */
-  @Nonnull
-  private static final String AS_PATH_REGEX =
+  private static final @Nonnull String AS_PATH_REGEX =
       // the empty AS-path
       "^^$"
           + "|"
@@ -72,7 +71,7 @@ public class SymbolicAsPathRegex extends SymbolicRegex implements Comparable<Sym
    * that when we solve for AS paths that match regexes, we will get examples that are sensible and
    * also able to be parsed by Batfish.
    */
-  @Nonnull private static final Automaton AS_PATH_FSM = new RegExp(AS_PATH_REGEX).toAutomaton();
+  private static final @Nonnull Automaton AS_PATH_FSM = new RegExp(AS_PATH_REGEX).toAutomaton();
 
   public SymbolicAsPathRegex(String regex) {
     super(regex);

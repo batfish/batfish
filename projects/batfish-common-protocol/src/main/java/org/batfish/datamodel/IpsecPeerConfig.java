@@ -25,15 +25,15 @@ public abstract class IpsecPeerConfig implements Serializable {
 
   static final String PROP_TUNNEL_INTERFACE = "tunnelInterface";
 
-  @Nullable private String _ipsecPolicy;
+  private @Nullable String _ipsecPolicy;
 
-  @Nonnull private String _sourceInterface;
+  private @Nonnull String _sourceInterface;
 
-  @Nullable private IpAccessList _policyAccessList;
+  private @Nullable IpAccessList _policyAccessList;
 
-  @Nonnull private Ip _localAddress;
+  private @Nonnull Ip _localAddress;
 
-  @Nullable private String _tunnelInterface;
+  private @Nullable String _tunnelInterface;
 
   @JsonCreator
   protected IpsecPeerConfig(

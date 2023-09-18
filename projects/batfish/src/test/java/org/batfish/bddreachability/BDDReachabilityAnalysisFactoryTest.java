@@ -366,8 +366,7 @@ public final class BDDReachabilityAnalysisFactoryTest {
     }
   }
 
-  @Nonnull
-  private Set<Edge> getEdges(Map<StateExpr, Map<StateExpr, Transition>> edgeMap) {
+  private @Nonnull Set<Edge> getEdges(Map<StateExpr, Map<StateExpr, Transition>> edgeMap) {
     return edgeMap.entrySet().stream()
         .flatMap(
             srcEntry ->

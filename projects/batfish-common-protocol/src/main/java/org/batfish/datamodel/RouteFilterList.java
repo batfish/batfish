@@ -34,11 +34,11 @@ public class RouteFilterList implements Serializable {
 
   private final Supplier<Set<Prefix>> _deniedCache;
 
-  @Nonnull private List<RouteFilterLine> _lines;
+  private @Nonnull List<RouteFilterLine> _lines;
 
-  @Nullable private final String _name;
+  private final @Nullable String _name;
 
-  @Nullable private final VendorStructureId _vendorStructureId;
+  private final @Nullable VendorStructureId _vendorStructureId;
 
   private final Supplier<Set<Prefix>> _permittedCache;
 

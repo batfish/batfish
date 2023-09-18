@@ -21,7 +21,7 @@ import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 public final class PrependAsPath extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  @Nonnull private AsPathListExpr _expr;
+  private @Nonnull AsPathListExpr _expr;
 
   @JsonCreator
   private static PrependAsPath jsonCreator(@Nullable @JsonProperty(PROP_EXPR) AsPathListExpr expr) {
@@ -78,8 +78,7 @@ public final class PrependAsPath extends Statement {
   }
 
   @JsonProperty(PROP_EXPR)
-  @Nonnull
-  public AsPathListExpr getExpr() {
+  public @Nonnull AsPathListExpr getExpr() {
     return _expr;
   }
 

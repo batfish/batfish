@@ -201,8 +201,7 @@ public class BgpProcess implements Serializable {
     return _dynamicIpv6PeerGroups;
   }
 
-  @Nullable
-  public Boolean getEnforceFirstAs() {
+  public @Nullable Boolean getEnforceFirstAs() {
     return _enforceFirstAs;
   }
 

@@ -76,8 +76,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
    * Return an {@link Optional} {@link Prefix} from a string, or {@link Optional#empty} if the
    * string does not represent a {@link Prefix}.
    */
-  @Nonnull
-  public static Optional<Prefix> tryParse(@Nonnull String text) {
+  public static @Nonnull Optional<Prefix> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {
@@ -183,8 +182,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return _ip.equals(rhs._ip) && _prefixLength == rhs._prefixLength;
   }
 
-  @Nonnull
-  public Ip getEndIp() {
+  public @Nonnull Ip getEndIp() {
     long networkEnd = _ip.asLong() | wildcardMaskForPrefixLength(_prefixLength);
     return Ip.create(networkEnd);
   }
@@ -193,14 +191,12 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return _prefixLength;
   }
 
-  @Nonnull
-  public Ip getPrefixWildcard() {
+  public @Nonnull Ip getPrefixWildcard() {
     long wildcardLong = wildcardMaskForPrefixLength(_prefixLength);
     return Ip.create(wildcardLong);
   }
 
-  @Nonnull
-  public Ip getStartIp() {
+  public @Nonnull Ip getStartIp() {
     return _ip;
   }
 
@@ -210,8 +206,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return 31 + 31 * Long.hashCode(_ip.asLong()) + _prefixLength;
   }
 
-  @Nonnull
-  public IpSpace toIpSpace() {
+  public @Nonnull IpSpace toIpSpace() {
     if (_prefixLength == 0) {
       return UniverseIpSpace.INSTANCE;
     } else if (_prefixLength == MAX_PREFIX_LENGTH) {

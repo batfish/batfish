@@ -26,9 +26,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
     private static final String PROP_ROLE_MAP = "roleMap";
 
-    @Nonnull private NodeRoleDimension _roleDimension;
+    private @Nonnull NodeRoleDimension _roleDimension;
 
-    @Nonnull private SortedMap<String, SortedSet<String>> _roleMap;
+    private @Nonnull SortedMap<String, SortedSet<String>> _roleMap;
 
     @JsonCreator
     public RolesAnswerElement(
@@ -83,9 +83,9 @@ public class RolesQuestionPlugin extends QuestionPlugin {
     private static final String PROP_NODE_REGEX = "nodeRegex";
     private static final String PROP_ROLE_DIMENSION = "roleDimension";
 
-    @Nonnull private NodesSpecifier _nodeRegex;
+    private @Nonnull NodesSpecifier _nodeRegex;
 
-    @Nullable private String _roleDimension;
+    private @Nullable String _roleDimension;
 
     @JsonCreator
     public RolesQuestion(

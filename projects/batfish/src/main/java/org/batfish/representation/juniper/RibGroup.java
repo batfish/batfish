@@ -10,10 +10,10 @@ import javax.annotation.Nullable;
 /** Rib group configuration */
 public class RibGroup implements Serializable {
 
-  @Nonnull private String _name;
-  @Nullable private String _exportRib;
-  @Nonnull private List<String> _importPolicies;
-  @Nonnull private List<String> _importRibs;
+  private @Nonnull String _name;
+  private @Nullable String _exportRib;
+  private @Nonnull List<String> _importPolicies;
+  private @Nonnull List<String> _importRibs;
 
   public RibGroup(@Nonnull String name) {
     _name = name;
@@ -21,8 +21,7 @@ public class RibGroup implements Serializable {
     _importRibs = ImmutableList.of();
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -30,8 +29,7 @@ public class RibGroup implements Serializable {
     _name = name;
   }
 
-  @Nullable
-  public String getExportRib() {
+  public @Nullable String getExportRib() {
     return _exportRib;
   }
 
@@ -39,8 +37,7 @@ public class RibGroup implements Serializable {
     _exportRib = rib;
   }
 
-  @Nonnull
-  public List<String> getImportPolicies() {
+  public @Nonnull List<String> getImportPolicies() {
     return _importPolicies;
   }
 
@@ -48,8 +45,7 @@ public class RibGroup implements Serializable {
     _importPolicies = ImmutableList.<String>builder().addAll(_importPolicies).add(policy).build();
   }
 
-  @Nonnull
-  public List<String> getImportRibs() {
+  public @Nonnull List<String> getImportRibs() {
     return _importRibs;
   }
 

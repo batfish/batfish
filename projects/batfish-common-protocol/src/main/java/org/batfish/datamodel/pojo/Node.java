@@ -18,9 +18,9 @@ public final class Node extends BfObject {
   private static final String PROP_MODEL = "model";
   private static final String PROP_TYPE = "type";
 
-  @Nonnull private final String _name;
-  @Nullable private DeviceModel _model;
-  @Nullable private DeviceType _type;
+  private final @Nonnull String _name;
+  private @Nullable DeviceModel _model;
+  private @Nullable DeviceType _type;
 
   @VisibleForTesting
   Node(

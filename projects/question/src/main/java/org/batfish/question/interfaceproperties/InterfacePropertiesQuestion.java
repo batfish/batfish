@@ -31,13 +31,13 @@ public class InterfacePropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private final String _interfaces;
-  @Nonnull private final InterfaceSpecifier _interfaceSpecifier;
-  @Nullable private final String _nodes;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nullable String _interfaces;
+  private final @Nonnull InterfaceSpecifier _interfaceSpecifier;
+  private final @Nullable String _nodes;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
   private boolean _onlyActive;
-  @Nullable private final String _properties;
-  @Nonnull private final InterfacePropertySpecifier _propertySpecifier;
+  private final @Nullable String _properties;
+  private final @Nonnull InterfacePropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static InterfacePropertiesQuestion create(
@@ -115,8 +115,7 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
-  @Nonnull
-  public InterfaceSpecifier getInterfaceSpecifier() {
+  public @Nonnull InterfaceSpecifier getInterfaceSpecifier() {
     return _interfaceSpecifier;
   }
 
@@ -127,20 +126,17 @@ public class InterfacePropertiesQuestion extends Question {
   }
 
   @JsonIgnore
-  @Nonnull
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  @Nullable
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 
   @JsonIgnore
-  @Nonnull
-  public InterfacePropertySpecifier getPropertySpecifier() {
+  public @Nonnull InterfacePropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
   }
 

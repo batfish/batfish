@@ -24,9 +24,9 @@ public class SelfDescribingObject {
   static final String PROP_SCHEMA = "schema";
   static final String PROP_VALUE = "value";
 
-  @Nullable private final String _name;
-  @Nonnull private final Schema _schema;
-  @Nullable private final Object _value;
+  private final @Nullable String _name;
+  private final @Nonnull Schema _schema;
+  private final @Nullable Object _value;
 
   @JsonCreator
   private static @Nonnull SelfDescribingObject create(

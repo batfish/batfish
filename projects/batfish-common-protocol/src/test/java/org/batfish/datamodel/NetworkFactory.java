@@ -23,7 +23,7 @@ public class NetworkFactory {
   /** Base class for all network factory builders */
   public abstract static class NetworkFactoryBuilder<T> {
 
-    @Nullable private final NetworkFactory _networkFactory;
+    private final @Nullable NetworkFactory _networkFactory;
 
     private final Class<T> _outputClass;
 

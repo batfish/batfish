@@ -17,16 +17,14 @@ public class TrackInterface implements Track {
     _mode = mode;
   }
 
-  @Nonnull
-  public String getInterface() {
+  public @Nonnull String getInterface() {
     return _interface;
   }
 
-  @Nonnull
-  public Mode getMode() {
+  public @Nonnull Mode getMode() {
     return _mode;
   }
 
-  @Nonnull private final String _interface;
-  @Nonnull private final Mode _mode;
+  private final @Nonnull String _interface;
+  private final @Nonnull Mode _mode;
 }

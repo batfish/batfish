@@ -23,8 +23,7 @@ public class BgpL2vpnEvpnAddressFamily implements Serializable {
   }
 
   /** If not {@code null}, redistribute IPv4 routes into EVPN address family as type 5 routes */
-  @Nullable
-  public BgpL2VpnEvpnIpv4Unicast getAdvertiseIpv4Unicast() {
+  public @Nullable BgpL2VpnEvpnIpv4Unicast getAdvertiseIpv4Unicast() {
     return _advertiseIpv4Unicast;
   }
 

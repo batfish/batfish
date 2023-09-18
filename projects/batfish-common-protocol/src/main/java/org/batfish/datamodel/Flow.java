@@ -18,7 +18,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
   public static class Builder {
     private int _dscp;
     private Ip _dstIp;
-    @Nullable private Integer _dstPort;
+    private @Nullable Integer _dstPort;
     private int _ecn;
     private int _fragmentOffset;
     private @Nullable Integer _icmpCode;
@@ -549,14 +549,12 @@ public final class Flow implements Comparable<Flow>, Serializable {
   }
 
   @JsonProperty(PROP_ICMP_CODE)
-  @Nullable
-  public Integer getIcmpCode() {
+  public @Nullable Integer getIcmpCode() {
     return _icmpCode;
   }
 
   @JsonProperty(PROP_ICMP_TYPE)
-  @Nullable
-  public Integer getIcmpType() {
+  public @Nullable Integer getIcmpType() {
     return _icmpType;
   }
 

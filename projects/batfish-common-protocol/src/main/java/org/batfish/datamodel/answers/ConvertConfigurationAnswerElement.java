@@ -41,38 +41,35 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   private static final String PROP_WARNINGS = "warnings";
 
   // This will only be null in legacy objects, which used _failed set instead
-  @Nullable private SortedMap<String, ConvertStatus> _convertStatus;
+  private @Nullable SortedMap<String, ConvertStatus> _convertStatus;
 
   // filename -> structType -> structName -> info
-  @Nonnull
-  private SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+  private @Nonnull SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       _definedStructures;
 
   /* Map of source filename to generated nodes (e.g. "configs/j1.cfg" -> ["j1_master", "j1_logical_system1"]) */
-  @Nonnull private Multimap<String, String> _fileMap;
+  private @Nonnull Multimap<String, String> _fileMap;
 
   // filename -> structType -> structName -> usage -> lines
-  @Nonnull
-  private SortedMap<
+  private @Nonnull SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       _referencedStructures;
 
-  @Nonnull private SortedMap<String, BatfishException.BatfishStackTrace> _errors;
+  private @Nonnull SortedMap<String, BatfishException.BatfishStackTrace> _errors;
 
-  @Nonnull private SortedMap<String, ErrorDetails> _errorDetails;
+  private @Nonnull SortedMap<String, ErrorDetails> _errorDetails;
 
   // This is just to support legacy objects, before _convertStatus map was used
-  @Nullable private Set<String> _failed;
+  private @Nullable Set<String> _failed;
 
   // filename -> structType -> structName -> usage -> lines
-  @Nonnull
-  private SortedMap<
+  private @Nonnull SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       _undefinedReferences;
 
-  @Nonnull private String _version;
+  private @Nonnull String _version;
 
-  @Nonnull private SortedMap<String, Warnings> _warnings;
+  private @Nonnull SortedMap<String, Warnings> _warnings;
 
   public ConvertConfigurationAnswerElement() {
     this(null, null, null, null, null, null, null, null, null);
@@ -113,8 +110,7 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
   }
 
   @JsonProperty(PROP_DEFINED_STRUCTURES)
-  @Nonnull
-  public SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
+  public @Nonnull SortedMap<String, SortedMap<String, SortedMap<String, DefinedStructureInfo>>>
       getDefinedStructures() {
     return _definedStructures;
   }
@@ -141,49 +137,42 @@ public class ConvertConfigurationAnswerElement extends InitStepAnswerElement
 
   @Override
   @JsonProperty(PROP_ERRORS)
-  @Nonnull
-  public SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
+  public @Nonnull SortedMap<String, BatfishException.BatfishStackTrace> getErrors() {
     return _errors;
   }
 
   @Override
-  @Nonnull
-  public SortedMap<String, ErrorDetails> getErrorDetails() {
+  public @Nonnull SortedMap<String, ErrorDetails> getErrorDetails() {
     return _errorDetails;
   }
 
   @JsonProperty(PROP_FILE_MAP)
-  @Nonnull
-  public Multimap<String, String> getFileMap() {
+  public @Nonnull Multimap<String, String> getFileMap() {
     return _fileMap;
   }
 
   @JsonProperty(PROP_REFERENCED_STRUCTURES)
-  @Nonnull
-  public SortedMap<
+  public @Nonnull SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       getReferencedStructures() {
     return _referencedStructures;
   }
 
   @JsonProperty(PROP_UNDEFINED_REFERENCES)
-  @Nonnull
-  public SortedMap<
+  public @Nonnull SortedMap<
           String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
       getUndefinedReferences() {
     return _undefinedReferences;
   }
 
   @JsonProperty(PROP_VERSION)
-  @Nonnull
-  public String getVersion() {
+  public @Nonnull String getVersion() {
     return _version;
   }
 
   @Override
   @JsonProperty(PROP_WARNINGS)
-  @Nonnull
-  public SortedMap<String, Warnings> getWarnings() {
+  public @Nonnull SortedMap<String, Warnings> getWarnings() {
     return _warnings;
   }
 
