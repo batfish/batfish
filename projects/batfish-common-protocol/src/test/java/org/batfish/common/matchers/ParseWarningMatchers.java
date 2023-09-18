@@ -1,6 +1,6 @@
 package org.batfish.common.matchers;
 
-import static org.hamcrest.CoreMatchers.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings.ParseWarning;

@@ -1,7 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.BgpProcess.testBgpProcess;
-import static org.hamcrest.core.Is.is;
+import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
 import org.junit.Before;

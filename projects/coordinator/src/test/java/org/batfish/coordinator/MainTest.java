@@ -4,6 +4,7 @@ import static org.batfish.coordinator.Main.getQuestionTemplates;
 import static org.batfish.coordinator.Main.readQuestionTemplate;
 import static org.batfish.coordinator.Main.readQuestionTemplates;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertThat;
@@ -17,7 +18,6 @@ import java.util.Map;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.util.CommonUtil;
 import org.codehaus.jettison.json.JSONObject;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
@@ -54,7 +54,7 @@ public class MainTest {
     // the value of the question template with key duplicate_template should be replaced now
     assertThat(
         questionTemplates,
-        IsMapContaining.hasEntry(
+        hasEntry(
             DUPLICATE_TEMPLATE_NAME,
             "{\"instance\":{\"instanceName\":\"duplicate_template\",\"description\":\"test"
                 + " question description\"}}"));
@@ -81,7 +81,7 @@ public class MainTest {
     // with (instanceName:DUPLICATE_TEMPLATE), key of the map will be same
     assertThat(
         questionTemplates,
-        IsMapContaining.hasEntry(
+        hasEntry(
             DUPLICATE_TEMPLATE_NAME,
             "{\"instance\":{\"instanceName\":\"DUPLICATE_TEMPLATE\",\"description\":\"test"
                 + " question description\"}}"));
@@ -108,8 +108,8 @@ public class MainTest {
     assertThat(
         questionTemplates,
         allOf(
-            IsMapContaining.hasEntry(DUPLICATE_TEMPLATE_NAME, "template_body"),
-            IsMapContaining.hasEntry(
+            hasEntry(DUPLICATE_TEMPLATE_NAME, "template_body"),
+            hasEntry(
                 NEW_TEMPLATE_NAME,
                 "{\"instance\":{\"instanceName\":\"new_template\",\"description\":\"test question"
                     + " description\"}}")));
@@ -144,11 +144,11 @@ public class MainTest {
     assertThat(
         questionTemplates,
         allOf(
-            IsMapContaining.hasEntry(
+            hasEntry(
                 "testquestion1",
                 "{\"instance\":{\"instanceName\":\"testQuestion1\",\"description\":\"test question"
                     + " one description\"}}"),
-            IsMapContaining.hasEntry(
+            hasEntry(
                 "testquestion2",
                 "{\"instance\":{\"instanceName\":\"testQuestion2\",\"description\":\"test question"
                     + " two description\"}}")));
@@ -177,7 +177,7 @@ public class MainTest {
     // Both templates should be present
     assertThat(
         questionTemplates,
-        IsMapContaining.hasEntry(
+        hasEntry(
             "testquestion",
             "{\"instance\":{\"instanceName\":\"testQuestion\",\"description\":\"test question"
                 + " description\"}}"));
