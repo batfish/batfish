@@ -397,10 +397,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
    * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
    * with route-maps in r1 of the new snapshot.
-   *
-   * @param snapshot the current snapshot
-   * @param reference the reference snapshot
-   * @return
    */
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
