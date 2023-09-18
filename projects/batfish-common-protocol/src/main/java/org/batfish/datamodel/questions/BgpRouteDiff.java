@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Ordering.natural;
 import static java.util.Comparator.comparing;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
@@ -41,6 +42,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
    */
   private static final Set<String> ROUTE_DIFF_FIELD_NAMES =
       ImmutableSet.of(
+          PROP_ADMINISTRATIVE_DISTANCE,
           PROP_AS_PATH,
           PROP_COMMUNITIES,
           PROP_LOCAL_PREFERENCE,
@@ -60,7 +62,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
     checkArgument(
         ROUTE_DIFF_FIELD_NAMES.contains(fieldName),
         "fieldName must be one of " + ROUTE_DIFF_FIELD_NAMES);
-    checkArgument(!oldValue.equals(newValue), "oldValue and newValule must be different");
+    checkArgument(!oldValue.equals(newValue), "oldValue and newValue must be different");
     _fieldName = fieldName;
     _oldValue = oldValue;
     _newValue = newValue;
@@ -125,6 +127,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
 
     checkArgument(
         route1.toBuilder()
+            .setAdminDist(route2.getAdminDist())
             .setAsPath(route2.getAsPath())
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
@@ -144,6 +147,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
 
     return new StructuredBgpRouteDiffs(
         Stream.of(
+                routeDiff(route1, route2, PROP_ADMINISTRATIVE_DISTANCE, BgpRoute::getAdminDist),
                 routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
                 routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
                 routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),

@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
+import static org.batfish.minesweeper.SymbolicAsPathRegex.AS_NUM_REGEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
@@ -40,11 +41,16 @@ public class SymbolicAsPathRegexTest {
 
     assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
     assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
-    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
-    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+    assertThat(
+        r3.toAutomaton(),
+        equalTo(new RegExp("^^" + "(" + AS_NUM_REGEX + " )*" + "40$").toAutomaton()));
+
+    assertThat(
+        r4.toAutomaton(), equalTo(new RegExp("^^40( " + AS_NUM_REGEX + ")*$").toAutomaton()));
     assertThat(
         r5.toAutomaton(),
-        equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40 50( (0|[1-9][0-9]*))*$").toAutomaton()));
+        equalTo(
+            new RegExp("^^(" + AS_NUM_REGEX + " )*40 50( " + AS_NUM_REGEX + ")*$").toAutomaton()));
   }
 
   @Test
@@ -59,8 +65,10 @@ public class SymbolicAsPathRegexTest {
 
     assertThat(r1.toAutomaton(), equalTo(new RegExp("^^40$").toAutomaton()));
     assertThat(r2.toAutomaton(), equalTo(new RegExp("^^$").toAutomaton()));
-    assertThat(r3.toAutomaton(), equalTo(new RegExp("^^((0|[1-9][0-9]*) )*40$").toAutomaton()));
-    assertThat(r4.toAutomaton(), equalTo(new RegExp("^^40( (0|[1-9][0-9]*))*$").toAutomaton()));
+    assertThat(
+        r3.toAutomaton(), equalTo(new RegExp("^^(" + AS_NUM_REGEX + " )*40$").toAutomaton()));
+    assertThat(
+        r4.toAutomaton(), equalTo(new RegExp("^^40( " + AS_NUM_REGEX + ")*$").toAutomaton()));
   }
 
   @Test
@@ -87,7 +95,7 @@ public class SymbolicAsPathRegexTest {
     String r2 = SymbolicAsPathRegex.toRegex(500L, (long) Integer.MAX_VALUE + 20);
     String r3 =
         SymbolicAsPathRegex.toRegex((long) Integer.MAX_VALUE + 20, (long) Integer.MAX_VALUE + 500);
-    String r4 = SymbolicAsPathRegex.toRegex(0L, (long) Math.pow(2, 32) - 1);
+    String r4 = SymbolicAsPathRegex.toRegex(0L, (1L << 32) - 1);
 
     assertThat(r1, equalTo("<0-2147483647>"));
     assertThat(r2, equalTo("((<500-2147483647>)|(2<147483648-147483667>))"));
@@ -144,8 +152,7 @@ public class SymbolicAsPathRegexTest {
             .add(3999999999L)
             .build());
 
-    SymbolicAsPathRegex r4 =
-        singletonAsPathRegexForClosedInterval(400L, (long) Math.pow(2, 32) - 1);
+    SymbolicAsPathRegex r4 = singletonAsPathRegexForClosedInterval(400L, (1L << 32) - 1);
     testRegexBehavior(
         r4,
         ImmutableSet.<Long>builder()
