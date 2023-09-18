@@ -194,8 +194,7 @@ public final class CumulusConversions {
    * @return the inferred Ip or empty optional if that is not possible.
    */
   @VisibleForTesting
-  @Nonnull
-  static Optional<Ip> inferPeerIp(Interface viIface) {
+  static @Nonnull Optional<Ip> inferPeerIp(Interface viIface) {
     // one concrete interface address
     if (viIface.getAllAddresses().size() != 1
         || viIface.getAddress() == null
@@ -256,8 +255,7 @@ public final class CumulusConversions {
    * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
    * {@link Configuration} to ensure they are available and tracked.
    */
-  @Nullable
-  static If suppressSummarizedPrefixes(
+  static @Nullable If suppressSummarizedPrefixes(
       Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
     Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
     if (!prefixesToSuppress.hasNext()) {
@@ -327,8 +325,7 @@ public final class CumulusConversions {
             });
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)
@@ -342,8 +339,7 @@ public final class CumulusConversions {
    * Returns {@link org.batfish.datamodel.BgpProcess} for named {@code bgpVrf} if valid, or else
    * {@code null}.
    */
-  @Nullable
-  static org.batfish.datamodel.BgpProcess toBgpProcess(
+  static @Nullable org.batfish.datamodel.BgpProcess toBgpProcess(
       Configuration c, CumulusNcluConfiguration vsConfig, String vrfName, BgpVrf bgpVrf) {
     BgpProcess bgpProcess = vsConfig.getBgpProcess();
     Ip routerId = bgpVrf.getRouterId();
@@ -520,8 +516,7 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  @Nullable
-  static Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
+  static @Nullable Ipv4UnicastAddressFamily convertIpv4UnicastAddressFamily(
       @Nullable BgpNeighborIpv4UnicastAddressFamily ipv4UnicastAddressFamily,
       boolean defaultIpv4Unicast,
       RoutingPolicy exportRoutingPolicy,
@@ -582,8 +577,7 @@ public final class CumulusConversions {
         c, vsConfig, neighbor, localAs, bgpVrf, newProc, peerConfigBuilder, w);
   }
 
-  @Nonnull
-  private static RoutingPolicy computeBgpNeighborExportRoutingPolicy(
+  private static @Nonnull RoutingPolicy computeBgpNeighborExportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf, @Nullable Long localAs) {
     String vrfName = bgpVrf.getVrfName();
 
@@ -948,8 +942,7 @@ public final class CumulusConversions {
         && Boolean.TRUE.equals(neighbor.getIpv4UnicastAddressFamily().getDefaultOriginate());
   }
 
-  @Nullable
-  private static EvpnAddressFamily toEvpnAddressFamily(
+  private static @Nullable EvpnAddressFamily toEvpnAddressFamily(
       Configuration c,
       CumulusNcluConfiguration vsConfig,
       BgpNeighbor neighbor,
@@ -1183,8 +1176,7 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static If convertOspfRedistributionPolicy(
+  static @Nonnull If convertOspfRedistributionPolicy(
       RedistributionPolicy policy, Map<String, RouteMap> routeMaps) {
     CumulusRoutingProtocol protocol = policy.getCumulusRoutingProtocol();
 
@@ -1252,8 +1244,7 @@ public final class CumulusConversions {
    * @param routerId router ID of the {@code bgpVrf} (already inferred if needed)
    */
   @VisibleForTesting
-  @Nullable
-  static Long inferClusterId(
+  static @Nullable Long inferClusterId(
       BgpVrf bgpVrf, Ip routerId, BgpNeighbor neighbor, @Nullable Long localAs) {
     assert neighbor.getRemoteAs() != null; // precondition
     // Do not set cluster Id if peer is eBGP
@@ -1318,8 +1309,7 @@ public final class CumulusConversions {
         e -> OspfArea.builder().setNumber(e.getKey()).addInterfaces(e.getValue()).build());
   }
 
-  @Nullable
-  private static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings w) {
     if (type == null) {
       return null;
@@ -1507,8 +1497,7 @@ public final class CumulusConversions {
   }
 
   @VisibleForTesting
-  @Nullable
-  public static String getSuperInterfaceName(String ifaceName) {
+  public static @Nullable String getSuperInterfaceName(String ifaceName) {
     Matcher matcher = SUBINTERFACE_PATTERN.matcher(ifaceName);
     if (matcher.matches()) {
       return matcher.group(1);

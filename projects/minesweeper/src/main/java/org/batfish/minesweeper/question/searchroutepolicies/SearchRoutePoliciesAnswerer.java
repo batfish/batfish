@@ -67,17 +67,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final BgpRouteConstraints _inputConstraints;
-  @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nonnull private final Action _action;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nonnull BgpRouteConstraints _inputConstraints;
+  private final @Nonnull BgpRouteConstraints _outputConstraints;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nonnull Action _action;
 
   private final PathOption _pathOption;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   /** Helper class that contains both a row and and Bgpv4Route for a result */
   private static class RowAndRoute {

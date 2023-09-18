@@ -9,18 +9,16 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class Resolution implements Serializable {
 
-  @Nonnull
-  public ResolutionRib getOrReplaceRib(String name) {
+  public @Nonnull ResolutionRib getOrReplaceRib(String name) {
     if (_rib == null || !_rib.getName().equals(name)) {
       _rib = new ResolutionRib(name);
     }
     return _rib;
   }
 
-  @Nullable
-  public ResolutionRib getRib() {
+  public @Nullable ResolutionRib getRib() {
     return _rib;
   }
 
-  @Nullable private ResolutionRib _rib;
+  private @Nullable ResolutionRib _rib;
 }

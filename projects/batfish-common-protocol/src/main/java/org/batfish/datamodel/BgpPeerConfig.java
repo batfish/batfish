@@ -46,8 +46,8 @@ public abstract class BgpPeerConfig implements Serializable {
 
   static final String PROP_REPLACE_NON_LOCAL_ASES_ON_EXPORT = "replaceNonLocalAsesOnExport";
 
-  @Nullable private final RibGroup _appliedRibGroup;
-  @Nullable private final BgpAuthenticationSettings _authenticationSettings;
+  private final @Nullable RibGroup _appliedRibGroup;
+  private final @Nullable BgpAuthenticationSettings _authenticationSettings;
 
   /**
    * Whether this peer will check local IP, if configured, when accepting a connection. Not all
@@ -56,9 +56,9 @@ public abstract class BgpPeerConfig implements Serializable {
   private final boolean _checkLocalIpOnAccept;
 
   /** The cluster id associated with this peer to be used in route reflection */
-  @Nullable private final Long _clusterId;
+  private final @Nullable Long _clusterId;
 
-  @Nullable private final Long _confederationAsn;
+  private final @Nullable Long _confederationAsn;
 
   /** The default metric associated with routes sent to this peer */
   private final int _defaultMetric;
@@ -71,26 +71,26 @@ public abstract class BgpPeerConfig implements Serializable {
    * The set of generated and/or aggregate routes to be potentially sent to this peer before
    * outbound policies are taken into account
    */
-  @Nonnull private final Set<GeneratedRoute> _generatedRoutes;
+  private final @Nonnull Set<GeneratedRoute> _generatedRoutes;
 
   /**
    * The group name associated with this peer in the vendor-specific configuration from which the
    * containing configuration is derived. This field is OPTIONAL and should not impact the
    * subsequent data plane computation.
    */
-  @Nullable private final String _group;
+  private final @Nullable String _group;
 
   /** The autonomous system number of the containing BGP process as reported to this peer */
-  @Nullable private final Long _localAs;
+  private final @Nullable Long _localAs;
 
   /** The ip address of the containing router as reported to this peer */
-  @Nullable private final Ip _localIp;
+  private final @Nullable Ip _localIp;
 
-  @Nonnull protected final LongSpace _remoteAsns;
+  protected final @Nonnull LongSpace _remoteAsns;
 
   // Address families
-  @Nullable private Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
-  @Nullable private EvpnAddressFamily _evpnAddressFamily;
+  private @Nullable Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
+  private @Nullable EvpnAddressFamily _evpnAddressFamily;
 
   private final boolean _replaceNonLocalAsesOnExport;
 
@@ -132,8 +132,7 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   /** Return the {@link RibGroup} applied to this config */
-  @Nullable
-  public RibGroup getAppliedRibGroup() {
+  public @Nullable RibGroup getAppliedRibGroup() {
     return _appliedRibGroup;
   }
 
@@ -155,8 +154,7 @@ public abstract class BgpPeerConfig implements Serializable {
 
   /** Route-reflection cluster-id for this peer */
   @JsonProperty(PROP_CLUSTER_ID)
-  @Nullable
-  public Long getClusterId() {
+  public @Nullable Long getClusterId() {
     return _clusterId;
   }
 
@@ -225,15 +223,13 @@ public abstract class BgpPeerConfig implements Serializable {
    * perhaps by vendor's logic (e.g., lo0) or by the dest IP of an incoming BGP connection.
    */
   @JsonProperty(PROP_LOCAL_IP)
-  @Nullable
-  public Ip getLocalIp() {
+  public @Nullable Ip getLocalIp() {
     return _localIp;
   }
 
   /** Space of acceptable remote AS numbers for session to be established */
   @JsonProperty(PROP_REMOTE_ASNS)
-  @Nonnull
-  public LongSpace getRemoteAsns() {
+  public @Nonnull LongSpace getRemoteAsns() {
     return _remoteAsns;
   }
 
@@ -242,8 +238,7 @@ public abstract class BgpPeerConfig implements Serializable {
    * should participate in the exchange of IPv4 routes
    */
   @JsonProperty(PROP_IPV4_UNICAST_ADDRESS_FAMILY)
-  @Nullable
-  public Ipv4UnicastAddressFamily getIpv4UnicastAddressFamily() {
+  public @Nullable Ipv4UnicastAddressFamily getIpv4UnicastAddressFamily() {
     return _ipv4UnicastAddressFamily;
   }
 
@@ -252,8 +247,7 @@ public abstract class BgpPeerConfig implements Serializable {
    * participate in the exchange of EVPN routes
    */
   @JsonProperty(PROP_EVPN_ADDRESS_FAMILY)
-  @Nullable
-  public EvpnAddressFamily getEvpnAddressFamily() {
+  public @Nullable EvpnAddressFamily getEvpnAddressFamily() {
     return _evpnAddressFamily;
   }
 
@@ -276,8 +270,7 @@ public abstract class BgpPeerConfig implements Serializable {
    * @throws IllegalArgumentException if the family type is unrecognized.
    */
   @JsonIgnore
-  @Nullable
-  public AddressFamily getAddressFamily(AddressFamily.Type type) {
+  public @Nullable AddressFamily getAddressFamily(AddressFamily.Type type) {
     switch (type) {
       case IPV4_UNICAST:
         return _ipv4UnicastAddressFamily;
@@ -371,26 +364,26 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   public abstract static class Builder<S extends Builder<S, T>, T extends BgpPeerConfig> {
-    @Nullable protected RibGroup _appliedRibGroup;
-    @Nullable protected BgpAuthenticationSettings _authenticationSettings;
-    @Nullable protected BgpProcess _bgpProcess;
-    @Nullable protected Boolean _checkLocalIpOnAccept;
-    @Nullable protected Long _clusterId;
-    @Nullable protected Long _confederation;
+    protected @Nullable RibGroup _appliedRibGroup;
+    protected @Nullable BgpAuthenticationSettings _authenticationSettings;
+    protected @Nullable BgpProcess _bgpProcess;
+    protected @Nullable Boolean _checkLocalIpOnAccept;
+    protected @Nullable Long _clusterId;
+    protected @Nullable Long _confederation;
     protected int _defaultMetric;
     protected String _description;
     protected boolean _ebgpMultihop;
     protected boolean _enforceFirstAs;
-    @Nullable protected Set<GeneratedRoute> _generatedRoutes;
-    @Nullable protected String _group;
-    @Nullable protected Long _localAs;
-    @Nullable protected Ip _localIp;
-    @Nonnull protected LongSpace _remoteAsns;
-    @Nullable protected Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
-    @Nullable protected EvpnAddressFamily _evpnAddressFamily;
+    protected @Nullable Set<GeneratedRoute> _generatedRoutes;
+    protected @Nullable String _group;
+    protected @Nullable Long _localAs;
+    protected @Nullable Ip _localIp;
+    protected @Nonnull LongSpace _remoteAsns;
+    protected @Nullable Ipv4UnicastAddressFamily _ipv4UnicastAddressFamily;
+    protected @Nullable EvpnAddressFamily _evpnAddressFamily;
 
     // Identifying fields
-    @Nullable protected String _hostname;
+    protected @Nullable String _hostname;
 
     protected boolean _replaceNonLocalAsesOnExport;
 

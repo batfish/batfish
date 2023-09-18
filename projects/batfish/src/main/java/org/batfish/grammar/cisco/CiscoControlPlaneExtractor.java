@@ -1436,9 +1436,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
-  @Nullable private String _currentEigrpInterface;
+  private @Nullable String _currentEigrpInterface;
 
-  @Nullable private EigrpProcess _currentEigrpProcess;
+  private @Nullable EigrpProcess _currentEigrpProcess;
 
   private ExpandedCommunityList _currentExpandedCommunityList;
 
@@ -1512,7 +1512,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private String _currentVrf;
 
-  @Nullable private VrfAddressFamily _currentVrfAddressFamily;
+  private @Nullable VrfAddressFamily _currentVrfAddressFamily;
 
   private Integer _currentVrrpGroupNum;
 
@@ -1524,7 +1524,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private boolean _no;
 
-  @Nullable private EigrpProcess _parentEigrpProcess;
+  private @Nullable EigrpProcess _parentEigrpProcess;
 
   private final CiscoCombinedParser _parser;
 
@@ -1534,7 +1534,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private NetworkObjectGroup _currentNetworkObjectGroup;
 
@@ -3381,8 +3381,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentLineNames = names;
   }
 
-  @Nonnull
-  private List<String> getLineNames(S_lineContext ctx) {
+  private @Nonnull List<String> getLineNames(S_lineContext ctx) {
     String lineType = ctx.line_type().getText();
     if (lineType.equals("")) {
       lineType = "<UNNAMED>";
@@ -9734,8 +9733,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  @Nullable
-  private String getAddressGroup(Access_list_ip6_rangeContext ctx) {
+  private @Nullable String getAddressGroup(Access_list_ip6_rangeContext ctx) {
     if (ctx.address_group != null) {
       return ctx.address_group.getText();
     } else {
@@ -9860,8 +9858,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         .build();
   }
 
-  @Nonnull
-  private EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
      * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
      * the K constants are configured.
@@ -10807,8 +10804,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return defaultReturnValue;
   }
 
-  @Nonnull
-  private RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
+  private @Nonnull RouteDistinguisher toRouteDistinguisher(Route_distinguisherContext ctx) {
     long dec = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       checkArgument(dec <= 0xFFFFL, "Invalid route distinguisher %s", ctx.getText());
@@ -10817,8 +10813,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     return RouteDistinguisher.from(toAsNum(ctx.bgp_asn()), dec);
   }
 
-  @Nonnull
-  private ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
+  private @Nonnull ExtendedCommunity toRouteTarget(Route_targetContext ctx) {
     long la = toLong(ctx.dec());
     if (ctx.IP_ADDRESS() != null) {
       return ExtendedCommunity.target(toIp(ctx.IP_ADDRESS()).asLong(), la);
@@ -10831,8 +10826,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     warn(outer, "Object group defined multiple times: '" + name.getText() + "'.");
   }
 
-  @Nullable
-  private ServiceObjectGroup.ServiceProtocol toServiceProtocol(
+  private @Nullable ServiceObjectGroup.ServiceProtocol toServiceProtocol(
       Service_group_protocolContext protocol) {
     if (protocol == null) {
       return null;

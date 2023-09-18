@@ -13,7 +13,7 @@ import org.batfish.datamodel.SubRange;
 @ParametersAreNonnullByDefault
 abstract class PortAppAstNode implements AppAstNode {
 
-  @Nonnull protected final List<SubRange> _ports;
+  protected final @Nonnull List<SubRange> _ports;
 
   public PortAppAstNode(List<SubRange> ports) {
     _ports = ports;

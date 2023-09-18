@@ -27,8 +27,7 @@ public final class InterfaceConverter {
   public static final int DEFAULT_BRIDGE_PVID = 1;
 
   @VisibleForTesting
-  @Nullable
-  public static String getSuperInterfaceName(String ifaceName) {
+  public static @Nullable String getSuperInterfaceName(String ifaceName) {
     Matcher matcher = SUBINTERFACE_PATTERN.matcher(ifaceName);
     if (matcher.matches()) {
       return matcher.group(1);
@@ -37,8 +36,7 @@ public final class InterfaceConverter {
   }
 
   @VisibleForTesting
-  @Nullable
-  public static Integer getEncapsulationVlan(InterfacesInterface iface) {
+  public static @Nullable Integer getEncapsulationVlan(InterfacesInterface iface) {
     Matcher matcher = ENCAPSULATION_VLAN_PATTERN.matcher(iface.getName());
     return matcher.matches() ? Integer.parseInt(matcher.group(1)) : null;
   }

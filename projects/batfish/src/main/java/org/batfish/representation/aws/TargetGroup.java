@@ -27,17 +27,17 @@ public final class TargetGroup implements AwsVpcEntity, Serializable {
     IP
   }
 
-  @Nonnull private String _targetGroupArn;
+  private @Nonnull String _targetGroupArn;
 
-  @Nonnull private final List<String> _loadBalancerArns;
+  private final @Nonnull List<String> _loadBalancerArns;
 
-  @Nonnull private final Protocol _protocol;
+  private final @Nonnull Protocol _protocol;
 
-  @Nonnull private final Integer _port;
+  private final @Nonnull Integer _port;
 
-  @Nonnull private final String _targetGroupName;
+  private final @Nonnull String _targetGroupName;
 
-  @Nonnull private final Type _targetType;
+  private final @Nonnull Type _targetType;
 
   @JsonCreator
   private static TargetGroup create(
@@ -83,28 +83,23 @@ public final class TargetGroup implements AwsVpcEntity, Serializable {
     return _targetGroupArn;
   }
 
-  @Nonnull
-  public List<String> getLoadBalancerArns() {
+  public @Nonnull List<String> getLoadBalancerArns() {
     return _loadBalancerArns;
   }
 
-  @Nonnull
-  public Protocol getProtocol() {
+  public @Nonnull Protocol getProtocol() {
     return _protocol;
   }
 
-  @Nonnull
-  public Integer getPort() {
+  public @Nonnull Integer getPort() {
     return _port;
   }
 
-  @Nonnull
-  public String getTargetGroupName() {
+  public @Nonnull String getTargetGroupName() {
     return _targetGroupName;
   }
 
-  @Nonnull
-  public Type getTargetType() {
+  public @Nonnull Type getTargetType() {
     return _targetType;
   }
 

@@ -18,7 +18,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   private static final String PROP_PEER_ADDRESS = "peerAddress";
 
   /** The remote peer's IP address */
-  @Nullable private final Ip _peerAddress;
+  private final @Nullable Ip _peerAddress;
 
   @JsonCreator
   private static @Nonnull BgpActivePeerConfig create(
@@ -138,7 +138,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {
-    @Nullable private Ip _peerAddress;
+    private @Nullable Ip _peerAddress;
 
     protected Builder() {
       super();
@@ -150,8 +150,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     }
 
     @Override
-    @Nonnull
-    public BgpActivePeerConfig build() {
+    public @Nonnull BgpActivePeerConfig build() {
       BgpActivePeerConfig bgpPeerConfig =
           new BgpActivePeerConfig(
               _appliedRibGroup,

@@ -25,8 +25,7 @@ public class IpPrefix implements Serializable {
   }
 
   /** Parse a {@link Prefix} from a string. */
-  @Nonnull
-  public static IpPrefix parse(@Nonnull String text) {
+  public static @Nonnull IpPrefix parse(@Nonnull String text) {
     String[] parts = text.split("/");
     checkArgument(
         parts.length == 2, "Invalid %s string: \"%s\"", IpPrefix.class.getSimpleName(), text);

@@ -33,15 +33,13 @@ public final class NextHopInterface implements NextHop {
 
   /** The interface name to which the traffic should be routed */
   @JsonProperty(PROP_INTERFACE)
-  @Nonnull
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
   /** Optional next hop/ARP IP to use */
   @JsonProperty(PROP_IP)
-  @Nullable
-  public Ip getIp() {
+  public @Nullable Ip getIp() {
     return _ip;
   }
 
@@ -52,8 +50,7 @@ public final class NextHopInterface implements NextHop {
    * @throws IllegalArgumentException if the interface name is not valid, e.g., {@link
    *     Interface#NULL_INTERFACE_NAME}
    */
-  @Nonnull
-  public static NextHopInterface of(String interfaceName) {
+  public static @Nonnull NextHopInterface of(String interfaceName) {
     return CACHE.getUnchecked(new NextHopInterface(interfaceName, null));
   }
 
@@ -65,8 +62,7 @@ public final class NextHopInterface implements NextHop {
    * @throws IllegalArgumentException if the interface name is not valid, e.g., {@link
    *     Interface#NULL_INTERFACE_NAME} or the IP is invalid, e.g., {@link Ip#AUTO}
    */
-  @Nonnull
-  public static NextHopInterface of(String interfaceName, Ip ip) {
+  public static @Nonnull NextHopInterface of(String interfaceName, Ip ip) {
     return CACHE.getUnchecked(new NextHopInterface(interfaceName, ip));
   }
 
@@ -105,8 +101,8 @@ public final class NextHopInterface implements NextHop {
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_IP = "ip";
 
-  @Nonnull private final String _interfaceName;
-  @Nullable private final Ip _ip;
+  private final @Nonnull String _interfaceName;
+  private final @Nullable Ip _ip;
 
   @JsonCreator
   private static @Nonnull NextHopInterface create(

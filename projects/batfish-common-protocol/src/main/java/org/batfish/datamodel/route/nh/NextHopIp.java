@@ -23,14 +23,12 @@ public final class NextHopIp implements NextHop {
   private static final LoadingCache<Ip, NextHopIp> CACHE =
       Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(NextHopIp::new);
 
-  @Nonnull
-  public static NextHopIp of(Ip ip) {
+  public static @Nonnull NextHopIp of(Ip ip) {
     return CACHE.get(ip);
   }
 
   @JsonProperty(PROP_IP)
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
@@ -61,7 +59,7 @@ public final class NextHopIp implements NextHop {
     return visitor.visitNextHopIp(this);
   }
 
-  @Nonnull private final Ip _ip;
+  private final @Nonnull Ip _ip;
 
   private static final String PROP_IP = "ip";
 

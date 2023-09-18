@@ -22,7 +22,7 @@ public class InferRolesQuestionPlugin extends QuestionPlugin {
   public static class InferRolesAnswerElement extends AnswerElement {
     private static final String PROP_ROLE_MAPPING = "roleMapping";
 
-    @Nonnull private final Optional<RoleMapping> _roleMapping;
+    private final @Nonnull Optional<RoleMapping> _roleMapping;
 
     @JsonCreator
     public InferRolesAnswerElement(

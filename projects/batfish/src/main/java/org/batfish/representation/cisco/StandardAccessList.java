@@ -7,8 +7,8 @@ import javax.annotation.Nonnull;
 
 public class StandardAccessList implements Serializable {
 
-  @Nonnull private List<StandardAccessListLine> _lines;
-  @Nonnull private final String _name;
+  private @Nonnull List<StandardAccessListLine> _lines;
+  private final @Nonnull String _name;
 
   public StandardAccessList(@Nonnull String id) {
     _name = id;
@@ -19,13 +19,11 @@ public class StandardAccessList implements Serializable {
     _lines.add(line);
   }
 
-  @Nonnull
-  public List<StandardAccessListLine> getLines() {
+  public @Nonnull List<StandardAccessListLine> getLines() {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

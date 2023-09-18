@@ -23,10 +23,10 @@ public final class RibGroup implements Serializable {
   private static final String PROP_IMPORT_POLICY = "importPolicies";
   private static final String PROP_RIB_IDS = "ribIds";
 
-  @Nonnull private final String _name;
-  @Nonnull private final List<RibId> _importRibs;
-  @Nonnull private final String _importPolicy;
-  @Nullable private final RibId _exportRib;
+  private final @Nonnull String _name;
+  private final @Nonnull List<RibId> _importRibs;
+  private final @Nonnull String _importPolicy;
+  private final @Nullable RibId _exportRib;
 
   /** Create a new RibGroup */
   public RibGroup(

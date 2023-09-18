@@ -19,8 +19,8 @@ public final class TunnelConfiguration implements Serializable {
   private static final String PROP_SOURCE_ADDRESS = "sourceAddress";
   private static final String PROP_DESTINATION_ADDRESS = "destinationAddress";
 
-  @Nonnull private Ip _sourceAddress;
-  @Nonnull private Ip _destinationAddress;
+  private @Nonnull Ip _sourceAddress;
+  private @Nonnull Ip _destinationAddress;
 
   private TunnelConfiguration(Ip sourceAddress, Ip destinationAddress) {
     _sourceAddress = sourceAddress;
@@ -37,14 +37,12 @@ public final class TunnelConfiguration implements Serializable {
   }
 
   @JsonProperty(PROP_SOURCE_ADDRESS)
-  @Nonnull
-  public Ip getSourceAddress() {
+  public @Nonnull Ip getSourceAddress() {
     return _sourceAddress;
   }
 
   @JsonProperty(PROP_DESTINATION_ADDRESS)
-  @Nonnull
-  public Ip getDestinationAddress() {
+  public @Nonnull Ip getDestinationAddress() {
     return _destinationAddress;
   }
 
@@ -71,8 +69,8 @@ public final class TunnelConfiguration implements Serializable {
   }
 
   public static final class Builder {
-    @Nullable private Ip _sourceAddress;
-    @Nullable private Ip _destinationAddress;
+    private @Nullable Ip _sourceAddress;
+    private @Nullable Ip _destinationAddress;
 
     private Builder() {}
 

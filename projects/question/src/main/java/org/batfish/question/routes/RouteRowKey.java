@@ -12,11 +12,11 @@ import org.batfish.datamodel.Prefix;
  */
 @ParametersAreNonnullByDefault
 public class RouteRowKey {
-  @Nonnull private final String _hostName;
+  private final @Nonnull String _hostName;
 
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
-  @Nonnull private final Prefix _prefix;
+  private final @Nonnull Prefix _prefix;
 
   public RouteRowKey(String hostName, String vrfName, Prefix prefix) {
     _hostName = hostName;
@@ -43,18 +43,15 @@ public class RouteRowKey {
     return Objects.hash(_hostName, _vrfName, _prefix);
   }
 
-  @Nonnull
-  public String getHostName() {
+  public @Nonnull String getHostName() {
     return _hostName;
   }
 
-  @Nonnull
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
 }

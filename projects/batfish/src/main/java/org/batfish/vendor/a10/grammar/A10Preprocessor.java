@@ -37,7 +37,7 @@ public final class A10Preprocessor extends A10ParserBaseListener {
    */
   private static Pattern ACOS_VERSION_PATTERN = Pattern.compile("!.*version (\\d+).\\d+.\\d+");
 
-  @Nonnull private A10Configuration _c;
+  private @Nonnull A10Configuration _c;
 
-  @Nonnull private String _text;
+  private @Nonnull String _text;
 }

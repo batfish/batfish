@@ -13,7 +13,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class VarAsPathSet extends AsPathSetExpr {
   private static final String PROP_VAR = "var";
 
-  @Nonnull private String _var;
+  private @Nonnull String _var;
 
   @JsonCreator
   private static VarAsPathSet jsonCreator(@Nullable @JsonProperty(PROP_VAR) String var) {
@@ -37,8 +37,7 @@ public final class VarAsPathSet extends AsPathSetExpr {
   }
 
   @JsonProperty(PROP_VAR)
-  @Nonnull
-  public String getVar() {
+  public @Nonnull String getVar() {
     return _var;
   }
 

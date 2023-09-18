@@ -119,13 +119,13 @@ public class BgpVr implements Serializable {
   private boolean _installRoute;
   private Map<String, PolicyRule> _importPolicyRules;
   private @Nullable Long _localAs;
-  private @Nonnull final Map<String, BgpPeerGroup> _peerGroups;
+  private final @Nonnull Map<String, BgpPeerGroup> _peerGroups;
 
   /**
    * Redist rules used by this BGP process, keyed by the referred redist profile name or by the
    * prefix used for filtering
    */
-  private @Nonnull final Map<RedistRuleRefNameOrPrefix, RedistRule> _redistRules;
+  private final @Nonnull Map<RedistRuleRefNameOrPrefix, RedistRule> _redistRules;
 
   private boolean _rejectDefaultRoute;
   private @Nullable Ip _routerId;

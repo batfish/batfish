@@ -50,7 +50,7 @@ public final class StandardCommunity extends Community {
   private final long _value;
 
   // Cached string representation
-  @Nullable private transient String _str;
+  private @Nullable transient String _str;
 
   private StandardCommunity(long value) {
     checkArgument(
@@ -76,8 +76,7 @@ public final class StandardCommunity extends Community {
     }
   }
 
-  @Nonnull
-  public static StandardCommunity parse(String value) {
+  public static @Nonnull StandardCommunity parse(String value) {
     String[] parts = value.split(":");
     checkArgument(parts.length <= 2, "Invalid standard community string: %s", value);
     if (parts.length == 2) {
@@ -87,8 +86,7 @@ public final class StandardCommunity extends Community {
     }
   }
 
-  @Nonnull
-  public static Optional<StandardCommunity> tryParse(String text) {
+  public static @Nonnull Optional<StandardCommunity> tryParse(String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {
@@ -96,13 +94,11 @@ public final class StandardCommunity extends Community {
     }
   }
 
-  @Nonnull
-  public static StandardCommunity of(long value) {
+  public static @Nonnull StandardCommunity of(long value) {
     return new StandardCommunity(value);
   }
 
-  @Nonnull
-  public static StandardCommunity of(int high, int low) {
+  public static @Nonnull StandardCommunity of(int high, int low) {
     checkArgument(low >= 0 && low <= 0xFFFF, "Invalid low value: %s", low);
     checkArgument(high >= 0 && high <= 0xFFFF, "Invalid high value: %s", low);
     return new StandardCommunity((long) high << 16 | low);

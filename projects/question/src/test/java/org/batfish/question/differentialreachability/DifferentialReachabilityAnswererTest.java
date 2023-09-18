@@ -107,8 +107,7 @@ public final class DifferentialReachabilityAnswererTest {
     assertEquals(expected, startLocations);
   }
 
-  @Nonnull
-  private static SpecifierContext getMockSpecifierContext(
+  private static @Nonnull SpecifierContext getMockSpecifierContext(
       SortedMap<String, Configuration> snapshotConfigs) {
     return new SpecifierContext() {
 

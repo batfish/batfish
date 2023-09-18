@@ -44,7 +44,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static class VpcAttachment {
 
-    @Nonnull private final String _vpcId;
+    private final @Nonnull String _vpcId;
 
     @JsonCreator
     private static VpcAttachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
@@ -62,11 +62,11 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final List<String> _attachmentVpcIds;
+  private final @Nonnull List<String> _attachmentVpcIds;
 
-  @Nonnull private final String _vpnGatewayId;
+  private final @Nonnull String _vpnGatewayId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
   private static VpnGateway create(

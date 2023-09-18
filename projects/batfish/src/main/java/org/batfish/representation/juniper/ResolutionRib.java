@@ -15,8 +15,7 @@ public final class ResolutionRib implements Serializable {
     _importPolicies = ImmutableList.of();
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -25,11 +24,10 @@ public final class ResolutionRib implements Serializable {
   }
 
   /** Returns the policy(ies) routes in this RIB must match to be usable for next-hop resolution. */
-  @Nonnull
-  public List<String> getImportPolicies() {
+  public @Nonnull List<String> getImportPolicies() {
     return _importPolicies;
   }
 
-  @Nonnull private List<String> _importPolicies;
-  @Nonnull private final String _name;
+  private @Nonnull List<String> _importPolicies;
+  private final @Nonnull String _name;
 }

@@ -16,23 +16,19 @@ public class InternetServiceName implements Serializable {
 
   public static final Type DEFAULT_TYPE = Type.DEFAULT;
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Long getInternetServiceId() {
+  public @Nullable Long getInternetServiceId() {
     return _internetServiceId;
   }
 
-  @Nullable
-  public Type getType() {
+  public @Nullable Type getType() {
     return _type;
   }
 
-  @Nonnull
-  public Type getTypeEffective() {
+  public @Nonnull Type getTypeEffective() {
     return firstNonNull(_type, DEFAULT_TYPE);
   }
 
@@ -48,7 +44,7 @@ public class InternetServiceName implements Serializable {
     _name = name;
   }
 
-  @Nonnull private final String _name;
-  @Nullable private Type _type;
-  @Nullable private Long _internetServiceId;
+  private final @Nonnull String _name;
+  private @Nullable Type _type;
+  private @Nullable Long _internetServiceId;
 }

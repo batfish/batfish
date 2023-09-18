@@ -53,17 +53,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
+  private final @Nonnull Environment.Direction _direction;
 
-  @Nonnull private final String _policySpecifierString;
-  @Nullable private final String _referencePolicySpecifierString;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nullable private final RoutingPolicySpecifier _referencePolicySpecifier;
+  private final @Nonnull String _policySpecifierString;
+  private final @Nullable String _referencePolicySpecifierString;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nullable RoutingPolicySpecifier _referencePolicySpecifier;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   public CompareRoutePoliciesAnswerer(
       org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question,

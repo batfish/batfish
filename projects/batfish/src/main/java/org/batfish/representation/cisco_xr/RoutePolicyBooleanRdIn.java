@@ -41,5 +41,5 @@ public class RoutePolicyBooleanRdIn extends RoutePolicyBoolean {
     return _expr.hashCode();
   }
 
-  @Nonnull private final RdMatchExpr _expr;
+  private final @Nonnull RdMatchExpr _expr;
 }

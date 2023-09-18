@@ -19,7 +19,7 @@ public class TransferResult {
    * input announcement; a BDD, which represents the conditions under which this particular path is
    * taken; and a boolean indicating whether the path ultimately accepts or rejects the announcement
    */
-  @Nonnull private final TransferReturn _returnValue;
+  private final @Nonnull TransferReturn _returnValue;
 
   /**
    * Whether the routes that go down this path should be suppressed (i.e., not announced). Route
@@ -71,74 +71,61 @@ public class TransferResult {
     _returnAssignedValue = returnAssignedValue;
   }
 
-  @Nonnull
-  public TransferReturn getReturnValue() {
+  public @Nonnull TransferReturn getReturnValue() {
     return _returnValue;
   }
 
-  @Nonnull
-  public boolean getSuppressedValue() {
+  public @Nonnull boolean getSuppressedValue() {
     return _suppressedValue;
   }
 
-  @Nonnull
-  public boolean getFallthroughValue() {
+  public @Nonnull boolean getFallthroughValue() {
     return _fallthroughValue;
   }
 
-  @Nonnull
-  public boolean getExitAssignedValue() {
+  public @Nonnull boolean getExitAssignedValue() {
     return _exitAssignedValue;
   }
 
-  @Nonnull
-  public boolean getReturnAssignedValue() {
+  public @Nonnull boolean getReturnAssignedValue() {
     return _returnAssignedValue;
   }
 
-  @Nonnull
-  public TransferResult setReturnValue(TransferReturn newReturn) {
+  public @Nonnull TransferResult setReturnValue(TransferReturn newReturn) {
     return new TransferResult(
         newReturn, _suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
-  @Nonnull
-  public TransferResult setReturnValueAccepted(boolean newAccepted) {
+  public @Nonnull TransferResult setReturnValueAccepted(boolean newAccepted) {
     return setReturnValue(_returnValue.setAccepted(newAccepted));
   }
 
-  @Nonnull
-  public TransferResult setReturnValueBDD(BDD newBDD) {
+  public @Nonnull TransferResult setReturnValueBDD(BDD newBDD) {
     return setReturnValue(
         new TransferReturn(_returnValue.getFirst(), newBDD, _returnValue.getAccepted()));
   }
 
-  @Nonnull
-  public TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
+  public @Nonnull TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
     return setReturnValue(
         new TransferReturn(newBDDRoute, _returnValue.getSecond(), _returnValue.getAccepted()));
   }
 
-  @Nonnull
-  public TransferResult setSuppressedValue(boolean suppressedValue) {
+  public @Nonnull TransferResult setSuppressedValue(boolean suppressedValue) {
     return new TransferResult(
         _returnValue, suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
-  @Nonnull
-  public TransferResult setExitAssignedValue(boolean exitAssignedValue) {
+  public @Nonnull TransferResult setExitAssignedValue(boolean exitAssignedValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, exitAssignedValue, _fallthroughValue, _returnAssignedValue);
   }
 
-  @Nonnull
-  public TransferResult setFallthroughValue(boolean fallthroughValue) {
+  public @Nonnull TransferResult setFallthroughValue(boolean fallthroughValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, _exitAssignedValue, fallthroughValue, _returnAssignedValue);
   }
 
-  @Nonnull
-  public TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
+  public @Nonnull TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
   }

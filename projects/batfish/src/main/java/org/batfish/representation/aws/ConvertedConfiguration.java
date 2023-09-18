@@ -21,24 +21,24 @@ import org.batfish.datamodel.Configuration;
 class ConvertedConfiguration implements Serializable {
 
   /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
-  @Nonnull private final Map<String, Configuration> _configurationNodes;
+  private final @Nonnull Map<String, Configuration> _configurationNodes;
 
-  @Nonnull private final Set<Layer1Edge> _layer1Edges;
+  private final @Nonnull Set<Layer1Edge> _layer1Edges;
 
   /**
    * Multimap of subnet IDs to {@link Instance} in that subnet used as targets by some {@link
    * LoadBalancer}
    */
-  @Nonnull private final Multimap<String, Instance> _subnetsToInstanceTargets;
+  private final @Nonnull Multimap<String, Instance> _subnetsToInstanceTargets;
 
   /**
    * Multimap of subnet IDs to {@link LoadBalancer} connected to that subnet that have active
    * instance targets
    */
-  @Nonnull private final Multimap<String, LoadBalancer> _subnetsToNlbs;
+  private final @Nonnull Multimap<String, LoadBalancer> _subnetsToNlbs;
 
   /** Multimap of load balancer ARNs to {@link Instance} used as targets for that load balancer */
-  @Nonnull private final Multimap<String, Instance> _nlbsToInstanceTargets;
+  private final @Nonnull Multimap<String, Instance> _nlbsToInstanceTargets;
 
   public ConvertedConfiguration(AwsConfiguration awsConfiguration) {
     this(
@@ -91,13 +91,11 @@ class ConvertedConfiguration implements Serializable {
     return _configurationNodes.values();
   }
 
-  @Nullable
-  public Configuration getNode(String hostname) {
+  public @Nullable Configuration getNode(String hostname) {
     return _configurationNodes.get(hostname.toLowerCase());
   }
 
-  @Nonnull
-  public Set<Layer1Edge> getLayer1Edges() {
+  public @Nonnull Set<Layer1Edge> getLayer1Edges() {
     return _layer1Edges;
   }
 

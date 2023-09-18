@@ -7,13 +7,11 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** FortiOS datamodel component containing secondary IP configuration */
 public final class SecondaryIp implements Serializable {
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public ConcreteInterfaceAddress getIp() {
+  public @Nullable ConcreteInterfaceAddress getIp() {
     return _ip;
   }
 
@@ -25,6 +23,6 @@ public final class SecondaryIp implements Serializable {
     _name = name;
   }
 
-  @Nonnull private final String _name;
-  @Nullable private ConcreteInterfaceAddress _ip;
+  private final @Nonnull String _name;
+  private @Nullable ConcreteInterfaceAddress _ip;
 }

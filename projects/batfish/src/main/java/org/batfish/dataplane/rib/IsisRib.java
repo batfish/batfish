@@ -42,8 +42,7 @@ public class IsisRib extends AbstractRib<IsisRoute> {
   }
 
   @Override
-  @Nonnull
-  public RibDelta<IsisRoute> mergeRouteGetDelta(IsisRoute route) {
+  public @Nonnull RibDelta<IsisRoute> mergeRouteGetDelta(IsisRoute route) {
     if (route.getAttach() && !_l1Only) {
       return RibDelta.empty();
     }

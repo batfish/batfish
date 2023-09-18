@@ -23,8 +23,8 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
 
   private RuleAction _action;
   private boolean _addRoute;
-  @Nullable private String _routeMap;
-  @Nullable private String _vrf;
+  private @Nullable String _routeMap;
+  private @Nullable String _vrf;
 
   /**
    * All IOS NATs have a particular action which defines where and when to modify source and
@@ -51,8 +51,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   }
 
   /** Route-map specifying matching traffic (mutually exclusive with ACL) */
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 
@@ -61,8 +60,7 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
   }
 
   /** Which VRF this NAT is in */
-  @Nullable
-  public final String getVrf() {
+  public final @Nullable String getVrf() {
     return _vrf;
   }
 

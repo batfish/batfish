@@ -278,7 +278,7 @@ public class SonicConversions {
 
   // Super simple name to type conversion
   // TODO: expand later as needed
-  private @Nonnull static InterfaceType interfaceNameToType(String interfaceName) {
+  private static @Nonnull InterfaceType interfaceNameToType(String interfaceName) {
     if (interfaceName.toLowerCase().startsWith("eth")) {
       return InterfaceType.PHYSICAL;
     }

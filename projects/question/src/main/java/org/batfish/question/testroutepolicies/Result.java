@@ -99,8 +99,7 @@ final class Result {
     return new Key(_policyId, _inputRoute);
   }
 
-  @Nullable
-  public Bgpv4Route getOutputRoute() {
+  public @Nullable Bgpv4Route getOutputRoute() {
     return _outputRoute;
   }
 

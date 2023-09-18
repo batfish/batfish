@@ -30,9 +30,9 @@ public class IspAttachment {
   private static final String PROP_INTERFACE = "interface";
   private static final String PROP_VLAN_TAG = "vlanTag";
 
-  @Nullable private final String _hostname;
-  @Nonnull private final String _interface;
-  @Nullable private final Integer _vlanTag;
+  private final @Nullable String _hostname;
+  private final @Nonnull String _interface;
+  private final @Nullable Integer _vlanTag;
 
   public IspAttachment(@Nullable String hostname, String iface, @Nullable Integer vlanTag) {
     _hostname = hostname == null ? null : hostname.toLowerCase();

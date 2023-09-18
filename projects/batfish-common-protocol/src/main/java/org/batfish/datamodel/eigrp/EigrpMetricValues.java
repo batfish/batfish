@@ -20,7 +20,7 @@ public final class EigrpMetricValues implements Serializable {
   private static final String PROP_RELIABILITY = "reliability";
   private static final String PROP_MTU = "mtu";
 
-  @Nullable private Long _bandwidth;
+  private @Nullable Long _bandwidth;
   private final long _delay;
   private final int _effectiveBandwidth;
   private final int _reliability;
@@ -131,7 +131,7 @@ public final class EigrpMetricValues implements Serializable {
   }
 
   public static final class Builder {
-    @Nullable private Long _bandwidth;
+    private @Nullable Long _bandwidth;
     private Long _delay;
     private int _effectiveBandwidth = 0;
     private int _reliability = 0;
@@ -140,56 +140,48 @@ public final class EigrpMetricValues implements Serializable {
     private Builder() {}
 
     /** Bandwidth in Kbps */
-    @Nonnull
-    public Builder setBandwidth(@Nullable Long bandwidth) {
+    public @Nonnull Builder setBandwidth(@Nullable Long bandwidth) {
       _bandwidth = bandwidth;
       return this;
     }
 
     /** Bandwidth in Kbps */
-    @Nonnull
-    public Builder setBandwidth(double bandwidth) {
+    public @Nonnull Builder setBandwidth(double bandwidth) {
       _bandwidth = (long) bandwidth;
       return this;
     }
 
     /** Delay in picoseconds */
-    @Nonnull
-    public Builder setDelay(long delay) {
+    public @Nonnull Builder setDelay(long delay) {
       _delay = delay;
       return this;
     }
 
     /** Delay in picoseconds */
-    @Nonnull
-    public Builder setDelay(double delay) {
+    public @Nonnull Builder setDelay(double delay) {
       _delay = (long) delay;
       return this;
     }
 
     /** Effective bandwidth (0-255) */
-    @Nonnull
-    public Builder setEffectiveBandwidth(int effectiveBandwidth) {
+    public @Nonnull Builder setEffectiveBandwidth(int effectiveBandwidth) {
       _effectiveBandwidth = effectiveBandwidth;
       return this;
     }
 
     /** Reliability (0-255) */
-    @Nonnull
-    public Builder setReliability(int reliability) {
+    public @Nonnull Builder setReliability(int reliability) {
       _reliability = reliability;
       return this;
     }
 
     /** MTU (in bytes) */
-    @Nonnull
-    public Builder setMtu(long mtu) {
+    public @Nonnull Builder setMtu(long mtu) {
       _mtu = mtu;
       return this;
     }
 
-    @Nonnull
-    public EigrpMetricValues build() {
+    public @Nonnull EigrpMetricValues build() {
       checkArgument(_delay != null, "Missing %s", PROP_DELAY);
       return new EigrpMetricValues(_bandwidth, _delay, _effectiveBandwidth, _reliability, _mtu);
     }

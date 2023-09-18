@@ -80,10 +80,10 @@ public class OspfSettings implements Serializable {
     }
   }
 
-  @Nullable private Integer _cost;
-  @Nullable private Integer _deadInterval;
-  @Nullable private DistributeList _distributeListIn;
-  @Nullable private Integer _helloInterval;
-  @Nullable private OspfNetworkType _networkType;
-  @Nullable private Boolean _passive;
+  private @Nullable Integer _cost;
+  private @Nullable Integer _deadInterval;
+  private @Nullable DistributeList _distributeListIn;
+  private @Nullable Integer _helloInterval;
+  private @Nullable OspfNetworkType _networkType;
+  private @Nullable Boolean _passive;
 }

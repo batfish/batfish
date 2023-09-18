@@ -23,7 +23,7 @@ final class RouteTable implements AwsVpcEntity, Serializable {
   static class Association implements Serializable {
 
     private final boolean _isMain;
-    @Nullable private final String _subnetId;
+    private final @Nullable String _subnetId;
 
     @JsonCreator
     private static Association create(
@@ -65,13 +65,13 @@ final class RouteTable implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final List<Route> _routes;
+  private final @Nonnull List<Route> _routes;
 
-  @Nonnull private final List<Association> _associations;
+  private final @Nonnull List<Association> _associations;
 
-  @Nonnull private final String _routeTableId;
+  private final @Nonnull String _routeTableId;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   @JsonCreator
   private static RouteTable create(

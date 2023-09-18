@@ -12,7 +12,7 @@ public class FalseExpr extends AclLineMatchExpr {
 
   public static final FalseExpr INSTANCE = new FalseExpr();
 
-  @Nullable private final TraceElement _traceElement;
+  private final @Nullable TraceElement _traceElement;
 
   private FalseExpr() {
     super(null);

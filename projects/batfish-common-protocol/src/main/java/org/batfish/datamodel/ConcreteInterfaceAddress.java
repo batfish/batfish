@@ -19,7 +19,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
       Comparator.comparing(ConcreteInterfaceAddress::getIp)
           .thenComparing(ConcreteInterfaceAddress::getNetworkBits);
 
-  @Nonnull private final Ip _ip;
+  private final @Nonnull Ip _ip;
   private final int _networkBits;
 
   private ConcreteInterfaceAddress(Ip ip, int networkBits) {
@@ -66,7 +66,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
    * Return an {@link Optional} {@link ConcreteInterfaceAddress} from a string, or {@link
    * Optional#empty} if the string does not represent a {@link ConcreteInterfaceAddress}.
    */
-  public @Nonnull static Optional<ConcreteInterfaceAddress> tryParse(String text) {
+  public static @Nonnull Optional<ConcreteInterfaceAddress> tryParse(String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {
@@ -93,8 +93,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     return _ip.equals(rhs._ip) && _networkBits == rhs._networkBits;
   }
 
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
@@ -102,8 +101,7 @@ public final class ConcreteInterfaceAddress extends InterfaceAddress {
     return _networkBits;
   }
 
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return Prefix.create(_ip, _networkBits);
   }
 

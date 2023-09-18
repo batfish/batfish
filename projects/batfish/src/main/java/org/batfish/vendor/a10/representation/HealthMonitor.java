@@ -8,8 +8,7 @@ import javax.annotation.Nonnull;
  * health of load balancer service or server.
  */
 public final class HealthMonitor implements Serializable {
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -17,5 +16,5 @@ public final class HealthMonitor implements Serializable {
     _name = name;
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

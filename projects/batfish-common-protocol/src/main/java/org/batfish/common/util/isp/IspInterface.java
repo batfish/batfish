@@ -9,10 +9,10 @@ import org.batfish.datamodel.InterfaceAddress;
 
 /** Captures settings needed to create an interface on the ISP node */
 final class IspInterface {
-  @Nonnull private final String _name;
-  @Nonnull private final InterfaceAddress _address;
-  @Nonnull private final Layer1Node _layer1Remote;
-  @Nullable private final Integer _vlanTag;
+  private final @Nonnull String _name;
+  private final @Nonnull InterfaceAddress _address;
+  private final @Nonnull Layer1Node _layer1Remote;
+  private final @Nullable Integer _vlanTag;
 
   public IspInterface(
       String name, InterfaceAddress address, Layer1Node layer1Remote, @Nullable Integer vlanTag) {

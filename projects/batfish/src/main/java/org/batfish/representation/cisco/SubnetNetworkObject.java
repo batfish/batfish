@@ -13,7 +13,7 @@ public final class SubnetNetworkObject implements Serializable, NetworkObject {
 
   private NetworkObjectInfo _info;
 
-  @Nonnull private final Prefix _subnet;
+  private final @Nonnull Prefix _subnet;
 
   public SubnetNetworkObject(Prefix subnet) {
     _subnet = subnet;

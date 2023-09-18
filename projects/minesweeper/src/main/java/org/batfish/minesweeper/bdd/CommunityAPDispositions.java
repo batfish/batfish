@@ -34,9 +34,9 @@ public class CommunityAPDispositions {
 
   private final int _numAPs;
   // the atomic predicates that are definitely on the route announcement
-  @Nonnull private final IntegerSpace _mustExist;
+  private final @Nonnull IntegerSpace _mustExist;
   // the atomic predicates that are definitely not on the route announcement
-  @Nonnull private final IntegerSpace _mustNotExist;
+  private final @Nonnull IntegerSpace _mustNotExist;
 
   public CommunityAPDispositions(int numAPs, IntegerSpace mustExist, IntegerSpace mustNotExist) {
     assert mustExist.stream().allMatch(i -> i >= 0 && i < numAPs)

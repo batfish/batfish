@@ -29,8 +29,8 @@ public class SessionMatchExpr {
   private final IpProtocol _ipProtocol;
   private final Ip _srcIp;
   private final Ip _dstIp;
-  @Nullable private final Integer _srcPort;
-  @Nullable private final Integer _dstPort;
+  private final @Nullable Integer _srcPort;
+  private final @Nullable Integer _dstPort;
 
   public SessionMatchExpr(
       IpProtocol ipProtocol,
@@ -77,14 +77,12 @@ public class SessionMatchExpr {
   }
 
   @JsonProperty(PROP_SRC_PORT)
-  @Nullable
-  public Integer getSrcPort() {
+  public @Nullable Integer getSrcPort() {
     return _srcPort;
   }
 
   @JsonProperty(PROP_DST_PORT)
-  @Nullable
-  public Integer getDstPort() {
+  public @Nullable Integer getDstPort() {
     return _dstPort;
   }
 

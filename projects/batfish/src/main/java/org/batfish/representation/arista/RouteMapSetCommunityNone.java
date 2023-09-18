@@ -12,8 +12,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RouteMapSetCommunityNone extends RouteMapSetLine {
 
-  @Nonnull
-  public static RouteMapSetCommunityNone instance() {
+  public static @Nonnull RouteMapSetCommunityNone instance() {
     return INSTANCE;
   }
 

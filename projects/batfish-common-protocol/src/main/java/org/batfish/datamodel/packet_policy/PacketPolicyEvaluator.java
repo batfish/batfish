@@ -36,21 +36,21 @@ public final class PacketPolicyEvaluator {
   private final @Nonnull Map<String, IpSpace> _namedIpSpaces;
 
   // Start state
-  @Nonnull private final String _srcInterface;
-  @Nonnull private final String _srcInterfaceVrf;
+  private final @Nonnull String _srcInterface;
+  private final @Nonnull String _srcInterfaceVrf;
 
   /** Vrf name to FIB mapping */
-  @Nonnull private final Map<String, Fib> _fibs;
+  private final @Nonnull Map<String, Fib> _fibs;
 
-  @Nonnull private final ImmutableList.Builder<Step<?>> _traceSteps;
+  private final @Nonnull ImmutableList.Builder<Step<?>> _traceSteps;
 
   // Modified state
-  @Nonnull private Flow.Builder _currentFlow;
+  private @Nonnull Flow.Builder _currentFlow;
 
   // Expr and stmt visitors
-  @Nonnull private final BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
-  @Nonnull private final StatementEvaluator _stmtEvaluator = new StatementEvaluator();
-  @Nonnull private final VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
+  private final @Nonnull BoolExprEvaluator _boolExprEvaluator = new BoolExprEvaluator();
+  private final @Nonnull StatementEvaluator _stmtEvaluator = new StatementEvaluator();
+  private final @Nonnull VrfExprEvaluator _vrfExprEvaluator = new VrfExprEvaluator();
 
   private final class BoolExprEvaluator implements BoolExprVisitor<Boolean> {
 
@@ -116,8 +116,7 @@ public final class PacketPolicyEvaluator {
     StatementEvaluator() {}
 
     @Override
-    @Nullable
-    public Action visitIf(If ifStmt) {
+    public @Nullable Action visitIf(If ifStmt) {
       if (ifStmt.getMatchCondition().accept(_boolExprEvaluator)) {
         return ifStmt.getTrueStatements().stream()
             .map(this::visit)
@@ -185,8 +184,7 @@ public final class PacketPolicyEvaluator {
     _traceSteps = ImmutableList.builder();
   }
 
-  @Nonnull
-  private Flow getTransformedFlow() {
+  private @Nonnull Flow getTransformedFlow() {
     return _currentFlow.build();
   }
 

@@ -15,7 +15,7 @@ public final class AristaBgpDefaultOriginate implements Serializable {
   private final boolean _enabled;
 
   /** If {@link #getEnabled()} is true, an optional route-map applied. */
-  @Nullable private final String _routeMap;
+  private final @Nullable String _routeMap;
 
   public static AristaBgpDefaultOriginate disabled() {
     return new AristaBgpDefaultOriginate(false, false, null);

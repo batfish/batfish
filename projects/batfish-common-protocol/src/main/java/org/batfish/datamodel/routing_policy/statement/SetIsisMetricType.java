@@ -15,7 +15,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class SetIsisMetricType extends Statement {
   private static final String PROP_METRIC_TYPE = "metricType";
 
-  @Nonnull private IsisMetricType _metricType;
+  private @Nonnull IsisMetricType _metricType;
 
   @JsonCreator
   private static SetIsisMetricType jsonCreator(
@@ -50,8 +50,7 @@ public final class SetIsisMetricType extends Statement {
   }
 
   @JsonProperty(PROP_METRIC_TYPE)
-  @Nonnull
-  public IsisMetricType getMetricType() {
+  public @Nonnull IsisMetricType getMetricType() {
     return _metricType;
   }
 

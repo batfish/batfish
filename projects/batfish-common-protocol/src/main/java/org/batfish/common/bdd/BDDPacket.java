@@ -459,78 +459,63 @@ public class BDDPacket implements Serializable {
     return fb;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getDscp() {
+  public @Nonnull ImmutableBDDInteger getDscp() {
     return _dscp;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getDstIp() {
+  public @Nonnull ImmutableBDDInteger getDstIp() {
     return _dstIp.getVar();
   }
 
-  @Nonnull
-  public PrimedBDDInteger getDstIpPrimedBDDInteger() {
+  public @Nonnull PrimedBDDInteger getDstIpPrimedBDDInteger() {
     return _dstIp;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getDstPort() {
+  public @Nonnull ImmutableBDDInteger getDstPort() {
     return _dstPort.getVar();
   }
 
-  @Nonnull
-  public PrimedBDDInteger getDstPortPrimedBDDInteger() {
+  public @Nonnull PrimedBDDInteger getDstPortPrimedBDDInteger() {
     return _dstPort;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getEcn() {
+  public @Nonnull ImmutableBDDInteger getEcn() {
     return _ecn;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getFragmentOffset() {
+  public @Nonnull ImmutableBDDInteger getFragmentOffset() {
     return _fragmentOffset;
   }
 
-  @Nonnull
-  public BDDIcmpCode getIcmpCode() {
+  public @Nonnull BDDIcmpCode getIcmpCode() {
     return _icmpCode;
   }
 
-  @Nonnull
-  public BDDIcmpType getIcmpType() {
+  public @Nonnull BDDIcmpType getIcmpType() {
     return _icmpType;
   }
 
-  @Nonnull
-  public BDDIpProtocol getIpProtocol() {
+  public @Nonnull BDDIpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
-  @Nonnull
-  public BDDPacketLength getPacketLength() {
+  public @Nonnull BDDPacketLength getPacketLength() {
     return _packetLength;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getSrcIp() {
+  public @Nonnull ImmutableBDDInteger getSrcIp() {
     return _srcIp.getVar();
   }
 
-  @Nonnull
-  public PrimedBDDInteger getSrcIpPrimedBDDInteger() {
+  public @Nonnull PrimedBDDInteger getSrcIpPrimedBDDInteger() {
     return _srcIp;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getSrcPort() {
+  public @Nonnull ImmutableBDDInteger getSrcPort() {
     return _srcPort.getVar();
   }
 
-  @Nonnull
-  public PrimedBDDInteger getSrcPortPrimedBDDInteger() {
+  public @Nonnull PrimedBDDInteger getSrcPortPrimedBDDInteger() {
     return _srcPort;
   }
 
@@ -540,48 +525,39 @@ public class BDDPacket implements Serializable {
    * <p>May be useful for {@link BDD#project(BDD)}, {@link BDD#testsVars(BDD)}, or similar
    * operations.
    */
-  @Nonnull
-  public BDD getTcpFlagsVars() {
+  public @Nonnull BDD getTcpFlagsVars() {
     return _tcpFlags;
   }
 
-  @Nonnull
-  public BDD getTcpAck() {
+  public @Nonnull BDD getTcpAck() {
     return _tcpAck;
   }
 
-  @Nonnull
-  public BDD getTcpCwr() {
+  public @Nonnull BDD getTcpCwr() {
     return _tcpCwr;
   }
 
-  @Nonnull
-  public BDD getTcpEce() {
+  public @Nonnull BDD getTcpEce() {
     return _tcpEce;
   }
 
-  @Nonnull
-  public BDD getTcpFin() {
+  public @Nonnull BDD getTcpFin() {
     return _tcpFin;
   }
 
-  @Nonnull
-  public BDD getTcpPsh() {
+  public @Nonnull BDD getTcpPsh() {
     return _tcpPsh;
   }
 
-  @Nonnull
-  public BDD getTcpRst() {
+  public @Nonnull BDD getTcpRst() {
     return _tcpRst;
   }
 
-  @Nonnull
-  public BDD getTcpSyn() {
+  public @Nonnull BDD getTcpSyn() {
     return _tcpSyn;
   }
 
-  @Nonnull
-  public BDD getTcpUrg() {
+  public @Nonnull BDD getTcpUrg() {
     return _tcpUrg;
   }
 

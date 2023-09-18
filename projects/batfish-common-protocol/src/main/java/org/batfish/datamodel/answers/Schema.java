@@ -94,16 +94,16 @@ public class Schema {
   }
 
   /** Captures what this Schema finally contains after levels of nesting */
-  @Nonnull private final Class<?> _baseType;
+  private final @Nonnull Class<?> _baseType;
 
   /** For list/set types this field represents what is inside; for base types it is null */
-  @Nullable private final Schema _innerSchema;
+  private final @Nullable Schema _innerSchema;
 
   /** The string representaion from which this Schema was derived; kept around for printing */
-  @Nonnull private final String _schemaStr;
+  private final @Nonnull String _schemaStr;
 
   /** Is this Schema a list, set, or base? */
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
   @JsonCreator
   Schema(String schema) {
@@ -169,8 +169,7 @@ public class Schema {
     return _baseType;
   }
 
-  @Nullable
-  public Schema getInnerSchema() {
+  public @Nullable Schema getInnerSchema() {
     return _innerSchema;
   }
 

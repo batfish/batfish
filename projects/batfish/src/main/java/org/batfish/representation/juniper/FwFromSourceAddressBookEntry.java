@@ -21,7 +21,7 @@ public final class FwFromSourceAddressBookEntry implements FwFrom {
   private final AddressBook _globalAddressBook;
 
   // if zone is null, consult the global address book; o/w, the zone's address book
-  @Nullable private final Zone _zone;
+  private final @Nullable Zone _zone;
 
   public FwFromSourceAddressBookEntry(
       Zone zone, AddressBook globalAddressBook, String addressBookEntryName) {

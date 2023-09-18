@@ -7,8 +7,8 @@ import javax.annotation.Nonnull;
 
 public class ExtendedAccessList implements Serializable {
 
-  @Nonnull private List<ExtendedAccessListLine> _lines;
-  @Nonnull private final String _name;
+  private @Nonnull List<ExtendedAccessListLine> _lines;
+  private final @Nonnull String _name;
   private StandardAccessList _parent;
 
   public ExtendedAccessList(@Nonnull String id) {
@@ -20,13 +20,11 @@ public class ExtendedAccessList implements Serializable {
     _lines.add(line);
   }
 
-  @Nonnull
-  public List<ExtendedAccessListLine> getLines() {
+  public @Nonnull List<ExtendedAccessListLine> getLines() {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

@@ -43,17 +43,17 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
 
   // the regular expression that induces this role mapping on node names
-  @Nonnull private String _regex;
-  @Nonnull private List<Integer> _groups;
+  private @Nonnull String _regex;
+  private @Nonnull List<Integer> _groups;
   /* this map is used to convert the default role name that was obtained from the node name, via
   the regex and groups above, to a canonical role name.  the keys are allowed to be arbitrary Java
   regexes, and any default role name matching the regex is mapped to the corresponding string value
   as its canonical role name.  we allow regexes in order to also make it easy to convert the old
   node roles format, based on the NodeRole class, to this new format.
    */
-  @Nonnull private Map<String, String> _canonicalRoleNames;
+  private @Nonnull Map<String, String> _canonicalRoleNames;
 
-  @Nonnull private Pattern _pattern;
+  private @Nonnull Pattern _pattern;
 
   @JsonCreator
   public RoleDimensionMapping(
@@ -118,20 +118,17 @@ public class RoleDimensionMapping implements Comparable<RoleDimensionMapping> {
   }
 
   @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
-  @Nonnull
-  public Map<String, String> getCanonicalRoleNames() {
+  public @Nonnull Map<String, String> getCanonicalRoleNames() {
     return _canonicalRoleNames;
   }
 
   @JsonProperty(PROP_GROUPS)
-  @Nonnull
-  public List<Integer> getGroups() {
+  public @Nonnull List<Integer> getGroups() {
     return _groups;
   }
 
   @JsonProperty(PROP_REGEX)
-  @Nonnull
-  public String getRegex() {
+  public @Nonnull String getRegex() {
     return _regex;
   }
 

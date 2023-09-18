@@ -33,21 +33,21 @@ import org.batfish.common.BatfishException;
 @ParametersAreNonnullByDefault
 public class RegexAtomicPredicates<T extends SymbolicRegex> {
 
-  @Nonnull private final Set<T> _regexes;
+  private final @Nonnull Set<T> _regexes;
 
   // a regex representing logical "true", or all possible valid strings
-  @Nonnull private final T _trueRegex;
+  private final @Nonnull T _trueRegex;
 
   // the number of atomic predicates
   private int _numAtomicPredicates;
 
   // maps each regex to its set of atomic predicates, which are integers in the range
   // 0 ... (_numAtomicPredicates - 1)
-  @Nonnull private Map<T, Set<Integer>> _regexAtomicPredicates;
+  private @Nonnull Map<T, Set<Integer>> _regexAtomicPredicates;
 
   // maps each atomic predicate number to its semantic representation, which is a finite-state
   // automaton
-  @Nonnull private Map<Integer, Automaton> _atomicPredicateAutomata;
+  private @Nonnull Map<Integer, Automaton> _atomicPredicateAutomata;
 
   /**
    * Create atomic predicates for the given set of regexes.
@@ -125,8 +125,7 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
     return _numAtomicPredicates;
   }
 
-  @Nonnull
-  public Map<Integer, Automaton> getAtomicPredicateAutomata() {
+  public @Nonnull Map<Integer, Automaton> getAtomicPredicateAutomata() {
     return _atomicPredicateAutomata;
   }
 
@@ -134,18 +133,15 @@ public class RegexAtomicPredicates<T extends SymbolicRegex> {
     _atomicPredicateAutomata = ImmutableMap.copyOf(apAutomata);
   }
 
-  @Nonnull
-  public Set<T> getRegexes() {
+  public @Nonnull Set<T> getRegexes() {
     return _regexes;
   }
 
-  @Nonnull
-  public Map<T, Set<Integer>> getRegexAtomicPredicates() {
+  public @Nonnull Map<T, Set<Integer>> getRegexAtomicPredicates() {
     return _regexAtomicPredicates;
   }
 
-  @Nonnull
-  public T getTrueRegex() {
+  public @Nonnull T getTrueRegex() {
     return _trueRegex;
   }
 }

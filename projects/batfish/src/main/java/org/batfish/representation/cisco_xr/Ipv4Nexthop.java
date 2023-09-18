@@ -13,8 +13,7 @@ public class Ipv4Nexthop implements Serializable {
     return _ip;
   }
 
-  @Nullable
-  public String getVrf() {
+  public @Nullable String getVrf() {
     return _vrf;
   }
 
@@ -23,6 +22,6 @@ public class Ipv4Nexthop implements Serializable {
     _vrf = vrf;
   }
 
-  @Nonnull private final Ip _ip;
-  @Nullable private final String _vrf;
+  private final @Nonnull Ip _ip;
+  private final @Nullable String _vrf;
 }

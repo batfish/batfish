@@ -15,7 +15,7 @@ public class Conjunction implements BoolExpr {
 
   private static final String PROP_CONJUNCTS = "conjuncts";
 
-  @Nonnull private final List<BoolExpr> _conjuncts;
+  private final @Nonnull List<BoolExpr> _conjuncts;
 
   private Conjunction(List<BoolExpr> conjuncts) {
     _conjuncts = ImmutableList.copyOf(conjuncts);

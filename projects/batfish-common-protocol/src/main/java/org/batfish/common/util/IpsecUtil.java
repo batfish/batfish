@@ -143,8 +143,7 @@ public class IpsecUtil {
    * Returns all {@link IpsecPeerConfigId}s whose local IP is equal to any of the IPs behind
    * destinationIp after NAT
    */
-  @Nonnull
-  private static Set<IpsecPeerConfigId> getCandidatePeersBehindNat(
+  private static @Nonnull Set<IpsecPeerConfigId> getCandidatePeersBehindNat(
       @Nonnull Ip destinationIp,
       @Nonnull SetMultimap<Ip, IpWildcardSetIpSpace> privateIpsByPublicIp,
       @Nonnull Map<Ip, Set<IpsecPeerConfigId>> localIpsAndIpsecPeers) {
@@ -170,8 +169,7 @@ public class IpsecUtil {
    * on the negotiation.
    */
   @VisibleForTesting
-  @Nonnull
-  static IpsecSession getIpsecSession(
+  static @Nonnull IpsecSession getIpsecSession(
       Configuration initiatorOwner,
       Configuration peerOwner,
       IpsecStaticPeerConfig initiator,
@@ -321,8 +319,7 @@ public class IpsecUtil {
    * IkePhase1Proposal}s and responder's {@link IkePhase1Proposal}s, returns null if no compatible
    * {@link IkePhase1Proposal} could be found
    */
-  @Nullable
-  private static IkePhase1Proposal getMatchingIkeP1Proposal(
+  private static @Nullable IkePhase1Proposal getMatchingIkeP1Proposal(
       Configuration initiatorOwner,
       Configuration responderOwner,
       List<String> initiatorProposals,
@@ -367,8 +364,7 @@ public class IpsecUtil {
    * IpsecPhase2Proposal}s and responder's {@link IpsecPhase2Proposal}s, returns null if no
    * compatible {@link IpsecPhase2Proposal} could be found
    */
-  @Nullable
-  private static IpsecPhase2Proposal getMatchingIpsecP2Proposal(
+  private static @Nullable IpsecPhase2Proposal getMatchingIpsecP2Proposal(
       Configuration initiatorOwner,
       Configuration responderOwner,
       List<String> initiatorProposals,
@@ -403,8 +399,7 @@ public class IpsecUtil {
    * Searches and returns the {@link IkePhase1Policy} which can be used for peering with the
    * initiator on the responder. Returns null if no such {@link IkePhase1Policy} could be found.
    */
-  @Nullable
-  private static IkePhase1Policy getMatchingDynamicIkeP1Policy(
+  private static @Nullable IkePhase1Policy getMatchingDynamicIkeP1Policy(
       IpsecStaticPeerConfig initiator, IpsecPeerConfig responder, Configuration responderOwner) {
     List<IkePhase1Policy> dynamicIkePhase1Policies =
         ((IpsecDynamicPeerConfig) responder)

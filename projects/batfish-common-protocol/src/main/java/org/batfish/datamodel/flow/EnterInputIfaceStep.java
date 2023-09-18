@@ -43,14 +43,12 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
-    @Nonnull
-    public NodeInterfacePair getInputInterface() {
+    public @Nonnull NodeInterfacePair getInputInterface() {
       return _inputInterface;
     }
 
     @JsonProperty(PROP_INPUT_VRF)
-    @Nullable
-    public String getInputVrf() {
+    public @Nullable String getInputVrf() {
       return _inputVrf;
     }
 
@@ -119,8 +117,8 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
   /** Chained builder to create an {@link EnterInputIfaceStep} object */
   public static final class Builder {
-    @Nullable private EnterInputIfaceStepDetail _detail;
-    @Nullable private StepAction _action;
+    private @Nullable EnterInputIfaceStepDetail _detail;
+    private @Nullable StepAction _action;
 
     public EnterInputIfaceStep build() {
       checkState(_action != null, "setAction must be called before building");

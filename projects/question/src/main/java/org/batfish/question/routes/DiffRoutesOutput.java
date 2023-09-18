@@ -50,15 +50,15 @@ public class DiffRoutesOutput {
     }
   }
 
-  @Nonnull private final RouteRowKey _routeRowKey;
+  private final @Nonnull RouteRowKey _routeRowKey;
 
-  @Nonnull private final RouteRowSecondaryKey _routeRowSecondaryKey;
+  private final @Nonnull RouteRowSecondaryKey _routeRowSecondaryKey;
 
-  @Nonnull private final KeyPresenceStatus _routeRowSecondaryKeyStatus;
+  private final @Nonnull KeyPresenceStatus _routeRowSecondaryKeyStatus;
 
-  @Nonnull private final List<List<RouteRowAttribute>> _diffInAttributes;
+  private final @Nonnull List<List<RouteRowAttribute>> _diffInAttributes;
 
-  @Nonnull private final KeyPresenceStatus _networkKeyPresenceStatus;
+  private final @Nonnull KeyPresenceStatus _networkKeyPresenceStatus;
 
   public DiffRoutesOutput(
       @Nonnull RouteRowKey routeRowKey,
@@ -99,28 +99,23 @@ public class DiffRoutesOutput {
         _diffInAttributes);
   }
 
-  @Nonnull
-  public RouteRowKey getRouteRowKey() {
+  public @Nonnull RouteRowKey getRouteRowKey() {
     return _routeRowKey;
   }
 
-  @Nonnull
-  public RouteRowSecondaryKey getRouteRowSecondaryKey() {
+  public @Nonnull RouteRowSecondaryKey getRouteRowSecondaryKey() {
     return _routeRowSecondaryKey;
   }
 
-  @Nonnull
-  public KeyPresenceStatus getRouteRowSecondaryKeyStatus() {
+  public @Nonnull KeyPresenceStatus getRouteRowSecondaryKeyStatus() {
     return _routeRowSecondaryKeyStatus;
   }
 
-  @Nonnull
-  public List<List<RouteRowAttribute>> getDiffInAttributes() {
+  public @Nonnull List<List<RouteRowAttribute>> getDiffInAttributes() {
     return _diffInAttributes;
   }
 
-  @Nonnull
-  public KeyPresenceStatus getNetworkKeyPresenceStatus() {
+  public @Nonnull KeyPresenceStatus getNetworkKeyPresenceStatus() {
     return _networkKeyPresenceStatus;
   }
 }

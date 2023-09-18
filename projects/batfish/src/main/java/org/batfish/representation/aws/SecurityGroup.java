@@ -29,22 +29,22 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
   static final String INGRESS = "INGRESS";
   static final String EGRESS = "EGRESS";
 
-  @Nullable private final String _description;
+  private final @Nullable String _description;
 
-  @Nonnull private final String _groupId;
+  private final @Nonnull String _groupId;
 
-  @Nonnull private final String _groupName;
+  private final @Nonnull String _groupName;
 
-  @Nonnull private final List<IpPermissions> _ipPermsEgress;
+  private final @Nonnull List<IpPermissions> _ipPermsEgress;
 
-  @Nonnull private final List<IpPermissions> _ipPermsIngress;
+  private final @Nonnull List<IpPermissions> _ipPermsIngress;
 
   /** IPs and instance names of the instances which refer to this security group */
-  @Nonnull private final Map<Ip, String> _referrerIps;
+  private final @Nonnull Map<Ip, String> _referrerIps;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   @JsonCreator
   private static SecurityGroup create(
@@ -131,8 +131,7 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -142,8 +141,7 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
    * because AWS displays security groups or auto-completes them in a search solely based on {@code
    * Group Name}, not on the Name Tag.
    */
-  @Nonnull
-  public String getGroupName() {
+  public @Nonnull String getGroupName() {
     return _groupName;
   }
 
@@ -152,13 +150,11 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _groupId;
   }
 
-  @Nonnull
-  public List<IpPermissions> getIpPermsEgress() {
+  public @Nonnull List<IpPermissions> getIpPermsEgress() {
     return _ipPermsEgress;
   }
 
-  @Nonnull
-  public List<IpPermissions> getIpPermsIngress() {
+  public @Nonnull List<IpPermissions> getIpPermsIngress() {
     return _ipPermsIngress;
   }
 
@@ -166,13 +162,11 @@ public final class SecurityGroup implements AwsVpcEntity, Serializable {
     return _referrerIps;
   }
 
-  @Nonnull
-  public Map<String, String> getTags() {
+  public @Nonnull Map<String, String> getTags() {
     return _tags;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 

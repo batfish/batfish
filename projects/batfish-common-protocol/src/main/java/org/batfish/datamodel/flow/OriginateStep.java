@@ -33,8 +33,7 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
     }
 
     @JsonProperty(PROP_ORIGINATING_VRF)
-    @Nonnull
-    public String getOriginatingVrf() {
+    public @Nonnull String getOriginatingVrf() {
       return _originatingVrf;
     }
 
@@ -96,8 +95,8 @@ public final class OriginateStep extends Step<OriginateStepDetail> {
 
   /** Chained builder to create an {@link OriginateStep} object */
   public static final class Builder {
-    @Nullable private OriginateStepDetail _detail;
-    @Nullable private StepAction _action;
+    private @Nullable OriginateStepDetail _detail;
+    private @Nullable StepAction _action;
 
     public OriginateStep build() {
       checkState(_action != null, "setAction must be called before building");

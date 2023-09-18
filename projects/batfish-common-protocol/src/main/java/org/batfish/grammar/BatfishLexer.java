@@ -14,7 +14,7 @@ public abstract class BatfishLexer extends Lexer {
 
   private BatfishCombinedParser<?, ?> _parser;
 
-  @Nullable private BatfishLexerRecoveryStrategy _recoveryStrategy;
+  private @Nullable BatfishLexerRecoveryStrategy _recoveryStrategy;
 
   public BatfishLexer(CharStream input) {
     super(input);
@@ -24,8 +24,7 @@ public abstract class BatfishLexer extends Lexer {
     return getModeNames()[_mode];
   }
 
-  @Nullable
-  public BatfishLexerRecoveryStrategy getRecoveryStrategy() {
+  public @Nullable BatfishLexerRecoveryStrategy getRecoveryStrategy() {
     return _recoveryStrategy;
   }
 

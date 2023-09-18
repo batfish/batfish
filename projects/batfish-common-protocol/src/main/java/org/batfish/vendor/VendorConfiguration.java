@@ -34,7 +34,7 @@ public abstract class VendorConfiguration implements Serializable {
   private transient @Nullable ConversionContext _conversionContext;
   protected String _filename;
   protected @Nonnull List<String> _secondaryFilenames;
-  @Nonnull protected transient SnapshotRuntimeData _runtimeData;
+  protected @Nonnull transient SnapshotRuntimeData _runtimeData;
   private VendorConfiguration _overlayConfiguration;
   protected final @Nonnull StructureManager _structureManager;
 
@@ -287,8 +287,7 @@ public abstract class VendorConfiguration implements Serializable {
    * <p>Subclasses whose border interfaces are not expected to be covered by the user-supplied ISP
    * config file (e.g., AWS) should override this method.
    */
-  @Nullable
-  public IspConfiguration getIspConfiguration() {
+  public @Nullable IspConfiguration getIspConfiguration() {
     return null;
   }
 
@@ -306,8 +305,7 @@ public abstract class VendorConfiguration implements Serializable {
    *
    * <p>It is the responsibility of the implementation to enforce the invariant above.
    */
-  @Nonnull
-  public Set<Layer1Edge> getLayer1Edges() {
+  public @Nonnull Set<Layer1Edge> getLayer1Edges() {
     return ImmutableSet.of();
   }
 

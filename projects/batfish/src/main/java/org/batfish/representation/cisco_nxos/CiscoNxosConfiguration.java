@@ -535,8 +535,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
             });
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_DISTANCE_EBGP)
         .setIbgpAdminCost(DEFAULT_DISTANCE_IBGP)
@@ -1574,8 +1573,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
    * @param vlanNumber VLAN number
    * @return {@link org.batfish.datamodel.Vrf} containing VLAN interface of {@code vlanNumber}
    */
-  @Nullable
-  private org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
+  private @Nullable org.batfish.datamodel.Vrf getMemberVrfForVlan(int vlanNumber) {
     String vrfMemberForVlanIface =
         Optional.ofNullable(_interfaces.get(String.format("Vlan%d", vlanNumber)))
             .map(org.batfish.representation.cisco_nxos.Interface::getVrfMember)
@@ -1590,8 +1588,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return _c.getVrfs().get(vrfMemberForVlanIface);
   }
 
-  @Nonnull
-  private static BumTransportMethod getBumTransportMethod(NveVni nveVni, Nve nve) {
+  private static @Nonnull BumTransportMethod getBumTransportMethod(NveVni nveVni, Nve nve) {
     if (nveVni.getIngressReplicationProtocol() == IngressReplicationProtocol.STATIC) {
       // since all multicast group commands are ignored in this case
       return UNICAST_FLOOD_GROUP;
@@ -1603,8 +1600,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         : UNICAST_FLOOD_GROUP;
   }
 
-  @Nonnull
-  private static Ip getMultiCastGroupIp(NveVni nveVni, Nve nve) {
+  private static @Nonnull Ip getMultiCastGroupIp(NveVni nveVni, Nve nve) {
     if (nveVni.getMcastGroup() != null) {
       return nveVni.getMcastGroup();
     }
@@ -1616,8 +1612,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return nve.getMulticastGroupL2();
   }
 
-  @Nullable
-  private Ip getInterfaceIp(
+  private @Nullable Ip getInterfaceIp(
       Map<String, org.batfish.datamodel.Interface> interfaces, String ifaceName) {
     org.batfish.datamodel.Interface iface = interfaces.get(ifaceName);
     if (iface == null) {
@@ -1630,8 +1625,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return concreteInterfaceAddress.getIp();
   }
 
-  @Nullable
-  private Integer getVlanForVni(Integer vni) {
+  private @Nullable Integer getVlanForVni(Integer vni) {
     return _vlans.values().stream()
         .filter(vlan -> vni.equals(vlan.getVni()))
         .findFirst()
@@ -2424,8 +2418,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return String.format("~EIGRP_EXPORT_POLICY:%s:%s~", vrfName, asn);
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(Interface iface) {
     // configuredBw is in kb/s
     Long bw = Optional.ofNullable(iface.getEigrpBandwidth()).orElse(iface.getBandwidth());
     if (bw == null) {
@@ -3257,8 +3250,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     return String.format("~%s~SEQ:%d~", routeMapName, sequence);
   }
 
-  @Nonnull
-  private PacketPolicy toPacketPolicy(RouteMap routeMap) {
+  private @Nonnull PacketPolicy toPacketPolicy(RouteMap routeMap) {
     // TODO: handle continue statements
     return new PacketPolicy(
         routeMap.getName(),
@@ -3343,8 +3335,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         statements);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
+  private @Nonnull org.batfish.datamodel.packet_policy.Statement toPacketPolicyStatement(
       RouteMapEntry entry) {
     // TODO: handle continue statement
     RouteMapMatchVisitor<BoolExpr> matchToBoolExpr =

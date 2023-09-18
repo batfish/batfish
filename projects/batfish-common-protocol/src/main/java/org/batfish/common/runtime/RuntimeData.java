@@ -19,7 +19,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class RuntimeData {
   public static final class Builder {
-    @Nonnull private Map<String, InterfaceRuntimeData> _interfaces;
+    private @Nonnull Map<String, InterfaceRuntimeData> _interfaces;
 
     public RuntimeData build() {
       return new RuntimeData(_interfaces);
@@ -51,7 +51,7 @@ public final class RuntimeData {
 
   private static final String PROP_INTERFACES = "interfaces";
 
-  @Nonnull private final Map<String, InterfaceRuntimeData> _interfaces;
+  private final @Nonnull Map<String, InterfaceRuntimeData> _interfaces;
 
   @JsonCreator
   private static RuntimeData create(
@@ -72,8 +72,7 @@ public final class RuntimeData {
   }
 
   @JsonIgnore
-  @Nullable
-  public InterfaceRuntimeData getInterface(String ifaceName) {
+  public @Nullable InterfaceRuntimeData getInterface(String ifaceName) {
     return _interfaces.get(ifaceName);
   }
 

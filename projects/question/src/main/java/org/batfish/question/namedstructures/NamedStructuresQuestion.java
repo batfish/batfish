@@ -36,17 +36,17 @@ public class NamedStructuresQuestion extends Question {
 
   private final boolean _indicatePresence;
 
-  @Nullable private final String _nodes;
+  private final @Nullable String _nodes;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nullable private final String _structureNameRegex;
+  private final @Nullable String _structureNameRegex;
 
-  @Nonnull private final Pattern _structureNamePattern;
+  private final @Nonnull Pattern _structureNamePattern;
 
-  @Nullable private final String _structureTypes;
+  private final @Nullable String _structureTypes;
 
-  @Nonnull private final NamedStructurePropertySpecifier _structureTypeSpecifier;
+  private final @Nonnull NamedStructurePropertySpecifier _structureTypeSpecifier;
 
   @JsonCreator
   static NamedStructuresQuestion create(

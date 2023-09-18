@@ -32,8 +32,7 @@ public abstract class BatfishJobResult<OutputT, AnswerElementT extends AnswerEle
     return _elapsedTime;
   }
 
-  @Nullable
-  public final Throwable getFailureCause() {
+  public final @Nullable Throwable getFailureCause() {
     return _failureCause;
   }
 

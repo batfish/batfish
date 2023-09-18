@@ -5,7 +5,7 @@ import javax.annotation.Nonnull;
 
 public final class NetworkObjectInfo implements Serializable {
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
   private String _description;
 
   public NetworkObjectInfo(@Nonnull String name) {
@@ -16,8 +16,7 @@ public final class NetworkObjectInfo implements Serializable {
     return _description;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

@@ -56,11 +56,11 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class VpcOptions {
 
-    @Nonnull private final String _vpcId;
+    private final @Nonnull String _vpcId;
 
-    @Nonnull private final List<String> _securityGroupIds;
+    private final @Nonnull List<String> _securityGroupIds;
 
-    @Nonnull private final List<String> _subnetIds;
+    private final @Nonnull List<String> _subnetIds;
 
     @JsonCreator
     private static VpcOptions create(
@@ -80,35 +80,32 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       _subnetIds = subnetIds;
     }
 
-    @Nonnull
-    public String getVpcId() {
+    public @Nonnull String getVpcId() {
       return _vpcId;
     }
 
-    @Nonnull
-    public List<String> getSecurityGroupIds() {
+    public @Nonnull List<String> getSecurityGroupIds() {
       return _securityGroupIds;
     }
 
-    @Nonnull
-    public List<String> getSubnetIds() {
+    public @Nonnull List<String> getSubnetIds() {
       return _subnetIds;
     }
   }
 
-  @Nonnull private final String _arn;
+  private final @Nonnull String _arn;
 
-  @Nonnull private final List<String> _securityGroups;
+  private final @Nonnull List<String> _securityGroups;
 
-  @Nonnull private final String _domainName;
+  private final @Nonnull String _domainName;
 
-  @Nullable private final String _vpcEndpoint;
+  private final @Nullable String _vpcEndpoint;
 
-  @Nullable private final String _vpcId;
+  private final @Nullable String _vpcId;
 
   private final int _instanceCount;
 
-  @Nonnull private final List<String> _subnets;
+  private final @Nonnull List<String> _subnets;
 
   private final boolean _available;
 
@@ -116,8 +113,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     return _available;
   }
 
-  @Nonnull
-  public String getDomainName() {
+  public @Nonnull String getDomainName() {
     return _domainName;
   }
 
@@ -130,23 +126,19 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     return _instanceCount;
   }
 
-  @Nonnull
-  public List<String> getSecurityGroups() {
+  public @Nonnull List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
-  @Nonnull
-  public List<String> getSubnets() {
+  public @Nonnull List<String> getSubnets() {
     return _subnets;
   }
 
-  @Nullable
-  public String getVpcEndpoint() {
+  public @Nullable String getVpcEndpoint() {
     return _vpcEndpoint;
   }
 
-  @Nullable
-  public String getVpcId() {
+  public @Nullable String getVpcId() {
     return _vpcId;
   }
 
@@ -264,8 +256,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
     return cfgNode;
   }
 
-  @Nonnull
-  static String getNodeName(int instanceNumber, String arn, @Nullable String vpcEndpoint) {
+  static @Nonnull String getNodeName(int instanceNumber, String arn, @Nullable String vpcEndpoint) {
     return String.format("%d-%s", instanceNumber, vpcEndpoint == null ? arn : vpcEndpoint);
   }
 

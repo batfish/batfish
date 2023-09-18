@@ -18,8 +18,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _inheritPeerPolicies = new TreeMap<>();
   }
 
-  @Nullable
-  public Integer getAllowAsIn() {
+  public @Nullable Integer getAllowAsIn() {
     return _allowAsIn;
   }
 
@@ -27,8 +26,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _allowAsIn = allowAsIn;
   }
 
-  @Nullable
-  public Boolean getAsOverride() {
+  public @Nullable Boolean getAsOverride() {
     return _asOverride;
   }
 
@@ -36,8 +34,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _asOverride = asOverride;
   }
 
-  @Nullable
-  public Boolean getDefaultOriginate() {
+  public @Nullable Boolean getDefaultOriginate() {
     return _defaultOriginate;
   }
 
@@ -45,8 +42,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _defaultOriginate = defaultOriginate;
   }
 
-  @Nullable
-  public String getDefaultOriginateMap() {
+  public @Nullable String getDefaultOriginateMap() {
     return _defaultOriginateMap;
   }
 
@@ -54,8 +50,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _defaultOriginateMap = defaultOriginateMap;
   }
 
-  @Nullable
-  public Boolean getDisablePeerAsCheck() {
+  public @Nullable Boolean getDisablePeerAsCheck() {
     return _disablePeerAsCheck;
   }
 
@@ -63,8 +58,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _disablePeerAsCheck = disablePeerAsCheck;
   }
 
-  @Nullable
-  public String getInboundPrefixList() {
+  public @Nullable String getInboundPrefixList() {
     return _inboundPrefixList;
   }
 
@@ -72,8 +66,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _inboundPrefixList = inboundPrefixList;
   }
 
-  @Nullable
-  public String getInboundRouteMap() {
+  public @Nullable String getInboundRouteMap() {
     return _inboundRouteMap;
   }
 
@@ -85,8 +78,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _inheritPeerPolicies.put(seq, policy);
   }
 
-  @Nullable
-  public Boolean getNextHopSelf() {
+  public @Nullable Boolean getNextHopSelf() {
     return _nextHopSelf;
   }
 
@@ -94,8 +86,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _nextHopSelf = nextHopSelf;
   }
 
-  @Nullable
-  public Boolean getNextHopThirdParty() {
+  public @Nullable Boolean getNextHopThirdParty() {
     return _nextHopThirdParty;
   }
 
@@ -103,8 +94,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _nextHopThirdParty = nextHopThirdParty;
   }
 
-  @Nullable
-  public String getOutboundPrefixList() {
+  public @Nullable String getOutboundPrefixList() {
     return _outboundPrefixList;
   }
 
@@ -112,8 +102,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _outboundPrefixList = outboundPrefixList;
   }
 
-  @Nullable
-  public String getOutboundRouteMap() {
+  public @Nullable String getOutboundRouteMap() {
     return _outboundRouteMap;
   }
 
@@ -121,8 +110,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _outboundRouteMap = outboundRouteMap;
   }
 
-  @Nullable
-  public Boolean getRouteReflectorClient() {
+  public @Nullable Boolean getRouteReflectorClient() {
     return _routeReflectorClient;
   }
 
@@ -130,8 +118,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _routeReflectorClient = routeReflectorClient;
   }
 
-  @Nullable
-  public Boolean getSendCommunityExtended() {
+  public @Nullable Boolean getSendCommunityExtended() {
     return _sendCommunityExtended;
   }
 
@@ -139,8 +126,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _sendCommunityExtended = sendCommunityExtended;
   }
 
-  @Nullable
-  public Boolean getSendCommunityStandard() {
+  public @Nullable Boolean getSendCommunityStandard() {
     return _sendCommunityStandard;
   }
 
@@ -148,8 +134,7 @@ public final class BgpVrfNeighborAddressFamilyConfiguration implements Serializa
     _sendCommunityStandard = sendCommunityStandard;
   }
 
-  @Nullable
-  public Boolean getSuppressInactive() {
+  public @Nullable Boolean getSuppressInactive() {
     return _suppressInactive;
   }
 

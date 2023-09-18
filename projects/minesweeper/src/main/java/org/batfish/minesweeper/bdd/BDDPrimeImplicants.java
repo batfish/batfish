@@ -128,7 +128,7 @@ public class BDDPrimeImplicants implements Iterable<BDD> {
 
     private List<BDD> _allPIs;
 
-    @Nullable private BDD _nextPI;
+    private @Nullable BDD _nextPI;
 
     PrimeImplicantsIterator() {
       _workQueue = new PriorityQueue<>(Comparator.comparingInt(SearchState::size));

@@ -26,5 +26,5 @@ public final class DstIpExtractorDefault implements FieldExtractor<Ip> {
   }
 
   private static final Ip DEFAULT_IP_ADDRESS = Ip.parse("8.8.8.8");
-  private @Nonnull final IpFieldExtractorContext _helper;
+  private final @Nonnull IpFieldExtractorContext _helper;
 }

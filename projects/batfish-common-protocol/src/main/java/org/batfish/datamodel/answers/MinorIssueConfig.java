@@ -17,9 +17,9 @@ public class MinorIssueConfig {
   private static final String PROP_SEVERITY = "severity";
   private static final String PROP_URL = "url";
 
-  @Nonnull private final String _minorIssue;
-  @Nullable private final Integer _severity;
-  @Nullable private final String _url;
+  private final @Nonnull String _minorIssue;
+  private final @Nullable Integer _severity;
+  private final @Nullable String _url;
 
   @JsonCreator
   private static @Nonnull MinorIssueConfig create(
@@ -51,20 +51,17 @@ public class MinorIssueConfig {
   }
 
   @JsonProperty(PROP_MINOR_ISSUE)
-  @Nonnull
-  public String getMinor() {
+  public @Nonnull String getMinor() {
     return _minorIssue;
   }
 
   @JsonProperty(PROP_SEVERITY)
-  @Nullable
-  public Integer getSeverity() {
+  public @Nullable Integer getSeverity() {
     return _severity;
   }
 
   @JsonProperty(PROP_URL)
-  @Nullable
-  public String getUrl() {
+  public @Nullable String getUrl() {
     return _url;
   }
 

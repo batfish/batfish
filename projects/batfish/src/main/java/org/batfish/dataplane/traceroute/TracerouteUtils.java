@@ -112,8 +112,8 @@ public final class TracerouteUtils {
    * @return {@link EnterInputIfaceStep} containing {@link EnterInputIfaceStepDetail} and action for
    *     the step; null if {@link EnterInputIfaceStep} can't be created
    */
-  @Nonnull
-  static EnterInputIfaceStep buildEnterSrcIfaceStep(Configuration node, String inputIfaceName) {
+  static @Nonnull EnterInputIfaceStep buildEnterSrcIfaceStep(
+      Configuration node, String inputIfaceName) {
     Interface inputInterface = node.getAllInterfaces().get(inputIfaceName);
     checkArgument(
         inputInterface != null, "Node %s has no interface %s", node.getHostname(), inputIfaceName);
@@ -301,8 +301,7 @@ public final class TracerouteUtils {
         .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().build()));
   }
 
-  @Nullable
-  static Transformation sessionTransformation(Flow inputFlow, Flow currentFlow) {
+  static @Nullable Transformation sessionTransformation(Flow inputFlow, Flow currentFlow) {
     ImmutableList.Builder<org.batfish.datamodel.transformation.TransformationStep>
         transformationStepsBuilder = ImmutableList.builder();
 
@@ -336,8 +335,7 @@ public final class TracerouteUtils {
     return transformationSteps.isEmpty() ? null : always().apply(transformationSteps).build();
   }
 
-  @Nullable
-  static Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
+  static @Nullable Flow hopFlow(Flow originalFlow, @Nullable Flow transformedFlow) {
     if (originalFlow == transformedFlow) {
       return null;
     } else {

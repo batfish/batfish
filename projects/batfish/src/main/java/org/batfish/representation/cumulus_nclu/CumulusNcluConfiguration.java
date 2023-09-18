@@ -96,8 +96,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, IpPrefixList> _ipPrefixLists;
   private final @Nonnull Map<String, IpCommunityList> _ipCommunityLists;
 
-  @Nonnull
-  public static final LinkLocalAddress LINK_LOCAL_ADDRESS = LinkLocalAddress.of(BGP_UNNUMBERED_IP);
+  public static final @Nonnull LinkLocalAddress LINK_LOCAL_ADDRESS =
+      LinkLocalAddress.of(BGP_UNNUMBERED_IP);
 
   public CumulusNcluConfiguration() {
     _bonds = new HashMap<>();
@@ -311,8 +311,7 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     _vrfs.forEach(this::initVrf);
   }
 
-  @Nullable
-  public String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
+  public @Nullable String getVrfForVlan(@Nullable Integer bridgeAccessVlan) {
     if (bridgeAccessVlan == null) {
       return null;
     }
@@ -726,13 +725,11 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
         });
   }
 
-  @Nullable
-  public Vrf getVrf(String vrfName) {
+  public @Nullable Vrf getVrf(String vrfName) {
     return _vrfs.get(vrfName);
   }
 
-  @Nonnull
-  public Map<String, InterfaceClagSettings> getClagSettings() {
+  public @Nonnull Map<String, InterfaceClagSettings> getClagSettings() {
     return _interfaces.values().stream()
         .filter(iface -> iface.getClag() != null)
         .collect(ImmutableMap.toImmutableMap(Interface::getName, Interface::getClag));

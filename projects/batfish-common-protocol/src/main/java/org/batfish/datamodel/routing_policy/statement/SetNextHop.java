@@ -18,7 +18,7 @@ import org.batfish.datamodel.routing_policy.expr.NextHopExpr;
 public final class SetNextHop extends Statement {
   private static final String PROP_EXPR = "expr";
 
-  @Nonnull private NextHopExpr _expr;
+  private @Nonnull NextHopExpr _expr;
 
   @JsonCreator
   private static SetNextHop jsonCreator(@Nullable @JsonProperty(PROP_EXPR) NextHopExpr expr) {
@@ -53,8 +53,7 @@ public final class SetNextHop extends Statement {
   }
 
   @JsonProperty(PROP_EXPR)
-  @Nonnull
-  public NextHopExpr getExpr() {
+  public @Nonnull NextHopExpr getExpr() {
     return _expr;
   }
 

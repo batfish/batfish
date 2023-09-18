@@ -98,8 +98,8 @@ public class AwsConfiguration extends VendorConfiguration {
   /** ASN to use for nodes that faces the backbone (e.g., IGW, services gateway) */
   static final long BACKBONE_PEERING_ASN = 65534L;
 
-  @Nullable private ConvertedConfiguration _convertedConfiguration;
-  @Nonnull private final Map<String, Account> _accounts;
+  private @Nullable ConvertedConfiguration _convertedConfiguration;
+  private final @Nonnull Map<String, Account> _accounts;
 
   /**
    * Multimap of subnet IDs to {@link Instance} in that subnet used as targets by some {@link
@@ -129,21 +129,18 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   /** Return a stream of all VPCs, across all accounts */
-  @Nonnull
-  public Stream<Vpc> getAllVpc() {
+  public @Nonnull Stream<Vpc> getAllVpc() {
     return getAccounts().stream()
         .flatMap(a -> a.getRegions().stream())
         .flatMap(r -> r.getVpcs().values().stream());
   }
 
   /** Return a VPC with a given ID (in any account/region) if it exists, or {@code null} */
-  @Nullable
-  public Vpc getVpc(String vpcId) {
+  public @Nullable Vpc getVpc(String vpcId) {
     return getAllVpc().filter(v -> vpcId.equals(v.getId())).findFirst().orElse(null);
   }
 
-  @Nonnull
-  public Account addOrGetAccount(String accountId) {
+  public @Nonnull Account addOrGetAccount(String accountId) {
     return _accounts.computeIfAbsent(accountId, Account::new);
   }
 
@@ -290,8 +287,7 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   @Override
-  @Nonnull
-  public IspConfiguration getIspConfiguration() {
+  public @Nonnull IspConfiguration getIspConfiguration() {
     if (_convertedConfiguration == null) {
       throw new IllegalStateException(
           "getIspConfiguration called when converted configuration is null");
@@ -438,8 +434,7 @@ public class AwsConfiguration extends VendorConfiguration {
   }
 
   @Override
-  @Nonnull
-  public Set<Layer1Edge> getLayer1Edges() {
+  public @Nonnull Set<Layer1Edge> getLayer1Edges() {
     if (_convertedConfiguration == null) {
       convertConfigurations();
     }

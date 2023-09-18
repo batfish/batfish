@@ -24,10 +24,10 @@ public final class CompareRoutePoliciesQuestion extends Question {
   @VisibleForTesting
   static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nullable private final String _policy;
-  @Nullable private final String _referencePolicy;
-  @Nullable private final String _nodes;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nullable String _policy;
+  private final @Nullable String _referencePolicy;
+  private final @Nullable String _nodes;
 
   public CompareRoutePoliciesQuestion() {
     this(DEFAULT_DIRECTION, null, null, null);
@@ -63,8 +63,7 @@ public final class CompareRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_DIRECTION)
-  @Nonnull
-  public Environment.Direction getDirection() {
+  public @Nonnull Environment.Direction getDirection() {
     return _direction;
   }
 

@@ -19,7 +19,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class IpNextHop extends NextHopExpr {
   private static final String PROP_IPS = "ips";
 
-  @Nonnull private final List<Ip> _ips;
+  private final @Nonnull List<Ip> _ips;
 
   @JsonCreator
   private static IpNextHop jsonCreator(@Nullable @JsonProperty(PROP_IPS) List<Ip> ips) {
@@ -45,8 +45,7 @@ public final class IpNextHop extends NextHopExpr {
   }
 
   @JsonProperty(PROP_IPS)
-  @Nonnull
-  public List<Ip> getIps() {
+  public @Nonnull List<Ip> getIps() {
     return _ips;
   }
 

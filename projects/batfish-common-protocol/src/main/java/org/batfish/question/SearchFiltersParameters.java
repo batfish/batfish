@@ -40,18 +40,15 @@ public final class SearchFiltersParameters {
     _complementHeaderSpace = complementHeaderSpace;
   }
 
-  @Nonnull
-  public IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
+  public @Nonnull IpSpaceAssignmentSpecifier getDestinationIpSpaceSpecifier() {
     return _destinationIpSpaceSpecifier;
   }
 
-  @Nonnull
-  public LocationSpecifier getStartLocationSpecifier() {
+  public @Nonnull LocationSpecifier getStartLocationSpecifier() {
     return _startLocationSpecifier;
   }
 
-  @Nonnull
-  public IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
+  public @Nonnull IpSpaceAssignmentSpecifier getSourceIpSpaceSpecifier() {
     return _sourceIpSpaceSpecifier;
   }
 
@@ -65,8 +62,7 @@ public final class SearchFiltersParameters {
         : and(_headerSpaceExpr, srcExpr, dstExpr);
   }
 
-  @Nonnull
-  private static IpSpace resolveIpSpaceSpecifier(
+  private static @Nonnull IpSpace resolveIpSpaceSpecifier(
       IpSpaceAssignmentSpecifier specifier, SpecifierContext ctx) {
     return firstNonNull(
         AclIpSpace.union(

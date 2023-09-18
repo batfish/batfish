@@ -31,7 +31,7 @@ public final class TopologyContext implements TopologyContainer {
     private @Nonnull Layer1Topologies _layer1Topologies;
     private @Nonnull L3Adjacencies _l3Adjacencies;
     private @Nonnull OspfTopology _ospfTopology;
-    @Nonnull private TunnelTopology _tunnelTopology;
+    private @Nonnull TunnelTopology _tunnelTopology;
     private @Nonnull VxlanTopology _vxlanTopology;
 
     public @Nonnull TopologyContext build() {
@@ -124,7 +124,7 @@ public final class TopologyContext implements TopologyContainer {
   private final @Nonnull Layer1Topologies _layer1Topologies;
   private final @Nonnull L3Adjacencies _l3Adjacencies;
   private final @Nonnull OspfTopology _ospfTopology;
-  @Nonnull private final TunnelTopology _tunnelTopology;
+  private final @Nonnull TunnelTopology _tunnelTopology;
   private final @Nonnull VxlanTopology _vxlanTopology;
 
   private TopologyContext(
@@ -195,8 +195,7 @@ public final class TopologyContext implements TopologyContainer {
   }
 
   @Override
-  @Nonnull
-  public TunnelTopology getTunnelTopology() {
+  public @Nonnull TunnelTopology getTunnelTopology() {
     return _tunnelTopology;
   }
 

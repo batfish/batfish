@@ -20,10 +20,10 @@ public final class Trace {
   private static final String PROP_HOPS = "hops";
 
   /** Final action taken on the last {@link Step} of the last {@link Hop} of the {@link Trace} */
-  @Nonnull private final FlowDisposition _disposition;
+  private final @Nonnull FlowDisposition _disposition;
 
   /** List of {@link Hop}s making up {@link Trace} */
-  @Nonnull private final List<Hop> _hops;
+  private final @Nonnull List<Hop> _hops;
 
   public Trace(FlowDisposition disposition, List<Hop> hops) {
     _disposition = disposition;
@@ -51,14 +51,12 @@ public final class Trace {
   }
 
   @JsonProperty(PROP_DISPOSITION)
-  @Nonnull
-  public FlowDisposition getDisposition() {
+  public @Nonnull FlowDisposition getDisposition() {
     return _disposition;
   }
 
   @JsonProperty(PROP_HOPS)
-  @Nonnull
-  public List<Hop> getHops() {
+  public @Nonnull List<Hop> getHops() {
     return _hops;
   }
 

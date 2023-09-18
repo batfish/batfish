@@ -14,8 +14,7 @@ import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 public final class PrefixSpaceEvaluator
     implements PrefixSpaceExprVisitor<PrefixSpace, Environment> {
 
-  @Nonnull
-  public static PrefixSpaceEvaluator instance() {
+  public static @Nonnull PrefixSpaceEvaluator instance() {
     return INSTANCE;
   }
 

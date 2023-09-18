@@ -132,8 +132,7 @@ public class GroupWildcard extends BaseParser<String> {
 
   /** Like {@link #toJavaRegex(String)}, but for debugging. */
   @SuppressWarnings("unused") // leaving here for future debugging.
-  @Nonnull
-  static String debugToJavaRegex(String regex) {
+  static @Nonnull String debugToJavaRegex(String regex) {
     GroupWildcard parser = Parboiled.createParser(GroupWildcard.class);
     TracingParseRunner<String> runner =
         new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());

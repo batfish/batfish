@@ -67,14 +67,14 @@ public abstract class IpAccessListToBdd {
   }
 
   /** Map of ACL name to {@link PermitAndDenyBdds} of the packets explicitly matched by that ACL */
-  @Nonnull private final Map<String, Supplier<PermitAndDenyBdds>> _permitAndDenyBdds;
+  private final @Nonnull Map<String, Supplier<PermitAndDenyBdds>> _permitAndDenyBdds;
 
-  @Nonnull private final BDDFactory _factory;
-  @Nonnull private final BDDOps _bddOps;
-  @Nonnull private final BDDPacket _pkt;
-  @Nonnull private final BDDSourceManager _bddSrcManager;
-  @Nonnull private final HeaderSpaceToBDD _headerSpaceToBDD;
-  @Nonnull private final ToBddConverter _toBddConverter;
+  private final @Nonnull BDDFactory _factory;
+  private final @Nonnull BDDOps _bddOps;
+  private final @Nonnull BDDPacket _pkt;
+  private final @Nonnull BDDSourceManager _bddSrcManager;
+  private final @Nonnull HeaderSpaceToBDD _headerSpaceToBDD;
+  private final @Nonnull ToBddConverter _toBddConverter;
 
   protected IpAccessListToBdd(
       @Nonnull BDDPacket pkt,
@@ -126,8 +126,7 @@ public abstract class IpAccessListToBdd {
     return _pkt;
   }
 
-  @Nonnull
-  public final HeaderSpaceToBDD getHeaderSpaceToBDD() {
+  public final @Nonnull HeaderSpaceToBDD getHeaderSpaceToBDD() {
     return _headerSpaceToBDD;
   }
 
@@ -135,8 +134,7 @@ public abstract class IpAccessListToBdd {
    * Convert an Access Control List (ACL) to a symbolic boolean expression representing the union of
    * packets that will be permitted by the ACL. The default action in an ACL is to deny all traffic.
    */
-  @Nonnull
-  public final BDD toBdd(IpAccessList acl) {
+  public final @Nonnull BDD toBdd(IpAccessList acl) {
     return getPermitAndDenyBdds(acl.getName()).getPermitBdd();
   }
 

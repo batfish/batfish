@@ -27,8 +27,8 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   public static final class Builder
       extends EvpnRoute.Builder<EvpnType2Route.Builder, EvpnType2Route> {
 
-    @Nullable private Ip _ip;
-    @Nullable private MacAddress _macAddress;
+    private @Nullable Ip _ip;
+    private @Nullable MacAddress _macAddress;
 
     private Builder() {}
 
@@ -88,19 +88,16 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
       return this;
     }
 
-    @Nullable
-    public Ip getIp() {
+    public @Nullable Ip getIp() {
       return _ip;
     }
 
-    @Nullable
-    public MacAddress getMacAddress() {
+    public @Nullable MacAddress getMacAddress() {
       return _macAddress;
     }
 
     @Override
-    @Nonnull
-    public Builder getThis() {
+    public @Nonnull Builder getThis() {
       return this;
     }
   }
@@ -108,8 +105,8 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
   private static final String PROP_IP = "ip";
   private static final String PROP_MAC_ADDRESS = "macAddress";
 
-  @Nonnull private final Ip _ip;
-  @Nullable private final MacAddress _macAddress;
+  private final @Nonnull Ip _ip;
+  private final @Nullable MacAddress _macAddress;
   /* Cache the hashcode */
   private transient int _hashCode = 0;
 
@@ -192,13 +189,11 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
     _macAddress = macAddress;
   }
 
-  @Nullable
-  public MacAddress getMacAddress() {
+  public @Nullable MacAddress getMacAddress() {
     return _macAddress;
   }
 
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 

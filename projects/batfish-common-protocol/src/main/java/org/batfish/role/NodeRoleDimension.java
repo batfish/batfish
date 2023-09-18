@@ -64,8 +64,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
     return new Builder();
   }
 
-  @Nonnull
-  public static Builder builder(String name) {
+  public static @Nonnull Builder builder(String name) {
     return new Builder().setName(name);
   }
 
@@ -77,7 +76,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
   private static final String PROP_ROLE_REGEXES = "roleRegexes";
   private static final String PROP_ROLE_DIMENSION_MAPPINGS = "roleDimensionMappings";
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   /**
    * a list of role dimension mappings used to identify roles from node names. each mapping contains
@@ -86,7 +85,7 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    * of node names for which to produce role names. there are multiple role dimension mappings to
    * handle node names that have different formats.
    */
-  @Nonnull private final List<RoleDimensionMapping> _roleDimensionMappings;
+  private final @Nonnull List<RoleDimensionMapping> _roleDimensionMappings;
 
   private NodeRoleDimension(String name, List<RoleDimensionMapping> mappings) {
     _name = name;

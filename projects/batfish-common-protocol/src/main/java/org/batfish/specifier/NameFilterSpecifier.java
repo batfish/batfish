@@ -12,7 +12,7 @@ import org.batfish.datamodel.IpAccessList;
 /** A {@link FilterSpecifier} that matches filter names (case insensitive). */
 @ParametersAreNonnullByDefault
 public final class NameFilterSpecifier implements FilterSpecifier {
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public NameFilterSpecifier(String name) {
     _name = name;

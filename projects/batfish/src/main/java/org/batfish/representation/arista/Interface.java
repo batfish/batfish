@@ -73,11 +73,11 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  @Nullable private Integer _accessVlan;
+  private @Nullable Integer _accessVlan;
 
   private boolean _shutdown;
 
-  @Nullable private IntegerSpace _allowedVlans;
+  private @Nullable IntegerSpace _allowedVlans;
 
   private List<AristaDynamicSourceNat> _dynamicSourceNats;
 
@@ -85,7 +85,7 @@ public class Interface implements Serializable {
 
   private boolean _autoState;
 
-  @Nullable private Double _bandwidth;
+  private @Nullable Double _bandwidth;
 
   private String _channelGroup;
 
@@ -101,37 +101,37 @@ public class Interface implements Serializable {
 
   private String _incomingFilter;
 
-  @Nullable private Long _isisCost;
+  private @Nullable Long _isisCost;
 
-  @Nullable private IsisInterfaceMode _isisInterfaceMode;
+  private @Nullable IsisInterfaceMode _isisInterfaceMode;
 
   private @Nullable Boolean _localProxyArp;
 
   private final @Nonnull Set<String> _memberInterfaces;
 
-  @Nullable private Integer _mlagId;
+  private @Nullable Integer _mlagId;
 
   private int _mtu;
 
   private final String _name;
 
-  @Nullable private Integer _nativeVlan;
+  private @Nullable Integer _nativeVlan;
 
   private Long _ospfArea;
 
   private Integer _ospfCost;
 
-  @Nullable private Integer _ospfDeadInterval;
+  private @Nullable Integer _ospfDeadInterval;
 
-  @Nullable private Integer _ospfHelloInterval;
+  private @Nullable Integer _ospfHelloInterval;
 
   private int _ospfHelloMultiplier;
 
-  @Nullable private OspfNetworkType _ospfNetworkType;
+  private @Nullable OspfNetworkType _ospfNetworkType;
 
-  @Nullable private Boolean _ospfPassive;
+  private @Nullable Boolean _ospfPassive;
 
-  @Nullable private String _ospfProcess;
+  private @Nullable String _ospfProcess;
 
   private boolean _ospfShutdown;
 
@@ -157,7 +157,7 @@ public class Interface implements Serializable {
 
   private Tunnel _tunnel;
 
-  @Nonnull private Set<String> _vlanTrunkGroups;
+  private @Nonnull Set<String> _vlanTrunkGroups;
 
   private String _vrf;
 
@@ -222,8 +222,7 @@ public class Interface implements Serializable {
     _allowedVlans = allowedVlans;
   }
 
-  @Nullable
-  public Integer getAccessVlan() {
+  public @Nullable Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -231,8 +230,7 @@ public class Interface implements Serializable {
     return _shutdown;
   }
 
-  @Nullable
-  public IntegerSpace getAllowedVlans() {
+  public @Nullable IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -305,8 +303,7 @@ public class Interface implements Serializable {
     return _memberInterfaces;
   }
 
-  @Nullable
-  public Integer getMlagId() {
+  public @Nullable Integer getMlagId() {
     return _mlagId;
   }
 
@@ -318,8 +315,7 @@ public class Interface implements Serializable {
     return _name;
   }
 
-  @Nullable
-  public Integer getNativeVlan() {
+  public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -332,14 +328,12 @@ public class Interface implements Serializable {
   }
 
   /** Get the time (in seconds) to wait before neighbors are declared dead */
-  @Nullable
-  public Integer getOspfDeadInterval() {
+  public @Nullable Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
 
   /** Get the time (in seconds) between sending hello messages to neighbors */
-  @Nullable
-  public Integer getOspfHelloInterval() {
+  public @Nullable Integer getOspfHelloInterval() {
     return _ospfHelloInterval;
   }
 
@@ -351,8 +345,7 @@ public class Interface implements Serializable {
     return _ospfNetworkType;
   }
 
-  @Nullable
-  public Boolean getOspfPassive() {
+  public @Nullable Boolean getOspfPassive() {
     return _ospfPassive;
   }
 
@@ -431,8 +424,7 @@ public class Interface implements Serializable {
    * Retun the (immutable) set of VLAN trunk groups that this interface belongs to. To add trunk
    * groups, see {@link #addVlanTrunkGroup(String)}
    */
-  @Nonnull
-  public Set<String> getVlanTrunkGroups() {
+  public @Nonnull Set<String> getVlanTrunkGroups() {
     return _vlanTrunkGroups;
   }
 

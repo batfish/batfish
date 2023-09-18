@@ -41,23 +41,22 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
     REGEX
   }
 
-  @Nonnull private final Type _type;
-  @Nullable private final Community _literalValue;
+  private final @Nonnull Type _type;
+  private final @Nullable Community _literalValue;
 
   /**
    * A regex representing numbers that can be part of communities. The first conjunct of the regex
    * ensures there are no leading zeros. The second conjunct of the regex ensures that the number is
    * at most 16 bits, using the numeric interval syntax of the automaton library.
    */
-  @VisibleForTesting @Nonnull
-  static final String COMMUNITY_NUM_REGEX = "((0|[1-9][0-9]*)&<0-65535>)";
+  @VisibleForTesting
+  static final @Nonnull String COMMUNITY_NUM_REGEX = "((0|[1-9][0-9]*)&<0-65535>)";
 
   /**
    * A regex that represents the syntax of standard community literals supported by Batfish (see
    * StandardCommunity::matchString())
    */
-  @Nonnull
-  private static final String COMMUNITY_REGEX =
+  private static final @Nonnull String COMMUNITY_REGEX =
       // start-of-string character
       "^"
           + String.join(":", COMMUNITY_NUM_REGEX, COMMUNITY_NUM_REGEX)
@@ -72,7 +71,7 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
    * be arbitrary strings. Second, it ensures that when we solve for community literals that match
    * regexes, we will get examples that are sensible and also able to be parsed by Batfish.
    */
-  @Nonnull static final Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
+  static final @Nonnull Automaton COMMUNITY_FSM = new RegExp(COMMUNITY_REGEX).toAutomaton();
 
   private CommunityVar(Type type, String regex, @Nullable Community literalValue) {
     super(regex);
@@ -92,13 +91,11 @@ public final class CommunityVar extends SymbolicRegex implements Comparable<Comm
     return new CommunityVar(EXACT, "^" + literalCommunity.matchString() + "$", literalCommunity);
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
-  @Nullable
-  public Community getLiteralValue() {
+  public @Nullable Community getLiteralValue() {
     return _literalValue;
   }
 

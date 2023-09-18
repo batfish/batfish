@@ -16,9 +16,9 @@ public final class IpPrefix extends PrefixExpr {
   private static final String PROP_IP = "ip";
   private static final String PROP_PREFIX_LENGTH = "prefixLength";
 
-  @Nonnull private IpExpr _ip;
+  private @Nonnull IpExpr _ip;
 
-  @Nonnull private IntExpr _prefixLength;
+  private @Nonnull IntExpr _prefixLength;
 
   @JsonCreator
   private static IpPrefix jsonCreator(
@@ -53,14 +53,12 @@ public final class IpPrefix extends PrefixExpr {
   }
 
   @JsonProperty(PROP_IP)
-  @Nonnull
-  public IpExpr getIp() {
+  public @Nonnull IpExpr getIp() {
     return _ip;
   }
 
   @JsonProperty(PROP_PREFIX_LENGTH)
-  @Nonnull
-  public IntExpr getPrefixLength() {
+  public @Nonnull IntExpr getPrefixLength() {
     return _prefixLength;
   }
 

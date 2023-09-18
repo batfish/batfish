@@ -23,8 +23,8 @@ import javax.annotation.Nullable;
  */
 public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
 
-  @Nonnull private final VrfExpr _vrf;
-  @Nonnull private final Set<String> _interfaceNames;
+  private final @Nonnull VrfExpr _vrf;
+  private final @Nonnull Set<String> _interfaceNames;
 
   private static final String PROP_VRF = "vrf";
   private static final String PROP_INTERFACES = "interfaces";

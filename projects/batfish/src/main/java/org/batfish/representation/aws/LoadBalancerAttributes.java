@@ -27,9 +27,9 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static class Attribute implements Serializable {
 
-    @Nonnull private final String _key;
+    private final @Nonnull String _key;
 
-    @Nonnull private final String _value;
+    private final @Nonnull String _value;
 
     @JsonCreator
     private static Attribute create(
@@ -45,13 +45,11 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
       _value = value;
     }
 
-    @Nonnull
-    public String getKey() {
+    public @Nonnull String getKey() {
       return _key;
     }
 
-    @Nonnull
-    public String getValue() {
+    public @Nonnull String getValue() {
       return _value;
     }
 
@@ -78,9 +76,9 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private String _loadBalancerArn;
+  private @Nonnull String _loadBalancerArn;
 
-  @Nonnull private final List<Attribute> _attributes;
+  private final @Nonnull List<Attribute> _attributes;
 
   @JsonCreator
   private static LoadBalancerAttributes create(
@@ -114,8 +112,7 @@ final class LoadBalancerAttributes implements AwsVpcEntity, Serializable {
     return _loadBalancerArn;
   }
 
-  @Nonnull
-  public List<Attribute> getAttributes() {
+  public @Nonnull List<Attribute> getAttributes() {
     return _attributes;
   }
 

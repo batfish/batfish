@@ -15,8 +15,7 @@ public final class RedistProfile implements Serializable {
     _name = name;
   }
 
-  @Nullable
-  public Action getAction() {
+  public @Nullable Action getAction() {
     return _action;
   }
 
@@ -24,16 +23,14 @@ public final class RedistProfile implements Serializable {
     _action = action;
   }
 
-  @Nonnull
-  public RedistProfileFilter getOrCreateFilter() {
+  public @Nonnull RedistProfileFilter getOrCreateFilter() {
     if (_filter == null) {
       _filter = new RedistProfileFilter();
     }
     return _filter;
   }
 
-  @Nullable
-  public RedistProfileFilter getFilter() {
+  public @Nullable RedistProfileFilter getFilter() {
     return _filter;
   }
 
@@ -41,13 +38,11 @@ public final class RedistProfile implements Serializable {
     _filter = filter;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Integer getPriority() {
+  public @Nullable Integer getPriority() {
     return _priority;
   }
 

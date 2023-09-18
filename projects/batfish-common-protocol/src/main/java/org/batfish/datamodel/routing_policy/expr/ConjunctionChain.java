@@ -33,7 +33,7 @@ public final class ConjunctionChain extends BooleanExpr {
 
   private static final String PROP_SUBROUTINES = "subroutines";
 
-  @Nonnull private final List<BooleanExpr> _subroutines;
+  private final @Nonnull List<BooleanExpr> _subroutines;
 
   @JsonCreator
   private static ConjunctionChain create(

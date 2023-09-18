@@ -23,9 +23,9 @@ public class Address extends AddrgrpMember implements Serializable {
 
   // Fields that are only allowed to be set for a particular address type
   public static class TypeSpecificFields implements Serializable {
-    @Nullable private String _interface; // for type INTERFACE_SUBNET
-    @Nullable private Ip _ip1;
-    @Nullable private Ip _ip2;
+    private @Nullable String _interface; // for type INTERFACE_SUBNET
+    private @Nullable Ip _ip1;
+    private @Nullable Ip _ip2;
 
     // Type.SUBNET and Type.INTERFACE_SUBNET: Default subnet is 0.0.0.0/0
     // Type.WILDCARD: Default wildcard is 0.0.0.0 0.0.0.0 (meaning all IPs)
@@ -89,14 +89,14 @@ public class Address extends AddrgrpMember implements Serializable {
     }
   }
 
-  @Nullable private Boolean _allowRouting;
-  @Nullable private String _associatedInterface;
-  @Nullable private String _associatedInterfaceZone;
-  @Nullable private BatfishUUID _associatedInterfaceZoneUuid;
-  @Nonnull private String _name;
-  @Nonnull private final BatfishUUID _uuid;
-  @Nullable private Type _type;
-  @Nonnull private final TypeSpecificFields _typeSpecificFields;
+  private @Nullable Boolean _allowRouting;
+  private @Nullable String _associatedInterface;
+  private @Nullable String _associatedInterfaceZone;
+  private @Nullable BatfishUUID _associatedInterfaceZoneUuid;
+  private @Nonnull String _name;
+  private final @Nonnull BatfishUUID _uuid;
+  private @Nullable Type _type;
+  private final @Nonnull TypeSpecificFields _typeSpecificFields;
 
   public static final boolean DEFAULT_ALLOW_ROUTING = false;
   public static final Type DEFAULT_TYPE = Type.IPMASK;

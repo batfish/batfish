@@ -26,7 +26,7 @@ public final class PrivateIpAddress implements Serializable {
   @ParametersAreNonnullByDefault
   static final class Association {
 
-    @Nonnull private final Ip _publicIp;
+    private final @Nonnull Ip _publicIp;
 
     @JsonCreator
     private static Association create(@Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) Ip publicIp) {
@@ -46,9 +46,9 @@ public final class PrivateIpAddress implements Serializable {
 
   private final boolean _primary;
 
-  @Nonnull private final Ip _privateIp;
+  private final @Nonnull Ip _privateIp;
 
-  @Nullable private final Ip _publicIp;
+  private final @Nullable Ip _publicIp;
 
   @JsonCreator
   private static PrivateIpAddress create(
@@ -68,13 +68,11 @@ public final class PrivateIpAddress implements Serializable {
     _publicIp = publicIp;
   }
 
-  @Nonnull
-  public Ip getPrivateIp() {
+  public @Nonnull Ip getPrivateIp() {
     return _privateIp;
   }
 
-  @Nullable
-  public Ip getPublicIp() {
+  public @Nullable Ip getPublicIp() {
     return _publicIp;
   }
 

@@ -16,10 +16,10 @@ import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
  */
 @ParametersAreNonnullByDefault
 public class FileParseResult implements Serializable {
-  @Nonnull private ParseTreeSentences _parseTreeSentences;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
-  @Nonnull private final Warnings _warnings;
-  @Nullable private ParseStatus _parseStatus;
+  private @Nonnull ParseTreeSentences _parseTreeSentences;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull Warnings _warnings;
+  private @Nullable ParseStatus _parseStatus;
 
   public FileParseResult(
       ParseTreeSentences parseTreeSentences,
@@ -35,29 +35,24 @@ public class FileParseResult implements Serializable {
     return this;
   }
 
-  @Nonnull
-  public FileParseResult setParseTreeSentences(ParseTreeSentences parseTreeSentences) {
+  public @Nonnull FileParseResult setParseTreeSentences(ParseTreeSentences parseTreeSentences) {
     _parseTreeSentences = parseTreeSentences;
     return this;
   }
 
-  @Nonnull
-  public ParseTreeSentences getParseTreeSentences() {
+  public @Nonnull ParseTreeSentences getParseTreeSentences() {
     return _parseTreeSentences;
   }
 
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
-  @Nonnull
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _warnings;
   }
 
-  @Nullable
-  public ParseStatus getParseStatus() {
+  public @Nullable ParseStatus getParseStatus() {
     return _parseStatus;
   }
 }

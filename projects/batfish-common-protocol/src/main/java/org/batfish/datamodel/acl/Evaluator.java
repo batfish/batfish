@@ -24,7 +24,7 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
 
   protected final Map<String, IpSpace> _namedIpSpaces;
 
-  @Nullable protected final String _srcInterface;
+  protected final @Nullable String _srcInterface;
 
   public Evaluator(
       Flow flow,

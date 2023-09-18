@@ -26,17 +26,17 @@ public class RouteMapClause implements Serializable {
 
   private List<RouteMapSetLine> _setList;
 
-  @Nullable private RouteMapSetCommunity _setCommunity;
+  private @Nullable RouteMapSetCommunity _setCommunity;
 
-  @Nullable private RouteMapSetCommunityNone _setCommunityNone;
+  private @Nullable RouteMapSetCommunityNone _setCommunityNone;
 
-  @Nullable private RouteMapSetCommunityList _setCommunityList;
+  private @Nullable RouteMapSetCommunityList _setCommunityList;
 
-  @Nullable private RouteMapSetCommunityDelete _setCommunityDelete;
+  private @Nullable RouteMapSetCommunityDelete _setCommunityDelete;
 
-  @Nullable private RouteMapSetCommunityListDelete _setCommunityListDelete;
+  private @Nullable RouteMapSetCommunityListDelete _setCommunityListDelete;
 
-  @Nullable private RouteMapMatchCommunity _matchCommunity;
+  private @Nullable RouteMapMatchCommunity _matchCommunity;
 
   public RouteMapClause(@Nonnull LineAction action, String name, int num) {
     _action = action;
@@ -46,8 +46,7 @@ public class RouteMapClause implements Serializable {
     _setList = new ArrayList<>();
   }
 
-  @Nullable
-  public RouteMapSetCommunity getSetCommunity() {
+  public @Nullable RouteMapSetCommunity getSetCommunity() {
     return _setCommunity;
   }
 
@@ -55,8 +54,7 @@ public class RouteMapClause implements Serializable {
     _setCommunity = setCommunity;
   }
 
-  @Nullable
-  public RouteMapSetCommunityNone getSetCommunityNone() {
+  public @Nullable RouteMapSetCommunityNone getSetCommunityNone() {
     return _setCommunityNone;
   }
 
@@ -64,8 +62,7 @@ public class RouteMapClause implements Serializable {
     _setCommunityNone = setCommunityNone;
   }
 
-  @Nullable
-  public RouteMapSetCommunityList getSetCommunityList() {
+  public @Nullable RouteMapSetCommunityList getSetCommunityList() {
     return _setCommunityList;
   }
 
@@ -73,8 +70,7 @@ public class RouteMapClause implements Serializable {
     _setCommunityList = setCommunityList;
   }
 
-  @Nullable
-  public RouteMapSetCommunityDelete getSetCommunityDelete() {
+  public @Nullable RouteMapSetCommunityDelete getSetCommunityDelete() {
     return _setCommunityDelete;
   }
 
@@ -82,8 +78,7 @@ public class RouteMapClause implements Serializable {
     _setCommunityDelete = setCommunityDelete;
   }
 
-  @Nullable
-  public RouteMapSetCommunityListDelete getSetCommunityListDelete() {
+  public @Nullable RouteMapSetCommunityListDelete getSetCommunityListDelete() {
     return _setCommunityListDelete;
   }
 
@@ -92,8 +87,7 @@ public class RouteMapClause implements Serializable {
     _setCommunityListDelete = setCommunityListDelete;
   }
 
-  @Nullable
-  public RouteMapMatchCommunity getMatchCommunity() {
+  public @Nullable RouteMapMatchCommunity getMatchCommunity() {
     return _matchCommunity;
   }
 

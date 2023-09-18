@@ -105,8 +105,7 @@ public final class Common {
    * <p>If any Batfish-generated structures are generated, does the bookkeeping in the provided
    * {@link Configuration} to ensure they are available and tracked.
    */
-  @Nullable
-  public static If suppressSummarizedPrefixes(
+  public static @Nullable If suppressSummarizedPrefixes(
       Configuration c, String vrfName, Stream<Prefix> summaryOnlyPrefixes) {
     Iterator<Prefix> prefixesToSuppress = summaryOnlyPrefixes.iterator();
     if (!prefixesToSuppress.hasNext()) {

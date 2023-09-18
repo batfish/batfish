@@ -25,13 +25,13 @@ public class Layer3Edge implements Comparable<Layer3Edge> {
   private static final String PROP_INTERFACE_ADDRESSES1 = "interfaceAddresses1";
   private static final String PROP_INTERFACE_ADDRESSES2 = "interfaceAddresses2";
 
-  @Nonnull private final NodeInterfacePair _nodeInterface1;
+  private final @Nonnull NodeInterfacePair _nodeInterface1;
 
-  @Nonnull private final NodeInterfacePair _nodeInterface2;
+  private final @Nonnull NodeInterfacePair _nodeInterface2;
 
-  @Nonnull private final SortedSet<InterfaceAddress> _interfaceAddresses1;
+  private final @Nonnull SortedSet<InterfaceAddress> _interfaceAddresses1;
 
-  @Nonnull private final SortedSet<InterfaceAddress> _interfaceAddresses2;
+  private final @Nonnull SortedSet<InterfaceAddress> _interfaceAddresses2;
 
   public Layer3Edge(
       NodeInterfacePair nodeInterface1,
@@ -83,26 +83,22 @@ public class Layer3Edge implements Comparable<Layer3Edge> {
   }
 
   @JsonProperty(PROP_NODE_INTERFACE1)
-  @Nonnull
-  public NodeInterfacePair getNodeInterface1() {
+  public @Nonnull NodeInterfacePair getNodeInterface1() {
     return _nodeInterface1;
   }
 
   @JsonProperty(PROP_NODE_INTERFACE2)
-  @Nonnull
-  public NodeInterfacePair getNodeInterface2() {
+  public @Nonnull NodeInterfacePair getNodeInterface2() {
     return _nodeInterface2;
   }
 
   @JsonProperty(PROP_INTERFACE_ADDRESSES1)
-  @Nonnull
-  public SortedSet<InterfaceAddress> getInterfaceAddresses1() {
+  public @Nonnull SortedSet<InterfaceAddress> getInterfaceAddresses1() {
     return _interfaceAddresses1;
   }
 
   @JsonProperty(PROP_INTERFACE_ADDRESSES2)
-  @Nonnull
-  public SortedSet<InterfaceAddress> getInterfaceAddresses2() {
+  public @Nonnull SortedSet<InterfaceAddress> getInterfaceAddresses2() {
     return _interfaceAddresses2;
   }
 

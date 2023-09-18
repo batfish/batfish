@@ -46,8 +46,7 @@ public class StaticRoute implements Serializable {
     return _nextHopIp;
   }
 
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
@@ -76,8 +75,7 @@ public class StaticRoute implements Serializable {
   }
 
   /** Convert this static route to a VI static route */
-  @Nonnull
-  public org.batfish.datamodel.StaticRoute convert() {
+  public @Nonnull org.batfish.datamodel.StaticRoute convert() {
     String nhInt = _nextHopInterface != null ? canonicalizeInterfaceName(_nextHopInterface) : null;
     return org.batfish.datamodel.StaticRoute.builder()
         .setAdmin(_distance != null ? _distance : DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE)

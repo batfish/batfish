@@ -25,8 +25,7 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
 
     @Override
-    @Nonnull
-    protected Boolean featureValueOf(EigrpInterfaceSettings actual) {
+    protected @Nonnull Boolean featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getEnabled();
     }
   }
@@ -37,8 +36,7 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
 
     @Override
-    @Nonnull
-    protected EigrpMetric featureValueOf(EigrpInterfaceSettings actual) {
+    protected @Nonnull EigrpMetric featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getMetric();
     }
   }
@@ -49,8 +47,7 @@ final class EigrpInterfaceSettingsMatchersImpl {
     }
 
     @Override
-    @Nonnull
-    protected Boolean featureValueOf(EigrpInterfaceSettings actual) {
+    protected @Nonnull Boolean featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getPassive();
     }
   }

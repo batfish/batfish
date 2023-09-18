@@ -52,18 +52,15 @@ public final class Nat implements Serializable {
     _defaultToPort = DEFAULT_TO_PORT;
   }
 
-  @Nonnull
-  public Map<String, NatPool> getPools() {
+  public @Nonnull Map<String, NatPool> getPools() {
     return _pools;
   }
 
-  @Nonnull
-  public Map<String, NatRuleSet> getRuleSets() {
+  public @Nonnull Map<String, NatRuleSet> getRuleSets() {
     return _ruleSets;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 

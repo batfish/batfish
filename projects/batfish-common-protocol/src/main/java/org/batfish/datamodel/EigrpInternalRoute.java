@@ -79,8 +79,7 @@ public class EigrpInternalRoute extends EigrpRoute {
     private Builder() {}
 
     @Override
-    @Nonnull
-    public EigrpInternalRoute build() {
+    public @Nonnull EigrpInternalRoute build() {
       checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
       checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
       checkArgument(

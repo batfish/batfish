@@ -95,13 +95,13 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
   private static final String PROP_SERVICE_OBJECT_GROUPS = "serviceObjectGroups";
   private static final String PROP_SERVICE_OBJECTS = "serviceObjects";
 
-  @Nonnull private final SortedSet<AddressGroup> _addressGroups;
-  @Nonnull private final SortedSet<FilterGroup> _filterGroups;
-  @Nonnull private final SortedSet<InterfaceGroup> _interfaceGroups;
-  @Nonnull private final String _name;
-  @Nonnull private final SortedSet<ServiceEndpoint> _serviceEndpoints;
-  @Nonnull private final SortedSet<ServiceObjectGroup> _serviceObjectGroups;
-  @Nonnull private final SortedSet<ServiceObject> _serviceObjects;
+  private final @Nonnull SortedSet<AddressGroup> _addressGroups;
+  private final @Nonnull SortedSet<FilterGroup> _filterGroups;
+  private final @Nonnull SortedSet<InterfaceGroup> _interfaceGroups;
+  private final @Nonnull String _name;
+  private final @Nonnull SortedSet<ServiceEndpoint> _serviceEndpoints;
+  private final @Nonnull SortedSet<ServiceObjectGroup> _serviceObjectGroups;
+  private final @Nonnull SortedSet<ServiceObject> _serviceObjects;
 
   @JsonCreator
   private static ReferenceBook create(

@@ -22,6 +22,6 @@ public class Nexthop implements Serializable {
     _priority = priority;
   }
 
-  @Nonnull private final NexthopTarget _nexthopTarget;
-  @Nullable private Integer _priority;
+  private final @Nonnull NexthopTarget _nexthopTarget;
+  private @Nullable Integer _priority;
 }

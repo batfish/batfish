@@ -65,10 +65,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static final String COL_DIFF = "Difference";
   public static final String COL_TRACE = "Trace";
 
-  @Nonnull private final Direction _direction;
-  @Nonnull private final List<Bgpv4Route> _inputRoutes;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
+  private final @Nonnull Direction _direction;
+  private final @Nonnull List<Bgpv4Route> _inputRoutes;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
 
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
@@ -198,8 +198,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return answerElement;
   }
 
-  @Nullable
-  private static Bgpv4Route toDataplaneBgpRoute(
+  private static @Nullable Bgpv4Route toDataplaneBgpRoute(
       @Nullable org.batfish.datamodel.questions.BgpRoute questionsBgpRoute) {
     if (questionsBgpRoute == null) {
       return null;
@@ -232,8 +231,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  @Nullable
-  private static org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
+  private static @Nullable org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
       @Nullable Bgpv4Route dataplaneBgpRoute) {
     if (dataplaneBgpRoute == null) {
       return null;

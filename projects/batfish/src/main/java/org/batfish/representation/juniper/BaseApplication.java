@@ -37,8 +37,7 @@ public final class BaseApplication implements Application, Serializable {
       _tracingName = tracingName;
     }
 
-    @Nullable
-    public String getTracingName() {
+    public @Nullable String getTracingName() {
       return _tracingName;
     }
 

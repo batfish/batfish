@@ -25,12 +25,12 @@ public final class EigrpNeighborConfig implements Serializable {
   private static final String PROP_VRF = "vrf";
 
   private final long _asn;
-  @Nonnull private final String _exportPolicy;
-  @Nonnull private final String _interfaceName;
-  @Nonnull private final Ip _ip;
+  private final @Nonnull String _exportPolicy;
+  private final @Nonnull String _interfaceName;
+  private final @Nonnull Ip _ip;
   private final boolean _isPassive;
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _vrfName;
 
   private EigrpNeighborConfig(
       long asn,
@@ -119,13 +119,13 @@ public final class EigrpNeighborConfig implements Serializable {
 
   /** Builder for {@link EigrpNeighborConfig} */
   public static final class Builder {
-    @Nullable private Long _asn;
-    @Nullable private String _exportPolicy;
-    @Nullable private String _hostname;
-    @Nullable private String _interfaceName;
-    @Nullable private Ip _ip;
+    private @Nullable Long _asn;
+    private @Nullable String _exportPolicy;
+    private @Nullable String _hostname;
+    private @Nullable String _interfaceName;
+    private @Nullable Ip _ip;
     private boolean _isPassive;
-    @Nullable private String _vrfName;
+    private @Nullable String _vrfName;
 
     private Builder() {}
 

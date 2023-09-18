@@ -20,8 +20,8 @@ import org.parboiled.support.ParsingResult;
 public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
 
   private static final class IpProtocolSets {
-    @Nonnull private Set<IpProtocol> _including;
-    @Nonnull private Set<IpProtocol> _excluding;
+    private @Nonnull Set<IpProtocol> _including;
+    private @Nonnull Set<IpProtocol> _excluding;
 
     IpProtocolSets() {
       this(ImmutableSet.of(), ImmutableSet.of());

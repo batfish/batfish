@@ -189,8 +189,7 @@ public abstract class BaseSettings {
         : s.stream().map(Paths::get).collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
-  protected final Path getPathOptionValue(String key) {
+  protected final @Nullable Path getPathOptionValue(String key) {
     String valueStr = _line.getOptionValue(key);
     if (valueStr != null) {
       _config.setProperty(key, valueStr);
@@ -229,8 +228,7 @@ public abstract class BaseSettings {
     }
   }
 
-  @Nullable
-  protected static Path nullablePath(String s) {
+  protected static @Nullable Path nullablePath(String s) {
     return (s != null) ? Paths.get(s) : null;
   }
 

@@ -18,8 +18,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Model of a Cumulus /etc/network/interfaces file. */
 @ParametersAreNonnullByDefault
 public final class CumulusInterfacesConfiguration implements Serializable {
-  @Nonnull private final Set<String> _autoIfaces;
-  @Nonnull private final Map<String, InterfacesInterface> _interfaces;
+  private final @Nonnull Set<String> _autoIfaces;
+  private final @Nonnull Map<String, InterfacesInterface> _interfaces;
   private List<String> _interfaceInitOrder;
 
   public CumulusInterfacesConfiguration() {
@@ -33,8 +33,7 @@ public final class CumulusInterfacesConfiguration implements Serializable {
   }
 
   /** Create an interface with the following name, or return it if it already exists. */
-  @Nonnull
-  public InterfacesInterface createOrGetInterface(String name) {
+  public @Nonnull InterfacesInterface createOrGetInterface(String name) {
     InterfacesInterface iface = _interfaces.get(name);
     if (iface == null) {
       iface = new InterfacesInterface(name);
@@ -48,18 +47,15 @@ public final class CumulusInterfacesConfiguration implements Serializable {
         .anyMatch(iface -> iface.getName().equals(vrfName) && isVrf(iface));
   }
 
-  @Nonnull
-  public Set<String> getAutoIfaces() {
+  public @Nonnull Set<String> getAutoIfaces() {
     return _autoIfaces;
   }
 
-  @Nonnull
-  public Map<String, InterfacesInterface> getInterfaces() {
+  public @Nonnull Map<String, InterfacesInterface> getInterfaces() {
     return _interfaces;
   }
 
-  @Nonnull
-  public Collection<String> getInterfaceInitOrder() {
+  public @Nonnull Collection<String> getInterfaceInitOrder() {
     return firstNonNull(
         _interfaceInitOrder,
         // for ease of testing

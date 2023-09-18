@@ -12,9 +12,9 @@ import org.batfish.datamodel.route.nh.NextHop;
 /** Class representing the secondary key used for grouping {@link Bgpv4Route}s */
 @ParametersAreNonnullByDefault
 public class EvpnRouteRowSecondaryKey extends RouteRowSecondaryKey {
-  @Nonnull private final ReceivedFrom _receivedFrom;
-  @Nullable private final Integer _pathId;
-  @Nonnull private final RouteDistinguisher _routeDistinguisher;
+  private final @Nonnull ReceivedFrom _receivedFrom;
+  private final @Nullable Integer _pathId;
+  private final @Nonnull RouteDistinguisher _routeDistinguisher;
 
   public EvpnRouteRowSecondaryKey(
       NextHop nextHop,

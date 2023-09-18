@@ -63,6 +63,6 @@ public class BgpPeerGroup implements Serializable {
 
   private boolean _enable;
   private final @Nonnull String _name;
-  private @Nonnull final Map<String, BgpPeer> _peers;
+  private final @Nonnull Map<String, BgpPeer> _peers;
   private @Nullable BgpPeerGroupTypeAndOptions _typeAndOptions;
 }
