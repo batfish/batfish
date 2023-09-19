@@ -308,6 +308,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _localPreference;
     }
 
+    @Override
     public @Nullable Ip getOriginatorIp() {
       return _originatorIp;
     }
@@ -414,6 +415,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    @Override
     public @Nonnull B setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();
@@ -566,9 +568,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes._med;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGINATOR_IP)
-  public Ip getOriginatorIp() {
+  @Override
+  public @Nonnull Ip getOriginatorIp() {
     return _attributes._originatorIp;
   }
 
