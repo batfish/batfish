@@ -36,6 +36,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         HasReadableClusterList,
         HasReadableCommunities,
         HasReadableLocalPreference,
+        HasReadableOriginatorIp,
         HasReadableOriginType,
         HasReadableSourceProtocol,
         HasReadableWeight {
@@ -232,6 +233,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
           HasWritableClusterList<B, R>,
           HasWritableCommunities<B, R>,
           HasWritableLocalPreference<B, R>,
+          HasWritableOriginatorIp<B, R>,
           HasWritableOriginType<B, R>,
           HasWritableWeight<B, R> {
 
@@ -412,6 +414,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
+    @Nonnull
     public B setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();

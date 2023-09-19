@@ -59,4 +59,6 @@ public interface StatementVisitor<T, U> {
   T visitTraceableStatement(TraceableStatement traceableStatement, U arg);
 
   T visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence);
+
+  T visitSetOriginatorIp(SetOriginatorIp setOriginatorIp, U arg);
 }

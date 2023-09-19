@@ -103,6 +103,7 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
@@ -678,6 +679,12 @@ public final class CommunityStructuresVerifier {
 
     @Override
     public Void visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
+      return null;
+    }
+
+    @Override
+    public Void visitSetOriginatorIp(
+        SetOriginatorIp setOriginatorIp, CommunityStructuresVerifierContext arg) {
       return null;
     }
 
