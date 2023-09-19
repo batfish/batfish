@@ -414,8 +414,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    @Nonnull
-    public B setOriginatorIp(Ip originatorIp) {
+    public @Nonnull B setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();
     }
