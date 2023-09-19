@@ -21,10 +21,12 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
+import org.batfish.datamodel.routing_policy.expr.NextHopIp;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
+import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
@@ -96,6 +98,14 @@ public class RoutePolicyStatementMatchCollectorTest {
             new SymbolicAsPathRegex(ASPATH2),
             new SymbolicAsPathRegex(ASPATH3)),
         result);
+  }
+
+  @Test
+  public void testVisitSetOriginatorIp() {
+    assertEquals(
+        _asPathCollector.visitSetOriginatorIp(
+            SetOriginatorIp.of(NextHopIp.instance()), new Tuple<>(new HashSet<>(), _baseConfig)),
+        ImmutableSet.of());
   }
 
   @Test
