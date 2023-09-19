@@ -441,7 +441,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, XrCommunitySet> _communitySets;
 
-  @Nonnull private final Map<String, RdSet> _rdSets;
+  private final @Nonnull Map<String, RdSet> _rdSets;
 
   public CiscoXrConfiguration() {
     _asPathSets = new TreeMap<>();
@@ -1337,8 +1337,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(
+      Interface iface, EigrpProcessMode mode) {
     Optional<Double> bw =
         Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
             .filter(Objects::nonNull)
@@ -2334,8 +2334,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _communitySets;
   }
 
-  @Nonnull
-  public Map<String, RdSet> getRdSets() {
+  public @Nonnull Map<String, RdSet> getRdSets() {
     return _rdSets;
   }
 }

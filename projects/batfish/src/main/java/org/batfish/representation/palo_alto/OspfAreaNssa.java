@@ -34,8 +34,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     _defaultRouteDisable = defaultRouteDisable;
   }
 
-  @Nullable
-  public Integer getDefaultRouteMetric() {
+  public @Nullable Integer getDefaultRouteMetric() {
     return _defaultRouteMetric;
   }
 
@@ -43,8 +42,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     _defaultRouteMetric = defaultRouteMetric;
   }
 
-  @Nullable
-  public DefaultRouteType getDefaultRouteType() {
+  public @Nullable DefaultRouteType getDefaultRouteType() {
     return _defaultRouteType;
   }
 
@@ -52,8 +50,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
     _defaultRouteType = defaultRouteType;
   }
 
-  @Nullable
-  public Boolean getAcceptSummary() {
+  public @Nullable Boolean getAcceptSummary() {
     return _acceptSummary;
   }
 
@@ -66,7 +63,7 @@ public class OspfAreaNssa implements OspfAreaTypeSettings {
   //////////////////////////////////////////
 
   private boolean _defaultRouteDisable;
-  @Nullable private Integer _defaultRouteMetric;
-  @Nullable private DefaultRouteType _defaultRouteType;
-  @Nullable private Boolean _acceptSummary;
+  private @Nullable Integer _defaultRouteMetric;
+  private @Nullable DefaultRouteType _defaultRouteType;
+  private @Nullable Boolean _acceptSummary;
 }

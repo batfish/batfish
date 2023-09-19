@@ -33,13 +33,13 @@ public final class InputValidationNotes {
    * Commentary on the current input. Could be a message to show the user why the input is invalid
    * or could describe what is specified by the current input if it is valid
    */
-  @Nullable private final String _description;
+  private final @Nullable String _description;
 
   /** For invalid input, where the error begins */
-  @Nullable private final Integer _errorIndex;
+  private final @Nullable Integer _errorIndex;
 
   /** List of everything specified by the input */
-  @Nullable private final List<String> _expansions;
+  private final @Nullable List<String> _expansions;
 
   /** Whether the current input is valid or not */
   private final Validity _validity;
@@ -77,20 +77,17 @@ public final class InputValidationNotes {
   }
 
   @JsonProperty(PROP_DESCRIPTION)
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
   @JsonProperty(PROP_ERROR_INDEX)
-  @Nullable
-  public Integer getErrorIndex() {
+  public @Nullable Integer getErrorIndex() {
     return _errorIndex;
   }
 
   @JsonProperty(PROP_EXPANSIONS)
-  @Nullable
-  public List<String> getExpansions() {
+  public @Nullable List<String> getExpansions() {
     return _expansions;
   }
 

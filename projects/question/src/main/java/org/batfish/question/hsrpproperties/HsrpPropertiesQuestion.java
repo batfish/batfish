@@ -25,9 +25,9 @@ public final class HsrpPropertiesQuestion extends Question {
   private static final String PROP_VIRTUAL_ADDRESSES = "virtualAddresses";
   private static final String PROP_EXCLUDE_SHUT_INTERFACES = "excludeShutInterfaces";
 
-  @Nullable private final String _nodes;
-  @Nullable private final String _interfaces;
-  @Nullable private final String _virtualAddresses;
+  private final @Nullable String _nodes;
+  private final @Nullable String _interfaces;
+  private final @Nullable String _virtualAddresses;
   private final boolean _excludeShutInterfaces;
 
   @Override

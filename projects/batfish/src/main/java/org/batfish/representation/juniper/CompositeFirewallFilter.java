@@ -30,8 +30,7 @@ public final class CompositeFirewallFilter extends FirewallFilter {
     return _inner.get(0).getFamily();
   }
 
-  @Nonnull
-  public List<FirewallFilter> getInner() {
+  public @Nonnull List<FirewallFilter> getInner() {
     return _inner;
   }
 

@@ -31,10 +31,10 @@ public abstract class Step<D> {
   protected static final String PROP_ACTION = "action";
 
   /** Metadata about the {@link Step} */
-  @Nonnull private final D _detail;
+  private final @Nonnull D _detail;
 
   /** The action which was taken at the end of this step */
-  @Nonnull private final StepAction _action;
+  private final @Nonnull StepAction _action;
 
   Step(D detail, StepAction action) {
     _detail = detail;
@@ -42,14 +42,12 @@ public abstract class Step<D> {
   }
 
   @JsonProperty(PROP_DETAIL)
-  @Nonnull
-  public final D getDetail() {
+  public final @Nonnull D getDetail() {
     return _detail;
   }
 
   @JsonProperty(PROP_ACTION)
-  @Nonnull
-  public final StepAction getAction() {
+  public final @Nonnull StepAction getAction() {
     return _action;
   }
 

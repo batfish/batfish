@@ -31,8 +31,7 @@ public class FrrInterface implements Serializable {
   }
 
   /** Interface alias (description) */
-  @Nullable
-  public String getAlias() {
+  public @Nullable String getAlias() {
     return _alias;
   }
 
@@ -60,8 +59,7 @@ public class FrrInterface implements Serializable {
     _shutdown = shutdown;
   }
 
-  @Nullable
-  public OspfInterface getOspf() {
+  public @Nullable OspfInterface getOspf() {
     return _ospf;
   }
 

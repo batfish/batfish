@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchRouteType extends BooleanExpr {
   private static final String PROP_TYPE = "type";
 
-  @Nonnull private final RouteTypeExpr _type;
+  private final @Nonnull RouteTypeExpr _type;
 
   @JsonCreator
   private static MatchRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteTypeExpr type) {
@@ -40,8 +40,7 @@ public final class MatchRouteType extends BooleanExpr {
   }
 
   @JsonProperty(PROP_TYPE)
-  @Nonnull
-  public RouteTypeExpr getType() {
+  public @Nonnull RouteTypeExpr getType() {
     return _type;
   }
 

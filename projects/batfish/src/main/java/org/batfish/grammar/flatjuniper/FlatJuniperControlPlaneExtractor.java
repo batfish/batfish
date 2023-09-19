@@ -21,7 +21,7 @@ public class FlatJuniperControlPlaneExtractor implements ControlPlaneExtractor {
   private final FlatJuniperCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   @Override
   public Set<String> implementedRuleNames() {

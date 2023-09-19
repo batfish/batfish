@@ -21,7 +21,7 @@ public final class CryptoProfile implements Serializable {
   }
 
   /** null implies no authentiation */
-  @Nullable private IpsecAuthenticationAlgorithm _authAlgorithm;
+  private @Nullable IpsecAuthenticationAlgorithm _authAlgorithm;
 
   private DiffieHellmanGroup _dhGroup;
 
@@ -31,9 +31,9 @@ public final class CryptoProfile implements Serializable {
 
   private Integer _lifetimeSeconds;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
   public CryptoProfile(String name, Type cpType) {
     this(name, cpType, null, null, null, null, null);
@@ -71,8 +71,7 @@ public final class CryptoProfile implements Serializable {
         && Objects.equals(_lifetimeSeconds, rhs._lifetimeSeconds);
   }
 
-  @Nullable
-  public IpsecAuthenticationAlgorithm getAuthAlgorithm() {
+  public @Nullable IpsecAuthenticationAlgorithm getAuthAlgorithm() {
     return _authAlgorithm;
   }
 

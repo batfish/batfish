@@ -196,8 +196,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     }
   }
 
-  @Nonnull
-  public A10Configuration getConfiguration() {
+  public @Nonnull A10Configuration getConfiguration() {
     return _c;
   }
 
@@ -874,8 +873,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
    * Creates and returns a NAT pool based on the specified settings. Adds a warning and returns
    * {@link Optional#empty()} if the NAT pool cannot be created.
    */
-  @Nonnull
-  private Optional<NatPool> createNatPool(
+  private @Nonnull Optional<NatPool> createNatPool(
       ParserRuleContext ctx, Optional<String> maybeName, Ip start, Ip end, int netmask) {
     if (!maybeName.isPresent()) {
       // Already warned
@@ -1072,8 +1070,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentBgpProcess.setRouterId(toIp(ctx.ip_address()));
   }
 
-  @Nonnull
-  private BgpNeighborId toBgpNeighborId(A10Parser.Bgp_neighborContext ctx) {
+  private @Nonnull BgpNeighborId toBgpNeighborId(A10Parser.Bgp_neighborContext ctx) {
     assert ctx.ip_address() != null;
     return new BgpNeighborIdAddress(toIp(ctx.ip_address()));
   }
@@ -1141,8 +1138,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
     _currentBgpNeighbor.setSendCommunity(toSendCommunity(ctx.send_community()));
   }
 
-  @Nonnull
-  private BgpNeighbor.SendCommunity toSendCommunity(A10Parser.Send_communityContext ctx) {
+  private @Nonnull BgpNeighbor.SendCommunity toSendCommunity(A10Parser.Send_communityContext ctx) {
     if (ctx.BOTH() != null) {
       return BgpNeighbor.SendCommunity.BOTH;
     } else if (ctx.EXTENDED() != null) {
@@ -2460,7 +2456,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
         messageCtx, ctx.uint16(), TRAFFIC_BUCKET_COUNT_RANGE, "traffic bucket-count");
   }
 
-  private @Nonnull static VirtualServerPort.Type toType(
+  private static @Nonnull VirtualServerPort.Type toType(
       A10Parser.Virtual_server_port_typeContext ctx) {
     if (ctx.DIAMETER() != null) {
       return VirtualServerPort.Type.DIAMETER;
@@ -2899,7 +2895,7 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
   /** Combination of all NAT pools, used for preventing pool overlap */
   private LongSpace _allNatPools = LongSpace.EMPTY;
 
-  @Nonnull private A10Configuration _c;
+  private @Nonnull A10Configuration _c;
 
   private AccessList _currentAccessList;
 
@@ -2940,11 +2936,11 @@ public final class A10ConfigurationBuilder extends A10ParserBaseListener
 
   private VrrpAVrid _currentVrid;
 
-  @Nonnull private A10CombinedParser _parser;
+  private @Nonnull A10CombinedParser _parser;
 
-  @Nonnull private final String _text;
+  private final @Nonnull String _text;
 
-  @Nonnull private final Warnings _w;
+  private final @Nonnull Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 }

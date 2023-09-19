@@ -131,7 +131,7 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
   public static final BgpProcessPropertySpecifier ALL =
       new BgpProcessPropertySpecifier(JAVA_MAP.keySet());
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   /**
    * Create a bgp process property specifier from provided expression. If the expression is null or

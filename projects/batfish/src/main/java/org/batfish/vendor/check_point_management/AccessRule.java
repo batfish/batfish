@@ -168,8 +168,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
   }
 
   @VisibleForTesting
-  @Nonnull
-  public static Builder testBuilder() {
+  public static @Nonnull Builder testBuilder() {
     return builder()
         .setComments("")
         .setContentDirection("any")
@@ -185,8 +184,7 @@ public final class AccessRule extends NamedManagementObject implements AccessRul
    * Returns a {@link Builder} with all applicable fields populated with the specified {@code
    * CpmiAny} object {@link Uid}.
    */
-  @Nonnull
-  public static Builder testBuilder(@Nonnull Uid cpmiAny) {
+  public static @Nonnull Builder testBuilder(@Nonnull Uid cpmiAny) {
     List<Uid> listAny = ImmutableList.of(cpmiAny);
     return testBuilder()
         .setContent(listAny)

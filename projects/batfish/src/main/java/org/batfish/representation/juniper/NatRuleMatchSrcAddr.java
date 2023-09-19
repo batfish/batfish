@@ -32,8 +32,7 @@ public final class NatRuleMatchSrcAddr implements NatRuleMatch {
     return Objects.equals(_prefix, that._prefix);
   }
 
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
 

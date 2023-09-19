@@ -21,9 +21,9 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 
 /** An {@link InterfaceSpecifier} that resolves interfaces connected to a given {@link IpSpace}. */
 public final class InterfaceWithConnectedIpsSpecifier implements InterfaceSpecifier {
-  @Nonnull private final IpSpace _ipSpace;
-  @Nonnull private final IpSpaceToBDD _ipSpaceToBdd;
-  @Nonnull private final BDD _ipSpaceBdd;
+  private final @Nonnull IpSpace _ipSpace;
+  private final @Nonnull IpSpaceToBDD _ipSpaceToBdd;
+  private final @Nonnull BDD _ipSpaceBdd;
   public static final String NAME = InterfaceWithConnectedIpsSpecifier.class.getName();
 
   /**

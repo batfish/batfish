@@ -6,18 +6,17 @@ import javax.annotation.Nullable;
 
 /** BGP neighbor settings. This class implements the union of all address families. */
 public class AristaBgpNeighborAddressFamily implements Serializable {
-  @Nullable private Boolean _activate;
-  @Nullable private AristaBgpAdditionalPathsConfig _additionalPaths;
-  @Nullable private AristaBgpDefaultOriginate _defaultOriginate;
-  @Nullable private Boolean _nextHopUnchanged;
-  @Nullable private String _prefixListIn;
-  @Nullable private String _prefixListOut;
-  @Nullable private String _routeMapIn;
-  @Nullable private String _routeMapOut;
-  @Nullable private Integer _weight;
+  private @Nullable Boolean _activate;
+  private @Nullable AristaBgpAdditionalPathsConfig _additionalPaths;
+  private @Nullable AristaBgpDefaultOriginate _defaultOriginate;
+  private @Nullable Boolean _nextHopUnchanged;
+  private @Nullable String _prefixListIn;
+  private @Nullable String _prefixListOut;
+  private @Nullable String _routeMapIn;
+  private @Nullable String _routeMapOut;
+  private @Nullable Integer _weight;
 
-  @Nullable
-  public Boolean getActivate() {
+  public @Nullable Boolean getActivate() {
     return _activate;
   }
 
@@ -25,21 +24,18 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _activate = activate;
   }
 
-  @Nullable
-  public AristaBgpAdditionalPathsConfig getAdditionalPaths() {
+  public @Nullable AristaBgpAdditionalPathsConfig getAdditionalPaths() {
     return _additionalPaths;
   }
 
-  @Nonnull
-  public AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
+  public @Nonnull AristaBgpAdditionalPathsConfig getOrCreateAdditionalPaths() {
     if (_additionalPaths == null) {
       _additionalPaths = new AristaBgpAdditionalPathsConfig();
     }
     return _additionalPaths;
   }
 
-  @Nullable
-  public AristaBgpDefaultOriginate getDefaultOriginate() {
+  public @Nullable AristaBgpDefaultOriginate getDefaultOriginate() {
     return _defaultOriginate;
   }
 
@@ -47,8 +43,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _defaultOriginate = defaultOriginate;
   }
 
-  @Nullable
-  public Boolean getNextHopUnchanged() {
+  public @Nullable Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
   }
 
@@ -56,8 +51,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
-  @Nullable
-  public String getPrefixListIn() {
+  public @Nullable String getPrefixListIn() {
     return _prefixListIn;
   }
 
@@ -65,8 +59,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _prefixListIn = prefixListIn;
   }
 
-  @Nullable
-  public String getPrefixListOut() {
+  public @Nullable String getPrefixListOut() {
     return _prefixListOut;
   }
 
@@ -74,8 +67,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _prefixListOut = prefixListOut;
   }
 
-  @Nullable
-  public String getRouteMapIn() {
+  public @Nullable String getRouteMapIn() {
     return _routeMapIn;
   }
 
@@ -83,8 +75,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _routeMapIn = routeMapIn;
   }
 
-  @Nullable
-  public String getRouteMapOut() {
+  public @Nullable String getRouteMapOut() {
     return _routeMapOut;
   }
 
@@ -92,8 +83,7 @@ public class AristaBgpNeighborAddressFamily implements Serializable {
     _routeMapOut = routeMapOut;
   }
 
-  @Nullable
-  public Integer getWeight() {
+  public @Nullable Integer getWeight() {
     return _weight;
   }
 

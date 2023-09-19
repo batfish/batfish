@@ -9,19 +9,18 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNullableByDefault
 public final class MlagConfiguration implements Serializable {
 
-  @Nullable private Ip _peerAddress;
-  @Nullable private Ip _peerAddressHeartbeat;
-  @Nullable private String _peerAddressHeartbeatVrfName;
-  @Nullable private String _peerLink;
-  @Nullable private String _localInterface;
-  @Nullable private String _domainId;
-  @Nullable private Integer _reloadDelayMlag;
-  @Nullable private Integer _reloadDelayNonMlag;
+  private @Nullable Ip _peerAddress;
+  private @Nullable Ip _peerAddressHeartbeat;
+  private @Nullable String _peerAddressHeartbeatVrfName;
+  private @Nullable String _peerLink;
+  private @Nullable String _localInterface;
+  private @Nullable String _domainId;
+  private @Nullable Integer _reloadDelayMlag;
+  private @Nullable Integer _reloadDelayNonMlag;
   private boolean _reloadDelayStandbyMode;
   private boolean _shutdown;
 
-  @Nullable
-  public Ip getPeerAddress() {
+  public @Nullable Ip getPeerAddress() {
     return _peerAddress;
   }
 
@@ -29,8 +28,7 @@ public final class MlagConfiguration implements Serializable {
     _peerAddress = peerAddress;
   }
 
-  @Nullable
-  public Ip getPeerAddressHeartbeat() {
+  public @Nullable Ip getPeerAddressHeartbeat() {
     return _peerAddressHeartbeat;
   }
 
@@ -38,8 +36,7 @@ public final class MlagConfiguration implements Serializable {
     _peerAddressHeartbeat = address;
   }
 
-  @Nullable
-  public String getPeerAddressHeartbeatVrfName() {
+  public @Nullable String getPeerAddressHeartbeatVrfName() {
     return _peerAddressHeartbeatVrfName;
   }
 
@@ -47,8 +44,7 @@ public final class MlagConfiguration implements Serializable {
     _peerAddressHeartbeatVrfName = vrfName;
   }
 
-  @Nullable
-  public String getPeerLink() {
+  public @Nullable String getPeerLink() {
     return _peerLink;
   }
 
@@ -56,8 +52,7 @@ public final class MlagConfiguration implements Serializable {
     _peerLink = peerLink;
   }
 
-  @Nullable
-  public String getLocalInterface() {
+  public @Nullable String getLocalInterface() {
     return _localInterface;
   }
 
@@ -65,8 +60,7 @@ public final class MlagConfiguration implements Serializable {
     _localInterface = localInterface;
   }
 
-  @Nullable
-  public String getDomainId() {
+  public @Nullable String getDomainId() {
     return _domainId;
   }
 
@@ -74,8 +68,7 @@ public final class MlagConfiguration implements Serializable {
     _domainId = domainId;
   }
 
-  @Nullable
-  public Integer getReloadDelayMlag() {
+  public @Nullable Integer getReloadDelayMlag() {
     return _reloadDelayMlag;
   }
 
@@ -83,8 +76,7 @@ public final class MlagConfiguration implements Serializable {
     _reloadDelayMlag = reloadDelayMlag;
   }
 
-  @Nullable
-  public Integer getReloadDelayNonMlag() {
+  public @Nullable Integer getReloadDelayNonMlag() {
     return _reloadDelayNonMlag;
   }
 

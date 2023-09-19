@@ -22,9 +22,9 @@ public class EigrpInterfaceSettings implements Serializable {
 
   private final long _asn;
   private final boolean _enabled;
-  @Nullable private final String _exportPolicy;
-  @Nullable private final String _importPolicy;
-  @Nonnull private final EigrpMetric _metric;
+  private final @Nullable String _exportPolicy;
+  private final @Nullable String _importPolicy;
+  private final @Nonnull EigrpMetric _metric;
   private final boolean _passive;
 
   private EigrpInterfaceSettings(
@@ -114,8 +114,7 @@ public class EigrpInterfaceSettings implements Serializable {
    * @return The interface metric
    */
   @JsonProperty(PROP_METRIC)
-  @Nonnull
-  public EigrpMetric getMetric() {
+  public @Nonnull EigrpMetric getMetric() {
     return _metric;
   }
 
@@ -134,17 +133,16 @@ public class EigrpInterfaceSettings implements Serializable {
 
   public static class Builder {
 
-    @Nullable private Long _asn;
+    private @Nullable Long _asn;
     private boolean _enabled;
-    @Nullable private String _exportPolicy;
-    @Nullable private String _importPolicy;
-    @Nullable private EigrpMetric _metric;
+    private @Nullable String _exportPolicy;
+    private @Nullable String _importPolicy;
+    private @Nullable EigrpMetric _metric;
     private boolean _passive;
 
     private Builder() {}
 
-    @Nonnull
-    public EigrpInterfaceSettings build() {
+    public @Nonnull EigrpInterfaceSettings build() {
       checkArgument(_asn != null, "Missing %s", PROP_ASN);
       checkArgument(_metric != null, "Missing %s", PROP_METRIC);
       return new EigrpInterfaceSettings(

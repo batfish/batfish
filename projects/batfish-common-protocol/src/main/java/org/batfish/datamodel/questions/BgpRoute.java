@@ -56,10 +56,10 @@ public final class BgpRoute {
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
-  @Nullable private final Integer _adminDist;
-  @Nonnull private final AsPath _asPath;
-  @Nonnull private final Set<Long> _clusterList;
-  @Nonnull private final SortedSet<Community> _communities;
+  private final @Nullable Integer _adminDist;
+  private final @Nonnull AsPath _asPath;
+  private final @Nonnull Set<Long> _clusterList;
+  private final @Nonnull SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
   @Nonnull private final Prefix _network;
@@ -71,7 +71,7 @@ public final class BgpRoute {
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
   private final long _tag;
-  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
   private BgpRoute(
@@ -354,10 +354,10 @@ public final class BgpRoute {
   @ParametersAreNonnullByDefault
   public static final class Builder {
 
-    @Nullable private Integer _adminDist;
-    @Nonnull private AsPath _asPath;
-    @Nonnull private Set<Long> _clusterList;
-    @Nonnull private SortedSet<Community> _communities;
+    private @Nullable Integer _adminDist;
+    private @Nonnull AsPath _asPath;
+    private @Nonnull Set<Long> _clusterList;
+    private @Nonnull SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
     @Nullable private Prefix _network;
@@ -369,7 +369,7 @@ public final class BgpRoute {
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
     private long _tag;
-    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
     public Builder() {

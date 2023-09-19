@@ -19,13 +19,13 @@ public final class OspfProcessConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private final String _nodes;
+  private final @Nullable String _nodes;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nullable private final String _properties;
+  private final @Nullable String _properties;
 
-  @Nonnull private final OspfProcessPropertySpecifier _propertySpecifier;
+  private final @Nonnull OspfProcessPropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static OspfProcessConfigurationQuestion create(
@@ -69,8 +69,7 @@ public final class OspfProcessConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 

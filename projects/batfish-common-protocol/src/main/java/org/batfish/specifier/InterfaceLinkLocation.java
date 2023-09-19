@@ -10,9 +10,9 @@ public final class InterfaceLinkLocation implements Location {
   private static final String PROP_INTERFACE_NAME = "interfaceName";
   private static final String PROP_NODE_NAME = "nodeName";
 
-  @Nonnull private final String _interfaceName;
+  private final @Nonnull String _interfaceName;
 
-  @Nonnull private final String _nodeName;
+  private final @Nonnull String _nodeName;
 
   @JsonCreator
   public InterfaceLinkLocation(
@@ -40,15 +40,13 @@ public final class InterfaceLinkLocation implements Location {
   }
 
   @JsonProperty(PROP_INTERFACE_NAME)
-  @Nonnull
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
   @Override
   @JsonProperty(PROP_NODE_NAME)
-  @Nonnull
-  public String getNodeName() {
+  public @Nonnull String getNodeName() {
     return _nodeName;
   }
 

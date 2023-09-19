@@ -18,9 +18,9 @@ public class ServiceObject implements Comparable<ServiceObject>, Serializable {
   private static final String PROP_NAME = "name";
   private static final String PROP_PORTS = "ports";
 
-  @Nonnull private IpProtocol _ipProtocol;
-  @Nonnull private String _name;
-  @Nonnull private SubRange _ports;
+  private @Nonnull IpProtocol _ipProtocol;
+  private @Nonnull String _name;
+  private @Nonnull SubRange _ports;
 
   @JsonCreator
   public ServiceObject(

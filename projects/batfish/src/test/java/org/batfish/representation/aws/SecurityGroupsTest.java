@@ -17,8 +17,8 @@ import static org.batfish.representation.aws.Utils.traceElementForProtocol;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -49,7 +49,6 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.IpPermissions.AddressType;
 import org.batfish.representation.aws.IpPermissions.IpRange;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -116,7 +115,7 @@ public class SecurityGroupsTest {
 
     assertThat(
         securityGroups,
-        Matchers.equalTo(
+        equalTo(
             ImmutableList.of(
                 new SecurityGroup(
                     "For test",

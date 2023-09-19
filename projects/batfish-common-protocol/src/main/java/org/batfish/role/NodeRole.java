@@ -18,11 +18,11 @@ public class NodeRole implements Comparable<NodeRole> {
   private static final String PROP_NAME = "name";
   private static final String PROP_REGEX = "regex";
 
-  @Nonnull private final transient Pattern _compiledPattern;
+  private final @Nonnull transient Pattern _compiledPattern;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final String _regex;
+  private final @Nonnull String _regex;
 
   @JsonCreator
   private static NodeRole create(

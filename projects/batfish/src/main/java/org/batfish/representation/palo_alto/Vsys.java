@@ -32,7 +32,7 @@ public final class Vsys implements Serializable {
 
   private final SortedMap<String, ApplicationGroup> _applicationGroups;
 
-  @Nonnull private final Map<String, CustomUrlCategory> _customUrlCategories;
+  private final @Nonnull Map<String, CustomUrlCategory> _customUrlCategories;
 
   private String _displayName;
 
@@ -42,11 +42,11 @@ public final class Vsys implements Serializable {
 
   private final String _name;
 
-  @Nonnull private final Rulebase _rulebase;
+  private final @Nonnull Rulebase _rulebase;
   // Panorama only: rules to prepend to every rulebase
-  @Nonnull private final Rulebase _preRulebase;
+  private final @Nonnull Rulebase _preRulebase;
   // Panorama only: rules to append to every rulebase
-  @Nonnull private final Rulebase _postRulebase;
+  private final @Nonnull Rulebase _postRulebase;
 
   private final SortedMap<String, Service> _services;
 
@@ -140,20 +140,17 @@ public final class Vsys implements Serializable {
   }
 
   /** Returns a {@link Rulebase} of the rules in this vsys. */
-  @Nonnull
-  public Rulebase getRulebase() {
+  public @Nonnull Rulebase getRulebase() {
     return _rulebase;
   }
 
   /** Returns a {@link Rulebase} of the pre-rulebase for this vsys. */
-  @Nonnull
-  public Rulebase getPreRulebase() {
+  public @Nonnull Rulebase getPreRulebase() {
     return _preRulebase;
   }
 
   /** Returns a {@link Rulebase} of the post-rulebase for this vsys. */
-  @Nonnull
-  public Rulebase getPostRulebase() {
+  public @Nonnull Rulebase getPostRulebase() {
     return _postRulebase;
   }
 

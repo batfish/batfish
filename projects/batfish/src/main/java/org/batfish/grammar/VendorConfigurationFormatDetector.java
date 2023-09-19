@@ -112,16 +112,14 @@ public final class VendorConfigurationFormatDetector {
     }
   }
 
-  @Nullable
-  private ConfigurationFormat checkA10() {
+  private @Nullable ConfigurationFormat checkA10() {
     if (fileTextMatches(A10_PATTERN)) {
       return ConfigurationFormat.A10_ACOS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkAlcatelAos() {
+  private @Nullable ConfigurationFormat checkAlcatelAos() {
     if (fileTextMatches(ALCATEL_AOS_PATTERN)) {
       return ConfigurationFormat.ALCATEL_AOS;
     }
@@ -135,8 +133,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern ARISTA_TELLS =
       Pattern.compile("(?m)^ip (ext)?community-list regexp");
 
-  @Nullable
-  private ConfigurationFormat checkArista() {
+  private @Nullable ConfigurationFormat checkArista() {
     if (fileTextMatches(ARISTA_FLASH_PATTERN)) {
       return ConfigurationFormat.ARISTA;
     } else if (fileTextMatches(ARISTA_EOS_PATTERN)) {
@@ -148,32 +145,28 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkArubaOS() {
+  private @Nullable ConfigurationFormat checkArubaOS() {
     if (fileTextMatches(ARUBAOS_PATTERN)) {
       return ConfigurationFormat.ARUBAOS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkBlade() {
+  private @Nullable ConfigurationFormat checkBlade() {
     if (fileTextMatches(BLADE_NETWORK_PATTERN)) {
       return ConfigurationFormat.BLADENETWORK;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkCadant() {
+  private @Nullable ConfigurationFormat checkCadant() {
     if (fileTextMatches(CADANT_NETWORK_PATTERN)) {
       return ConfigurationFormat.CADANT;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkCheckPoint() {
+  private @Nullable ConfigurationFormat checkCheckPoint() {
     if (fileTextMatches(CHECK_POINT_GATEWAY_PATTERN)) {
       return ConfigurationFormat.CHECK_POINT_GATEWAY;
     }
@@ -185,8 +178,7 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile(
           "(?m)^\\s*(interface Bundle-Ether|end-policy\\b|end-set\\b|ipv4 access-list\\b)");
 
-  @Nullable
-  private ConfigurationFormat checkCisco() {
+  private @Nullable ConfigurationFormat checkCisco() {
     if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
     } else if (fileTextMatches(XR_QUALIFIERS)) {
@@ -207,32 +199,28 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkCiscoXr() {
+  private @Nullable ConfigurationFormat checkCiscoXr() {
     if (_fileText.contains("IOS XR")) {
       return ConfigurationFormat.CISCO_IOS_XR;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkCumulusConcatenated() {
+  private @Nullable ConfigurationFormat checkCumulusConcatenated() {
     if (fileTextMatches(CUMULUS_CONCATENATED_PATTERN)) {
       return ConfigurationFormat.CUMULUS_CONCATENATED;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkCumulusNclu() {
+  private @Nullable ConfigurationFormat checkCumulusNclu() {
     if (fileTextMatches(CUMULUS_NCLU_PATTERN)) {
       return ConfigurationFormat.CUMULUS_NCLU;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkEmpty() {
+  private @Nullable ConfigurationFormat checkEmpty() {
     String trimmedText = _fileText.trim();
     if (trimmedText.length() == 0) {
       return ConfigurationFormat.EMPTY;
@@ -241,8 +229,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkF5() {
+  private @Nullable ConfigurationFormat checkF5() {
     if (fileTextMatches(F5_BIGIP_STRUCTURED_SYS_GLOBAL_SETTINGS_PATTERN)
         && (fileTextMatches(F5_BIGIP_STRUCTURED_HEADER_PATTERN)
             || fileTextMatches(F5_BIGIP_STRUCTURED_LTM_GLOBAL_SETTINGS_PATTERN))) {
@@ -256,16 +243,14 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkFlatVyos() {
+  private @Nullable ConfigurationFormat checkFlatVyos() {
     if (_fileText.contains("set system config-management commit-revisions")) {
       return ConfigurationFormat.FLAT_VYOS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkIpTables() {
+  private @Nullable ConfigurationFormat checkIpTables() {
     if (_fileText.contains("INPUT")
         && _fileText.contains("OUTPUT")
         && _fileText.contains("FORWARD")) {
@@ -274,8 +259,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkJuniper(boolean preMatch) {
+  private @Nullable ConfigurationFormat checkJuniper(boolean preMatch) {
     if (_notJuniper) {
       return null;
     } else if (FLATTENED_JUNIPER_PATTERN.matcher(_fileText).find(0)) {
@@ -305,8 +289,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkMetamako() {
+  private @Nullable ConfigurationFormat checkMetamako() {
     if (_fileText.contains("application metamux")
         || _fileText.contains("application metawatch")
         || fileTextMatches(METAMAKO_MOS_PATTERN)) {
@@ -315,32 +298,28 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkMrv() {
+  private @Nullable ConfigurationFormat checkMrv() {
     if (_fileText.contains("System.SystemName")) {
       return ConfigurationFormat.MRV;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkMrvCommands() {
+  private @Nullable ConfigurationFormat checkMrvCommands() {
     if (fileTextMatches(MRV_HOSTNAME_PATTERN)) {
       return ConfigurationFormat.MRV_COMMANDS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkMss() {
+  private @Nullable ConfigurationFormat checkMss() {
     if (fileTextMatches(MSS_PATTERN)) {
       return ConfigurationFormat.MSS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkPaloAlto(boolean preMatch) {
+  private @Nullable ConfigurationFormat checkPaloAlto(boolean preMatch) {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.PALO_ALTO;
     } else if (preMatch
@@ -354,8 +333,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkBatfish() {
+  private @Nullable ConfigurationFormat checkBatfish() {
     Matcher m = BATFISH_CONFIG_FORMAT_PATTERN.matcher(_fileText);
     if (!m.find()) {
       return null;
@@ -370,8 +348,7 @@ public final class VendorConfigurationFormatDetector {
     }
   }
 
-  @Nullable
-  private ConfigurationFormat checkRancid() {
+  private @Nullable ConfigurationFormat checkRancid() {
     Matcher m = RANCID_BASE_PATTERN.matcher(_fileText);
     if (!m.find()) {
       return null;
@@ -477,24 +454,21 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern RUCKUS_ICX_MODULE_PATTERN =
       Pattern.compile("module \\d+ icx", Pattern.MULTILINE);
 
-  @Nullable
-  private ConfigurationFormat checkRuckusIcx() {
+  private @Nullable ConfigurationFormat checkRuckusIcx() {
     if (RUCKUS_ICX_MODULE_PATTERN.matcher(_fileText).find()) {
       return ConfigurationFormat.RUCKUS_ICX;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkVxWorks() {
+  private @Nullable ConfigurationFormat checkVxWorks() {
     if (_firstChar == '!' && _fileText.contains("set prompt")) {
       return ConfigurationFormat.VXWORKS;
     }
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkVyos() {
+  private @Nullable ConfigurationFormat checkVyos() {
     if (_fileText.contains("system")
         && _fileText.contains("{")
         && _fileText.contains("}")
@@ -505,8 +479,7 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  @Nullable
-  private ConfigurationFormat checkFortios() {
+  private @Nullable ConfigurationFormat checkFortios() {
     if (_fileText.contains("config system global")) {
       return ConfigurationFormat.FORTIOS;
     }

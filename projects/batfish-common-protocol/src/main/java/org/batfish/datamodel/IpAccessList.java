@@ -97,8 +97,8 @@ public class IpAccessList implements Serializable {
     return new Builder(nameGenerator);
   }
 
-  @Nonnull private final List<AclLine> _lines;
-  @Nonnull private final String _name;
+  private final @Nonnull List<AclLine> _lines;
+  private final @Nonnull String _name;
   private final String _sourceName;
   private final String _sourceType;
 
@@ -156,15 +156,13 @@ public class IpAccessList implements Serializable {
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
   /** The lines against which to check an IPV4 packet. */
   @JsonProperty(PROP_LINES)
-  @Nonnull
-  public List<AclLine> getLines() {
+  public @Nonnull List<AclLine> getLines() {
     return _lines;
   }
 

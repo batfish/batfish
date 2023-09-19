@@ -38,11 +38,11 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   public static class DefaultAction implements Serializable {
 
-    @Nullable private final Integer _order;
+    private final @Nullable Integer _order;
 
-    @Nonnull private final String _targetGroupArn;
+    private final @Nonnull String _targetGroupArn;
 
-    @Nonnull private final ActionType _type;
+    private final @Nonnull ActionType _type;
 
     @JsonCreator
     private static DefaultAction create(
@@ -62,18 +62,15 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       _type = type;
     }
 
-    @Nullable
-    public Integer getOrder() {
+    public @Nullable Integer getOrder() {
       return _order;
     }
 
-    @Nonnull
-    public String getTargetGroupArn() {
+    public @Nonnull String getTargetGroupArn() {
       return _targetGroupArn;
     }
 
-    @Nonnull
-    public ActionType getType() {
+    public @Nonnull ActionType getType() {
       return _type;
     }
 
@@ -101,11 +98,11 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   public static class Listener implements AwsVpcEntity, Serializable {
 
-    @Nonnull private String _listenerArn;
+    private @Nonnull String _listenerArn;
 
-    @Nonnull private final List<DefaultAction> _defaultActions;
+    private final @Nonnull List<DefaultAction> _defaultActions;
 
-    @Nonnull private final Protocol _protocol;
+    private final @Nonnull Protocol _protocol;
 
     private final int _port;
 
@@ -200,13 +197,11 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
       return _listenerArn;
     }
 
-    @Nonnull
-    public List<DefaultAction> getDefaultActions() {
+    public @Nonnull List<DefaultAction> getDefaultActions() {
       return _defaultActions;
     }
 
-    @Nonnull
-    public Protocol getProtocol() {
+    public @Nonnull Protocol getProtocol() {
       return _protocol;
     }
 
@@ -245,9 +240,9 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private String _loadBalancerArn;
+  private @Nonnull String _loadBalancerArn;
 
-  @Nonnull private final List<Listener> _listeners;
+  private final @Nonnull List<Listener> _listeners;
 
   @JsonCreator
   private static LoadBalancerListener create(
@@ -265,13 +260,11 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
   }
 
   @Override
-  @Nonnull
-  public String getId() {
+  public @Nonnull String getId() {
     return _loadBalancerArn;
   }
 
-  @Nonnull
-  public List<Listener> getListeners() {
+  public @Nonnull List<Listener> getListeners() {
     return _listeners;
   }
 

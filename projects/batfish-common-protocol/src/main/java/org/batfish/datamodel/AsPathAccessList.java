@@ -26,7 +26,7 @@ public final class AsPathAccessList implements Serializable {
 
   private transient Set<AsPath> _deniedCache;
 
-  @Nonnull private final List<AsPathAccessListLine> _lines;
+  private final @Nonnull List<AsPathAccessListLine> _lines;
 
   private final String _name;
 
@@ -58,14 +58,12 @@ public final class AsPathAccessList implements Serializable {
 
   /** The list of lines against which a route's AS-path will be checked in order. */
   @JsonProperty(PROP_LINES)
-  @Nonnull
-  public List<AsPathAccessListLine> getLines() {
+  public @Nonnull List<AsPathAccessListLine> getLines() {
     return _lines;
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

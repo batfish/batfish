@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 public final class Ipv4AccessList implements Serializable {
 
   private final @Nonnull SortedMap<Long, Ipv4AccessListLine> _lines;
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public Ipv4AccessList(@Nonnull String id) {
     _name = id;
@@ -23,8 +23,7 @@ public final class Ipv4AccessList implements Serializable {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

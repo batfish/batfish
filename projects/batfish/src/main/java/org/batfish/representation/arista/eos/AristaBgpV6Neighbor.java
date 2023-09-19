@@ -8,21 +8,19 @@ import org.batfish.datamodel.Ip6;
 
 /** IPv4 BGP neighbor */
 public final class AristaBgpV6Neighbor extends AristaBgpNeighbor implements AristaBgpHasPeerGroup {
-  @Nonnull private final Ip6 _ip;
-  @Nullable private String _peerGroup;
+  private final @Nonnull Ip6 _ip;
+  private @Nullable String _peerGroup;
 
   public AristaBgpV6Neighbor(@Nonnull Ip6 ip) {
     _ip = ip;
   }
 
-  @Nonnull
-  public Ip6 getIp() {
+  public @Nonnull Ip6 getIp() {
     return _ip;
   }
 
   @Override
-  @Nullable
-  public String getPeerGroup() {
+  public @Nullable String getPeerGroup() {
     return _peerGroup;
   }
 

@@ -54,8 +54,7 @@ public abstract class GatewayOrServer extends NamedManagementObject implements A
     return _ipv4Address;
   }
 
-  @Nonnull
-  public GatewayOrServerPolicy getPolicy() {
+  public @Nonnull GatewayOrServerPolicy getPolicy() {
     return _policy;
   }
 

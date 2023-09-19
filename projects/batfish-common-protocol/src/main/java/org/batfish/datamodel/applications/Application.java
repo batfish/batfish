@@ -16,14 +16,13 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 @ParametersAreNonnullByDefault
 public abstract class Application {
 
-  @Nonnull private final IpProtocol _ipProtocol;
+  private final @Nonnull IpProtocol _ipProtocol;
 
   protected Application(IpProtocol ipProtocol) {
     _ipProtocol = ipProtocol;
   }
 
-  @Nonnull
-  public IpProtocol getIpProtocol() {
+  public @Nonnull IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 

@@ -14,7 +14,7 @@ import org.batfish.specifier.SpecifierFactories;
 public class AaaAuthenticationLoginQuestion extends Question {
   private static final String PROP_NODES = "nodes";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
   @JsonCreator
   private static AaaAuthenticationLoginQuestion create(

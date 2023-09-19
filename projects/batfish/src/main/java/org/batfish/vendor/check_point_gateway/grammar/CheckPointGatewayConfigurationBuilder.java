@@ -128,8 +128,7 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     }
   }
 
-  @Nonnull
-  public CheckPointGatewayConfiguration getConfiguration() {
+  public @Nonnull CheckPointGatewayConfiguration getConfiguration() {
     return _configuration;
   }
 
@@ -756,13 +755,13 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
 
   private Nexthop _currentStaticRouteNextHop;
 
-  @Nonnull private CheckPointGatewayConfiguration _configuration;
+  private @Nonnull CheckPointGatewayConfiguration _configuration;
 
-  @Nonnull private CheckPointGatewayCombinedParser _parser;
+  private @Nonnull CheckPointGatewayCombinedParser _parser;
 
-  @Nonnull private final String _text;
+  private final @Nonnull String _text;
 
-  @Nonnull private final Warnings _w;
+  private final @Nonnull Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 }

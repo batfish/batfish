@@ -37,14 +37,12 @@ public final class TraceTree {
   }
 
   @JsonProperty(PROP_CHILDREN)
-  @Nonnull
-  public List<TraceTree> getChildren() {
+  public @Nonnull List<TraceTree> getChildren() {
     return _children;
   }
 
   @JsonProperty(PROP_TRACE_ELEMENT)
-  @Nullable
-  public TraceElement getTraceElement() {
+  public @Nullable TraceElement getTraceElement() {
     return _traceElement;
   }
 

@@ -96,8 +96,7 @@ public final class BDDFibGenerator {
    * Generate edges related to forwarding using the provided state constructors and node-inclusion
    * criteria.
    */
-  @Nonnull
-  public Stream<Edge> generateForwardingEdges(
+  public @Nonnull Stream<Edge> generateForwardingEdges(
       Predicate<String> includedNode,
       StateExprConstructor2 postInVrf,
       StateExprConstructor4 preOutEdge,

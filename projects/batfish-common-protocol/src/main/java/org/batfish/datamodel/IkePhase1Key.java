@@ -41,15 +41,13 @@ public class IkePhase1Key implements Serializable {
 
   /** Identity of the remote peer which matches this key. */
   @JsonProperty(PROP_REMOTE_IDENTITY)
-  @Nonnull
-  public IpSpace getRemoteIdentity() {
+  public @Nonnull IpSpace getRemoteIdentity() {
     return _remoteIdentity;
   }
 
   /** Local interface on which this key can be used. */
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  @Nonnull
-  public String getLocalInterface() {
+  public @Nonnull String getLocalInterface() {
     return _localInterface;
   }
 

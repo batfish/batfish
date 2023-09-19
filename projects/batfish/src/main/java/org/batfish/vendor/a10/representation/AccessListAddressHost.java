@@ -5,8 +5,7 @@ import org.batfish.datamodel.Ip;
 
 /** An access-list address, representing a specific host address. */
 public class AccessListAddressHost implements AccessListAddress {
-  @Nonnull
-  public Ip getHost() {
+  public @Nonnull Ip getHost() {
     return _host;
   }
 
@@ -14,7 +13,7 @@ public class AccessListAddressHost implements AccessListAddress {
     _host = host;
   }
 
-  @Nonnull private final Ip _host;
+  private final @Nonnull Ip _host;
 
   @Override
   public <T> T accept(AccessListAddressVisitor<T> visitor) {

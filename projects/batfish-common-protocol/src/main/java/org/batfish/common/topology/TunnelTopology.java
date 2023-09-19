@@ -24,14 +24,13 @@ public final class TunnelTopology {
   public static final TunnelTopology EMPTY =
       new TunnelTopology(GraphBuilder.undirected().allowsSelfLoops(false).build());
 
-  @Nonnull private Graph<NodeInterfacePair> _graph;
+  private @Nonnull Graph<NodeInterfacePair> _graph;
 
   private TunnelTopology(Graph<NodeInterfacePair> graph) {
     _graph = ImmutableGraph.copyOf(graph);
   }
 
-  @Nonnull
-  public Graph<NodeInterfacePair> getGraph() {
+  public @Nonnull Graph<NodeInterfacePair> getGraph() {
     return _graph;
   }
 
@@ -64,7 +63,7 @@ public final class TunnelTopology {
   }
 
   public static final class Builder {
-    @Nonnull private MutableGraph<NodeInterfacePair> _graph;
+    private @Nonnull MutableGraph<NodeInterfacePair> _graph;
 
     private Builder() {
       _graph = GraphBuilder.directed().allowsSelfLoops(false).build();

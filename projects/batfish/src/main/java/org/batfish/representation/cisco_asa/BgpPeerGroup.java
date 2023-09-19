@@ -107,8 +107,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _groupName;
   }
 
-  @Nullable
-  public String getInboundIpAccessList() {
+  public @Nullable String getInboundIpAccessList() {
     return _inboundIpAccessList;
   }
 
@@ -154,8 +153,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _nextHopSelf;
   }
 
-  @Nullable
-  public String getOutboundIpAccessList() {
+  public @Nullable String getOutboundIpAccessList() {
     return _outboundIpAccessList;
   }
 

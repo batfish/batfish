@@ -42,8 +42,7 @@ public final class DelegatedToNextVrf implements ForwardingDetail {
   }
 
   @JsonProperty(PROP_NEXT_VRF)
-  @Nonnull
-  public String getNextVrf() {
+  public @Nonnull String getNextVrf() {
     return _nextVrf;
   }
 

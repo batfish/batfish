@@ -23,7 +23,7 @@ public class ApplyFilter implements Statement {
 
   private static final String PROP_FILTER = "filter";
 
-  @Nonnull private final String _filter;
+  private final @Nonnull String _filter;
 
   public ApplyFilter(String filter) {
     _filter = filter;

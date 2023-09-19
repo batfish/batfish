@@ -1,5 +1,8 @@
 package org.batfish.minesweeper;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
@@ -11,7 +14,6 @@ import java.util.Map;
 import java.util.Set;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraint;
 import org.batfish.minesweeper.question.searchroutepolicies.RegexConstraints;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /** Tests for the {@link AsPathRegexAtomicPredicates} class. */
@@ -81,10 +83,10 @@ public class AsPathRegexAtomicPredicatesTest {
     assertEquals(copy2AutomataMap.keySet().size(), 2);
     assertThat(
         copy2AutomataMap,
-        Matchers.allOf(
-            Matchers.hasValue(Matchers.equalTo(new RegExp("^^10 20$").toAutomaton())),
-            Matchers.hasValue(
-                Matchers.equalTo(
+        allOf(
+            hasValue(equalTo(new RegExp("^^10 20$").toAutomaton())),
+            hasValue(
+                equalTo(
                     new RegExp("^^10 20 .*")
                         .toAutomaton()
                         .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton())))));
@@ -108,10 +110,10 @@ public class AsPathRegexAtomicPredicatesTest {
     assertEquals(copy2AutomataMap.keySet().size(), 2);
     assertThat(
         copy2AutomataMap,
-        Matchers.allOf(
-            Matchers.hasValue(Matchers.equalTo(Automaton.makeEmpty())),
-            Matchers.hasValue(
-                Matchers.equalTo(
+        allOf(
+            hasValue(equalTo(Automaton.makeEmpty())),
+            hasValue(
+                equalTo(
                     new RegExp("^^(40|50) .*")
                         .toAutomaton()
                         .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton())))));
@@ -125,10 +127,10 @@ public class AsPathRegexAtomicPredicatesTest {
     assertEquals(copy3AutomataMap.keySet().size(), 2);
     assertThat(
         copy3AutomataMap,
-        Matchers.allOf(
-            Matchers.hasValue(Matchers.equalTo(new RegExp("^^$").toAutomaton())),
-            Matchers.hasValue(
-                Matchers.equalTo(
+        allOf(
+            hasValue(equalTo(new RegExp("^^$").toAutomaton())),
+            hasValue(
+                equalTo(
                     new RegExp("^^.+$")
                         .toAutomaton()
                         .intersection(new RegExp("^^(40|50) .*").toAutomaton().complement())

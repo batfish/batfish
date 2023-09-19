@@ -2114,8 +2114,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
    *
    * @see <a href="https://github.com/coreswitch/zebra/blob/master/docs/router-id.md">zebra docs</a>
    */
-  @Nonnull
-  static Ip inferRouterId(Configuration c, String vrf, Warnings w, String processDesc) {
+  static @Nonnull Ip inferRouterId(Configuration c, String vrf, Warnings w, String processDesc) {
     Optional<Ip> highestIp =
         c.getAllInterfaces(vrf).values().stream()
             .map(org.batfish.datamodel.Interface::getConcreteAddress)

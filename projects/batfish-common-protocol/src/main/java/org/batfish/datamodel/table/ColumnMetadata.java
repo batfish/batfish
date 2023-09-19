@@ -21,11 +21,11 @@ public final class ColumnMetadata {
   private static final String PROP_NAME = "name";
   private static final String PROP_SCHEMA = "schema";
 
-  @Nonnull private String _description;
+  private @Nonnull String _description;
   private boolean _isKey;
   private boolean _isValue;
-  @Nonnull private String _name;
-  @Nonnull private Schema _schema;
+  private @Nonnull String _name;
+  private @Nonnull Schema _schema;
 
   public ColumnMetadata(String name, Schema schema, String description) {
     this(name, schema, description, null, null);

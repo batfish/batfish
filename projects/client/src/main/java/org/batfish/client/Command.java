@@ -44,21 +44,19 @@ public enum Command {
   VALIDATE_TEMPLATE("validate-template");
 
   public static class CommandUsage {
-    @Nonnull private final String _usage;
-    @Nonnull private final String _description;
+    private final @Nonnull String _usage;
+    private final @Nonnull String _description;
 
     public CommandUsage(@Nonnull String usage, @Nonnull String description) {
       _usage = usage;
       _description = description;
     }
 
-    @Nonnull
-    public String getDescription() {
+    public @Nonnull String getDescription() {
       return _description;
     }
 
-    @Nonnull
-    public String getUsage() {
+    public @Nonnull String getUsage() {
       return _usage;
     }
   }

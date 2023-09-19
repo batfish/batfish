@@ -56,8 +56,7 @@ public class Interface implements Serializable {
   }
 
   /** Interface alias (description) */
-  @Nullable
-  public String getAlias() {
+  public @Nullable String getAlias() {
     return _alias;
   }
 
@@ -104,8 +103,7 @@ public class Interface implements Serializable {
   }
 
   /** Speed in Mbps */
-  @Nullable
-  public Integer getSpeed() {
+  public @Nullable Integer getSpeed() {
     return _speed;
   }
 
@@ -138,8 +136,7 @@ public class Interface implements Serializable {
     _vrf = vrf;
   }
 
-  @Nullable
-  public OspfInterface getOspf() {
+  public @Nullable OspfInterface getOspf() {
     return _ospf;
   }
 
@@ -154,8 +151,7 @@ public class Interface implements Serializable {
     _ospf = ospf;
   }
 
-  @Nonnull
-  public List<StaticRoute> getPostUpIpRoutes() {
+  public @Nonnull List<StaticRoute> getPostUpIpRoutes() {
     return _postUpIpRoutes;
   }
 

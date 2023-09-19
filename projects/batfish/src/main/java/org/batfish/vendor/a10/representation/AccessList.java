@@ -8,13 +8,11 @@ import javax.annotation.Nonnull;
 /** Datamodel class representing configuration of an A10 access-list. */
 public final class AccessList implements Serializable {
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public List<AccessListRule> getRules() {
+  public @Nonnull List<AccessListRule> getRules() {
     return _rules;
   }
 
@@ -31,7 +29,7 @@ public final class AccessList implements Serializable {
     _rules = ImmutableList.of();
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private List<AccessListRule> _rules;
+  private @Nonnull List<AccessListRule> _rules;
 }

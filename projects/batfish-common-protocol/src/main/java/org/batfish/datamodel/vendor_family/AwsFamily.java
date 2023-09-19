@@ -5,28 +5,24 @@ import javax.annotation.Nullable;
 
 public class AwsFamily implements Serializable {
 
-  @Nullable private String _accountId;
-  @Nullable private String _region;
-  @Nullable private String _subnetId;
-  @Nullable private String _vpcId;
+  private @Nullable String _accountId;
+  private @Nullable String _region;
+  private @Nullable String _subnetId;
+  private @Nullable String _vpcId;
 
-  @Nullable
-  public String getAccountId() {
+  public @Nullable String getAccountId() {
     return _accountId;
   }
 
-  @Nullable
-  public String getRegion() {
+  public @Nullable String getRegion() {
     return _region;
   }
 
-  @Nullable
-  public String getSubnetId() {
+  public @Nullable String getSubnetId() {
     return _subnetId;
   }
 
-  @Nullable
-  public String getVpcId() {
+  public @Nullable String getVpcId() {
     return _vpcId;
   }
 

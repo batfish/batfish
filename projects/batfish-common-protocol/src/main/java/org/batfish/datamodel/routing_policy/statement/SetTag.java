@@ -15,7 +15,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 public final class SetTag extends Statement {
   private static final String PROP_TAG = "tag";
 
-  @Nonnull private final LongExpr _tag;
+  private final @Nonnull LongExpr _tag;
 
   @JsonCreator
   private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
@@ -56,8 +56,7 @@ public final class SetTag extends Statement {
   }
 
   @JsonProperty(PROP_TAG)
-  @Nonnull
-  public LongExpr getTag() {
+  public @Nonnull LongExpr getTag() {
     return _tag;
   }
 

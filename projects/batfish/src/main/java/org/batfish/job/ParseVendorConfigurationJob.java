@@ -111,12 +111,12 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    * Map from fileName (relative to the snapshot base) to its {@link FileParseResult} object, which
    * is populated as part of parsing.
    */
-  private @Nonnull final Map<String, FileParseResult> _fileResults;
+  private final @Nonnull Map<String, FileParseResult> _fileResults;
 
   final NetworkSnapshot _snapshot;
 
   /** Job-level (non-file-specific) warnings */
-  private @Nonnull final Warnings _warnings;
+  private final @Nonnull Warnings _warnings;
 
   public ParseVendorConfigurationJob(
       Settings settings,
@@ -683,8 +683,7 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
    * It may also contain a {@link ParseResult#getConfig() parsed vendor-specific configuration} or a
    * {@link ParseResult#getFailureCause() failure cause}.
    */
-  @Nonnull
-  public ParseResult parse() {
+  public @Nonnull ParseResult parse() {
     ConfigurationFormat format = detectFormat(_fileTexts, _settings, _expectedFormat);
 
     String jobFiles = jobFilenamesToString(_fileTexts.keySet());

@@ -77,8 +77,7 @@ public class EigrpExternalRoute extends EigrpRoute {
   }
 
   @Override
-  @Nonnull
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return RoutingProtocol.EIGRP_EX;
   }
 

@@ -11,7 +11,7 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class HostNetworkObject implements Serializable, NetworkObject {
 
-  @Nonnull private final Ip _host;
+  private final @Nonnull Ip _host;
   private NetworkObjectInfo _info;
 
   public HostNetworkObject(Ip host) {

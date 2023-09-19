@@ -84,8 +84,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    *
    * @return a set of {@link Prefix}
    */
-  @Nonnull
-  public Stream<Prefix> getPrefixes() {
+  public @Nonnull Stream<Prefix> getPrefixes() {
     return _actions.stream().map(ra -> ra.getRoute().getNetwork()).distinct();
   }
 
@@ -111,8 +110,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   }
 
   /** Helper method: retrieves all routes affected by this delta. */
-  @Nonnull
-  public Stream<R> getRoutesStream() {
+  public @Nonnull Stream<R> getRoutesStream() {
     return _actions.stream().map(RouteAdvertisement::getRoute);
   }
 
@@ -209,8 +207,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
      *
      * @return A new {@link RibDelta}
      */
-    @Nonnull
-    public RibDelta<R> build() {
+    public @Nonnull RibDelta<R> build() {
       if (isEmpty()) {
         return empty();
       }
@@ -218,8 +215,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     }
 
     /** Process all added and removed routes from a given delta */
-    @Nonnull
-    public <T extends R> Builder<R> from(RibDelta<T> delta) {
+    public @Nonnull <T extends R> Builder<R> from(RibDelta<T> delta) {
       for (RouteAdvertisement<T> ra : delta.getActions()) {
         from(ra);
       }
@@ -227,14 +223,12 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     }
 
     /** Process all added and removed routes from a given delta */
-    @Nonnull
-    public <T extends R> Builder<R> from(Stream<RouteAdvertisement<T>> actions) {
+    public @Nonnull <T extends R> Builder<R> from(Stream<RouteAdvertisement<T>> actions) {
       actions.forEach(this::from);
       return this;
     }
 
-    @Nonnull
-    public <T extends R> Builder<R> from(RouteAdvertisement<T> routeAdvertisement) {
+    public @Nonnull <T extends R> Builder<R> from(RouteAdvertisement<T> routeAdvertisement) {
       if (routeAdvertisement.isWithdrawn()) {
         remove(routeAdvertisement.getRoute(), routeAdvertisement.getReason());
       } else {
@@ -249,8 +243,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
     }
   }
 
-  @Nonnull
-  public static <T extends AbstractRouteDecorator> Builder<T> builder() {
+  public static @Nonnull <T extends AbstractRouteDecorator> Builder<T> builder() {
     return new Builder<>();
   }
 
@@ -270,9 +263,9 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
-  @Nonnull
-  public static <T extends AbstractRoute, U extends T> RibDelta<AnnotatedRoute<T>> importRibDelta(
-      AnnotatedRib<T> importingRib, RibDelta<AnnotatedRoute<U>> delta) {
+  public static @Nonnull <T extends AbstractRoute, U extends T>
+      RibDelta<AnnotatedRoute<T>> importRibDelta(
+          AnnotatedRib<T> importingRib, RibDelta<AnnotatedRoute<U>> delta) {
     return importRibDelta(
         importingRib, delta, ar -> new AnnotatedRoute<>(ar.getRoute(), ar.getSourceVrf()));
   }
@@ -286,8 +279,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
-  @Nonnull
-  public static <T extends AbstractRoute, U extends T> RibDelta<T> importRibDelta(
+  public static @Nonnull <T extends AbstractRoute, U extends T> RibDelta<T> importRibDelta(
       AbstractRib<T> importingRib, RibDelta<U> delta) {
     return importRibDelta(importingRib, delta, Function.identity());
   }
@@ -302,9 +294,9 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    * @param <U> type of {@link AbstractRoute} in the delta; must extend {@code T}
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
-  @Nonnull
-  public static <T extends AbstractRoute, U extends T> RibDelta<AnnotatedRoute<T>> importRibDelta(
-      AnnotatedRib<T> importingRib, RibDelta<U> delta, String vrfName) {
+  public static @Nonnull <T extends AbstractRoute, U extends T>
+      RibDelta<AnnotatedRoute<T>> importRibDelta(
+          AnnotatedRib<T> importingRib, RibDelta<U> delta, String vrfName) {
     return importRibDelta(importingRib, delta, r -> new AnnotatedRoute<>(r, vrfName));
   }
 
@@ -319,8 +311,7 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
    * @param <RibT> Type of the RIB
    * @return the {@link RibDelta} that results from modifying {@code importingRib}
    */
-  @Nonnull
-  private static <
+  private static @Nonnull <
           T extends AbstractRouteDecorator,
           U extends AbstractRouteDecorator,
           RibT extends AbstractRib<T>>

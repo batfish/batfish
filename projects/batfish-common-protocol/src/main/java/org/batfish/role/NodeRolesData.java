@@ -26,10 +26,10 @@ import org.batfish.datamodel.Names;
 public class NodeRolesData {
 
   public static final class Builder {
-    @Nullable private String _defaultDimension;
-    @Nullable private List<String> _roleDimensionOrder;
-    @Nonnull private List<RoleMapping> _roleMappings;
-    @Nonnull private Type _type;
+    private @Nullable String _defaultDimension;
+    private @Nullable List<String> _roleDimensionOrder;
+    private @Nonnull List<RoleMapping> _roleMappings;
+    private @Nonnull Type _type;
 
     private Builder() {
       _roleMappings = ImmutableList.of();
@@ -86,16 +86,16 @@ public class NodeRolesData {
   private static final String PROP_ROLE_DIMENSION_ORDER = "roleDimensionOrder";
   private static final String PROP_TYPE = "type";
 
-  @Nullable private String _defaultDimension;
+  private @Nullable String _defaultDimension;
 
-  @Nonnull private List<RoleMapping> _roleMappings;
+  private @Nonnull List<RoleMapping> _roleMappings;
 
   /* the list of role dimensions (or a subset of them), ordered for hierarchical
     visualization / exploration
   */
-  @Nullable private List<String> _roleDimensionOrder;
+  private @Nullable List<String> _roleDimensionOrder;
 
-  @Nonnull private Type _type;
+  private @Nonnull Type _type;
 
   public static @Nonnull Builder builder() {
     return new Builder();
@@ -171,8 +171,7 @@ public class NodeRolesData {
    * default dimension if set and exists, the auto-inferred primary dimension if it exists, the
    * dimension that is lexicographically first, and null if no dimensions exist.
    */
-  @Nonnull
-  private Optional<NodeRoleDimension> nodeRoleDimensionForDefault() {
+  private @Nonnull Optional<NodeRoleDimension> nodeRoleDimensionForDefault() {
     // check default
     if (getDefaultDimension() != null) {
       Optional<NodeRoleDimension> opt = nodeRoleDimensionFor(getDefaultDimension());

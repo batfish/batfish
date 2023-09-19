@@ -82,8 +82,8 @@ public class Filter {
       STRING
     }
 
-    @Nonnull private Type _type;
-    @Nullable private Object _value;
+    private @Nonnull Type _type;
+    private @Nullable Object _value;
 
     public Operand(Type type, @Nullable Object value) {
       _type = type;
@@ -144,10 +144,10 @@ public class Filter {
               + OPERAND_PATTERN_STR
               + ")\\s*$");
 
-  @Nonnull private String _expression;
-  @Nonnull private Operand _leftOperand;
-  @Nonnull private Operator _operator;
-  @Nonnull private Operand _rightOperand;
+  private @Nonnull String _expression;
+  private @Nonnull Operand _leftOperand;
+  private @Nonnull Operator _operator;
+  private @Nonnull Operand _rightOperand;
 
   /**
    * Creates Filter object from its string representation. Examples:

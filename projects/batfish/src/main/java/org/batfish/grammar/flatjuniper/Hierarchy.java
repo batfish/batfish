@@ -211,8 +211,7 @@ public final class Hierarchy {
         return _children;
       }
 
-      @Nullable
-      public HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
+      public @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
         for (HierarchyChildNode child : _children.values()) {
           if (child.matches(node)) {
             return child;

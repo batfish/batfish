@@ -14,14 +14,14 @@ import org.batfish.datamodel.vxlan.Layer3Vni;
 public class MockDataPlane implements DataPlane {
 
   public static class Builder {
-    @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-    @Nonnull private Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
-    @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
-    @Nonnull private Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
-    @Nonnull private Map<String, Map<String, Fib>> _fibs;
-    @Nonnull private ForwardingAnalysis _forwardingAnalysis;
-    @Nonnull private Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
-    @Nonnull private Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+    private @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+    private @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
+    private @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+    private @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
+    private @Nonnull Map<String, Map<String, Fib>> _fibs;
+    private @Nonnull ForwardingAnalysis _forwardingAnalysis;
+    private @Nonnull Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+    private @Nonnull Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
     private @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
         _prefixTracingInfoSummary;
     private @Nonnull Table<String, String, FinalMainRib> _ribs;
@@ -105,15 +105,15 @@ public class MockDataPlane implements DataPlane {
     return new Builder();
   }
 
-  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
-  @Nonnull private final Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
-  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
-  @Nonnull private final Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
-  @Nonnull private final Map<String, Map<String, Fib>> _fibs;
-  @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
+  private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpRoutes;
+  private final @Nonnull Table<String, String, Set<Bgpv4Route>> _bgpBackupRoutes;
+  private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnRoutes;
+  private final @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> _evpnBackupRoutes;
+  private final @Nonnull Map<String, Map<String, Fib>> _fibs;
+  private final @Nonnull ForwardingAnalysis _forwardingAnalysis;
 
-  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
-  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+  private final @Nonnull Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  private final @Nonnull Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
   private final @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       _prefixTracingInfoSummary;
   private final @Nonnull Table<String, String, FinalMainRib> _ribs;
@@ -173,8 +173,7 @@ public class MockDataPlane implements DataPlane {
   }
 
   @Override
-  @Nonnull
-  public SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
+  public @Nonnull SortedMap<String, SortedMap<String, Map<Prefix, Map<String, Set<String>>>>>
       getPrefixTracingInfoSummary() {
     return _prefixTracingInfoSummary;
   }

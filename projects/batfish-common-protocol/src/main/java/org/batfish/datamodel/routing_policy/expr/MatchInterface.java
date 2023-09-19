@@ -22,7 +22,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchInterface extends BooleanExpr {
   private static final String PROP_INTERFACES = "interfaces";
 
-  @Nonnull private final Set<String> _interfaces;
+  private final @Nonnull Set<String> _interfaces;
 
   @JsonCreator
   private static MatchInterface jsonCreator(

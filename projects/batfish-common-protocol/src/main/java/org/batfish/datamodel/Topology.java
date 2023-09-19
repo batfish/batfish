@@ -76,8 +76,7 @@ public final class Topology implements Serializable {
     return _edges;
   }
 
-  @Nonnull
-  public SortedSet<NodeInterfacePair> getNeighbors(NodeInterfacePair iface) {
+  public @Nonnull SortedSet<NodeInterfacePair> getNeighbors(NodeInterfacePair iface) {
     return _interfaceNeighbors.getOrDefault(iface, ImmutableSortedSet.of());
   }
 

@@ -192,59 +192,48 @@ public final class CompletionMetadata implements Serializable {
     _zones = zones;
   }
 
-  @Nonnull
-  public Set<String> getFilterNames() {
+  public @Nonnull Set<String> getFilterNames() {
     return _filterNames;
   }
 
-  @Nonnull
-  public Set<NodeInterfacePair> getInterfaces() {
+  public @Nonnull Set<NodeInterfacePair> getInterfaces() {
     return _interfaces;
   }
 
-  @Nonnull
-  public PrefixTrieMultiMap<IpCompletionMetadata> getIps() {
+  public @Nonnull PrefixTrieMultiMap<IpCompletionMetadata> getIps() {
     return _ips;
   }
 
-  @Nonnull
-  public Set<LocationCompletionMetadata> getLocations() {
+  public @Nonnull Set<LocationCompletionMetadata> getLocations() {
     return _locations;
   }
 
   /** Returns the full set of MLAG domain ids in the snapshot */
-  @Nonnull
-  public Set<String> getMlagIds() {
+  public @Nonnull Set<String> getMlagIds() {
     return _mlagIds;
   }
 
-  @Nonnull
-  public Map<String, NodeCompletionMetadata> getNodes() {
+  public @Nonnull Map<String, NodeCompletionMetadata> getNodes() {
     return _nodes;
   }
 
-  @Nonnull
-  public Set<String> getPrefixes() {
+  public @Nonnull Set<String> getPrefixes() {
     return _prefixes;
   }
 
-  @Nonnull
-  public Set<String> getRoutingPolicyNames() {
+  public @Nonnull Set<String> getRoutingPolicyNames() {
     return _routingPolicyNames;
   }
 
-  @Nonnull
-  public Set<String> getStructureNames() {
+  public @Nonnull Set<String> getStructureNames() {
     return _structureNames;
   }
 
-  @Nonnull
-  public Set<String> getVrfs() {
+  public @Nonnull Set<String> getVrfs() {
     return _vrfs;
   }
 
-  @Nonnull
-  public Set<String> getZones() {
+  public @Nonnull Set<String> getZones() {
     return _zones;
   }
 

@@ -406,7 +406,7 @@ public class ConfigDb implements Serializable {
 
   private static final class Deserializer extends StdDeserializer<ConfigDb> {
 
-    private @Nonnull final Warnings _warnings;
+    private final @Nonnull Warnings _warnings;
 
     public Deserializer(Warnings warnings) {
       super(ConfigDb.class);

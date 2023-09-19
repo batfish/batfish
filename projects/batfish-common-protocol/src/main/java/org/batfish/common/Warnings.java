@@ -62,13 +62,13 @@ public class Warnings implements Serializable {
 
   private @Nullable ErrorDetails _errorDetails;
 
-  @Nonnull private final List<ParseWarning> _parseWarnings;
+  private final @Nonnull List<ParseWarning> _parseWarnings;
 
-  @Nonnull private final SortedSet<Warning> _pedanticWarnings;
+  private final @Nonnull SortedSet<Warning> _pedanticWarnings;
 
-  @Nonnull private final SortedSet<Warning> _redFlagWarnings;
+  private final @Nonnull SortedSet<Warning> _redFlagWarnings;
 
-  @Nonnull private final SortedSet<Warning> _unimplementedWarnings;
+  private final @Nonnull SortedSet<Warning> _unimplementedWarnings;
 
   public static @Nonnull Warnings forLogger(BatfishLogger logger) {
     return new Warnings(
@@ -255,10 +255,10 @@ public class Warnings implements Serializable {
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";
     private static final String PROP_TEXT = "Text";
 
-    @Nonnull private final String _comment;
+    private final @Nonnull String _comment;
     private final int _line;
-    @Nonnull private final String _parserContext;
-    @Nonnull private final String _text;
+    private final @Nonnull String _parserContext;
+    private final @Nonnull String _text;
 
     @JsonCreator
     private static ParseWarning create(
@@ -281,8 +281,7 @@ public class Warnings implements Serializable {
     }
 
     @JsonProperty(PROP_COMMENT)
-    @Nonnull
-    public String getComment() {
+    public @Nonnull String getComment() {
       return _comment;
     }
 
@@ -292,14 +291,12 @@ public class Warnings implements Serializable {
     }
 
     @JsonProperty(PROP_PARSER_CONTEXT)
-    @Nonnull
-    public String getParserContext() {
+    public @Nonnull String getParserContext() {
       return _parserContext;
     }
 
     @JsonProperty(PROP_TEXT)
-    @Nonnull
-    public String getText() {
+    public @Nonnull String getText() {
       return _text;
     }
 

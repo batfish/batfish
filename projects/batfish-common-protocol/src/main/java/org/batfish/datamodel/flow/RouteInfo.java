@@ -28,19 +28,19 @@ public final class RouteInfo {
   private static final String PROP_METRIC = "metric";
 
   /** Protocol of the route like bgp, ospf etc. */
-  private @Nonnull final RoutingProtocol _protocol;
+  private final @Nonnull RoutingProtocol _protocol;
 
   /** Network of this route */
-  private @Nonnull final Prefix _network;
+  private final @Nonnull Prefix _network;
 
   /** Next Hop for this route */
   private final @Nonnull NextHop _nextHop;
 
   /** Next Hop IP for this route */
-  private @Nullable final Ip _nextHopIp;
+  private final @Nullable Ip _nextHopIp;
 
   /** Next VRF for this route */
-  private @Nullable final String _nextVrf;
+  private final @Nullable String _nextVrf;
 
   /** Administrative distance for this route */
   private final int _adminDistance;
@@ -101,32 +101,27 @@ public final class RouteInfo {
   }
 
   @JsonProperty(PROP_PROTOCOL)
-  @Nonnull
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return _protocol;
   }
 
   @JsonProperty(PROP_NETWORK)
-  @Nonnull
-  public Prefix getNetwork() {
+  public @Nonnull Prefix getNetwork() {
     return _network;
   }
 
   @JsonProperty(PROP_NEXT_HOP)
-  @Nonnull
-  public NextHop getNextHop() {
+  public @Nonnull NextHop getNextHop() {
     return _nextHop;
   }
 
   @JsonProperty(PROP_NEXT_HOP_IP)
-  @Nullable
-  public Ip getNextHopIp() {
+  public @Nullable Ip getNextHopIp() {
     return _nextHopIp;
   }
 
   @JsonProperty(PROP_NEXT_VRF)
-  @Nullable
-  public String getNextVrf() {
+  public @Nullable String getNextVrf() {
     return _nextVrf;
   }
 

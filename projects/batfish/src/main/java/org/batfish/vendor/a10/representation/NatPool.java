@@ -8,18 +8,15 @@ import org.batfish.datamodel.Ip;
 /** Datamodel class representing configuration for a NAT pool. */
 public final class NatPool implements Serializable {
 
-  @Nonnull
-  public Ip getEnd() {
+  public @Nonnull Ip getEnd() {
     return _end;
   }
 
-  @Nullable
-  public Ip getGateway() {
+  public @Nullable Ip getGateway() {
     return _gateway;
   }
 
-  @Nullable
-  public Integer getHaGroupId() {
+  public @Nullable Integer getHaGroupId() {
     return _haGroupId;
   }
 
@@ -27,8 +24,7 @@ public final class NatPool implements Serializable {
     return _ipRr;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -40,18 +36,15 @@ public final class NatPool implements Serializable {
     return _portOverload;
   }
 
-  @Nullable
-  public Integer getScaleoutDeviceId() {
+  public @Nullable Integer getScaleoutDeviceId() {
     return _scaleoutDeviceId;
   }
 
-  @Nonnull
-  public Ip getStart() {
+  public @Nonnull Ip getStart() {
     return _start;
   }
 
-  @Nullable
-  public Integer getVrid() {
+  public @Nullable Integer getVrid() {
     return _vrid;
   }
 
@@ -86,14 +79,14 @@ public final class NatPool implements Serializable {
     _start = start;
   }
 
-  @Nonnull private final Ip _end;
-  @Nullable private Ip _gateway;
-  @Nullable private Integer _haGroupId;
+  private final @Nonnull Ip _end;
+  private @Nullable Ip _gateway;
+  private @Nullable Integer _haGroupId;
   private boolean _ipRr;
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
   private final int _netmask;
   private boolean _portOverload;
-  @Nullable private Integer _scaleoutDeviceId;
-  @Nonnull private final Ip _start;
-  @Nullable private Integer _vrid;
+  private @Nullable Integer _scaleoutDeviceId;
+  private final @Nonnull Ip _start;
+  private @Nullable Integer _vrid;
 }

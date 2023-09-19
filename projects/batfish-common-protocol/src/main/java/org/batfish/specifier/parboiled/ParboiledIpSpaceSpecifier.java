@@ -40,8 +40,7 @@ public final class ParboiledIpSpaceSpecifier
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitDifferenceIpSpaceAstNode(
+    public @Nonnull IpSpace visitDifferenceIpSpaceAstNode(
         DifferenceIpSpaceAstNode differenceIpSpaceAstNode) {
       // using firstNonNull to stop compiler warning. since neither left nor right should will be
       // null, the difference will not be null
@@ -53,8 +52,7 @@ public final class ParboiledIpSpaceSpecifier
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitIntersectionIpSpaceAstNode(
+    public @Nonnull IpSpace visitIntersectionIpSpaceAstNode(
         IntersectionIpSpaceAstNode intersectionIpSpaceAstNode) {
       // using firstNonNull to stop compiler warning. since neither left nor right should will be
       // null, the intersection will not be null
@@ -66,8 +64,7 @@ public final class ParboiledIpSpaceSpecifier
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
+    public @Nonnull IpSpace visitUnionIpSpaceAstNode(UnionIpSpaceAstNode unionIpSpaceAstNode) {
       // using firstNonNull to stop compiler warning. since neither left nor right should will be
       // null, the union will not be null
       return firstNonNull(
@@ -78,40 +75,36 @@ public final class ParboiledIpSpaceSpecifier
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitIpAstNode(IpAstNode ipAstNode) {
+    public @Nonnull IpSpace visitIpAstNode(IpAstNode ipAstNode) {
       return ipAstNode.getIp().toIpSpace();
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitIpRangeAstNode(IpRangeAstNode rangeIpSpaceAstNode) {
+    public @Nonnull IpSpace visitIpRangeAstNode(IpRangeAstNode rangeIpSpaceAstNode) {
       return IpRange.range(rangeIpSpaceAstNode.getLow(), rangeIpSpaceAstNode.getHigh());
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitIpWildcardAstNode(IpWildcardAstNode ipWildcardAstNode) {
+    public @Nonnull IpSpace visitIpWildcardAstNode(IpWildcardAstNode ipWildcardAstNode) {
       return ipWildcardAstNode.getIpWildcard().toIpSpace();
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitLocationIpSpaceAstNode(LocationIpSpaceAstNode locationIpSpaceAstNode) {
+    public @Nonnull IpSpace visitLocationIpSpaceAstNode(
+        LocationIpSpaceAstNode locationIpSpaceAstNode) {
       return LocationIpSpaceSpecifier.computeIpSpace(
           new ParboiledLocationSpecifier(locationIpSpaceAstNode.getLocationAst()).resolve(_ctxt),
           _ctxt);
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitPrefixAstNode(PrefixAstNode prefixAstNode) {
+    public @Nonnull IpSpace visitPrefixAstNode(PrefixAstNode prefixAstNode) {
       return prefixAstNode.getPrefix().toIpSpace();
     }
 
     @Override
-    @Nonnull
-    public IpSpace visitAddressGroupAstNode(AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
+    public @Nonnull IpSpace visitAddressGroupAstNode(
+        AddressGroupIpSpaceAstNode addressGroupIpSpaceAstNode) {
       // Because we changed the input on Apr 30 2019 from (group, book) to (book, group), we
       // first interpret the user input as (book, group) if the book exists. Otherwise, we interpret
       // it is as (group, book)
@@ -193,8 +186,7 @@ public final class ParboiledIpSpaceSpecifier
   }
 
   @VisibleForTesting
-  @Nonnull
-  static IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {
+  static @Nonnull IpSpace computeIpSpace(IpSpaceAstNode ast, SpecifierContext ctxt) {
     return ast.accept(new IpSpaceAstNodeToIpSpace(ctxt));
   }
 

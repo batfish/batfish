@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 
 public class LiteralTunnelEncapsulationAttribute extends TunnelEncapsulationAttributeExpr {
   private static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE = "tunnelEncapsulationAttribute";
-  @Nonnull private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  private final @Nonnull TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
 
   @JsonCreator
   private static LiteralTunnelEncapsulationAttribute jsonCreator(

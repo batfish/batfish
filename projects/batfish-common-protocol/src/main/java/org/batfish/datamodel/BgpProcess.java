@@ -53,19 +53,19 @@ public class BgpProcess implements Serializable {
 
   public static class Builder {
 
-    @Nullable private Boolean _clientToClientReflection;
-    @Nullable private BgpConfederation _confederation;
-    @Nullable private Integer _ebgpAdminCost;
-    @Nullable private Integer _ibgpAdminCost;
-    @Nullable private Integer _localAdminCost;
-    @Nullable private Ip _routerId;
-    @Nullable private Vrf _vrf;
-    @Nullable private String _networkPolicy;
-    @Nullable private String _mainRibIndependentNetworkPolicy;
-    @Nullable private String _redistributionPolicy;
-    @Nullable private LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
-    @Nullable private NextHopIpTieBreaker _networkNextHopIpTieBreaker;
-    @Nullable private NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
+    private @Nullable Boolean _clientToClientReflection;
+    private @Nullable BgpConfederation _confederation;
+    private @Nullable Integer _ebgpAdminCost;
+    private @Nullable Integer _ibgpAdminCost;
+    private @Nullable Integer _localAdminCost;
+    private @Nullable Ip _routerId;
+    private @Nullable Vrf _vrf;
+    private @Nullable String _networkPolicy;
+    private @Nullable String _mainRibIndependentNetworkPolicy;
+    private @Nullable String _redistributionPolicy;
+    private @Nullable LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
+    private @Nullable NextHopIpTieBreaker _networkNextHopIpTieBreaker;
+    private @Nullable NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
 
     public BgpProcess build() {
       checkArgument(_routerId != null, "Missing %s", PROP_ROUTER_ID);
@@ -113,41 +113,35 @@ public class BgpProcess implements Serializable {
       return this;
     }
 
-    @Nonnull
-    public Builder setConfederation(@Nullable BgpConfederation confederation) {
+    public @Nonnull Builder setConfederation(@Nullable BgpConfederation confederation) {
       _confederation = confederation;
       return this;
     }
 
     /** Sets the EBGP administrative distance for this process. */
-    @Nonnull
-    public Builder setEbgpAdminCost(int ebgpAdminCost) {
+    public @Nonnull Builder setEbgpAdminCost(int ebgpAdminCost) {
       _ebgpAdminCost = ebgpAdminCost;
       return this;
     }
 
     /** Sets the IBGP administrative distance for this process. */
-    @Nonnull
-    public Builder setIbgpAdminCost(int ibgpAdminCost) {
+    public @Nonnull Builder setIbgpAdminCost(int ibgpAdminCost) {
       _ibgpAdminCost = ibgpAdminCost;
       return this;
     }
 
     /** Sets the Local administrative distance for this process. */
-    @Nonnull
-    public Builder setLocalAdminCost(int localAdminCost) {
+    public @Nonnull Builder setLocalAdminCost(int localAdminCost) {
       _localAdminCost = localAdminCost;
       return this;
     }
 
-    @Nonnull
-    public Builder setRouterId(Ip routerId) {
+    public @Nonnull Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
-    @Nonnull
-    public Builder setVrf(Vrf vrf) {
+    public @Nonnull Builder setVrf(Vrf vrf) {
       _vrf = vrf;
       return this;
     }
@@ -227,12 +221,12 @@ public class BgpProcess implements Serializable {
   private static final String PROP_TRACKS = "tracks";
 
   private boolean _clientToClientReflection;
-  @Nullable private BgpConfederation _confederation;
+  private @Nullable BgpConfederation _confederation;
   private final int _ebgpAdminCost;
   private final int _ibgpAdminCost;
   private final int _localAdminCost;
   private final @Nonnull Supplier<Set<Long>> _clusterIds;
-  @Nonnull private SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
+  private @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private boolean _multipathIbgp;
@@ -244,26 +238,26 @@ public class BgpProcess implements Serializable {
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
    * to peer, keyed by unique ID.
    */
-  @Nonnull private SortedMap<Ip, BgpActivePeerConfig> _activeNeighbors;
+  private @Nonnull SortedMap<Ip, BgpActivePeerConfig> _activeNeighbors;
 
   /**
    * A map of all dynamic bgp neighbors with which the router owning this process is configured to
    * peer, keyed by unique ID.
    */
-  @Nonnull private SortedMap<Prefix, BgpPassivePeerConfig> _passiveNeighbors;
+  private @Nonnull SortedMap<Prefix, BgpPassivePeerConfig> _passiveNeighbors;
 
   /** Space of prefixes to be advertised using explicit network statements */
   private PrefixSpace _originationSpace;
 
-  @Nonnull private final Ip _routerId;
+  private final @Nonnull Ip _routerId;
 
   private BgpTieBreaker _tieBreaker;
 
-  @Nullable private String _independentNetworkPolicy;
+  private @Nullable String _independentNetworkPolicy;
 
-  @Nullable private String _mainRibIndependentNetworkPolicy;
+  private @Nullable String _mainRibIndependentNetworkPolicy;
 
-  @Nullable private String _redistributionPolicy;
+  private @Nullable String _redistributionPolicy;
 
   private final @Nonnull LocalOriginationTypeTieBreaker _localOriginationTypeTieBreaker;
   private final @Nonnull NextHopIpTieBreaker _networkNextHopIpTieBreaker;
@@ -437,8 +431,7 @@ public class BgpProcess implements Serializable {
 
   /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  @Nonnull
-  public SortedMap<Ip, BgpActivePeerConfig> getActiveNeighbors() {
+  public @Nonnull SortedMap<Ip, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
   }
 
@@ -496,8 +489,7 @@ public class BgpProcess implements Serializable {
 
   /** Returns BGP unnumbered peer configurations keyed by peer-interface */
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
-  @Nonnull
-  public SortedMap<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
+  public @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
     return _interfaceNeighbors;
   }
 
@@ -518,8 +510,7 @@ public class BgpProcess implements Serializable {
 
   /** Neighbor relationships configured for this BGP process. */
   @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  @Nonnull
-  public SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
+  public @Nonnull SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
     return _passiveNeighbors;
   }
 
@@ -640,8 +631,7 @@ public class BgpProcess implements Serializable {
    * should not be added to the BGP RIB.
    */
   @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY)
-  @Nullable
-  public String getIndependentNetworkPolicy() {
+  public @Nullable String getIndependentNetworkPolicy() {
     return _independentNetworkPolicy;
   }
 
@@ -660,8 +650,7 @@ public class BgpProcess implements Serializable {
    * neighbors.
    */
   @JsonProperty(PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY)
-  @Nullable
-  public String getMainRibIndependentNetworkPolicy() {
+  public @Nullable String getMainRibIndependentNetworkPolicy() {
     return _mainRibIndependentNetworkPolicy;
   }
 
@@ -677,8 +666,7 @@ public class BgpProcess implements Serializable {
    * this case, any redistribution should be implemented directly in export policies.
    */
   @JsonProperty(PROP_REDISTRIBUTION_POLICY)
-  @Nullable
-  public String getRedistributionPolicy() {
+  public @Nullable String getRedistributionPolicy() {
     return _redistributionPolicy;
   }
 

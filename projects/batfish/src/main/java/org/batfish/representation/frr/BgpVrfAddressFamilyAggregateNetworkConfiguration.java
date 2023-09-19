@@ -89,8 +89,7 @@ public final class BgpVrfAddressFamilyAggregateNetworkConfiguration implements S
     _matchingMedOnly = matchingMedOnly;
   }
 
-  @Nullable
-  public OriginType getOrigin() {
+  public @Nullable OriginType getOrigin() {
     return _origin;
   }
 
@@ -98,8 +97,7 @@ public final class BgpVrfAddressFamilyAggregateNetworkConfiguration implements S
     _origin = origin;
   }
 
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 
@@ -115,8 +113,7 @@ public final class BgpVrfAddressFamilyAggregateNetworkConfiguration implements S
     _summaryOnly = summaryOnly;
   }
 
-  @Nullable
-  public String getSuppressMap() {
+  public @Nullable String getSuppressMap() {
     return _suppressMap;
   }
 

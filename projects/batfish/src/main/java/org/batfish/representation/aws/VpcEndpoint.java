@@ -22,13 +22,13 @@ import org.batfish.datamodel.Configuration;
 @ParametersAreNonnullByDefault
 public abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
 
-  @Nonnull protected final String _id;
+  protected final @Nonnull String _id;
 
-  @Nonnull protected final String _serviceName;
+  protected final @Nonnull String _serviceName;
 
-  @Nonnull protected final String _vpcId;
+  protected final @Nonnull String _vpcId;
 
-  @Nonnull protected final Map<String, String> _tags;
+  protected final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
   private static VpcEndpoint create(
@@ -76,13 +76,11 @@ public abstract class VpcEndpoint implements AwsVpcEntity, Serializable {
     return _id;
   }
 
-  @Nonnull
-  public String getServiceName() {
+  public @Nonnull String getServiceName() {
     return _serviceName;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 }

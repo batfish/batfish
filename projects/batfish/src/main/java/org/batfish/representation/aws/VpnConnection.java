@@ -147,8 +147,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nullable
-  private static IpsecEncapsulationMode toIpsecEncapdulationMode(
+  private static @Nullable IpsecEncapsulationMode toIpsecEncapdulationMode(
       String ipsecEncapsulationMode, Warnings warnings) {
     switch (ipsecEncapsulationMode) {
       case "tunnel":
@@ -173,7 +172,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       return new VpnRoute(destinationCidrBlock);
     }
 
-    @Nonnull private final Prefix _destinationCidrBlock;
+    private final @Nonnull Prefix _destinationCidrBlock;
 
     private VpnRoute(Prefix destinationCidrBlock) {
       _destinationCidrBlock = destinationCidrBlock;
@@ -211,23 +210,23 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     VPN
   }
 
-  @Nonnull private final String _customerGatewayId;
+  private final @Nonnull String _customerGatewayId;
 
-  @Nonnull private final List<IpsecTunnel> _ipsecTunnels;
+  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
 
   private final boolean _isBgpConnection;
 
-  @Nonnull private final List<Prefix> _routes;
+  private final @Nonnull List<Prefix> _routes;
 
   private final boolean _staticRoutesOnly;
 
-  @Nonnull private final List<VgwTelemetry> _vgwTelemetrys;
+  private final @Nonnull List<VgwTelemetry> _vgwTelemetrys;
 
-  @Nonnull private final String _vpnConnectionId;
+  private final @Nonnull String _vpnConnectionId;
 
-  @Nonnull private final GatewayType _awsGatewayType;
+  private final @Nonnull GatewayType _awsGatewayType;
 
-  @Nonnull private final String _awsGatewayId;
+  private final @Nonnull String _awsGatewayId;
 
   @JsonCreator
   private static VpnConnection create(
@@ -327,8 +326,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     _staticRoutesOnly = staticRoutesOnly;
   }
 
-  @Nonnull
-  private static IkePhase1Proposal toIkePhase1Proposal(
+  private static @Nonnull IkePhase1Proposal toIkePhase1Proposal(
       String proposalName, IpsecTunnel ipsecTunnel) {
     IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(proposalName);
     if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
@@ -343,8 +341,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Proposal;
   }
 
-  @Nonnull
-  private static IkePhase1Key toIkePhase1PreSharedKey(
+  private static @Nonnull IkePhase1Key toIkePhase1PreSharedKey(
       IpsecTunnel ipsecTunnel, Ip remoteIdentity, String localInterface) {
     IkePhase1Key ikePhase1Key = new IkePhase1Key();
     ikePhase1Key.setKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED);
@@ -354,8 +351,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Key;
   }
 
-  @Nonnull
-  private static IkePhase1Policy toIkePhase1Policy(
+  private static @Nonnull IkePhase1Policy toIkePhase1Policy(
       String vpnId,
       String ikePhase1ProposalName,
       IkePhase1Key ikePhase1Key,
@@ -369,8 +365,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Policy;
   }
 
-  @Nonnull
-  private static IpsecPhase2Proposal toIpsecPhase2Proposal(
+  private static @Nonnull IpsecPhase2Proposal toIpsecPhase2Proposal(
       IpsecTunnel ipsecTunnel, Warnings warnings) {
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     ipsecPhase2Proposal.setAuthenticationAlgorithm(
@@ -384,8 +379,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ipsecPhase2Proposal;
   }
 
-  @Nonnull
-  private static IpsecPhase2Policy toIpsecPhase2Policy(
+  private static @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
       IpsecTunnel ipsecTunnel, String ipsecPhase2Proposal) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
     ipsecPhase2Policy.setPfsKeyGroup(

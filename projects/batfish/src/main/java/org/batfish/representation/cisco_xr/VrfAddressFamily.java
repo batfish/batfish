@@ -17,8 +17,7 @@ public final class VrfAddressFamily implements Serializable {
     _routeTargetImport = ImmutableSet.of();
   }
 
-  @Nullable
-  public String getExportPolicy() {
+  public @Nullable String getExportPolicy() {
     return _exportPolicy;
   }
 
@@ -26,8 +25,7 @@ public final class VrfAddressFamily implements Serializable {
     _exportPolicy = exportPolicy;
   }
 
-  @Nullable
-  public String getExportToDefaultVrfPolicy() {
+  public @Nullable String getExportToDefaultVrfPolicy() {
     return _exportToDefaultVrfPolicy;
   }
 
@@ -35,8 +33,7 @@ public final class VrfAddressFamily implements Serializable {
     _exportToDefaultVrfPolicy = exportToDefaultVrfPolicy;
   }
 
-  @Nullable
-  public String getImportPolicy() {
+  public @Nullable String getImportPolicy() {
     return _importPolicy;
   }
 
@@ -44,8 +41,7 @@ public final class VrfAddressFamily implements Serializable {
     _importPolicy = importPolicy;
   }
 
-  @Nullable
-  public String getImportFromDefaultVrfPolicy() {
+  public @Nullable String getImportFromDefaultVrfPolicy() {
     return _importFromDefaultVrfPolicy;
   }
 
@@ -57,8 +53,7 @@ public final class VrfAddressFamily implements Serializable {
    * The route target values to attach to VPN routes originating from this VRF. Will be empty if it
    * must be auto-derived.
    */
-  @Nonnull
-  public Set<ExtendedCommunity> getRouteTargetExport() {
+  public @Nonnull Set<ExtendedCommunity> getRouteTargetExport() {
     return _routeTargetExport;
   }
 
@@ -74,8 +69,7 @@ public final class VrfAddressFamily implements Serializable {
    * Routes that contain any of these route target community should be merged into this VRF. Will be
    * empty if it must be auto-derived.
    */
-  @Nonnull
-  public Set<ExtendedCommunity> getRouteTargetImport() {
+  public @Nonnull Set<ExtendedCommunity> getRouteTargetImport() {
     return _routeTargetImport;
   }
 
@@ -87,10 +81,10 @@ public final class VrfAddressFamily implements Serializable {
             .build();
   }
 
-  @Nonnull private Set<ExtendedCommunity> _routeTargetExport;
-  @Nonnull private Set<ExtendedCommunity> _routeTargetImport;
-  @Nullable private String _exportPolicy;
-  @Nullable private String _exportToDefaultVrfPolicy;
-  @Nullable private String _importPolicy;
-  @Nullable private String _importFromDefaultVrfPolicy;
+  private @Nonnull Set<ExtendedCommunity> _routeTargetExport;
+  private @Nonnull Set<ExtendedCommunity> _routeTargetImport;
+  private @Nullable String _exportPolicy;
+  private @Nullable String _exportToDefaultVrfPolicy;
+  private @Nullable String _importPolicy;
+  private @Nullable String _importFromDefaultVrfPolicy;
 }

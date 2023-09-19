@@ -11,7 +11,7 @@ import org.batfish.datamodel.TraceElement;
 public class TrueExpr extends AclLineMatchExpr {
   public static final TrueExpr INSTANCE = new TrueExpr();
 
-  @Nullable private final TraceElement _traceElement;
+  private final @Nullable TraceElement _traceElement;
 
   private TrueExpr() {
     super(null);

@@ -50,14 +50,14 @@ public final class GeneratedRoute extends AbstractRoute
           HasWritableOriginType<Builder, GeneratedRoute>,
           HasWritableWeight<Builder, GeneratedRoute> {
 
-    @Nonnull private AsPath _asPath;
-    @Nullable private String _attributePolicy;
-    @Nonnull private CommunitySet _communities;
+    private @Nonnull AsPath _asPath;
+    private @Nullable String _attributePolicy;
+    private @Nonnull CommunitySet _communities;
     private boolean _discard;
-    @Nullable private String _generationPolicy;
+    private @Nullable String _generationPolicy;
     private long _localPreference;
     private long _metric;
-    @Nonnull private OriginType _originType;
+    private @Nonnull OriginType _originType;
     private int _weight;
 
     private Builder() {
@@ -109,8 +109,7 @@ public final class GeneratedRoute extends AbstractRoute
       return this;
     }
 
-    @Nonnull
-    public Builder setAttributePolicy(@Nullable String attributePolicy) {
+    public @Nonnull Builder setAttributePolicy(@Nullable String attributePolicy) {
       _attributePolicy = attributePolicy;
       return this;
     }
@@ -134,14 +133,12 @@ public final class GeneratedRoute extends AbstractRoute
       return this;
     }
 
-    @Nonnull
-    public Builder setDiscard(boolean discard) {
+    public @Nonnull Builder setDiscard(boolean discard) {
       _discard = discard;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerationPolicy(@Nullable String generationPolicy) {
+    public @Nonnull Builder setGenerationPolicy(@Nullable String generationPolicy) {
       _generationPolicy = generationPolicy;
       return this;
     }
@@ -194,14 +191,14 @@ public final class GeneratedRoute extends AbstractRoute
   private static final String PROP_GENERATION_POLICY = "generationPolicy";
   private static final String PROP_GENERATION_POLICY_SOURCES = "generationPolicySources";
 
-  @Nonnull private final AsPath _asPath;
-  @Nullable private final String _attributePolicy;
-  @Nonnull private final CommunitySet _communities;
+  private final @Nonnull AsPath _asPath;
+  private final @Nullable String _attributePolicy;
+  private final @Nonnull CommunitySet _communities;
   private final boolean _discard;
-  @Nullable private final String _generationPolicy;
+  private final @Nullable String _generationPolicy;
   private final long _localPreference;
   private final long _metric;
-  @Nonnull private final OriginType _originType;
+  private final @Nonnull OriginType _originType;
   private final int _weight;
 
   // Non-final fields, not properties of the route. Should not impact equality or hashcode.

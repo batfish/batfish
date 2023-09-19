@@ -9,18 +9,15 @@ import javax.annotation.Nullable;
 /** FortiOS datamodel component containing access-list configuration */
 public class AccessList implements Serializable {
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public String getComments() {
+  public @Nullable String getComments() {
     return _comments;
   }
 
-  @Nonnull
-  public Map<String, AccessListRule> getRules() {
+  public @Nonnull Map<String, AccessListRule> getRules() {
     return _rules;
   }
 
@@ -34,8 +31,8 @@ public class AccessList implements Serializable {
     _rules = new LinkedHashMap<>();
   }
 
-  @Nonnull private final String _name;
-  @Nullable private String _comments;
+  private final @Nonnull String _name;
+  private @Nullable String _comments;
   // Note: this is a LinkedHashMaps to preserve insertion order
-  @Nonnull private final Map<String, AccessListRule> _rules;
+  private final @Nonnull Map<String, AccessListRule> _rules;
 }

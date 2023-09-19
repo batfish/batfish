@@ -5,8 +5,7 @@ import org.batfish.datamodel.IpWildcard;
 
 /** An access-list address, representing a specific IP wildcard. */
 public class AccessListAddressWildcard implements AccessListAddress {
-  @Nonnull
-  public IpWildcard getWildcard() {
+  public @Nonnull IpWildcard getWildcard() {
     return _wildcard;
   }
 
@@ -14,7 +13,7 @@ public class AccessListAddressWildcard implements AccessListAddress {
     _wildcard = wildcard;
   }
 
-  @Nonnull private final IpWildcard _wildcard;
+  private final @Nonnull IpWildcard _wildcard;
 
   @Override
   public <T> T accept(AccessListAddressVisitor<T> visitor) {

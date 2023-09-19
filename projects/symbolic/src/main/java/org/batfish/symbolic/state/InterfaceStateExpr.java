@@ -10,21 +10,19 @@ import javax.annotation.Nonnull;
  * where {@link #hashCode()} is different for different types.
  */
 public abstract class InterfaceStateExpr implements StateExpr {
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _interface;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _interface;
 
   public InterfaceStateExpr(@Nonnull String hostname, @Nonnull String iface) {
     _hostname = hostname;
     _interface = iface;
   }
 
-  @Nonnull
-  public final String getHostname() {
+  public final @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
-  public final String getInterface() {
+  public final @Nonnull String getInterface() {
     return _interface;
   }
 

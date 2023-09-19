@@ -85,8 +85,7 @@ public final class FirewallSessionTraceInfo {
     return _sessionFlows.toAclLineMatchExpr();
   }
 
-  @Nonnull
-  public SessionScope getSessionScope() {
+  public @Nonnull SessionScope getSessionScope() {
     return _sessionScope;
   }
 
@@ -96,8 +95,7 @@ public final class FirewallSessionTraceInfo {
   }
 
   /** The (optional) transformation for session traffic. */
-  @Nullable
-  public Transformation getTransformation() {
+  public @Nullable Transformation getTransformation() {
     return _transformation;
   }
 }

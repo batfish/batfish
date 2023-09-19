@@ -16,7 +16,7 @@ public final class FibLookup implements Action {
 
   private static final String PROP_VRF_EXPR = "vrfExpr";
 
-  @Nonnull private final VrfExpr _vrfExpr;
+  private final @Nonnull VrfExpr _vrfExpr;
 
   public FibLookup(VrfExpr vrfExpr) {
     _vrfExpr = vrfExpr;
@@ -29,8 +29,7 @@ public final class FibLookup implements Action {
   }
 
   @JsonProperty(PROP_VRF_EXPR)
-  @Nonnull
-  public VrfExpr getVrfExpr() {
+  public @Nonnull VrfExpr getVrfExpr() {
     return _vrfExpr;
   }
 

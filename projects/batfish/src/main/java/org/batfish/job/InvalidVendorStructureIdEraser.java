@@ -59,8 +59,7 @@ public final class InvalidVendorStructureIdEraser
    * Returns the specified {@link VendorStructureId} if it is valid. Otherwise, returns {@code
    * null}.
    */
-  @Nullable
-  private VendorStructureId eraseInvalid(VendorStructureId vendorStructureId) {
+  private @Nullable VendorStructureId eraseInvalid(VendorStructureId vendorStructureId) {
     return isVendorStructureIdValid(vendorStructureId) ? vendorStructureId : null;
   }
 

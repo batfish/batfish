@@ -316,13 +316,13 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
     /** Name of a zone */
     ZONE_NAME("ZONE_NAME", "Zone name", null, SuggestionType.NAME_LITERAL);
 
-    @Nullable private final String _description;
+    private final @Nullable String _description;
 
-    @Nullable private final String _hint;
+    private final @Nullable String _hint;
 
-    @Nonnull private final String _name;
+    private final @Nonnull String _name;
 
-    @Nonnull private final SuggestionType _suggestionType;
+    private final @Nonnull SuggestionType _suggestionType;
 
     Type(
         String name,
@@ -335,23 +335,19 @@ import org.batfish.datamodel.answers.AutocompleteSuggestion.SuggestionType;
       _suggestionType = suggestionType;
     }
 
-    @Nullable
-    public String getDescription() {
+    public @Nullable String getDescription() {
       return _description;
     }
 
-    @Nullable
-    public String getHint() {
+    public @Nullable String getHint() {
       return _hint;
     }
 
-    @Nonnull
-    public String getName() {
+    public @Nonnull String getName() {
       return _name;
     }
 
-    @Nonnull
-    public SuggestionType getSuggestionType() {
+    public @Nonnull SuggestionType getSuggestionType() {
       return _suggestionType;
     }
   }

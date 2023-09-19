@@ -25,8 +25,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   public abstract static class Builder<B extends Builder<B, R>, R extends EvpnRoute<B, R>>
       extends BgpRoute.Builder<B, R> {
 
-    @Nullable protected RouteDistinguisher _routeDistinguisher;
-    @Nullable protected Integer _vni;
+    protected @Nullable RouteDistinguisher _routeDistinguisher;
+    protected @Nullable Integer _vni;
 
     @Override
     public final B setAdmin(int admin) {
@@ -49,8 +49,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       throw new UnsupportedOperationException("Cannot set nonForwarding for an EvpnRoute");
     }
 
-    @Nullable
-    public RouteDistinguisher getRouteDistinguisher() {
+    public @Nullable RouteDistinguisher getRouteDistinguisher() {
       return _routeDistinguisher;
     }
 
@@ -78,8 +77,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
   static final String PROP_ROUTE_DISTINGUISHER = "routeDistinguisher";
   static final String PROP_VNI = "vni";
 
-  @Nonnull protected final RouteDistinguisher _routeDistinguisher;
-  @Nonnull protected final int _vni;
+  protected final @Nonnull RouteDistinguisher _routeDistinguisher;
+  protected final @Nonnull int _vni;
 
   protected EvpnRoute(
       Prefix network,

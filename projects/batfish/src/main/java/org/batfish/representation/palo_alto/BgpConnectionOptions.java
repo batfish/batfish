@@ -8,8 +8,7 @@ import javax.annotation.Nullable;
  * NAME peer NAME connection-options}.
  */
 public final class BgpConnectionOptions implements Serializable {
-  @Nullable
-  public Boolean getIncomingAllow() {
+  public @Nullable Boolean getIncomingAllow() {
     return _incomingAllow;
   }
 
@@ -17,8 +16,7 @@ public final class BgpConnectionOptions implements Serializable {
     _incomingAllow = incomingAllow;
   }
 
-  @Nullable
-  public Integer getLocalPort() {
+  public @Nullable Integer getLocalPort() {
     return _localPort;
   }
 
@@ -26,8 +24,7 @@ public final class BgpConnectionOptions implements Serializable {
     _localPort = localPort;
   }
 
-  @Nullable
-  public Boolean getOutgoingAllow() {
+  public @Nullable Boolean getOutgoingAllow() {
     return _outgoingAllow;
   }
 
@@ -35,8 +32,7 @@ public final class BgpConnectionOptions implements Serializable {
     _outgoingAllow = outgoingAllow;
   }
 
-  @Nullable
-  public Integer getRemotePort() {
+  public @Nullable Integer getRemotePort() {
     return _remotePort;
   }
 

@@ -24,9 +24,9 @@ public final class BidirectionalReachabilityQuestion extends Question {
   // Return flow constraints
   private static final String PROP_RETURN_FLOW_TYPE = "returnFlowType";
 
-  @Nonnull private final PacketHeaderConstraints _headerConstraints;
-  @Nonnull private final PathConstraintsInput _pathConstraints;
-  @Nonnull private final ReturnFlowType _returnFlowType;
+  private final @Nonnull PacketHeaderConstraints _headerConstraints;
+  private final @Nonnull PathConstraintsInput _pathConstraints;
+  private final @Nonnull ReturnFlowType _returnFlowType;
 
   @Nonnull
   BidirectionalReachabilityQuestion(

@@ -43,8 +43,7 @@ public class NetworkObjectAddressSpecifier implements AccessListAddressSpecifier
   }
 
   @Override
-  @Nonnull
-  public IpSpace toIpSpace() {
+  public @Nonnull IpSpace toIpSpace() {
     return new IpSpaceReference(_name, String.format("Match network object: '%s'", _name));
   }
 }

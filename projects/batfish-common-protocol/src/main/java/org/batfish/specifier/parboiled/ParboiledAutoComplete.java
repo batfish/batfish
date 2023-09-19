@@ -676,8 +676,7 @@ public final class ParboiledAutoComplete {
    * assign start index
    */
   @VisibleForTesting
-  @Nonnull
-  static Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
+  static @Nonnull Set<ParboiledAutoCompleteSuggestion> updateSuggestions(
       List<AutocompleteSuggestion> suggestions,
       boolean escape,
       Anchor.Type anchorType,
@@ -697,8 +696,7 @@ public final class ParboiledAutoComplete {
   }
 
   /** Unescapes {@code originalMatch} if it is of escapable type and is already escaped */
-  @Nonnull
-  private static String unescapeIfNeeded(String originalMatch, Anchor.Type anchorType) {
+  private static @Nonnull String unescapeIfNeeded(String originalMatch, Anchor.Type anchorType) {
     if (isEscapableNameAnchor(anchorType) && originalMatch.startsWith(ESCAPE_CHAR)) {
       return originalMatch.substring(1);
     }

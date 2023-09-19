@@ -78,74 +78,70 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute> {
   /* Provided configuration */
   /** The configuration/datamodel process */
-  @Nonnull private final OspfProcess _process;
+  private final @Nonnull OspfProcess _process;
 
   /** The parent {@link Configuration} */
-  @Nonnull private final Configuration _c;
+  private final @Nonnull Configuration _c;
 
   /** The name of the VRF we are in */
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
 
   /** The current known topology */
-  @Nonnull private OspfTopology _topology;
+  private @Nonnull OspfTopology _topology;
 
   /** The area summary filter for each area, if present. */
-  @Nonnull private final Map<Long, RouteFilterList> _areaFilters;
+  private final @Nonnull Map<Long, RouteFilterList> _areaFilters;
 
   /* Computed configuration & cached variables */
   private final boolean _useMinMetricForSummaries;
 
   /** Export policy for external routes */
-  @Nonnull private final RoutingPolicy _exportPolicy;
+  private final @Nonnull RoutingPolicy _exportPolicy;
 
   /* Internal RIBs */
-  @Nonnull private final OspfIntraAreaRib _intraAreaRib;
-  @Nonnull private final OspfInterAreaRib _interAreaRib;
-  @Nonnull private final OspfInternalSummaryRib _internalSummaryRib;
-  @Nonnull private final OspfExternalType1Rib _type1Rib;
-  @Nonnull private final OspfExternalType2Rib _type2Rib;
-  @Nonnull private final OspfRib _ospfRib;
+  private final @Nonnull OspfIntraAreaRib _intraAreaRib;
+  private final @Nonnull OspfInterAreaRib _interAreaRib;
+  private final @Nonnull OspfInternalSummaryRib _internalSummaryRib;
+  private final @Nonnull OspfExternalType1Rib _type1Rib;
+  private final @Nonnull OspfExternalType2Rib _type2Rib;
+  private final @Nonnull OspfRib _ospfRib;
 
   /*
    * Message queues. For determinism, these must be sorted. However, for performance, they should not be SortedMap.
    */
-  @Nonnull
-  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfIntraAreaRoute>>>
+  private @Nonnull Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfIntraAreaRoute>>>
       _intraAreaIncomingRoutes = ImmutableMap.of();
 
-  @Nonnull
-  private Map<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>> _interAreaIncomingRoutes =
-      ImmutableMap.of();
+  private @Nonnull Map<EdgeId, Queue<RouteAdvertisement<OspfInterAreaRoute>>>
+      _interAreaIncomingRoutes = ImmutableMap.of();
 
-  @Nonnull
-  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
+  private @Nonnull Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType1Route>>>
       _type1IncomingRoutes = ImmutableMap.of();
 
-  @Nonnull
-  private Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
+  private @Nonnull Map<OspfTopology.EdgeId, Queue<RouteAdvertisement<OspfExternalType2Route>>>
       _type2IncomingRoutes = ImmutableMap.of();
 
   /* State we need to maintain between iterations */
 
   /** Delta that captures process initialization (creating intra-area routes based on interfaces) */
-  @Nonnull private InternalDelta _initializationDelta;
+  private @Nonnull InternalDelta _initializationDelta;
 
   /** Delta to pass to the main RIB */
-  @Nonnull private RibDelta.Builder<OspfRoute> _changeset;
+  private @Nonnull RibDelta.Builder<OspfRoute> _changeset;
 
   /** Delta of routes we have locally queued for re-distribution */
-  @Nonnull private ExternalDelta _queuedForRedistribution;
+  private @Nonnull ExternalDelta _queuedForRedistribution;
 
   /**
    * Delta of external routes we have activated in current iteration (but haven't advertised yet)
    */
-  @Nonnull private RibDelta<OspfExternalRoute> _activatedGeneratedRoutes;
+  private @Nonnull RibDelta<OspfExternalRoute> _activatedGeneratedRoutes;
 
   /**
    * If this router is an ABR, keep track neighbors into which a default route was injected, since
    * the default route needs to be injected only once
    */
-  @Nonnull private Set<OspfNeighborConfigId> _neighborsWhereDefaultIARouteWasInjected;
+  private @Nonnull Set<OspfNeighborConfigId> _neighborsWhereDefaultIARouteWasInjected;
 
   OspfRoutingProcess(
       OspfProcess process, String vrfName, Configuration configuration, OspfTopology topology) {
@@ -456,8 +452,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param ifaceAddress the {@link ConcreteInterfaceAddress} for which the route is being
    *     constructed. Will inform the route's network and next hop IP.
    */
-  @Nonnull
-  private OspfIntraAreaRoute computeIntraAreaRouteFromInterface(
+  private @Nonnull OspfIntraAreaRoute computeIntraAreaRouteFromInterface(
       Long areaNum, Interface iface, ConcreteInterfaceAddress ifaceAddress) {
 
     return OspfIntraAreaRoute.builder()
@@ -480,8 +475,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * Extract the {@link OspfRoutingProcess} belonging to the given {@link OspfNeighborConfigId
    * OspfNeighborId}
    */
-  @Nullable
-  private static OspfRoutingProcess getNeighborProcess(
+  private static @Nullable OspfRoutingProcess getNeighborProcess(
       OspfNeighborConfigId ospfNeighborId, Map<String, Node> allNodes) {
     return allNodes
         .get(ospfNeighborId.getHostname())
@@ -491,8 +485,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Return the stream of incoming edges, for all neighbors that belong to this process. */
-  @Nonnull
-  private Stream<EdgeId> getIncomingEdgeStream(OspfTopology topology) {
+  private @Nonnull Stream<EdgeId> getIncomingEdgeStream(OspfTopology topology) {
     return _process.getOspfNeighborConfigs().keySet().stream()
         .flatMap(ospfNeighborConfigId -> topology.incomingEdges(ospfNeighborConfigId).stream());
   }
@@ -501,9 +494,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * Given a route advertisement, add or remove the route from the RIB. Any (import) transformations
    * must already have been applied to the route.
    */
-  @Nonnull
-  private static <R extends AbstractRoute, T extends R> RibDelta<R> processRouteAdvertisement(
-      RouteAdvertisement<T> ra, AbstractRib<R> rib) {
+  private static @Nonnull <R extends AbstractRoute, T extends R>
+      RibDelta<R> processRouteAdvertisement(RouteAdvertisement<T> ra, AbstractRib<R> rib) {
     if (ra.isWithdrawn()) {
       return rib.removeRouteGetDelta(ra.getRoute());
     } else {
@@ -512,8 +504,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Process all OSPF internal messages from all the message queues */
-  @Nonnull
-  private InternalDelta processInternalRoutes() {
+  private @Nonnull InternalDelta processInternalRoutes() {
     InternalDelta intraProcessingDelta = processIntraAreaRoutes();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = processInterAreaRoutes();
     // non-forwarding, for re-advertisement only
@@ -569,8 +560,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @return the resulting inter-area RIB delta builder.
    */
-  @Nonnull
-  private RibDelta.Builder<OspfInterAreaRoute> processInterAreaRoutes() {
+  private @Nonnull RibDelta.Builder<OspfInterAreaRoute> processInterAreaRoutes() {
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _interAreaIncomingRoutes.forEach(
         (edgeId, queue) -> {
@@ -630,8 +620,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @return the resulting intra-area RIB delta builder.
    */
-  @Nonnull
-  private InternalDelta processIntraAreaRoutes() {
+  private @Nonnull InternalDelta processIntraAreaRoutes() {
     RibDelta.Builder<OspfIntraAreaRoute> intraAreaDelta = RibDelta.builder();
     RibDelta.Builder<OspfInterAreaRoute> interAreaDelta = RibDelta.builder();
     _intraAreaIncomingRoutes.forEach(
@@ -722,8 +711,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * Compute inter-area summaries. Only applies to an ABR. Will return a {@link RibDelta} for all
    * new inter-area summaries to advertise, or empty delta if not an ABR.
    */
-  @Nonnull
-  private RibDelta<OspfInterAreaRoute> computeInterAreaSummaries() {
+  private @Nonnull RibDelta<OspfInterAreaRoute> computeInterAreaSummaries() {
     if (!isABR()) {
       return RibDelta.empty();
     }
@@ -738,8 +726,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * Compute internal summaries. Only applies to an ABR. Will return a {@link RibDelta} for all new
    * internal summary discard routes to install, or empty delta if not an ABR.
    */
-  @Nonnull
-  private RibDelta<OspfInternalSummaryRoute> computeInternalSummaries() {
+  private @Nonnull RibDelta<OspfInternalSummaryRoute> computeInternalSummaries() {
     if (!isABR()) {
       return RibDelta.empty();
     }
@@ -751,8 +738,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Compute inter-area summaries for a single area. */
-  @Nonnull
-  private RibDelta<OspfInterAreaRoute> computeInterAreaSummariesForArea(OspfArea area) {
+  private @Nonnull RibDelta<OspfInterAreaRoute> computeInterAreaSummariesForArea(OspfArea area) {
     RibDelta.Builder<OspfInterAreaRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
         .forEach(
@@ -763,8 +749,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Compute the discard routes corresponding to area summaries. */
-  @Nonnull
-  private RibDelta<OspfInternalSummaryRoute> computeInternalSummariesForArea(OspfArea area) {
+  private @Nonnull RibDelta<OspfInternalSummaryRoute> computeInternalSummariesForArea(
+      OspfArea area) {
     RibDelta.Builder<OspfInternalSummaryRoute> deltaBuilder = RibDelta.builder();
     area.getSummaries()
         .forEach(
@@ -790,8 +776,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return {@link Optional#empty()} if the summary is not supposed to be advertised or there are
    *     no contributing routes, otherwise an optional containing a new inter-area route
    */
-  @Nonnull
-  private Optional<OspfInterAreaRoute> computeInterAreaSummaryRoute(
+  private @Nonnull Optional<OspfInterAreaRoute> computeInterAreaSummaryRoute(
       Prefix prefix, OspfAreaSummary summary, long areaNumber) {
     if (!summary.isAdvertised()) {
       return Optional.empty();
@@ -850,8 +835,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return {@link Optional#empty()} if there are no contributing routes, otherwise an optional
    *     containing a new internal summary route
    */
-  @Nonnull
-  private Optional<OspfInternalSummaryRoute> computeInternalSummaryRoute(
+  private @Nonnull Optional<OspfInternalSummaryRoute> computeInternalSummaryRoute(
       Prefix prefix, long areaNumber) {
     /*
     TODO:
@@ -1191,16 +1175,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Process all OSPF external messages from all the message queues */
-  @Nonnull
-  private ExternalDelta processExternalRoutes() {
+  private @Nonnull ExternalDelta processExternalRoutes() {
     RibDelta<OspfExternalType1Route> type1delta = processType1Routes();
     RibDelta<OspfExternalType2Route> type2delta = processType2Routes();
     return new ExternalDelta(type1delta, type2delta);
   }
 
   /** Process type 1 routes from all message queues */
-  @Nonnull
-  private RibDelta<OspfExternalType1Route> processType1Routes() {
+  private @Nonnull RibDelta<OspfExternalType1Route> processType1Routes() {
     RibDelta.Builder<OspfExternalType1Route> type1deltaBuilder = RibDelta.builder();
     _type1IncomingRoutes.forEach(
         (edgeId, queue) -> {
@@ -1241,8 +1223,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Process type 2 routes from all message queues */
-  @Nonnull
-  private RibDelta<OspfExternalType2Route> processType2Routes() {
+  private @Nonnull RibDelta<OspfExternalType2Route> processType2Routes() {
     RibDelta.Builder<OspfExternalType2Route> type2deltaBuilder = RibDelta.builder();
     _type2IncomingRoutes.forEach(
         (edgeId, queue) -> {
@@ -1729,9 +1710,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Wrapper around intra- and inter-area RIB deltas */
   private static final class InternalDelta {
-    @Nonnull private final RibDelta<OspfIntraAreaRoute> _intraArea;
-    @Nonnull private final RibDelta<OspfInterAreaRoute> _interArea;
-    @Nonnull private final RibDelta<OspfInternalSummaryRoute> _internalSummary;
+    private final @Nonnull RibDelta<OspfIntraAreaRoute> _intraArea;
+    private final @Nonnull RibDelta<OspfInterAreaRoute> _interArea;
+    private final @Nonnull RibDelta<OspfInternalSummaryRoute> _internalSummary;
 
     InternalDelta(
         RibDelta<OspfIntraAreaRoute> intraArea,
@@ -1749,8 +1730,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
   /** Wrapper around type1 and type2 external RIB deltas */
   private static final class ExternalDelta {
-    @Nonnull private final RibDelta<OspfExternalType1Route> _type1;
-    @Nonnull private final RibDelta<OspfExternalType2Route> _type2;
+    private final @Nonnull RibDelta<OspfExternalType1Route> _type1;
+    private final @Nonnull RibDelta<OspfExternalType2Route> _type2;
 
     private ExternalDelta() {
       this(RibDelta.empty(), RibDelta.empty());

@@ -7,14 +7,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** Class for `update-source IFACE` in bgp neighbor */
 @ParametersAreNonnullByDefault
 public class BgpNeighborSourceInterface implements BgpNeighborSource {
-  @Nonnull private final String _ifaceName;
+  private final @Nonnull String _ifaceName;
 
   public BgpNeighborSourceInterface(@Nonnull String ifaceName) {
     _ifaceName = ifaceName;
   }
 
-  @Nonnull
-  public String getInterface() {
+  public @Nonnull String getInterface() {
     return _ifaceName;
   }
 

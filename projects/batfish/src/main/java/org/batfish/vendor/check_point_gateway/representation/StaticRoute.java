@@ -15,13 +15,11 @@ public class StaticRoute implements Serializable {
     _nexthops = new HashMap<>();
   }
 
-  @Nullable
-  public String getComment() {
+  public @Nullable String getComment() {
     return _comment;
   }
 
-  @Nonnull
-  public Prefix getDestination() {
+  public @Nonnull Prefix getDestination() {
     return _destination;
   }
 
@@ -30,8 +28,7 @@ public class StaticRoute implements Serializable {
    *
    * <p>Only one nexthop configuration exists per nexthop target.
    */
-  @Nonnull
-  public Map<NexthopTarget, Nexthop> getNexthops() {
+  public @Nonnull Map<NexthopTarget, Nexthop> getNexthops() {
     return _nexthops;
   }
 
@@ -39,7 +36,7 @@ public class StaticRoute implements Serializable {
     _comment = comment;
   }
 
-  @Nullable private String _comment;
-  @Nonnull private final Prefix _destination;
-  @Nonnull private final Map<NexthopTarget, Nexthop> _nexthops;
+  private @Nullable String _comment;
+  private final @Nonnull Prefix _destination;
+  private final @Nonnull Map<NexthopTarget, Nexthop> _nexthops;
 }

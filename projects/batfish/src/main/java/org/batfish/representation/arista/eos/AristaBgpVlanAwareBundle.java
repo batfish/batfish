@@ -5,7 +5,7 @@ import org.batfish.datamodel.IntegerSpace;
 
 public final class AristaBgpVlanAwareBundle extends AristaBgpVlanBase {
   private final String _name;
-  @Nullable private IntegerSpace _vlans;
+  private @Nullable IntegerSpace _vlans;
 
   public AristaBgpVlanAwareBundle(String name) {
     _name = name;
@@ -15,8 +15,7 @@ public final class AristaBgpVlanAwareBundle extends AristaBgpVlanBase {
     return _name;
   }
 
-  @Nullable
-  public IntegerSpace getVlans() {
+  public @Nullable IntegerSpace getVlans() {
     return _vlans;
   }
 

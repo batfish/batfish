@@ -141,24 +141,24 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  @Nullable private Integer _accessVlan;
+  private @Nullable Integer _accessVlan;
 
   private boolean _active;
 
   private String _alias;
 
-  @Nullable private IntegerSpace _allowedVlans;
+  private @Nullable IntegerSpace _allowedVlans;
 
   private boolean _autoState;
 
-  @Nullable private Double _bandwidth;
+  private @Nullable Double _bandwidth;
 
   private String _channelGroup;
 
   private String _cryptoMap;
 
   /** Delay value for this interface, if set. In picoseconds */
-  @Nullable private Long _delay;
+  private @Nullable Long _delay;
 
   private String _description;
 
@@ -174,35 +174,35 @@ public class Interface implements Serializable {
 
   private String _incomingFilter;
 
-  @Nullable private Long _isisCost;
+  private @Nullable Long _isisCost;
 
-  @Nullable private IsisInterfaceMode _isisInterfaceMode;
+  private @Nullable IsisInterfaceMode _isisInterfaceMode;
 
   private final @Nonnull Set<String> _memberInterfaces;
 
-  @Nullable private Integer _mlagId;
+  private @Nullable Integer _mlagId;
 
   private int _mtu;
 
   private final String _name;
 
-  @Nullable private Integer _nativeVlan;
+  private @Nullable Integer _nativeVlan;
 
   private Long _ospfArea;
 
   private Integer _ospfCost;
 
-  @Nullable private Integer _ospfDeadInterval;
+  private @Nullable Integer _ospfDeadInterval;
 
-  @Nullable private Integer _ospfHelloInterval;
+  private @Nullable Integer _ospfHelloInterval;
 
   private int _ospfHelloMultiplier;
 
-  @Nullable private OspfNetworkType _ospfNetworkType;
+  private @Nullable OspfNetworkType _ospfNetworkType;
 
-  @Nullable private Boolean _ospfPassive;
+  private @Nullable Boolean _ospfPassive;
 
-  @Nullable private String _ospfProcess;
+  private @Nullable String _ospfProcess;
 
   private boolean _ospfShutdown;
 
@@ -236,7 +236,7 @@ public class Interface implements Serializable {
 
   private String _securityZone;
 
-  @Nullable private Integer _securityLevel;
+  private @Nullable Integer _securityLevel;
 
   private @Nullable Double _speed;
 
@@ -316,8 +316,7 @@ public class Interface implements Serializable {
     _allowedVlans = allowedVlans;
   }
 
-  @Nullable
-  public Integer getAccessVlan() {
+  public @Nullable Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -329,8 +328,7 @@ public class Interface implements Serializable {
     return _alias;
   }
 
-  @Nullable
-  public IntegerSpace getAllowedVlans() {
+  public @Nullable IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -399,8 +397,7 @@ public class Interface implements Serializable {
     return _memberInterfaces;
   }
 
-  @Nullable
-  public Integer getMlagId() {
+  public @Nullable Integer getMlagId() {
     return _mlagId;
   }
 
@@ -412,8 +409,7 @@ public class Interface implements Serializable {
     return _name;
   }
 
-  @Nullable
-  public Integer getNativeVlan() {
+  public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -426,14 +422,12 @@ public class Interface implements Serializable {
   }
 
   /** Get the time (in seconds) to wait before neighbors are declared dead */
-  @Nullable
-  public Integer getOspfDeadInterval() {
+  public @Nullable Integer getOspfDeadInterval() {
     return _ospfDeadInterval;
   }
 
   /** Get the time (in seconds) between sending hello messages to neighbors */
-  @Nullable
-  public Integer getOspfHelloInterval() {
+  public @Nullable Integer getOspfHelloInterval() {
     return _ospfHelloInterval;
   }
 
@@ -445,8 +439,7 @@ public class Interface implements Serializable {
     return _ospfNetworkType;
   }
 
-  @Nullable
-  public Boolean getOspfPassive() {
+  public @Nullable Boolean getOspfPassive() {
     return _ospfPassive;
   }
 
@@ -467,8 +460,7 @@ public class Interface implements Serializable {
   }
 
   /** Return the delay value for this interface, in picoseconds */
-  @Nullable
-  public Long getDelay() {
+  public @Nullable Long getDelay() {
     return _delay;
   }
 
@@ -523,8 +515,7 @@ public class Interface implements Serializable {
     return _tunnel;
   }
 
-  @Nullable
-  public Integer getSecurityLevel() {
+  public @Nullable Integer getSecurityLevel() {
     return _securityLevel;
   }
 

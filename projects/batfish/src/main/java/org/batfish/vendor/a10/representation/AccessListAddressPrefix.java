@@ -5,8 +5,7 @@ import org.batfish.datamodel.Prefix;
 
 /** An access-list address, representing a specific prefix. */
 public class AccessListAddressPrefix implements AccessListAddress {
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
 
@@ -14,7 +13,7 @@ public class AccessListAddressPrefix implements AccessListAddress {
     _prefix = prefix;
   }
 
-  @Nonnull private final Prefix _prefix;
+  private final @Nonnull Prefix _prefix;
 
   @Override
   public <T> T accept(AccessListAddressVisitor<T> visitor) {

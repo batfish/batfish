@@ -8,21 +8,19 @@ import javax.annotation.Nullable;
 
 /** Combination of what type of routes to redistribute and route map to apply, if any */
 public class AristaBgpRedistributionPolicy implements Serializable {
-  @Nonnull private final AristaRedistributeType _type;
-  @Nullable private final String _routeMap;
+  private final @Nonnull AristaRedistributeType _type;
+  private final @Nullable String _routeMap;
 
   public AristaBgpRedistributionPolicy(AristaRedistributeType type, @Nullable String routeMap) {
     _type = type;
     _routeMap = routeMap;
   }
 
-  @Nonnull
-  public AristaRedistributeType getType() {
+  public @Nonnull AristaRedistributeType getType() {
     return _type;
   }
 
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 

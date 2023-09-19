@@ -14,8 +14,8 @@ import org.batfish.datamodel.IpAccessList;
  */
 @ParametersAreNonnullByDefault
 public final class PermitAndDenyBdds {
-  @Nonnull private final BDD _permitBdd;
-  @Nonnull private final BDD _denyBdd;
+  private final @Nonnull BDD _permitBdd;
+  private final @Nonnull BDD _denyBdd;
   private BDD _matchBdd;
 
   public PermitAndDenyBdds(BDD permit, BDD deny) {
@@ -33,20 +33,17 @@ public final class PermitAndDenyBdds {
   }
 
   /** BDD of all flows explicitly matched and permitted */
-  @Nonnull
-  public BDD getPermitBdd() {
+  public @Nonnull BDD getPermitBdd() {
     return _permitBdd.id();
   }
 
   /** BDD of all flows explicitly matched and denied */
-  @Nonnull
-  public BDD getDenyBdd() {
+  public @Nonnull BDD getDenyBdd() {
     return _denyBdd.id();
   }
 
   /** BDD of all explicitly matched flows, whether permitted or denied */
-  @Nonnull
-  public BDD getMatchBdd() {
+  public @Nonnull BDD getMatchBdd() {
     if (_matchBdd == null) {
       _matchBdd = _permitBdd.or(_denyBdd);
     }
@@ -57,8 +54,7 @@ public final class PermitAndDenyBdds {
    * Returns a new {@link PermitAndDenyBdds} with BDDs created by {@link BDD#and anding} {@code bdd}
    * with this object's BDDs.
    */
-  @Nonnull
-  public PermitAndDenyBdds and(BDD bdd) {
+  public @Nonnull PermitAndDenyBdds and(BDD bdd) {
     return new PermitAndDenyBdds(_permitBdd.and(bdd), _denyBdd.and(bdd));
   }
 
@@ -66,8 +62,7 @@ public final class PermitAndDenyBdds {
    * Returns a new {@link PermitAndDenyBdds} with BDDs created by subtracting {@code subtrahend}
    * from this object's BDDs.
    */
-  @Nonnull
-  public PermitAndDenyBdds diff(BDD subtrahend) {
+  public @Nonnull PermitAndDenyBdds diff(BDD subtrahend) {
     return new PermitAndDenyBdds(_permitBdd.diff(subtrahend), _denyBdd.diff(subtrahend));
   }
 

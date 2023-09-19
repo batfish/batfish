@@ -15,14 +15,14 @@ import javax.annotation.Nullable;
 public class Tacplus implements Serializable {
   private static final String PROP_SRC_INTF = "src_intf";
 
-  private @Nullable final String _srcIntf;
+  private final @Nullable String _srcIntf;
 
   public @Nonnull Optional<String> getSrcIntf() {
     return Optional.ofNullable(_srcIntf);
   }
 
   @JsonCreator
-  private @Nonnull static Tacplus create(@Nullable @JsonProperty(PROP_SRC_INTF) String srcIntf) {
+  private static @Nonnull Tacplus create(@Nullable @JsonProperty(PROP_SRC_INTF) String srcIntf) {
     return Tacplus.builder().setSrcIntf(srcIntf).build();
   }
 
@@ -52,7 +52,7 @@ public class Tacplus implements Serializable {
     return MoreObjects.toStringHelper(this).omitNullValues().add("srcIntf", _srcIntf).toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

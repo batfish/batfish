@@ -48,9 +48,9 @@ abstract class Route implements Serializable {
 
   static final int DEFAULT_STATIC_ROUTE_COST = 0;
 
-  @Nonnull protected final State _state;
-  @Nullable protected final String _target;
-  @Nonnull protected final TargetType _targetType;
+  protected final @Nonnull State _state;
+  protected final @Nullable String _target;
+  protected final @Nonnull TargetType _targetType;
 
   @JsonCreator
   private static Route create(
@@ -127,18 +127,15 @@ abstract class Route implements Serializable {
     _targetType = targetType;
   }
 
-  @Nonnull
-  public State getState() {
+  public @Nonnull State getState() {
     return _state;
   }
 
-  @Nullable
-  public String getTarget() {
+  public @Nullable String getTarget() {
     return _target;
   }
 
-  @Nonnull
-  public TargetType getTargetType() {
+  public @Nonnull TargetType getTargetType() {
     return _targetType;
   }
 

@@ -1086,8 +1086,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return Optional.of(configurations);
   }
 
-  @Nonnull
-  private SortedMap<String, Configuration> actuallyParseConfigurations(NetworkSnapshot snapshot) {
+  private @Nonnull SortedMap<String, Configuration> actuallyParseConfigurations(
+      NetworkSnapshot snapshot) {
     _logger.infof("Repairing configurations for testrig %s", snapshot.getSnapshot());
     repairConfigurations(snapshot);
     SortedMap<String, Configuration> configurations =
@@ -1370,8 +1370,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Parse AWS configurations for a single account (possibly with multiple regions) */
   @VisibleForTesting
-  @Nonnull
-  public static AwsConfiguration parseAwsConfigurations(
+  public static @Nonnull AwsConfiguration parseAwsConfigurations(
       Map<String, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
     AwsConfiguration config = new AwsConfiguration();
     for (Entry<String, String> configFile : configurationData.entrySet()) {
@@ -1718,8 +1717,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @Override
-  @Nullable
-  public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
+  public @Nullable String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     try {
       return _storage.loadExternalBgpAnnouncementsFile(snapshot).orElse(null);
     } catch (IOException e) {
@@ -2355,8 +2353,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
    * <p>If a node named 'internet' already exists in input {@code configurations} an empty {@link
    * ModeledNodes} object is returned.
    */
-  @Nonnull
-  private ModeledNodes getInternetAndIspNodes(
+  private @Nonnull ModeledNodes getInternetAndIspNodes(
       NetworkSnapshot snapshot,
       Map<String, Configuration> configurations,
       Map<String, VendorConfiguration> vendorConfigs,
@@ -2964,8 +2961,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return ImmutableSet.copyOf(computeMultipathInconsistencies(pkt, successBdds, failureBdds));
   }
 
-  @Nonnull
-  public IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment(
+  public @Nonnull IpSpaceAssignment getAllSourcesInferFromLocationIpSpaceAssignment(
       NetworkSnapshot snapshot) {
     SpecifierContextImpl specifierContext = new SpecifierContextImpl(this, snapshot);
     Set<Location> locations =
@@ -2977,8 +2973,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
         locations, specifierContext);
   }
 
-  @Nonnull
-  private BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
+  private @Nonnull BDDReachabilityAnalysisFactory getBddReachabilityAnalysisFactory(
       NetworkSnapshot snapshot, BDDPacket pkt, boolean ignoreFilters) {
     DataPlane dataPlane = loadDataPlane(snapshot);
     return new BDDReachabilityAnalysisFactory(

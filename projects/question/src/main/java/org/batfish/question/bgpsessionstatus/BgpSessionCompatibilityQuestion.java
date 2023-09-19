@@ -17,7 +17,7 @@ import org.batfish.specifier.SpecifierFactories;
 public class BgpSessionCompatibilityQuestion extends BgpSessionQuestion {
 
   // caches the set of statuses we got (optimization)
-  @Nonnull private final Set<ConfiguredSessionStatus> _expandedStatuses;
+  private final @Nonnull Set<ConfiguredSessionStatus> _expandedStatuses;
 
   @JsonCreator
   private static BgpSessionCompatibilityQuestion create(

@@ -107,22 +107,22 @@ public class Interface implements Serializable {
     return DEFAULT_INTERFACE_MTU;
   }
 
-  @Nullable private Integer _accessVlan;
+  private @Nullable Integer _accessVlan;
 
   private boolean _active;
 
-  @Nullable private IntegerSpace _allowedVlans;
+  private @Nullable IntegerSpace _allowedVlans;
 
   private boolean _autoState;
 
-  @Nullable private Double _bandwidth;
+  private @Nullable Double _bandwidth;
 
   private @Nullable Integer _bundleId;
 
   private String _cryptoMap;
 
   /** Delay value for this interface, if set. In picoseconds */
-  @Nullable private Long _delay;
+  private @Nullable Long _delay;
 
   private String _description;
 
@@ -134,9 +134,9 @@ public class Interface implements Serializable {
 
   private String _incomingFilter;
 
-  @Nullable private Long _isisCost;
+  private @Nullable Long _isisCost;
 
-  @Nullable private IsisInterfaceMode _isisInterfaceMode;
+  private @Nullable IsisInterfaceMode _isisInterfaceMode;
 
   private boolean _l2transport = false;
 
@@ -144,7 +144,7 @@ public class Interface implements Serializable {
 
   private final String _name;
 
-  @Nullable private Integer _nativeVlan;
+  private @Nullable Integer _nativeVlan;
 
   private String _outgoingFilter;
 
@@ -166,7 +166,7 @@ public class Interface implements Serializable {
 
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
 
-  @Nullable private TagRewritePolicy _rewriteIngressTagPolicy;
+  private @Nullable TagRewritePolicy _rewriteIngressTagPolicy;
 
   private Tunnel _tunnel;
 
@@ -222,8 +222,7 @@ public class Interface implements Serializable {
     _allowedVlans = allowedVlans;
   }
 
-  @Nullable
-  public Integer getAccessVlan() {
+  public @Nullable Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -231,8 +230,7 @@ public class Interface implements Serializable {
     return _active;
   }
 
-  @Nullable
-  public IntegerSpace getAllowedVlans() {
+  public @Nullable IntegerSpace getAllowedVlans() {
     return _allowedVlans;
   }
 
@@ -302,8 +300,7 @@ public class Interface implements Serializable {
     return _name;
   }
 
-  @Nullable
-  public Integer getNativeVlan() {
+  public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -312,8 +309,7 @@ public class Interface implements Serializable {
   }
 
   /** Configured policy for rewriting ingress tags. */
-  @Nullable
-  public TagRewritePolicy getRewriteIngressTag() {
+  public @Nullable TagRewritePolicy getRewriteIngressTag() {
     return _rewriteIngressTagPolicy;
   }
 
@@ -322,8 +318,7 @@ public class Interface implements Serializable {
   }
 
   /** Return the delay value for this interface, in picoseconds */
-  @Nullable
-  public Long getDelay() {
+  public @Nullable Long getDelay() {
     return _delay;
   }
 

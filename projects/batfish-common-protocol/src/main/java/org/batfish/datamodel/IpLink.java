@@ -17,8 +17,8 @@ public final class IpLink implements Comparable<IpLink> {
   private static final String PROP_IP1 = "ip1";
   private static final String PROP_IP2 = "ip2";
 
-  @Nonnull private final Ip _ip1;
-  @Nonnull private final Ip _ip2;
+  private final @Nonnull Ip _ip1;
+  private final @Nonnull Ip _ip2;
 
   @JsonCreator
   private static IpLink create(
@@ -35,14 +35,12 @@ public final class IpLink implements Comparable<IpLink> {
   }
 
   @JsonProperty(PROP_IP1)
-  @Nonnull
-  public Ip getIp1() {
+  public @Nonnull Ip getIp1() {
     return _ip1;
   }
 
   @JsonProperty(PROP_IP2)
-  @Nonnull
-  public Ip getIp2() {
+  public @Nonnull Ip getIp2() {
     return _ip2;
   }
 

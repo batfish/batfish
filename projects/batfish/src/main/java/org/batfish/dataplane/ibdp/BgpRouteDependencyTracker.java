@@ -19,7 +19,7 @@ public final class BgpRouteDependencyTracker<
     R extends BgpRoute<?, ?>, D extends AbstractRouteDecorator> {
 
   /** Map of routes to the set of routes they depend on */
-  @Nonnull private final Map<D, Set<R>> _routeDependents;
+  private final @Nonnull Map<D, Set<R>> _routeDependents;
 
   BgpRouteDependencyTracker() {
     _routeDependents = new IdentityHashMap<>();

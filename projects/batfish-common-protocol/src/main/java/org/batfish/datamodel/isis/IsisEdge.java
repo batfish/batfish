@@ -26,16 +26,14 @@ import org.batfish.datamodel.Vrf;
 
 public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
 
-  @Nullable
-  private static IsisLevel interfaceSettingsLevel(IsisInterfaceSettings settings) {
+  private static @Nullable IsisLevel interfaceSettingsLevel(IsisInterfaceSettings settings) {
     return union(
         settings.getLevel1() != null ? LEVEL_1 : null,
         settings.getLevel2() != null ? LEVEL_2 : null);
   }
 
   /** Return an {@link IsisEdge} if there is an IS-IS circuit on {@code edge}. */
-  @Nonnull
-  public static Optional<IsisEdge> edgeIfCircuit(
+  public static @Nonnull Optional<IsisEdge> edgeIfCircuit(
       Edge edge, Map<String, Configuration> configurations) {
     // vertex1
     Configuration c1 = configurations.get(edge.getNode1());
@@ -96,8 +94,7 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
             new IsisNode(c2.getHostname(), iface2.getName())));
   }
 
-  @Nullable
-  private static IsisLevel processLevel(IsisProcess isisProcess) {
+  private static @Nullable IsisLevel processLevel(IsisProcess isisProcess) {
     return union(
         isisProcess.getLevel1() != null ? LEVEL_1 : null,
         isisProcess.getLevel2() != null ? LEVEL_2 : null);
@@ -149,20 +146,17 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
   }
 
   @JsonProperty(PROP_CIRCUIT_TYPE)
-  @Nonnull
-  public IsisLevel getCircuitType() {
+  public @Nonnull IsisLevel getCircuitType() {
     return _circuitType;
   }
 
   @JsonProperty(PROP_NODE1)
-  @Nonnull
-  public IsisNode getNode1() {
+  public @Nonnull IsisNode getNode1() {
     return _node1;
   }
 
   @JsonProperty(PROP_NODE2)
-  @Nonnull
-  public IsisNode getNode2() {
+  public @Nonnull IsisNode getNode2() {
     return _node2;
   }
 
@@ -171,8 +165,7 @@ public final class IsisEdge implements Comparable<IsisEdge>, Serializable {
     return Objects.hash(_circuitType.ordinal(), _node1, _node2);
   }
 
-  @Nonnull
-  public IsisEdge reverse() {
+  public @Nonnull IsisEdge reverse() {
     return new IsisEdge(_circuitType, _node2, _node1);
   }
 

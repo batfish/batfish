@@ -57,7 +57,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
 
   private Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public IptablesControlPlaneExtractor(
       String fileText,
@@ -73,8 +73,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
   }
 
   @Override
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -236,8 +235,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return _w;
   }
 
-  @Nullable
-  private ChainPolicy getBuiltInTarget(Built_in_targetContext ctx) {
+  private @Nullable ChainPolicy getBuiltInTarget(Built_in_targetContext ctx) {
     if (ctx.ACCEPT() != null) {
       return ChainPolicy.ACCEPT;
     } else if (ctx.DROP() != null) {
@@ -250,8 +248,7 @@ public class IptablesControlPlaneExtractor extends IptablesParserBaseListener
     return null;
   }
 
-  @Nullable
-  private Object getEndpoint(EndpointContext endpoint) {
+  private @Nullable Object getEndpoint(EndpointContext endpoint) {
     if (endpoint.IP_ADDRESS() != null) {
       return Ip.parse(endpoint.IP_ADDRESS().getText());
     } else if (endpoint.IP_PREFIX() != null) {

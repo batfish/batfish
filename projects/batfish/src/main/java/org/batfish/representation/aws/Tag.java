@@ -14,8 +14,8 @@ public class Tag {
   private static final String PROP_KEY = "Key";
   private static final String PROP_VALUE = "Value";
 
-  @Nonnull private final String _key;
-  @Nonnull private final String _value;
+  private final @Nonnull String _key;
+  private final @Nonnull String _value;
 
   @JsonCreator
   private static Tag create(
@@ -31,13 +31,11 @@ public class Tag {
     _value = value;
   }
 
-  @Nonnull
-  public String getKey() {
+  public @Nonnull String getKey() {
     return _key;
   }
 
-  @Nonnull
-  public String getValue() {
+  public @Nonnull String getValue() {
     return _value;
   }
 }

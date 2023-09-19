@@ -23,8 +23,8 @@ public class BgpIpv4UnicastAddressFamily implements Serializable {
     _redistributionPolicies = new TreeMap<>();
   }
 
-  @Nonnull
-  public Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration> getAggregateNetworks() {
+  public @Nonnull Map<Prefix, BgpVrfAddressFamilyAggregateNetworkConfiguration>
+      getAggregateNetworks() {
     return _aggregateNetworks;
   }
 

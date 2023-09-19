@@ -12,8 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class MsPair<T1 extends Comparable<? super T1>, T2 extends Comparable<? super T2>>
     implements Serializable, Comparable<MsPair<T1, T2>> {
 
-  @Nullable private final T1 _first;
-  @Nullable private final T2 _second;
+  private final @Nullable T1 _first;
+  private final @Nullable T2 _second;
 
   public MsPair(@Nullable T1 t1, @Nullable T2 t2) {
     _first = t1;
@@ -46,8 +46,7 @@ public class MsPair<T1 extends Comparable<? super T1>, T2 extends Comparable<? s
   }
 
   @JsonIgnore
-  @Nullable
-  public final T2 getSecond() {
+  public final @Nullable T2 getSecond() {
     return _second;
   }
 

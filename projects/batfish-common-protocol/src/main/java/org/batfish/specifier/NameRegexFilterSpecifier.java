@@ -13,7 +13,7 @@ import org.batfish.datamodel.IpAccessList;
 /** A {@link FilterSpecifier} that matches filter names based on a regex pattern. */
 @ParametersAreNonnullByDefault
 public final class NameRegexFilterSpecifier implements FilterSpecifier {
-  @Nonnull private final Pattern _pattern;
+  private final @Nonnull Pattern _pattern;
 
   public NameRegexFilterSpecifier(Pattern pattern) {
     _pattern = pattern;

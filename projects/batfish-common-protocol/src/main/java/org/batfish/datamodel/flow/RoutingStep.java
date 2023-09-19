@@ -35,21 +35,21 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     private static final String PROP_FORWARDING_DETAIL = "forwardingDetail";
 
     /** The name of the VRF in which routing was done. */
-    @Nonnull private final String _vrf;
+    private final @Nonnull String _vrf;
 
     /**
      * Information about {@link Route}s which led to the selection of the out {@link Interface}, can
      * be multiple in case of ECMP
      */
-    @Nonnull private final List<RouteInfo> _routes;
+    private final @Nonnull List<RouteInfo> _routes;
 
     /** ARP IP which was resolved using the {@code _routes} */
-    @Nullable private final Ip _arpIp;
+    private final @Nullable Ip _arpIp;
 
     /** Output interface which was resolved using the {@code _routes} */
-    @Nullable private final String _outputInterface;
+    private final @Nullable String _outputInterface;
 
-    @Nonnull private final ForwardingDetail _forwardingDetail;
+    private final @Nonnull ForwardingDetail _forwardingDetail;
 
     @JsonCreator
     private RoutingStepDetail(
@@ -68,20 +68,17 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     }
 
     @JsonProperty(PROP_ROUTES)
-    @Nonnull
-    public List<RouteInfo> getRoutes() {
+    public @Nonnull List<RouteInfo> getRoutes() {
       return _routes;
     }
 
     @JsonProperty(PROP_ARP_IP)
-    @Nullable
-    public Ip getArpIp() {
+    public @Nullable Ip getArpIp() {
       return _arpIp;
     }
 
     @JsonProperty(PROP_OUTPUT_INTERFACE)
-    @Nullable
-    public String getOutputInterface() {
+    public @Nullable String getOutputInterface() {
       return _outputInterface;
     }
 
@@ -91,8 +88,7 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
     }
 
     @JsonProperty(PROP_FORWARDING_DETAIL)
-    @Nonnull
-    public ForwardingDetail getForwardingDetail() {
+    public @Nonnull ForwardingDetail getForwardingDetail() {
       return _forwardingDetail;
     }
 

@@ -10,14 +10,13 @@ import javax.annotation.Nonnull;
  * where {@link #hashCode()} is different for different types.
  */
 public abstract class NodeStateExpr implements StateExpr {
-  @Nonnull private final String _hostname;
+  private final @Nonnull String _hostname;
 
   public NodeStateExpr(@Nonnull String hostname) {
     _hostname = hostname;
   }
 
-  @Nonnull
-  public final String getHostname() {
+  public final @Nonnull String getHostname() {
     return _hostname;
   }
 

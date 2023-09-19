@@ -131,20 +131,17 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_DIRECTION)
-  @Nonnull
-  public Environment.Direction getDirection() {
+  public @Nonnull Environment.Direction getDirection() {
     return _direction;
   }
 
   @JsonProperty(PROP_INPUT_CONSTRAINTS)
-  @Nonnull
-  public BgpRouteConstraints getInputConstraints() {
+  public @Nonnull BgpRouteConstraints getInputConstraints() {
     return _inputConstraints;
   }
 
   @JsonProperty(PROP_OUTPUT_CONSTRAINTS)
-  @Nonnull
-  public BgpRouteConstraints getOutputConstraints() {
+  public @Nonnull BgpRouteConstraints getOutputConstraints() {
     return _outputConstraints;
   }
 
@@ -174,8 +171,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   @JsonProperty(PROP_PATH_OPTION)
-  @Nonnull
-  public PathOption getPathOption() {
+  public @Nonnull PathOption getPathOption() {
     return _pathOption;
   }
 }

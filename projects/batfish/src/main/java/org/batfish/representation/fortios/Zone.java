@@ -23,13 +23,11 @@ public final class Zone implements FortiosRenameableObject, InterfaceOrZone, Ser
     return visitor.visitZone(this);
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public IntrazoneAction getIntrazone() {
+  public @Nullable IntrazoneAction getIntrazone() {
     return _intrazone;
   }
 
@@ -46,8 +44,7 @@ public final class Zone implements FortiosRenameableObject, InterfaceOrZone, Ser
   }
 
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -75,9 +72,9 @@ public final class Zone implements FortiosRenameableObject, InterfaceOrZone, Ser
     _interface = new HashSet<>();
   }
 
-  @Nullable private String _description;
-  @Nonnull private final Set<String> _interface;
-  @Nullable private IntrazoneAction _intrazone;
-  @Nonnull private String _name;
-  @Nonnull private final BatfishUUID _uuid;
+  private @Nullable String _description;
+  private final @Nonnull Set<String> _interface;
+  private @Nullable IntrazoneAction _intrazone;
+  private @Nonnull String _name;
+  private final @Nonnull BatfishUUID _uuid;
 }

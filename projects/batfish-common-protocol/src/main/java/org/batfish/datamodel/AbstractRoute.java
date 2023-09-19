@@ -34,12 +34,12 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_PROTOCOL = "protocol";
   static final String PROP_TAG = "tag";
 
-  @Nonnull protected final Prefix _network;
+  protected final @Nonnull Prefix _network;
   protected final int _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
   protected final long _tag;
-  @Nonnull protected NextHop _nextHop = NextHopDiscard.instance();
+  protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
   @JsonCreator
   protected AbstractRoute(
@@ -75,8 +75,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** IPV4 network of this route */
   @JsonProperty(PROP_NETWORK)
   @Override
-  @Nonnull
-  public final Prefix getNetwork() {
+  public final @Nonnull Prefix getNetwork() {
     return _network;
   }
 
@@ -85,8 +84,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * Route#UNSET_NEXT_HOP_INTERFACE} must be returned.
    */
   @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Nonnull
-  public final String getNextHopInterface() {
+  public final @Nonnull String getNextHopInterface() {
     return LegacyNextHops.getNextHopInterface(_nextHop).orElse(Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
@@ -95,8 +93,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * returned.
    */
   @JsonProperty(PROP_NEXT_HOP_IP)
-  @Nonnull
-  public final Ip getNextHopIp() {
+  public final @Nonnull Ip getNextHopIp() {
     return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
@@ -105,8 +102,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * opposed to the legacy {@link #getNextHopIp()}} or {@link #getNextHopInterface()} methods.
    */
   @JsonIgnore
-  @Nonnull
-  public final NextHop getNextHop() {
+  public final @Nonnull NextHop getNextHop() {
     return _nextHop;
   }
 

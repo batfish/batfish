@@ -27,16 +27,16 @@ public class OspfArea implements Serializable {
   public static class Builder {
 
     private boolean _injectDefaultRoute = DEFAULT_INJECT_DEFAULT_ROUTE;
-    @Nonnull private ImmutableSortedSet.Builder<String> _interfaces;
-    @Nullable private NssaSettings _nssa;
-    @Nullable private Long _number;
-    @Nullable private Supplier<Long> _numberGenerator;
+    private @Nonnull ImmutableSortedSet.Builder<String> _interfaces;
+    private @Nullable NssaSettings _nssa;
+    private @Nullable Long _number;
+    private @Nullable Supplier<Long> _numberGenerator;
     private int _metricOfDefaultRoute = DEFAULT_METRIC_OF_DEFAULT_ROUTE;
-    @Nullable private OspfProcess _ospfProcess;
-    @Nullable private StubSettings _stub;
-    @Nonnull private StubType _stubType;
-    @Nonnull private ImmutableSortedMap.Builder<Prefix, OspfAreaSummary> _summaries;
-    @Nullable private String _summaryFilter;
+    private @Nullable OspfProcess _ospfProcess;
+    private @Nullable StubSettings _stub;
+    private @Nonnull StubType _stubType;
+    private @Nonnull ImmutableSortedMap.Builder<Prefix, OspfAreaSummary> _summaries;
+    private @Nullable String _summaryFilter;
 
     private Builder(@Nullable Supplier<Long> numberGenerator) {
       _numberGenerator = numberGenerator;
@@ -202,13 +202,13 @@ public class OspfArea implements Serializable {
   private final long _areaNumber;
   private final boolean _injectDefaultRoute;
   // Not final because of the need to support addInterface
-  @Nonnull private SortedSet<String> _interfaces;
+  private @Nonnull SortedSet<String> _interfaces;
   private final int _metricOfDefaultRoute;
-  @Nullable private final NssaSettings _nssa;
-  @Nullable private final StubSettings _stub;
-  @Nonnull private final StubType _stubType;
-  @Nonnull private final SortedMap<Prefix, OspfAreaSummary> _summaries;
-  @Nullable private final String _summaryFilter;
+  private final @Nullable NssaSettings _nssa;
+  private final @Nullable StubSettings _stub;
+  private final @Nonnull StubType _stubType;
+  private final @Nonnull SortedMap<Prefix, OspfAreaSummary> _summaries;
+  private final @Nullable String _summaryFilter;
 
   public @Nonnull Builder toBuilder() {
     return builder()

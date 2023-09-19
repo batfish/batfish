@@ -82,8 +82,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private final PathOption _pathOption;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   /**
    * Some route-map statements, notably setting the next hop to the address of the BGP peer, can

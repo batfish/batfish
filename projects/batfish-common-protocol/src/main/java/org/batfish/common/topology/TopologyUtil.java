@@ -286,8 +286,7 @@ public final class TopologyUtil {
    * Generates {@link NodeInterfacePairsByVlanRange} for the given {@code hostnames}. Assumes all
    * hostnames are present in {@code configs}.
    */
-  @Nonnull
-  private static NodeInterfacePairsByVlanRange computeNodeInterfacePairsByVlan(
+  private static @Nonnull NodeInterfacePairsByVlanRange computeNodeInterfacePairsByVlan(
       @Nonnull Map<String, Configuration> configs, Set<String> hostnames) {
     NodeInterfacePairsByVlanRange nisByVlan = NodeInterfacePairsByVlanRange.create();
     for (String hostname : hostnames) {
@@ -614,8 +613,7 @@ public final class TopologyUtil {
    * Collect all interfaces that have subnets overlapping P iff they have an IP address in P. Use an
    * IdentityHashSet to prevent duplicates.
    */
-  @Nonnull
-  private static Set<Interface> candidateInterfacesForPrefix(
+  private static @Nonnull Set<Interface> candidateInterfacesForPrefix(
       Map<Prefix, List<Interface>> prefixBuckets, Prefix p) {
     Set<Interface> candidateInterfaces = Sets.newIdentityHashSet();
     IntStream.range(0, Prefix.MAX_PREFIX_LENGTH)
@@ -630,8 +628,7 @@ public final class TopologyUtil {
   }
 
   /** Bucket Interfaces that are not loopbacks and not /32s by their prefix */
-  @Nonnull
-  private static Map<Prefix, List<Interface>> computeInterfacesBucketByPrefix(
+  private static @Nonnull Map<Prefix, List<Interface>> computeInterfacesBucketByPrefix(
       Map<String, Configuration> configurations) {
     Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
@@ -709,8 +706,7 @@ public final class TopologyUtil {
    * possibly valid edges (according to IP addresse and interface types), but not verified using
    * reachability checks.
    */
-  @Nonnull
-  public static TunnelTopology computeInitialTunnelTopology(
+  public static @Nonnull TunnelTopology computeInitialTunnelTopology(
       Map<String, Configuration> configurations) {
     Map<Prefix, List<Interface>> prefixInterfaces = computeInterfacesBucketByPrefix(configurations);
     TunnelTopology.Builder builder = TunnelTopology.builder();
@@ -747,8 +743,7 @@ public final class TopologyUtil {
   }
 
   /** Return a {@link TunnelTopology} where tunnel endpoints can reach each other. */
-  @Nonnull
-  public static TunnelTopology pruneUnreachableTunnelEdges(
+  public static @Nonnull TunnelTopology pruneUnreachableTunnelEdges(
       TunnelTopology initialTunnelTopology,
       NetworkConfigurations configurations,
       TracerouteEngine tracerouteEngine) {

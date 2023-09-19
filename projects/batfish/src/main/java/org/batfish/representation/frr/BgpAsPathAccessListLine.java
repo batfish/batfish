@@ -14,8 +14,7 @@ public class BgpAsPathAccessListLine implements Serializable {
     _regex = regex;
   }
 
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 

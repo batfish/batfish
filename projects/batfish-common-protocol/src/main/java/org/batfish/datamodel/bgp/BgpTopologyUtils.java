@@ -61,9 +61,9 @@ public final class BgpTopologyUtils {
    * direction.
    */
   public static final class BgpSessionInitiationResult {
-    @Nonnull private final Flow _flow;
-    @Nonnull private final List<Trace> _forwardTraces;
-    @Nonnull private final List<Trace> _reverseTraces;
+    private final @Nonnull Flow _flow;
+    private final @Nonnull List<Trace> _forwardTraces;
+    private final @Nonnull List<Trace> _reverseTraces;
     private final boolean _successful;
 
     public BgpSessionInitiationResult(
@@ -78,18 +78,15 @@ public final class BgpTopologyUtils {
       return _successful;
     }
 
-    @Nonnull
-    public Flow getFlow() {
+    public @Nonnull Flow getFlow() {
       return _flow;
     }
 
-    @Nonnull
-    public List<Trace> getForwardTraces() {
+    public @Nonnull List<Trace> getForwardTraces() {
       return _forwardTraces;
     }
 
-    @Nonnull
-    public List<Trace> getReverseTraces() {
+    public @Nonnull List<Trace> getReverseTraces() {
       return _reverseTraces;
     }
   }
@@ -520,8 +517,8 @@ public final class BgpTopologyUtils {
   }
 
   private static final class ReverseFlowAndFirewallSessions {
-    @Nonnull final Flow _reverseFlow;
-    @Nonnull final Set<FirewallSessionTraceInfo> _firewallSessions;
+    final @Nonnull Flow _reverseFlow;
+    final @Nonnull Set<FirewallSessionTraceInfo> _firewallSessions;
 
     private ReverseFlowAndFirewallSessions(
         @Nonnull Flow reverseFlow, @Nonnull Set<FirewallSessionTraceInfo> firewallSessions) {
@@ -529,13 +526,11 @@ public final class BgpTopologyUtils {
       _firewallSessions = firewallSessions;
     }
 
-    @Nonnull
-    public Flow getReverseFlow() {
+    public @Nonnull Flow getReverseFlow() {
       return _reverseFlow;
     }
 
-    @Nonnull
-    public Set<FirewallSessionTraceInfo> getFirewallSessions() {
+    public @Nonnull Set<FirewallSessionTraceInfo> getFirewallSessions() {
       return _firewallSessions;
     }
 
@@ -763,8 +758,7 @@ public final class BgpTopologyUtils {
     return initiationResults.build();
   }
 
-  @Nullable
-  public static AsPair computeAsPair(
+  public static @Nullable AsPair computeAsPair(
       @Nullable Long initiatorLocalAs,
       @Nullable Long initiatorConfed,
       @Nonnull LongSpace initiatorRemoteAsns,

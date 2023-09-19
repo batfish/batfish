@@ -16,7 +16,7 @@ public final class StoredObjectMetadata {
   private static final String PROP_KEY = "key";
   private static final String PROP_SIZE = "size";
 
-  @Nonnull private final String _key;
+  private final @Nonnull String _key;
   private final long _size;
 
   @JsonCreator
@@ -32,8 +32,7 @@ public final class StoredObjectMetadata {
   }
 
   @JsonProperty(PROP_KEY)
-  @Nonnull
-  public String getKey() {
+  public @Nonnull String getKey() {
     return _key;
   }
 

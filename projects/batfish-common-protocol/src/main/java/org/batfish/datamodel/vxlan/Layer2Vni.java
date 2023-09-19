@@ -21,13 +21,13 @@ public final class Layer2Vni implements Vni {
   /** Builder for {@link Layer2Vni} */
   public static final class Builder {
 
-    @Nonnull private Set<Ip> _bumTransportIps = ImmutableSet.of();
-    @Nullable private BumTransportMethod _bumTransportMethod;
-    @Nullable private Ip _sourceAddress;
-    @Nullable private Integer _udpPort;
-    @Nullable private Integer _vlan;
-    @Nullable private Integer _vni;
-    @Nullable private String _srcVrf;
+    private @Nonnull Set<Ip> _bumTransportIps = ImmutableSet.of();
+    private @Nullable BumTransportMethod _bumTransportMethod;
+    private @Nullable Ip _sourceAddress;
+    private @Nullable Integer _udpPort;
+    private @Nullable Integer _vlan;
+    private @Nullable Integer _vni;
+    private @Nullable String _srcVrf;
 
     private Builder() {}
 
@@ -79,27 +79,25 @@ public final class Layer2Vni implements Vni {
       return this;
     }
 
-    @Nonnull
-    public Builder setSrcVrf(String srcVrf) {
+    public @Nonnull Builder setSrcVrf(String srcVrf) {
       _srcVrf = srcVrf;
       return this;
     }
   }
 
-  @Nonnull private final Set<Ip> _bumTransportIps;
-  @Nonnull private final BumTransportMethod _bumTransportMethod;
-  @Nullable private final Ip _sourceAddress;
+  private final @Nonnull Set<Ip> _bumTransportIps;
+  private final @Nonnull BumTransportMethod _bumTransportMethod;
+  private final @Nullable Ip _sourceAddress;
   private final int _udpPort;
   private final int _vlan;
   private final int _vni;
-  @Nonnull private final String _srcVrf;
+  private final @Nonnull String _srcVrf;
 
   public static @Nonnull Builder builder() {
     return new Builder();
   }
 
-  @Nonnull
-  public static Builder testBuilder() {
+  public static @Nonnull Builder testBuilder() {
     return builder().setSrcVrf(Configuration.DEFAULT_VRF_NAME);
   }
 
@@ -165,8 +163,7 @@ public final class Layer2Vni implements Vni {
   }
 
   @Override
-  @Nullable
-  public Ip getSourceAddress() {
+  public @Nullable Ip getSourceAddress() {
     return _sourceAddress;
   }
 
@@ -190,8 +187,7 @@ public final class Layer2Vni implements Vni {
     return _srcVrf;
   }
 
-  @Nonnull
-  public Builder toBuilder() {
+  public @Nonnull Builder toBuilder() {
     return builder()
         .setBumTransportMethod(_bumTransportMethod)
         .setSourceAddress(_sourceAddress)
@@ -203,8 +199,7 @@ public final class Layer2Vni implements Vni {
   }
 
   /** Return a new {@link Layer2Vni} with a flood list that includes a given {@code ip} */
-  @Nonnull
-  public Layer2Vni addToFloodList(Ip ip) {
+  public @Nonnull Layer2Vni addToFloodList(Ip ip) {
     checkArgument(
         _bumTransportMethod == BumTransportMethod.UNICAST_FLOOD_GROUP,
         "Cannot add new IPs if the transport method is not %s",

@@ -46,8 +46,7 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     return Objects.equals(_poolName, that._poolName);
   }
 
-  @Nonnull
-  public String getPoolName() {
+  public @Nonnull String getPoolName() {
     return _poolName;
   }
 

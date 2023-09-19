@@ -14,19 +14,19 @@ public class IpsecSession {
   /** Port on which IKE (Phase 1) and IPsec(Phase 2) parameters are exchanged through UDP */
   public static final int IPSEC_UDP_PORT = 500;
 
-  @Nullable private final IkePhase1Policy _initiatorIkeP1Policy;
+  private final @Nullable IkePhase1Policy _initiatorIkeP1Policy;
 
-  @Nullable private final IpsecPhase2Policy _initiatorIpsecP2Policy;
+  private final @Nullable IpsecPhase2Policy _initiatorIpsecP2Policy;
 
-  @Nullable private final IkePhase1Proposal _negotiatedIkeP1Proposal;
+  private final @Nullable IkePhase1Proposal _negotiatedIkeP1Proposal;
 
-  @Nullable private final IkePhase1Key _negotiatedIkeP1Key;
+  private final @Nullable IkePhase1Key _negotiatedIkeP1Key;
 
-  @Nullable private final IpsecPhase2Proposal _negotiatedIpsecP2Proposal;
+  private final @Nullable IpsecPhase2Proposal _negotiatedIpsecP2Proposal;
 
-  @Nullable private final IkePhase1Policy _responderIkeP1Policy;
+  private final @Nullable IkePhase1Policy _responderIkeP1Policy;
 
-  @Nullable private final IpsecPhase2Policy _responderIpsecP2Policy;
+  private final @Nullable IpsecPhase2Policy _responderIpsecP2Policy;
 
   /**
    * Is true when at least one of the peers for this IPsec session is a cloud type configuration
@@ -63,38 +63,31 @@ public class IpsecSession {
     return _cloud;
   }
 
-  @Nullable
-  public IkePhase1Policy getInitiatorIkeP1Policy() {
+  public @Nullable IkePhase1Policy getInitiatorIkeP1Policy() {
     return _initiatorIkeP1Policy;
   }
 
-  @Nullable
-  public IpsecPhase2Policy getInitiatorIpsecP2Policy() {
+  public @Nullable IpsecPhase2Policy getInitiatorIpsecP2Policy() {
     return _initiatorIpsecP2Policy;
   }
 
-  @Nullable
-  public IkePhase1Policy getResponderIkeP1Policy() {
+  public @Nullable IkePhase1Policy getResponderIkeP1Policy() {
     return _responderIkeP1Policy;
   }
 
-  @Nullable
-  public IpsecPhase2Policy getResponderIpsecP2Policy() {
+  public @Nullable IpsecPhase2Policy getResponderIpsecP2Policy() {
     return _responderIpsecP2Policy;
   }
 
-  @Nullable
-  public IkePhase1Proposal getNegotiatedIkeP1Proposal() {
+  public @Nullable IkePhase1Proposal getNegotiatedIkeP1Proposal() {
     return _negotiatedIkeP1Proposal;
   }
 
-  @Nullable
-  public IkePhase1Key getNegotiatedIkeP1Key() {
+  public @Nullable IkePhase1Key getNegotiatedIkeP1Key() {
     return _negotiatedIkeP1Key;
   }
 
-  @Nullable
-  public IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
+  public @Nullable IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
     return _negotiatedIpsecP2Proposal;
   }
 
@@ -135,38 +128,31 @@ public class IpsecSession {
       return _cloud;
     }
 
-    @Nullable
-    public IkePhase1Policy getInitiatorIkeP1Policy() {
+    public @Nullable IkePhase1Policy getInitiatorIkeP1Policy() {
       return _initiatorIkeP1Policy;
     }
 
-    @Nullable
-    public IpsecPhase2Policy getInitiatorIpsecP2Policy() {
+    public @Nullable IpsecPhase2Policy getInitiatorIpsecP2Policy() {
       return _initiatorIpsecP2Policy;
     }
 
-    @Nullable
-    public IkePhase1Policy getResponderIkeP1Policy() {
+    public @Nullable IkePhase1Policy getResponderIkeP1Policy() {
       return _responderIkeP1Policy;
     }
 
-    @Nullable
-    public IpsecPhase2Policy getResponderIpsecP2Policy() {
+    public @Nullable IpsecPhase2Policy getResponderIpsecP2Policy() {
       return _responderIpsecP2Policy;
     }
 
-    @Nullable
-    public IkePhase1Proposal getNegotiatedIkeP1Proposal() {
+    public @Nullable IkePhase1Proposal getNegotiatedIkeP1Proposal() {
       return _negotiatedIkeP1Proposal;
     }
 
-    @Nullable
-    public IkePhase1Key getNegotiatedIkeP1Key() {
+    public @Nullable IkePhase1Key getNegotiatedIkeP1Key() {
       return _negotiatedIkeP1Key;
     }
 
-    @Nullable
-    public IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
+    public @Nullable IpsecPhase2Proposal getNegotiatedIpsecP2Proposal() {
       return _negotiatedIpsecP2Proposal;
     }
 

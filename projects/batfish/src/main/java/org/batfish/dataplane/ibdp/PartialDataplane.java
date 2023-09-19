@@ -73,14 +73,12 @@ public final class PartialDataplane implements DataPlane {
   }
 
   @Override
-  @Nonnull
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
     throw new UnsupportedOperationException();
   }
 
   @Override
-  @Nonnull
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
     throw new UnsupportedOperationException();
   }
 
@@ -101,10 +99,10 @@ public final class PartialDataplane implements DataPlane {
 
   public static class Builder {
 
-    @Nullable private IpOwners _ipOwners;
-    @Nullable private Map<String, Node> _nodes;
-    @Nullable private Topology _layer3Topology;
-    @Nullable private L3Adjacencies _l3Adjacencies;
+    private @Nullable IpOwners _ipOwners;
+    private @Nullable Map<String, Node> _nodes;
+    private @Nullable Topology _layer3Topology;
+    private @Nullable L3Adjacencies _l3Adjacencies;
 
     public @Nonnull Builder setIpOwners(@Nonnull IpOwners ipOwners) {
       _ipOwners = ipOwners;
@@ -139,12 +137,12 @@ public final class PartialDataplane implements DataPlane {
   // Private implementation
   /////////////////////////
 
-  @Nonnull private final Map<String, Map<String, Fib>> _fibs;
-  @Nonnull private final ForwardingAnalysis _forwardingAnalysis;
-  @Nonnull private final Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
-  @Nonnull private final Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
-  @Nonnull private final Topology _layer3Topology;
-  @Nonnull private final L3Adjacencies _l3Adjacencies;
+  private final @Nonnull Map<String, Map<String, Fib>> _fibs;
+  private final @Nonnull ForwardingAnalysis _forwardingAnalysis;
+  private final @Nonnull Table<String, String, Set<Layer2Vni>> _layer2VniSettings;
+  private final @Nonnull Table<String, String, Set<Layer3Vni>> _layer3VniSettings;
+  private final @Nonnull Topology _layer3Topology;
+  private final @Nonnull L3Adjacencies _l3Adjacencies;
 
   private PartialDataplane(Builder builder) {
     checkArgument(builder._nodes != null, "Dataplane must have nodes to be constructed");
