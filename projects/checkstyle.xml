@@ -49,6 +49,11 @@
     </module>
 
     <module name="RegexpSinglelineJava">
+      <property name="format" value="(@Nullable|@Nonnull) (private|public|protected|static|final) "/>
+      <property name="message" value="Nullity should annotate the type when possible"/>
+    </module>
+
+    <module name="RegexpSinglelineJava">
       <property name="format" value="import com.google.common.base.Preconditions;"/>
       <property name="message" value="Static import from Guava utility classes"/>
     </module>
