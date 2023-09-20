@@ -46,7 +46,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private final @Nonnull BgpRouteConstraints _outputConstraints;
   private final @Nonnull LineAction _action;
 
-  private final PathOption _pathOption;
+  private final @Nonnull PathOption _pathOption;
 
   /**
    * The PathOption enum represents various options for how results are presented based on how paths
@@ -146,27 +146,23 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   @JsonIgnore
-  @Nonnull
   @Override
-  public String getName() {
+  public @Nonnull String getName() {
     return "searchRoutePolicies";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nullable
   @JsonProperty(PROP_POLICIES)
-  public String getPolicies() {
+  public @Nullable String getPolicies() {
     return _policies;
   }
 
   @JsonProperty(PROP_ACTION)
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
