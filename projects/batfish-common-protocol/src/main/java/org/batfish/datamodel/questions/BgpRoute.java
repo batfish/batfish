@@ -71,7 +71,7 @@ public final class BgpRoute {
   @Nonnull private final RoutingProtocol _protocol;
   @Nullable private final RoutingProtocol _srcProtocol;
   private final long _tag;
-  private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
   private BgpRoute(
@@ -208,9 +208,8 @@ public final class BgpRoute {
     return _network;
   }
 
-  @Nonnull
   @JsonProperty(PROP_NEXT_HOP)
-  public NextHopResult getNextHop() {
+  public @Nonnull NextHopResult getNextHop() {
     return _nextHop;
   }
 
@@ -369,7 +368,7 @@ public final class BgpRoute {
     @Nullable private RoutingProtocol _protocol;
     @Nullable private RoutingProtocol _srcProtocol;
     private long _tag;
-    private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
     public Builder() {

@@ -82,8 +82,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private final PathOption _pathOption;
 
-  private final @Nonnull Set<String> _communityRegexes;
-  private final @Nonnull Set<String> _asPathRegexes;
+  @Nonnull private final Set<String> _communityRegexes;
+  @Nonnull private final Set<String> _asPathRegexes;
 
   /**
    * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
@@ -91,8 +91,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Environment}. For our purposes the specific property values can be anything, so we use this
    * dummy object.
    */
-  @Nonnull
-  public static BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
+  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
       BgpSessionProperties.builder()
           .setLocalAs(1)
           .setLocalIp(Ip.parse("1.1.1.1"))
