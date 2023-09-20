@@ -10,6 +10,7 @@ import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment;
 
@@ -31,7 +32,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
   static final BgpRouteConstraints DEFAULT_ROUTE_CONSTRAINTS =
       BgpRouteConstraints.builder().build();
 
-  @VisibleForTesting static final Action DEFAULT_ACTION = Action.PERMIT;
+  @VisibleForTesting static final LineAction DEFAULT_ACTION = LineAction.PERMIT;
 
   @VisibleForTesting static final PathOption DEFAULT_PATH_OPTION = PathOption.SINGLE;
 
@@ -43,14 +44,9 @@ public final class SearchRoutePoliciesQuestion extends Question {
   private final @Nullable String _policies;
   private final @Nonnull BgpRouteConstraints _inputConstraints;
   private final @Nonnull BgpRouteConstraints _outputConstraints;
-  private final @Nonnull Action _action;
+  private final @Nonnull LineAction _action;
 
-  private final PathOption _pathOption;
-
-  public enum Action {
-    DENY,
-    PERMIT
-  }
+  private final @Nonnull PathOption _pathOption;
 
   /**
    * The PathOption enum represents various options for how results are presented based on how paths
@@ -89,10 +85,10 @@ public final class SearchRoutePoliciesQuestion extends Question {
       BgpRouteConstraints outputConstraints,
       @Nullable String nodes,
       @Nullable String policies,
-      Action action,
+      LineAction action,
       PathOption pathOption) {
     checkArgument(
-        action == Action.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
+        action == LineAction.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
     _direction = direction;
     _nodes = nodes;
@@ -110,7 +106,7 @@ public final class SearchRoutePoliciesQuestion extends Question {
       @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
       @Nullable @JsonProperty(PROP_NODES) String nodes,
       @Nullable @JsonProperty(PROP_POLICIES) String policies,
-      @Nullable @JsonProperty(PROP_ACTION) Action action,
+      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
       @Nullable @JsonProperty(PROP_PER_PATH) Boolean perPath,
       @Nullable @JsonProperty(PROP_PATH_OPTION) PathOption pathOption) {
     checkArgument(
@@ -150,26 +146,23 @@ public final class SearchRoutePoliciesQuestion extends Question {
   }
 
   @JsonIgnore
-  @Nonnull
   @Override
-  public String getName() {
+  public @Nonnull String getName() {
     return "searchRoutePolicies";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nullable
   @JsonProperty(PROP_POLICIES)
-  public String getPolicies() {
+  public @Nullable String getPolicies() {
     return _policies;
   }
 
   @JsonProperty(PROP_ACTION)
-  public @Nonnull Action getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
