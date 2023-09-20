@@ -39,12 +39,12 @@ public final class SearchRoutePoliciesQuestion extends Question {
   @VisibleForTesting
   static final Environment.Direction DEFAULT_DIRECTION = Environment.Direction.IN;
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nullable private final String _nodes;
-  @Nullable private final String _policies;
-  @Nonnull private final BgpRouteConstraints _inputConstraints;
-  @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final LineAction _action;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nullable String _nodes;
+  private final @Nullable String _policies;
+  private final @Nonnull BgpRouteConstraints _inputConstraints;
+  private final @Nonnull BgpRouteConstraints _outputConstraints;
+  private final @Nonnull LineAction _action;
 
   private final PathOption _pathOption;
 
