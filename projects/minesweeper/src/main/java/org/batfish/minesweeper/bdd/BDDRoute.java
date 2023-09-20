@@ -180,7 +180,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     int numNeeded =
         32 * 6
             + 16
-            + 8
+            + 31
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
@@ -219,9 +219,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _weight = MutableBDDInteger.makeFromIndex(factory, 16, idx, false);
     addBitNames("weight", 16, idx, false);
     idx += 16;
-    _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
-    addBitNames("ad", 8, idx, false);
-    idx += 8;
+    _adminDist = MutableBDDInteger.makeFromIndex(factory, 31, idx, false);
+    addBitNames("ad", 31, idx, false);
+    idx += 31;
     _localPref = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
