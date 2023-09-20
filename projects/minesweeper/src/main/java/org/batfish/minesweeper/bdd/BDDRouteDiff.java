@@ -54,10 +54,9 @@ public final class BDDRouteDiff {
     if (!Objects.equals(r1.getTag(), r2.getTag())) {
       result.add(DifferenceType.TAG);
     }
-    // TODO: Administrative distance is not properly supported in TRP/RouteDiff.
-    //    if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
-    //      result.add(DifferenceType.ADMIN_DIST);
-    //    }
+    if (!Objects.equals(r1.getAdminDist(), r2.getAdminDist())) {
+      result.add(DifferenceType.ADMIN_DIST);
+    }
     if (!Objects.equals(r1.getWeight(), r2.getWeight())) {
       result.add(DifferenceType.WEIGHT);
     }
