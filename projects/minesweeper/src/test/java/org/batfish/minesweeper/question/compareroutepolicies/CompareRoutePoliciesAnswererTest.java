@@ -104,7 +104,10 @@ import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link CompareRoutePoliciesAnswerer}. */
+/**
+ * Tests for {@link
+ * org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesAnswerer}.
+ */
 public class CompareRoutePoliciesAnswererTest {
   private static final String HOSTNAME = "hostname";
   private static final String POLICY_REFERENCE_NAME = "policy_reference";
@@ -605,10 +608,7 @@ public class CompareRoutePoliciesAnswererTest {
         answer.getRows().getData().isEmpty());
   }
 
-  /**
-   * Tests differences in Administrative Distance. We currently ignore this. It needs to be added to
-   * BgpRoute/BgpRouteDiff.
-   */
+  /** Tests that differences in administrative cost are detected. */
   @Test
   public void testAdministrativeDistance() {
 
@@ -634,9 +634,22 @@ public class CompareRoutePoliciesAnswererTest {
         (TableAnswerElement)
             answerer.answerDiff(_batfish.getSnapshot(), _batfish.getReferenceSnapshot());
 
+    BgpRouteDiffs diff =
+        new BgpRouteDiffs(
+            ImmutableSet.of(new BgpRouteDiff(BgpRoute.PROP_ADMINISTRATIVE_DISTANCE, "20", "10")));
+
     assertThat(
-        "the two are equivalent because we ignore AD differences",
-        answer.getRows().getData().isEmpty());
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NEW_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_REFERENCE_NAME), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, anything(), Schema.BGP_ROUTE),
+                hasColumn(baseColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(baseColumnName(COL_OUTPUT_ROUTE), anything(), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
   }
 
   /** Test differences in set communities. */
