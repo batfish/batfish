@@ -113,6 +113,7 @@ import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -1006,6 +1007,42 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
     assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testSetAdminDistance() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetAdministrativeCost(new LiteralInt(255)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    MutableBDDInteger ad = expected.getAdminDist();
+    expected.setAdminDist(MutableBDDInteger.makeFromValue(ad.getFactory(), 8, 255));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testSetAdminDistanceOutOfBounds() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetAdministrativeCost(new LiteralInt(256)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    assertEquals(1, paths.size());
+    assertTrue(paths.get(0).getFirst().getUnsupported());
   }
 
   @Test
