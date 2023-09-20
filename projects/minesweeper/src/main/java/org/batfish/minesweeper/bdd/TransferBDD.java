@@ -88,6 +88,7 @@ import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -782,6 +783,20 @@ public class TransferBDD {
       }
 
       return ImmutableList.copyOf(newStates);
+
+    } else if (stmt instanceof SetAdministrativeCost) {
+      curP.debug("SetAdministrativeCost");
+      SetAdministrativeCost sac = (SetAdministrativeCost) stmt;
+      IntExpr ie = sac.getAdmin();
+      if (!(ie instanceof LiteralInt)) {
+        throw new UnsupportedFeatureException(ie.toString());
+      }
+      int val = ((LiteralInt) ie).getValue();
+      if (val < 0 || val > 255) {
+        throw new UnsupportedFeatureException("Administrative Distance must be in [0,255].");
+      }
+      curP.getData().setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 8, val));
+      return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetDefaultPolicy) {
       curP.debug("SetDefaultPolicy");
