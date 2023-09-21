@@ -62,7 +62,7 @@ sy_host_name
 sy_name_server
 :
   // TODO: do better
-  NAME_SERVER hostname = junos_name
+  NAME_SERVER hostname = junos_name SOURCE_ADDRESS ip_address
 ;
 
 sy_ntp

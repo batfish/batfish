@@ -40690,7 +40690,7 @@
             "              STATIC:'static'",
             "              (ros_route",
             "                ROUTE:'route'",
-            "                (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.40.40.0/24')",
             "                (rosr_common*",
             "                  (rosr_next_hop",
@@ -52350,8 +52350,35 @@
             "                      THEN:'then'",
             "                      (fftt_next_ip",
             "                        NEXT_IP:'next-ip'",
-            "                        prefix = (ip_prefix*",
+            "                        prefix = (ip_prefix_default_32*",
             "                          IP_PREFIX:'1.2.3.4/5')))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_firewall",
+            "            FIREWALL:'firewall'",
+            "            (f_family",
+            "              FAMILY:'family'",
+            "              INET:'inet'",
+            "              (f_common*",
+            "                (f_filter",
+            "                  FILTER:'filter'",
+            "                  name = (filter_name*",
+            "                    (junos_name*",
+            "                      NAME:'blah'  <== mode:M_Filter))",
+            "                  (ff_term",
+            "                    TERM:'term'",
+            "                    name = (junos_name*",
+            "                      NAME:'t4'  <== mode:M_Name)",
+            "                    (fft_then*",
+            "                      THEN:'then'",
+            "                      (fftt_next_ip",
+            "                        NEXT_IP:'next-ip'",
+            "                        prefix = (ip_prefix_default_32*",
+            "                          IP_ADDRESS:'1.2.3.6')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -55794,7 +55821,7 @@
             "                    IP_ADDRESS:'0.1.2.3')",
             "                  (oa_area_range",
             "                    AREA_RANGE:'area-range'",
-            "                    (ip_prefix*",
+            "                    prefix = (ip_prefix_default_32*",
             "                      IP_PREFIX:'1.2.0.0/16')",
             "                    (oaa_override_metric",
             "                      OVERRIDE_METRIC:'override-metric'",
@@ -58161,7 +58188,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.2.0.0/16')",
             "                      (popsfrf_common*",
             "                        (popsfrf_exact",
@@ -58187,7 +58214,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.3.0.0/17')",
             "                      (popsfrf_common*",
             "                        (popsfrf_longer",
@@ -58213,7 +58240,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.4.0.0/18')",
             "                      (popsfrf_common*",
             "                        (popsfrf_orlonger",
@@ -58239,7 +58266,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.5.0.0/19')",
             "                      (popsfrf_common*",
             "                        (popsfrf_upto",
@@ -58268,7 +58295,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.6.0.0/20')",
             "                      (popsfrf_common*",
             "                        (popsfrf_prefix_length_range",
@@ -58301,12 +58328,12 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ip_prefix*",
+            "                      prefix = (ip_prefix_default_32*",
             "                        IP_PREFIX:'1.7.0.0/21')",
             "                      (popsfrf_common*",
             "                        (popsfrf_through",
             "                          THROUGH:'through'",
-            "                          (ip_prefix*",
+            "                          prefix = (ip_prefix_default_32*",
             "                            IP_PREFIX:'1.7.0.0/24'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -58506,7 +58533,7 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
-            "                prefix = (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.0.0.0/8')",
             "                (roa_common*",
             "                  (roa_as_path*",
@@ -58528,7 +58555,7 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
-            "                prefix = (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'20.0.0.0/8')",
             "                (roa_common*",
             "                  (roa_as_path*",
@@ -58555,7 +58582,7 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
-            "                prefix = (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'30.0.0.0/8')",
             "                (roa_common*",
             "                  (roa_as_path*",
@@ -58591,7 +58618,7 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
-            "                prefix = (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'35.0.0.0/8')",
             "                (roa_common*",
             "                  (roa_discard",
@@ -58608,7 +58635,7 @@
             "              AGGREGATE:'aggregate'",
             "              (roa_route",
             "                ROUTE:'route'",
-            "                prefix = (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'40.0.0.0/8')",
             "                (roa_common*",
             "                  (roa_policy",
@@ -58655,7 +58682,7 @@
             "              GENERATE:'generate'",
             "              (rog_route",
             "                ROUTE:'route'",
-            "                (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.0.1.0/24')",
             "                (rog_common*",
             "                  (rog_active",
@@ -58672,7 +58699,7 @@
             "              GENERATE:'generate'",
             "              (rog_route",
             "                ROUTE:'route'",
-            "                (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.0.1.0/24')",
             "                (rog_common*",
             "                  (rog_community",
@@ -58692,7 +58719,7 @@
             "              GENERATE:'generate'",
             "              (rog_route",
             "                ROUTE:'route'",
-            "                (ip_prefix*",
+            "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.0.1.0/24')",
             "                (rog_common*",
             "                  (rog_discard",
@@ -70558,50 +70585,56 @@
               "Text" : "next-ip 1.2.3.4/5"
             },
             {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 48,
-              "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options any"
-            },
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 49,
-              "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options loose-source-route"
+              "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported",
+              "Line" : 42,
+              "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "next-ip 1.2.3.6"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 50,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options route-record"
+              "Text" : "ip-options any"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 51,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options router-alert"
+              "Text" : "ip-options loose-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 52,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options security"
+              "Text" : "ip-options route-record"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 53,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options stream-id"
+              "Text" : "ip-options router-alert"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 54,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "ip-options strict-source-route"
+              "Text" : "ip-options security"
             },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 55,
+              "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip-options stream-id"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 56,
+              "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "ip-options strict-source-route"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 57,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
             }
@@ -74297,15 +74330,15 @@
         "configs/juniper_firewall" : {
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
-              "definitionLines" : "47",
+              "definitionLines" : "49",
               "numReferrers" : 0
             },
             "blah" : {
-              "definitionLines" : "5-28,30,32,35-36,38,40",
+              "definitionLines" : "5-28,30,32,35-36,38,40,42",
               "numReferrers" : 0
             },
             "blah6" : {
-              "definitionLines" : "42-44",
+              "definitionLines" : "44-46",
               "numReferrers" : 0
             },
             "f1" : {
@@ -74313,13 +74346,13 @@
               "numReferrers" : 0
             },
             "ip_options" : {
-              "definitionLines" : "48-55",
+              "definitionLines" : "50-57",
               "numReferrers" : 0
             }
           },
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
-              "definitionLines" : "47",
+              "definitionLines" : "49",
               "numReferrers" : 1
             },
             "blah blorp" : {
@@ -74342,8 +74375,12 @@
               "definitionLines" : "40",
               "numReferrers" : 1
             },
+            "blah t4" : {
+              "definitionLines" : "42",
+              "numReferrers" : 1
+            },
             "blah6 blorp6" : {
-              "definitionLines" : "42-44",
+              "definitionLines" : "44-46",
               "numReferrers" : 3
             },
             "f1 t1" : {
@@ -74351,7 +74388,7 @@
               "numReferrers" : 1
             },
             "ip_options t1" : {
-              "definitionLines" : "48-55",
+              "definitionLines" : "50-57",
               "numReferrers" : 8
             }
           },
@@ -81509,7 +81546,7 @@
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
               "firewall filter term" : [
-                47
+                49
               ]
             },
             "blah blorp" : {
@@ -81562,11 +81599,16 @@
                 40
               ]
             },
+            "blah t4" : {
+              "firewall filter term" : [
+                42
+              ]
+            },
             "blah6 blorp6" : {
               "firewall filter term" : [
-                42,
-                43,
-                44
+                44,
+                45,
+                46
               ]
             },
             "f1 t1" : {
@@ -81576,14 +81618,14 @@
             },
             "ip_options t1" : {
               "firewall filter term" : [
-                48,
-                49,
                 50,
                 51,
                 52,
                 53,
                 54,
-                55
+                55,
+                56,
+                57
               ]
             }
           },
