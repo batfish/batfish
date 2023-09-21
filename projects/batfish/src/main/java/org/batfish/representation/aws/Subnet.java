@@ -64,21 +64,21 @@ public class Subnet implements AwsVpcEntity, Serializable {
   @VisibleForTesting static final String NLB_INSTANCE_TARGETS_VRF_NAME = "NLB_instance_targets";
   @VisibleForTesting static final String NLB_INSTANCE_TARGETS_IFACE_SUFFIX = "nlb-instance-targets";
 
-  @Nonnull private final String _availabilityZone;
+  private final @Nonnull String _availabilityZone;
 
-  @Nonnull private final Prefix _cidrBlock;
+  private final @Nonnull Prefix _cidrBlock;
 
-  @Nonnull private final String _ownerId;
+  private final @Nonnull String _ownerId;
 
-  @Nonnull private final String _subnetArn;
+  private final @Nonnull String _subnetArn;
 
-  @Nonnull private final String _subnetId;
+  private final @Nonnull String _subnetId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
-  @Nonnull private final Set<Long> _allocatedIps;
+  private final @Nonnull Set<Long> _allocatedIps;
 
   private long _lastGeneratedIp;
 
@@ -191,18 +191,15 @@ public class Subnet implements AwsVpcEntity, Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  public Prefix getCidrBlock() {
+  public @Nonnull Prefix getCidrBlock() {
     return _cidrBlock;
   }
 
-  @Nonnull
-  public String getOwnerId() {
+  public @Nonnull String getOwnerId() {
     return _ownerId;
   }
 
-  @Nonnull
-  public String getSubnetArn() {
+  public @Nonnull String getSubnetArn() {
     return _subnetArn;
   }
 
@@ -211,13 +208,11 @@ public class Subnet implements AwsVpcEntity, Serializable {
     return _subnetId;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 
-  @Nonnull
-  public String getAvailabilityZone() {
+  public @Nonnull String getAvailabilityZone() {
     return _availabilityZone;
   }
 

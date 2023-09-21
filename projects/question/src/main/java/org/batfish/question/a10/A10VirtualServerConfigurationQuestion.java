@@ -18,8 +18,8 @@ public class A10VirtualServerConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_VIRTUAL_SERVER_IPS = "virtualServerIps";
 
-  @Nullable private final String _nodes;
-  @Nullable private final String _virtualServerIps;
+  private final @Nullable String _nodes;
+  private final @Nullable String _virtualServerIps;
 
   @JsonCreator
   private static A10VirtualServerConfigurationQuestion create(

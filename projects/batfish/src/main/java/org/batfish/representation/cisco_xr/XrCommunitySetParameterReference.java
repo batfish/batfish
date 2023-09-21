@@ -15,10 +15,9 @@ public final class XrCommunitySetParameterReference implements XrCommunitySetExp
     return visitor.visitCommunitySetParameterReference(this);
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

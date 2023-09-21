@@ -158,24 +158,24 @@ public class Interface implements Serializable {
   private @Nullable String _incomingFilter;
   private @Nullable List<String> _incomingFilterList;
   private transient boolean _inherited;
-  @Nullable private IsisInterfaceSettings _isisSettings;
+  private @Nullable IsisInterfaceSettings _isisSettings;
   private IsoAddress _isoAddress;
   private Integer _mtu;
   private final String _name;
-  @Nullable private Integer _nativeVlan;
-  @Nullable private OspfInterfaceSettings _ospfSettings;
+  private @Nullable Integer _nativeVlan;
+  private @Nullable OspfInterfaceSettings _ospfSettings;
   private @Nullable String _outgoingFilter;
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
   private ConcreteInterfaceAddress _primaryAddress;
   private boolean _primary;
-  @Nullable private String _redundantParentInterface;
+  private @Nullable String _redundantParentInterface;
   private RoutingInstance _routingInstance;
   private final @Nonnull InterfaceType _type;
   private final SortedMap<String, Interface> _units;
   private final SortedMap<Integer, VrrpGroup> _vrrpGroups;
-  @Nullable private Integer _vlanId;
+  private @Nullable Integer _vlanId;
   private @Nonnull VlanTaggingMode _vlanTagging;
   private Integer _tcpMss;
 
@@ -239,8 +239,7 @@ public class Interface implements Serializable {
     return _incomingFilterList;
   }
 
-  @Nullable
-  public IsisInterfaceSettings getIsisSettings() {
+  public @Nullable IsisInterfaceSettings getIsisSettings() {
     return _isisSettings;
   }
 
@@ -256,8 +255,7 @@ public class Interface implements Serializable {
     return _isoAddress;
   }
 
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
@@ -269,8 +267,7 @@ public class Interface implements Serializable {
    * The vlan assigned to untagged packets. These packets are sent to the logical L3 subinterface
    * with the same vlan-id. This is distinct from the concept of trunk native-vlan.
    */
-  @Nullable
-  public Integer getNativeVlan() {
+  public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -308,8 +305,7 @@ public class Interface implements Serializable {
     return _primary;
   }
 
-  @Nullable
-  public String getRedundantParentInterface() {
+  public @Nullable String getRedundantParentInterface() {
     return _redundantParentInterface;
   }
 
@@ -325,8 +321,7 @@ public class Interface implements Serializable {
     return _units;
   }
 
-  @Nullable
-  public Integer getVlanId() {
+  public @Nullable Integer getVlanId() {
     return _vlanId;
   }
 

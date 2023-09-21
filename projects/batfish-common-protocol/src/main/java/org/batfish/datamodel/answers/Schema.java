@@ -54,6 +54,7 @@ public class Schema {
           .put("Issue", getClassString(Issue.class))
           .put("Long", getClassString(Long.class))
           .put("NextHop", getClassString(NextHop.class))
+          .put("NextHopResult", getClassString(NextHopResult.class))
           .put("Object", getClassString(Object.class))
           .put("Node", getClassString(Node.class))
           .put("Prefix", getClassString(Prefix.class))
@@ -75,6 +76,7 @@ public class Schema {
   public static final Schema ISSUE = new Schema("Issue");
   public static final Schema LONG = new Schema("Long");
   public static final Schema NEXT_HOP = new Schema("NextHop");
+  public static final Schema NEXT_HOP_RESULT = new Schema("NextHopResult");
   public static final Schema NODE = new Schema("Node");
   public static final Schema OBJECT = new Schema("Object");
   public static final Schema PREFIX = new Schema("Prefix");
@@ -94,16 +96,16 @@ public class Schema {
   }
 
   /** Captures what this Schema finally contains after levels of nesting */
-  @Nonnull private final Class<?> _baseType;
+  private final @Nonnull Class<?> _baseType;
 
   /** For list/set types this field represents what is inside; for base types it is null */
-  @Nullable private final Schema _innerSchema;
+  private final @Nullable Schema _innerSchema;
 
   /** The string representaion from which this Schema was derived; kept around for printing */
-  @Nonnull private final String _schemaStr;
+  private final @Nonnull String _schemaStr;
 
   /** Is this Schema a list, set, or base? */
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
   @JsonCreator
   Schema(String schema) {
@@ -169,8 +171,7 @@ public class Schema {
     return _baseType;
   }
 
-  @Nullable
-  public Schema getInnerSchema() {
+  public @Nullable Schema getInnerSchema() {
     return _innerSchema;
   }
 

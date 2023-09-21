@@ -7,8 +7,8 @@ import org.batfish.datamodel.isp_configuration.IspPeeringInfo;
 /** Internal representation of inter-ISP peerings */
 public class IspPeering {
 
-  @Nonnull private final long _asn1;
-  @Nonnull private final long _asn2;
+  private final @Nonnull long _asn1;
+  private final @Nonnull long _asn2;
 
   public IspPeering(long asn1, long asn2) {
     // canonicalize by using the lower number as asn1

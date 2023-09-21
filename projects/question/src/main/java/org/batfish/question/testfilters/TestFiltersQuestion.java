@@ -27,10 +27,10 @@ public class TestFiltersQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_START_LOCATION = "startLocation";
 
-  @Nullable private final String _filters;
-  @Nonnull private final PacketHeaderConstraints _headers;
-  @Nullable private final String _nodes;
-  @Nullable private final String _startLocation;
+  private final @Nullable String _filters;
+  private final @Nonnull PacketHeaderConstraints _headers;
+  private final @Nullable String _nodes;
+  private final @Nullable String _startLocation;
 
   @JsonCreator
   public TestFiltersQuestion(

@@ -10,8 +10,7 @@ import javax.annotation.Nullable;
 /** Datamodel class representing a configured A10 vlan. */
 public final class Vlan implements Serializable {
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -19,18 +18,15 @@ public final class Vlan implements Serializable {
     return _number;
   }
 
-  @Nullable
-  public Integer getRouterInterface() {
+  public @Nullable Integer getRouterInterface() {
     return _routerInterface;
   }
 
-  @Nonnull
-  public Set<InterfaceReference> getTagged() {
+  public @Nonnull Set<InterfaceReference> getTagged() {
     return _tagged;
   }
 
-  @Nonnull
-  public Set<InterfaceReference> getUntagged() {
+  public @Nonnull Set<InterfaceReference> getUntagged() {
     return _untagged;
   }
 
@@ -56,9 +52,9 @@ public final class Vlan implements Serializable {
     _untagged = new HashSet<>();
   }
 
-  @Nonnull private String _name;
+  private @Nonnull String _name;
   private final int _number;
-  @Nullable private Integer _routerInterface;
-  @Nonnull private Set<InterfaceReference> _tagged;
-  @Nonnull private Set<InterfaceReference> _untagged;
+  private @Nullable Integer _routerInterface;
+  private @Nonnull Set<InterfaceReference> _tagged;
+  private @Nonnull Set<InterfaceReference> _untagged;
 }

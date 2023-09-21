@@ -20,9 +20,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class TransitGatewayRouteTable implements AwsVpcEntity, Serializable {
 
-  @Nonnull private final String _gatewayId;
+  private final @Nonnull String _gatewayId;
 
-  @Nonnull private final String _routeTableId;
+  private final @Nonnull String _routeTableId;
 
   private final boolean _defaultAssociationRouteTable;
 
@@ -61,14 +61,12 @@ final class TransitGatewayRouteTable implements AwsVpcEntity, Serializable {
     _defaultPropagationRouteTable = defaultPropagationRouteTable;
   }
 
-  @Nonnull
-  public String getGatewayId() {
+  public @Nonnull String getGatewayId() {
     return _gatewayId;
   }
 
   @Override
-  @Nonnull
-  public String getId() {
+  public @Nonnull String getId() {
     return _routeTableId;
   }
 

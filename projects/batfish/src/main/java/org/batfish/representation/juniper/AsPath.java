@@ -20,8 +20,7 @@ public class AsPath implements Serializable {
     _regex = regex;
   }
 
-  @Nonnull
-  public String getRegex() {
+  public @Nonnull String getRegex() {
     return _regex;
   }
 }

@@ -31,11 +31,11 @@ public class IspConfiguration {
   private static final String PROP_ISP_NODE_INFO = "ispNodeInfo";
   private static final String PROP_ISP_PEERINGS = "ispPeerings";
 
-  @Nonnull private final List<BorderInterfaceInfo> _borderInterfaces;
-  @Nonnull private final List<BgpPeerInfo> _bgpPeersInfos;
-  @Nonnull private final IspFilter _filter;
-  @Nonnull private final List<IspNodeInfo> _ispNodeInfos;
-  @Nonnull private final List<IspPeeringInfo> _ispPeeringInfos;
+  private final @Nonnull List<BorderInterfaceInfo> _borderInterfaces;
+  private final @Nonnull List<BgpPeerInfo> _bgpPeersInfos;
+  private final @Nonnull IspFilter _filter;
+  private final @Nonnull List<IspNodeInfo> _ispNodeInfos;
+  private final @Nonnull List<IspPeeringInfo> _ispPeeringInfos;
 
   public IspConfiguration(
       @Nonnull List<BorderInterfaceInfo> borderInterfaces, @Nonnull IspFilter filter) {
@@ -95,32 +95,27 @@ public class IspConfiguration {
   }
 
   @JsonProperty(PROP_BORDER_INTERFACES)
-  @Nonnull
-  public List<BorderInterfaceInfo> getBorderInterfaces() {
+  public @Nonnull List<BorderInterfaceInfo> getBorderInterfaces() {
     return _borderInterfaces;
   }
 
   @JsonProperty(PROP_BGP_PEERS)
-  @Nonnull
-  public List<BgpPeerInfo> getBgpPeerInfos() {
+  public @Nonnull List<BgpPeerInfo> getBgpPeerInfos() {
     return _bgpPeersInfos;
   }
 
   @JsonProperty(PROP_FILTER)
-  @Nonnull
-  public IspFilter getFilter() {
+  public @Nonnull IspFilter getFilter() {
     return _filter;
   }
 
   @JsonProperty(PROP_ISP_NODE_INFO)
-  @Nonnull
-  public List<IspNodeInfo> getIspNodeInfos() {
+  public @Nonnull List<IspNodeInfo> getIspNodeInfos() {
     return _ispNodeInfos;
   }
 
   @JsonProperty(PROP_ISP_PEERINGS)
-  @Nonnull
-  public List<IspPeeringInfo> getIspPeeringInfos() {
+  public @Nonnull List<IspPeeringInfo> getIspPeeringInfos() {
     return _ispPeeringInfos;
   }
 }

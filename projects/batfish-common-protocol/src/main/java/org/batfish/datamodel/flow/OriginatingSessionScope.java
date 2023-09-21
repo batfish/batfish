@@ -13,7 +13,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class OriginatingSessionScope implements SessionScope {
   private static final String PROP_ORIGINATING_VRF = "originatingVrf";
 
-  @Nonnull private final String _originatingVrf;
+  private final @Nonnull String _originatingVrf;
 
   public OriginatingSessionScope(String originatingVrf) {
     _originatingVrf = originatingVrf;
@@ -32,8 +32,7 @@ public final class OriginatingSessionScope implements SessionScope {
   }
 
   @JsonProperty(PROP_ORIGINATING_VRF)
-  @Nonnull
-  public String getOriginatingVrf() {
+  public @Nonnull String getOriginatingVrf() {
     return _originatingVrf;
   }
 

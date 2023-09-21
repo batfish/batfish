@@ -6,12 +6,11 @@ import javax.annotation.Nullable;
 /** Represents source-translation clause in Palo Alto NAT rule */
 public class SourceTranslation implements Serializable {
 
-  @Nullable private DynamicIpAndPort _dynamicIpAndPort;
+  private @Nullable DynamicIpAndPort _dynamicIpAndPort;
 
   public SourceTranslation() {}
 
-  @Nullable
-  public DynamicIpAndPort getDynamicIpAndPort() {
+  public @Nullable DynamicIpAndPort getDynamicIpAndPort() {
     return _dynamicIpAndPort;
   }
 

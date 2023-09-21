@@ -12,10 +12,10 @@ public class PathConstraintsInput {
   private static final String PROP_FORBIDDEN_LOCATIONS = "forbiddenLocations";
   private static final String PROP_END_LOCATION = "endLocation";
 
-  @Nullable private String _startLocation;
-  @Nullable private String _endLocation;
-  @Nullable private String _transitLocations;
-  @Nullable private String _forbiddenLocations;
+  private @Nullable String _startLocation;
+  private @Nullable String _endLocation;
+  private @Nullable String _transitLocations;
+  private @Nullable String _forbiddenLocations;
 
   @JsonCreator
   private PathConstraintsInput(

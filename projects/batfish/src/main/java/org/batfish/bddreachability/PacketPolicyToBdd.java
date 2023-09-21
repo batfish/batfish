@@ -55,9 +55,9 @@ import org.batfish.symbolic.state.StateExpr;
  */
 @ParametersAreNonnullByDefault
 class PacketPolicyToBdd {
-  @Nonnull private final PacketPolicy _policy;
-  @Nonnull private final BoolExprToBdd _boolExprToBdd;
-  @Nonnull private final TransformationToTransition _transformationToTransition;
+  private final @Nonnull PacketPolicy _policy;
+  private final @Nonnull BoolExprToBdd _boolExprToBdd;
+  private final @Nonnull TransformationToTransition _transformationToTransition;
   private final String _hostname;
   private final String _vrf;
   private final Table<StateExpr, StateExpr, List<Transition>> _edges;
@@ -362,8 +362,8 @@ class PacketPolicyToBdd {
   /** Converts boolean expressions to BDDs */
   @VisibleForTesting
   static final class BoolExprToBdd implements BoolExprVisitor<BDD> {
-    @Nonnull private final IpAccessListToBdd _ipAccessListToBdd;
-    @Nonnull private final IpsRoutedOutInterfaces _ipsRoutedOutInterfaces;
+    private final @Nonnull IpAccessListToBdd _ipAccessListToBdd;
+    private final @Nonnull IpsRoutedOutInterfaces _ipsRoutedOutInterfaces;
 
     BoolExprToBdd(
         IpAccessListToBdd ipAccessListToBdd, IpsRoutedOutInterfaces ipsRoutedOutInterfaces) {

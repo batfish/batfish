@@ -14,11 +14,11 @@ public class Interface extends BfObject {
   private static final String PROP_NODE_ID = "nodeId";
   private static final String PROP_TYPE = "type";
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final String _nodeId;
+  private final @Nonnull String _nodeId;
 
-  @Nonnull private InterfaceType _type;
+  private @Nonnull InterfaceType _type;
 
   public Interface(String nodeId, String name) {
     this(nodeId, name, InterfaceType.UNKNOWN);

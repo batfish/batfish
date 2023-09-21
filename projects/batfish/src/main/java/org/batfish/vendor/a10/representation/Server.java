@@ -9,29 +9,25 @@ import javax.annotation.Nullable;
 /** Datamodel class representing configuration for a load balancer server. */
 public final class Server implements Serializable {
 
-  @Nullable
-  public Integer getConnLimit() {
+  public @Nullable Integer getConnLimit() {
     return _connLimit;
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Map<ServerPort.ServerPortAndType, ServerPort> getPorts() {
+  public @Nonnull Map<ServerPort.ServerPortAndType, ServerPort> getPorts() {
     return _ports;
   }
 
   /** Returns the requested port; creates one and adds it if it doesn't already exist. */
-  @Nonnull
-  public ServerPort getOrCreatePort(int port, ServerPort.Type type, @Nullable Integer range) {
+  public @Nonnull ServerPort getOrCreatePort(
+      int port, ServerPort.Type type, @Nullable Integer range) {
     return _ports.computeIfAbsent(
         new ServerPort.ServerPortAndType(port, type), pat -> new ServerPort(port, type, range));
   }
@@ -43,23 +39,19 @@ public final class Server implements Serializable {
     _ports.put(key, new ServerPort(port, type, null));
   }
 
-  @Nullable
-  public String getServerTemplate() {
+  public @Nullable String getServerTemplate() {
     return _serverTemplate;
   }
 
-  @Nullable
-  public Boolean getStatsDataEnable() {
+  public @Nullable Boolean getStatsDataEnable() {
     return _statsDataEnable;
   }
 
-  @Nonnull
-  public ServerTarget getTarget() {
+  public @Nonnull ServerTarget getTarget() {
     return _target;
   }
 
-  @Nullable
-  public Integer getWeight() {
+  public @Nullable Integer getWeight() {
     return _weight;
   }
 
@@ -87,8 +79,7 @@ public final class Server implements Serializable {
     _weight = weight;
   }
 
-  @Nullable
-  public String getHealthCheck() {
+  public @Nullable String getHealthCheck() {
     return _healthCheck;
   }
 
@@ -96,8 +87,7 @@ public final class Server implements Serializable {
     _healthCheck = healthCheck;
   }
 
-  @Nullable
-  public Boolean getHealthCheckDisable() {
+  public @Nullable Boolean getHealthCheckDisable() {
     return _healthCheckDisable;
   }
 
@@ -111,14 +101,14 @@ public final class Server implements Serializable {
     _target = target;
   }
 
-  @Nullable private Integer _connLimit;
-  @Nullable private Boolean _enable;
-  @Nullable private String _healthCheck;
-  @Nullable private Boolean _healthCheckDisable;
-  @Nonnull private final String _name;
-  @Nonnull private final Map<ServerPort.ServerPortAndType, ServerPort> _ports;
-  @Nonnull private ServerTarget _target;
-  @Nullable private String _serverTemplate;
-  @Nullable private Boolean _statsDataEnable;
-  @Nullable private Integer _weight;
+  private @Nullable Integer _connLimit;
+  private @Nullable Boolean _enable;
+  private @Nullable String _healthCheck;
+  private @Nullable Boolean _healthCheckDisable;
+  private final @Nonnull String _name;
+  private final @Nonnull Map<ServerPort.ServerPortAndType, ServerPort> _ports;
+  private @Nonnull ServerTarget _target;
+  private @Nullable String _serverTemplate;
+  private @Nullable Boolean _statsDataEnable;
+  private @Nullable Integer _weight;
 }

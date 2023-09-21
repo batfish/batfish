@@ -6,7 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** {@link VrfExprVisitor} that provides the name of the specified VRF. */
 @ParametersAreNonnullByDefault
 public class VrfExprNameExtractor implements VrfExprVisitor<String> {
-  @Nonnull private final String _ingressIfaceVrf;
+  private final @Nonnull String _ingressIfaceVrf;
 
   public VrfExprNameExtractor(String ingressIfaceVrf) {
     _ingressIfaceVrf = ingressIfaceVrf;

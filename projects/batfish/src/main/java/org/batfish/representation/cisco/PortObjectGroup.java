@@ -15,7 +15,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class PortObjectGroup extends ObjectGroup {
 
-  private @Nonnull final List<PortObjectGroupLine> _lines;
+  private final @Nonnull List<PortObjectGroupLine> _lines;
 
   public PortObjectGroup(String name) {
     super(name);

@@ -15,11 +15,11 @@ public class IpsecSessionStatusQuestion extends Question {
 
   private static final String QUESTION_NAME = "ipsecSessionStatus";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
-  @Nullable private String _remoteNodes;
+  private @Nullable String _remoteNodes;
 
-  @Nullable private String _status;
+  private @Nullable String _status;
 
   @JsonCreator
   private static IpsecSessionStatusQuestion create(

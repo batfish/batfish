@@ -87,8 +87,8 @@ public final class IpPermissions implements Serializable {
   @ParametersAreNonnullByDefault
   public static final class IpRange implements Serializable {
 
-    @Nullable private final String _description;
-    @Nonnull private final Prefix _prefix;
+    private final @Nullable String _description;
+    private final @Nonnull Prefix _prefix;
 
     @JsonCreator
     private static IpRange create(
@@ -108,13 +108,11 @@ public final class IpPermissions implements Serializable {
       _prefix = prefix;
     }
 
-    @Nonnull
-    public Prefix getPrefix() {
+    public @Nonnull Prefix getPrefix() {
       return _prefix;
     }
 
-    @Nullable
-    public String getDescription() {
+    public @Nullable String getDescription() {
       return _description;
     }
 
@@ -141,7 +139,7 @@ public final class IpPermissions implements Serializable {
   @ParametersAreNonnullByDefault
   private static final class PrefixListId implements Serializable {
 
-    @Nonnull private final String _id;
+    private final @Nonnull String _id;
 
     @JsonCreator
     private static PrefixListId create(@Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_ID) String id) {
@@ -153,8 +151,7 @@ public final class IpPermissions implements Serializable {
       _id = id;
     }
 
-    @Nonnull
-    public String getId() {
+    public @Nonnull String getId() {
       return _id;
     }
 
@@ -181,9 +178,9 @@ public final class IpPermissions implements Serializable {
   @ParametersAreNonnullByDefault
   public static final class UserIdGroupPair implements Serializable {
 
-    @Nullable private final String _description;
+    private final @Nullable String _description;
 
-    @Nonnull private final String _groupId;
+    private final @Nonnull String _groupId;
 
     @JsonCreator
     private static UserIdGroupPair create(
@@ -198,13 +195,11 @@ public final class IpPermissions implements Serializable {
       _description = description;
     }
 
-    @Nullable
-    public String getDescription() {
+    public @Nullable String getDescription() {
       return _description;
     }
 
-    @Nonnull
-    public String getGroupId() {
+    public @Nonnull String getGroupId() {
       return _groupId;
     }
 
@@ -227,17 +222,17 @@ public final class IpPermissions implements Serializable {
     }
   }
 
-  @Nullable private final Integer _fromPort;
+  private final @Nullable Integer _fromPort;
 
-  @Nonnull private final String _ipProtocol;
+  private final @Nonnull String _ipProtocol;
 
-  @Nonnull private final List<IpRange> _ipRanges;
+  private final @Nonnull List<IpRange> _ipRanges;
 
-  @Nonnull private final List<String> _prefixList;
+  private final @Nonnull List<String> _prefixList;
 
-  @Nonnull private final List<UserIdGroupPair> _userIdGroupPairs;
+  private final @Nonnull List<UserIdGroupPair> _userIdGroupPairs;
 
-  @Nullable private final Integer _toPort;
+  private final @Nullable Integer _toPort;
 
   @JsonCreator
   private static IpPermissions create(
@@ -305,8 +300,7 @@ public final class IpPermissions implements Serializable {
    * in this IpPermission instance (or ICMP type and code, if protocol is ICMP). Returns null if IP
    * Protocol and ports are not consistent
    */
-  @Nullable
-  private List<AclLineMatchExpr> getMatchExprsForProtocolAndPorts(
+  private @Nullable List<AclLineMatchExpr> getMatchExprsForProtocolAndPorts(
       String aclLineName, Warnings warnings) {
     ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
     IpProtocol ipProtocol = Utils.toIpProtocol(_ipProtocol);
@@ -357,8 +351,7 @@ public final class IpPermissions implements Serializable {
   }
 
   /** Returns a MatchHeaderSpace to match the destination ports in this IpPermission instance */
-  @Nullable
-  private MatchHeaderSpace exprForDstPorts() {
+  private @Nullable MatchHeaderSpace exprForDstPorts() {
     // if the range isn't all ports, set it in ACL
     int low = (_fromPort == null || _fromPort == -1) ? 0 : _fromPort;
     int hi = (_toPort == null || _toPort == -1) ? 65535 : _toPort;
@@ -542,33 +535,27 @@ public final class IpPermissions implements Serializable {
         .toString();
   }
 
-  @Nullable
-  public Integer getFromPort() {
+  public @Nullable Integer getFromPort() {
     return _fromPort;
   }
 
-  @Nonnull
-  public String getIpProtocol() {
+  public @Nonnull String getIpProtocol() {
     return _ipProtocol;
   }
 
-  @Nonnull
-  public List<IpRange> getIpRanges() {
+  public @Nonnull List<IpRange> getIpRanges() {
     return _ipRanges;
   }
 
-  @Nonnull
-  public List<String> getPrefixList() {
+  public @Nonnull List<String> getPrefixList() {
     return _prefixList;
   }
 
-  @Nonnull
-  public List<UserIdGroupPair> getUserIdGroupPairs() {
+  public @Nonnull List<UserIdGroupPair> getUserIdGroupPairs() {
     return _userIdGroupPairs;
   }
 
-  @Nullable
-  public Integer getToPort() {
+  public @Nullable Integer getToPort() {
     return _toPort;
   }
 }

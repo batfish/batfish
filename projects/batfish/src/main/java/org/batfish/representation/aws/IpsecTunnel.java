@@ -14,45 +14,45 @@ import org.w3c.dom.Element;
 @ParametersAreNonnullByDefault
 final class IpsecTunnel implements Serializable {
 
-  @Nullable private Long _cgwBgpAsn;
+  private @Nullable Long _cgwBgpAsn;
 
-  @Nonnull private final Ip _cgwInsideAddress;
+  private final @Nonnull Ip _cgwInsideAddress;
 
   private final int _cgwInsidePrefixLength;
 
-  @Nonnull private final Ip _cgwOutsideAddress;
+  private final @Nonnull Ip _cgwOutsideAddress;
 
-  @Nonnull private final String _ikeAuthProtocol;
+  private final @Nonnull String _ikeAuthProtocol;
 
-  @Nonnull private final String _ikeEncryptionProtocol;
+  private final @Nonnull String _ikeEncryptionProtocol;
 
   private final int _ikeLifetime;
 
-  @Nonnull private final String _ikeMode;
+  private final @Nonnull String _ikeMode;
 
-  @Nonnull private final String _ikePerfectForwardSecrecy;
+  private final @Nonnull String _ikePerfectForwardSecrecy;
 
-  @Nonnull private final String _ikePreSharedKeyHash;
+  private final @Nonnull String _ikePreSharedKeyHash;
 
-  @Nonnull private final String _ipsecAuthProtocol;
+  private final @Nonnull String _ipsecAuthProtocol;
 
-  @Nonnull private final String _ipsecEncryptionProtocol;
+  private final @Nonnull String _ipsecEncryptionProtocol;
 
   private final int _ipsecLifetime;
 
-  @Nonnull private final String _ipsecMode;
+  private final @Nonnull String _ipsecMode;
 
-  @Nonnull private final String _ipsecPerfectForwardSecrecy;
+  private final @Nonnull String _ipsecPerfectForwardSecrecy;
 
-  @Nonnull private final String _ipsecProtocol;
+  private final @Nonnull String _ipsecProtocol;
 
-  @Nullable private final Long _vgwBgpAsn;
+  private final @Nullable Long _vgwBgpAsn;
 
-  @Nonnull private final Ip _vgwInsideAddress;
+  private final @Nonnull Ip _vgwInsideAddress;
 
   private final int _vgwInsidePrefixLength;
 
-  @Nonnull private final Ip _vgwOutsideAddress;
+  private final @Nonnull Ip _vgwOutsideAddress;
 
   static IpsecTunnel create(Element ipsecTunnel, boolean isBgpConnection) {
 

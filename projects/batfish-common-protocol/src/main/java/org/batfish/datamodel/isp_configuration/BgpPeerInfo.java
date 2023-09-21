@@ -31,11 +31,11 @@ public class BgpPeerInfo {
   private static final String PROP_VRF = "vrf";
   private static final String PROP_ISP_ATTACHMENT = "ispAttachment";
 
-  @Nonnull private final String _hostname;
-  @Nullable private final Ip _overrideLocalAddress;
-  @Nonnull private final Ip _peerAddress;
-  @Nullable private final String _vrf;
-  @Nullable private final IspAttachment _ispAttachment;
+  private final @Nonnull String _hostname;
+  private final @Nullable Ip _overrideLocalAddress;
+  private final @Nonnull Ip _peerAddress;
+  private final @Nullable String _vrf;
+  private final @Nullable IspAttachment _ispAttachment;
 
   public BgpPeerInfo(
       String hostname,

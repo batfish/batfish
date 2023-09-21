@@ -26,31 +26,31 @@ public final class ApplicationOverrideRule implements Serializable {
   }
 
   // Name of the rule
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   // Description of the rule
-  @Nullable private String _description;
+  private @Nullable String _description;
 
   // Application used for traffic matching this rule
-  @Nullable private ApplicationOrApplicationGroupReference _application;
+  private @Nullable ApplicationOrApplicationGroupReference _application;
 
   private boolean _disabled;
 
   // Zones to match
-  @Nonnull private final SortedSet<String> _from;
-  @Nonnull private final SortedSet<String> _to;
+  private final @Nonnull SortedSet<String> _from;
+  private final @Nonnull SortedSet<String> _to;
 
   // IPs to match
-  @Nonnull private final List<RuleEndpoint> _source;
-  @Nonnull private final List<RuleEndpoint> _destination;
+  private final @Nonnull List<RuleEndpoint> _source;
+  private final @Nonnull List<RuleEndpoint> _destination;
   private boolean _negateSource;
   private boolean _negateDestination;
 
   // Traffic characteristics to match
-  @Nonnull private Protocol _protocol;
-  @Nonnull private IntegerSpace _port;
+  private @Nonnull Protocol _protocol;
+  private @Nonnull IntegerSpace _port;
 
-  @Nonnull private final Set<String> _tags;
+  private final @Nonnull Set<String> _tags;
 
   public ApplicationOverrideRule(@Nonnull String name) {
     _destination = new LinkedList<>();
@@ -66,18 +66,15 @@ public final class ApplicationOverrideRule implements Serializable {
     _protocol = Protocol.UNSPECIFIED;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public ApplicationOrApplicationGroupReference getApplication() {
+  public @Nullable ApplicationOrApplicationGroupReference getApplication() {
     return _application;
   }
 
@@ -85,23 +82,19 @@ public final class ApplicationOverrideRule implements Serializable {
     return _disabled;
   }
 
-  @Nonnull
-  public SortedSet<String> getFrom() {
+  public @Nonnull SortedSet<String> getFrom() {
     return _from;
   }
 
-  @Nonnull
-  public SortedSet<String> getTo() {
+  public @Nonnull SortedSet<String> getTo() {
     return _to;
   }
 
-  @Nonnull
-  public List<RuleEndpoint> getSource() {
+  public @Nonnull List<RuleEndpoint> getSource() {
     return _source;
   }
 
-  @Nonnull
-  public List<RuleEndpoint> getDestination() {
+  public @Nonnull List<RuleEndpoint> getDestination() {
     return _destination;
   }
 
@@ -113,13 +106,11 @@ public final class ApplicationOverrideRule implements Serializable {
     return _negateDestination;
   }
 
-  @Nonnull
-  public Protocol getProtocol() {
+  public @Nonnull Protocol getProtocol() {
     return _protocol;
   }
 
-  @Nullable
-  public IpProtocol getIpProtocol() {
+  public @Nullable IpProtocol getIpProtocol() {
     switch (_protocol) {
       case TCP:
         return IpProtocol.TCP;
@@ -131,13 +122,11 @@ public final class ApplicationOverrideRule implements Serializable {
     }
   }
 
-  @Nonnull
-  public IntegerSpace getPort() {
+  public @Nonnull IntegerSpace getPort() {
     return _port;
   }
 
-  @Nonnull
-  public Set<String> getTags() {
+  public @Nonnull Set<String> getTags() {
     return _tags;
   }
 

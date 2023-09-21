@@ -54,8 +54,8 @@ public final class AutocompleteSuggestion {
 
   @ParametersAreNonnullByDefault
   public static final class Builder {
-    @Nullable private String _description;
-    @Nullable private String _hint;
+    private @Nullable String _description;
+    private @Nullable String _hint;
     private int _insertionIndex;
     private boolean _isPartial;
     private int _rank;
@@ -125,13 +125,13 @@ public final class AutocompleteSuggestion {
   public static final int DEFAULT_RANK = Integer.MAX_VALUE;
 
   /** Some helpful text about what the suggestion specifies */
-  @Nullable private final String _description;
+  private final @Nullable String _description;
 
   /**
    * Short text to show the user how to complete a partial suggestion. Should be provided for every
    * partial suggestion.
    */
-  @Nullable private final String _hint;
+  private final @Nullable String _hint;
 
   /** Index in the input query string where the suggestion text should be inserted */
   private final int _insertionIndex;
@@ -146,10 +146,10 @@ public final class AutocompleteSuggestion {
   private final int _rank;
 
   /** The type of this suggestion */
-  @Nonnull private final SuggestionType _suggestionType;
+  private final @Nonnull SuggestionType _suggestionType;
 
   /** Actual text of the suggestion */
-  @Nonnull private final String _text;
+  private final @Nonnull String _text;
 
   @JsonCreator
   private static @Nonnull AutocompleteSuggestion create(
@@ -226,14 +226,12 @@ public final class AutocompleteSuggestion {
   }
 
   @JsonProperty(PROP_DESCRIPTION)
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
   @JsonProperty(PROP_HINT)
-  @Nullable
-  public String getHint() {
+  public @Nullable String getHint() {
     return _hint;
   }
 
@@ -252,14 +250,12 @@ public final class AutocompleteSuggestion {
     return _rank;
   }
 
-  @Nonnull
-  public SuggestionType getSuggestionType() {
+  public @Nonnull SuggestionType getSuggestionType() {
     return _suggestionType;
   }
 
   @JsonProperty(PROP_TEXT)
-  @Nonnull
-  public String getText() {
+  public @Nonnull String getText() {
     return _text;
   }
 

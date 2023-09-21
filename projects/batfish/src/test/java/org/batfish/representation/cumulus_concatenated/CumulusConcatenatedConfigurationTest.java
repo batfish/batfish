@@ -14,8 +14,8 @@ import static org.batfish.representation.frr.FrrConfiguration.LINK_LOCAL_ADDRESS
 import static org.batfish.representation.frr.FrrConfiguration.LOOPBACK_INTERFACE_NAME;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_LOOPBACK_BANDWIDTH;
 import static org.batfish.representation.frr.FrrConversions.DEFAULT_PORT_BANDWIDTH;
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
@@ -49,7 +49,6 @@ import org.batfish.representation.frr.BgpVrf;
 import org.batfish.representation.frr.FrrConfiguration;
 import org.batfish.representation.frr.FrrInterface;
 import org.batfish.representation.frr.StaticRoute;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 /** Test for {@link CumulusConcatenatedConfiguration}. */
@@ -82,8 +81,7 @@ public class CumulusConcatenatedConfigurationTest {
     // vxlan's local tunnel ip should win when anycast is null
     convertVxlans(
         c, vc, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(
-        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(vxlanLocalTunnelIp));
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(vxlanLocalTunnelIp));
 
     // anycast should win if non-null
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
@@ -94,16 +92,14 @@ public class CumulusConcatenatedConfigurationTest {
         loopbackAnycastIp,
         loopbackTunnelIp,
         new Warnings());
-    assertThat(
-        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(loopbackAnycastIp));
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackAnycastIp));
 
     // loopback tunnel ip should win when nothing else is present
     vrf.setLayer3Vnis(ImmutableList.of()); // wipe out prior state
     vxlan.setVxlanLocalTunnelIp(null);
     convertVxlans(
         c, vc, ImmutableMap.of(1001, vrf.getName()), null, loopbackTunnelIp, new Warnings());
-    assertThat(
-        vrf.getLayer3Vnis().get(1001).getSourceAddress(), Matchers.equalTo(loopbackTunnelIp));
+    assertThat(vrf.getLayer3Vnis().get(1001).getSourceAddress(), equalTo(loopbackTunnelIp));
   }
 
   /** Test that loopback interface is unconditionally created */

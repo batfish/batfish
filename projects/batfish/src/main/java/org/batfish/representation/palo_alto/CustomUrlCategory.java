@@ -41,5 +41,5 @@ public final class CustomUrlCategory implements Serializable {
 
   private @Nullable String _description;
   private @Nonnull Set<String> _list;
-  private @Nonnull final String _name;
+  private final @Nonnull String _name;
 }

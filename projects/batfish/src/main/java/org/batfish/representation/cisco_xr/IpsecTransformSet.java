@@ -14,15 +14,15 @@ import org.batfish.datamodel.IpsecProtocol;
 
 public class IpsecTransformSet implements Serializable {
 
-  @Nullable private IpsecAuthenticationAlgorithm _authenticationAlgorithm;
+  private @Nullable IpsecAuthenticationAlgorithm _authenticationAlgorithm;
 
-  @Nullable private EncryptionAlgorithm _encryptionAlgorithm;
+  private @Nullable EncryptionAlgorithm _encryptionAlgorithm;
 
-  @Nonnull private IpsecEncapsulationMode _ipsecEncapsulationMode;
+  private @Nonnull IpsecEncapsulationMode _ipsecEncapsulationMode;
 
   private final String _name;
 
-  @Nonnull private SortedSet<IpsecProtocol> _protocols;
+  private @Nonnull SortedSet<IpsecProtocol> _protocols;
 
   public IpsecTransformSet(String name) {
     _ipsecEncapsulationMode = IpsecEncapsulationMode.TUNNEL;

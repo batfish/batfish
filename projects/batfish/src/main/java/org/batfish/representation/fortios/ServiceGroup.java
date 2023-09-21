@@ -11,8 +11,7 @@ import javax.annotation.Nullable;
 public final class ServiceGroup extends ServiceGroupMember implements Serializable {
 
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -25,14 +24,12 @@ public final class ServiceGroup extends ServiceGroupMember implements Serializab
    * Names of service members asssociated with this service group. Should be derived from {@link
    * this#getMemberUUIDs} when finishing building the VS model.
    */
-  @Nullable
-  public Set<String> getMember() {
+  public @Nullable Set<String> getMember() {
     return _member;
   }
 
   /** Set of Batfish-internal UUIDs associated with member references. */
-  @Nonnull
-  public Set<BatfishUUID> getMemberUUIDs() {
+  public @Nonnull Set<BatfishUUID> getMemberUUIDs() {
     return _memberUuids;
   }
 
@@ -52,8 +49,8 @@ public final class ServiceGroup extends ServiceGroupMember implements Serializab
     _memberUuids = new HashSet<>();
   }
 
-  @Nonnull private String _name;
-  @Nonnull private final BatfishUUID _uuid;
-  @Nullable private Set<String> _member;
-  @Nonnull private final Set<BatfishUUID> _memberUuids;
+  private @Nonnull String _name;
+  private final @Nonnull BatfishUUID _uuid;
+  private @Nullable Set<String> _member;
+  private final @Nonnull Set<BatfishUUID> _memberUuids;
 }

@@ -129,7 +129,7 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
   public static final NamedStructurePropertySpecifier ALL =
       new NamedStructurePropertySpecifier(JAVA_MAP.keySet());
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   /** Creates the specifier object from the grammar expression */
   public static NamedStructurePropertySpecifier create(String expression) {
@@ -153,8 +153,7 @@ public class NamedStructurePropertySpecifier extends PropertySpecifier {
   }
 
   @Override
-  @Nonnull
-  public List<String> getMatchingProperties() {
+  public @Nonnull List<String> getMatchingProperties() {
     return _properties;
   }
 

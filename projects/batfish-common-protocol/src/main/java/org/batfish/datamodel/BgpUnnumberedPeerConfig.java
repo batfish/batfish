@@ -22,15 +22,14 @@ import org.batfish.datamodel.dataplane.rib.RibGroup;
 public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpUnnumberedPeerConfig> {
-    @Nullable private String _peerInterface;
+    private @Nullable String _peerInterface;
 
     protected Builder() {
       super();
     }
 
     @Override
-    @Nonnull
-    public BgpUnnumberedPeerConfig build() {
+    public @Nonnull BgpUnnumberedPeerConfig build() {
       checkArgument(_peerInterface != null, "Missing %s", PROP_PEER_INTERFACE);
       checkArgument(_checkLocalIpOnAccept == null, "Unsupported %s", PROP_CHECK_LOCAL_IP_ON_ACCEPT);
       BgpUnnumberedPeerConfig bgpPeerConfig =
@@ -117,7 +116,7 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
         replaceNonLocalAsesOnExport);
   }
 
-  @Nonnull private final String _peerInterface;
+  private final @Nonnull String _peerInterface;
 
   private BgpUnnumberedPeerConfig(
       @Nullable RibGroup appliedRibGroup,

@@ -36,8 +36,7 @@ public class BgpPeer implements Serializable {
     _enable = enable;
   }
 
-  @Nullable
-  public Boolean getEnableSenderSideLoopDetection() {
+  public @Nullable Boolean getEnableSenderSideLoopDetection() {
     return _enableSenderSideLoopDetection;
   }
 
@@ -61,8 +60,7 @@ public class BgpPeer implements Serializable {
     _localInterface = localInterface;
   }
 
-  @Nullable
-  public Integer getMultihop() {
+  public @Nullable Integer getMultihop() {
     return _multihop;
   }
 

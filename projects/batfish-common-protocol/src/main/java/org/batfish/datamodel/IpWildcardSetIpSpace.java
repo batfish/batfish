@@ -76,9 +76,9 @@ public final class IpWildcardSetIpSpace extends IpSpace {
     return new Builder();
   }
 
-  @Nonnull private final Set<IpWildcard> _blacklist;
+  private final @Nonnull Set<IpWildcard> _blacklist;
 
-  @Nonnull private final Set<IpWildcard> _whitelist;
+  private final @Nonnull Set<IpWildcard> _whitelist;
 
   private IpWildcardSetIpSpace(
       @Nonnull Set<IpWildcard> blacklist, @Nonnull Set<IpWildcard> whitelist) {

@@ -18,43 +18,38 @@ public final class Tunnel implements Serializable {
     IPV6_IP,
   }
 
-  @Nullable private Ip _destination;
+  private @Nullable Ip _destination;
 
-  @Nullable private String _ipsecProfileName;
+  private @Nullable String _ipsecProfileName;
 
-  @Nonnull private TunnelMode _mode;
+  private @Nonnull TunnelMode _mode;
 
-  @Nullable private Ip _sourceAddress;
+  private @Nullable Ip _sourceAddress;
 
-  @Nonnull private String _sourceInterfaceName;
+  private @Nonnull String _sourceInterfaceName;
 
   public Tunnel() {
     _sourceInterfaceName = UNSET_LOCAL_INTERFACE;
     _mode = TunnelMode.GRE_MULTIPOINT;
   }
 
-  @Nullable
-  public Ip getDestination() {
+  public @Nullable Ip getDestination() {
     return _destination;
   }
 
-  @Nullable
-  public String getIpsecProfileName() {
+  public @Nullable String getIpsecProfileName() {
     return _ipsecProfileName;
   }
 
-  @Nonnull
-  public TunnelMode getMode() {
+  public @Nonnull TunnelMode getMode() {
     return _mode;
   }
 
-  @Nullable
-  public Ip getSourceAddress() {
+  public @Nullable Ip getSourceAddress() {
     return _sourceAddress;
   }
 
-  @Nonnull
-  public String getSourceInterfaceName() {
+  public @Nonnull String getSourceInterfaceName() {
     return _sourceInterfaceName;
   }
 

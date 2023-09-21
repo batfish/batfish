@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ConstantNameSetSpecifier implements NameSetSpecifier {
 
-  @Nonnull private final Set<String> _names;
+  private final @Nonnull Set<String> _names;
 
   public ConstantNameSetSpecifier(Set<String> names) {
     _names = ImmutableSet.copyOf(names);

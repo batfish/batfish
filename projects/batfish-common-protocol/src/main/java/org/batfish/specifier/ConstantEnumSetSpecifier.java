@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ConstantEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
 
-  @Nonnull private final Set<T> _structureTypes;
+  private final @Nonnull Set<T> _structureTypes;
 
   public ConstantEnumSetSpecifier(Set<T> structureTypes) {
     _structureTypes = ImmutableSet.copyOf(structureTypes);

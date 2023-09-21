@@ -4,7 +4,6 @@ import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
-import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.diffRowResultsFor;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -30,6 +29,7 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -40,7 +40,9 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
 import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -53,17 +55,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
+  private final @Nonnull Environment.Direction _direction;
 
-  @Nonnull private final String _policySpecifierString;
-  @Nullable private final String _referencePolicySpecifierString;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nullable private final RoutingPolicySpecifier _referencePolicySpecifier;
+  private final @Nonnull String _policySpecifierString;
+  private final @Nullable String _referencePolicySpecifierString;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nullable RoutingPolicySpecifier _referencePolicySpecifier;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   public CompareRoutePoliciesAnswerer(
       org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question,
@@ -92,26 +94,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     // created and tracked by the analysis
     _communityRegexes = ImmutableSet.<String>builder().build();
     _asPathRegexes = ImmutableSet.<String>builder().build();
-  }
-
-  /**
-   * Convert the results of symbolic route analysis into an answer to this question, if the
-   * resulting constraints are satisfiable.
-   *
-   * @param referencePolicy the reference route policy that we compared against.
-   * @param policy the proposed route policy.
-   * @param inRoute the input route to simulate on each policy
-   * @param env a pair of predicate that assigns truth values to tracks and a source VRF
-   * @return the concrete input route and, if the desired action is PERMIT, the concrete output
-   *     routes resulting from analyzing the given policies.
-   */
-  private Row computeDifferencesForInputs(
-      RoutingPolicy referencePolicy,
-      RoutingPolicy policy,
-      Bgpv4Route inRoute,
-      Tuple<Predicate<String>, String> env) {
-    return diffRowResultsFor(
-        referencePolicy, policy, inRoute, _direction, env.getFirst(), env.getSecond());
   }
 
   /**
@@ -165,7 +147,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         case LOCAL_PREF:
         case MED:
         case NEXTHOP:
-        case NEXTHOP_DISCARDED:
+        case NEXTHOP_TYPE:
         case NEXTHOP_SET:
         case TAG:
         case ADMIN_DIST:
@@ -218,7 +200,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private List<Row> comparePolicies(
       RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
-    List<BDD> differences = new ArrayList<>();
+    List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
 
     BDDFactory factory = JFactory.init(100000, 10000);
     TransferBDD tBDD = new TransferBDD(factory, configAPs, referencePolicy);
@@ -244,12 +226,15 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
         BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
-        // some common
-        // input routes and their behavior should match.
+        // some common input routes and their behavior should match.
         if (!intersection.isZero()) {
+          // a flag that is set if we find a behavioral difference between the two paths
+          boolean behaviorDiff = false;
+          BDD finalConstraints = null;
           // Naive check to see if both policies accepted/rejected the route(s).
           if (path.getAccepted() != otherPath.getAccepted()) {
-            differences.add(intersection);
+            behaviorDiff = true;
+            finalConstraints = intersection;
           } else {
             // If both policies perform the same action, then check that their outputs match.
             // We compute the outputs of interest, by restricting the sets of output routes to the
@@ -264,17 +249,30 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
               BDD outputConstraints =
                   counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
               if (!diff.isEmpty()) {
-                differences.add(intersection.and(outputConstraints));
+                behaviorDiff = true;
+                finalConstraints = intersection.and(outputConstraints);
               }
             }
+          }
+
+          // we have found a difference, so let's get a concrete example of the difference
+          if (behaviorDiff) {
+            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+                constraintsToInputs(finalConstraints, configAPs);
+            Result<BgpRoute> otherResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
+            Result<BgpRoute> refResult =
+                SearchRoutePoliciesAnswerer.simulatePolicy(
+                    referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
+            differences.add(new Tuple<>(otherResult, refResult));
           }
         }
       }
     }
     return differences.stream()
-        .map(intersection -> constraintsToInputs(intersection, configAPs))
-        .sorted(Comparator.comparing(t -> t.getFirst().getNetwork()))
-        .map(t -> computeDifferencesForInputs(referencePolicy, policy, t.getFirst(), t.getSecond()))
+        .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()))
+        .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
         .collect(Collectors.toList());
   }
 
@@ -396,10 +394,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
    * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
    * with route-maps in r1 of the new snapshot.
-   *
-   * @param snapshot the current snapshot
-   * @param reference the reference snapshot
-   * @return
    */
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {

@@ -15,11 +15,11 @@ public final class NatPool implements Serializable {
 
   private Ip _toAddress;
 
-  @Nullable private String _owner;
+  private @Nullable String _owner;
 
   // null value means no pat is configured; source nat will apply pat and dest nat will not apply
   // pat by default
-  @Nullable private PortAddressTranslation _pat;
+  private @Nullable PortAddressTranslation _pat;
 
   public NatPool() {
     _fromAddress = Prefix.ZERO.getStartIp();
@@ -28,23 +28,19 @@ public final class NatPool implements Serializable {
     _owner = null;
   }
 
-  @Nonnull
-  public Ip getFromAddress() {
+  public @Nonnull Ip getFromAddress() {
     return _fromAddress;
   }
 
-  @Nonnull
-  public Ip getToAddress() {
+  public @Nonnull Ip getToAddress() {
     return _toAddress;
   }
 
-  @Nullable
-  public String getOwner() {
+  public @Nullable String getOwner() {
     return _owner;
   }
 
-  @Nullable
-  public PortAddressTranslation getPortAddressTranslation() {
+  public @Nullable PortAddressTranslation getPortAddressTranslation() {
     return _pat;
   }
 

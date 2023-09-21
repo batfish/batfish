@@ -20,8 +20,8 @@ public final class MatchTag extends BooleanExpr {
   private static final String PROP_CMP = "cmp";
   private static final String PROP_TAG = "tag";
 
-  @Nonnull private final IntComparator _cmp;
-  @Nonnull private final LongExpr _tag;
+  private final @Nonnull IntComparator _cmp;
+  private final @Nonnull LongExpr _tag;
 
   @JsonCreator
   private static MatchTag jsonCreator(
@@ -57,14 +57,12 @@ public final class MatchTag extends BooleanExpr {
   }
 
   @JsonProperty(PROP_CMP)
-  @Nonnull
-  public IntComparator getCmp() {
+  public @Nonnull IntComparator getCmp() {
     return _cmp;
   }
 
   @JsonProperty(PROP_TAG)
-  @Nonnull
-  public LongExpr getTag() {
+  public @Nonnull LongExpr getTag() {
     return _tag;
   }
 

@@ -205,7 +205,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   public FlatVyosControlPlaneExtractor(
       String text,
@@ -219,8 +219,7 @@ public class FlatVyosControlPlaneExtractor extends FlatVyosParserBaseListener
   }
 
   @Override
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

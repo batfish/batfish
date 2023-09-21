@@ -79,7 +79,7 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
 
   public static final class VIModelQuestion extends Question {
 
-    private @Nullable final String _nodes;
+    private final @Nullable String _nodes;
 
     public VIModelQuestion(@Nullable String nodes) {
       _nodes = nodes;

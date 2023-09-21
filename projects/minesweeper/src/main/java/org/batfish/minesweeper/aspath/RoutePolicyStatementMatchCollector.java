@@ -25,6 +25,7 @@ import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
+import org.batfish.datamodel.routing_policy.statement.SetOriginatorIp;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
 import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
@@ -102,6 +103,12 @@ public class RoutePolicyStatementMatchCollector<T>
   public Set<T> visitReplaceAsesInAsSequence(ReplaceAsesInAsSequence replaceAsesInAsPathSequence) {
     // if/when we update TransferBDD to support AS-path replacing, we will need to update this as
     // well
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<T> visitSetOriginatorIp(
+      SetOriginatorIp setOriginatorIp, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 

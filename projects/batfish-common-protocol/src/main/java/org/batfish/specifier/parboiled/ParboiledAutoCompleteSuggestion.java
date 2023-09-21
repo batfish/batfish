@@ -27,19 +27,19 @@ final class ParboiledAutoCompleteSuggestion {
   static final String SET_PREFIX_UNION = "Set union";
 
   /** The anchor based on which we are auto completing. */
-  @Nonnull private final Anchor.Type _anchorType;
+  private final @Nonnull Anchor.Type _anchorType;
 
   /** Index in the input query string where the suggestion text should be inserted */
   private final int _insertionIndex;
 
   /** Actual text of the suggestion */
-  @Nonnull private final String _text;
+  private final @Nonnull String _text;
 
   /** Short text to show the user how to complete a partial suggestion. */
-  @Nullable private final String _hint;
+  private final @Nullable String _hint;
 
   /** Some helpful text about what the suggestion specifies */
-  @Nullable private final String _description;
+  private final @Nullable String _description;
 
   ParboiledAutoCompleteSuggestion(String text, int insertionIndex, Anchor.Type anchorType) {
     this(text, anchorType.getHint(), insertionIndex, anchorType);
@@ -75,13 +75,11 @@ final class ParboiledAutoCompleteSuggestion {
         && Objects.equals(_text, ((ParboiledAutoCompleteSuggestion) o)._text);
   }
 
-  @Nonnull
-  public Anchor.Type getAnchorType() {
+  public @Nonnull Anchor.Type getAnchorType() {
     return _anchorType;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -89,8 +87,7 @@ final class ParboiledAutoCompleteSuggestion {
     return _insertionIndex;
   }
 
-  @Nonnull
-  public String getText() {
+  public @Nonnull String getText() {
     return _text;
   }
 

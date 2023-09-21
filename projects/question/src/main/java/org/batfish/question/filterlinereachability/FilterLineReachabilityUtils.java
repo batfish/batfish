@@ -343,7 +343,7 @@ public class FilterLineReachabilityUtils {
    * packet differently than the blocked line would
    */
   public static class BlockingProperties {
-    @Nonnull private final List<Integer> _blockingLineNums;
+    private final @Nonnull List<Integer> _blockingLineNums;
     private final boolean _diffAction;
 
     public BlockingProperties(@Nonnull Collection<Integer> blockingLineNums, boolean diffAction) {

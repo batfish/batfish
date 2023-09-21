@@ -12,8 +12,8 @@ import org.batfish.datamodel.IpSpace;
 public final class RangeNetworkObject implements Serializable, NetworkObject {
 
   private NetworkObjectInfo _info;
-  @Nonnull private final Ip _end;
-  @Nonnull private final Ip _start;
+  private final @Nonnull Ip _end;
+  private final @Nonnull Ip _start;
 
   public RangeNetworkObject(Ip start, Ip end) {
     _end = end;

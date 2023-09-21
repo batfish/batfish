@@ -295,7 +295,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final Ip _srcIp;
 
-  @Nullable private final String _srcNode;
+  private final @Nullable String _srcNode;
 
   private final RoutingProtocol _srcProtocol;
 
@@ -622,8 +622,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @JsonProperty(PROP_SRC_NODE)
-  @Nullable
-  public String getSrcNode() {
+  public @Nullable String getSrcNode() {
     return _srcNode;
   }
 

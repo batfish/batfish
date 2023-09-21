@@ -164,15 +164,13 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       return this;
     }
 
-    @Nonnull
-    public Builder setAdministrativeCost(int administrativeCost) {
+    public @Nonnull Builder setAdministrativeCost(int administrativeCost) {
       // Call method on parent builder. Keep backwards-compatible API.
       setAdmin(administrativeCost);
       return this;
     }
 
-    @Nonnull
-    public Builder setRecursive(boolean recursive) {
+    public @Nonnull Builder setRecursive(boolean recursive) {
       _recursive = recursive;
       return this;
     }

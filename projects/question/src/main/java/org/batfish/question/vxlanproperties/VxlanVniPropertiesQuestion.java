@@ -14,8 +14,8 @@ public final class VxlanVniPropertiesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private String _nodes;
-  @Nullable private String _properties;
+  private @Nullable String _nodes;
+  private @Nullable String _properties;
 
   @Override
   public boolean getDataPlane() {

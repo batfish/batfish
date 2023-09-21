@@ -6,8 +6,8 @@ import javax.annotation.Nonnull;
 
 /** Captures common settings used to create a BGP peer on the ISP node */
 abstract class IspBgpPeer {
-  @Nonnull protected final Long _remoteAsn;
-  @Nonnull protected final Long _localAsn;
+  protected final @Nonnull Long _remoteAsn;
+  protected final @Nonnull Long _localAsn;
   protected final boolean _ebgpMultiHop;
 
   public IspBgpPeer(Long remoteAsn, Long localAsn, boolean ebgpMultiHop) {

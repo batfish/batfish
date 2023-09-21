@@ -50,8 +50,7 @@ public final class PolicyRule implements Serializable {
     return _updateMetric;
   }
 
-  @Nullable
-  public PolicyRuleUpdateWeight getUpdateWeight() {
+  public @Nullable PolicyRuleUpdateWeight getUpdateWeight() {
     return _updateWeight;
   }
 

@@ -9,8 +9,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 @ParametersAreNonnullByDefault
 final class InterfaceLocationAstNode implements LocationAstNode {
-  @Nullable private final NodeAstNode _nodeAst;
-  @Nullable private final InterfaceAstNode _interfaceAst;
+  private final @Nullable NodeAstNode _nodeAst;
+  private final @Nullable InterfaceAstNode _interfaceAst;
 
   private InterfaceLocationAstNode(
       @Nullable NodeAstNode nodeAst, @Nullable InterfaceAstNode interfaceAst) {

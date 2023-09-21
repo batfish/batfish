@@ -39,6 +39,6 @@ public final class RdSetIpPrefix implements RdSetElem {
     return Objects.hash(_prefix, _low);
   }
 
-  @Nonnull private final Prefix _prefix;
-  @Nonnull private final Uint16RangeExpr _low;
+  private final @Nonnull Prefix _prefix;
+  private final @Nonnull Uint16RangeExpr _low;
 }

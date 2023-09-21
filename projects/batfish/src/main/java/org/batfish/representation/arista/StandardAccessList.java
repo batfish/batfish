@@ -19,13 +19,11 @@ public class StandardAccessList implements Serializable {
     _lines.put(line.getSeq(), line);
   }
 
-  @Nonnull
-  public SortedMap<Long, StandardAccessListLine> getLines() {
+  public @Nonnull SortedMap<Long, StandardAccessListLine> getLines() {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

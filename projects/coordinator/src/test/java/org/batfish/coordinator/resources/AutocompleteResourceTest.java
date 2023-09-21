@@ -5,9 +5,9 @@ import static javax.ws.rs.core.Response.Status.OK;
 import static org.batfish.common.CoordConstsV2.QP_MAX_SUGGESTIONS;
 import static org.batfish.common.CoordConstsV2.QP_QUERY;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
-import static org.hamcrest.core.IsEqual.equalTo;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;

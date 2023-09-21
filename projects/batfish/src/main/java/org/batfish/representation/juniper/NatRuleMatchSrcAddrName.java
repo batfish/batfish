@@ -31,8 +31,7 @@ public final class NatRuleMatchSrcAddrName implements NatRuleMatch {
     return Objects.equals(_name, that._name);
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

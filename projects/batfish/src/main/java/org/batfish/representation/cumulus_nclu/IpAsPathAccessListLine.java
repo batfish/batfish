@@ -14,8 +14,7 @@ public class IpAsPathAccessListLine implements Serializable {
     _asNum = asNum;
   }
 
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 

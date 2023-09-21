@@ -35,8 +35,7 @@ public class Vlan implements Serializable {
     return _addressVirtuals;
   }
 
-  @Nullable
-  public String getAlias() {
+  public @Nullable String getAlias() {
     return _alias;
   }
 

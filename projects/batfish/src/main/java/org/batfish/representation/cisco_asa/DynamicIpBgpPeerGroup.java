@@ -7,7 +7,7 @@ import org.batfish.datamodel.Prefix6;
 
 public class DynamicIpBgpPeerGroup extends LeafBgpPeerGroup {
 
-  @Nonnull private final Prefix _prefix;
+  private final @Nonnull Prefix _prefix;
 
   public DynamicIpBgpPeerGroup(@Nonnull Prefix prefix) {
     _prefix = prefix;
@@ -29,8 +29,7 @@ public class DynamicIpBgpPeerGroup extends LeafBgpPeerGroup {
     return null;
   }
 
-  @Nonnull
-  public Prefix getPrefix() {
+  public @Nonnull Prefix getPrefix() {
     return _prefix;
   }
 }

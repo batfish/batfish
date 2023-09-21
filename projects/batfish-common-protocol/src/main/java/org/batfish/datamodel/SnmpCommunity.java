@@ -43,8 +43,7 @@ public class SnmpCommunity extends ComparableStructure<String> {
     _accessList6 = accessList6;
   }
 
-  @Nullable
-  public IpSpace getClientIps() {
+  public @Nullable IpSpace getClientIps() {
     return _clientIps;
   }
 

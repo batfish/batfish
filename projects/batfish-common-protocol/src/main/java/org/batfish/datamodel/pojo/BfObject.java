@@ -9,7 +9,7 @@ public abstract class BfObject {
 
   protected static final String PROP_ID = "id";
 
-  @Nullable private final String _id;
+  private final @Nullable String _id;
 
   private Map<String, String> _properties;
 
@@ -23,8 +23,7 @@ public abstract class BfObject {
   }
 
   @JsonProperty(PROP_ID)
-  @Nullable
-  public String getId() {
+  public @Nullable String getId() {
     return _id;
   }
 

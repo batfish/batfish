@@ -11,8 +11,8 @@ import org.batfish.datamodel.Ip;
 
 /** Captures settings used to create an active BGP peer on the ISP */
 final class IspBgpActivePeer extends IspBgpPeer {
-  @Nonnull private final Ip _peerAddress;
-  @Nonnull private final Ip _localIp;
+  private final @Nonnull Ip _peerAddress;
+  private final @Nonnull Ip _localIp;
 
   public IspBgpActivePeer(
       Ip peerAddress, Ip localIp, Long remoteAsn, Long localAsn, boolean ebgpMultihop) {

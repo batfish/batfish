@@ -29,7 +29,7 @@ public class AristaEosVxlan implements Serializable {
   /** Map of VLAN number to VXLAN segment id (VNI) */
   private SortedMap<Integer, Integer> _vlanVnis;
 
-  @Nonnull private final Map<String, Integer> _vrfToVni;
+  private final @Nonnull Map<String, Integer> _vrfToVni;
 
   public AristaEosVxlan(String interfaceName) {
     _floodAddresses = new TreeSet<>();
@@ -95,8 +95,7 @@ public class AristaEosVxlan implements Serializable {
     _udpPort = udpPort;
   }
 
-  @Nonnull
-  public Map<String, Integer> getVrfToVni() {
+  public @Nonnull Map<String, Integer> getVrfToVni() {
     return _vrfToVni;
   }
 }

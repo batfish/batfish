@@ -33,17 +33,17 @@ public final class AddressGroup implements Serializable {
     STATIC
   }
 
-  @Nullable private String _description;
+  private @Nullable String _description;
 
-  @Nullable private String _filter;
+  private @Nullable String _filter;
 
   private final Set<String> _members;
 
   private final String _name;
 
-  @Nonnull private final Set<String> _tags;
+  private final @Nonnull Set<String> _tags;
 
-  @Nullable private Type _type;
+  private @Nullable Type _type;
 
   public AddressGroup(String name) {
     _name = name;
@@ -207,13 +207,11 @@ public final class AddressGroup implements Serializable {
     return _name;
   }
 
-  @Nonnull
-  public Set<String> getTags() {
+  public @Nonnull Set<String> getTags() {
     return _tags;
   }
 
-  @Nullable
-  public Type getType() {
+  public @Nullable Type getType() {
     return _type;
   }
 

@@ -16,7 +16,7 @@ public abstract class PortsApplication extends Application {
 
   public static int MAX_PORT_NUMBER = 65535;
 
-  @Nonnull protected final List<SubRange> _ports;
+  protected final @Nonnull List<SubRange> _ports;
 
   protected PortsApplication(IpProtocol ipProtocol, int port) {
     this(ipProtocol, ImmutableList.of(SubRange.singleton(port)));
@@ -33,8 +33,7 @@ public abstract class PortsApplication extends Application {
         HeaderSpace.builder().setIpProtocols(super.getIpProtocol()).setDstPorts(_ports).build());
   }
 
-  @Nonnull
-  public List<SubRange> getPorts() {
+  public @Nonnull List<SubRange> getPorts() {
     return _ports;
   }
 }

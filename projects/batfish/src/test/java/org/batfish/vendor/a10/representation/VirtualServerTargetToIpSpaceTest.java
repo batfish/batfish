@@ -1,7 +1,7 @@
 package org.batfish.vendor.a10.representation;
 
-import static org.hamcrest.CoreMatchers.equalTo;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.datamodel.Ip;
 import org.junit.Test;

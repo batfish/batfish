@@ -38,8 +38,7 @@ public final class RemoveTunnelEncapsulationAttribute extends Statement {
   }
 
   @Override
-  @Nonnull
-  public Result execute(Environment environment) {
+  public @Nonnull Result execute(Environment environment) {
     if (!(environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>)) {
       // Do nothing for non-BGP routes
       return new Result();

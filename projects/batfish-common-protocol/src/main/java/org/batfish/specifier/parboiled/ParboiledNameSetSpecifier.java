@@ -52,9 +52,9 @@ public final class ParboiledNameSetSpecifier implements NameSetSpecifier {
     }
   }
 
-  @Nonnull private final NameSetAstNode _ast;
+  private final @Nonnull NameSetAstNode _ast;
 
-  @Nonnull private final Grammar _grammar;
+  private final @Nonnull Grammar _grammar;
 
   ParboiledNameSetSpecifier(NameSetAstNode ast, Grammar grammar) {
     _ast = ast;

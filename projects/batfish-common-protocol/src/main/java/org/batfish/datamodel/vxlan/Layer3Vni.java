@@ -14,11 +14,11 @@ import org.batfish.datamodel.Ip;
 
 /** Configuration for an L3 VXLAN VNI */
 public final class Layer3Vni implements Vni {
-  @Nonnull private final Set<Ip> _learnedNexthopVtepIps;
-  @Nullable private final Ip _sourceAddress;
+  private final @Nonnull Set<Ip> _learnedNexthopVtepIps;
+  private final @Nullable Ip _sourceAddress;
   private final int _udpPort;
   private final int _vni;
-  @Nonnull private final String _srcVrf;
+  private final @Nonnull String _srcVrf;
 
   private Layer3Vni(
       Set<Ip> learnedNexthopVtepIps,
@@ -37,14 +37,12 @@ public final class Layer3Vni implements Vni {
    * The set of all VTEP IPs of all {@link org.batfish.datamodel.route.nh.NextHopVtep} routes for
    * this VNI in the VRF corresponding to this Layer3 VNI.
    */
-  @Nonnull
-  public Set<Ip> getLearnedNexthopVtepIps() {
+  public @Nonnull Set<Ip> getLearnedNexthopVtepIps() {
     return _learnedNexthopVtepIps;
   }
 
   @Override
-  @Nullable
-  public Ip getSourceAddress() {
+  public @Nullable Ip getSourceAddress() {
     return _sourceAddress;
   }
 
@@ -59,8 +57,7 @@ public final class Layer3Vni implements Vni {
   }
 
   @Override
-  @Nonnull
-  public String getSrcVrf() {
+  public @Nonnull String getSrcVrf() {
     return _srcVrf;
   }
 
@@ -100,8 +97,7 @@ public final class Layer3Vni implements Vni {
     return new Builder();
   }
 
-  @Nonnull
-  public Builder toBuilder() {
+  public @Nonnull Builder toBuilder() {
     return builder()
         .setLearnedNexthopVtepIps(_learnedNexthopVtepIps)
         .setSourceAddress(_sourceAddress)
@@ -116,46 +112,40 @@ public final class Layer3Vni implements Vni {
 
   /** Builder for {@link Layer3Vni} */
   public static final class Builder {
-    @Nonnull private Set<Ip> _learnedNexthopVtepIps = ImmutableSet.of();
-    @Nullable private Ip _sourceAddress;
-    @Nullable private Integer _udpPort = Vni.DEFAULT_UDP_PORT;
-    @Nullable private Integer _vni;
-    @Nullable private String _srcVrf;
+    private @Nonnull Set<Ip> _learnedNexthopVtepIps = ImmutableSet.of();
+    private @Nullable Ip _sourceAddress;
+    private @Nullable Integer _udpPort = Vni.DEFAULT_UDP_PORT;
+    private @Nullable Integer _vni;
+    private @Nullable String _srcVrf;
 
     private Builder() {}
 
-    @Nonnull
-    public Builder setLearnedNexthopVtepIps(Set<Ip> learnedNexthopVtepIps) {
+    public @Nonnull Builder setLearnedNexthopVtepIps(Set<Ip> learnedNexthopVtepIps) {
       _learnedNexthopVtepIps = learnedNexthopVtepIps;
       return this;
     }
 
-    @Nonnull
-    public Builder setSourceAddress(@Nullable Ip sourceAddress) {
+    public @Nonnull Builder setSourceAddress(@Nullable Ip sourceAddress) {
       _sourceAddress = sourceAddress;
       return this;
     }
 
-    @Nonnull
-    public Builder setUdpPort(Integer udpPort) {
+    public @Nonnull Builder setUdpPort(Integer udpPort) {
       _udpPort = udpPort;
       return this;
     }
 
-    @Nonnull
-    public Builder setVni(int vni) {
+    public @Nonnull Builder setVni(int vni) {
       _vni = vni;
       return this;
     }
 
-    @Nonnull
-    public Builder setSrcVrf(String srcVrf) {
+    public @Nonnull Builder setSrcVrf(String srcVrf) {
       _srcVrf = srcVrf;
       return this;
     }
 
-    @Nonnull
-    public Layer3Vni build() {
+    public @Nonnull Layer3Vni build() {
       checkArgument(_vni != null, "VNI must not be null.");
       checkArgument(_srcVrf != null, "Source VRF for VNI cannot be null");
       return new Layer3Vni(

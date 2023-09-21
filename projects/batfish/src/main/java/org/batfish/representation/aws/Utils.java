@@ -199,8 +199,7 @@ public final class Utils {
    *     "icmpv6", "-1" or protocol numbers ranging 0-255.
    * @return {@link IpProtocol} or {@code null} parsed from the protocol string
    */
-  @Nullable
-  public static IpProtocol toIpProtocol(String ipProtocolAsString) {
+  public static @Nullable IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {
       case "tcp":
         return IpProtocol.TCP;
@@ -237,34 +236,30 @@ public final class Utils {
     vrf.getStaticRoutes().add(staticRoute);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
+  static @Nonnull StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
     return toStaticRoute(targetPrefix, nextHopIp, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
+  static @Nonnull StaticRoute toStaticRoute(
+      Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
     return toStaticRoute(targetPrefix, null, nextHopIp, nonForwarding);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
+  static @Nonnull StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, null, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(
+  static @Nonnull StaticRoute toStaticRoute(
       Prefix targetPrefix, String nextHopInterfaceName, boolean nonForwarding) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, null, nonForwarding);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+  static @Nonnull StaticRoute toStaticRoute(
+      Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, nextHopIp, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(
+  static @Nonnull StaticRoute toStaticRoute(
       Prefix targetPrefix,
       @Nullable String nextHopInterfaceName,
       @Nullable Ip nextHopIp,
@@ -327,8 +322,7 @@ public final class Utils {
    *
    * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
    */
-  @Nullable
-  static Interface connectGatewayToVpc(
+  static @Nullable Interface connectGatewayToVpc(
       String gatewayId,
       Configuration gatewayCfg,
       String vpcId,
@@ -415,8 +409,7 @@ public final class Utils {
    * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
    * Throws an exception if the interface is not present or does not have an assigned address
    */
-  @Nonnull
-  static Ip getInterfaceLinkLocalIp(Configuration configuration, String ifaceName) {
+  static @Nonnull Ip getInterfaceLinkLocalIp(Configuration configuration, String ifaceName) {
     InterfaceAddress ifaceAddress = getInterfaceAddress(configuration, ifaceName);
     if (ifaceAddress instanceof LinkLocalAddress) {
       return ((LinkLocalAddress) ifaceAddress).getIp();

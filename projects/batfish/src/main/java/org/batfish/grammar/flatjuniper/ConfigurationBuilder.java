@@ -1563,8 +1563,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
   }
 
-  @Nonnull
-  private static StandardCommunity toStandardCommunity(Sc_literalContext ctx) {
+  private static @Nonnull StandardCommunity toStandardCommunity(Sc_literalContext ctx) {
     String text = ctx.STANDARD_COMMUNITY().getText();
     return StandardCommunity.parse(text);
   }
@@ -2146,7 +2145,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private OspfArea _currentArea;
 
-  @Nullable private Long _currentAreaRangeMetric;
+  private @Nullable Long _currentAreaRangeMetric;
 
   private Prefix _currentAreaRangePrefix;
 
@@ -2276,7 +2275,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private ApplicationSet _currentApplicationSet;
 
@@ -7217,8 +7216,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Optional.of(name);
   }
 
-  @Nullable
-  private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
+  private @Nullable IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
     if (ctx == null) {
       return null;
     } else if (ctx.ip != null) {
@@ -7416,8 +7414,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * logical interfaces are created if they doesn't already exist. If the unit is not explicit in
    * the configuration text, it is considered to be zero (tested in lab for both OSPF and ISIS).
    */
-  @Nonnull
-  private Interface initRoutingInterface(Interface_idContext id) {
+  private @Nonnull Interface initRoutingInterface(Interface_idContext id) {
     Map<String, Interface> interfaces;
     InterfaceId interfaceId = new InterfaceId(id);
     if (interfaceId.getNode() != null) {

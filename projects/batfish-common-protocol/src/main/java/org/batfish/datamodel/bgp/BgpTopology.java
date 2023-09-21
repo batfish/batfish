@@ -96,8 +96,8 @@ public final class BgpTopology {
   @ParametersAreNonnullByDefault
   public static final class EdgeId implements Comparable<EdgeId> {
 
-    @Nonnull private final BgpPeerConfigId _tail;
-    @Nonnull private final BgpPeerConfigId _head;
+    private final @Nonnull BgpPeerConfigId _tail;
+    private final @Nonnull BgpPeerConfigId _head;
     private static final Comparator<EdgeId> COMPARATOR =
         Comparator.comparing(EdgeId::tail).thenComparing(EdgeId::head);
 

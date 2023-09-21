@@ -14,7 +14,7 @@ public final class IncrementMetric extends LongExpr {
   private static final String PROP_ADDEND = "addend";
   private static final long MAX_INT_VALUE = 0xFFFFFFFFL;
 
-  @Nonnull private long _addend;
+  private @Nonnull long _addend;
 
   @JsonCreator
   private static IncrementMetric jsonCreator(@Nullable @JsonProperty(PROP_ADDEND) Long addend) {

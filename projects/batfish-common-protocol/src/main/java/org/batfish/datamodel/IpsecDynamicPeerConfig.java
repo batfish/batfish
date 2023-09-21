@@ -12,7 +12,7 @@ import javax.annotation.Nullable;
 public final class IpsecDynamicPeerConfig extends IpsecPeerConfig implements Serializable {
   private static final String PROP_IKE_PHASE1_POLICIES = "ikePhase1Policies";
 
-  @Nonnull private List<String> _ikePhase1Policies;
+  private @Nonnull List<String> _ikePhase1Policies;
 
   @JsonCreator
   private IpsecDynamicPeerConfig(

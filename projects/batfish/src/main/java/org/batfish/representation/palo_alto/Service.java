@@ -103,12 +103,12 @@ public final class Service implements ServiceGroupMember {
   }
 
   private final String _name;
-  @Nullable private String _description;
-  @Nullable private Integer _icmpType;
-  @Nullable private IpProtocol _protocol;
-  @Nonnull private IntegerSpace _sourcePorts;
-  @Nonnull private IntegerSpace _ports;
-  @Nonnull private final Set<String> _tags;
+  private @Nullable String _description;
+  private @Nullable Integer _icmpType;
+  private @Nullable IpProtocol _protocol;
+  private @Nonnull IntegerSpace _sourcePorts;
+  private @Nonnull IntegerSpace _ports;
+  private final @Nonnull Set<String> _tags;
 
   public Service(String name) {
     _name = name;
@@ -117,13 +117,11 @@ public final class Service implements ServiceGroupMember {
     _tags = new HashSet<>();
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public Integer getIcmpType() {
+  public @Nullable Integer getIcmpType() {
     return _icmpType;
   }
 
@@ -140,8 +138,7 @@ public final class Service implements ServiceGroupMember {
     _ports = IntegerSpace.builder().including(_ports).including(ports).build();
   }
 
-  @Nullable
-  public IpProtocol getProtocol() {
+  public @Nullable IpProtocol getProtocol() {
     return _protocol;
   }
 
@@ -165,13 +162,11 @@ public final class Service implements ServiceGroupMember {
     _protocol = protocol;
   }
 
-  @Nonnull
-  public IntegerSpace getPorts() {
+  public @Nonnull IntegerSpace getPorts() {
     return _ports;
   }
 
-  @Nonnull
-  public Set<String> getTags() {
+  public @Nonnull Set<String> getTags() {
     return _tags;
   }
 

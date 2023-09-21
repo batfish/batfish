@@ -18,8 +18,8 @@ import org.batfish.role.NodeRoleDimension;
  */
 @ParametersAreNonnullByDefault
 public final class RoleRegexNodeSpecifier implements NodeSpecifier {
-  @Nonnull private final Pattern _rolePattern;
-  @Nullable private final String _roleDimension;
+  private final @Nonnull Pattern _rolePattern;
+  private final @Nullable String _roleDimension;
 
   public RoleRegexNodeSpecifier(Pattern rolePattern, @Nullable String roleDimension) {
     _rolePattern = rolePattern;

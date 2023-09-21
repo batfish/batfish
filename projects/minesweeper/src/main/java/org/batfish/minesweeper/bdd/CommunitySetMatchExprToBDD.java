@@ -38,8 +38,8 @@ public class CommunitySetMatchExprToBDD
 
   // a tuple of a TransferBDD object and a BDDRoute object, used as the argument to this visitor
   static class Arg {
-    @Nonnull private final TransferBDD _transferBDD;
-    @Nonnull private final BDDRoute _bddRoute;
+    private final @Nonnull TransferBDD _transferBDD;
+    private final @Nonnull BDDRoute _bddRoute;
 
     Arg(TransferBDD transferBDD, BDDRoute bddRoute) {
       _transferBDD = transferBDD;

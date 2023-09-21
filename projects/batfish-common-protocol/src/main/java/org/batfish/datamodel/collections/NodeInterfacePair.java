@@ -28,8 +28,8 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
   private static final String PROP_HOSTNAME = "hostname";
   private static final String PROP_INTERFACE = "interface";
 
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _interfaceName;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _interfaceName;
 
   @JsonCreator
   private static NodeInterfacePair jsonCreator(
@@ -55,15 +55,13 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
 
   /** Return node name */
   @JsonProperty(PROP_HOSTNAME)
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
   /** Return node interface name */
   @JsonProperty(PROP_INTERFACE)
-  @Nonnull
-  public String getInterface() {
+  public @Nonnull String getInterface() {
     return _interfaceName;
   }
 

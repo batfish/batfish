@@ -110,8 +110,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
   }
 
   @Override
-  @Nonnull
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr() {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setDscps(_dscps)

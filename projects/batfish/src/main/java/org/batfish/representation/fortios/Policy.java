@@ -28,45 +28,37 @@ public final class Policy implements Serializable {
     IPSEC,
   }
 
-  @Nonnull
-  public String getNumber() {
+  public @Nonnull String getNumber() {
     return _number;
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
   @VisibleForTesting
-  @Nullable
-  public Action getAction() {
+  public @Nullable Action getAction() {
     return _action;
   }
 
-  @Nonnull
-  public Action getActionEffective() {
+  public @Nonnull Action getActionEffective() {
     return _action == null ? DEFAULT_ACTION : _action;
   }
 
-  @Nullable
-  public String getComments() {
+  public @Nullable String getComments() {
     return _comments;
   }
 
   @VisibleForTesting
-  @Nullable
-  public Status getStatus() {
+  public @Nullable Status getStatus() {
     return _status;
   }
 
-  @Nonnull
-  public Status getStatusEffective() {
+  public @Nonnull Status getStatusEffective() {
     return _status == null ? DEFAULT_STATUS : _status;
   }
 
-  @Nonnull
-  public Set<String> getSrcIntf() {
+  public @Nonnull Set<String> getSrcIntf() {
     return _srcIntf;
   }
 
@@ -74,19 +66,16 @@ public final class Policy implements Serializable {
    * Names of zones referenced in srcintf field in this policy. Should be derived from {@link
    * this#getSrcIntfZoneUUIDs} when finishing building the VS model.
    */
-  @Nullable
-  public Set<String> getSrcIntfZones() {
+  public @Nullable Set<String> getSrcIntfZones() {
     return _srcIntfZones;
   }
 
   /** Set of Batfish-internal UUIDs associated with srcintf zone references. */
-  @Nonnull
-  public Set<BatfishUUID> getSrcIntfZoneUUIDs() {
+  public @Nonnull Set<BatfishUUID> getSrcIntfZoneUUIDs() {
     return _srcIntfZoneUuids;
   }
 
-  @Nonnull
-  public Set<String> getDstIntf() {
+  public @Nonnull Set<String> getDstIntf() {
     return _dstIntf;
   }
 
@@ -94,14 +83,12 @@ public final class Policy implements Serializable {
    * Names of zones referenced in dstintf field in this policy. Should be derived from {@link
    * this#getDstIntfZoneUUIDs} when finishing building the VS model.
    */
-  @Nullable
-  public Set<String> getDstIntfZones() {
+  public @Nullable Set<String> getDstIntfZones() {
     return _dstIntfZones;
   }
 
   /** Set of Batfish-internal UUIDs associated with dstintf zone references. */
-  @Nonnull
-  public Set<BatfishUUID> getDstIntfZoneUUIDs() {
+  public @Nonnull Set<BatfishUUID> getDstIntfZoneUUIDs() {
     return _dstIntfZoneUuids;
   }
 
@@ -110,8 +97,7 @@ public final class Policy implements Serializable {
   }
 
   /** Set of Batfish-internal UUIDs associated with srcaddr references. */
-  @Nonnull
-  public Set<BatfishUUID> getSrcAddrUUIDs() {
+  public @Nonnull Set<BatfishUUID> getSrcAddrUUIDs() {
     return _srcAddrUuids;
   }
 
@@ -120,8 +106,7 @@ public final class Policy implements Serializable {
   }
 
   /** Set of Batfish-internal UUIDs associated with dstaddr references. */
-  @Nonnull
-  public Set<BatfishUUID> getDstAddrUUIDs() {
+  public @Nonnull Set<BatfishUUID> getDstAddrUUIDs() {
     return _dstAddrUuids;
   }
 
@@ -134,8 +119,7 @@ public final class Policy implements Serializable {
   }
 
   /** Set of Batfish-internal UUIDs associated with service references. */
-  @Nonnull
-  public Set<BatfishUUID> getServiceUUIDs() {
+  public @Nonnull Set<BatfishUUID> getServiceUUIDs() {
     return _serviceUuids;
   }
 
@@ -190,21 +174,21 @@ public final class Policy implements Serializable {
     _serviceUuids = new HashSet<>();
   }
 
-  @Nonnull private String _number;
-  @Nullable private String _name;
-  @Nonnull private final Set<String> _srcIntf;
-  @Nullable private Set<String> _srcIntfZones;
-  @Nonnull private final Set<BatfishUUID> _srcIntfZoneUuids;
-  @Nonnull private final Set<String> _dstIntf;
-  @Nullable private Set<String> _dstIntfZones;
-  @Nonnull private final Set<BatfishUUID> _dstIntfZoneUuids;
-  @Nullable private Set<String> _srcAddr;
-  @Nonnull private final Set<BatfishUUID> _srcAddrUuids;
-  @Nullable private Set<String> _dstAddr;
-  @Nonnull private final Set<BatfishUUID> _dstAddrUuids;
-  @Nullable private Set<String> _service;
-  @Nonnull private final Set<BatfishUUID> _serviceUuids;
-  @Nullable private Status _status;
-  @Nullable private String _comments;
-  @Nullable private Action _action;
+  private @Nonnull String _number;
+  private @Nullable String _name;
+  private final @Nonnull Set<String> _srcIntf;
+  private @Nullable Set<String> _srcIntfZones;
+  private final @Nonnull Set<BatfishUUID> _srcIntfZoneUuids;
+  private final @Nonnull Set<String> _dstIntf;
+  private @Nullable Set<String> _dstIntfZones;
+  private final @Nonnull Set<BatfishUUID> _dstIntfZoneUuids;
+  private @Nullable Set<String> _srcAddr;
+  private final @Nonnull Set<BatfishUUID> _srcAddrUuids;
+  private @Nullable Set<String> _dstAddr;
+  private final @Nonnull Set<BatfishUUID> _dstAddrUuids;
+  private @Nullable Set<String> _service;
+  private final @Nonnull Set<BatfishUUID> _serviceUuids;
+  private @Nullable Status _status;
+  private @Nullable String _comments;
+  private @Nullable Action _action;
 }

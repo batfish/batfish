@@ -30,9 +30,9 @@ public final class SnmpCommunityClientsQuestion extends Question {
       new ConstantIpSpaceSpecifier(UniverseIpSpace.INSTANCE);
   private static final NodeSpecifier DEFAULT_NODE_SPECIFIER = AllNodesNodeSpecifier.INSTANCE;
 
-  @Nullable private final String _community;
-  @Nullable private final String _clients;
-  @Nullable private final String _nodes;
+  private final @Nullable String _community;
+  private final @Nullable String _clients;
+  private final @Nullable String _nodes;
 
   SnmpCommunityClientsQuestion() {
     this(null, null, null);

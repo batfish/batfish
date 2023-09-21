@@ -21,21 +21,21 @@ public final class ConnectedRouteMetadata implements Serializable {
   private static final String PROP_GENERATE_LOCAL_ROUTES = "generateLocalRoutes";
   private static final String PROP_TAG = "tag";
 
-  @Nullable private final Integer _admin;
+  private final @Nullable Integer _admin;
 
   // If set, controls whether a connected route is generated for this address. If unset, the
   // default behavior is to generate a connected route.
-  @Nullable private final Boolean _generateConnectedRoute;
+  private final @Nullable Boolean _generateConnectedRoute;
 
   // If set, controls whether a local route is generated for this connected route. If unset, the
   // default behavior is to generate local routes for /31 networks or larger
-  @Nullable private final Boolean _generateLocalRoute;
+  private final @Nullable Boolean _generateLocalRoute;
 
   // If set, controls whether a local null route is generated for this connected route when the
   // interface is down. If unset, these routes are not generated.
-  @Nullable private final Boolean _generateLocalNullRouteIfDown;
+  private final @Nullable Boolean _generateLocalNullRouteIfDown;
 
-  @Nullable private final Long _tag;
+  private final @Nullable Long _tag;
 
   @Nullable
   @JsonProperty(PROP_ADMIN)
@@ -122,70 +122,61 @@ public final class ConnectedRouteMetadata implements Serializable {
   }
 
   public static final class Builder {
-    @Nullable private Integer _admin;
-    @Nullable private Boolean _generateConnectedRoute;
-    @Nullable private Boolean _generateLocalRoute;
-    @Nullable private Boolean _generateLocalNullRouteIfDown;
-    @Nullable private Long _tag;
+    private @Nullable Integer _admin;
+    private @Nullable Boolean _generateConnectedRoute;
+    private @Nullable Boolean _generateLocalRoute;
+    private @Nullable Boolean _generateLocalNullRouteIfDown;
+    private @Nullable Long _tag;
 
     private Builder() {}
 
-    @Nonnull
-    public Builder setAdmin(@Nullable Integer admin) {
+    public @Nonnull Builder setAdmin(@Nullable Integer admin) {
       _admin = admin;
       return this;
     }
 
-    @Nonnull
-    public Builder setAdmin(int admin) {
+    public @Nonnull Builder setAdmin(int admin) {
       _admin = admin;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerateConnectedRoute(@Nullable Boolean generateConnectedRoute) {
+    public @Nonnull Builder setGenerateConnectedRoute(@Nullable Boolean generateConnectedRoute) {
       _generateConnectedRoute = generateConnectedRoute;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerateConnectedRoute(boolean generateConnectedRoute) {
+    public @Nonnull Builder setGenerateConnectedRoute(boolean generateConnectedRoute) {
       _generateConnectedRoute = generateConnectedRoute;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerateLocalRoute(@Nullable Boolean generateLocalRoute) {
+    public @Nonnull Builder setGenerateLocalRoute(@Nullable Boolean generateLocalRoute) {
       _generateLocalRoute = generateLocalRoute;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerateLocalNullRouteIfDown(@Nullable Boolean generateLocalNullRouteIfDown) {
+    public @Nonnull Builder setGenerateLocalNullRouteIfDown(
+        @Nullable Boolean generateLocalNullRouteIfDown) {
       _generateLocalNullRouteIfDown = generateLocalNullRouteIfDown;
       return this;
     }
 
-    @Nonnull
-    public Builder setGenerateLocalRoute(boolean generateLocalRoute) {
+    public @Nonnull Builder setGenerateLocalRoute(boolean generateLocalRoute) {
       _generateLocalRoute = generateLocalRoute;
       return this;
     }
 
-    @Nonnull
-    public Builder setTag(@Nullable Long tag) {
+    public @Nonnull Builder setTag(@Nullable Long tag) {
       _tag = tag;
       return this;
     }
 
-    @Nonnull
-    public Builder setTag(long tag) {
+    public @Nonnull Builder setTag(long tag) {
       _tag = tag;
       return this;
     }
 
-    @Nonnull
-    public ConnectedRouteMetadata build() {
+    public @Nonnull ConnectedRouteMetadata build() {
       return new ConnectedRouteMetadata(
           _admin,
           _generateConnectedRoute,

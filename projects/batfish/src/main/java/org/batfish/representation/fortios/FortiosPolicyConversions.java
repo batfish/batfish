@@ -354,8 +354,7 @@ public final class FortiosPolicyConversions {
    * Convert specified {@link ServiceGroupMember} into its corresponding {@link AclLineMatchExpr}.
    */
   @VisibleForTesting
-  @Nonnull
-  public static AclLineMatchExpr toMatchExpr(
+  public static @Nonnull AclLineMatchExpr toMatchExpr(
       ServiceGroupMember serviceGroupMember,
       Map<String, ServiceGroupMember> serviceGroupMembers,
       String filename) {
@@ -367,8 +366,7 @@ public final class FortiosPolicyConversions {
     }
   }
 
-  @Nonnull
-  private static AclLineMatchExpr toMatchExpr(
+  private static @Nonnull AclLineMatchExpr toMatchExpr(
       ServiceGroup serviceGroup,
       Map<String, ServiceGroupMember> serviceGroupMembers,
       String filename) {
@@ -385,8 +383,7 @@ public final class FortiosPolicyConversions {
     return new OrMatchExpr(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
   }
 
-  @Nonnull
-  private static AclLineMatchExpr toMatchExpr(Service service, String filename) {
+  private static @Nonnull AclLineMatchExpr toMatchExpr(Service service, String filename) {
     TraceElement traceElement = matchServiceTraceElement(service, filename);
     switch (service.getProtocolEffective()) {
       case ICMP:
@@ -404,8 +401,7 @@ public final class FortiosPolicyConversions {
     }
   }
 
-  @Nonnull
-  private static Stream<HeaderSpace> toHeaderSpaces(Service service) {
+  private static @Nonnull Stream<HeaderSpace> toHeaderSpaces(Service service) {
     switch (service.getProtocolEffective()) {
       case TCP_UDP_SCTP:
         return Stream.of(

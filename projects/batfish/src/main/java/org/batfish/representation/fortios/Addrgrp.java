@@ -56,14 +56,12 @@ public class Addrgrp extends AddrgrpMember implements Serializable {
    * Names of addrgrp exclude members associated with this addrgrp. Should be derived from {@link
    * this#getMemberUUIDs} when finishing building the VS model.
    */
-  @Nullable
-  public Set<String> getExcludeMember() {
+  public @Nullable Set<String> getExcludeMember() {
     return _excludeMember;
   }
 
   /** Set of Batfish-internal UUIDs associated with exclude member references. */
-  @Nonnull
-  public Set<BatfishUUID> getExcludeMemberUUIDs() {
+  public @Nonnull Set<BatfishUUID> getExcludeMemberUUIDs() {
     return _excludeMemberUuids;
   }
 
@@ -71,14 +69,12 @@ public class Addrgrp extends AddrgrpMember implements Serializable {
    * Names of addrgrp members associated with this addrgrp. Should be derived from {@link
    * this#getMemberUUIDs} when finishing building the VS model.
    */
-  @Nullable
-  public Set<String> getMember() {
+  public @Nullable Set<String> getMember() {
     return _member;
   }
 
   /** Set of Batfish-internal UUIDs associated with member references. */
-  @Nonnull
-  public Set<BatfishUUID> getMemberUUIDs() {
+  public @Nonnull Set<BatfishUUID> getMemberUUIDs() {
     return _memberUuids;
   }
 
@@ -111,12 +107,12 @@ public class Addrgrp extends AddrgrpMember implements Serializable {
     _memberUuids = new HashSet<>();
   }
 
-  @Nonnull private String _name;
-  @Nonnull private final BatfishUUID _uuid;
-  @Nullable private Boolean _exclude;
-  @Nullable private Set<String> _excludeMember;
-  @Nonnull private final Set<BatfishUUID> _excludeMemberUuids;
-  @Nullable private Set<String> _member;
-  @Nonnull private final Set<BatfishUUID> _memberUuids;
-  @Nullable private Type _type;
+  private @Nonnull String _name;
+  private final @Nonnull BatfishUUID _uuid;
+  private @Nullable Boolean _exclude;
+  private @Nullable Set<String> _excludeMember;
+  private final @Nonnull Set<BatfishUUID> _excludeMemberUuids;
+  private @Nullable Set<String> _member;
+  private final @Nonnull Set<BatfishUUID> _memberUuids;
+  private @Nullable Type _type;
 }

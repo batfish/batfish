@@ -25,8 +25,8 @@ public class OspfExternalType2Rib extends AbstractRib<OspfExternalType2Route> {
   }
 
   @Override
-  @Nonnull
-  public RibDelta<OspfExternalType2Route> mergeRouteGetDelta(OspfExternalType2Route route) {
+  public @Nonnull RibDelta<OspfExternalType2Route> mergeRouteGetDelta(
+      OspfExternalType2Route route) {
     String advertiser = route.getAdvertiser();
     if (route.getCostToAdvertiser() != 0 && _hostname.equals(advertiser)) {
       return RibDelta.empty();

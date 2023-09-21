@@ -74,8 +74,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
    * @throws IllegalArgumentException if the key is {@code null}
    */
   @Override
-  @Nullable
-  public V get(Object key) {
+  public @Nullable V get(Object key) {
     checkArgument(key != null, "Key must be nonnull");
     return _map.get(key);
   }
@@ -87,8 +86,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
    * @throws IllegalArgumentException if the key or value is {@code null}
    */
   @Override
-  @Nullable
-  public V put(K key, V value) {
+  public @Nullable V put(K key, V value) {
     checkArgument(key != null && value != null, "Keys and values must be nonnull");
     V ret = putIntoMapClearFromKeyList(key, value);
     _keyList.add(key);
@@ -96,8 +94,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
   }
 
   /** Insert a value at the front of the map. See {@link #put(K, V)} for return value semantics. */
-  @Nullable
-  public V putFirst(K key, V value) {
+  public @Nullable V putFirst(K key, V value) {
     V ret = putIntoMapClearFromKeyList(key, value);
     _keyList.add(0, key);
     return ret;
@@ -126,8 +123,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
 
   /** Returns and immutable copy of the key set. Map iteration order is reflected in the set. */
   @Override
-  @Nonnull
-  public Set<K> keySet() {
+  public @Nonnull Set<K> keySet() {
     return ImmutableSet.copyOf(_keyList);
   }
 
@@ -237,8 +233,7 @@ public class InsertOrderedMap<K, V> implements Map<K, V>, Serializable {
    * Put a new value in the map. If the value already existed for a given key, remove it from the
    * key list.
    */
-  @Nullable
-  private V putIntoMapClearFromKeyList(K key, @Nonnull V value) {
+  private @Nullable V putIntoMapClearFromKeyList(K key, @Nonnull V value) {
     V ret = _map.put(key, value);
     if (ret != null) {
       // A value has been replaced

@@ -33,39 +33,33 @@ public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<St
   }
 
   @Override
-  @Nullable
-  public Statement visitFwThenAccept(FwThenAccept accept) {
+  public @Nullable Statement visitFwThenAccept(FwThenAccept accept) {
     return _skipRest ? null : new Return(new FibLookup(new LiteralVrfName(_vrfToUse)));
   }
 
   @Override
-  @Nullable
-  public Statement visitFwThenDiscard(FwThenDiscard discard) {
+  public @Nullable Statement visitFwThenDiscard(FwThenDiscard discard) {
     return _skipRest ? null : new Return(Drop.instance());
   }
 
   @Override
-  @Nullable
-  public Statement visitFwThenNextIp(FwThenNextIp nextIp) {
+  public @Nullable Statement visitFwThenNextIp(FwThenNextIp nextIp) {
     return null;
   }
 
   @Override
-  @Nullable
-  public Statement visitFwThenNextTerm(FwThenNextTerm accept) {
+  public @Nullable Statement visitFwThenNextTerm(FwThenNextTerm accept) {
     _skipRest = true;
     return null;
   }
 
   @Override
-  @Nullable
-  public Statement visitFwThenNop(FwThenNop nop) {
+  public @Nullable Statement visitFwThenNop(FwThenNop nop) {
     return null;
   }
 
   @Override
-  @Nullable
-  public Statement visitThenRoutingInstance(FwThenRoutingInstance routingInstance) {
+  public @Nullable Statement visitThenRoutingInstance(FwThenRoutingInstance routingInstance) {
     return _skipRest
         ? null
         : new Return(

@@ -11,6 +11,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasEntry;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultiset;
@@ -33,7 +34,6 @@ import org.batfish.datamodel.collections.FileLines;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.Rows;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.hamcrest.collection.IsMapContaining;
 import org.junit.Test;
 
 /** Tests for {@link InitIssuesAnswerer}. */
@@ -336,11 +336,8 @@ public class InitIssuesAnswererTest {
     // is left alone
     assertThat(aggregatedStatuses, aMapWithSize(2));
     assertThat(
-        aggregatedStatuses,
-        IsMapContaining.hasEntry(equalTo(ParseStatus.EMPTY), contains("empty1", "empty2")));
-    assertThat(
-        aggregatedStatuses,
-        IsMapContaining.hasEntry(equalTo(ParseStatus.UNKNOWN), contains("unknown")));
+        aggregatedStatuses, hasEntry(equalTo(ParseStatus.EMPTY), contains("empty1", "empty2")));
+    assertThat(aggregatedStatuses, hasEntry(equalTo(ParseStatus.UNKNOWN), contains("unknown")));
   }
 
   private static class TestBatfishBase extends IBatfishTestAdapter {

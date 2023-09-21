@@ -17,8 +17,8 @@ public abstract class EigrpRoute extends AbstractRoute {
   static final String PROP_PROCESS_ASN = "process-asn";
 
   protected final int _admin;
-  @Nonnull protected final EigrpMetric _metric;
-  @Nonnull protected final EigrpMetricVersion _metricVersion;
+  protected final @Nonnull EigrpMetric _metric;
+  protected final @Nonnull EigrpMetricVersion _metricVersion;
 
   /** AS number of the EIGRP process that installed this route in the RIB */
   final long _processAsn;
@@ -47,14 +47,12 @@ public abstract class EigrpRoute extends AbstractRoute {
   }
 
   @JsonProperty(PROP_EIGRP_METRIC)
-  @Nonnull
-  public final EigrpMetric getEigrpMetric() {
+  public final @Nonnull EigrpMetric getEigrpMetric() {
     return _metric;
   }
 
   @JsonProperty(PROP_EIGRP_METRIC_VERSION)
-  @Nonnull
-  public final EigrpMetricVersion getEigrpMetricVersion() {
+  public final @Nonnull EigrpMetricVersion getEigrpMetricVersion() {
     return _metricVersion;
   }
 
@@ -73,10 +71,10 @@ public abstract class EigrpRoute extends AbstractRoute {
 
   public abstract static class Builder<B extends Builder<B, R>, R extends EigrpRoute>
       extends AbstractRouteBuilder<B, R> {
-    @Nullable protected Long _destinationAsn;
-    @Nullable protected EigrpMetric _eigrpMetric;
-    @Nullable protected EigrpMetricVersion _eigrpMetricVersion;
-    @Nullable protected Long _processAsn;
+    protected @Nullable Long _destinationAsn;
+    protected @Nullable EigrpMetric _eigrpMetric;
+    protected @Nullable EigrpMetricVersion _eigrpMetricVersion;
+    protected @Nullable Long _processAsn;
 
     public B setDestinationAsn(@Nonnull Long destinationAsn) {
       _destinationAsn = destinationAsn;

@@ -18,7 +18,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
 
   public static class Builder {
 
-    @Nonnull private Set<Integer> _dscps = ImmutableSet.of();
+    private @Nonnull Set<Integer> _dscps = ImmutableSet.of();
     private List<SubRange> _dstPortRanges = ImmutableList.of();
     private boolean _fragments;
     private Integer _icmpCode;
@@ -76,7 +76,7 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     return new Builder();
   }
 
-  @Nonnull private final Set<Integer> _dscps;
+  private final @Nonnull Set<Integer> _dscps;
   private final List<SubRange> _dstPortRanges;
   private final boolean _fragments;
   private final Integer _icmpCode;
@@ -96,14 +96,12 @@ public class SimpleExtendedAccessListServiceSpecifier implements AccessListServi
     _tcpFlags = builder._tcpFlags;
   }
 
-  @Nonnull
-  public Set<Integer> getDscps() {
+  public @Nonnull Set<Integer> getDscps() {
     return _dscps;
   }
 
   @Override
-  @Nonnull
-  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
     return new MatchHeaderSpace(
         HeaderSpace.builder()
             .setDscps(_dscps)

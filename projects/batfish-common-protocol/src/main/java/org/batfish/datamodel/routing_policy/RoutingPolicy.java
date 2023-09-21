@@ -88,10 +88,10 @@ public class RoutingPolicy implements Serializable {
   private static final String PROP_NAME = "name";
   private static final String PROP_STATEMENTS = "statements";
 
-  @Nonnull private final String _name;
-  @Nullable private Configuration _owner;
-  @Nullable private transient Set<String> _sources;
-  @Nonnull private List<Statement> _statements;
+  private final @Nonnull String _name;
+  private @Nullable Configuration _owner;
+  private @Nullable transient Set<String> _sources;
+  private @Nonnull List<Statement> _statements;
 
   @JsonCreator
   private RoutingPolicy(@Nullable @JsonProperty(PROP_NAME) String name) {
@@ -171,8 +171,7 @@ public class RoutingPolicy implements Serializable {
 
   /** Return the name of this policy */
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -242,10 +241,11 @@ public class RoutingPolicy implements Serializable {
   public boolean process(
       AbstractRouteDecorator inputRoute,
       AbstractRouteBuilder<?, ?> outputRoute,
+      BgpSessionProperties properties,
       Direction direction,
       Predicate<String> successfulTrack,
       Tracer tracer) {
-    return process(inputRoute, outputRoute, null, null, direction, successfulTrack, tracer);
+    return process(inputRoute, outputRoute, properties, null, direction, successfulTrack, tracer);
   }
 
   public boolean process(

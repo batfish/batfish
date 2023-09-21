@@ -10,18 +10,15 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** XR datamodel component containing bridge-domain configuration */
 @ParametersAreNonnullByDefault
 public class BridgeDomain implements Serializable {
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Set<String> getInterfaces() {
+  public @Nonnull Set<String> getInterfaces() {
     return _interfaces;
   }
 
-  @Nullable
-  public String getRoutedInterface() {
+  public @Nullable String getRoutedInterface() {
     return _routedInterface;
   }
 
@@ -34,7 +31,7 @@ public class BridgeDomain implements Serializable {
     _interfaces = new HashSet<>();
   }
 
-  @Nonnull private final String _name;
-  @Nonnull private final Set<String> _interfaces;
-  @Nullable private String _routedInterface;
+  private final @Nonnull String _name;
+  private final @Nonnull Set<String> _interfaces;
+  private @Nullable String _routedInterface;
 }

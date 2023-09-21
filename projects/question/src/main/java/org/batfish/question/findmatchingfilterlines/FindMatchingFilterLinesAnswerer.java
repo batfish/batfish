@@ -202,7 +202,7 @@ public final class FindMatchingFilterLinesAnswerer extends Answerer {
     private final IpAccessListToBdd _ipAccessListToBdd;
 
     // Restrictions on lines to include, based on question parameters
-    @Nullable private final Action _action;
+    private final @Nullable Action _action;
     private final BDD _headerSpaceBdd;
 
     LineBehaviorFinder(

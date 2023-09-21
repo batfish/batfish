@@ -20,7 +20,7 @@ public class RegexConstraint {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_NEGATED = "negated";
 
-  @Nonnull private final String _regex;
+  private final @Nonnull String _regex;
   private final boolean _negated;
 
   @JsonCreator
@@ -42,8 +42,7 @@ public class RegexConstraint {
    * @return the corresponding RegexConstraint object
    */
   @JsonCreator
-  @Nonnull
-  public static RegexConstraint parse(@Nonnull String s) {
+  public static @Nonnull RegexConstraint parse(@Nonnull String s) {
     String curr = s;
     // first check if this constraint should be negated
     boolean negated;

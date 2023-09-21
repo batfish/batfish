@@ -7,9 +7,9 @@ import javax.annotation.Nullable;
 /** Uniquely identifies an IPSec peer in the network */
 public class IpsecPeerConfigId {
 
-  @Nonnull private String _ipsecPeerConfigName;
+  private @Nonnull String _ipsecPeerConfigName;
 
-  @Nonnull private String _hostName;
+  private @Nonnull String _hostName;
 
   @SuppressWarnings("PMD.UnnecessaryCaseChange") // that's what we're asserting
   public IpsecPeerConfigId(@Nonnull String ipsecPeerConfigName, @Nonnull String hostName) {
@@ -36,13 +36,11 @@ public class IpsecPeerConfigId {
     return Objects.hash(_ipsecPeerConfigName, _hostName);
   }
 
-  @Nonnull
-  public String getIpsecPeerConfigName() {
+  public @Nonnull String getIpsecPeerConfigName() {
     return _ipsecPeerConfigName;
   }
 
-  @Nonnull
-  public String getHostName() {
+  public @Nonnull String getHostName() {
     return _hostName;
   }
 }

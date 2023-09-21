@@ -264,18 +264,15 @@ public class BidirectionalTracerouteAnswerer extends Answerer {
       return Objects.hash(_forwardFlow, _newSessions, _reverseFlow);
     }
 
-    @Nonnull
-    public Flow getForwardFlow() {
+    public @Nonnull Flow getForwardFlow() {
       return _forwardFlow;
     }
 
-    @Nonnull
-    public Set<FirewallSessionTraceInfo> getNewSessions() {
+    public @Nonnull Set<FirewallSessionTraceInfo> getNewSessions() {
       return _newSessions;
     }
 
-    @Nullable
-    public Flow getReverseFlow() {
+    public @Nullable Flow getReverseFlow() {
       return _reverseFlow;
     }
   }

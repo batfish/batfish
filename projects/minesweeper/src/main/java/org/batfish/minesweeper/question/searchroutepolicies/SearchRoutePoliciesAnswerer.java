@@ -1,8 +1,8 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
-import static org.batfish.datamodel.answers.Schema.STRING;
+import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
-import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action.PERMIT;
+import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 import static org.parboiled.common.Preconditions.checkState;
 
@@ -32,12 +32,18 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.answers.AnswerElement;
+import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
+import org.batfish.datamodel.answers.NextHopSelf;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -53,9 +59,9 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
-import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.Action;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
 import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
@@ -67,17 +73,31 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final BgpRouteConstraints _inputConstraints;
-  @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nonnull private final Action _action;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nonnull BgpRouteConstraints _inputConstraints;
+  private final @Nonnull BgpRouteConstraints _outputConstraints;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nonnull LineAction _action;
 
   private final PathOption _pathOption;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
+
+  /**
+   * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
+   * only be simulated by Batfish if a {@link BgpSessionProperties} object exists in the {@link
+   * Environment}. For our purposes the specific property values can be anything, so we use this
+   * dummy object.
+   */
+  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
+      BgpSessionProperties.builder()
+          .setLocalAs(1)
+          .setLocalIp(Ip.parse("1.1.1.1"))
+          .setRemoteAs(2)
+          .setRemoteIp(Ip.parse("2.2.2.2"))
+          .build();
 
   /** Helper class that contains both a row and and Bgpv4Route for a result */
   private static class RowAndRoute {
@@ -130,8 +150,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param policy the route policy that was analyzed
    * @param configAPs an object that provides information about the community and as-path atomic
    *     predicates
-   * @param prependedASes a list of the ASes that were prepended on the particular execution path
-   *     being considered
+   * @param outputRoute the symbolic route produced by the analysis
    * @return an optional answer, which includes a concrete input route and (if the desired action is
    *     PERMIT) concrete output route
    */
@@ -139,7 +158,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD constraints,
       RoutingPolicy policy,
       ConfigAtomicPredicates configAPs,
-      List<Long> prependedASes) {
+      BDDRoute outputRoute) {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
@@ -148,8 +167,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
           ModelGeneration.satAssignmentToEnvironment(model, configAPs);
-      Predicate<String> successfulTracks = env.getFirst();
-      String sourceVrf = env.getSecond();
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -158,13 +175,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         List<AsSet> asSets = inRoute.getAsPath().getAsSets();
         AsPath newAspath =
             AsPath.ofAsSets(
-                asSets.subList(prependedASes.size(), asSets.size()).toArray(new AsSet[0]));
+                asSets
+                    .subList(outputRoute.getPrependedASes().size(), asSets.size())
+                    .toArray(new AsSet[0]));
         inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
       }
 
-      Row result =
-          TestRoutePoliciesAnswerer.rowResultFor(
-              policy, inRoute, _direction, successfulTracks, sourceVrf);
+      Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
       // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
@@ -174,10 +191,76 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
       // result.
       checkState(
-          result.get(TestRoutePoliciesAnswerer.COL_ACTION, STRING).equals(_action.toString()),
+          result.getAction().equals(_action),
           "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
-      return Optional.of(new RowAndRoute(inRoute, result));
+      return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }
+  }
+
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param env a pair of a predicate that indicates which tracks are successful and an optional
+   *     name of the source VRF
+   * @return the results of the simulation as a result for this question
+   */
+  public static Result<BgpRoute> simulatePolicy(
+      RoutingPolicy policy,
+      Bgpv4Route inRoute,
+      Environment.Direction direction,
+      Tuple<Predicate<String>, String> env,
+      BDDRoute bddRoute) {
+    Result<Bgpv4Route> simResult =
+        TestRoutePoliciesAnswerer.simulatePolicy(
+            policy,
+            inRoute,
+            DUMMY_BGP_SESSION_PROPERTIES,
+            direction,
+            env.getFirst(),
+            env.getSecond());
+    return toQuestionResult(simResult, bddRoute);
+  }
+
+  /**
+   * Converts a simulation result that uses {@link Bgpv4Route} to represent the input and output
+   * routes to an equivalent result that uses {@link BgpRoute} instead. The former class is used by
+   * the Batfish route simulation, while the latter class is the format that is used in results by
+   * {@link SearchRoutePoliciesQuestion}. This method differs from the same-named method in {@link
+   * TestRoutePoliciesAnswerer} because results here sometimes use symbolic values instead of
+   * concrete ones, for instance for the next-hop in a route.
+   *
+   * @param result the original simulation result
+   * @return a version of the result suitable for output from this analysis
+   */
+  private static Result<BgpRoute> toQuestionResult(
+      Result<Bgpv4Route> result, BDDRoute outputRoute) {
+    Result<BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
+
+    if (result.getAction() == PERMIT) {
+      // update the output route's next-hop if it was set to the local or remote IP;
+      // rather than producing a concrete IP we use a special class that indicates that the
+      // local (remote) IP is used
+      switch (outputRoute.getNextHopType()) {
+        case SELF:
+          BgpRoute outRouteSelf =
+              qResult.getOutputRoute().toBuilder().setNextHop(NextHopSelf.instance()).build();
+          qResult = qResult.setOutputRoute(outRouteSelf);
+          break;
+        case BGP_PEER_ADDRESS:
+          BgpRoute outRoutePeer =
+              qResult.getOutputRoute().toBuilder()
+                  .setNextHop(NextHopBgpPeerAddress.instance())
+                  .build();
+          qResult = qResult.setOutputRoute(outRoutePeer);
+          break;
+        default:
+          break;
+      }
+    }
+    return qResult;
   }
 
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
@@ -227,23 +310,31 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private BDD nextHopIpConstraintsToBDD(
       Optional<Prefix> optNextHopIp, BDDRoute r, boolean outputRoute) {
-    if (optNextHopIp.isPresent()) {
-      BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
-      if (outputRoute) {
-        // make sure that the next hop was not discarded by the route map
-        if (r.getNextHopDiscarded()) {
-          return r.getFactory().zero();
-        }
-        if (_direction == Environment.Direction.OUT && !r.getNextHopSet()) {
-          // in the OUT direction we can only use the next-hop IP in the route
-          // if the route-map explicitly sets it
-          return r.getFactory().zero();
-        }
-      }
-      return nextHopBDD;
-    } else {
+    if (!optNextHopIp.isPresent()) {
       return r.getFactory().one();
     }
+    BDD nextHopBDD = r.getNextHop().toBDD(optNextHopIp.get());
+    if (outputRoute) {
+      // handle special kinds of next hops that can be set by the route map
+      switch (r.getNextHopType()) {
+        case DISCARDED:
+          // if the next hop is discarded it can't satisfy any prefix constraints
+          return r.getFactory().zero();
+        case SELF:
+        case BGP_PEER_ADDRESS:
+          // since the local and remote IPs could in principle be anything, we
+          // consider any prefix constraints to be satisfied, erring on the side of producing
+          // results
+          return r.getFactory().one();
+        default:
+          if (_direction == Environment.Direction.OUT && !r.getNextHopSet()) {
+            // in the OUT direction we can only use the next-hop IP in the route
+            // if the route-map explicitly sets it
+            return r.getFactory().zero();
+          }
+      }
+    }
+    return nextHopBDD;
   }
 
   /**
@@ -427,7 +518,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         intersection = intersection.and(outConstraints);
       }
       Optional<RowAndRoute> result =
-          constraintsToResult(intersection, policy, outConfigAPs, outputRoute.getPrependedASes());
+          constraintsToResult(intersection, policy, outConfigAPs, outputRoute);
       if (result.isPresent()) {
         builder.add(result.get()._row);
         if (_pathOption == PathOption.SINGLE) {

@@ -47,23 +47,19 @@ public final class NatPacketLocation implements Serializable, Comparable<NatPack
 
   private Type _type;
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
-  @Nullable
-  public String getInterface() {
+  public @Nullable String getInterface() {
     return _type == Type.InterfaceType ? _name : null;
   }
 
-  @Nullable
-  public String getRoutingInstance() {
+  public @Nullable String getRoutingInstance() {
     return _type == Type.RoutingInstanceType ? _name : null;
   }
 
-  @Nullable
-  public String getZone() {
+  public @Nullable String getZone() {
     return _type == Type.ZoneType ? _name : null;
   }
 

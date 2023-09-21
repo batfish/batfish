@@ -50,7 +50,7 @@ public class Row implements Serializable {
 
   public abstract static class RowBuilder {
 
-    @Nonnull protected final ObjectNode _data;
+    protected final @Nonnull ObjectNode _data;
 
     private RowBuilder() {
       _data = BatfishObjectMapper.mapper().createObjectNode();
@@ -147,7 +147,7 @@ public class Row implements Serializable {
     private UntypedRowBuilder() {}
   }
 
-  @Nonnull private final ObjectNode _data;
+  private final @Nonnull ObjectNode _data;
 
   /**
    * Returns a new {@link Row} with the given entries.

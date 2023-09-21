@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 public final class SetWeight extends Statement {
   private static final String PROP_WEIGHT = "weight";
 
-  @Nonnull private IntExpr _weight;
+  private @Nonnull IntExpr _weight;
 
   @JsonCreator
   private static SetWeight jsonCreator(@Nullable @JsonProperty(PROP_WEIGHT) IntExpr weight) {
@@ -59,8 +59,7 @@ public final class SetWeight extends Statement {
   }
 
   @JsonProperty(PROP_WEIGHT)
-  @Nonnull
-  public IntExpr getWeight() {
+  public @Nonnull IntExpr getWeight() {
     return _weight;
   }
 

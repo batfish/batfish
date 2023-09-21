@@ -35,8 +35,7 @@ public class WildcardAddressSpecifier implements AccessListAddressSpecifier {
   }
 
   @Override
-  @Nonnull
-  public IpSpace toIpSpace() {
+  public @Nonnull IpSpace toIpSpace() {
     return _ipWildcard.toIpSpace();
   }
 }

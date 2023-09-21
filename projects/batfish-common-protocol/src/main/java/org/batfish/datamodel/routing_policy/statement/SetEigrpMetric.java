@@ -23,7 +23,7 @@ import org.batfish.datamodel.routing_policy.expr.EigrpMetricExpr;
 public final class SetEigrpMetric extends Statement {
   private static final String PROP_METRIC = "metric";
 
-  @Nonnull private final EigrpMetricExpr _metric;
+  private final @Nonnull EigrpMetricExpr _metric;
 
   @JsonCreator
   private static SetEigrpMetric jsonCreator(
@@ -73,8 +73,7 @@ public final class SetEigrpMetric extends Statement {
   }
 
   @JsonProperty(PROP_METRIC)
-  @Nonnull
-  public EigrpMetricExpr getMetric() {
+  public @Nonnull EigrpMetricExpr getMetric() {
     return _metric;
   }
 }

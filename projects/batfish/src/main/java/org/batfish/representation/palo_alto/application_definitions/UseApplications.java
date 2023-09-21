@@ -19,8 +19,7 @@ import javax.annotation.Nullable;
  * use-applications}". These correspond to applications used by / related to others (details TBD).
  */
 public final class UseApplications {
-  @Nonnull
-  public List<String> getMember() {
+  public @Nonnull List<String> getMember() {
     return _member;
   }
 
@@ -63,5 +62,5 @@ public final class UseApplications {
     _member = ImmutableList.copyOf(member);
   }
 
-  @Nonnull private final List<String> _member;
+  private final @Nonnull List<String> _member;
 }

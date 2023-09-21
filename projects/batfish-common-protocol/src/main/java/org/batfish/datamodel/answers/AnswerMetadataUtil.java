@@ -36,8 +36,7 @@ public final class AnswerMetadataUtil {
   }
 
   @VisibleForTesting
-  @Nullable
-  static ColumnAggregationResult computeColumnAggregation(
+  static @Nullable ColumnAggregationResult computeColumnAggregation(
       @Nonnull TableAnswerElement table,
       @Nonnull ColumnAggregation columnAggregation,
       @Nonnull BatfishLogger logger) {
@@ -57,8 +56,7 @@ public final class AnswerMetadataUtil {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static Map<String, Map<Aggregation, Object>> computeColumnAggregations(
+  static @Nonnull Map<String, Map<Aggregation, Object>> computeColumnAggregations(
       @Nonnull TableAnswerElement table,
       @Nonnull List<ColumnAggregation> aggregations,
       @Nonnull BatfishLogger logger) {
@@ -88,8 +86,7 @@ public final class AnswerMetadataUtil {
    * @throws IllegalArgumentException if the named column is not present in the table.
    */
   @VisibleForTesting
-  @Nullable
-  static Integer computeColumnMax(
+  static @Nullable Integer computeColumnMax(
       @Nonnull TableAnswerElement table, @Nonnull String column, @Nonnull BatfishLogger logger) {
     ColumnMetadata columnMetadata = table.getMetadata().toColumnMap().get(column);
     if (columnMetadata == null) {

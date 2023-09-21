@@ -15,8 +15,7 @@ public class ProtocolOrServiceObjectGroupServiceSpecifier implements AccessListS
   }
 
   @Override
-  @Nonnull
-  public AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr(Map<String, ObjectGroup> objectGroups) {
     ObjectGroup objectGroup = objectGroups.get(_name);
     String aclName;
     if (objectGroup instanceof ProtocolObjectGroup) {

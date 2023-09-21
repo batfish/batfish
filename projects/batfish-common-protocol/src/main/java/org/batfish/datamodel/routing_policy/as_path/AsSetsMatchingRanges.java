@@ -81,8 +81,7 @@ public final class AsSetsMatchingRanges extends AsPathMatchExpr {
   private static final String PROP_AS_RANGES = "asRanges";
 
   @JsonCreator
-  @Nonnull
-  private static AsSetsMatchingRanges create(
+  private static @Nonnull AsSetsMatchingRanges create(
       @JsonProperty(PROP_ANCHOR_END) boolean anchorEnd,
       @JsonProperty(PROP_ANCHOR_START) boolean anchorStart,
       @JsonProperty(PROP_AS_RANGES) @Nullable List<Range<Long>> asRanges) {

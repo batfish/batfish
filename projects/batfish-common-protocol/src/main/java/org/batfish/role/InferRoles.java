@@ -29,41 +29,37 @@ import org.batfish.datamodel.Topology;
 
 public final class InferRoles {
   private static class PreTokenizedString {
-    @Nonnull private final String _string;
-    @Nonnull private final PreToken _token;
+    private final @Nonnull String _string;
+    private final @Nonnull PreToken _token;
 
     public PreTokenizedString(@Nonnull String string, @Nonnull PreToken token) {
       _string = string;
       _token = token;
     }
 
-    @Nonnull
-    public String getString() {
+    public @Nonnull String getString() {
       return _string;
     }
 
-    @Nonnull
-    public PreToken getToken() {
+    public @Nonnull PreToken getToken() {
       return _token;
     }
   }
 
   private static class TokenizedString {
-    @Nonnull private final String _string;
-    @Nonnull private final Token _token;
+    private final @Nonnull String _string;
+    private final @Nonnull Token _token;
 
     public TokenizedString(@Nonnull String string, @Nonnull Token token) {
       _string = string;
       _token = token;
     }
 
-    @Nonnull
-    public String getString() {
+    public @Nonnull String getString() {
       return _string;
     }
 
-    @Nonnull
-    public Token getToken() {
+    public @Nonnull Token getToken() {
       return _token;
     }
   }

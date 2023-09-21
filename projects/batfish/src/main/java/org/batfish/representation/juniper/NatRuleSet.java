@@ -39,23 +39,19 @@ public final class NatRuleSet implements Serializable, Comparable<NatRuleSet> {
     _toLocation = new NatPacketLocation();
   }
 
-  @Nonnull
-  public NatPacketLocation getFromLocation() {
+  public @Nonnull NatPacketLocation getFromLocation() {
     return _fromLocation;
   }
 
-  @Nonnull
-  public List<NatRule> getRules() {
+  public @Nonnull List<NatRule> getRules() {
     return _rules;
   }
 
-  @Nonnull
-  public NatPacketLocation getToLocation() {
+  public @Nonnull NatPacketLocation getToLocation() {
     return _toLocation;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

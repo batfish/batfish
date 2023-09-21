@@ -9,7 +9,7 @@ import static org.batfish.datamodel.questions.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_METRIC;
-import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP_IP;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_TAG;
@@ -47,7 +47,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
           PROP_COMMUNITIES,
           PROP_LOCAL_PREFERENCE,
           PROP_METRIC,
-          PROP_NEXT_HOP_IP,
+          PROP_NEXT_HOP,
           PROP_ORIGINATOR_IP,
           PROP_ORIGIN_TYPE,
           PROP_TAG,
@@ -132,7 +132,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
             .setCommunities(route2.getCommunities())
             .setLocalPreference(route2.getLocalPreference())
             .setMetric(route2.getMetric())
-            .setNextHopIp(route2.getNextHopIp())
+            .setNextHop(route2.getNextHop())
             .setOriginatorIp(route2.getOriginatorIp())
             .setOriginType(route2.getOriginType())
             .setTag(route2.getTag())
@@ -151,7 +151,7 @@ public final class BgpRouteDiff implements Comparable<BgpRouteDiff> {
                 routeDiff(route1, route2, PROP_AS_PATH, BgpRoute::getAsPath),
                 routeDiff(route1, route2, PROP_LOCAL_PREFERENCE, BgpRoute::getLocalPreference),
                 routeDiff(route1, route2, PROP_METRIC, BgpRoute::getMetric),
-                routeDiff(route1, route2, PROP_NEXT_HOP_IP, BgpRoute::getNextHopIp),
+                routeDiff(route1, route2, PROP_NEXT_HOP, BgpRoute::getNextHop),
                 routeDiff(route1, route2, PROP_ORIGINATOR_IP, BgpRoute::getOriginatorIp),
                 routeDiff(route1, route2, PROP_ORIGIN_TYPE, BgpRoute::getOriginType),
                 routeDiff(route1, route2, PROP_TAG, BgpRoute::getTag),

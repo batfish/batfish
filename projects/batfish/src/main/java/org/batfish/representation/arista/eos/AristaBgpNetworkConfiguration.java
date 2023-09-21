@@ -5,12 +5,11 @@ import javax.annotation.Nullable;
 
 /** Configuration on how to advertise a particular network into BGP */
 public final class AristaBgpNetworkConfiguration implements Serializable {
-  @Nullable private String _routeMap;
+  private @Nullable String _routeMap;
 
   public AristaBgpNetworkConfiguration() {}
 
-  @Nullable
-  public String getRouteMap() {
+  public @Nullable String getRouteMap() {
     return _routeMap;
   }
 

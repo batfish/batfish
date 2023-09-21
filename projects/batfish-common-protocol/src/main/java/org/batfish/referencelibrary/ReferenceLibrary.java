@@ -26,7 +26,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public class ReferenceLibrary {
   private static final String PROP_BOOKS = "books";
 
-  @Nonnull private SortedSet<ReferenceBook> _books;
+  private @Nonnull SortedSet<ReferenceBook> _books;
 
   /**
    * The argument to this constructor is a List (not a SortedSet) to prevent Jackson from silently
@@ -80,8 +80,7 @@ public class ReferenceLibrary {
   }
 
   @JsonProperty(PROP_BOOKS)
-  @Nonnull
-  public SortedSet<ReferenceBook> getReferenceBooks() {
+  public @Nonnull SortedSet<ReferenceBook> getReferenceBooks() {
     return _books;
   }
 

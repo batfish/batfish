@@ -136,19 +136,19 @@ public final class OspfInterfaceSettings implements Serializable {
     }
   }
 
-  @Nullable private OspfAddresses _ospfAddresses;
-  @Nullable private Long _ospfAreaName;
-  @Nullable private Integer _ospfCost;
+  private @Nullable OspfAddresses _ospfAddresses;
+  private @Nullable Long _ospfAreaName;
+  private @Nullable Integer _ospfCost;
   private int _ospfDeadInterval;
   private boolean _ospfEnabled;
   private int _ospfHelloInterval;
-  @Nullable private Integer _ospfHelloMultiplier;
-  @Nullable private String _ospfInboundDistributeListPolicy;
-  @Nonnull private Set<Ip> _ospfNbmaNeighbors;
-  @Nullable private OspfNetworkType _ospfNetworkType;
+  private @Nullable Integer _ospfHelloMultiplier;
+  private @Nullable String _ospfInboundDistributeListPolicy;
+  private @Nonnull Set<Ip> _ospfNbmaNeighbors;
+  private @Nullable OspfNetworkType _ospfNetworkType;
   private boolean _ospfPassive;
-  @Nullable private String _ospfProcess;
-  @Nullable private String _ospfType5FilterPolicy;
+  private @Nullable String _ospfProcess;
+  private @Nullable String _ospfType5FilterPolicy;
 
   private static final String PROP_AREA = "area";
   private static final String PROP_COST = "cost";
@@ -272,15 +272,13 @@ public final class OspfInterfaceSettings implements Serializable {
 
   /** The OSPF area to which this interface belongs. */
   @JsonProperty(PROP_AREA)
-  @Nullable
-  public Long getAreaName() {
+  public @Nullable Long getAreaName() {
     return _ospfAreaName;
   }
 
   /** The OSPF cost of this interface. */
   @JsonProperty(PROP_COST)
-  @Nullable
-  public Integer getCost() {
+  public @Nullable Integer getCost() {
     return _ospfCost;
   }
 
@@ -304,8 +302,7 @@ public final class OspfInterfaceSettings implements Serializable {
 
   /** Number of OSPF packets to send out during dead-interval period for fast OSPF updates. */
   @JsonProperty(PROP_HELLO_MULTIPLIER)
-  @Nullable
-  public Integer getHelloMultiplier() {
+  public @Nullable Integer getHelloMultiplier() {
     return _ospfHelloMultiplier;
   }
 
@@ -314,32 +311,27 @@ public final class OspfInterfaceSettings implements Serializable {
    * inbound distribute-lists for OSPF
    */
   @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY)
-  @Nullable
-  public String getInboundDistributeListPolicy() {
+  public @Nullable String getInboundDistributeListPolicy() {
     return _ospfInboundDistributeListPolicy;
   }
 
   @JsonProperty(PROP_NBMA_NEIGHBORS)
-  @Nonnull
-  private SortedSet<Ip> getJacksonNbmaNeighbors() {
+  private @Nonnull SortedSet<Ip> getJacksonNbmaNeighbors() {
     return ImmutableSortedSet.copyOf(_ospfNbmaNeighbors);
   }
 
-  @Nonnull
-  public Set<Ip> getNbmaNeighbors() {
+  public @Nonnull Set<Ip> getNbmaNeighbors() {
     return _ospfNbmaNeighbors;
   }
 
   /** OSPF network type for this interface. */
   @JsonProperty(PROP_NETWORK_TYPE)
-  @Nullable
-  public OspfNetworkType getNetworkType() {
+  public @Nullable OspfNetworkType getNetworkType() {
     return _ospfNetworkType;
   }
 
   @JsonProperty(PROP_OSPF_ADDRESSES)
-  @Nullable
-  public OspfAddresses getOspfAddresses() {
+  public @Nullable OspfAddresses getOspfAddresses() {
     return _ospfAddresses;
   }
 
@@ -354,8 +346,7 @@ public final class OspfInterfaceSettings implements Serializable {
 
   /** The OSPF process this interface is associated with. */
   @JsonProperty(PROP_PROCESS)
-  @Nullable
-  public String getProcess() {
+  public @Nullable String getProcess() {
     return _ospfProcess;
   }
 

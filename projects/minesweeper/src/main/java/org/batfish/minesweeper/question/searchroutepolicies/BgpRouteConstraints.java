@@ -38,27 +38,27 @@ public class BgpRouteConstraints {
   private static final String PROP_PROTOCOL = "protocol";
 
   // the announcement's prefix must be within this space
-  @Nonnull private final PrefixSpace _prefix;
+  private final @Nonnull PrefixSpace _prefix;
   // if this flag is set, then the prefix must be outside of the above space
   private final boolean _complementPrefix;
   // the announcement's local preference must be within this range
-  @Nonnull private final LongSpace _localPreference;
+  private final @Nonnull LongSpace _localPreference;
   // the announcement's MED must be within this range
-  @Nonnull private final LongSpace _med;
+  private final @Nonnull LongSpace _med;
   // the announcement's tag must be within this range
-  @Nonnull private final LongSpace _tag;
+  private final @Nonnull LongSpace _tag;
   // the announcement's communities must satisfy these constraints
-  @Nonnull private final RegexConstraints _communities;
+  private final @Nonnull RegexConstraints _communities;
   // the announcement's AS path must satisfy these constraints
-  @Nonnull private final RegexConstraints _asPath;
+  private final @Nonnull RegexConstraints _asPath;
   // the announcement's next-hop IP must be within this prefix;
   // an empty value means that any next-hop IP is ok, including
   // an unset one
-  @Nonnull private final Optional<Prefix> _nextHopIp;
+  private final @Nonnull Optional<Prefix> _nextHopIp;
   // the announcement's origin type must be a member of this set
-  @Nonnull private final Set<OriginType> _originType;
+  private final @Nonnull Set<OriginType> _originType;
   // the announcement's protocol must be a member of this set
-  @Nonnull private final Set<RoutingProtocol> _protocol;
+  private final @Nonnull Set<RoutingProtocol> _protocol;
 
   private static final LongSpace THIRTY_TWO_BIT_RANGE =
       LongSpace.builder().including(Range.closed(0L, 4294967295L)).build();
@@ -113,8 +113,7 @@ public class BgpRouteConstraints {
   }
 
   @VisibleForTesting
-  @Nullable
-  static LongSpace processBuilder(@Nullable LongSpace.Builder builder) {
+  static @Nullable LongSpace processBuilder(@Nullable LongSpace.Builder builder) {
     if (builder == null) {
       return null;
     }
@@ -257,8 +256,7 @@ public class BgpRouteConstraints {
   }
 
   @JsonProperty(PROP_PREFIX)
-  @Nonnull
-  public PrefixSpace getPrefix() {
+  public @Nonnull PrefixSpace getPrefix() {
     return _prefix;
   }
 
@@ -268,50 +266,42 @@ public class BgpRouteConstraints {
   }
 
   @JsonProperty(PROP_LOCAL_PREFERENCE)
-  @Nonnull
-  public LongSpace getLocalPreference() {
+  public @Nonnull LongSpace getLocalPreference() {
     return _localPreference;
   }
 
   @JsonProperty(PROP_MED)
-  @Nonnull
-  public LongSpace getMed() {
+  public @Nonnull LongSpace getMed() {
     return _med;
   }
 
   @JsonProperty(PROP_TAG)
-  @Nonnull
-  public LongSpace getTag() {
+  public @Nonnull LongSpace getTag() {
     return _tag;
   }
 
   @JsonProperty(PROP_COMMUNITIES)
-  @Nonnull
-  public RegexConstraints getCommunities() {
+  public @Nonnull RegexConstraints getCommunities() {
     return _communities;
   }
 
   @JsonProperty(PROP_AS_PATH)
-  @Nonnull
-  public RegexConstraints getAsPath() {
+  public @Nonnull RegexConstraints getAsPath() {
     return _asPath;
   }
 
   @JsonProperty(PROP_NEXT_HOP_IP)
-  @Nonnull
-  public Optional<Prefix> getNextHopIp() {
+  public @Nonnull Optional<Prefix> getNextHopIp() {
     return _nextHopIp;
   }
 
   @JsonProperty(PROP_ORIGIN_TYPE)
-  @Nonnull
-  public Set<OriginType> getOriginType() {
+  public @Nonnull Set<OriginType> getOriginType() {
     return _originType;
   }
 
   @JsonProperty(PROP_PROTOCOL)
-  @Nonnull
-  public Set<RoutingProtocol> getProtocol() {
+  public @Nonnull Set<RoutingProtocol> getProtocol() {
     return _protocol;
   }
 

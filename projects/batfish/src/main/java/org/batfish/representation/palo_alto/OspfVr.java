@@ -30,8 +30,7 @@ public class OspfVr implements Serializable {
     return _areas.computeIfAbsent(areaId, OspfArea::new);
   }
 
-  @Nonnull
-  public Map<Ip, OspfArea> getAreas() {
+  public @Nonnull Map<Ip, OspfArea> getAreas() {
     return _areas;
   }
 
@@ -56,8 +55,7 @@ public class OspfVr implements Serializable {
     _rejectDefaultRoute = rejectDefaultRoute;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 

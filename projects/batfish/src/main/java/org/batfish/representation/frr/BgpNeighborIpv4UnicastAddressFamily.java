@@ -14,20 +14,19 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     REPLACE_AS,
   }
 
-  @Nullable private Boolean _activated;
-  @Nullable private Integer _allowAsIn;
-  @Nullable private Boolean _defaultOriginate;
-  @Nullable private String _defaultOriginateRouteMap;
-  @Nullable private RemovePrivateAsMode _removePrivateAsMode;
-  @Nullable private Boolean _routeReflectorClient;
-  @Nullable private Boolean _nextHopSelf;
-  @Nullable private Boolean _nextHopSelfAll;
-  @Nullable private String _routeMapIn;
-  @Nullable private String _routeMapOut;
+  private @Nullable Boolean _activated;
+  private @Nullable Integer _allowAsIn;
+  private @Nullable Boolean _defaultOriginate;
+  private @Nullable String _defaultOriginateRouteMap;
+  private @Nullable RemovePrivateAsMode _removePrivateAsMode;
+  private @Nullable Boolean _routeReflectorClient;
+  private @Nullable Boolean _nextHopSelf;
+  private @Nullable Boolean _nextHopSelfAll;
+  private @Nullable String _routeMapIn;
+  private @Nullable String _routeMapOut;
 
   /** Whether this address family has been explicitly activated for this neighbor */
-  @Nullable
-  public Boolean getActivated() {
+  public @Nullable Boolean getActivated() {
     return _activated;
   }
 
@@ -44,8 +43,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   }
 
   /** Whether the neighbor is a route reflector client */
-  @Nullable
-  public Boolean getRouteReflectorClient() {
+  public @Nullable Boolean getRouteReflectorClient() {
     return _routeReflectorClient;
   }
 
@@ -54,8 +52,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
   }
 
   /** Whether to set next-hop to the device's IP in iBGP advertisements to the neighbor. */
-  @Nullable
-  public Boolean getNextHopSelf() {
+  public @Nullable Boolean getNextHopSelf() {
     return _nextHopSelf;
   }
 
@@ -63,8 +60,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     _nextHopSelf = nextHopSelf;
   }
 
-  @Nullable
-  public Boolean getNextHopSelfAll() {
+  public @Nullable Boolean getNextHopSelfAll() {
     return _nextHopSelfAll;
   }
 
@@ -108,8 +104,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     }
   }
 
-  @Nullable
-  public String getRouteMapIn() {
+  public @Nullable String getRouteMapIn() {
     return _routeMapIn;
   }
 
@@ -117,8 +112,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     _routeMapIn = routeMapIn;
   }
 
-  @Nullable
-  public String getRouteMapOut() {
+  public @Nullable String getRouteMapOut() {
     return _routeMapOut;
   }
 
@@ -126,8 +120,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     _routeMapOut = routeMapOut;
   }
 
-  @Nullable
-  public Integer getAllowAsIn() {
+  public @Nullable Integer getAllowAsIn() {
     return _allowAsIn;
   }
 
@@ -135,8 +128,7 @@ public class BgpNeighborIpv4UnicastAddressFamily implements Serializable {
     _allowAsIn = allowAsIn;
   }
 
-  @Nullable
-  public Boolean getDefaultOriginate() {
+  public @Nullable Boolean getDefaultOriginate() {
     return _defaultOriginate;
   }
 

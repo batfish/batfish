@@ -23,40 +23,40 @@ public final class SecurityRule implements Serializable {
   }
 
   // Name of the rule
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
   // Action of the rule
-  @Nonnull private LineAction _action;
+  private @Nonnull LineAction _action;
 
-  @Nonnull private Set<CustomUrlCategoryReference> _category;
+  private @Nonnull Set<CustomUrlCategoryReference> _category;
 
   // Owning Vsys of this rule
-  @Nonnull private final Vsys _vsys;
+  private final @Nonnull Vsys _vsys;
 
   // Description of the rule
-  @Nullable private String _description;
+  private @Nullable String _description;
 
   private boolean _disabled;
 
   // Zones
-  @Nonnull private final SortedSet<String> _from;
-  @Nonnull private final SortedSet<String> _to;
+  private final @Nonnull SortedSet<String> _from;
+  private final @Nonnull SortedSet<String> _to;
 
   // IPs
-  @Nonnull private Set<RuleEndpoint> _source;
-  @Nonnull private Set<RuleEndpoint> _destination;
+  private @Nonnull Set<RuleEndpoint> _source;
+  private @Nonnull Set<RuleEndpoint> _destination;
   private boolean _negateSource;
   private boolean _negateDestination;
 
   // Services
-  @Nonnull private final SortedSet<ServiceOrServiceGroupReference> _service;
+  private final @Nonnull SortedSet<ServiceOrServiceGroupReference> _service;
 
   // Applications
-  @Nonnull private final SortedSet<ApplicationOrApplicationGroupReference> _applications;
+  private final @Nonnull SortedSet<ApplicationOrApplicationGroupReference> _applications;
 
   // Rule type
-  @Nullable private RuleType _ruleType;
+  private @Nullable RuleType _ruleType;
 
-  @Nonnull private final Set<String> _tags;
+  private final @Nonnull Set<String> _tags;
 
   public SecurityRule(String name, Vsys vsys) {
     _action = LineAction.DENY;
@@ -75,13 +75,11 @@ public final class SecurityRule implements Serializable {
     _vsys = vsys;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
@@ -101,18 +99,15 @@ public final class SecurityRule implements Serializable {
             .build();
   }
 
-  @Nonnull
-  public SortedSet<ApplicationOrApplicationGroupReference> getApplications() {
+  public @Nonnull SortedSet<ApplicationOrApplicationGroupReference> getApplications() {
     return ImmutableSortedSet.copyOf(_applications);
   }
 
-  @Nonnull
-  public Set<CustomUrlCategoryReference> getCategory() {
+  public @Nonnull Set<CustomUrlCategoryReference> getCategory() {
     return _category;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -127,8 +122,7 @@ public final class SecurityRule implements Serializable {
             .build();
   }
 
-  @Nonnull
-  public Set<RuleEndpoint> getDestination() {
+  public @Nonnull Set<RuleEndpoint> getDestination() {
     return _destination;
   }
 
@@ -136,8 +130,7 @@ public final class SecurityRule implements Serializable {
     return _disabled;
   }
 
-  @Nonnull
-  public SortedSet<String> getFrom() {
+  public @Nonnull SortedSet<String> getFrom() {
     return _from;
   }
 
@@ -157,8 +150,7 @@ public final class SecurityRule implements Serializable {
     _negateSource = negateSource;
   }
 
-  @Nonnull
-  public SortedSet<ServiceOrServiceGroupReference> getService() {
+  public @Nonnull SortedSet<ServiceOrServiceGroupReference> getService() {
     return _service;
   }
 
@@ -173,28 +165,23 @@ public final class SecurityRule implements Serializable {
             .build();
   }
 
-  @Nonnull
-  public Set<RuleEndpoint> getSource() {
+  public @Nonnull Set<RuleEndpoint> getSource() {
     return _source;
   }
 
-  @Nonnull
-  public SortedSet<String> getTo() {
+  public @Nonnull SortedSet<String> getTo() {
     return _to;
   }
 
-  @Nonnull
-  public Set<String> getTags() {
+  public @Nonnull Set<String> getTags() {
     return _tags;
   }
 
-  @Nonnull
-  public Vsys getVsys() {
+  public @Nonnull Vsys getVsys() {
     return _vsys;
   }
 
-  @Nullable
-  public RuleType getRuleType() {
+  public @Nullable RuleType getRuleType() {
     return _ruleType;
   }
 

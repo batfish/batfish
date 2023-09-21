@@ -10,8 +10,8 @@ public class TunnelAttribute implements Serializable {
     IPIP,
   }
 
-  @Nullable private Ip _remoteEndPoint;
-  @Nullable private Type _type;
+  private @Nullable Ip _remoteEndPoint;
+  private @Nullable Type _type;
 
   public @Nullable Ip getRemoteEndPoint() {
     return _remoteEndPoint;

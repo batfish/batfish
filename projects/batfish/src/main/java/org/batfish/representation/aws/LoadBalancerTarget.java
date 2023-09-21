@@ -16,9 +16,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
 
-  @Nullable private final String _availabilityZone;
+  private final @Nullable String _availabilityZone;
 
-  @Nonnull private final String _id;
+  private final @Nonnull String _id;
 
   private final int _port;
 
@@ -40,14 +40,12 @@ public final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
     _port = port;
   }
 
-  @Nullable
-  public String getAvailabilityZone() {
+  public @Nullable String getAvailabilityZone() {
     return _availabilityZone;
   }
 
   @Override
-  @Nonnull
-  public String getId() {
+  public @Nonnull String getId() {
     return _id;
   }
 

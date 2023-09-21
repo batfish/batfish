@@ -26,25 +26,22 @@ import org.batfish.datamodel.vxlan.Vni;
  */
 @ParametersAreNonnullByDefault
 public final class NetworkConfigurations {
-  @Nonnull private final Map<String, Configuration> _configurations;
+  private final @Nonnull Map<String, Configuration> _configurations;
 
   /** Wrap a configurations map */
   private NetworkConfigurations(Map<String, Configuration> configurations) {
     _configurations = ImmutableMap.copyOf(requireNonNull(configurations));
   }
 
-  @Nonnull
-  public Map<String, Configuration> getMap() {
+  public @Nonnull Map<String, Configuration> getMap() {
     return _configurations;
   }
 
-  @Nonnull
-  public Collection<Configuration> all() {
+  public @Nonnull Collection<Configuration> all() {
     return _configurations.values();
   }
 
-  @Nonnull
-  public Optional<Configuration> get(String hostname) {
+  public @Nonnull Optional<Configuration> get(String hostname) {
     return Optional.ofNullable(_configurations.get(hostname));
   }
 
@@ -52,8 +49,7 @@ public final class NetworkConfigurations {
    * Returns a {@link BgpPeerConfig} matching the given {@code id} if one exists, otherwise {@code
    * null}.
    */
-  @Nullable
-  public BgpPeerConfig getBgpPeerConfig(BgpPeerConfigId id) {
+  public @Nullable BgpPeerConfig getBgpPeerConfig(BgpPeerConfigId id) {
     switch (id.getType()) {
       case ACTIVE:
         return getBgpPointToPointPeerConfig(id);
@@ -70,8 +66,7 @@ public final class NetworkConfigurations {
    * Returns a {@link BgpPassivePeerConfig} matching the given {@code id} if one exists, otherwise
    * {@code null}.
    */
-  @Nullable
-  public BgpPassivePeerConfig getBgpDynamicPeerConfig(BgpPeerConfigId id) {
+  public @Nullable BgpPassivePeerConfig getBgpDynamicPeerConfig(BgpPeerConfigId id) {
     if (id.getRemotePeerPrefix() == null) {
       return null;
     }
@@ -86,8 +81,7 @@ public final class NetworkConfigurations {
    * Returns a {@link BgpActivePeerConfig} matching the given {@code id} if one exists, otherwise
    * {@code null}.
    */
-  @Nullable
-  public BgpActivePeerConfig getBgpPointToPointPeerConfig(BgpPeerConfigId id) {
+  public @Nullable BgpActivePeerConfig getBgpPointToPointPeerConfig(BgpPeerConfigId id) {
     if (id.getRemotePeerPrefix() == null) {
       return null;
     }
@@ -104,8 +98,7 @@ public final class NetworkConfigurations {
    * Returns a {@link BgpUnnumberedPeerConfig} matching the given {@code id} if one exists,
    * otherwise {@code null}.
    */
-  @Nullable
-  public BgpUnnumberedPeerConfig getBgpUnnumberedPeerConfig(BgpPeerConfigId id) {
+  public @Nullable BgpUnnumberedPeerConfig getBgpUnnumberedPeerConfig(BgpPeerConfigId id) {
     if (id.getPeerInterface() == null) {
       return null;
     }
@@ -130,13 +123,11 @@ public final class NetworkConfigurations {
   }
 
   /** Return an interface identified by hostname and interface name */
-  @Nonnull
-  public Optional<Interface> getInterface(String hostname, String interfaceName) {
+  public @Nonnull Optional<Interface> getInterface(String hostname, String interfaceName) {
     return get(hostname).map(Configuration::getAllInterfaces).map(m -> m.get(interfaceName));
   }
 
-  @Nullable
-  public IpsecPeerConfig getIpsecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
+  public @Nullable IpsecPeerConfig getIpsecPeerConfig(IpsecPeerConfigId ipsecPeerConfigId) {
     return get(ipsecPeerConfigId.getHostName())
         .map(Configuration::getIpsecPeerConfigs)
         .map(m -> m.get(ipsecPeerConfigId.getIpsecPeerConfigName()))
@@ -144,8 +135,7 @@ public final class NetworkConfigurations {
   }
 
   /** Return the {@link Mlag} configuration identified by a given ID. */
-  @Nonnull
-  public Optional<Mlag> getMlagConfig(String hostname, String id) {
+  public @Nonnull Optional<Mlag> getMlagConfig(String hostname, String id) {
     return get(hostname).map(Configuration::getMlags).map(m -> m.get(id));
   }
 
@@ -170,8 +160,7 @@ public final class NetworkConfigurations {
   }
 
   /** Return {@link Vni} identificated by {@code hostname} and {@code vni} number. */
-  @Nonnull
-  public <V extends Vni> Optional<V> getVniSettings(
+  public @Nonnull <V extends Vni> Optional<V> getVniSettings(
       String hostname, int vni, Function<Vrf, Map<Integer, V>> vniGetter) {
     // implementation assumes a given VNI can be present in at most one VRF.
     return get(hostname)

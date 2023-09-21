@@ -14,8 +14,7 @@ public class BgpProcess implements Serializable {
     return _asn;
   }
 
-  @Nullable
-  public Long getDefaultLocalPreference() {
+  public @Nullable Long getDefaultLocalPreference() {
     return _defaultLocalPreference;
   }
 
@@ -23,14 +22,12 @@ public class BgpProcess implements Serializable {
     _defaultLocalPreference = defaultLocalPreference;
   }
 
-  @Nonnull
-  public Map<BgpNeighborId, BgpNeighbor> getNeighbors() {
+  public @Nonnull Map<BgpNeighborId, BgpNeighbor> getNeighbors() {
     return _neighbors;
   }
 
   /** Get the {@link BgpNeighbor} given by the specified {@link BgpNeighborId}. */
-  @Nullable
-  public BgpNeighbor getNeighbor(BgpNeighborId id) {
+  public @Nullable BgpNeighbor getNeighbor(BgpNeighborId id) {
     return _neighbors.get(id);
   }
 
@@ -38,8 +35,7 @@ public class BgpProcess implements Serializable {
    * Get the {@link BgpNeighbor} given by the specified {@link BgpNeighborId}, creating a new
    * neighbor if it doesn't already exist.
    */
-  @Nonnull
-  public BgpNeighbor getOrCreateNeighbor(BgpNeighborId id) {
+  public @Nonnull BgpNeighbor getOrCreateNeighbor(BgpNeighborId id) {
     BgpNeighbor neighbor = _neighbors.get(id);
     if (neighbor == null) {
       neighbor = new BgpNeighbor(id);
@@ -52,8 +48,7 @@ public class BgpProcess implements Serializable {
     return neighbor;
   }
 
-  @Nullable
-  public Integer getMaximumPaths() {
+  public @Nullable Integer getMaximumPaths() {
     return _maximumPaths;
   }
 
@@ -101,8 +96,7 @@ public class BgpProcess implements Serializable {
     _redistributeVipOnlyNotFlagged = redistributeVipOnlyNotFlagged;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -116,13 +110,13 @@ public class BgpProcess implements Serializable {
   }
 
   private final long _asn;
-  @Nullable private Long _defaultLocalPreference;
-  @Nonnull private Map<BgpNeighborId, BgpNeighbor> _neighbors;
-  @Nullable private Integer _maximumPaths;
+  private @Nullable Long _defaultLocalPreference;
+  private @Nonnull Map<BgpNeighborId, BgpNeighbor> _neighbors;
+  private @Nullable Integer _maximumPaths;
   private boolean _redistributeConnected;
   private boolean _redistributeFloatingIp;
   private boolean _redistributeIpNat;
   private boolean _redistributeVipOnlyFlagged;
   private boolean _redistributeVipOnlyNotFlagged;
-  @Nullable private Ip _routerId;
+  private @Nullable Ip _routerId;
 }

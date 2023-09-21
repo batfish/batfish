@@ -10,8 +10,8 @@ import org.batfish.datamodel.LongSpace;
 /** Parent for all BGP neighbors. */
 public abstract class BgpNeighbor implements Serializable {
   public static class RemoteAs implements Serializable {
-    @Nullable final Long _asn;
-    @Nonnull final RemoteAsType _type;
+    final @Nullable Long _asn;
+    final @Nonnull RemoteAsType _type;
 
     public static RemoteAs explicit(long asn) {
       return new RemoteAs(asn, RemoteAsType.EXPLICIT);
@@ -113,8 +113,7 @@ public abstract class BgpNeighbor implements Serializable {
     return _name;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -122,8 +121,7 @@ public abstract class BgpNeighbor implements Serializable {
     _description = description;
   }
 
-  @Nullable
-  public String getPeerGroup() {
+  public @Nullable String getPeerGroup() {
     return _peerGroup;
   }
 
@@ -215,8 +213,7 @@ public abstract class BgpNeighbor implements Serializable {
     }
   }
 
-  @Nullable
-  public BgpNeighborSource getBgpNeighborSource() {
+  public @Nullable BgpNeighborSource getBgpNeighborSource() {
     return _bgpNeighborSource;
   }
 

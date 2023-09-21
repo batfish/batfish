@@ -13,8 +13,8 @@ public final class DistributeList implements Serializable {
     ROUTE_MAP
   }
 
-  @Nonnull private final DistributeListFilterType _filterType;
-  @Nonnull private final String _filterName;
+  private final @Nonnull DistributeListFilterType _filterType;
+  private final @Nonnull String _filterName;
 
   public DistributeList(
       @Nonnull String filterName, @Nonnull DistributeListFilterType distributeListFilterType) {
@@ -22,13 +22,11 @@ public final class DistributeList implements Serializable {
     _filterType = distributeListFilterType;
   }
 
-  @Nonnull
-  public DistributeListFilterType getFilterType() {
+  public @Nonnull DistributeListFilterType getFilterType() {
     return _filterType;
   }
 
-  @Nonnull
-  public String getFilterName() {
+  public @Nonnull String getFilterName() {
     return _filterName;
   }
 

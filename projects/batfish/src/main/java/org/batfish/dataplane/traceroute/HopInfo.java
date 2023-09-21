@@ -134,8 +134,7 @@ public final class HopInfo {
     return _firewallSessionTraceInfo;
   }
 
-  @Nullable
-  public FlowDisposition getDisposition() {
+  public @Nullable FlowDisposition getDisposition() {
     return _disposition;
   }
 }

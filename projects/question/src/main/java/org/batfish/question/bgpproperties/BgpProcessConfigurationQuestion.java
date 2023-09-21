@@ -23,10 +23,10 @@ public class BgpProcessConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private String _nodes;
-  @Nonnull private NodeSpecifier _nodeSpecifier;
-  @Nullable private String _properties;
-  @Nonnull private BgpProcessPropertySpecifier _propertySpecifier;
+  private @Nullable String _nodes;
+  private @Nonnull NodeSpecifier _nodeSpecifier;
+  private @Nullable String _properties;
+  private @Nonnull BgpProcessPropertySpecifier _propertySpecifier;
 
   @JsonCreator
   private static BgpProcessConfigurationQuestion create(

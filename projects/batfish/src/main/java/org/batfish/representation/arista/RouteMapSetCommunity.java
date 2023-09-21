@@ -48,5 +48,5 @@ public class RouteMapSetCommunity extends RouteMapSetLine {
   }
 
   private final boolean _additive;
-  @Nonnull private List<StandardCommunity> _communities;
+  private @Nonnull List<StandardCommunity> _communities;
 }

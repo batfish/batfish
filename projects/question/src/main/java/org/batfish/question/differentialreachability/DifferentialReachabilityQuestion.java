@@ -22,12 +22,12 @@ public final class DifferentialReachabilityQuestion extends Question {
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
 
-  @Nonnull private final DispositionSpecifier _actions;
-  @Nonnull private final PacketHeaderConstraints _headerConstraints;
+  private final @Nonnull DispositionSpecifier _actions;
+  private final @Nonnull PacketHeaderConstraints _headerConstraints;
   private final boolean _ignoreFilters;
   private final boolean _invertSearch;
   private final int _maxTraces;
-  @Nonnull private final PathConstraintsInput _pathConstraints;
+  private final @Nonnull PathConstraintsInput _pathConstraints;
 
   @JsonCreator
   public DifferentialReachabilityQuestion(

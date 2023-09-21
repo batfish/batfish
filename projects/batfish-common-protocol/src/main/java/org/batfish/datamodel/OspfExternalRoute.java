@@ -21,11 +21,11 @@ public abstract class OspfExternalRoute extends OspfRoute {
   public static final class Builder extends AbstractRouteBuilder<Builder, OspfExternalRoute>
       implements HasWritableOspfMetricType<Builder, OspfExternalRoute> {
 
-    @Nullable private String _advertiser;
-    @Nullable private Long _area;
-    @Nullable private Long _costToAdvertiser;
-    @Nullable private Long _lsaMetric;
-    @Nullable private OspfMetricType _ospfMetricType;
+    private @Nullable String _advertiser;
+    private @Nullable Long _area;
+    private @Nullable Long _costToAdvertiser;
+    private @Nullable Long _lsaMetric;
+    private @Nullable OspfMetricType _ospfMetricType;
 
     @Nonnull
     @Override
@@ -72,8 +72,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
       }
     }
 
-    @Nullable
-    public OspfMetricType getOspfMetricType() {
+    public @Nullable OspfMetricType getOspfMetricType() {
       return _ospfMetricType;
     }
 
@@ -83,26 +82,22 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return this;
     }
 
-    @Nonnull
-    public Builder setAdvertiser(@Nonnull String advertiser) {
+    public @Nonnull Builder setAdvertiser(@Nonnull String advertiser) {
       _advertiser = advertiser;
       return getThis();
     }
 
-    @Nonnull
-    public Builder setArea(long area) {
+    public @Nonnull Builder setArea(long area) {
       _area = area;
       return getThis();
     }
 
-    @Nonnull
-    public Builder setCostToAdvertiser(long costToAdvertiser) {
+    public @Nonnull Builder setCostToAdvertiser(long costToAdvertiser) {
       _costToAdvertiser = costToAdvertiser;
       return getThis();
     }
 
-    @Nonnull
-    public Builder setLsaMetric(long lsaMetric) {
+    public @Nonnull Builder setLsaMetric(long lsaMetric) {
       _lsaMetric = lsaMetric;
       return getThis();
     }
@@ -121,13 +116,12 @@ public abstract class OspfExternalRoute extends OspfRoute {
   protected static final String PROP_COST_TO_ADVERTISER = "costToAdvertiser";
   protected static final String PROP_LSA_METRIC = "lsaMetric";
 
-  @Nonnull private final String _advertiser;
+  private final @Nonnull String _advertiser;
   private final long _costToAdvertiser;
   private final long _lsaMetric;
   private transient int _hashCode;
 
-  @Nonnull
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
@@ -150,8 +144,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @JsonProperty(PROP_ADVERTISER)
-  @Nonnull
-  public final String getAdvertiser() {
+  public final @Nonnull String getAdvertiser() {
     return _advertiser;
   }
 
@@ -166,8 +159,7 @@ public abstract class OspfExternalRoute extends OspfRoute {
   }
 
   @JsonIgnore
-  @Nonnull
-  public abstract OspfMetricType getOspfMetricType();
+  public @Nonnull abstract OspfMetricType getOspfMetricType();
 
   @Nonnull
   @Override

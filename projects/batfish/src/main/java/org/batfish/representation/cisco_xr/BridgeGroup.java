@@ -9,13 +9,11 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** XR datamodel component containing bridge group configuration */
 @ParametersAreNonnullByDefault
 public class BridgeGroup implements Serializable {
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Map<String, BridgeDomain> getBridgeDomains() {
+  public @Nonnull Map<String, BridgeDomain> getBridgeDomains() {
     return _bridgeDomains;
   }
 
@@ -24,6 +22,6 @@ public class BridgeGroup implements Serializable {
     _bridgeDomains = new HashMap<>();
   }
 
-  @Nonnull private final String _name;
-  @Nonnull private final Map<String, BridgeDomain> _bridgeDomains;
+  private final @Nonnull String _name;
+  private final @Nonnull Map<String, BridgeDomain> _bridgeDomains;
 }

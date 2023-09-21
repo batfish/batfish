@@ -13,7 +13,7 @@ import org.batfish.datamodel.Configuration;
 public final class NodeCompletionMetadata implements Serializable {
   private static final String PROP_HUMAN_NAME = "humanName";
 
-  @Nullable private final String _humanName;
+  private final @Nullable String _humanName;
 
   public NodeCompletionMetadata(@Nullable String humanName) {
     _humanName = humanName;

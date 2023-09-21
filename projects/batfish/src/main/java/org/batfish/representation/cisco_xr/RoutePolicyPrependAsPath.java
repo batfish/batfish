@@ -15,8 +15,8 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 
 public class RoutePolicyPrependAsPath extends RoutePolicySetStatement {
 
-  @Nonnull private AsExpr _expr;
-  @Nullable private IntExpr _number;
+  private @Nonnull AsExpr _expr;
+  private @Nullable IntExpr _number;
 
   public RoutePolicyPrependAsPath(@Nonnull AsExpr expr, @Nullable IntExpr number) {
     _expr = expr;
