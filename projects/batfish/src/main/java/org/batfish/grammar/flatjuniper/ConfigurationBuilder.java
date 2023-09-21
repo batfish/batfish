@@ -375,6 +375,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_address_and_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_optionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_prefix_default_32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
@@ -2841,8 +2842,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentAreaRangePrefix = null;
     _currentAreaRangeRestrict = false;
 
-    if (ctx.ip_prefix() != null) {
-      _currentAreaRangePrefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      _currentAreaRangePrefix = toPrefix(ctx.prefix);
     } else {
       todo(ctx);
     }
@@ -3070,8 +3071,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       PsFromRouteFilter from = new PsFromRouteFilter(rfName);
       _currentPsTerm.getFroms().addFromRouteFilter(from);
     }
-    if (ctx.ip_prefix() != null) {
-      _currentRouteFilterPrefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      _currentRouteFilterPrefix = toPrefix(ctx.prefix);
       _currentRouteFilter.setIpv4(true);
     } else if (ctx.ipv6_prefix() != null) {
       _currentRoute6FilterPrefix = toPrefix6(ctx.ipv6_prefix());
@@ -3172,7 +3173,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterPopsfrf_through(Popsfrf_throughContext ctx) {
     if (_currentRouteFilterPrefix != null) { // ipv4
-      Prefix throughPrefix = toPrefix(ctx.ip_prefix());
+      Prefix throughPrefix = toPrefix(ctx.prefix);
       Route4FilterLine line = new Route4FilterLineThrough(_currentRouteFilterPrefix, throughPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
@@ -3224,7 +3225,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRoa_route(Roa_routeContext ctx) {
     if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
       _currentAggregateRoute = aggregateRoutes.computeIfAbsent(prefix, AggregateRoute::new);
     } else {
@@ -3259,8 +3260,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRog_route(Rog_routeContext ctx) {
-    if (ctx.ip_prefix() != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
       _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
     } else if (ctx.ipv6_prefix() != null) {
@@ -3349,8 +3350,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRos_route(Ros_routeContext ctx) {
-    if (ctx.ip_prefix() != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
       _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
     } else if (ctx.ipv6_prefix() != null) {
@@ -4751,14 +4752,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftt_next_ip(Fftt_next_ipContext ctx) {
-    Prefix nextPrefix;
-    if (ctx.ip != null) {
-      Ip nextIp = toIp(ctx.ip);
-      nextPrefix = nextIp.toPrefix();
-    } else {
-      nextPrefix = toPrefix(ctx.prefix);
-    }
-    FwThenNextIp then = new FwThenNextIp(nextPrefix);
+    FwThenNextIp then = new FwThenNextIp(toPrefix(ctx.prefix));
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     _currentFilter.setUsedForFBF(true);
@@ -5271,14 +5265,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
       }
     } else {
-      assert ctx.port_num != null;
       // this command can only happen for destination nat, and when port is given we need to enable
       // port translation
       Ip ip = toIp(ctx.ip);
       _currentNatPool.setFromAddress(ip);
       _currentNatPool.setToAddress(ip);
-      int port = toInt(ctx.port_num);
-      _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      if (ctx.port_num != null) {
+        int port = toInt(ctx.port_num);
+        _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      }
     }
   }
 
@@ -7085,6 +7080,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
     return Prefix.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefix_default_32Context ctx) {
+    if (ctx.IP_PREFIX() != null) {
+      return Prefix.parse(ctx.getText());
+    }
+    assert ctx.IP_ADDRESS() != null;
+    return Ip.parse(ctx.getText()).toPrefix();
   }
 
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {

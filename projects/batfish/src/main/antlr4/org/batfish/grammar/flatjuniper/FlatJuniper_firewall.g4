@@ -386,11 +386,7 @@ fftt_loss_priority
 
 fftt_next_ip
 :
-   NEXT_IP
-   (
-      ip = ip_address
-      | prefix = ip_prefix
-   )
+   NEXT_IP prefix = ip_prefix_default_32
 ;
 
 fftt_next_term
