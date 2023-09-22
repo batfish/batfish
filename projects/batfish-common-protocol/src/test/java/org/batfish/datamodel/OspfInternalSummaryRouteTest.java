@@ -19,7 +19,7 @@ public class OspfInternalSummaryRouteTest {
     new EqualsTester()
         .addEqualityGroup(r, builder.build())
         .addEqualityGroup(builder.setNetwork(Prefix.parse("1.1.1.1/32")).build())
-        .addEqualityGroup(builder.setAdmin(1000).build())
+        .addEqualityGroup(builder.setAdmin(100).build())
         .addEqualityGroup(builder.setArea(2L).build())
         .addEqualityGroup(builder.setMetric(20L).build())
         .testEquals();
@@ -30,7 +30,7 @@ public class OspfInternalSummaryRouteTest {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.ZERO)
-            .setAdmin(1000)
+            .setAdmin(100)
             .setArea(0)
             .setMetric(1L)
             .build();
@@ -42,7 +42,7 @@ public class OspfInternalSummaryRouteTest {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.ZERO)
-            .setAdmin(1000)
+            .setAdmin(100)
             .setArea(0)
             .setMetric(1L)
             .build();
@@ -54,7 +54,7 @@ public class OspfInternalSummaryRouteTest {
     OspfInternalSummaryRoute r =
         OspfInternalSummaryRoute.builder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
-            .setAdmin(1000)
+            .setAdmin(100)
             .setArea(2L)
             .setMetric(1L)
             .build();

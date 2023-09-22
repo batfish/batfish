@@ -287,7 +287,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  public static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/routers/xr12000/software/xr12k_r4-0/routing/configuration/guide/rc40xr12k_chapter6.html
+  // An administrative distance is an integer from 0 to 255. In general, the higher the value, the
+  // lower the trust rating. An administrative distance of 255 means the routing information source
+  // cannot be trusted at all and should be ignored.
+  public static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 

@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpProcess;
@@ -244,7 +245,7 @@ public class BgpProtocolHelperTest {
   public void testTransformOnImportClearAdminSetInterface() {
     final Builder builder =
         transformBgpRouteOnImport(
-            _baseBgpRouteBuilder.setAdmin(Integer.MAX_VALUE).build(),
+            _baseBgpRouteBuilder.setAdmin(AbstractRoute.MAX_ADMIN_DISTANCE).build(),
             2L,
             false,
             true,

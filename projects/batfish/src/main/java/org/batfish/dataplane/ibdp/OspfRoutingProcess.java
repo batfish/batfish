@@ -1141,7 +1141,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
                     // next-hop-interface of receiver.
                     .setNonRouting(true)
                     // Intentionally large. Must be correctly set on the receiver's side
-                    .setAdmin(Integer.MAX_VALUE)
+                    .setAdmin(AbstractRoute.MAX_ADMIN_DISTANCE)
                     .setMetric(areaConfig.getMetricOfDefaultRoute())
                     .setArea(areaConfig.getAreaNumber())
                     .build())

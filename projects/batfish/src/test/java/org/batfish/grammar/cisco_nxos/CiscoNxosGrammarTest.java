@@ -1653,7 +1653,7 @@ public final class CiscoNxosGrammarTest {
         peer.getGeneratedRoutes(),
         equalTo(
             ImmutableSet.of(
-                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(32767).build())));
+                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(255).build())));
 
     Ipv4UnicastAddressFamily ipv4Af = peer.getIpv4UnicastAddressFamily();
     assertThat(ipv4Af, notNullValue());

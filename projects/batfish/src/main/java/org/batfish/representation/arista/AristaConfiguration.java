@@ -284,7 +284,9 @@ public final class AristaConfiguration extends VendorConfiguration {
   public static final String DEFAULT_VRF_NAME = "default";
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.arista.com/en/um-eos/eos-border-gateway-protocol-bgp#xx1116652
+  // - Distance values range from 1 to 255
+  static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
