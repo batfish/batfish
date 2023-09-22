@@ -96,6 +96,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, RoutingInstance> _routingInstances;
 
+  private final Map<String, PrefixList> _snmpClientLists;
+
   private NavigableSet<String> _syslogHosts;
 
   private NavigableSet<String> _tacplusServers;
@@ -145,6 +147,7 @@ public class LogicalSystem implements Serializable {
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _securityPolicies = new TreeMap<>();
+    _snmpClientLists = new TreeMap<>();
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _tunnelAttributes = new TreeMap<>();
@@ -374,6 +377,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, RoutingInstance> getRoutingInstances() {
     return _routingInstances;
+  }
+
+  public Map<String, PrefixList> getSnmpClientLists() {
+    return _snmpClientLists;
   }
 
   public NavigableSet<String> getSyslogHosts() {

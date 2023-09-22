@@ -6318,14 +6318,22 @@ public final class FlatJuniperGrammarTest {
   public void testSnmpClientIps() {
     Configuration c = parseConfig("snmp");
     Map<String, SnmpCommunity> communities = c.getDefaultVrf().getSnmpServer().getCommunities();
+    assertThat(communities, hasKeys("COMM1", "COMM2"));
     {
-      assertThat(communities, hasKey("COMM1"));
       SnmpCommunity comm = communities.get("COMM1");
       assertThat(
           comm.getClientIps(),
           equalTo(
               AclIpSpace.union(
                   Prefix.parse("1.2.3.4/31").toIpSpace(), Prefix.parse("10.0.0.0/8").toIpSpace())));
+    }
+    {
+      SnmpCommunity comm = communities.get("COMM2");
+      assertThat(
+          comm.getClientIps(),
+          equalTo(
+              AclIpSpace.union(
+                  Ip.parse("2.3.4.5").toIpSpace(), Prefix.parse("20.0.0.0/8").toIpSpace())));
     }
   }
 
