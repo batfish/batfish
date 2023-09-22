@@ -3919,8 +3919,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
-        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER,
-        JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST);
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
+    markAbstractStructureAllUsages(
+        JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST,
+        ImmutableList.of(JuniperStructureType.PREFIX_LIST, JuniperStructureType.SNMP_CLIENT_LIST));
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     markConcreteStructure(
@@ -4107,7 +4109,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (clientListName == null) {
       return;
     }
-    PrefixList pl = _masterLogicalSystem.getPrefixLists().get(clientListName);
+    // Could be declared in VS as a prefix-list or an SNMP client-list. Prefer the latter.
+    PrefixList pl = _masterLogicalSystem.getSnmpClientLists().get(clientListName);
+    if (pl == null) {
+      pl = _masterLogicalSystem.getPrefixLists().get(clientListName);
+    }
     if (pl == null) {
       // Unreferenced error elsewhere.
       return;

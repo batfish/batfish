@@ -42,6 +42,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_IN
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
+import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -124,7 +126,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
-import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_CLIENT_LIST_NAME;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
@@ -684,9 +688,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_protocolsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_system_servicesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_client_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_logical_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcl_networkContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcls_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
@@ -3942,6 +3950,50 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSnmp_community(Snmp_communityContext ctx) {
+    _currentSnmpCommunity = null;
+  }
+
+  @Override
+  public void enterSnmpc_logical_system(Snmpc_logical_systemContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        JuniperStructureType.LOGICAL_SYSTEM,
+        name,
+        SNMP_COMMUNITY_LOGICAL_SYSTEM,
+        getLine(ctx.name.getStart()));
+    LogicalSystem ls = _configuration.getLogicalSystems().get(name);
+    if (ls == null) {
+      // dummy, deliberately not hooked up.
+      ls = new LogicalSystem(name);
+    }
+    setLogicalSystem(ls);
+  }
+
+  @Override
+  public void exitSnmpc_logical_system(Snmpc_logical_systemContext ctx) {
+    setLogicalSystem(_configuration.getMasterLogicalSystem());
+  }
+
+  @Override
+  public void enterSnmpcls_routing_instance(Snmpcls_routing_instanceContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, SNMP_COMMUNITY_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
+    RoutingInstance ri = _currentLogicalSystem.getRoutingInstances().get(name);
+    if (ri != null) {
+      // dummy, deliberately not hooked up.
+      ri = new RoutingInstance(name);
+    }
+    _currentRoutingInstance = ri;
+  }
+
+  @Override
+  public void exitSnmpcls_routing_instance(Snmpcls_routing_instanceContext ctx) {
+    _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
+  }
+
+  @Override
   public void enterSy_authentication_order(Sy_authentication_orderContext ctx) {
     if (_currentLine != null) {
       // in system services/ports hierarchy
@@ -6869,8 +6921,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitSnmp_community(Snmp_communityContext ctx) {
-    _currentSnmpCommunity = null;
+  public void enterSnmp_client_list(Snmp_client_listContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(SNMP_CLIENT_LIST, name, ctx, _parser);
+    Map<String, PrefixList> clientLists = _currentLogicalSystem.getSnmpClientLists();
+    _currentPrefixList = clientLists.computeIfAbsent(name, PrefixList::new);
+  }
+
+  @Override
+  public void exitSnmp_client_list(Snmp_client_listContext ctx) {
+    _currentPrefixList = null;
+  }
+
+  @Override
+  public void exitSnmpcl_network(Snmpcl_networkContext ctx) {
+    Prefix prefix = toPrefix(ctx.prefix);
+    _currentPrefixList.getPrefixes().add(prefix);
   }
 
   @Override
@@ -6889,7 +6955,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String list = toString(ctx.name);
     _currentSnmpCommunity.setAccessList(list);
     _configuration.referenceStructure(
-        PREFIX_LIST, list, SNMP_COMMUNITY_PREFIX_LIST, getLine(ctx.name.getStart()));
+        SNMP_CLIENT_LIST_OR_PREFIX_LIST,
+        list,
+        SNMP_COMMUNITY_CLIENT_LIST_NAME,
+        getLine(ctx.name.getStart()));
     // TODO: verify whether both ipv4 and ipv6 list should be set with this
     // command
     _currentSnmpCommunity.setAccessList6(list);
