@@ -144,7 +144,10 @@ public final class CumulusConversions {
 
   public static final int DEFAULT_STATIC_ROUTE_ADMINISTRATIVE_DISTANCE = 1;
   public static final int DEFAULT_STATIC_ROUTE_METRIC = 0;
-  private static final int MAX_ADMINISTRATIVE_COST = 32767;
+
+  // https://docs.frrouting.org/en/latest/bgp.html#administrative-distance-metrics
+  // distance (1-255)
+  private static final int MAX_ADMINISTRATIVE_COST = 255;
 
   private static final Long DEFAULT_REDISTRIBUTE_METRIC = 20L;
   private static final OspfMetricType DEFAULT_REDISTRIBUTE_METRIC_TYPE = OspfMetricType.E2;

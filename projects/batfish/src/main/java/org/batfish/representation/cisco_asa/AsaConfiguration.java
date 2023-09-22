@@ -336,7 +336,11 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/general/asa-910-general-config/route-static.html
+  // The distance argument is the administrative distance for the route, between 1 and 254.
+  // 2023-09-22 dhalperi@: seems like we should allow 255, which is likely in some cases.
+  // TODO: disallow 255 for some CLI commands that don't allow it.
+  static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 

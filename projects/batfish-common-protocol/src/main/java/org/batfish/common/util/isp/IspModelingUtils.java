@@ -38,6 +38,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -125,7 +126,7 @@ public final class IspModelingUtils {
           Prefix.parse("192.168.0.0/16"));
 
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
-  static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
+  static final int HIGH_ADMINISTRATIVE_COST = AbstractRoute.MAX_ADMIN_DISTANCE;
 
   /** Returns the hostname that will be used for the ISP model with the given ASN. */
   public static String getDefaultIspNodeName(long asn) {

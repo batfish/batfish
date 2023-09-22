@@ -107,7 +107,9 @@ public final class Conversions {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
-  private static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_advbgp.html
+  // Sets the administrative distance for BGP. The range is from 1 to 255.
+  private static final int MAX_ADMINISTRATIVE_COST = 255;
 
   private static final Statement ROUTE_MAP_DENY_STATEMENT =
       new If(
