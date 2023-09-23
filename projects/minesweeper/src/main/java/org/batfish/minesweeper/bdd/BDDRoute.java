@@ -457,11 +457,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
-    // at most one AS-path regex atomic predicate should be true, since by construction their
+    // exactly one AS-path regex atomic predicate should be true, since by construction their
     // regexes are all pairwise disjoint
-    // Note: the same constraint does not apply to community regexes because a route has a set
+    // Note: a similar constraint does not apply to community regexes because a route has a set
     // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint = atMostOneOf(_asPathRegexAtomicPredicates);
+    BDD asPathConstraint =
+        atMostOneOf(_asPathRegexAtomicPredicates).and(_factory.orAll(_asPathRegexAtomicPredicates));
     // at most one source VRF should be in the environment
     BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP

@@ -4,7 +4,6 @@ import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
-import static org.parboiled.common.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BoundType;
@@ -183,16 +182,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
       Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
-      // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
-      // the same as what the user was asking for.  if this ever fails then either TRP or SRP
-      // is modeling something incorrectly (or both).
-      // TODO: We can also take this validation further by using a variant of
-      // satAssignmentToInputRoute to produce the output route from our fullModel and the final
-      // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
-      // result.
-      checkState(
-          result.getAction().equals(_action),
-          "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
+      // As a sanity check, compare the simulated result above with what the symbolic route
+      // analysis predicts will happen.
+      assert ModelGeneration.validateModel(
+          fullModel, outputRoute, configAPs, _action, _direction, result);
+
       return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }
   }
@@ -517,6 +511,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
         intersection = intersection.and(outConstraints);
       }
+
       Optional<RowAndRoute> result =
           constraintsToResult(intersection, policy, outConfigAPs, outputRoute);
       if (result.isPresent()) {
