@@ -692,7 +692,7 @@ public class TransferBDD {
 
         case FallThrough:
           curP.debug("Fallthrough");
-          result = fallthrough(result, true);
+          result = fallthrough(result);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
         case Return:
@@ -923,12 +923,6 @@ public class TransferBDD {
        */
       return compute(bufStmt.getStatement(), state);
 
-    } else if (stmt instanceof SetOrigin) {
-      curP.debug("SetOrigin");
-      // System.out.println("Warning: use of unimplemented feature SetOrigin");
-      // TODO: implement me
-      return ImmutableList.of(toTransferBDDState(curP, result));
-
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
       setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
@@ -1015,8 +1009,8 @@ public class TransferBDD {
     return results.build();
   }
 
-  private TransferResult fallthrough(TransferResult r, boolean val) {
-    return r.setFallthroughValue(val).setReturnAssignedValue(true);
+  private TransferResult fallthrough(TransferResult r) {
+    return r.setFallthroughValue(true).setReturnAssignedValue(true);
   }
 
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
