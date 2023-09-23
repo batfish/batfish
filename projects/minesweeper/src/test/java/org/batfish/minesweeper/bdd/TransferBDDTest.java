@@ -1687,7 +1687,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     // get the unique atomic predicate that corresponds to " 40$"
     Integer ap =
@@ -1698,7 +1698,7 @@ public class TransferBDDTest {
             .iterator()
             .next();
 
-    BDD expectedBDD = aps[ap];
+    BDD expectedBDD = aps.value(ap);
 
     assertTrue(
         equalsForTesting(
@@ -1724,7 +1724,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(3, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
@@ -1734,7 +1734,7 @@ public class TransferBDDTest {
     Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
     Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
 
-    BDD expectedBDD = aps[ap1].or(aps[ap2]);
+    BDD expectedBDD = aps.value(ap1).or(aps.value(ap2));
 
     assertTrue(
         equalsForTesting(
@@ -2136,7 +2136,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
@@ -2152,7 +2152,7 @@ public class TransferBDDTest {
             .iterator()
             .next();
 
-    BDD expectedBDD = aps[ap];
+    BDD expectedBDD = aps.value(ap);
 
     assertTrue(
         equalsForTesting(
@@ -2177,7 +2177,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
@@ -2186,7 +2186,7 @@ public class TransferBDDTest {
     // get the unique atomic predicate that corresponds to the AsSetsMatchingRanges constraint
     Integer ap = regexMap.get(new SymbolicAsPathRegex(asExpr)).iterator().next();
 
-    BDD expectedBDD = aps[ap];
+    BDD expectedBDD = aps.value(ap);
 
     assertTrue(
         equalsForTesting(

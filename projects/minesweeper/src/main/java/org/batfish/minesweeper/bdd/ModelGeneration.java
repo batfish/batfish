@@ -125,23 +125,11 @@ public class ModelGeneration {
    */
   static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
-    BDD[] aps = r.getAsPathRegexAtomicPredicates();
+    Integer ap = r.getAsPathRegexAtomicPredicates().satAssignmentToValue(fullModel);
     Map<Integer, Automaton> apAutomata =
         configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
+    Automaton asPathRegexAutomaton = apAutomata.get(ap);
 
-    // find all atomic predicates that are required to be true in the given model
-    List<Integer> trueAPs =
-        IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-            .filter(i -> aps[i].andSat(fullModel))
-            .boxed()
-            .collect(Collectors.toList());
-
-    // since atomic predicates are disjoint, at most one of them should be true in the model
-    checkState(
-        trueAPs.size() == 1,
-        "Error in symbolic AS-path analysis: exactly one atomic predicate should be true");
-
-    Automaton asPathRegexAutomaton = apAutomata.get(trueAPs.get(0));
     String asPathStr = asPathRegexAutomaton.getShortestExample(true);
     // As-path regex automata should only accept strings with this property;
     // see SymbolicAsPathRegex::toAutomaton

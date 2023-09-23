@@ -137,16 +137,18 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @return A BDD that denotes at least one of the differences in the given diffs list. Only
-   *     capturing differences in communities and as-path for now; the rest are not necessary
-   *     because they do not have additive semantics, like "set community additive" and "set as-path
-   *     prepend". (actually, I think you might be able to plus on the local-pref value, TODO:
-   *     check)
+   *     capturing differences in communities for now; the rest are not necessary because they do
+   *     not have additive semantics, like "set community additive". Note that AS-path prepends are
+   *     recorded concretely rather than symbolically in {@link BDDRoute}s, so their differences are
+   *     also ignored here. (actually, I think you might be able to plus on the local-pref value,
+   *     TODO: check)
    */
   private BDD counterExampleOutputConstraints(
       BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
     BDD acc = factory.zero();
     for (BDDRouteDiff.DifferenceType d : diffs) {
       switch (d) {
+        case AS_PATH:
         case OSPF_METRIC:
         case LOCAL_PREF:
         case MED:
@@ -163,17 +165,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
           BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
           for (int i = 0; i < communityAtomicPredicates.length; i++) {
             BDD outConstraint = communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]);
-            // If there is a scenario where the two outputs differ at this community then ensure
-            // this scenario
-            // manifests during model generation.
-            acc = acc.or(outConstraint);
-          }
-          break;
-        case AS_PATH:
-          BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
-          BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
-          for (int i = 0; i < asPathAtomicPredicates.length; i++) {
-            BDD outConstraint = asPathAtomicPredicates[i].xor(otherAsPathAtomicPredicates[i]);
             // If there is a scenario where the two outputs differ at this community then ensure
             // this scenario
             // manifests during model generation.

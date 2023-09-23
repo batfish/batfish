@@ -209,18 +209,40 @@ public class TransferBDD {
      */
   }
 
-  // produce a BDD that represents the disjunction of all atomic predicates associated with any of
-  // the given as-path regexes
-  BDD asPathRegexesToBDD(Set<SymbolicAsPathRegex> asPathRegexes, BDDRoute route) {
-    Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, _asPathRegexAtomicPredicates);
-    BDD[] apBDDs = route.getAsPathRegexAtomicPredicates();
+  /**
+   * Produces a BDD that represents the disjunction of all atomic predicates associated with any of
+   * the given AS-path regexes.
+   *
+   * @param asPathRegexes the set of AS-path regexes to convert to a BDD
+   * @param apMap a map from as-path regexes to their corresponding sets of atomic predicates
+   * @param route the symbolic representation of a route
+   * @return the BDD
+   */
+  public static BDD asPathRegexesToBDD(
+      Set<SymbolicAsPathRegex> asPathRegexes,
+      Map<SymbolicAsPathRegex, Set<Integer>> apMap,
+      BDDRoute route) {
+    Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, apMap);
     return route
         .getFactory()
-        .orAll(asPathAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+        .orAll(
+            asPathAPs.stream()
+                .map(ap -> route.getAsPathRegexAtomicPredicates().value(ap))
+                .collect(Collectors.toList()));
   }
 
-  // produce the union of all atomic predicates associated with any of the given symbolic regexes
-  <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+  //
+
+  /**
+   * Produces a set consisting of all atomic predicates associated with any of the given symbolic
+   * regexes.
+   *
+   * @param regexes the regexes of interest
+   * @param apMap a map from regexes to their corresponding sets of atomic predicates
+   * @return the set of relevant atomic predicates
+   * @param <T> the specific type of the regexes
+   */
+  static <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
       Set<T> regexes, Map<T, Set<Integer>> apMap) {
     return regexes.stream()
         .flatMap(r -> apMap.get(r).stream())
@@ -319,6 +341,7 @@ public class TransferBDD {
                 .setReturnValueBDD(
                     asPathRegexesToBDD(
                         ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                        _asPathRegexAtomicPredicates,
                         routeForMatching(p.getData())))
                 .setReturnValueAccepted(true));
       } else {
@@ -564,6 +587,7 @@ public class TransferBDD {
               matchAsPath
                   .getAsPathMatchExpr()
                   .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute)),
+              _asPathRegexAtomicPredicates,
               currRoute);
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
@@ -1074,7 +1098,8 @@ public class TransferBDD {
       // each line's regex is represented as the disjunction of all of the regex's
       // corresponding atomic predicates
       SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
-      BDD regexAPBdd = asPathRegexesToBDD(ImmutableSet.of(regex), other);
+      BDD regexAPBdd =
+          asPathRegexesToBDD(ImmutableSet.of(regex), _asPathRegexAtomicPredicates, other);
       acc = ite(regexAPBdd, mkBDD(action), acc);
     }
     return acc;

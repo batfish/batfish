@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -71,18 +72,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private BDD[] _communityAtomicPredicates;
 
   /**
-   * Each AS-path regex atomic predicate (see class Graph) is allocated both a BDD variable and a
-   * BDD, as in the general encoding described above. This array maintains the BDDs. The nth BDD
-   * indicates the conditions under which the route's AS path satisfies the nth atomic predicate.
-   *
-   * <p>Since the AS-path atomic predicates are disjoint, at most one of them can be true in any
-   * concrete route. So we could use a binary encoding instead, where we use log(N) BDDs to
-   * represent N atomic predicates. See {@link org.batfish.common.bdd.BDDFiniteDomain} for an
-   * example of that encoding. If N is large, that could improve efficiency of symbolic route
-   * analysis (see {@link TransferBDD}) and of the route well-formedness constraints (see
-   * wellFormednessConstraints() below).
+   * Unlike the case for communities, where each route contains a set of communities, exactly one
+   * AS-path atomic predicate will be true for any concrete route. Therefore, we use a {@link
+   * BDDDomain}, which encodes the mutual exclusion constraint implicitly and also uses only a
+   * logarithmic number of BDD variables in the number of atomic predicates.
    */
-  private BDD[] _asPathRegexAtomicPredicates;
+  private BDDDomain<Integer> _asPathRegexAtomicPredicates;
 
   // for now we only track the cluster list's length, not its contents;
   // that is all that is needed to support matching on the length
@@ -266,12 +261,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     }
     // Initialize one BDD per AS-path regex atomic predicate, each of which has a corresponding
     // BDD variable
-    _asPathRegexAtomicPredicates = new BDD[numAsPathRegexAtomicPredicates];
-    for (int i = 0; i < numAsPathRegexAtomicPredicates; i++) {
-      _asPathRegexAtomicPredicates[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "AS-path regex atomic predicate " + i);
-      idx++;
-    }
+    _asPathRegexAtomicPredicates =
+        new BDDDomain<Integer>(
+            factory,
+            IntStream.range(0, numAsPathRegexAtomicPredicates).boxed().collect(Collectors.toList()),
+            idx);
+    len = _asPathRegexAtomicPredicates.getInteger().size();
+    addBitNames("as-path atomic predicates", len, idx, false);
+    idx += len;
+
     // Initialize one BDD per next-hop interface name, each of which has a corresponding BDD
     // variable
     _nextHopInterfaces = new BDD[numNextHopInterfaces];
@@ -310,7 +308,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDDRoute other) {
     _factory = other._factory;
 
-    _asPathRegexAtomicPredicates = other._asPathRegexAtomicPredicates.clone();
+    _asPathRegexAtomicPredicates = new BDDDomain<>(other._asPathRegexAtomicPredicates);
     _clusterListLength = new MutableBDDInteger(other._clusterListLength);
     _communityAtomicPredicates = other._communityAtomicPredicates.clone();
     _prefixLength = new MutableBDDInteger(other._prefixLength);
@@ -343,20 +341,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   public BDDRoute(BDD pred, BDDRoute route) {
     _factory = route._factory;
 
-    // Create fresh arrays for atomic predicates
-    BDD[] asPathAtomicPredicates = new BDD[route._asPathRegexAtomicPredicates.length];
+    // Create a fresh array for community atomic predicates
     BDD[] communityAtomicPredicates = new BDD[route._communityAtomicPredicates.length];
-
     // Intersect each atomic predicate with pred.
-    for (int i = 0; i < asPathAtomicPredicates.length; i++) {
-      asPathAtomicPredicates[i] = route._asPathRegexAtomicPredicates[i].and(pred);
-    }
-
     for (int i = 0; i < communityAtomicPredicates.length; i++) {
       communityAtomicPredicates[i] = route._communityAtomicPredicates[i].and(pred);
     }
 
-    _asPathRegexAtomicPredicates = asPathAtomicPredicates;
+    _asPathRegexAtomicPredicates = new BDDDomain<>(pred, route._asPathRegexAtomicPredicates);
     _clusterListLength = route.getClusterListLength().and(pred);
     _communityAtomicPredicates = communityAtomicPredicates;
     _prefixLength = route._prefixLength.and(pred);
@@ -457,12 +449,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
-    // exactly one AS-path regex atomic predicate should be true, since by construction their
-    // regexes are all pairwise disjoint
-    // Note: a similar constraint does not apply to community regexes because a route has a set
-    // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint =
-        atMostOneOf(_asPathRegexAtomicPredicates).and(_factory.orAll(_asPathRegexAtomicPredicates));
     // at most one source VRF should be in the environment
     BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP
@@ -473,7 +459,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
     return protocolConstraint
         .andWith(prefLenConstraint)
-        .andWith(asPathConstraint)
         .andWith(sourceVrfConstraint)
         .andWith(nextHopConstraint)
         .andWith(nextHopInterfaceConstraint);
@@ -534,11 +519,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _adminDist = adminDist;
   }
 
-  public BDD[] getAsPathRegexAtomicPredicates() {
+  public BDDDomain<Integer> getAsPathRegexAtomicPredicates() {
     return _asPathRegexAtomicPredicates;
   }
 
-  public void setAsPathRegexAtomicPredicates(BDD[] asPathRegexAtomicPredicates) {
+  public void setAsPathRegexAtomicPredicates(BDDDomain<Integer> asPathRegexAtomicPredicates) {
     _asPathRegexAtomicPredicates = asPathRegexAtomicPredicates;
   }
 
@@ -697,7 +682,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_prefix, other._prefix)
         && Objects.equals(_prefixLength, other._prefixLength)
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
-        && Arrays.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
+        && Objects.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
         && Arrays.equals(_nextHopInterfaces, other._nextHopInterfaces)
         && Arrays.equals(_sourceVrfs, other._sourceVrfs)
