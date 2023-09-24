@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
@@ -92,12 +93,21 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(
         _bitvec.length <= 63, "Only BDDInteger of 63 or fewer bits can be converted to long");
 
+    // explicitly treat as false any variables that do not appear in the given SAT assignment but
+    // are part of the support of this MutableBDDInteger; this is necessary to properly get models
+    // for situations like increments, where this object represents a function of the original
+    // BDD variables.
+    BDD fullSatAssignment =
+        satAssignment.satOne(
+            satAssignment
+                .getFactory()
+                .andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toList())),
+            false);
+
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      // a.diff(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
-      // this biases towards lexicographically smaller solutions: set a 1 only if you can't set 0.
-      if (!satAssignment.diffSat(bitBDD)) {
+      if (fullSatAssignment.andSat(bitBDD)) {
         value |= 1L << i;
       }
     }

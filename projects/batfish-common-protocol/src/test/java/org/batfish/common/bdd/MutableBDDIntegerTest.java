@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -80,6 +81,10 @@ public class MutableBDDIntegerTest {
     assertThat(xPlus1.getValuesSatisfying(xPlus1.value(3L), 100), contains(3L));
     assertThat(xPlus1.getValuesSatisfying(x.value(3L), 100), contains(4L));
     assertThat(x.getValuesSatisfying(xPlus1.value(3L), 100), contains(2L));
+
+    // Check that partial satisfying assignments also work properly
+    assertThat(x.satAssignmentToLong(factory.one()), equalTo(0L));
+    assertThat(xPlus1.satAssignmentToLong(factory.one()), equalTo(1L));
   }
 
   @Test
