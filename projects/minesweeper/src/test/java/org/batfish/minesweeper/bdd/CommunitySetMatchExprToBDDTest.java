@@ -17,6 +17,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
+import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
+import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
@@ -172,6 +174,24 @@ public class CommunitySetMatchExprToBDDTest {
     BDD result = _communitySetMatchExprToBDD.visitHasCommunity(hc, _arg);
 
     CommunityVar cvar = CommunityVar.from(StandardCommunity.parse("20:30"));
+
+    assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitHasCommunity2() {
+    HasCommunity hc =
+        new HasCommunity(
+            new CommunityAcl(
+                ImmutableList.of(
+                    new CommunityAclLine(
+                        LineAction.DENY, new CommunityIs(StandardCommunity.parse("20:30"))),
+                    new CommunityAclLine(
+                        LineAction.PERMIT, new CommunityIs(StandardCommunity.parse("21:30"))))));
+
+    BDD result = _communitySetMatchExprToBDD.visitHasCommunity(hc, _arg);
+
+    CommunityVar cvar = CommunityVar.from(StandardCommunity.parse("21:30"));
 
     assertEquals(cvarToBDD(cvar), result);
   }

@@ -159,11 +159,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+      BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
+          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -183,7 +183,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // As a sanity check, compare the simulated result above with what the symbolic route
       // analysis predicts will happen.
       assert ModelGeneration.validateModel(
-          fullModel, outputRoute, configAPs, _action, _direction, result);
+          model, outputRoute, configAPs, _action, _direction, result);
 
       return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }
