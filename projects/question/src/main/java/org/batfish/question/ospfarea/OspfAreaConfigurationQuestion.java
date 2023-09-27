@@ -14,7 +14,7 @@ import org.batfish.specifier.SpecifierFactories;
 public class OspfAreaConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
   @JsonCreator
   public OspfAreaConfigurationQuestion(@JsonProperty(PROP_NODES) @Nullable String nodes) {
@@ -32,8 +32,7 @@ public class OspfAreaConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 

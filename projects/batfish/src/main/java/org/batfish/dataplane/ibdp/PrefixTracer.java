@@ -29,7 +29,7 @@ public final class PrefixTracer implements Serializable {
 
     private final String _hostname;
     private final Ip _ip;
-    @Nullable private final String _routingPolicy;
+    private final @Nullable String _routingPolicy;
     private final String _vrfName;
 
     /**
@@ -55,8 +55,7 @@ public final class PrefixTracer implements Serializable {
     }
 
     /** Return the routing policy (of the current router) */
-    @Nullable
-    public String getRoutingPolicy() {
+    public @Nullable String getRoutingPolicy() {
       return _routingPolicy;
     }
 

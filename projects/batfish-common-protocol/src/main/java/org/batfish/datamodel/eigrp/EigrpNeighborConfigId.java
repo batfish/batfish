@@ -29,9 +29,9 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
   private static final String PROP_VRF = "vrf";
 
   private final long _asn;
-  @Nonnull private final String _hostname;
-  @Nonnull private final String _interfaceName;
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _hostname;
+  private final @Nonnull String _interfaceName;
+  private final @Nonnull String _vrfName;
 
   public EigrpNeighborConfigId(long asn, String hostname, String interfaceName, String vrfName) {
     _asn = asn;

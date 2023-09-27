@@ -41,8 +41,8 @@ public class IsisProtocolHelper {
             .build());
   }
 
-  @Nonnull
-  public static RibDelta<IsisRoute> setOverloadOnAllRoutes(@Nonnull RibDelta<IsisRoute> delta) {
+  public static @Nonnull RibDelta<IsisRoute> setOverloadOnAllRoutes(
+      @Nonnull RibDelta<IsisRoute> delta) {
 
     RibDelta.Builder<IsisRoute> deltaWithOverloadTrue = RibDelta.builder();
     delta.stream()
@@ -65,8 +65,7 @@ public class IsisProtocolHelper {
    * @return Transformed {@link IsisRoute} if {@code exportCandidate} passes the IS-IS export
    *     policy; otherwise {@code null}.
    */
-  @Nullable
-  public static IsisRoute exportNonIsisRouteToIsis(
+  public static @Nullable IsisRoute exportNonIsisRouteToIsis(
       @Nonnull AnnotatedRoute<AbstractRoute> exportCandidate,
       @Nonnull IsisProcess process,
       boolean isLevel1,
@@ -99,8 +98,7 @@ public class IsisProtocolHelper {
    * <p>Sets network, admin, metric, area, tag, protocol, level, overload, system ID, and nonRouting
    * (to true, should be cleared on import). Does not set next hop IP, attach, or down.
    */
-  @Nonnull
-  public static IsisRoute.Builder convertNonIsisRouteToIsisRoute(
+  public static @Nonnull IsisRoute.Builder convertNonIsisRouteToIsisRoute(
       AbstractRoute route, IsisProcess process, boolean isLevel1, Configuration c) {
     assert !(route instanceof IsisRoute);
     RoutingProtocol protocol = isLevel1 ? RoutingProtocol.ISIS_EL1 : RoutingProtocol.ISIS_EL2;

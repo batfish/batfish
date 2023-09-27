@@ -55,7 +55,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   private @Nullable ResolvConf _resolvConf;
   private @Nullable SnmpYml _snmpYml;
 
-  private @Nonnull final FrrConfiguration _frr;
+  private final @Nonnull FrrConfiguration _frr;
 
   public SonicConfiguration() {
     _frr = new FrrConfiguration();
@@ -259,8 +259,7 @@ public class SonicConfiguration extends FrrVendorConfiguration {
   @Override
   public void setVendor(ConfigurationFormat format) {}
 
-  @Nullable
-  public ResolvConf getResolvConf() {
+  public @Nullable ResolvConf getResolvConf() {
     return _resolvConf;
   }
 

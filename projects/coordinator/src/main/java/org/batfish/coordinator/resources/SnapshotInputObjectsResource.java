@@ -57,8 +57,7 @@ public class SnapshotInputObjectsResource {
   @Path(RSC_LIST)
   @GET
   @Produces(MediaType.APPLICATION_JSON)
-  @Nonnull
-  public Response listKeys() throws IOException {
+  public @Nonnull Response listKeys() throws IOException {
     List<StoredObjectMetadata> keys =
         Main.getWorkMgr().getSnapshotInputObjectsMetadata(_network, _snapshot);
     if (keys == null) {

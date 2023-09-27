@@ -117,6 +117,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportEncapsulationType;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
@@ -474,8 +475,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP);
   }
 
-  @Nullable
-  private BgpProcess createBgpProcess(RoutingInstance routingInstance) {
+  private @Nullable BgpProcess createBgpProcess(RoutingInstance routingInstance) {
     BgpGroup mg = routingInstance.getMasterBgpGroup();
     if (firstNonNull(mg.getDisable(), Boolean.FALSE)) {
       return null;
@@ -817,18 +817,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       ipv4AfSettingsBuilder.setSendCommunity(true).setSendExtendedCommunity(true);
 
       // inherit update-source
-      Ip localIp = ig.getLocalAddress();
-
-      // When local IP is not explicitly set, the source address is dynamically picked based on the
-      // outgoing interface (done in VI land, so we don't need to do anything more here).
-      // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
-      // default-address-selection is set.
-      if (localIp == null
-          && _masterLogicalSystem.getDefaultAddressSelection()
-          && (ibgp || firstNonNull(ig.getEbgpMultihop(), false))) {
-        localIp = getDefaultSourceAddress(routingInstance, _c).orElse(null);
-      }
-      neighbor.setLocalIp(localIp);
+      neighbor.setLocalIp(ig.getLocalAddress());
       neighbor.setBgpProcess(proc);
       neighbor.setIpv4UnicastAddressFamily(
           ipv4AfBuilder.setAddressFamilyCapabilities(ipv4AfSettingsBuilder.build()).build());
@@ -976,8 +965,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * creates an {@link If} that matches that route (specifically, matches static routes with that
    * route's destination network), and sets communities for matching exported routes.
    */
-  @Nonnull
-  private static List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
+  private static @Nonnull List<If> getStaticRouteCommunitySetters(@Nonnull RoutingInstance ri) {
     MatchProtocol matchStatic = new MatchProtocol(RoutingProtocol.STATIC);
     return ri
         .getRibs()
@@ -1295,13 +1283,13 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  @Nullable
-  private org.batfish.datamodel.isis.IsisInterfaceLevelSettings toIsisInterfaceLevelSettings(
-      IsisLevelSettings levelSettings,
-      IsisInterfaceSettings interfaceSettings,
-      IsisInterfaceLevelSettings interfaceLevelSettings,
-      long defaultCost,
-      boolean isLoopback) {
+  private @Nullable org.batfish.datamodel.isis.IsisInterfaceLevelSettings
+      toIsisInterfaceLevelSettings(
+          IsisLevelSettings levelSettings,
+          IsisInterfaceSettings interfaceSettings,
+          IsisInterfaceLevelSettings interfaceLevelSettings,
+          long defaultCost,
+          boolean isLoopback) {
     // Process and interface settings have already been checked to ensure IS-IS is enabled on iface
     if (!interfaceLevelSettings.getEnabled()) {
       return null;
@@ -1331,8 +1319,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  @Nullable
-  private OspfProcess createOspfProcess(RoutingInstance routingInstance) {
+  private @Nullable OspfProcess createOspfProcess(RoutingInstance routingInstance) {
     if (firstNonNull(routingInstance.getOspfDisable(), Boolean.FALSE)) {
       return null;
     }
@@ -1872,8 +1859,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * #toInterface(Interface)} for those conversions. Here we convert aggregation and bandwidth
    * settings; track VRF membership.
    */
-  @Nullable
-  private org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
+  private @Nullable org.batfish.datamodel.Interface toInterfaceNonUnit(Interface iface) {
     if (!iface.isDefined()) {
       // if this is false then it definitely means interface was created only because it was
       // referred somewhere but never defined so skipping conversion
@@ -1917,8 +1903,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * @param iface a {@link Interface}
    * @return {@link org.batfish.datamodel.Interface}
    */
-  @Nullable
-  private org.batfish.datamodel.Interface toInterface(Interface iface) {
+  private @Nullable org.batfish.datamodel.Interface toInterface(Interface iface) {
     if (!iface.isDefined()) {
       // if this is false then it definitely means interface was created only because it was
       // referred somewhere but never defined so skipping conversion
@@ -2208,8 +2193,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
   }
 
-  @Nullable
-  private OspfNetworkType toOspfNetworkType(OspfInterfaceSettings.OspfInterfaceType type) {
+  private @Nullable OspfNetworkType toOspfNetworkType(
+      OspfInterfaceSettings.OspfInterfaceType type) {
     switch (type) {
       case BROADCAST:
         return OspfNetworkType.BROADCAST;
@@ -2439,8 +2424,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return combinedAcl;
   }
 
-  @Nullable
-  private Transformation buildIncomingTransformation(
+  private @Nullable Transformation buildIncomingTransformation(
       Nat nat, Interface iface, Transformation orElse) {
     if (nat == null) {
       return orElse;
@@ -2507,8 +2491,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return transformation;
   }
 
-  @Nullable
-  private Transformation buildIncomingTransformation(Interface iface) {
+  private @Nullable Transformation buildIncomingTransformation(Interface iface) {
     Nat dnat = _masterLogicalSystem.getNatDestination();
     Transformation dstTransformation = buildIncomingTransformation(dnat, iface, null);
     Nat staticNat = _masterLogicalSystem.getNatStatic();
@@ -2680,8 +2663,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .build());
   }
 
-  @Nullable
-  private LineAction getLineAction(String aclName, FwTerm term) {
+  private @Nullable LineAction getLineAction(String aclName, FwTerm term) {
     if (term.getThens().contains(FwThenAccept.INSTANCE)) {
       return LineAction.PERMIT;
     }
@@ -2793,8 +2775,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         filter.getName(), filter, matchSrcInterface, JuniperStructureType.SECURITY_POLICY);
   }
 
-  @Nullable
-  private IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
+  private @Nullable IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
     ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface());
     IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
@@ -2890,8 +2871,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
    *
    * <p>Used for generating the list of VRFs to be imported for instance-import policies.
    */
-  @Nonnull
-  private List<String> getVrfsReferencedByPolicies(List<String> instanceImportPolicies) {
+  private @Nonnull List<String> getVrfsReferencedByPolicies(List<String> instanceImportPolicies) {
     return instanceImportPolicies.stream()
         .filter(pName -> _c.getRoutingPolicies().containsKey(pName))
         .flatMap(pName -> _vrfReferencesInPolicies.getOrDefault(pName, ImmutableList.of()).stream())
@@ -2900,8 +2880,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  private static RoutingPolicy buildInstanceImportRoutingPolicy(
+  private static @Nonnull RoutingPolicy buildInstanceImportRoutingPolicy(
       RoutingInstance ri, Configuration c, String vrfName) {
     String policyName = generateInstanceImportPolicyName(vrfName);
     List<BooleanExpr> policyCalls =
@@ -2929,8 +2908,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("~INSTANCE_IMPORT_POLICY_%s~", vrfName);
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
+  private static @Nonnull org.batfish.datamodel.dataplane.rib.RibGroup toRibGroup(
       RibGroup rg, RoutingProtocol protocol, Configuration c, String vrfName, Warnings w) {
     ImmutableList<RibId> importRibs =
         rg.getImportRibs().stream()
@@ -2978,8 +2956,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   @VisibleForTesting
-  @Nullable
-  static RibId toRibId(String hostname, String rib, @Nullable Warnings w) {
+  static @Nullable RibId toRibId(String hostname, String rib, @Nullable Warnings w) {
     String[] parts = rib.split("\\.");
     if (parts.length < 2 || parts.length > 3) {
       throw new VendorConversionException(String.format("Invalid RIB identifier %s", rib));
@@ -3005,8 +2982,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     // We only support IPv4 unicast
     if (!addressFamily.equals("inet") && w != null) {
-      w.unimplemented(
-          String.format("Rib name conversion: %s address family is not supported", addressFamily));
+      w.unimplementedf("Rib name conversion: %s address family is not supported", addressFamily);
       return null;
     }
     return new RibId(hostname, vrfName, ribName);
@@ -3306,8 +3282,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         return ImmutableSet.of();
       }
       if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
-        _w.unimplemented(
-            String.format("next-table support is currently limited to %s", RIB_IPV4_UNICAST));
+        _w.unimplementedf("next-table support is currently limited to %s", RIB_IPV4_UNICAST);
         return ImmutableSet.of();
       }
       nextVrf = ribId.getVrfName();
@@ -3853,6 +3828,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
+      if (_masterLogicalSystem.getDefaultAddressSelection()) {
+        // When local IP is not explicitly set, the source address is dynamically picked based on
+        // the outgoing interface (done in VI land, so we don't need to do anything more here).
+        // The exception to this behavior occurs for iBGP and eBGP-multihop sessions when
+        // default-address-selection is set.
+        getDefaultSourceAddress(ri, _c)
+            .ifPresent(ip -> vrf.setSourceIpInference(UseConstantIp.create(ip)));
+      }
       convertResolution(ri);
     }
 
@@ -3936,8 +3919,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST,
         JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST,
         JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST,
-        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER,
-        JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST);
+        JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER);
+    markAbstractStructureAllUsages(
+        JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST,
+        ImmutableList.of(JuniperStructureType.PREFIX_LIST, JuniperStructureType.SNMP_CLIENT_LIST));
     markConcreteStructure(JuniperStructureType.VLAN, JuniperStructureUsage.INTERFACE_VLAN);
 
     markConcreteStructure(
@@ -4124,7 +4109,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (clientListName == null) {
       return;
     }
-    PrefixList pl = _masterLogicalSystem.getPrefixLists().get(clientListName);
+    // Could be declared in VS as a prefix-list or an SNMP client-list. Prefer the latter.
+    PrefixList pl = _masterLogicalSystem.getSnmpClientLists().get(clientListName);
+    if (pl == null) {
+      pl = _masterLogicalSystem.getPrefixLists().get(clientListName);
+    }
     if (pl == null) {
       // Unreferenced error elsewhere.
       return;

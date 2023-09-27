@@ -37,7 +37,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class CidrBlockAssociation implements Serializable {
 
-    @Nonnull private final Prefix _block;
+    private final @Nonnull Prefix _block;
 
     @JsonCreator
     private static CidrBlockAssociation create(
@@ -73,13 +73,13 @@ final class Vpc implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final Set<Prefix> _cidrBlockAssociations;
+  private final @Nonnull Set<Prefix> _cidrBlockAssociations;
 
-  @Nonnull private final String _ownerId;
+  private final @Nonnull String _ownerId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   @JsonCreator
   private static Vpc create(
@@ -116,8 +116,7 @@ final class Vpc implements AwsVpcEntity, Serializable {
     return _cidrBlockAssociations;
   }
 
-  @Nonnull
-  public String getOwnerId() {
+  public @Nonnull String getOwnerId() {
     return _ownerId;
   }
 

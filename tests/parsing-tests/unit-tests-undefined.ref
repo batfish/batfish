@@ -3850,9 +3850,9 @@
       },
       {
         "File_Name" : "configs/juniper_snmp",
-        "Struct_Type" : "prefix-list",
+        "Struct_Type" : "snmp client-list or prefix-list",
         "Ref_Name" : "bippetyboo",
-        "Context" : "snmp community prefix-list",
+        "Context" : "snmp community client-list-name",
         "Lines" : {
           "filename" : "configs/juniper_snmp",
           "lines" : [

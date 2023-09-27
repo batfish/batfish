@@ -40,8 +40,7 @@ public final class CliUtils {
    *
    * @throws IOException if there is an error
    */
-  @Nonnull
-  static SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger)
+  static @Nonnull SortedMap<Path, String> readAllFiles(Path directory, BatfishLogger logger)
       throws IOException {
     try (Stream<Path> paths = Files.walk(directory, FileVisitOption.FOLLOW_LINKS)) {
       return paths
@@ -77,8 +76,7 @@ public final class CliUtils {
    *
    * @throws IOException if there is an error
    */
-  @Nonnull
-  public static SortedMap<Path, String> readAllFiles(Path directory) throws IOException {
+  public static @Nonnull SortedMap<Path, String> readAllFiles(Path directory) throws IOException {
     return readAllFiles(directory, null);
   }
 
@@ -99,8 +97,7 @@ public final class CliUtils {
     }
   }
 
-  @Nonnull
-  public static <T> Map<Path, T> relativize(Path basePath, Map<Path, T> pathKeyedMap) {
+  public static @Nonnull <T> Map<Path, T> relativize(Path basePath, Map<Path, T> pathKeyedMap) {
     ImmutableMap.Builder<Path, T> builder =
         ImmutableMap.builderWithExpectedSize(pathKeyedMap.size());
     pathKeyedMap.forEach(
@@ -108,8 +105,7 @@ public final class CliUtils {
     return builder.build();
   }
 
-  @Nonnull
-  public static <T> Map<Path, T> resolve(Path basePath, Map<Path, T> pathKeyedMap) {
+  public static @Nonnull <T> Map<Path, T> resolve(Path basePath, Map<Path, T> pathKeyedMap) {
     ImmutableMap.Builder<Path, T> builder =
         ImmutableMap.builderWithExpectedSize(pathKeyedMap.size());
     pathKeyedMap.forEach((relativePath, data) -> builder.put(basePath.resolve(relativePath), data));

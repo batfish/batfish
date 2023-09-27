@@ -6,17 +6,16 @@ import javax.annotation.Nullable;
 
 /** Represents a qualified next-hop configured for a {@link StaticRoute} */
 public class QualifiedNextHop implements Serializable {
-  @Nullable private Integer _metric;
-  @Nonnull private NextHop _nextHop;
-  @Nullable private Integer _preference;
-  @Nullable private Long _tag;
+  private @Nullable Integer _metric;
+  private @Nonnull NextHop _nextHop;
+  private @Nullable Integer _preference;
+  private @Nullable Long _tag;
 
   public QualifiedNextHop(@Nonnull NextHop nextHop) {
     _nextHop = nextHop;
   }
 
-  @Nullable
-  public Integer getMetric() {
+  public @Nullable Integer getMetric() {
     return _metric;
   }
 
@@ -24,8 +23,7 @@ public class QualifiedNextHop implements Serializable {
     _metric = metric;
   }
 
-  @Nullable
-  public Integer getPreference() {
+  public @Nullable Integer getPreference() {
     return _preference;
   }
 
@@ -33,8 +31,7 @@ public class QualifiedNextHop implements Serializable {
     _preference = preference;
   }
 
-  @Nullable
-  public Long getTag() {
+  public @Nullable Long getTag() {
     return _tag;
   }
 
@@ -42,8 +39,7 @@ public class QualifiedNextHop implements Serializable {
     _tag = tag;
   }
 
-  @Nonnull
-  public NextHop getNextHop() {
+  public @Nonnull NextHop getNextHop() {
     return _nextHop;
   }
 }

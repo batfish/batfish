@@ -17,7 +17,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 @ParametersAreNonnullByDefault
 public final class RouteMapSetPrependAsPath implements RouteMapSet {
 
-  @Nonnull private final List<Long> _asns;
+  private final @Nonnull List<Long> _asns;
 
   public RouteMapSetPrependAsPath(List<Long> asns) {
     _asns = asns;
@@ -31,8 +31,7 @@ public final class RouteMapSetPrependAsPath implements RouteMapSet {
     return Stream.of(new PrependAsPath(new LiteralAsList(asExprs)));
   }
 
-  @Nonnull
-  public List<Long> getAsns() {
+  public @Nonnull List<Long> getAsns() {
     return _asns;
   }
 }

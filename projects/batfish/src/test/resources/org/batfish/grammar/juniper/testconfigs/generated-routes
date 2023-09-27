@@ -8,4 +8,5 @@ set routing-options generate route 1.0.0.0/8 active
 set routing-options generate route 2.0.0.0/8 active
 set routing-options generate route 2.0.0.0/8 policy MOST_SPECIFIC
 set routing-options generate route 3.0.0.0/8 passive
+set routing-options generate route 4.4.4.4 passive
 #

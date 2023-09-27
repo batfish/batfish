@@ -22,8 +22,7 @@ public class VrfLeakConfig implements Serializable {
    * #getLeakAsBgp()} is not set
    */
   @JsonProperty(PROP_BGP_VRF_LEAK_CONFIGS)
-  @Nonnull
-  public List<BgpVrfLeakConfig> getBgpVrfLeakConfigs() {
+  public @Nonnull List<BgpVrfLeakConfig> getBgpVrfLeakConfigs() {
     return _bgpVrfLeakConfigs;
   }
 
@@ -38,8 +37,7 @@ public class VrfLeakConfig implements Serializable {
 
   /** VRF leak configs describing how routes should leak from BGPv4 RIBs to EVPN RIBs. */
   @JsonProperty(PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS)
-  @Nonnull
-  public List<Bgpv4ToEvpnVrfLeakConfig> getBgpv4ToEvpnVrfLeakConfigs() {
+  public @Nonnull List<Bgpv4ToEvpnVrfLeakConfig> getBgpv4ToEvpnVrfLeakConfigs() {
     return _bgpv4ToEvpnVrfLeakConfigs;
   }
 
@@ -54,8 +52,7 @@ public class VrfLeakConfig implements Serializable {
 
   /** VRF leak configs describing how routes should leak from EVPN RIBs to BGPv4 RIBs. */
   @JsonProperty(PROP_EVPN_TO_BGPV4_VRF_LEAK_CONFIGS)
-  @Nonnull
-  public List<EvpnToBgpv4VrfLeakConfig> getEvpnToBgpv4VrfLeakConfigs() {
+  public @Nonnull List<EvpnToBgpv4VrfLeakConfig> getEvpnToBgpv4VrfLeakConfigs() {
     return _evpnToBgpv4VrfLeakConfigs;
   }
 
@@ -90,8 +87,7 @@ public class VrfLeakConfig implements Serializable {
    * {@link #getLeakAsBgp()} is set
    */
   @JsonProperty(PROP_MAIN_RIB_VRF_LEAK_CONFIGS)
-  @Nonnull
-  public List<MainRibVrfLeakConfig> getMainRibVrfLeakConfigs() {
+  public @Nonnull List<MainRibVrfLeakConfig> getMainRibVrfLeakConfigs() {
     return _mainRibVrfLeakConfigs;
   }
 
@@ -200,26 +196,22 @@ public class VrfLeakConfig implements Serializable {
 
   public static final class Builder {
 
-    @Nonnull
-    public Builder addBgpVrfLeakConfig(BgpVrfLeakConfig c) {
+    public @Nonnull Builder addBgpVrfLeakConfig(BgpVrfLeakConfig c) {
       _bgpVrfLeakConfigs.add(c);
       return this;
     }
 
-    @Nonnull
-    public Builder addBgpv4ToEvpnVrfLeakConfig(Bgpv4ToEvpnVrfLeakConfig c) {
+    public @Nonnull Builder addBgpv4ToEvpnVrfLeakConfig(Bgpv4ToEvpnVrfLeakConfig c) {
       _bgpv4ToEvpnVrfLeakConfigs.add(c);
       return this;
     }
 
-    @Nonnull
-    public Builder addEvpnToBgpv4VrfLeakConfig(EvpnToBgpv4VrfLeakConfig c) {
+    public @Nonnull Builder addEvpnToBgpv4VrfLeakConfig(EvpnToBgpv4VrfLeakConfig c) {
       _evpnToBgpv4VrfLeakConfigs.add(c);
       return this;
     }
 
-    @Nonnull
-    public Builder addMainRibVrfLeakConfig(MainRibVrfLeakConfig c) {
+    public @Nonnull Builder addMainRibVrfLeakConfig(MainRibVrfLeakConfig c) {
       _mainRibVrfLeakConfigs.add(c);
       return this;
     }

@@ -20,8 +20,7 @@ public final class ApplicationDefinition {
   private static final String PROP_DEFAULT = "default";
 
   /** Get the name of the application. */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -29,29 +28,24 @@ public final class ApplicationDefinition {
    * Get the application container for this application. Appears similar in function to an {@link
    * org.batfish.representation.palo_alto.ApplicationGroup}.
    */
-  @Nullable
-  public String getApplicationContainer() {
+  public @Nullable String getApplicationContainer() {
     return _applicationContainer;
   }
 
-  @Nullable
-  public String getParentApp() {
+  public @Nullable String getParentApp() {
     return _parentApp;
   }
 
-  @Nullable
-  public UseApplications getUseApplications() {
+  public @Nullable UseApplications getUseApplications() {
     return _useApplications;
   }
 
-  @Nullable
-  public UseApplications getImplicitUseApplications() {
+  public @Nullable UseApplications getImplicitUseApplications() {
     return _implicitUseApplications;
   }
 
   /** Get information about default application properties, specifically IP protocol and port. */
-  @Nullable
-  public Default getDefault() {
+  public @Nullable Default getDefault() {
     return _default;
   }
 
@@ -91,10 +85,10 @@ public final class ApplicationDefinition {
     _default = defaultVal;
   }
 
-  @Nonnull private final String _name;
-  @Nullable private final String _applicationContainer;
-  @Nullable private final String _parentApp;
-  @Nullable private final UseApplications _useApplications;
-  @Nullable private final UseApplications _implicitUseApplications;
-  @Nullable private final Default _default;
+  private final @Nonnull String _name;
+  private final @Nullable String _applicationContainer;
+  private final @Nullable String _parentApp;
+  private final @Nullable UseApplications _useApplications;
+  private final @Nullable UseApplications _implicitUseApplications;
+  private final @Nullable Default _default;
 }

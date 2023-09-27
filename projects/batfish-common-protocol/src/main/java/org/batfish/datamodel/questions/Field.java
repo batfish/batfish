@@ -11,7 +11,7 @@ public final class Field {
 
   private boolean _optional;
 
-  @Nullable private Variable.Type _type;
+  private @Nullable Variable.Type _type;
 
   @JsonProperty(BfConsts.PROP_OPTIONAL)
   public boolean getOptional() {

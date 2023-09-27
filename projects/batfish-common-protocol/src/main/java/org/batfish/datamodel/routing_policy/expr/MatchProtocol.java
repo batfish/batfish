@@ -24,7 +24,7 @@ import org.batfish.datamodel.routing_policy.Result;
 public final class MatchProtocol extends BooleanExpr {
   private static final String PROP_PROTOCOLS = "protocols";
 
-  @Nonnull private final Set<RoutingProtocol> _protocols;
+  private final @Nonnull Set<RoutingProtocol> _protocols;
 
   public MatchProtocol(RoutingProtocol... protocols) {
     checkArgument(protocols.length > 0, "Must match at least 1 protocol");

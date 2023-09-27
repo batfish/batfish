@@ -41,15 +41,15 @@ public final class SearchFiltersQuestion extends Question {
   private static final String DEFAULT_ACTION = "permit";
 
   private final boolean _complementHeaderSpace;
-  @Nullable private final String _filters;
-  @Nonnull private final PacketHeaderConstraints _headerConstraints;
-  @Nullable private final String _nodes;
-  @Nonnull private final SearchFiltersQuery _query;
-  @Nullable private final String _startLocation;
+  private final @Nullable String _filters;
+  private final @Nonnull PacketHeaderConstraints _headerConstraints;
+  private final @Nullable String _nodes;
+  private final @Nonnull SearchFiltersQuery _query;
+  private final @Nullable String _startLocation;
 
   // Redundant with _query. Present for JSON serialization only, to avoid needing a new type of
   // parameter in the question template.
-  @Nonnull private String _action;
+  private @Nonnull String _action;
 
   @JsonCreator
   private static SearchFiltersQuestion create(
@@ -136,20 +136,17 @@ public final class SearchFiltersQuestion extends Question {
   }
 
   @JsonProperty(PROP_HEADERS)
-  @Nonnull
-  public PacketHeaderConstraints getHeaderConstraints() {
+  public @Nonnull PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_START_LOCATION)
-  @Nullable
-  public String getStartLocation() {
+  public @Nullable String getStartLocation() {
     return _startLocation;
   }
 
@@ -166,21 +163,18 @@ public final class SearchFiltersQuestion extends Question {
     return _query;
   }
 
-  @Nonnull
-  private LocationSpecifier getStartLocationSpecifier() {
+  private @Nonnull LocationSpecifier getStartLocationSpecifier() {
     return SpecifierFactories.getLocationSpecifierOrDefault(
         _startLocation, LocationSpecifier.ALL_LOCATIONS);
   }
 
-  @Nonnull
-  private IpSpaceAssignmentSpecifier getSourceSpecifier() {
+  private @Nonnull IpSpaceAssignmentSpecifier getSourceSpecifier() {
     return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getSrcIps(),
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));
   }
 
-  @Nonnull
-  private IpSpaceAssignmentSpecifier getDestinationSpecifier() {
+  private @Nonnull IpSpaceAssignmentSpecifier getDestinationSpecifier() {
     return SpecifierFactories.getIpSpaceAssignmentSpecifierOrDefault(
         _headerConstraints.getDstIps(),
         new ConstantIpSpaceAssignmentSpecifier(UniverseIpSpace.INSTANCE));

@@ -28,15 +28,15 @@ public class FilterLineReachabilityQuestion extends Question {
   private static final String PROP_IGNORE_COMPOSITES = "ignoreComposites";
   private static final String PROP_NODES = "nodes";
 
-  @Nullable private final String _filters;
+  private final @Nullable String _filters;
 
-  @Nonnull private final FilterSpecifier _filterSpecifier;
+  private final @Nonnull FilterSpecifier _filterSpecifier;
 
   private final boolean _ignoreComposites;
 
-  @Nullable private String _nodes;
+  private @Nullable String _nodes;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
   @JsonCreator
   private static FilterLineReachabilityQuestion create(

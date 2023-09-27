@@ -13,19 +13,17 @@ import org.batfish.config.Settings;
 public final class BatchManager {
 
   private final ConcurrentMap<String, Task> _taskLog;
-  @Nonnull private static BatchManager _instance = new BatchManager();
+  private static @Nonnull BatchManager _instance = new BatchManager();
 
   private BatchManager() {
     _taskLog = new ConcurrentHashMap<>();
   }
 
-  @Nonnull
-  public static BatchManager get() {
+  public static @Nonnull BatchManager get() {
     return _instance;
   }
 
-  @Nullable
-  private synchronized Task getTask(Settings settings) {
+  private @Nullable synchronized Task getTask(Settings settings) {
     String taskId = settings.getTaskId();
     if (taskId == null) {
       return null;
@@ -46,8 +44,7 @@ public final class BatchManager {
     }
   }
 
-  @Nullable
-  public synchronized Task getTaskFromLog(String taskId) {
+  public @Nullable synchronized Task getTaskFromLog(String taskId) {
     return _taskLog.get(taskId);
   }
 

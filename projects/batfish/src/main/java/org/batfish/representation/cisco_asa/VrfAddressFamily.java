@@ -17,8 +17,7 @@ public class VrfAddressFamily implements Serializable {
 
   public VrfAddressFamily() {}
 
-  @Nullable
-  public String getExportMap() {
+  public @Nullable String getExportMap() {
     return _exportMap;
   }
 
@@ -26,8 +25,7 @@ public class VrfAddressFamily implements Serializable {
     _exportMap = exportMap;
   }
 
-  @Nullable
-  public String getImportMap() {
+  public @Nullable String getImportMap() {
     return _importMap;
   }
 
@@ -39,8 +37,7 @@ public class VrfAddressFamily implements Serializable {
    * The route target values to attach to VPNv4 routes originating from this VRF. Returns empty set
    * if none are configured.
    */
-  @Nonnull
-  public Set<ExtendedCommunity> getRouteTargetExport() {
+  public @Nonnull Set<ExtendedCommunity> getRouteTargetExport() {
     return firstNonNull(_routeTargetExport, ImmutableSet.of());
   }
 
@@ -55,8 +52,7 @@ public class VrfAddressFamily implements Serializable {
    * Routes that contain this route target community should be merged into this VRF. Returns empty
    * set if none are configured.
    */
-  @Nonnull
-  public Set<ExtendedCommunity> getRouteTargetImport() {
+  public @Nonnull Set<ExtendedCommunity> getRouteTargetImport() {
     return firstNonNull(_routeTargetImport, ImmutableSet.of());
   }
 
@@ -76,8 +72,8 @@ public class VrfAddressFamily implements Serializable {
     }
   }
 
-  @Nullable private String _exportMap;
-  @Nullable private String _importMap;
-  @Nullable private Set<ExtendedCommunity> _routeTargetExport;
-  @Nullable private Set<ExtendedCommunity> _routeTargetImport;
+  private @Nullable String _exportMap;
+  private @Nullable String _importMap;
+  private @Nullable Set<ExtendedCommunity> _routeTargetExport;
+  private @Nullable Set<ExtendedCommunity> _routeTargetImport;
 }

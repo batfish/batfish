@@ -31,11 +31,11 @@ public final class EigrpProcess implements Serializable {
   private static final String PROP_EXTERNAL_ADMIN_COST = "externalAdminCost";
 
   private final long _asn;
-  @Nullable private final String _redistributionPolicy;
-  @Nonnull private final EigrpMetricVersion _metricVersion;
-  @Nonnull private final EigrpProcessMode _mode;
-  @Nonnull private SortedMap<String, EigrpNeighborConfig> _neighbors;
-  @Nonnull private final Ip _routerId;
+  private final @Nullable String _redistributionPolicy;
+  private final @Nonnull EigrpMetricVersion _metricVersion;
+  private final @Nonnull EigrpProcessMode _mode;
+  private @Nonnull SortedMap<String, EigrpNeighborConfig> _neighbors;
+  private final @Nonnull Ip _routerId;
   private final int _internalAdminCost;
   private final int _externalAdminCost;
 
@@ -204,20 +204,19 @@ public final class EigrpProcess implements Serializable {
   }
 
   public static class Builder {
-    @Nullable private Long _asn;
-    @Nullable private String _exportPolicy;
-    @Nullable private EigrpMetricVersion _metricVersion;
-    @Nullable private EigrpProcessMode _mode;
-    @Nullable private Map<String, EigrpNeighborConfig> _neighbors;
-    @Nullable private Ip _routerId;
+    private @Nullable Long _asn;
+    private @Nullable String _exportPolicy;
+    private @Nullable EigrpMetricVersion _metricVersion;
+    private @Nullable EigrpProcessMode _mode;
+    private @Nullable Map<String, EigrpNeighborConfig> _neighbors;
+    private @Nullable Ip _routerId;
     // The defaults are consistent across cisco variants
     private int _internalAdminCost = 90;
     private int _externalAdminCost = 170;
 
     private Builder() {}
 
-    @Nonnull
-    public EigrpProcess build() {
+    public @Nonnull EigrpProcess build() {
       checkArgument(_asn != null, "Missing %s", PROP_ASN);
       checkArgument(_metricVersion != null, "Missing %s", PROP_METRIC_VERSION);
       checkArgument(_mode != null, "Missing %s", PROP_MODE);
@@ -233,14 +232,12 @@ public final class EigrpProcess implements Serializable {
           _externalAdminCost);
     }
 
-    @Nonnull
-    public Builder setAsNumber(long asn) {
+    public @Nonnull Builder setAsNumber(long asn) {
       _asn = asn;
       return this;
     }
 
-    @Nonnull
-    public Builder setRedistributionPolicy(@Nullable String exportPolicy) {
+    public @Nonnull Builder setRedistributionPolicy(@Nullable String exportPolicy) {
       _exportPolicy = exportPolicy;
       return this;
     }
@@ -250,20 +247,17 @@ public final class EigrpProcess implements Serializable {
       return this;
     }
 
-    @Nonnull
-    public Builder setRouterId(Ip routerId) {
+    public @Nonnull Builder setRouterId(Ip routerId) {
       _routerId = routerId;
       return this;
     }
 
-    @Nonnull
-    public Builder setMetricVersion(EigrpMetricVersion version) {
+    public @Nonnull Builder setMetricVersion(EigrpMetricVersion version) {
       _metricVersion = version;
       return this;
     }
 
-    @Nonnull
-    public Builder setMode(EigrpProcessMode mode) {
+    public @Nonnull Builder setMode(EigrpProcessMode mode) {
       _mode = mode;
       return this;
     }

@@ -12,8 +12,7 @@ public interface ResolutionRestriction<R extends AbstractRouteDecorator> extends
   ResolutionRestriction<AbstractRouteDecorator> ALWAYS_TRUE = r -> true;
 
   @SuppressWarnings("unchecked")
-  @Nonnull
-  static <R extends AbstractRouteDecorator> ResolutionRestriction<R> alwaysTrue() {
+  static @Nonnull <R extends AbstractRouteDecorator> ResolutionRestriction<R> alwaysTrue() {
     return (ResolutionRestriction<R>) ALWAYS_TRUE;
   }
 }

@@ -33,13 +33,11 @@ public final class TrunkGroup implements Serializable {
     return _number;
   }
 
-  @Nullable
-  public Mode getMode() {
+  public @Nullable Mode getMode() {
     return _mode;
   }
 
-  @Nullable
-  public Timeout getTimeout() {
+  public @Nullable Timeout getTimeout() {
     return _timeout;
   }
 
@@ -47,19 +45,16 @@ public final class TrunkGroup implements Serializable {
    * The type for this trunk. This is the effective type for this trunk, even if not explicitly
    * configured.
    */
-  @Nonnull
-  public Type getTypeEffective() {
+  public @Nonnull Type getTypeEffective() {
     return getTypeEffective(_type);
   }
 
   /** Get the effective type, given the specified, possibly {@code Null} {@link Type}. */
-  @Nonnull
-  public static Type getTypeEffective(@Nullable Type type) {
+  public static @Nonnull Type getTypeEffective(@Nullable Type type) {
     return firstNonNull(type, DEFAULT_TRUNK_TYPE);
   }
 
-  @Nullable
-  public String getUserTag() {
+  public @Nullable String getUserTag() {
     return _userTag;
   }
 
@@ -80,9 +75,9 @@ public final class TrunkGroup implements Serializable {
     _type = type;
   }
 
-  @Nullable private Mode _mode;
+  private @Nullable Mode _mode;
   private final int _number;
-  @Nullable private Timeout _timeout;
-  @Nullable private final Type _type;
-  @Nullable private String _userTag;
+  private @Nullable Timeout _timeout;
+  private final @Nullable Type _type;
+  private @Nullable String _userTag;
 }

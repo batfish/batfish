@@ -25,17 +25,17 @@ public final class Zone extends ComparableStructure<String> {
   private static final String PROP_TO_HOST_FILTER = "toHostFilter";
   private static final String PROP_TO_ZONE_POLICIES = "toZonePolicies";
 
-  @Nullable private String _fromHostFilterName;
+  private @Nullable String _fromHostFilterName;
 
-  @Nullable private String _inboundFilterName;
+  private @Nullable String _inboundFilterName;
 
-  @Nonnull private SortedMap<String, String> _inboundInterfaceFiltersNames;
+  private @Nonnull SortedMap<String, String> _inboundInterfaceFiltersNames;
 
-  @Nonnull private SortedSet<String> _interfaces;
+  private @Nonnull SortedSet<String> _interfaces;
 
-  @Nullable private String _toHostFilterName;
+  private @Nullable String _toHostFilterName;
 
-  @Nonnull private SortedMap<String, String> _toZonePoliciesNames;
+  private @Nonnull SortedMap<String, String> _toZonePoliciesNames;
 
   @JsonCreator
   public Zone(@JsonProperty(PROP_NAME) String name) {
@@ -62,8 +62,7 @@ public final class Zone extends ComparableStructure<String> {
 
   /** Filter applied against packets originating from an interface in this zone on this node. */
   @JsonProperty(PROP_FROM_HOST_FILTER)
-  @Nullable
-  public String getFromHostFilterName() {
+  public @Nullable String getFromHostFilterName() {
     return _fromHostFilterName;
   }
 
@@ -72,8 +71,7 @@ public final class Zone extends ComparableStructure<String> {
    * not have its own inbound filter.
    */
   @JsonProperty(PROP_INBOUND_FILTER)
-  @Nullable
-  public String getInboundFilterName() {
+  public @Nullable String getInboundFilterName() {
     return _inboundFilterName;
   }
 
@@ -82,14 +80,12 @@ public final class Zone extends ComparableStructure<String> {
    * against packets whose final destination is the interface whose name is the key in this mapping.
    */
   @JsonProperty(PROP_INBOUND_INTERFACE_FILTERS)
-  @Nonnull
-  public SortedMap<String, String> getInboundInterfaceFiltersNames() {
+  public @Nonnull SortedMap<String, String> getInboundInterfaceFiltersNames() {
     return _inboundInterfaceFiltersNames;
   }
 
   @JsonProperty(PROP_INTERFACES)
-  @Nonnull
-  public SortedSet<String> getInterfaces() {
+  public @Nonnull SortedSet<String> getInterfaces() {
     return _interfaces;
   }
 
@@ -98,8 +94,7 @@ public final class Zone extends ComparableStructure<String> {
    * filter exists, it is applied IN ADDITION to the interface-specific or default inbound filter.
    */
   @JsonProperty(PROP_TO_HOST_FILTER)
-  @Nullable
-  public String getToHostFilterName() {
+  public @Nullable String getToHostFilterName() {
     return _toHostFilterName;
   }
 
@@ -108,8 +103,7 @@ public final class Zone extends ComparableStructure<String> {
    * received on this zone and routed to the named zone.
    */
   @JsonProperty(PROP_TO_ZONE_POLICIES)
-  @Nonnull
-  public SortedMap<String, String> getToZonePoliciesNames() {
+  public @Nonnull SortedMap<String, String> getToZonePoliciesNames() {
     return _toZonePoliciesNames;
   }
 

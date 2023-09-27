@@ -26,7 +26,7 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, ApplicationSet> _applicationSets;
 
-  @Nonnull private final Map<String, AsPath> _asPaths;
+  private final @Nonnull Map<String, AsPath> _asPaths;
 
   private final Map<String, AsPathGroup> _asPathGroups;
 
@@ -61,7 +61,7 @@ public class LogicalSystem implements Serializable {
   private final Map<String, InterfaceRange> _interfaceRanges;
 
   private final Map<String, Interface> _interfaces;
-  @Nonnull private final Map<String, InterfaceSet> _interfaceSets;
+  private final @Nonnull Map<String, InterfaceSet> _interfaceSets;
   private final Map<String, Zone> _interfaceZones;
 
   private final Map<String, IpsecPolicy> _ipsecPolicies;
@@ -76,11 +76,11 @@ public class LogicalSystem implements Serializable {
 
   private final String _name;
 
-  @Nullable private Nat _natDestination;
+  private @Nullable Nat _natDestination;
 
-  @Nullable private Nat _natSource;
+  private @Nullable Nat _natSource;
 
-  @Nullable private Nat _natStatic;
+  private @Nullable Nat _natStatic;
 
   private NavigableSet<String> _ntpServers;
 
@@ -90,11 +90,13 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, PrefixList> _prefixLists;
 
-  @Nonnull private final Map<String, RibGroup> _ribGroups;
+  private final @Nonnull Map<String, RibGroup> _ribGroups;
 
   private final Map<String, RouteFilter> _routeFilters;
 
   private final Map<String, RoutingInstance> _routingInstances;
+
+  private final Map<String, PrefixList> _snmpClientLists;
 
   private NavigableSet<String> _syslogHosts;
 
@@ -104,7 +106,7 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Vlan> _namedVlans;
 
-  @Nullable private SwitchOptions _switchOptions;
+  private @Nullable SwitchOptions _switchOptions;
 
   private final Map<String, Zone> _zones;
 
@@ -145,6 +147,7 @@ public class LogicalSystem implements Serializable {
     _routingInstances = new TreeMap<>();
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _securityPolicies = new TreeMap<>();
+    _snmpClientLists = new TreeMap<>();
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _tunnelAttributes = new TreeMap<>();
@@ -182,8 +185,7 @@ public class LogicalSystem implements Serializable {
     return _applicationSets;
   }
 
-  @Nonnull
-  public Map<String, AsPath> getAsPaths() {
+  public @Nonnull Map<String, AsPath> getAsPaths() {
     return _asPaths;
   }
 
@@ -235,8 +237,7 @@ public class LogicalSystem implements Serializable {
     return _securityPolicies;
   }
 
-  @Nonnull
-  public AddressBook getGlobalAddressBook() {
+  public @Nonnull AddressBook getGlobalAddressBook() {
     return _addressBooks.get(GLOBAL_ADDRESS_BOOK_NAME);
   }
 
@@ -366,8 +367,7 @@ public class LogicalSystem implements Serializable {
     return _prefixLists;
   }
 
-  @Nonnull
-  public Map<String, RibGroup> getRibGroups() {
+  public @Nonnull Map<String, RibGroup> getRibGroups() {
     return _ribGroups;
   }
 
@@ -377,6 +377,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, RoutingInstance> getRoutingInstances() {
     return _routingInstances;
+  }
+
+  public Map<String, PrefixList> getSnmpClientLists() {
+    return _snmpClientLists;
   }
 
   public NavigableSet<String> getSyslogHosts() {

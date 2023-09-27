@@ -9,7 +9,7 @@ import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 
 /** Captures settings used to create an unnumbered BGP peer on the ISP */
 final class IspBgpUnnumberedPeer extends IspBgpPeer {
-  @Nonnull private final String _localIfaceName;
+  private final @Nonnull String _localIfaceName;
 
   public IspBgpUnnumberedPeer(
       String localIfaceName, Long remoteAsn, Long localAsn, boolean ebgpMultihop) {

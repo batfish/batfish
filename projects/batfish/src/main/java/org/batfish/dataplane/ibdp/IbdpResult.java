@@ -17,7 +17,7 @@ import org.batfish.datamodel.answers.DataPlaneAnswerElement;
 @ParametersAreNonnullByDefault
 final class IbdpResult extends ComputeDataPlaneResult {
 
-  @Nonnull private final Map<String, Node> _nodes;
+  private final @Nonnull Map<String, Node> _nodes;
 
   IbdpResult(
       DataPlaneAnswerElement answerElement,

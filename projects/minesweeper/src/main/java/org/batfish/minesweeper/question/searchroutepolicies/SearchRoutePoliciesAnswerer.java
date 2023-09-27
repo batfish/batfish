@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -52,7 +51,6 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
-import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.BDDDomain;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.ModelGeneration;
@@ -72,17 +70,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final BgpRouteConstraints _inputConstraints;
-  @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nonnull private final LineAction _action;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nonnull BgpRouteConstraints _inputConstraints;
+  private final @Nonnull BgpRouteConstraints _outputConstraints;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nonnull LineAction _action;
 
   private final PathOption _pathOption;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   /**
    * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
@@ -90,8 +88,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Environment}. For our purposes the specific property values can be anything, so we use this
    * dummy object.
    */
-  @Nonnull
-  public static BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
+  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
       BgpSessionProperties.builder()
           .setLocalAs(1)
           .setLocalIp(Ip.parse("1.1.1.1"))
@@ -162,11 +159,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+      BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
+          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -186,7 +183,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // As a sanity check, compare the simulated result above with what the symbolic route
       // analysis predicts will happen.
       assert ModelGeneration.validateModel(
-          fullModel, outputRoute, configAPs, _action, _direction, result);
+          model, outputRoute, configAPs, _action, _direction, result);
 
       return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }
@@ -333,20 +330,36 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Convert regex constraints from a {@link BgpRouteConstraints} object to a BDD.
+   * Converts a list of {@link RegexConstraint}s about the AS-path to a BDD.
+   *
+   * @param regexConstraints the regex constraints
+   * @param configAPs information about the AS-path atomic predicates
+   * @param route the symbolic route
+   * @return the BDD
+   */
+  private BDD asPathRegexConstraintsToBDD(
+      List<RegexConstraint> regexConstraints, ConfigAtomicPredicates configAPs, BDDRoute route) {
+    return TransferBDD.asPathRegexesToBDD(
+        regexConstraints.stream()
+            .map(RegexConstraint::getRegex)
+            .map(SymbolicAsPathRegex::new)
+            .collect(Collectors.toSet()),
+        configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates(),
+        route);
+  }
+
+  /**
+   * Convert community regex constraints from a {@link BgpRouteConstraints} object to a BDD.
    *
    * @param regexes the user-defined regex constraints
-   * @param constructor function to convert a regex string into a symbolic regex object
    * @param atomicPredicates information about the atomic predicates corresponding to the regexes
    * @param atomicPredicateBDDs one BDD per atomic predicate, coming from a {@link BDDRoute} object
    * @param factory the BDD factory
-   * @param <T> the particular type of symbolic regexes (community or AS-path)
    * @return the overall constraint as a BDD
    */
-  private <T extends SymbolicRegex> BDD regexConstraintsToBDD(
+  private BDD communityRegexConstraintsToBDD(
       RegexConstraints regexes,
-      Function<String, T> constructor,
-      RegexAtomicPredicates<T> atomicPredicates,
+      RegexAtomicPredicates<CommunityVar> atomicPredicates,
       BDD[] atomicPredicateBDDs,
       BDDFactory factory) {
     /*
@@ -360,7 +373,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             : factory.orAll(
                 regexes.getPositiveRegexConstraints().stream()
                     .map(RegexConstraint::getRegex)
-                    .map(constructor)
+                    .map(CommunityVar::from)
                     .flatMap(
                         regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
                     .map(i -> atomicPredicateBDDs[i])
@@ -370,7 +383,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         factory.orAll(
             regexes.getNegativeRegexConstraints().stream()
                 .map(RegexConstraint::getRegex)
-                .map(constructor)
+                .map(CommunityVar::from)
                 .flatMap(regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
                 .map(i -> atomicPredicateBDDs[i])
                 .collect(ImmutableSet.toImmutableSet()));
@@ -402,12 +415,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // produce the OR of all atomic predicates whose associated automata are non-empty
     // these are the atomic predicates that satisfy the given regex constraints
     Map<Integer, Automaton> apAutomata = aps.getAtomicPredicateAutomata();
-    BDD[] apBDDs = r.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> apBDDs = r.getAsPathRegexAtomicPredicates();
     return r.getFactory()
         .orAll(
             apAutomata.keySet().stream()
                 .filter(i -> !apAutomata.get(i).isEmpty())
-                .map(i -> apBDDs[i])
+                .map(apBDDs::value)
                 .collect(ImmutableSet.toImmutableSet()));
   }
 
@@ -436,21 +449,24 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
     result.andWith(
-        regexConstraintsToBDD(
+        communityRegexConstraintsToBDD(
             constraints.getCommunities(),
-            CommunityVar::from,
             configAPs.getStandardCommunityAtomicPredicates(),
             r.getCommunityAtomicPredicates(),
             r.getFactory()));
-    result.andWith(
-        outputRoute
-            ? outputAsPathConstraintsToBDDAndUpdatedAPs(constraints.getAsPath(), configAPs, r)
-            : regexConstraintsToBDD(
-                constraints.getAsPath(),
-                SymbolicAsPathRegex::new,
-                configAPs.getAsPathRegexAtomicPredicates(),
-                r.getAsPathRegexAtomicPredicates(),
-                r.getFactory()));
+    if (outputRoute) {
+      // AS-path constraints on the output route need to take any prepends into account
+      result.andWith(
+          outputAsPathConstraintsToBDDAndUpdatedAPs(constraints.getAsPath(), configAPs, r));
+    } else {
+      List<RegexConstraint> pos = constraints.getAsPath().getPositiveRegexConstraints();
+      List<RegexConstraint> neg = constraints.getAsPath().getNegativeRegexConstraints();
+      // convert the positive and negative constraints to BDDs and return their difference;
+      // if the positive constraints are empty then treat it as logically true
+      result.andWith(
+          (pos.isEmpty() ? r.getFactory().one() : asPathRegexConstraintsToBDD(pos, configAPs, r))
+              .diffWith(asPathRegexConstraintsToBDD(neg, configAPs, r)));
+    }
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
     result.andWith(setToBDD(constraints.getOriginType(), r, r.getOriginType()));
     result.andWith(setToBDD(constraints.getProtocol(), r, r.getProtocolHistory()));

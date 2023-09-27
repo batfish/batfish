@@ -19,7 +19,7 @@ public class IsisRouteTest {
 
     IsisRoute original = b.build();
     IsisRoute copy = original.toBuilder().build();
-    IsisRoute differentAdmin = original.toBuilder().setAdmin(9000).build();
+    IsisRoute differentAdmin = original.toBuilder().setAdmin(90).build();
     IsisRoute differentMetric = original.toBuilder().setMetric(original.getMetric() + 50).build();
     IsisRoute differentNetwork = original.toBuilder().setNetwork(Prefix.parse("1.1.1.1/8")).build();
     IsisRoute differentNextHop = original.toBuilder().setNextHopIp(Ip.parse("3.3.3.3")).build();

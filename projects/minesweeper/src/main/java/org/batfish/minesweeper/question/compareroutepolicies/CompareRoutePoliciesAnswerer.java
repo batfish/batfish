@@ -58,17 +58,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
+  private final @Nonnull Environment.Direction _direction;
 
-  @Nonnull private final String _policySpecifierString;
-  @Nullable private final String _referencePolicySpecifierString;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nullable private final RoutingPolicySpecifier _referencePolicySpecifier;
+  private final @Nonnull String _policySpecifierString;
+  private final @Nullable String _referencePolicySpecifierString;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nullable RoutingPolicySpecifier _referencePolicySpecifier;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   public CompareRoutePoliciesAnswerer(
       org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question,
@@ -108,10 +108,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
       BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
-    BDD fullModel = constraintsToModel(constraints, configAPs);
+    BDD model = constraintsToModel(constraints, configAPs);
     return new Tuple<>(
-        satAssignmentToInputRoute(fullModel, configAPs),
-        satAssignmentToEnvironment(fullModel, configAPs));
+        satAssignmentToInputRoute(model, configAPs), satAssignmentToEnvironment(model, configAPs));
   }
 
   /**
@@ -137,16 +136,18 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @return A BDD that denotes at least one of the differences in the given diffs list. Only
-   *     capturing differences in communities and as-path for now; the rest are not necessary
-   *     because they do not have additive semantics, like "set community additive" and "set as-path
-   *     prepend". (actually, I think you might be able to plus on the local-pref value, TODO:
-   *     check)
+   *     capturing differences in communities for now; the rest are not necessary because they do
+   *     not have additive semantics, like "set community additive". Note that AS-path prepends are
+   *     recorded concretely rather than symbolically in {@link BDDRoute}s, so their differences are
+   *     also ignored here. (actually, I think you might be able to plus on the local-pref value,
+   *     TODO: check)
    */
   private BDD counterExampleOutputConstraints(
       BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
     BDD acc = factory.zero();
     for (BDDRouteDiff.DifferenceType d : diffs) {
       switch (d) {
+        case AS_PATH:
         case OSPF_METRIC:
         case LOCAL_PREF:
         case MED:
@@ -163,17 +164,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
           BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
           for (int i = 0; i < communityAtomicPredicates.length; i++) {
             BDD outConstraint = communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]);
-            // If there is a scenario where the two outputs differ at this community then ensure
-            // this scenario
-            // manifests during model generation.
-            acc = acc.or(outConstraint);
-          }
-          break;
-        case AS_PATH:
-          BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
-          BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
-          for (int i = 0; i < asPathAtomicPredicates.length; i++) {
-            BDD outConstraint = asPathAtomicPredicates[i].xor(otherAsPathAtomicPredicates[i]);
             // If there is a scenario where the two outputs differ at this community then ensure
             // this scenario
             // manifests during model generation.
@@ -460,10 +450,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
    * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
    * with route-maps in r1 of the new snapshot.
-   *
-   * @param snapshot the current snapshot
-   * @param reference the reference snapshot
-   * @return
    */
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {

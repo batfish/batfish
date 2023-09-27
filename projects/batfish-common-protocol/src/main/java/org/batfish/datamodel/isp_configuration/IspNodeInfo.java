@@ -41,10 +41,10 @@ public class IspNodeInfo {
   }
 
   private final long _asn;
-  @Nonnull private final String _name;
-  @Nonnull private final Role _role;
-  @Nonnull private final List<IspAnnouncement> _additionalAnnouncement;
-  @Nullable private final IspTrafficFiltering _trafficFiltering;
+  private final @Nonnull String _name;
+  private final @Nonnull Role _role;
+  private final @Nonnull List<IspAnnouncement> _additionalAnnouncement;
+  private final @Nullable IspTrafficFiltering _trafficFiltering;
 
   public IspNodeInfo(long asn, String name) {
     this(asn, name, Role.TRANSIT, ImmutableList.of(), null);
@@ -115,8 +115,7 @@ public class IspNodeInfo {
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -126,8 +125,7 @@ public class IspNodeInfo {
   }
 
   @JsonProperty(PROP_ADDITIONAL_ANNOUNCEMENTS_TO_INTERNET)
-  @Nonnull
-  public List<IspAnnouncement> getAdditionalAnnouncements() {
+  public @Nonnull List<IspAnnouncement> getAdditionalAnnouncements() {
     return _additionalAnnouncement;
   }
 

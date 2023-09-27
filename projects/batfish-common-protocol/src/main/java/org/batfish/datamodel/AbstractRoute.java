@@ -26,6 +26,11 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   // unsigned 32-bit int max
   public static final long MAX_TAG = 0xFFFFFFFFL;
 
+  // The maximum (VI) value for admin distance. Most OSes limit it to 255, and so do most networks,
+  // but at least one OS (Junos) allows values up to 2^32-1.
+  // TODO(https://github.com/batfish/batfish/issues/8808): update if we need to.
+  public static final int MAX_ADMIN_DISTANCE = 255;
+
   static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
   public static final String PROP_METRIC = "metric";
   static final String PROP_NETWORK = "network";
@@ -34,18 +39,22 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_PROTOCOL = "protocol";
   static final String PROP_TAG = "tag";
 
-  @Nonnull protected final Prefix _network;
+  protected final @Nonnull Prefix _network;
   protected final int _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
   protected final long _tag;
-  @Nonnull protected NextHop _nextHop = NextHopDiscard.instance();
+  protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
   @JsonCreator
   protected AbstractRoute(
       @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
-    checkArgument(admin >= 0, "Invalid admin distance for a route: %s", admin);
+    checkArgument(
+        admin >= 0 && admin <= MAX_ADMIN_DISTANCE,
+        "Invalid admin distance %s is not in [0,%s]",
+        admin,
+        MAX_ADMIN_DISTANCE);
     _network = network;
     _admin = admin;
     _nonForwarding = nonForwarding;
@@ -75,8 +84,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   /** IPV4 network of this route */
   @JsonProperty(PROP_NETWORK)
   @Override
-  @Nonnull
-  public final Prefix getNetwork() {
+  public final @Nonnull Prefix getNetwork() {
     return _network;
   }
 
@@ -85,8 +93,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * Route#UNSET_NEXT_HOP_INTERFACE} must be returned.
    */
   @JsonProperty(PROP_NEXT_HOP_INTERFACE)
-  @Nonnull
-  public final String getNextHopInterface() {
+  public final @Nonnull String getNextHopInterface() {
     return LegacyNextHops.getNextHopInterface(_nextHop).orElse(Route.UNSET_NEXT_HOP_INTERFACE);
   }
 
@@ -95,8 +102,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * returned.
    */
   @JsonProperty(PROP_NEXT_HOP_IP)
-  @Nonnull
-  public final Ip getNextHopIp() {
+  public final @Nonnull Ip getNextHopIp() {
     return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
@@ -105,8 +111,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
    * opposed to the legacy {@link #getNextHopIp()}} or {@link #getNextHopInterface()} methods.
    */
   @JsonIgnore
-  @Nonnull
-  public final NextHop getNextHop() {
+  public final @Nonnull NextHop getNextHop() {
     return _nextHop;
   }
 

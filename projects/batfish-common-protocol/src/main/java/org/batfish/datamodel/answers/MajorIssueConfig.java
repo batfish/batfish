@@ -24,8 +24,8 @@ public class MajorIssueConfig {
   private static final String PROP_MAJOR_ISSUE = "majorIssue";
   private static final String PROP_MINOR_ISSUE_CONFIGS = "minorIssueConfigs";
 
-  @Nonnull private final String _majorIssue;
-  @Nonnull private Map<String, MinorIssueConfig> _minorIssueConfigs;
+  private final @Nonnull String _majorIssue;
+  private @Nonnull Map<String, MinorIssueConfig> _minorIssueConfigs;
 
   @JsonCreator
   private static @Nonnull MajorIssueConfig create(
@@ -72,8 +72,7 @@ public class MajorIssueConfig {
   }
 
   @JsonProperty(PROP_MAJOR_ISSUE)
-  @Nonnull
-  public String getMajorIssue() {
+  public @Nonnull String getMajorIssue() {
     return _majorIssue;
   }
 
@@ -83,8 +82,7 @@ public class MajorIssueConfig {
   }
 
   @JsonIgnore
-  @Nonnull
-  public Map<String, MinorIssueConfig> getMinorIssueConfigsMap() {
+  public @Nonnull Map<String, MinorIssueConfig> getMinorIssueConfigsMap() {
     return _minorIssueConfigs;
   }
 

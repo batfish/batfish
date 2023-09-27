@@ -77,8 +77,7 @@ public class Aggregate extends BfObject {
     _type = type;
   }
 
-  @Nonnull
-  static String makeId(@Nonnull String name) {
+  static @Nonnull String makeId(@Nonnull String name) {
     return "aggregate-" + name;
   }
 

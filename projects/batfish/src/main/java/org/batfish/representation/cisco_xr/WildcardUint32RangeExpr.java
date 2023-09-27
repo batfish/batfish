@@ -7,8 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class WildcardUint32RangeExpr implements Uint32RangeExpr {
 
-  @Nonnull
-  public static WildcardUint32RangeExpr instance() {
+  public static @Nonnull WildcardUint32RangeExpr instance() {
     return INSTANCE;
   }
 

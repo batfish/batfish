@@ -20,8 +20,8 @@ public final class If implements Statement {
   private static final String PROP_ACTIONS = "actions";
   private static final String PROP_TRUE_STATEMENTS = "trueStatements";
 
-  @Nonnull private final BoolExpr _matchCondition;
-  @Nonnull private final List<Statement> _trueStatements;
+  private final @Nonnull BoolExpr _matchCondition;
+  private final @Nonnull List<Statement> _trueStatements;
 
   public If(BoolExpr matchCondition, List<Statement> trueStatements) {
     _matchCondition = matchCondition;
@@ -29,8 +29,7 @@ public final class If implements Statement {
   }
 
   @JsonCreator
-  @Nonnull
-  private static If jsonCreator(
+  private static @Nonnull If jsonCreator(
       @Nullable @JsonProperty(PROP_ACTIONS) List<Statement> actions,
       @Nullable @JsonProperty(PROP_TRUE_STATEMENTS) BoolExpr matchCondition) {
     checkArgument(matchCondition != null, "Missing %s", PROP_TRUE_STATEMENTS);

@@ -35,8 +35,8 @@ public class Issue {
     private static final String PROP_MAJOR = "major";
     private static final String PROP_MINOR = "minor";
 
-    @Nonnull private String _major;
-    @Nonnull private String _minor;
+    private @Nonnull String _major;
+    private @Nonnull String _minor;
 
     @JsonCreator
     private static Type createType(
@@ -89,10 +89,10 @@ public class Issue {
   private static final String PROP_TYPE = "type";
   private static final String PROP_URL = "url";
 
-  @Nullable private String _explanation;
-  @Nonnull private int _severity;
-  @Nonnull private Type _type;
-  @Nullable private String _url;
+  private @Nullable String _explanation;
+  private @Nonnull int _severity;
+  private @Nonnull Type _type;
+  private @Nullable String _url;
 
   @JsonCreator
   private static Issue getIssue(
@@ -139,8 +139,7 @@ public class Issue {
   }
 
   @JsonProperty(PROP_EXPLANATION)
-  @Nullable
-  public String getExplanation() {
+  public @Nullable String getExplanation() {
     return _explanation;
   }
 
@@ -156,8 +155,7 @@ public class Issue {
   }
 
   @JsonProperty(PROP_URL)
-  @Nullable
-  public String getUrl() {
+  public @Nullable String getUrl() {
     return _url;
   }
 

@@ -33,11 +33,11 @@ abstract class TransitGatewayRoute implements Serializable {
     PROPAGATED
   }
 
-  @Nonnull protected final State _state;
+  protected final @Nonnull State _state;
 
-  @Nonnull protected final Type _type;
+  protected final @Nonnull Type _type;
 
-  @Nonnull protected final List<String> _attachmentIds;
+  protected final @Nonnull List<String> _attachmentIds;
 
   @JsonCreator
   private static TransitGatewayRoute create(
@@ -83,18 +83,15 @@ abstract class TransitGatewayRoute implements Serializable {
     _attachmentIds = attachmentIds;
   }
 
-  @Nonnull
-  public List<String> getAttachmentIds() {
+  public @Nonnull List<String> getAttachmentIds() {
     return _attachmentIds;
   }
 
-  @Nonnull
-  public State getState() {
+  public @Nonnull State getState() {
     return _state;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 

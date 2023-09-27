@@ -13,7 +13,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** A {@link InterfaceSpecifier} that matches regex pattern over interface names. */
 @ParametersAreNonnullByDefault
 public final class NameRegexInterfaceSpecifier implements InterfaceSpecifier {
-  @Nonnull private final Pattern _pattern;
+  private final @Nonnull Pattern _pattern;
 
   public NameRegexInterfaceSpecifier(Pattern pattern) {
     _pattern = pattern;

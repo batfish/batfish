@@ -12,8 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class FibEntry implements Serializable {
 
-  @Nonnull private final FibAction _action;
-  @Nonnull private final List<AbstractRoute> _resolutionSteps;
+  private final @Nonnull FibAction _action;
+  private final @Nonnull List<AbstractRoute> _resolutionSteps;
   private transient int _hashCode;
 
   /**
@@ -49,8 +49,7 @@ public final class FibEntry implements Serializable {
   }
 
   /** Return the top level route for this entry (before recursive resolution) */
-  @Nonnull
-  public AbstractRoute getTopLevelRoute() {
+  public @Nonnull AbstractRoute getTopLevelRoute() {
     return _resolutionSteps.get(0);
   }
 

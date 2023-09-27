@@ -16,8 +16,7 @@ public final class ServiceUdp extends TypedManagementObject implements Service {
   }
 
   /** Docs: Destination ports, a comma separated list of ports/ranges. */
-  @Nonnull
-  public String getPort() {
+  public @Nonnull String getPort() {
     return _port;
   }
 
@@ -59,5 +58,5 @@ public final class ServiceUdp extends TypedManagementObject implements Service {
 
   private static final String PROP_PORT = "port";
 
-  @Nonnull private final String _port;
+  private final @Nonnull String _port;
 }

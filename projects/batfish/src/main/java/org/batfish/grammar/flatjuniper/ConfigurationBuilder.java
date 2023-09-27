@@ -42,6 +42,8 @@ import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_IN
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
+import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -124,7 +126,9 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_PROFILE_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_ZONES_SECURITY_ZONES_INTERFACE;
-import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_CLIENT_LIST_NAME;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
@@ -375,6 +379,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_address_and_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_optionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_prefix_default_32Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ip_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
@@ -683,9 +688,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsaad_address_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_protocolsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sezsh_system_servicesContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_client_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmp_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_authorizationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_client_list_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpc_logical_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcl_networkContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcls_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
@@ -1563,8 +1572,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
   }
 
-  @Nonnull
-  private static StandardCommunity toStandardCommunity(Sc_literalContext ctx) {
+  private static @Nonnull StandardCommunity toStandardCommunity(Sc_literalContext ctx) {
     String text = ctx.STANDARD_COMMUNITY().getText();
     return StandardCommunity.parse(text);
   }
@@ -2146,7 +2154,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private OspfArea _currentArea;
 
-  @Nullable private Long _currentAreaRangeMetric;
+  private @Nullable Long _currentAreaRangeMetric;
 
   private Prefix _currentAreaRangePrefix;
 
@@ -2276,7 +2284,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private final Warnings _w;
 
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private ApplicationSet _currentApplicationSet;
 
@@ -2842,8 +2850,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentAreaRangePrefix = null;
     _currentAreaRangeRestrict = false;
 
-    if (ctx.ip_prefix() != null) {
-      _currentAreaRangePrefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      _currentAreaRangePrefix = toPrefix(ctx.prefix);
     } else {
       todo(ctx);
     }
@@ -3071,8 +3079,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       PsFromRouteFilter from = new PsFromRouteFilter(rfName);
       _currentPsTerm.getFroms().addFromRouteFilter(from);
     }
-    if (ctx.ip_prefix() != null) {
-      _currentRouteFilterPrefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      _currentRouteFilterPrefix = toPrefix(ctx.prefix);
       _currentRouteFilter.setIpv4(true);
     } else if (ctx.ipv6_prefix() != null) {
       _currentRoute6FilterPrefix = toPrefix6(ctx.ipv6_prefix());
@@ -3173,7 +3181,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterPopsfrf_through(Popsfrf_throughContext ctx) {
     if (_currentRouteFilterPrefix != null) { // ipv4
-      Prefix throughPrefix = toPrefix(ctx.ip_prefix());
+      Prefix throughPrefix = toPrefix(ctx.prefix);
       Route4FilterLine line = new Route4FilterLineThrough(_currentRouteFilterPrefix, throughPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
@@ -3225,7 +3233,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRoa_route(Roa_routeContext ctx) {
     if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, AggregateRoute> aggregateRoutes = _currentRib.getAggregateRoutes();
       _currentAggregateRoute = aggregateRoutes.computeIfAbsent(prefix, AggregateRoute::new);
     } else {
@@ -3260,8 +3268,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRog_route(Rog_routeContext ctx) {
-    if (ctx.ip_prefix() != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
       _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
     } else if (ctx.ipv6_prefix() != null) {
@@ -3350,8 +3358,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRos_route(Ros_routeContext ctx) {
-    if (ctx.ip_prefix() != null) {
-      Prefix prefix = toPrefix(ctx.ip_prefix());
+    if (ctx.prefix != null) {
+      Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
       _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
     } else if (ctx.ipv6_prefix() != null) {
@@ -3939,6 +3947,50 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     SnmpCommunity snmpCommunity =
         _currentSnmpServer.getCommunities().computeIfAbsent(community, SnmpCommunity::new);
     _currentSnmpCommunity = snmpCommunity;
+  }
+
+  @Override
+  public void exitSnmp_community(Snmp_communityContext ctx) {
+    _currentSnmpCommunity = null;
+  }
+
+  @Override
+  public void enterSnmpc_logical_system(Snmpc_logical_systemContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        JuniperStructureType.LOGICAL_SYSTEM,
+        name,
+        SNMP_COMMUNITY_LOGICAL_SYSTEM,
+        getLine(ctx.name.getStart()));
+    LogicalSystem ls = _configuration.getLogicalSystems().get(name);
+    if (ls == null) {
+      // dummy, deliberately not hooked up.
+      ls = new LogicalSystem(name);
+    }
+    setLogicalSystem(ls);
+  }
+
+  @Override
+  public void exitSnmpc_logical_system(Snmpc_logical_systemContext ctx) {
+    setLogicalSystem(_configuration.getMasterLogicalSystem());
+  }
+
+  @Override
+  public void enterSnmpcls_routing_instance(Snmpcls_routing_instanceContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, SNMP_COMMUNITY_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
+    RoutingInstance ri = _currentLogicalSystem.getRoutingInstances().get(name);
+    if (ri != null) {
+      // dummy, deliberately not hooked up.
+      ri = new RoutingInstance(name);
+    }
+    _currentRoutingInstance = ri;
+  }
+
+  @Override
+  public void exitSnmpcls_routing_instance(Snmpcls_routing_instanceContext ctx) {
+    _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
   }
 
   @Override
@@ -4752,14 +4804,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftt_next_ip(Fftt_next_ipContext ctx) {
-    Prefix nextPrefix;
-    if (ctx.ip != null) {
-      Ip nextIp = toIp(ctx.ip);
-      nextPrefix = nextIp.toPrefix();
-    } else {
-      nextPrefix = toPrefix(ctx.prefix);
-    }
-    FwThenNextIp then = new FwThenNextIp(nextPrefix);
+    FwThenNextIp then = new FwThenNextIp(toPrefix(ctx.prefix));
     _currentFwTerm.getThens().add(then);
     _currentFwTerm.getThens().add(FwThenAccept.INSTANCE);
     _currentFilter.setUsedForFBF(true);
@@ -5272,14 +5317,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
       }
     } else {
-      assert ctx.port_num != null;
       // this command can only happen for destination nat, and when port is given we need to enable
       // port translation
       Ip ip = toIp(ctx.ip);
       _currentNatPool.setFromAddress(ip);
       _currentNatPool.setToAddress(ip);
-      int port = toInt(ctx.port_num);
-      _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      if (ctx.port_num != null) {
+        int port = toInt(ctx.port_num);
+        _currentNatPool.setPortAddressTranslation(new PatPool(port, port));
+      }
     }
   }
 
@@ -5805,7 +5851,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (type == 2) {
       _currentPsThens.add(new PsThenExternal(OspfMetricType.E2));
     } else {
-      _w.redFlag(String.format("unimplemented: then %s", getFullText(ctx)));
+      _w.redFlagf("unimplemented: then %s", getFullText(ctx));
     }
   }
 
@@ -5888,7 +5934,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (ctx.INCOMPLETE() != null) {
       origin = OriginType.INCOMPLETE;
     } else {
-      _w.redFlag(String.format("unimplemented origin type: %s", getFullText(ctx)));
+      _w.redFlagf("unimplemented origin type: %s", getFullText(ctx));
       return;
     }
     _currentPsThens.add(new PsThenOrigin(origin));
@@ -6875,8 +6921,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitSnmp_community(Snmp_communityContext ctx) {
-    _currentSnmpCommunity = null;
+  public void enterSnmp_client_list(Snmp_client_listContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(SNMP_CLIENT_LIST, name, ctx, _parser);
+    Map<String, PrefixList> clientLists = _currentLogicalSystem.getSnmpClientLists();
+    _currentPrefixList = clientLists.computeIfAbsent(name, PrefixList::new);
+  }
+
+  @Override
+  public void exitSnmp_client_list(Snmp_client_listContext ctx) {
+    _currentPrefixList = null;
+  }
+
+  @Override
+  public void exitSnmpcl_network(Snmpcl_networkContext ctx) {
+    Prefix prefix = toPrefix(ctx.prefix);
+    _currentPrefixList.getPrefixes().add(prefix);
   }
 
   @Override
@@ -6895,7 +6955,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String list = toString(ctx.name);
     _currentSnmpCommunity.setAccessList(list);
     _configuration.referenceStructure(
-        PREFIX_LIST, list, SNMP_COMMUNITY_PREFIX_LIST, getLine(ctx.name.getStart()));
+        SNMP_CLIENT_LIST_OR_PREFIX_LIST,
+        list,
+        SNMP_COMMUNITY_CLIENT_LIST_NAME,
+        getLine(ctx.name.getStart()));
     // TODO: verify whether both ipv4 and ipv6 list should be set with this
     // command
     _currentSnmpCommunity.setAccessList6(list);
@@ -6998,7 +7061,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (JuniperUtils.isJuniper9CipherText(text)) {
       return JuniperUtils.decryptAndHashJuniper9CipherText(text);
     } else {
-      _w.redFlag(String.format("Unencrypted key stored at line: %d", line));
+      _w.redFlagf("Unencrypted key stored at line: %d", line);
       return saltAndHash(text);
     }
   }
@@ -7086,6 +7149,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
     return Prefix.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix toPrefix(Ip_prefix_default_32Context ctx) {
+    if (ctx.IP_PREFIX() != null) {
+      return Prefix.parse(ctx.getText());
+    }
+    assert ctx.IP_ADDRESS() != null;
+    return Ip.parse(ctx.getText()).toPrefix();
   }
 
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {
@@ -7217,8 +7288,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Optional.of(name);
   }
 
-  @Nullable
-  private IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
+  private @Nullable IpWildcard formIpWildCard(Fftfa_address_mask_prefixContext ctx) {
     if (ctx == null) {
       return null;
     } else if (ctx.ip != null) {
@@ -7416,8 +7486,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    * logical interfaces are created if they doesn't already exist. If the unit is not explicit in
    * the configuration text, it is considered to be zero (tested in lab for both OSPF and ISIS).
    */
-  @Nonnull
-  private Interface initRoutingInterface(Interface_idContext id) {
+  private @Nonnull Interface initRoutingInterface(Interface_idContext id) {
     Map<String, Interface> interfaces;
     InterfaceId interfaceId = new InterfaceId(id);
     if (interfaceId.getNode() != null) {

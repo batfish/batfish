@@ -23,6 +23,7 @@ public abstract class BgpPeerGroup implements Serializable {
   protected String _description;
   protected Boolean _ebgpMultihop;
   private String _groupName;
+
   /** Name of IPv4 access list used to filter inbound BGP routes to this peer */
   protected String _inboundIpAccessList;
 
@@ -36,6 +37,7 @@ public abstract class BgpPeerGroup implements Serializable {
   private Integer _maximumPathsEibgp;
   private Integer _maximumPathsIbgp;
   private Boolean _nextHopSelf;
+
   /** Name of IPv4 access list used to filter outbound BGP routes from this peer */
   protected String _outboundIpAccessList;
 
@@ -105,8 +107,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _groupName;
   }
 
-  @Nullable
-  public String getInboundIpAccessList() {
+  public @Nullable String getInboundIpAccessList() {
     return _inboundIpAccessList;
   }
 
@@ -152,8 +153,7 @@ public abstract class BgpPeerGroup implements Serializable {
     return _nextHopSelf;
   }
 
-  @Nullable
-  public String getOutboundIpAccessList() {
+  public @Nullable String getOutboundIpAccessList() {
     return _outboundIpAccessList;
   }
 

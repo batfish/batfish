@@ -79,26 +79,22 @@ public class FilterStep extends Step<FilterStepDetail> {
     }
 
     @JsonProperty(PROP_FILTER)
-    @Nonnull
-    public String getFilter() {
+    public @Nonnull String getFilter() {
       return _filter;
     }
 
     @JsonProperty(PROP_TYPE)
-    @Nonnull
-    public FilterType getType() {
+    public @Nonnull FilterType getType() {
       return _type;
     }
 
     @JsonProperty(PROP_INPUT_INTERFACE)
-    @Nullable
-    public String getInputInterface() {
+    public @Nullable String getInputInterface() {
       return _inputInterface;
     }
 
     @JsonProperty(PROP_FLOW)
-    @Nonnull
-    public Flow getFlow() {
+    public @Nonnull Flow getFlow() {
       return _flow;
     }
 

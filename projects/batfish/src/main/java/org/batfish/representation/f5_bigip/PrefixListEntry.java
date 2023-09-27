@@ -81,12 +81,11 @@ public final class PrefixListEntry implements Serializable {
   /** Convert to a {@link RouteFilterLine}. If action or prefix is missing, return {@code null}. */
   public @Nullable RouteFilterLine toRouteFilterLine(Warnings w, String listName) {
     if (_action == null) {
-      w.redFlag(String.format("Missing action in prefix-list '%s' entry '%d'", listName, _num));
+      w.redFlagf("Missing action in prefix-list '%s' entry '%d'", listName, _num);
       return null;
     }
     if (_prefix == null) {
-      w.redFlag(
-          String.format("Missing IPv4 prefix in prefix-list '%s' entry '%d'", listName, _num));
+      w.redFlagf("Missing IPv4 prefix in prefix-list '%s' entry '%d'", listName, _num);
       return null;
     }
     return new RouteFilterLine(

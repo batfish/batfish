@@ -367,7 +367,7 @@ CLIENT_ALIVE_COUNT_MAX: 'client-alive-count-max';
 
 CLIENT_ALIVE_INTERVAL: 'client-alive-interval';
 
-CLIENT_LIST: 'client-list';
+CLIENT_LIST: 'client-list' -> pushMode(M_Name);
 
 CLIENT_LIST_NAME: 'client-list-name' -> pushMode(M_Name);
 
@@ -2371,7 +2371,7 @@ ROUTER_SOLICIT: 'router-solicit';
 ROUTING_HEADER: 'routing-header';
 
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
-
+ROUTING_INSTANCE_ACCESS: 'routing-instance-access';
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
 ROUTING_OPTIONS: 'routing-options';
@@ -2488,6 +2488,8 @@ SHA_256: 'sha-256';
 SHA_384: 'sha-384';
 
 SHA1: 'sha1';
+
+SHARED_BUFFER: 'shared-buffer';
 
 SHARED_IKE_ID: 'shared-ike-id';
 

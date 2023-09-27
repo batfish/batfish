@@ -20,7 +20,7 @@ import org.batfish.datamodel.LongSpace;
 @ParametersAreNonnullByDefault
 public final class BgpConfederation implements Serializable {
   private final long _id;
-  @Nonnull private final LongSpace _members;
+  private final @Nonnull LongSpace _members;
 
   /**
    * @see #BgpConfederation(long, Set)

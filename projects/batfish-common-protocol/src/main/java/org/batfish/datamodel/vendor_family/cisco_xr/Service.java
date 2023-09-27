@@ -14,9 +14,9 @@ public class Service implements Serializable {
   private static final String PROP_ENABLED = "enabled";
   private static final String PROP_SUBSERVICES = "subservices";
 
-  @Nullable private Boolean _enabled;
+  private @Nullable Boolean _enabled;
 
-  @Nonnull private SortedMap<String, Service> _subservices;
+  private @Nonnull SortedMap<String, Service> _subservices;
 
   @JsonCreator
   public Service() {
@@ -31,14 +31,12 @@ public class Service implements Serializable {
   }
 
   @JsonProperty(PROP_ENABLED)
-  @Nullable
-  public Boolean getEnabled() {
+  public @Nullable Boolean getEnabled() {
     return _enabled;
   }
 
   @JsonProperty(PROP_SUBSERVICES)
-  @Nonnull
-  public SortedMap<String, Service> getSubservices() {
+  public @Nonnull SortedMap<String, Service> getSubservices() {
     return _subservices;
   }
 

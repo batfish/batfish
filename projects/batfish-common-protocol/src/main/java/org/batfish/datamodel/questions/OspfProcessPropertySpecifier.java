@@ -78,7 +78,7 @@ public class OspfProcessPropertySpecifier extends PropertySpecifier {
     return JAVA_MAP.get(property);
   }
 
-  @Nonnull private final List<String> _properties;
+  private final @Nonnull List<String> _properties;
 
   /**
    * Create an ospf process property specifier from provided expression. If the expression is null

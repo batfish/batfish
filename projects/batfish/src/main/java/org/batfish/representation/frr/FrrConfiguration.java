@@ -47,23 +47,19 @@ public class FrrConfiguration implements Serializable {
     _vrfs = new HashMap<>();
   }
 
-  @Nonnull
-  public Vrf getOrCreateVrf(String vrfName) {
+  public @Nonnull Vrf getOrCreateVrf(String vrfName) {
     return _vrfs.computeIfAbsent(vrfName, name -> new Vrf(vrfName));
   }
 
-  @Nonnull
-  public FrrInterface getOrCreateInterface(String ifaceName, @Nullable String vrfName) {
+  public @Nonnull FrrInterface getOrCreateInterface(String ifaceName, @Nullable String vrfName) {
     return _interfaces.computeIfAbsent(ifaceName, name -> new FrrInterface(ifaceName, vrfName));
   }
 
-  @Nonnull
-  public FrrInterface getOrCreateInterface(String ifaceName) {
+  public @Nonnull FrrInterface getOrCreateInterface(String ifaceName) {
     return getOrCreateInterface(ifaceName, null);
   }
 
-  @Nullable
-  public BgpProcess getBgpProcess() {
+  public @Nullable BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
@@ -78,8 +74,7 @@ public class FrrConfiguration implements Serializable {
     return _ospfProcess;
   }
 
-  @Nullable
-  public OspfProcess getOspfProcess() {
+  public @Nullable OspfProcess getOspfProcess() {
     return _ospfProcess;
   }
 
@@ -87,48 +82,39 @@ public class FrrConfiguration implements Serializable {
     _ospfProcess = ospfProcess;
   }
 
-  @Nonnull
-  public Map<String, BgpAsPathAccessList> getBgpAsPathAccessLists() {
+  public @Nonnull Map<String, BgpAsPathAccessList> getBgpAsPathAccessLists() {
     return _bgpAsPathAccessLists;
   }
 
-  @Nonnull
-  public Map<String, IpPrefixList> getIpPrefixLists() {
+  public @Nonnull Map<String, IpPrefixList> getIpPrefixLists() {
     return _ipPrefixLists;
   }
 
-  @Nonnull
-  public Map<String, Ipv6PrefixList> getIpv6PrefixLists() {
+  public @Nonnull Map<String, Ipv6PrefixList> getIpv6PrefixLists() {
     return _ipv6PrefixLists;
   }
 
-  @Nonnull
-  public Map<String, BgpCommunityList> getBgpCommunityLists() {
+  public @Nonnull Map<String, BgpCommunityList> getBgpCommunityLists() {
     return _bgpCommunityLists;
   }
 
-  @Nonnull
-  public Set<StaticRoute> getStaticRoutes() {
+  public @Nonnull Set<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 
-  @Nonnull
-  public Map<String, RouteMap> getRouteMaps() {
+  public @Nonnull Map<String, RouteMap> getRouteMaps() {
     return _routeMaps;
   }
 
-  @Nonnull
-  public Map<String, Vrf> getVrfs() {
+  public @Nonnull Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
-  @Nonnull
-  public Map<String, FrrInterface> getInterfaces() {
+  public @Nonnull Map<String, FrrInterface> getInterfaces() {
     return _interfaces;
   }
 
-  @Nonnull
-  public Collection<String> getInterfaceInitOrder() {
+  public @Nonnull Collection<String> getInterfaceInitOrder() {
     return firstNonNull(
         _interfaceInitOrder,
         // for ease of testing

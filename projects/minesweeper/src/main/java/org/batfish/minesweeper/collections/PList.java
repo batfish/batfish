@@ -60,6 +60,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
   private final E _first;
   private final PList<E> _rest;
   private final int _size;
+
   // not externally instantiable (or subclassable):
 
   private PList() { // EMPTY constructor
@@ -71,7 +72,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
     _rest = null;
   }
 
-  private PList(@Nullable final E first, final PList<E> rest) {
+  private PList(final @Nullable E first, final PList<E> rest) {
     _first = first;
     _rest = rest;
 
@@ -205,8 +206,7 @@ public final class PList<E> extends AbstractSequentialList<E> {
     return new PList<>(_first, _rest.plusAll(i - 1, list));
   }
 
-  @Nullable
-  public PList<E> minus(final Object e) {
+  public @Nullable PList<E> minus(final Object e) {
     if (_size == 0) {
       return this;
     }

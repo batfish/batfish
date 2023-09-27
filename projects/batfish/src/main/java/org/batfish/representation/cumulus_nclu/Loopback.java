@@ -46,13 +46,11 @@ public class Loopback implements Serializable {
     _bandwidth = bw;
   }
 
-  @Nullable
-  public Double getBandwidth() {
+  public @Nullable Double getBandwidth() {
     return _bandwidth;
   }
 
-  @Nullable
-  public String getAlias() {
+  public @Nullable String getAlias() {
     return _alias;
   }
 
@@ -60,8 +58,7 @@ public class Loopback implements Serializable {
     _alias = alias;
   }
 
-  @Nullable
-  public Ip getVxlanLocalTunnelip() {
+  public @Nullable Ip getVxlanLocalTunnelip() {
     return _vxlanLocalTunnelip;
   }
 

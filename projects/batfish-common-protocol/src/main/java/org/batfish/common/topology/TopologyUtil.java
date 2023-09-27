@@ -153,24 +153,23 @@ public final class TopologyUtil {
       @Nonnull Consumer<Layer2Edge> edges,
       Map<Layer1Node, Set<Layer1Node>> parentChildrenMap,
       Map<String, InterfacesByVlanRange> vlanRangesPerNode) {
+    // Each Layer1 node may have children that are subinterfaces; and on some devices the parent
+    // node may also be important (e.g., handling the untagged frames).
     Layer1Node node1 = layer1Edge.getNode1();
-    Layer1Node node2 = layer1Edge.getNode2();
+    Set<Layer1Node> children1 =
+        Sets.union(
+            ImmutableSet.of(node1), parentChildrenMap.getOrDefault(node1, ImmutableSet.of()));
 
-    // Map each layer1-node to a set of layer-1 nodes corresponding to its children. Attempt to
-    // construct a layer-2 edge between each child in the cross product of the child sets.
-    parentChildrenMap
-        .getOrDefault(node1, ImmutableSet.of(node1))
-        .forEach(
-            node1Child ->
-                parentChildrenMap
-                    .getOrDefault(node2, ImmutableSet.of(node2))
-                    .forEach(
-                        node2Child ->
-                            tryComputeLayer2EdgesForLayer1ChildEdge(
-                                new Layer1Edge(node1Child, node2Child),
-                                configurations,
-                                edges,
-                                vlanRangesPerNode)));
+    Layer1Node node2 = layer1Edge.getNode2();
+    Set<Layer1Node> children2 =
+        Sets.union(
+            ImmutableSet.of(node2), parentChildrenMap.getOrDefault(node2, ImmutableSet.of()));
+    for (Layer1Node node1Child : children1) {
+      for (Layer1Node node2Child : children2) {
+        tryComputeLayer2EdgesForLayer1ChildEdge(
+            new Layer1Edge(node1Child, node2Child), configurations, edges, vlanRangesPerNode);
+      }
+    }
   }
 
   private static void tryComputeLayer2EdgesForLayer1ChildEdge(
@@ -287,8 +286,7 @@ public final class TopologyUtil {
    * Generates {@link NodeInterfacePairsByVlanRange} for the given {@code hostnames}. Assumes all
    * hostnames are present in {@code configs}.
    */
-  @Nonnull
-  private static NodeInterfacePairsByVlanRange computeNodeInterfacePairsByVlan(
+  private static @Nonnull NodeInterfacePairsByVlanRange computeNodeInterfacePairsByVlan(
       @Nonnull Map<String, Configuration> configs, Set<String> hostnames) {
     NodeInterfacePairsByVlanRange nisByVlan = NodeInterfacePairsByVlanRange.create();
     for (String hostname : hostnames) {
@@ -615,8 +613,7 @@ public final class TopologyUtil {
    * Collect all interfaces that have subnets overlapping P iff they have an IP address in P. Use an
    * IdentityHashSet to prevent duplicates.
    */
-  @Nonnull
-  private static Set<Interface> candidateInterfacesForPrefix(
+  private static @Nonnull Set<Interface> candidateInterfacesForPrefix(
       Map<Prefix, List<Interface>> prefixBuckets, Prefix p) {
     Set<Interface> candidateInterfaces = Sets.newIdentityHashSet();
     IntStream.range(0, Prefix.MAX_PREFIX_LENGTH)
@@ -631,8 +628,7 @@ public final class TopologyUtil {
   }
 
   /** Bucket Interfaces that are not loopbacks and not /32s by their prefix */
-  @Nonnull
-  private static Map<Prefix, List<Interface>> computeInterfacesBucketByPrefix(
+  private static @Nonnull Map<Prefix, List<Interface>> computeInterfacesBucketByPrefix(
       Map<String, Configuration> configurations) {
     Map<Prefix, List<Interface>> prefixInterfaces = new HashMap<>();
     configurations.forEach(
@@ -710,8 +706,7 @@ public final class TopologyUtil {
    * possibly valid edges (according to IP addresse and interface types), but not verified using
    * reachability checks.
    */
-  @Nonnull
-  public static TunnelTopology computeInitialTunnelTopology(
+  public static @Nonnull TunnelTopology computeInitialTunnelTopology(
       Map<String, Configuration> configurations) {
     Map<Prefix, List<Interface>> prefixInterfaces = computeInterfacesBucketByPrefix(configurations);
     TunnelTopology.Builder builder = TunnelTopology.builder();
@@ -748,8 +743,7 @@ public final class TopologyUtil {
   }
 
   /** Return a {@link TunnelTopology} where tunnel endpoints can reach each other. */
-  @Nonnull
-  public static TunnelTopology pruneUnreachableTunnelEdges(
+  public static @Nonnull TunnelTopology pruneUnreachableTunnelEdges(
       TunnelTopology initialTunnelTopology,
       NetworkConfigurations configurations,
       TracerouteEngine tracerouteEngine) {

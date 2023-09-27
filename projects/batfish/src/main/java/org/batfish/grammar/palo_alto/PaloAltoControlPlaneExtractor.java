@@ -18,7 +18,7 @@ public class PaloAltoControlPlaneExtractor implements ControlPlaneExtractor {
   private final PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
   private PaloAltoConfiguration _configuration;
 
   public PaloAltoControlPlaneExtractor(

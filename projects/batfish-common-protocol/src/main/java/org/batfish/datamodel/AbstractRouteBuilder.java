@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -19,60 +21,56 @@ public abstract class AbstractRouteBuilder<
 
   private int _admin;
   private long _metric;
-  @Nullable private Prefix _network;
-  @Nullable protected NextHop _nextHop;
+  private @Nullable Prefix _network;
+  protected @Nullable NextHop _nextHop;
   // It's fine for fields below to default to false/unset in the common case
   private boolean _nonForwarding;
   private boolean _nonRouting;
   private long _tag = Route.UNSET_ROUTE_TAG;
 
-  @Nonnull
-  public abstract T build();
+  public @Nonnull abstract T build();
 
   public final int getAdmin() {
     return _admin;
   }
 
   public S setAdmin(int admin) {
+    // TODO: too many tests set -1 via Route#UNSET_ADMIN here, so we don't check lower bound.
+    checkArgument(
+        admin <= MAX_ADMIN_DISTANCE, "Invalid admin distance %s > %s", admin, MAX_ADMIN_DISTANCE);
     _admin = admin;
     return getThis();
   }
 
   // To handle the class casting exception while returning S in chaining methods
-  @Nonnull
-  protected abstract S getThis();
+  protected @Nonnull abstract S getThis();
 
   public final long getMetric() {
     return _metric;
   }
 
-  @Nonnull
-  public final S setMetric(long metric) {
+  public final @Nonnull S setMetric(long metric) {
     _metric = metric;
     return getThis();
   }
 
-  @Nullable
-  public final Prefix getNetwork() {
+  public final @Nullable Prefix getNetwork() {
     return _network;
   }
 
-  @Nonnull
-  public final S setNetwork(@Nonnull Prefix network) {
+  public final @Nonnull S setNetwork(@Nonnull Prefix network) {
     _network = network;
     return getThis();
   }
 
-  @Nonnull
-  public final Ip getNextHopIp() {
+  public final @Nonnull Ip getNextHopIp() {
     if (_nextHop == null) {
       return Route.UNSET_ROUTE_NEXT_HOP_IP;
     }
     return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
   }
 
-  @Nonnull
-  public final S setNextHopIp(@Nullable Ip nextHopIp) {
+  public final @Nonnull S setNextHopIp(@Nullable Ip nextHopIp) {
     if (nextHopIp == null) {
       _nextHop = null;
       return getThis();
@@ -135,8 +133,7 @@ public abstract class AbstractRouteBuilder<
     return _nonForwarding;
   }
 
-  @Nonnull
-  public S setNonForwarding(boolean nonForwarding) {
+  public @Nonnull S setNonForwarding(boolean nonForwarding) {
     _nonForwarding = nonForwarding;
     return getThis();
   }
@@ -145,8 +142,7 @@ public abstract class AbstractRouteBuilder<
     return _nonRouting;
   }
 
-  @Nonnull
-  public S setNonRouting(boolean nonRouting) {
+  public @Nonnull S setNonRouting(boolean nonRouting) {
     _nonRouting = nonRouting;
     return getThis();
   }
@@ -155,8 +151,7 @@ public abstract class AbstractRouteBuilder<
     return _tag;
   }
 
-  @Nonnull
-  public final S setTag(@Nullable Long tag) {
+  public final @Nonnull S setTag(@Nullable Long tag) {
     _tag = firstNonNull(tag, Route.UNSET_ROUTE_TAG);
     return getThis();
   }

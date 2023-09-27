@@ -80,65 +80,65 @@ public final class Region implements Serializable {
   static final TraceElement DENY_SPOOFED_SOURCE_IP_TRACE_ELEMENT =
       TraceElement.of("Deny spoofed source IPs");
 
-  @Nonnull private final Map<String, Address> _addresses;
+  private final @Nonnull Map<String, Address> _addresses;
 
-  @Nonnull private final Map<String, CustomerGateway> _customerGateways;
+  private final @Nonnull Map<String, CustomerGateway> _customerGateways;
 
-  @Nonnull private final Map<String, ElasticsearchDomain> _elasticsearchDomains;
+  private final @Nonnull Map<String, ElasticsearchDomain> _elasticsearchDomains;
 
-  @Nonnull private final Map<String, Instance> _instances;
+  private final @Nonnull Map<String, Instance> _instances;
 
-  @Nonnull private final Map<String, InternetGateway> _internetGateways;
+  private final @Nonnull Map<String, InternetGateway> _internetGateways;
 
-  @Nonnull private final Map<String, LoadBalancer> _loadBalancers;
+  private final @Nonnull Map<String, LoadBalancer> _loadBalancers;
 
-  @Nonnull private final Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
+  private final @Nonnull Map<String, LoadBalancerAttributes> _loadBalancerAttributes;
 
-  @Nonnull private final Map<String, LoadBalancerListener> _loadBalancerListeners;
+  private final @Nonnull Map<String, LoadBalancerListener> _loadBalancerListeners;
 
-  @Nonnull private final Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
+  private final @Nonnull Map<String, LoadBalancerTargetHealth> _loadBalancerTargetHealths;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final Map<String, NatGateway> _natGateways;
+  private final @Nonnull Map<String, NatGateway> _natGateways;
 
-  @Nonnull private final Map<String, NetworkAcl> _networkAcls;
+  private final @Nonnull Map<String, NetworkAcl> _networkAcls;
 
-  @Nonnull private final Map<String, NetworkInterface> _networkInterfaces;
+  private final @Nonnull Map<String, NetworkInterface> _networkInterfaces;
 
-  @Nonnull private final Map<String, PrefixList> _prefixLists;
+  private final @Nonnull Map<String, PrefixList> _prefixLists;
 
-  @Nonnull private final Map<String, RdsInstance> _rdsInstances;
+  private final @Nonnull Map<String, RdsInstance> _rdsInstances;
 
-  @Nonnull private final Map<String, RouteTable> _routeTables;
+  private final @Nonnull Map<String, RouteTable> _routeTables;
 
-  @Nonnull private final Map<String, SecurityGroup> _securityGroups;
+  private final @Nonnull Map<String, SecurityGroup> _securityGroups;
 
-  @Nonnull private final Map<String, Subnet> _subnets;
+  private final @Nonnull Map<String, Subnet> _subnets;
 
-  @Nonnull private final Map<String, TargetGroup> _targetGroups;
+  private final @Nonnull Map<String, TargetGroup> _targetGroups;
 
-  @Nonnull private final Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
+  private final @Nonnull Map<String, TransitGatewayAttachment> _transitGatewayAttachments;
 
-  @Nonnull private final Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
+  private final @Nonnull Map<String, TransitGatewayPropagations> _transitGatewayPropagations;
 
-  @Nonnull private final Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
+  private final @Nonnull Map<String, TransitGatewayRouteTable> _transitGatewayRouteTables;
 
-  @Nonnull private final Map<String, TransitGatewayStaticRoutes> _transitGatewayStaticRoutes;
+  private final @Nonnull Map<String, TransitGatewayStaticRoutes> _transitGatewayStaticRoutes;
 
-  @Nonnull private final Map<String, TransitGatewayVpcAttachment> _transitGatewayVpcAttachments;
+  private final @Nonnull Map<String, TransitGatewayVpcAttachment> _transitGatewayVpcAttachments;
 
-  @Nonnull private final Map<String, TransitGateway> _transitGateways;
+  private final @Nonnull Map<String, TransitGateway> _transitGateways;
 
-  @Nonnull private final Map<String, VpcPeeringConnection> _vpcPeerings;
+  private final @Nonnull Map<String, VpcPeeringConnection> _vpcPeerings;
 
-  @Nonnull private final Map<String, Vpc> _vpcs;
+  private final @Nonnull Map<String, Vpc> _vpcs;
 
-  @Nonnull private final Map<String, VpnConnection> _vpnConnections;
+  private final @Nonnull Map<String, VpnConnection> _vpnConnections;
 
-  @Nonnull private final Map<String, VpcEndpoint> _vpcEndpoints;
+  private final @Nonnull Map<String, VpcEndpoint> _vpcEndpoints;
 
-  @Nonnull private final Map<String, VpnGateway> _vpnGateways;
+  private final @Nonnull Map<String, VpnGateway> _vpnGateways;
 
   private Map<String, IpAccessList> _sgIngressAcls;
   private Map<String, IpAccessList> _sgEgressAcls;
@@ -305,8 +305,7 @@ public final class Region implements Serializable {
    *
    * <p>Returns null for unrecognized keys.
    */
-  @Nullable
-  private ThrowingConsumer<JsonNode, IOException> getChildConsumer(String elementType) {
+  private @Nullable ThrowingConsumer<JsonNode, IOException> getChildConsumer(String elementType) {
     switch (elementType) {
       case AwsVpcEntity.JSON_KEY_ADDRESSES:
         return json -> {
@@ -592,8 +591,7 @@ public final class Region implements Serializable {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  @Nonnull
-  public Set<Address> getAddresses() {
+  public @Nonnull Set<Address> getAddresses() {
     return ImmutableSet.copyOf(_addresses.values());
   }
 
@@ -607,8 +605,7 @@ public final class Region implements Serializable {
     return _elasticsearchDomains;
   }
 
-  @Nonnull
-  public Map<String, Instance> getInstances() {
+  public @Nonnull Map<String, Instance> getInstances() {
     return _instances;
   }
 
@@ -617,8 +614,7 @@ public final class Region implements Serializable {
     return _internetGateways;
   }
 
-  @Nonnull
-  public Set<LoadBalancer> getLoadBalancers() {
+  public @Nonnull Set<LoadBalancer> getLoadBalancers() {
     return ImmutableSet.copyOf(_loadBalancers.values());
   }
 
@@ -637,8 +633,7 @@ public final class Region implements Serializable {
     return _loadBalancerListeners;
   }
 
-  @Nullable
-  public LoadBalancerListener getLoadBalancerListener(String loadBalancerArn) {
+  public @Nullable LoadBalancerListener getLoadBalancerListener(String loadBalancerArn) {
     return _loadBalancerListeners.get(loadBalancerArn);
   }
 
@@ -647,13 +642,11 @@ public final class Region implements Serializable {
     return _loadBalancerTargetHealths;
   }
 
-  @Nullable
-  public LoadBalancerTargetHealth getLoadBalancerTargetHealth(String targetGroupArn) {
+  public @Nullable LoadBalancerTargetHealth getLoadBalancerTargetHealth(String targetGroupArn) {
     return _loadBalancerTargetHealths.get(targetGroupArn);
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -662,18 +655,15 @@ public final class Region implements Serializable {
     return _natGateways;
   }
 
-  @Nonnull
-  public Map<String, NetworkAcl> getNetworkAcls() {
+  public @Nonnull Map<String, NetworkAcl> getNetworkAcls() {
     return _networkAcls;
   }
 
-  @Nonnull
-  public Map<String, PrefixList> getPrefixLists() {
+  public @Nonnull Map<String, PrefixList> getPrefixLists() {
     return _prefixLists;
   }
 
-  @Nonnull
-  public Map<String, NetworkInterface> getNetworkInterfaces() {
+  public @Nonnull Map<String, NetworkInterface> getNetworkInterfaces() {
     return _networkInterfaces;
   }
 
@@ -687,13 +677,11 @@ public final class Region implements Serializable {
     return _routeTables;
   }
 
-  @Nonnull
-  public Map<String, SecurityGroup> getSecurityGroups() {
+  public @Nonnull Map<String, SecurityGroup> getSecurityGroups() {
     return _securityGroups;
   }
 
-  @Nonnull
-  public Map<String, Subnet> getSubnets() {
+  public @Nonnull Map<String, Subnet> getSubnets() {
     return _subnets;
   }
 
@@ -702,8 +690,7 @@ public final class Region implements Serializable {
     return _targetGroups;
   }
 
-  @Nullable
-  public TargetGroup getTargetGroup(String targetGroupArn) {
+  public @Nullable TargetGroup getTargetGroup(String targetGroupArn) {
     return _targetGroups.get(targetGroupArn);
   }
 
@@ -737,8 +724,7 @@ public final class Region implements Serializable {
     return _transitGateways;
   }
 
-  @Nonnull
-  public Map<String, VpcEndpoint> getVpcEndpoints() {
+  public @Nonnull Map<String, VpcEndpoint> getVpcEndpoints() {
     return _vpcEndpoints;
   }
 

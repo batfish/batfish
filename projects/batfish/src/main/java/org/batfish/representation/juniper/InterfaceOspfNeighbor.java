@@ -12,13 +12,11 @@ public final class InterfaceOspfNeighbor implements Serializable {
     _ip = ip;
   }
 
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
-  @Nullable
-  public Boolean getDesignated() {
+  public @Nullable Boolean getDesignated() {
     return _isDesignated;
   }
 

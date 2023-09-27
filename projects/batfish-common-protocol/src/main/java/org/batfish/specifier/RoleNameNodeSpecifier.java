@@ -13,8 +13,8 @@ import org.batfish.role.NodeRoleDimension;
 /** A {@link NodeSpecifier} that specifies the set of nodes with a role and dimension names. */
 @ParametersAreNonnullByDefault
 public final class RoleNameNodeSpecifier implements NodeSpecifier {
-  @Nonnull private final String _roleName;
-  @Nonnull private final String _roleDimension;
+  private final @Nonnull String _roleName;
+  private final @Nonnull String _roleDimension;
 
   public RoleNameNodeSpecifier(String roleName, String roleDimension) {
     _roleName = roleName;

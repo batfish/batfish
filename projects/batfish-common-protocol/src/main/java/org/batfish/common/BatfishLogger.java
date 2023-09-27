@@ -35,7 +35,7 @@ public final class BatfishLogger {
   private static class HistoryItem implements Serializable {
 
     private final int _level;
-    @Nonnull private final String _message;
+    private final @Nonnull String _message;
 
     private HistoryItem(int i, @Nonnull String s) {
       _level = i;
@@ -148,10 +148,10 @@ public final class BatfishLogger {
     return LOG_LEVELS.containsKey(levelStr);
   }
 
-  @Nullable private final BatfishLoggerHistory _history;
+  private final @Nullable BatfishLoggerHistory _history;
   private int _level;
-  @Nullable private String _logFile;
-  @Nullable private PrintStream _ps;
+  private @Nullable String _logFile;
+  private @Nullable PrintStream _ps;
   private long _timerCount;
   private boolean _timestamp;
 

@@ -16,6 +16,7 @@ public class Settings extends BaseSettings {
 
   private static final String ARG_AUTHORIZER_TYPE = "authorizertype";
   private static final String ARG_CONTAINERS_LOCATION = "containerslocation";
+
   /** (the arguments below are not wired to command line) */
   private static final String ARG_FILE_AUTHORIZER_PERMS_FILE = "fileauthpermsfile";
 

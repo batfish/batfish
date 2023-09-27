@@ -85,8 +85,7 @@ public class BfCoordWorkHelper {
    * Returns the JSON log of a work item completed by the batfish worker corresponding to a given
    * work ID.
    */
-  @Nullable
-  public String getWorkJson(String networkName, String snapshotName, UUID workId) {
+  public @Nullable String getWorkJson(String networkName, String snapshotName, UUID workId) {
     WebTarget webTarget =
         getTargetV2(
             Arrays.asList(
@@ -119,8 +118,7 @@ public class BfCoordWorkHelper {
   }
 
   /** Returns the JSON-encoded POJO topology for a snapshot. */
-  @Nullable
-  public String getPojoTopology(String networkName, String snapshotName) {
+  public @Nullable String getPojoTopology(String networkName, String snapshotName) {
     WebTarget webTarget =
         getTargetV2(
             Arrays.asList(
@@ -164,21 +162,19 @@ public class BfCoordWorkHelper {
   }
 
   public static class WorkResult {
-    @Nonnull private final WorkStatusCode _status;
-    @Nonnull private final String _taskStr;
+    private final @Nonnull WorkStatusCode _status;
+    private final @Nonnull String _taskStr;
 
     WorkResult(@Nonnull WorkStatusCode status, @Nonnull String taskStr) {
       _status = status;
       _taskStr = taskStr;
     }
 
-    @Nonnull
-    public WorkStatusCode getStatus() {
+    public @Nonnull WorkStatusCode getStatus() {
       return _status;
     }
 
-    @Nonnull
-    public String getTaskStr() {
+    public @Nonnull String getTaskStr() {
       return _taskStr;
     }
   }
@@ -210,8 +206,8 @@ public class BfCoordWorkHelper {
     }
   }
 
-  @Nullable
-  public String initNetwork(@Nullable String networkName, @Nullable String networkPrefix) {
+  public @Nullable String initNetwork(
+      @Nullable String networkName, @Nullable String networkPrefix) {
     WebTarget webTarget = getTargetV2(ImmutableList.of(CoordConstsV2.RSC_NETWORKS));
     if (networkName != null) {
       webTarget = webTarget.queryParam(CoordConstsV2.QP_NAME, networkName);

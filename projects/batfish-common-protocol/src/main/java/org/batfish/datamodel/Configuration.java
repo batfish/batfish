@@ -721,8 +721,7 @@ public final class Configuration implements Serializable {
   }
 
   @JsonProperty(PROP_MLAGS)
-  @Nonnull
-  public Map<String, Mlag> getMlags() {
+  public @Nonnull Map<String, Mlag> getMlags() {
     return _mlags;
   }
 

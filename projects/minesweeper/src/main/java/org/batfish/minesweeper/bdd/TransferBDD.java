@@ -87,6 +87,7 @@ import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -207,18 +208,40 @@ public class TransferBDD {
      */
   }
 
-  // produce a BDD that represents the disjunction of all atomic predicates associated with any of
-  // the given as-path regexes
-  BDD asPathRegexesToBDD(Set<SymbolicAsPathRegex> asPathRegexes, BDDRoute route) {
-    Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, _asPathRegexAtomicPredicates);
-    BDD[] apBDDs = route.getAsPathRegexAtomicPredicates();
+  /**
+   * Produces a BDD that represents the disjunction of all atomic predicates associated with any of
+   * the given AS-path regexes.
+   *
+   * @param asPathRegexes the set of AS-path regexes to convert to a BDD
+   * @param apMap a map from as-path regexes to their corresponding sets of atomic predicates
+   * @param route the symbolic representation of a route
+   * @return the BDD
+   */
+  public static BDD asPathRegexesToBDD(
+      Set<SymbolicAsPathRegex> asPathRegexes,
+      Map<SymbolicAsPathRegex, Set<Integer>> apMap,
+      BDDRoute route) {
+    Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, apMap);
     return route
         .getFactory()
-        .orAll(asPathAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
+        .orAll(
+            asPathAPs.stream()
+                .map(ap -> route.getAsPathRegexAtomicPredicates().value(ap))
+                .collect(Collectors.toList()));
   }
 
-  // produce the union of all atomic predicates associated with any of the given symbolic regexes
-  <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
+  //
+
+  /**
+   * Produces a set consisting of all atomic predicates associated with any of the given symbolic
+   * regexes.
+   *
+   * @param regexes the regexes of interest
+   * @param apMap a map from regexes to their corresponding sets of atomic predicates
+   * @return the set of relevant atomic predicates
+   * @param <T> the specific type of the regexes
+   */
+  static <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
       Set<T> regexes, Map<T, Set<Integer>> apMap) {
     return regexes.stream()
         .flatMap(r -> apMap.get(r).stream())
@@ -289,35 +312,68 @@ public class TransferBDD {
 
     } else if (expr instanceof Disjunction) {
       Disjunction disj = (Disjunction) expr;
-      List<TransferResult> currResults = new ArrayList<>();
-      // the default result is false
-      currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
-      for (BooleanExpr e : disj.getDisjuncts()) {
-        List<TransferResult> nextResults = new ArrayList<>();
-        try {
-          for (TransferResult curr : currResults) {
-            BDD currBDD = curr.getReturnValue().getSecond();
-            compute(e, toTransferBDDState(p.indent(), curr))
-                .forEach(
-                    r -> {
-                      TransferResult updated =
-                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
-                      // if we're on a path where e evaluates to true, then this path is done;
-                      // otherwise we will evaluate the next disjunct in the next iteration
-                      if (updated.getReturnValue().getAccepted()) {
-                        finalResults.add(updated);
-                      } else {
-                        nextResults.add(updated);
-                      }
-                    });
+      /*
+      Disjunctions of as-path matches are handled specially when building as-path atomic
+      predicates, for performance reasons. See BooleanExprAsPathCollector::visitDisjunction. We
+      have to check for that special case here in order to access the correct atomic predicates.
+      */
+      if (!disj.getDisjuncts().isEmpty()
+          && disj.getDisjuncts().stream()
+              .allMatch(
+                  d ->
+                      d instanceof MatchAsPath
+                          && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+        // collect all as-path regexes, produce a single regex that is their union, and then create
+        // the corresponding BDD
+        BDDRoute currRoute = routeForMatching(p);
+        Set<SymbolicAsPathRegex> asPathRegexes =
+            disj.getDisjuncts().stream()
+                .flatMap(
+                    d ->
+                        ((MatchAsPath) d)
+                                .getAsPathMatchExpr()
+                                .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute))
+                                .stream())
+                .collect(ImmutableSet.toImmutableSet());
+        finalResults.add(
+            result
+                .setReturnValueBDD(
+                    asPathRegexesToBDD(
+                        ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                        _asPathRegexAtomicPredicates,
+                        routeForMatching(p)))
+                .setReturnValueAccepted(true));
+      } else {
+        List<TransferResult> currResults = new ArrayList<>();
+        // the default result is false
+        currResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
+        for (BooleanExpr e : disj.getDisjuncts()) {
+          List<TransferResult> nextResults = new ArrayList<>();
+          try {
+            for (TransferResult curr : currResults) {
+              BDD currBDD = curr.getReturnValue().getSecond();
+              compute(e, toTransferBDDState(p.indent(), curr))
+                  .forEach(
+                      r -> {
+                        TransferResult updated =
+                            r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                        // if we're on a path where e evaluates to true, then this path is done;
+                        // otherwise we will evaluate the next disjunct in the next iteration
+                        if (updated.getReturnValue().getAccepted()) {
+                          finalResults.add(updated);
+                        } else {
+                          nextResults.add(updated);
+                        }
+                      });
+            }
+            currResults = nextResults;
+          } catch (UnsupportedFeatureException ufe) {
+            // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
+            currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
           }
-          currResults = nextResults;
-        } catch (UnsupportedFeatureException ufe) {
-          // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
-          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
         }
+        finalResults.addAll(currResults);
       }
-      finalResults.addAll(currResults);
 
       // TODO: This code is here for backward-compatibility reasons but has not been tested and is
       // not currently maintained
@@ -521,10 +577,14 @@ public class TransferBDD {
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
       checkForAsPathMatchAfterUpdate(p);
       MatchAsPath matchAsPath = (MatchAsPath) expr;
+      BDDRoute currRoute = routeForMatching(p);
       BDD asPathPredicate =
-          matchAsPath
-              .getAsPathMatchExpr()
-              .accept(new AsPathMatchExprToBDD(), new Arg(this, routeForMatching(p)));
+          asPathRegexesToBDD(
+              matchAsPath
+                  .getAsPathMatchExpr()
+                  .accept(new AsPathMatchExprToRegexes(), new Arg(this, currRoute)),
+              _asPathRegexAtomicPredicates,
+              currRoute);
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchSourceVrf) {
@@ -652,7 +712,7 @@ public class TransferBDD {
 
         case FallThrough:
           curP.debug("Fallthrough");
-          result = fallthrough(result, true);
+          result = fallthrough(result);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
         case Return:
@@ -670,7 +730,7 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
-          /**
+          /*
            * These directives are used by the Batfish route simulation to control the handling of
            * route updates that implicitly involve both a "read" and a "write". For example, Batfish
            * models an additive community set of 40:40 as a write of (InputCommunities U 40:40). For
@@ -732,6 +792,17 @@ public class TransferBDD {
       }
 
       return ImmutableList.copyOf(newStates);
+
+    } else if (stmt instanceof SetAdministrativeCost) {
+      curP.debug("SetAdministrativeCost");
+      SetAdministrativeCost sac = (SetAdministrativeCost) stmt;
+      IntExpr ie = sac.getAdmin();
+      if (!(ie instanceof LiteralInt)) {
+        throw new UnsupportedFeatureException(ie.toString());
+      }
+      int val = ((LiteralInt) ie).getValue();
+      curP.getData().setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 8, val));
+      return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetDefaultPolicy) {
       curP.debug("SetDefaultPolicy");
@@ -854,18 +925,12 @@ public class TransferBDD {
     } else if (stmt instanceof BufferedStatement) {
       curP.debug("BufferedStatement");
       BufferedStatement bufStmt = (BufferedStatement) stmt;
-      /**
+      /*
        * The {@link Environment} class for simulating route policies keeps track of whether a
        * statement is buffered, but it currently does not seem to ever use that information. So we
        * ignore it.
        */
       return compute(bufStmt.getStatement(), state);
-
-    } else if (stmt instanceof SetOrigin) {
-      curP.debug("SetOrigin");
-      // System.out.println("Warning: use of unimplemented feature SetOrigin");
-      // TODO: implement me
-      return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
@@ -948,8 +1013,8 @@ public class TransferBDD {
     return results.build();
   }
 
-  private TransferResult fallthrough(TransferResult r, boolean val) {
-    return r.setFallthroughValue(val).setReturnAssignedValue(true);
+  private TransferResult fallthrough(TransferResult r) {
+    return r.setFallthroughValue(true).setReturnAssignedValue(true);
   }
 
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
@@ -1033,7 +1098,8 @@ public class TransferBDD {
       // each line's regex is represented as the disjunction of all of the regex's
       // corresponding atomic predicates
       SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
-      BDD regexAPBdd = asPathRegexesToBDD(ImmutableSet.of(regex), other);
+      BDD regexAPBdd =
+          asPathRegexesToBDD(ImmutableSet.of(regex), _asPathRegexAtomicPredicates, other);
       acc = ite(regexAPBdd, mkBDD(action), acc);
     }
     return acc;

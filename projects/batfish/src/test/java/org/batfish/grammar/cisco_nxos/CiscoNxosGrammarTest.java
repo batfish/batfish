@@ -1653,7 +1653,7 @@ public final class CiscoNxosGrammarTest {
         peer.getGeneratedRoutes(),
         equalTo(
             ImmutableSet.of(
-                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(32767).build())));
+                GeneratedRoute.builder().setNetwork(Prefix.ZERO).setAdmin(255).build())));
 
     Ipv4UnicastAddressFamily ipv4Af = peer.getIpv4UnicastAddressFamily();
     assertThat(ipv4Af, notNullValue());
@@ -9933,5 +9933,27 @@ public final class CiscoNxosGrammarTest {
     settings.setThrowOnParserError(false);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, hasIpAccessList("foo", hasLines(empty())));
+  }
+
+  @Test
+  public void testVlanServicePolicyExtraction() {
+    parseVendorConfig("nxos_vlan_service_policy");
+  }
+
+  @Test
+  public void testVlanServicePolicyExtractionPolicy() throws IOException {
+    String hostname = "nxos_vlan_service_policy";
+    String filename = String.format("configs/%s", hostname);
+    Batfish bf = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ans =
+        bf.loadConvertConfigurationAnswerElementOrReparse(bf.getSnapshot());
+
+    assertThat(
+        ans,
+        hasNumReferrers(filename, CiscoNxosStructureType.POLICY_MAP_QOS, "qos-classify-used", 1));
+
+    assertThat(
+        ans,
+        hasNumReferrers(filename, CiscoNxosStructureType.POLICY_MAP_QOS, "qos-classify-unused", 0));
   }
 }

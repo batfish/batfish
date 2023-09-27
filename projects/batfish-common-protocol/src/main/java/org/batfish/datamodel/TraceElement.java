@@ -78,8 +78,8 @@ public final class TraceElement implements Serializable {
 
   /** A {@link Fragment} that is linked to a vendor structure. */
   public static final class LinkFragment implements Fragment {
-    @Nonnull private final String _text;
-    @Nonnull private final VendorStructureId _vendorStructureId;
+    private final @Nonnull String _text;
+    private final @Nonnull VendorStructureId _vendorStructureId;
 
     LinkFragment(String text, VendorStructureId vendorStructureId) {
       checkArgument(!text.isEmpty(), "%s cannot be empty", PROP_TEXT);

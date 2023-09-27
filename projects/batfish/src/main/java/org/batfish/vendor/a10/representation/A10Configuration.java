@@ -135,30 +135,26 @@ public final class A10Configuration extends VendorConfiguration {
     _vlans = new HashMap<>();
   }
 
-  @Nullable
-  public BgpProcess getBgpProcess() {
+  public @Nullable BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
   /** Gets the {@link BgpProcess} for this device, creating a new one if none already exists. */
-  @Nonnull
-  public BgpProcess getOrCreateBgpProcess(long number) {
+  public @Nonnull BgpProcess getOrCreateBgpProcess(long number) {
     if (_bgpProcess == null) {
       _bgpProcess = new BgpProcess(number);
     }
     return _bgpProcess;
   }
 
-  @Nonnull
-  public AccessList getOrCreateAccessList(String name) {
+  public @Nonnull AccessList getOrCreateAccessList(String name) {
     if (!_accessLists.containsKey(name)) {
       _accessLists.put(name, new AccessList(name));
     }
     return _accessLists.get(name);
   }
 
-  @Nonnull
-  public Map<String, AccessList> getAccessLists() {
+  public @Nonnull Map<String, AccessList> getAccessLists() {
     return _accessLists;
   }
 
@@ -179,8 +175,7 @@ public final class A10Configuration extends VendorConfiguration {
     return _ha;
   }
 
-  @Nonnull
-  public Map<String, HealthMonitor> getHealthMonitors() {
+  public @Nonnull Map<String, HealthMonitor> getHealthMonitors() {
     return _healthMonitors;
   }
 
@@ -195,53 +190,43 @@ public final class A10Configuration extends VendorConfiguration {
     return _hostname;
   }
 
-  @Nonnull
-  public Map<Integer, Interface> getInterfacesEthernet() {
+  public @Nonnull Map<Integer, Interface> getInterfacesEthernet() {
     return _interfacesEthernet;
   }
 
-  @Nonnull
-  public Map<Integer, Interface> getInterfacesLoopback() {
+  public @Nonnull Map<Integer, Interface> getInterfacesLoopback() {
     return _interfacesLoopback;
   }
 
-  @Nonnull
-  public Map<Integer, TrunkInterface> getInterfacesTrunk() {
+  public @Nonnull Map<Integer, TrunkInterface> getInterfacesTrunk() {
     return _interfacesTrunk;
   }
 
-  @Nonnull
-  public Map<Integer, Interface> getInterfacesVe() {
+  public @Nonnull Map<Integer, Interface> getInterfacesVe() {
     return _interfacesVe;
   }
 
-  @Nonnull
-  public Map<String, NatPool> getNatPools() {
+  public @Nonnull Map<String, NatPool> getNatPools() {
     return _natPools;
   }
 
-  @Nonnull
-  public Map<String, ServiceGroup> getServiceGroups() {
+  public @Nonnull Map<String, ServiceGroup> getServiceGroups() {
     return ImmutableMap.copyOf(_serviceGroups);
   }
 
-  @Nonnull
-  public ServiceGroup getOrCreateServiceGroup(String name, ServerPort.Type type) {
+  public @Nonnull ServiceGroup getOrCreateServiceGroup(String name, ServerPort.Type type) {
     return _serviceGroups.computeIfAbsent(name, n -> new ServiceGroup(name, type));
   }
 
-  @Nonnull
-  public Map<String, Server> getServers() {
+  public @Nonnull Map<String, Server> getServers() {
     return _servers;
   }
 
-  @Nonnull
-  public Map<String, VirtualServer> getVirtualServers() {
+  public @Nonnull Map<String, VirtualServer> getVirtualServers() {
     return Collections.unmodifiableMap(_virtualServers);
   }
 
-  @Nullable
-  public VirtualServer getVirtualServer(String name) {
+  public @Nullable VirtualServer getVirtualServer(String name) {
     return _virtualServers.get(name);
   }
 
@@ -249,14 +234,12 @@ public final class A10Configuration extends VendorConfiguration {
    * Get the {@link VirtualServer} corresponding to the provided name, creating it (with the
    * specified {@link VirtualServerTarget}) if it doesn't already exist.
    */
-  @Nonnull
-  public VirtualServer getOrCreateVirtualServer(String name, VirtualServerTarget target) {
+  public @Nonnull VirtualServer getOrCreateVirtualServer(String name, VirtualServerTarget target) {
     return _virtualServers.computeIfAbsent(name, n -> new VirtualServer(n, target));
   }
 
   /** Map of route {@link Prefix} to {@link StaticRouteManager} for that prefix. */
-  @Nonnull
-  public Map<Prefix, StaticRouteManager> getStaticRoutes() {
+  public @Nonnull Map<Prefix, StaticRouteManager> getStaticRoutes() {
     return _staticRoutes;
   }
 
@@ -276,13 +259,11 @@ public final class A10Configuration extends VendorConfiguration {
     return firstNonNull(iface.getMtu(), DEFAULT_MTU);
   }
 
-  @Nonnull
-  public Map<Integer, Vlan> getVlans() {
+  public @Nonnull Map<Integer, Vlan> getVlans() {
     return _vlans;
   }
 
-  @Nonnull
-  public static InterfaceType getInterfaceType(Interface iface) {
+  public static @Nonnull InterfaceType getInterfaceType(Interface iface) {
     switch (iface.getType()) {
       case ETHERNET:
         return InterfaceType.PHYSICAL;
@@ -298,28 +279,23 @@ public final class A10Configuration extends VendorConfiguration {
     }
   }
 
-  @Nonnull
-  public static String getInterfaceName(InterfaceReference ref) {
+  public static @Nonnull String getInterfaceName(InterfaceReference ref) {
     return getInterfaceName(ref.getType(), ref.getNumber());
   }
 
-  @Nonnull
-  public static String getInterfaceName(Interface iface) {
+  public static @Nonnull String getInterfaceName(Interface iface) {
     return getInterfaceName(iface.getType(), iface.getNumber());
   }
 
-  @Nonnull
-  public static String getInterfaceName(Interface.Type type, int num) {
+  public static @Nonnull String getInterfaceName(Interface.Type type, int num) {
     return getInterfaceHumanName(type, num).replace(" ", "");
   }
 
-  @Nonnull
-  public static String getInterfaceHumanName(Interface iface) {
+  public static @Nonnull String getInterfaceHumanName(Interface iface) {
     return getInterfaceHumanName(iface.getType(), iface.getNumber());
   }
 
-  @Nonnull
-  public static String getInterfaceHumanName(Interface.Type type, int num) {
+  public static @Nonnull String getInterfaceHumanName(Interface.Type type, int num) {
     if (type == Interface.Type.VE) {
       return String.format("VirtualEthernet %s", num);
     }
@@ -939,8 +915,7 @@ public final class A10Configuration extends VendorConfiguration {
    * Returns the full transformation (DNAT and SNAT if applicable) for the specified virtual-server
    * port.
    */
-  @Nonnull
-  private TransformationStep toTransformationStep(VirtualServerPort port) {
+  private @Nonnull TransformationStep toTransformationStep(VirtualServerPort port) {
     // No service-group means no load balancing
     String serviceGroupName = port.getServiceGroup();
     if (serviceGroupName == null) {
@@ -1146,15 +1121,13 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Get the untagged VLAN for the specified interface, if one exists. */
-  @Nonnull
-  public Optional<Vlan> getUntaggedVlan(Interface iface) {
+  public @Nonnull Optional<Vlan> getUntaggedVlan(Interface iface) {
     InterfaceReference ref = new InterfaceReference(iface.getType(), iface.getNumber());
     return _vlans.values().stream().filter(v -> v.getUntagged().contains(ref)).findFirst();
   }
 
   /** Returns all VLANs associated with the specified tagged interface. */
-  @Nonnull
-  private List<Vlan> getTaggedVlans(Interface iface) {
+  private @Nonnull List<Vlan> getTaggedVlans(Interface iface) {
     InterfaceReference ref = new InterfaceReference(iface.getType(), iface.getNumber());
     return _vlans.values().stream()
         .filter(v -> v.getTagged().contains(ref))
@@ -1178,8 +1151,7 @@ public final class A10Configuration extends VendorConfiguration {
    * Returns the major version number determined for this configuration. Returns {@code null} if no
    * version number could be determined.
    */
-  @Nullable
-  public Integer getMajorVersionNumber() {
+  public @Nullable Integer getMajorVersionNumber() {
     return _majorVersionNumber;
   }
 
@@ -1210,29 +1182,30 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   /** Map of interface names to interface. Used for converting aggregate interfaces. */
-  @Nullable private transient Map<String, Interface> _ifaceNametoIface;
+  private @Nullable transient Map<String, Interface> _ifaceNametoIface;
 
-  @Nonnull private Map<String, AccessList> _accessLists;
-  @Nullable private BgpProcess _bgpProcess;
+  private @Nonnull Map<String, AccessList> _accessLists;
+  private @Nullable BgpProcess _bgpProcess;
   private Configuration _c;
   private @Nonnull Map<Ip, FloatingIp> _floatingIps;
   private @Nullable Ha _ha;
-  @Nonnull private Map<String, HealthMonitor> _healthMonitors;
+  private @Nonnull Map<String, HealthMonitor> _healthMonitors;
   private String _hostname;
+
   /** Hostname as it appears in the config, uncanonicalized */
   private String _rawHostname;
 
-  @Nonnull private Map<Integer, Interface> _interfacesEthernet;
-  @Nonnull private Map<Integer, Interface> _interfacesLoopback;
-  @Nonnull private Map<Integer, TrunkInterface> _interfacesTrunk;
-  @Nonnull private Map<Integer, Interface> _interfacesVe;
-  @Nullable private Integer _majorVersionNumber;
-  @Nonnull private Map<String, NatPool> _natPools;
-  @Nonnull private Map<String, Server> _servers;
-  @Nonnull private Map<String, ServiceGroup> _serviceGroups;
-  @Nonnull private Map<Prefix, StaticRouteManager> _staticRoutes;
-  @Nonnull private Map<String, VirtualServer> _virtualServers;
-  @Nullable private VrrpA _vrrpA;
-  @Nonnull private Map<Integer, Vlan> _vlans;
+  private @Nonnull Map<Integer, Interface> _interfacesEthernet;
+  private @Nonnull Map<Integer, Interface> _interfacesLoopback;
+  private @Nonnull Map<Integer, TrunkInterface> _interfacesTrunk;
+  private @Nonnull Map<Integer, Interface> _interfacesVe;
+  private @Nullable Integer _majorVersionNumber;
+  private @Nonnull Map<String, NatPool> _natPools;
+  private @Nonnull Map<String, Server> _servers;
+  private @Nonnull Map<String, ServiceGroup> _serviceGroups;
+  private @Nonnull Map<Prefix, StaticRouteManager> _staticRoutes;
+  private @Nonnull Map<String, VirtualServer> _virtualServers;
+  private @Nullable VrrpA _vrrpA;
+  private @Nonnull Map<Integer, Vlan> _vlans;
   private ConfigurationFormat _vendor;
 }

@@ -15,13 +15,11 @@ public class OspfVrf implements Serializable {
     _vrfName = name;
   }
 
-  @Nonnull
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 

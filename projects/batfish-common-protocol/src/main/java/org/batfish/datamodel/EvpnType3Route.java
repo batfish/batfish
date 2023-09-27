@@ -26,7 +26,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
   @ParametersAreNonnullByDefault
   public static final class Builder extends EvpnRoute.Builder<Builder, EvpnType3Route> {
 
-    @Nullable private Ip _vniIp;
+    private @Nullable Ip _vniIp;
 
     private Builder() {}
 
@@ -81,21 +81,19 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
       return this;
     }
 
-    @Nullable
-    public Ip getVniIp() {
+    public @Nullable Ip getVniIp() {
       return _vniIp;
     }
 
     @Override
-    @Nonnull
-    public Builder getThis() {
+    public @Nonnull Builder getThis() {
       return this;
     }
   }
 
   private static final String PROP_VNI_IP = "vniIp";
 
-  @Nonnull private final Ip _vniIp;
+  private final @Nonnull Ip _vniIp;
 
   /* Cache the hashcode */
   private transient int _hashCode = 0;
@@ -175,8 +173,7 @@ public final class EvpnType3Route extends EvpnRoute<EvpnType3Route.Builder, Evpn
     _vniIp = vniIp;
   }
 
-  @Nonnull
-  public Ip getVniIp() {
+  public @Nonnull Ip getVniIp() {
     return _vniIp;
   }
 

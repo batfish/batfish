@@ -21,8 +21,7 @@ public final class SchemaUtils {
    * @return The converted object
    * @throws ClassCastException if the conversion fails
    */
-  @Nullable
-  public static Object convertType(JsonNode jsonNode, Schema schema) {
+  public static @Nullable Object convertType(JsonNode jsonNode, Schema schema) {
     if (jsonNode == null || jsonNode.isNull()) {
       return null;
     }

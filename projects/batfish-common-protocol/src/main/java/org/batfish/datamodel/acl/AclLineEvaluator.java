@@ -29,8 +29,7 @@ public class AclLineEvaluator extends Evaluator implements GenericAclLineVisitor
 
   // Override visit in order to explicitly mark it nullable
   @Override
-  @Nullable
-  public LineAction visit(AclLine line) {
+  public @Nullable LineAction visit(AclLine line) {
     return line.accept(this);
   }
 

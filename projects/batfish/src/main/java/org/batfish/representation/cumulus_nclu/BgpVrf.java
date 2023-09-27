@@ -49,8 +49,7 @@ public class BgpVrf implements Serializable {
     _defaultIpv4Unicast = defaultIpv4Unicast;
   }
 
-  @Nullable
-  public Boolean getAsPathMultipathRelax() {
+  public @Nullable Boolean getAsPathMultipathRelax() {
     return _asPathMultipathRelax;
   }
 
@@ -58,8 +57,7 @@ public class BgpVrf implements Serializable {
     _asPathMultipathRelax = asPathMultipathRelax;
   }
 
-  @Nullable
-  public Long getMaxMedAdministrative() {
+  public @Nullable Long getMaxMedAdministrative() {
     return _maxMedAdministrative;
   }
 
@@ -123,8 +121,7 @@ public class BgpVrf implements Serializable {
     _clusterId = clusterId;
   }
 
-  @Nullable
-  public Long getConfederationId() {
+  public @Nullable Long getConfederationId() {
     return _confederationId;
   }
 
@@ -132,8 +129,7 @@ public class BgpVrf implements Serializable {
     _confederationId = confederationId;
   }
 
-  @Nonnull
-  public Map<Prefix, BgpNetwork> getNetworks() {
+  public @Nonnull Map<Prefix, BgpNetwork> getNetworks() {
     return _networks;
   }
 

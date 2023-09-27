@@ -62,18 +62,18 @@ public class AclRule implements Serializable {
   private static final String PROP_PRIORITY = "PRIORITY";
   private static final String PROP_ETHER_TYPE = "ETHER_TYPE";
 
-  private @Nullable final Integer _ipProtocol;
-  private @Nullable final Prefix _dstIp;
-  private @Nullable final Prefix _srcIp;
-  private @Nullable final Integer _l4DstPort;
-  private @Nullable final Integer _l4SrcPort;
-  private @Nullable final Integer _priority;
-  private @Nullable final PacketAction _packetAction;
+  private final @Nullable Integer _ipProtocol;
+  private final @Nullable Prefix _dstIp;
+  private final @Nullable Prefix _srcIp;
+  private final @Nullable Integer _l4DstPort;
+  private final @Nullable Integer _l4SrcPort;
+  private final @Nullable Integer _priority;
+  private final @Nullable PacketAction _packetAction;
 
-  private @Nullable final Integer _etherType;
+  private final @Nullable Integer _etherType;
 
   @JsonCreator
-  private @Nonnull static AclRule create(
+  private static @Nonnull AclRule create(
       @Nullable @JsonProperty(PROP_IP_PROTOCOL) Integer ipProtocol,
       @Nullable @JsonProperty(PROP_DST_IP) Prefix dstIp,
       @Nullable @JsonProperty(PROP_SRC_IP) Prefix srcIp,
@@ -145,7 +145,7 @@ public class AclRule implements Serializable {
         _etherType);
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

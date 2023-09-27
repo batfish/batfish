@@ -16,6 +16,7 @@ public class OspfVr implements Serializable {
 
   /** From PAN admin UI - only shows in running config if checked (as yes). */
   private static final boolean DEFAULT_ENABLE = false;
+
   /** From PAN admin UI - only shows in running config if checked (as no). */
   private static final boolean DEFAULT_REJECT_DEFAULT_ROUTE = true;
 
@@ -29,8 +30,7 @@ public class OspfVr implements Serializable {
     return _areas.computeIfAbsent(areaId, OspfArea::new);
   }
 
-  @Nonnull
-  public Map<Ip, OspfArea> getAreas() {
+  public @Nonnull Map<Ip, OspfArea> getAreas() {
     return _areas;
   }
 
@@ -55,8 +55,7 @@ public class OspfVr implements Serializable {
     _rejectDefaultRoute = rejectDefaultRoute;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 

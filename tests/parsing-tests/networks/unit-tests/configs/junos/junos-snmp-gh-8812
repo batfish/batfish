@@ -1,0 +1,65 @@
+system {
+    host-name junos-snmp-gh-8812;
+    tacplus-server {
+        10.1.0.1 {
+            secret "$9$SECRETSTRINGORSOMETHING"; ## SECRET-DATA
+            timeout 5;
+            single-connection;
+            source-address 192.168.0.1;
+        }
+        10.1.0.2 {
+            secret "$9$SECRETSTRINGORSOMETHING"; ## SECRET-DATA
+            timeout 5;
+            single-connection;
+            source-address 192.168.0.1;
+        }
+    }
+}
+routing-instances {
+    INTERNAL {}
+}
+policy-options {
+    prefix-list PL_TACACS {
+        apply-path "system tacplus-server <*>";
+    }
+}
+snmp {
+    location Datacenter;
+    client-list SNMP_LIST {
+        10.0.0.1/32;
+        10.0.0.2/32;
+        10.0.0.3/32;
+    }
+    community public {
+        authorization read-only;
+        client-list-name SNMP_LIST;
+        routing-instance INTERNAL {
+            client-list-name SNMP_LIST;
+        }
+    }
+    trap-options {
+        routing-instance INTERNAL {
+            source-address lo0;
+        }
+    }
+    trap-group TRAP_GROUP {
+        version v2;
+        categories {
+            authentication;
+            chassis;
+            link;
+            remote-operations;
+            routing;
+            startup;
+            rmon-alarm;
+            vrrp-events;
+            configuration;
+            services;
+        }
+        targets {
+            10.0.0.3;
+        }
+        routing-instance INTERNAL;
+    }
+    routing-instance-access;
+}

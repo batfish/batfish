@@ -107,7 +107,9 @@ public final class Conversions {
   /** Matches anything but the IPv4 default route. */
   static final Not NOT_DEFAULT_ROUTE = new Not(Common.matchDefaultRoute());
 
-  private static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_advbgp.html
+  // Sets the administrative distance for BGP. The range is from 1 to 255.
+  private static final int MAX_ADMINISTRATIVE_COST = 255;
 
   private static final Statement ROUTE_MAP_DENY_STATEMENT =
       new If(
@@ -123,8 +125,8 @@ public final class Conversions {
    * for a description of the algorithm, which is in practice applied per-VRF.
    */
   // See CiscoNxosTest#testRouterId for a test that is verifiable using GNS3.
-  @Nonnull
-  static Ip getBgpRouterId(BgpVrfConfiguration vrfConfig, Configuration c, Vrf vrf, Warnings w) {
+  static @Nonnull Ip getBgpRouterId(
+      BgpVrfConfiguration vrfConfig, Configuration c, Vrf vrf, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
     if (vrfConfig.getRouterId() != null) {
       return vrfConfig.getRouterId();
@@ -134,8 +136,7 @@ public final class Conversions {
   }
 
   /** Infers router ID on Cisco NX-OS when not configured in a routing process */
-  @Nonnull
-  static Ip inferRouterId(
+  static @Nonnull Ip inferRouterId(
       String vrfName, Map<String, Interface> vrfIfaces, Warnings w, String processDesc) {
     String messageBase =
         String.format(
@@ -262,8 +263,7 @@ public final class Conversions {
     // TODO: verify undefined route-map can be treated as omitted
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     attributeMap = generateAttributeMap(bgpGlobal, bgpVrf, attributeMap, c);
@@ -275,8 +275,7 @@ public final class Conversions {
         attributeMap);
   }
 
-  @Nonnull
-  static Map<Ip, BgpActivePeerConfig> getNeighbors(
+  static @Nonnull Map<Ip, BgpActivePeerConfig> getNeighbors(
       Configuration c,
       CiscoNxosConfiguration vsConfig,
       Vrf vrf,
@@ -307,8 +306,7 @@ public final class Conversions {
                             warnings)));
   }
 
-  @Nonnull
-  static Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
+  static @Nonnull Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
       Configuration c,
       CiscoNxosConfiguration vsConfig,
       Vrf vrf,
@@ -339,8 +337,7 @@ public final class Conversions {
                             warnings)));
   }
 
-  @Nullable
-  private static Ip computeUpdateSource(
+  private static @Nullable Ip computeUpdateSource(
       String vrfName,
       Map<String, org.batfish.datamodel.Interface> vrfInterfaces,
       Prefix prefix,
@@ -363,7 +360,7 @@ public final class Conversions {
       }
       return address.getIp();
     } else if (dynamic) {
-      return Ip.AUTO;
+      return null;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
         vrfInterfaces.values().stream()
@@ -400,8 +397,7 @@ public final class Conversions {
     return asns;
   }
 
-  @Nonnull
-  private static BgpPeerConfig toBgpNeighbor(
+  private static @Nonnull BgpPeerConfig toBgpNeighbor(
       Configuration c,
       CiscoNxosConfiguration vsConfig,
       Vrf vrf,
@@ -725,8 +721,8 @@ public final class Conversions {
    * Gets the MAC-VRF ID for the supplied L2 VNI as per
    * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/7-x/vxlan/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x/b_Cisco_Nexus_9000_Series_NX-OS_VXLAN_Configuration_Guide_7x_chapter_0100.html
    */
-  @Nullable
-  private static Integer getMacVrfIdForL2Vni(CiscoNxosConfiguration vsConfig, Integer l2Vni) {
+  private static @Nullable Integer getMacVrfIdForL2Vni(
+      CiscoNxosConfiguration vsConfig, Integer l2Vni) {
     Integer vlanNumber =
         vsConfig.getVlans().values().stream()
             .filter(vlan -> l2Vni.equals(vlan.getVni()))
@@ -742,8 +738,7 @@ public final class Conversions {
   }
 
   /** Get the tenant VRF associated with a L3 VNI */
-  @Nullable
-  static org.batfish.representation.cisco_nxos.Vrf getVrfForL3Vni(
+  static @Nullable org.batfish.representation.cisco_nxos.Vrf getVrfForL3Vni(
       Map<String, org.batfish.representation.cisco_nxos.Vrf> vrfs, int vni) {
     return vrfs.values().stream()
         .filter(vrf -> vrf.getVni() != null && vrf.getVni() == vni)

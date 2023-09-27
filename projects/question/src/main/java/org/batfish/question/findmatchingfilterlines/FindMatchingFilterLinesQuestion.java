@@ -25,13 +25,13 @@ public final class FindMatchingFilterLinesQuestion extends Question {
 
   private static final boolean DEFAULT_IGNORE_COMPOSITES = true;
 
-  @Nullable private final Action _action;
-  @Nullable private final String _filters;
-  @Nonnull private final FilterSpecifier _filterSpecifier;
-  @Nonnull private final PacketHeaderConstraints _headerConstraints;
+  private final @Nullable Action _action;
+  private final @Nullable String _filters;
+  private final @Nonnull FilterSpecifier _filterSpecifier;
+  private final @Nonnull PacketHeaderConstraints _headerConstraints;
   private final boolean _ignoreComposites;
-  @Nullable private final String _nodes;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nullable String _nodes;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
   /** Enum representing options for {@link FindMatchingFilterLinesQuestion#getAction()} */
   public enum Action {
@@ -78,8 +78,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
   }
 
   @JsonProperty(PROP_ACTION)
-  @Nullable
-  public Action getAction() {
+  public @Nullable Action getAction() {
     return _action;
   }
 
@@ -96,8 +95,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
   }
 
   @JsonProperty(PROP_HEADERS)
-  @Nonnull
-  public PacketHeaderConstraints getHeaderConstraints() {
+  public @Nonnull PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }
 
@@ -107,8 +105,7 @@ public final class FindMatchingFilterLinesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  private String getNodes() {
+  private @Nullable String getNodes() {
     return _nodes;
   }
 

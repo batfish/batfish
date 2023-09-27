@@ -90,8 +90,7 @@ public final class BgpProcess implements Serializable {
     _routerId = routerId;
   }
 
-  @Nullable
-  public BgpConfederation getConfederation() {
+  public @Nullable BgpConfederation getConfederation() {
     return _confederation;
   }
 

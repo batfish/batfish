@@ -51,8 +51,7 @@ import org.batfish.representation.aws.TransitGatewayPropagations.Propagation;
 @ParametersAreNonnullByDefault
 final class TransitGateway implements AwsVpcEntity, Serializable {
 
-  @Nonnull
-  public TransitGatewayOptions getOptions() {
+  public @Nonnull TransitGatewayOptions getOptions() {
     return _options;
   }
 
@@ -64,11 +63,11 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     private final boolean _defaultRouteTableAssociation;
 
-    @Nonnull private final String _associationDefaultRouteTableId;
+    private final @Nonnull String _associationDefaultRouteTableId;
 
     private final boolean _defaultRouteTablePropagation;
 
-    @Nonnull private final String _propagationDefaultRouteTableId;
+    private final @Nonnull String _propagationDefaultRouteTableId;
 
     private final boolean _vpnEcmpSupport;
 
@@ -153,8 +152,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return _defaultRouteTableAssociation;
     }
 
-    @Nonnull
-    public String getAssociationDefaultRouteTableId() {
+    public @Nonnull String getAssociationDefaultRouteTableId() {
       return _associationDefaultRouteTableId;
     }
 
@@ -162,8 +160,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       return _defaultRouteTablePropagation;
     }
 
-    @Nonnull
-    public String getPropagationDefaultRouteTableId() {
+    public @Nonnull String getPropagationDefaultRouteTableId() {
       return _propagationDefaultRouteTableId;
     }
 
@@ -214,10 +211,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _gatewayId;
-  @Nonnull private final TransitGatewayOptions _options;
-  @Nonnull private final String _ownerId;
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull String _gatewayId;
+  private final @Nonnull TransitGatewayOptions _options;
+  private final @Nonnull String _ownerId;
+  private final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
   private static TransitGateway create(
@@ -414,7 +411,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     String vrfNameOnVpc = Vpc.vrfNameForLink(attachment.getId());
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId()));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, vpc.getId());
       return;
     }
 
@@ -468,8 +465,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     String vrfNameOnTgw = vrfNameForRouteTable(routeTableId);
     if (!tgwCfg.getVrfs().containsKey(vrfNameOnTgw)) {
-      warnings.redFlag(
-          String.format("VRF %s not found on TGW %s", vrfNameOnTgw, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfNameOnTgw, tgwCfg.getHostname());
       return;
     }
     connect(awsConfiguration, tgwCfg, vrfNameOnTgw, vpcCfg, vrfNameOnVpc, routeTableId);
@@ -503,7 +499,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     String vrfName = vrfNameForRouteTable(attachment.getAssociation().getRouteTableId());
     if (!tgwCfg.getVrfs().containsKey(vrfName)) {
-      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
       return;
     }
     Vrf vrf = tgwCfg.getVrfs().get(vrfName);
@@ -637,28 +633,28 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
-      warnings.redFlag(String.format("VPC configuration node for VPC %s not found", vpc.getId()));
+      warnings.redFlagf("VPC configuration node for VPC %s not found", vpc.getId());
       return;
     }
 
     Interface localIface =
         tgwCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(vpcCfg, table.getId()));
     if (localIface == null) {
-      warnings.redFlag(String.format("Interface facing VPC %s not found on TGW", vpc.getId()));
+      warnings.redFlagf("Interface facing VPC %s not found on TGW", vpc.getId());
       return;
     }
 
     Interface remoteIface =
         vpcCfg.getAllInterfaces().get(Utils.interfaceNameToRemote(tgwCfg, table.getId()));
     if (remoteIface == null) {
-      warnings.redFlag(String.format("Interface facing TGW not found on VPC %s", vpc.getId()));
+      warnings.redFlagf("Interface facing TGW not found on VPC %s", vpc.getId());
       return;
     }
 
     String vrfName = vrfNameForRouteTable(table.getId());
     Vrf tgwVrf = tgwCfg.getVrfs().get(vrfName);
     if (tgwVrf == null) {
-      warnings.redFlag(String.format("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname()));
+      warnings.redFlagf("VRF %s not found on TGW %s", vrfName, tgwCfg.getHostname());
       return;
     }
 
@@ -834,8 +830,7 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     return _gatewayId;
   }
 
-  @Nonnull
-  public String getOwnerId() {
+  public @Nonnull String getOwnerId() {
     return _ownerId;
   }
 

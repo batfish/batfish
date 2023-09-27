@@ -47,29 +47,24 @@ final class BDDFirewallSessionTraceInfo {
     _transformation = transformation;
   }
 
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
-  public SessionScope getSessionScope() {
+  public @Nonnull SessionScope getSessionScope() {
     return _sessionScope;
   }
 
   /** The action to take on return traffic. */
-  @Nonnull
-  public SessionAction getAction() {
+  public @Nonnull SessionAction getAction() {
     return _action;
   }
 
-  @Nonnull
-  public BDD getSessionFlows() {
+  public @Nonnull BDD getSessionFlows() {
     return _sessionFlows;
   }
 
-  @Nonnull
-  public Transition getTransformation() {
+  public @Nonnull Transition getTransformation() {
     return _transformation;
   }
 

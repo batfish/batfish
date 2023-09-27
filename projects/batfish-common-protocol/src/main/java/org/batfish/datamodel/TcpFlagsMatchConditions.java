@@ -96,9 +96,11 @@ public final class TcpFlagsMatchConditions
    */
   public static final TcpFlagsMatchConditions ACK_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setAck(true).build()).setUseAck(true).build();
+
   /** Shorthand for match conditions for a RST (reset) packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions RST_TCP_FLAG =
       builder().setTcpFlags(TcpFlags.builder().setRst(true).build()).setUseRst(true).build();
+
   /** Shorthand for match conditions for a SYN-ACK packet. Other bits are unconstrained. */
   public static final TcpFlagsMatchConditions SYN_ACK_TCP_FLAG =
       builder()
@@ -106,6 +108,7 @@ public final class TcpFlagsMatchConditions
           .setUseAck(true)
           .setUseSyn(true)
           .build();
+
   /** Shorthand for match conditions for a SYN-only packet, with all other bits cleared */
   public static final TcpFlagsMatchConditions SYN_ONLY_TCP_FLAG =
       builder()
@@ -197,8 +200,7 @@ public final class TcpFlagsMatchConditions
   }
 
   @JsonProperty(PROP_TCP_FLAGS)
-  @Nonnull
-  public TcpFlags getTcpFlags() {
+  public @Nonnull TcpFlags getTcpFlags() {
     return _tcpFlags;
   }
 

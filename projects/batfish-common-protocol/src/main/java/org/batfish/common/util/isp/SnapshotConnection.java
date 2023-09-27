@@ -8,8 +8,8 @@ import javax.annotation.Nonnull;
 /** Represents one connection (interface(s), BGP peer) this ISP has to the snapshot */
 final class SnapshotConnection {
 
-  private @Nonnull final List<IspInterface> _interfaces;
-  private @Nonnull final IspBgpPeer _bgpPeer;
+  private final @Nonnull List<IspInterface> _interfaces;
+  private final @Nonnull IspBgpPeer _bgpPeer;
 
   SnapshotConnection(List<IspInterface> interfaces, IspBgpPeer bgpPeer) {
     _interfaces = interfaces;

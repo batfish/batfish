@@ -22,11 +22,11 @@ import net.sf.javabdd.BDDFactory;
 /** Given a finite set of values, assigns each an integer id that can be tracked via BDD. */
 @ParametersAreNonnullByDefault
 public final class BDDFiniteDomain<V> implements Serializable {
-  private @Nonnull final BiMap<V, BDD> _valueToBdd;
-  private @Nonnull final BiMap<BDD, V> _bddToValue;
-  private @Nonnull final BDD _isValidValue;
-  private @Nullable final BDD _varBits;
-  private @Nonnull final ImmutableBDDInteger _var;
+  private final @Nonnull BiMap<V, BDD> _valueToBdd;
+  private final @Nonnull BiMap<BDD, V> _bddToValue;
+  private final @Nonnull BDD _isValidValue;
+  private final @Nullable BDD _varBits;
+  private final @Nonnull ImmutableBDDInteger _var;
 
   /** Allocate a variable sufficient for the given set of values. */
   public BDDFiniteDomain(BDDPacket pkt, String varName, Set<V> values) {
@@ -141,8 +141,7 @@ public final class BDDFiniteDomain<V> implements Serializable {
     return _isValidValue;
   }
 
-  @Nonnull
-  public ImmutableBDDInteger getVar() {
+  public @Nonnull ImmutableBDDInteger getVar() {
     return _var;
   }
 }

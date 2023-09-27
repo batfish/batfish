@@ -28,23 +28,19 @@ public class RoutingInformationBase implements Serializable {
     _staticRoutes = new TreeMap<>();
   }
 
-  @Nonnull
-  public Map<Prefix, AggregateRoute> getAggregateRoutes() {
+  public @Nonnull Map<Prefix, AggregateRoute> getAggregateRoutes() {
     return _aggregateRoutes;
   }
 
-  @Nonnull
-  public Map<Prefix, GeneratedRoute> getGeneratedRoutes() {
+  public @Nonnull Map<Prefix, GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Map<Prefix, StaticRoute> getStaticRoutes() {
+  public @Nonnull Map<Prefix, StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 }

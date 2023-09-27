@@ -193,8 +193,7 @@ public class FileBasedStorage implements StorageProvider {
    * configurations is not already present, then this function returns {@code null}.
    */
   @Override
-  @Nullable
-  public SortedMap<String, Configuration> loadConfigurations(
+  public @Nullable SortedMap<String, Configuration> loadConfigurations(
       NetworkId network, SnapshotId snapshot) {
     Path indepDir = getVendorIndependentConfigDir(network, snapshot);
     // If the directory that would contain these configs does not even exist, no cache exists.
@@ -391,8 +390,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  @Nonnull
-  public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
+  public @Nonnull String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
     Path filePath = getWorkLogPath(network, snapshot, workId);
     if (!Files.exists(filePath)) {
@@ -403,8 +401,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @Override
-  @Nonnull
-  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
+  public @Nonnull String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
     Path filePath = getWorkJsonPath(network, snapshot, workId);
     if (!Files.exists(filePath)) {
@@ -1083,13 +1080,11 @@ public class FileBasedStorage implements StorageProvider {
     return new FileBasedStorage(baseDir, null).getWorkLogPath(network, snapshot, workId);
   }
 
-  @Nonnull
-  private Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
+  private @Nonnull Path getWorkLogPath(NetworkId network, SnapshotId snapshot, String workId) {
     return getSnapshotOutputDir(network, snapshot).resolve(toBase64(workId + SUFFIX_LOG_FILE));
   }
 
-  @Nonnull
-  private Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
+  private @Nonnull Path getWorkJsonPath(NetworkId network, SnapshotId snapshot, String workId) {
     return getSnapshotOutputDir(network, snapshot)
         .resolve(toBase64(workId + SUFFIX_ANSWER_JSON_FILE));
   }
@@ -1214,8 +1209,7 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @MustBeClosed
-  @Nonnull
-  private Stream<Path> list(Path path) throws IOException {
+  private @Nonnull Stream<Path> list(Path path) throws IOException {
     Path sanitizedPath = validatePath(path);
     return Files.list(sanitizedPath);
   }
@@ -1769,8 +1763,7 @@ public class FileBasedStorage implements StorageProvider {
     return getAnswersDir(networkId, snapshotId).resolve(answerId.getId());
   }
 
-  @Nonnull
-  private Path getOldAnswerDir(AnswerId answerId) {
+  private @Nonnull Path getOldAnswerDir(AnswerId answerId) {
     return getOldAnswersDir().resolve(answerId.getId());
   }
 

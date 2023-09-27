@@ -36,7 +36,7 @@ public final class OspfAreaSummary implements Serializable {
   private static final String PROP_BEHAVIOR = "behavior";
 
   private final SummaryRouteBehavior _behavior;
-  @Nullable private final Long _metric;
+  private final @Nullable Long _metric;
 
   @JsonCreator
   private static OspfAreaSummary create(

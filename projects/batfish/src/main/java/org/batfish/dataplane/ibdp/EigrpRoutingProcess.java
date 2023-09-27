@@ -64,46 +64,53 @@ import org.batfish.dataplane.rib.RouteAdvertisement.Reason;
 final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRoute> {
 
   /** Parent process containing configuration */
-  @Nonnull private final EigrpProcess _process;
+  private final @Nonnull EigrpProcess _process;
+
   /** All routing policies present at our parent node */
-  @Nonnull private final RoutingPolicies _routingPolicies;
+  private final @Nonnull RoutingPolicies _routingPolicies;
+
   /** Name of the VRF in which this process resides */
-  @Nonnull private final String _vrfName;
+  private final @Nonnull String _vrfName;
+
   /** Our AS number */
   private final long _asn;
 
   // RIBs and RIB deltas
 
   /** Helper RIB containing EIGRP external paths */
-  @Nonnull private final EigrpExternalRib _externalRib;
+  private final @Nonnull EigrpExternalRib _externalRib;
+
   /** Helper RIB containing all EIGRP paths internal to this router's ASN. */
-  @Nonnull private final EigrpInternalRib _internalRib;
+  private final @Nonnull EigrpInternalRib _internalRib;
+
   /** Helper RIBs containing EIGRP internal and external paths. */
-  @Nonnull private final EigrpRib _rib;
+  private final @Nonnull EigrpRib _rib;
+
   /** A {@link RibDelta} indicating which internal routes we initialized */
-  @Nonnull private RibDelta<EigrpInternalRoute> _initializationDelta;
+  private @Nonnull RibDelta<EigrpInternalRoute> _initializationDelta;
 
   /**
    * A {@link RibDelta} containing delta of the main RIB which will get exported as external routes
    * and get withdrawn/sent in the next iteration
    */
-  @Nonnull private RibDelta<EigrpExternalRoute> _queuedForRedistribution;
+  private @Nonnull RibDelta<EigrpExternalRoute> _queuedForRedistribution;
 
   /** Set of routes to be merged to the main RIB at the end of the iteration */
-  @Nonnull private RibDelta.Builder<EigrpRoute> _changeSet;
+  private @Nonnull RibDelta.Builder<EigrpRoute> _changeSet;
 
   // Message queues
 
   /** Incoming internal route messages into this router from each EIGRP adjacency */
-  @Nonnull
-  private SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
+  private @Nonnull SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpInternalRoute>>>
       _incomingInternalRoutes;
+
   /** Incoming external route messages into this router from each EIGRP adjacency */
   @Nonnull @VisibleForTesting
   SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingExternalRoutes;
 
   /** Current known EIGRP topology */
-  @Nonnull private EigrpTopology _topology;
+  private @Nonnull EigrpTopology _topology;
+
   /** Set of edges in the topology that are new in the current iteration */
   private Collection<EigrpEdge> _edgesWentUp = ImmutableSet.of();
 
@@ -275,8 +282,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return builder.build();
   }
 
-  @Nonnull
-  private RibDelta<EigrpInternalRoute> processInternalRoutes(NetworkConfigurations nc) {
+  private @Nonnull RibDelta<EigrpInternalRoute> processInternalRoutes(NetworkConfigurations nc) {
     // TODO: simplify all this later. Copied from old code
     Builder<EigrpInternalRoute> deltaBuilder = RibDelta.builder();
     _incomingInternalRoutes.forEach(
@@ -346,8 +352,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     return allowed ? Optional.of(outputBuilder.build()) : Optional.empty();
   }
 
-  @Nonnull
-  private RibDelta<EigrpExternalRoute> processExternalRoutes(NetworkConfigurations nc) {
+  private @Nonnull RibDelta<EigrpExternalRoute> processExternalRoutes(NetworkConfigurations nc) {
     RibDelta.Builder<EigrpExternalRoute> deltaBuilder = RibDelta.builder();
     _incomingExternalRoutes.forEach(
         (edge, queue) -> processExternalRoutesFromNeighbor(nc, deltaBuilder, edge, queue));
@@ -485,8 +490,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   /** Filter (and transform) a RibDelta of external routes to ones allowed by export policy */
-  @Nonnull
-  private RibDelta<EigrpExternalRoute> filterExternalRoutes(
+  private @Nonnull RibDelta<EigrpExternalRoute> filterExternalRoutes(
       RibDelta<EigrpExternalRoute> routes, EigrpEdge eigrpEdge) {
     // TODO: this is likely inefficient. optimize
     return RibDelta.<EigrpExternalRoute>builder()
@@ -546,8 +550,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   /**
    * Gets the {@link RoutingPolicy} used by a given {@link EigrpNeighborConfigId neighborConfigId}
    */
-  @Nonnull
-  private RoutingPolicy getOwnExportPolicy(EigrpNeighborConfigId neighborConfigId) {
+  private @Nonnull RoutingPolicy getOwnExportPolicy(EigrpNeighborConfigId neighborConfigId) {
     EigrpNeighborConfig neighborConfig =
         _process.getNeighbors().get(neighborConfigId.getInterfaceName());
     assert neighborConfig != null;
@@ -560,8 +563,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    * @param potentialExportRoute Route to consider exporting
    * @return The computed export route or null if the export policy denies the route
    */
-  @Nullable
-  private EigrpExternalRoute computeEigrpExportRoute(
+  private @Nullable EigrpExternalRoute computeEigrpExportRoute(
       RoutingPolicy exportPolicy, AnnotatedRoute<AbstractRoute> potentialExportRoute) {
     AbstractRoute unannotatedPotentialRoute = potentialExportRoute.getRoute();
     EigrpExternalRoute.Builder outputRouteBuilder =
@@ -623,8 +625,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
   }
 
   /** Returns all incoming edges as a stream */
-  @Nonnull
-  private Stream<EigrpEdge> getIncomingEdgeStream(EigrpTopology eigrpTopology) {
+  private @Nonnull Stream<EigrpEdge> getIncomingEdgeStream(EigrpTopology eigrpTopology) {
     Network<EigrpNeighborConfigId, EigrpEdge> graph = eigrpTopology.getNetwork();
     return _process.getNeighbors().values().stream()
         .map(EigrpNeighborConfig::getId)
@@ -637,8 +638,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
    *
    * @throws IllegalStateException if the EIGRP process cannot be found
    */
-  @Nonnull
-  private static EigrpRoutingProcess getNeighborEigrpProcess(
+  private static @Nonnull EigrpRoutingProcess getNeighborEigrpProcess(
       Map<String, Node> allNodes, EigrpEdge edge, long asn) {
     return Optional.ofNullable(allNodes.get(edge.getNode1().getHostname()))
         .map(n -> n.getVirtualRouterOrThrow(edge.getNode1().getVrf()))

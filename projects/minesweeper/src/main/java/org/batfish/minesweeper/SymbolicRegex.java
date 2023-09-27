@@ -7,14 +7,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 /** A representation of a regular expression for symbolic route analysis. */
 @ParametersAreNonnullByDefault
 public abstract class SymbolicRegex {
-  @Nonnull protected final String _regex;
+  protected final @Nonnull String _regex;
 
   public SymbolicRegex(String regex) {
     _regex = toAutomatonRegex(regex);
   }
 
-  @Nonnull
-  public String getRegex() {
+  public @Nonnull String getRegex() {
     return _regex;
   }
 
@@ -28,8 +27,7 @@ public abstract class SymbolicRegex {
 
   // modify the given regex to conform to the grammar of the Automaton library that we use to
   // analyze regexes
-  @Nonnull
-  private String toAutomatonRegex(String regex) {
+  private @Nonnull String toAutomatonRegex(String regex) {
     // the Automaton library does not support the character class \d
     return regex.replace("\\d", "[0-9]");
   }

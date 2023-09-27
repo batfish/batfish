@@ -120,8 +120,7 @@ class RouteMapConvertor {
     return _c.getRoutingPolicies().get(_routeMap.getName());
   }
 
-  @Nullable
-  private Statement convertCallStatement(RouteMapEntry entry) {
+  private @Nullable Statement convertCallStatement(RouteMapEntry entry) {
     RouteMapCall callStmt = entry.getCall();
     if (callStmt == null || !_vc.getRouteMaps().containsKey(callStmt.getRouteMapName())) {
       return null;

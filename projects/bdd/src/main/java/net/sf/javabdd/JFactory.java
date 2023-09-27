@@ -65,6 +65,7 @@ import org.apache.logging.log4j.Logger;
  */
 public class JFactory extends BDDFactory implements Serializable {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
+
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
   private static final boolean CACHESTATS = false;
 
@@ -119,6 +120,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /** The total number of BDDs ever created. */
   private long madeBDDs;
+
   /** The total number of BDDs ever freed. */
   private long freedBDDs;
 
@@ -508,6 +510,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final int offset__hash = 3;
   private static final int offset__next = 4;
   private static final int __node_size = 5;
+
   /**
    * The maximum number of BDD nodes that can {@link #bddnodesize} can ever be measured is the
    * largest array that can be allocated.
@@ -695,6 +698,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private int gbcollectnum; /* Number of garbage collections */
   private int cachesize; /* Size of the operator caches */
   private long gbcclock; /* Clock ticks used in GBC */
+
   /** Total millis used in resizing */
   private long sumResizeTime;
 
@@ -4390,7 +4394,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int supportID; /* Current ID (true value) for support */
   private transient int supportMin; /* Min. used level in support calc. */
   private transient int supportMax; /* Max. used level in support calc. */
-  @Nonnull private transient int[] supportSet; /* The found support set */
+  private @Nonnull transient int[] supportSet; /* The found support set */
   private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
   private transient BddCache quantcache; /* Cache for exist/forall results */
   private transient BddCache appexcache; /* Cache for appex/appall results */
@@ -4400,6 +4404,7 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
   private transient int satPolarity;
+
   /* Used instead of local variable in order
   to avoid compiler warning about 'first'
   being clobbered by setjmp */

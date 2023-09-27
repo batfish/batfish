@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class AaaServerGroup implements Serializable {
 
-  private @Nonnull final String _name;
+  private final @Nonnull String _name;
   private @Nonnull List<String> _privateServers;
   private @Nonnull List<String> _servers;
 
@@ -36,18 +36,15 @@ public abstract class AaaServerGroup implements Serializable {
             .build();
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public List<String> getPrivateServers() {
+  public @Nonnull List<String> getPrivateServers() {
     return _privateServers;
   }
 
-  @Nonnull
-  public List<String> getServers() {
+  public @Nonnull List<String> getServers() {
     return _servers;
   }
 }

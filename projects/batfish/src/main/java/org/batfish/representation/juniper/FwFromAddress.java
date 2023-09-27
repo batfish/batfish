@@ -15,8 +15,8 @@ import org.batfish.representation.juniper.FwTerm.Field;
 /** Class for firewall filter from address */
 public final class FwFromAddress implements FwFrom {
 
-  @Nonnull private final String _description;
-  @Nonnull private final IpWildcard _ipWildcard;
+  private final @Nonnull String _description;
+  private final @Nonnull IpWildcard _ipWildcard;
 
   /**
    * Creates a new {@link FwFromAddress}, matching the given {@link IpWildcard} and using the given

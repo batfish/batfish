@@ -15,18 +15,15 @@ public class OspfArea implements Serializable {
     _interfaces = new HashMap<>();
   }
 
-  @Nonnull
-  public OspfInterface getOrCreateOspfInterface(String ifaceName) {
+  public @Nonnull OspfInterface getOrCreateOspfInterface(String ifaceName) {
     return _interfaces.computeIfAbsent(ifaceName, OspfInterface::new);
   }
 
-  @Nonnull
-  public Map<String, OspfInterface> getInterfaces() {
+  public @Nonnull Map<String, OspfInterface> getInterfaces() {
     return _interfaces;
   }
 
-  @Nullable
-  public OspfAreaTypeSettings getTypeSettings() {
+  public @Nullable OspfAreaTypeSettings getTypeSettings() {
     return _typeSettings;
   }
 
@@ -34,8 +31,7 @@ public class OspfArea implements Serializable {
     _typeSettings = typeSettings;
   }
 
-  @Nonnull
-  public Ip getAreaId() {
+  public @Nonnull Ip getAreaId() {
     return _areaId;
   }
 

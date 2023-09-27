@@ -36,6 +36,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
         HasReadableClusterList,
         HasReadableCommunities,
         HasReadableLocalPreference,
+        HasReadableOriginatorIp,
         HasReadableOriginType,
         HasReadableSourceProtocol,
         HasReadableWeight {
@@ -177,10 +178,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     /////
     /** Non-null */
     protected final byte _originMechanism;
+
     /** Non-null */
     protected final byte _originType;
+
     /** Non-null */
     protected final byte _protocol;
+
     /** -1 for null */
     protected final byte _srcProtocol;
 
@@ -229,24 +233,25 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
           HasWritableClusterList<B, R>,
           HasWritableCommunities<B, R>,
           HasWritableLocalPreference<B, R>,
+          HasWritableOriginatorIp<B, R>,
           HasWritableOriginType<B, R>,
           HasWritableWeight<B, R> {
 
-    @Nonnull protected AsPath _asPath;
+    protected @Nonnull AsPath _asPath;
     // Invariant: either immutable or a local copy shielded from external mutations.
-    @Nonnull protected Set<Long> _clusterList;
-    @Nonnull protected CommunitySet _communities;
+    protected @Nonnull Set<Long> _clusterList;
+    protected @Nonnull CommunitySet _communities;
     protected long _localPreference;
-    @Nullable protected Ip _originatorIp;
-    @Nullable protected OriginMechanism _originMechanism;
-    @Nullable protected OriginType _originType;
-    @Nullable protected Integer _pathId;
-    @Nullable protected RoutingProtocol _protocol;
-    @Nullable protected ReceivedFrom _receivedFrom;
+    protected @Nullable Ip _originatorIp;
+    protected @Nullable OriginMechanism _originMechanism;
+    protected @Nullable OriginType _originType;
+    protected @Nullable Integer _pathId;
+    protected @Nullable RoutingProtocol _protocol;
+    protected @Nullable ReceivedFrom _receivedFrom;
 
     protected boolean _receivedFromRouteReflectorClient;
-    @Nullable protected RoutingProtocol _srcProtocol;
-    @Nullable protected TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    protected @Nullable RoutingProtocol _srcProtocol;
+    protected @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     protected int _weight;
 
     protected Builder() {
@@ -267,8 +272,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     to create a completely new builder which should be of the same type as environment's output
     route builder but we are not sure of the concrete type and only know that it extends the
     abstract BgpRoute's builder. */
-    @Nonnull
-    public abstract B newBuilder();
+    public @Nonnull abstract B newBuilder();
 
     @Nonnull
     @Override
@@ -304,8 +308,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _localPreference;
     }
 
-    @Nullable
-    public Ip getOriginatorIp() {
+    @Override
+    public @Nullable Ip getOriginatorIp() {
       return _originatorIp;
     }
 
@@ -319,19 +323,16 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _originType;
     }
 
-    @Nullable
-    public Integer getPathId() {
+    public @Nullable Integer getPathId() {
       return _pathId;
     }
 
-    @Nullable
-    public RoutingProtocol getProtocol() {
+    public @Nullable RoutingProtocol getProtocol() {
       return _protocol;
     }
 
     @Override
-    @Nonnull
-    protected abstract B getThis();
+    protected @Nonnull abstract B getThis();
 
     @Override
     public int getWeight() {
@@ -414,13 +415,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    public B setOriginatorIp(Ip originatorIp) {
+    @Override
+    public @Nonnull B setOriginatorIp(Ip originatorIp) {
       _originatorIp = originatorIp;
       return getThis();
     }
 
-    @Nonnull
-    public B setOriginMechanism(OriginMechanism originMechanism) {
+    public @Nonnull B setOriginMechanism(OriginMechanism originMechanism) {
       _originMechanism = originMechanism;
       return getThis();
     }
@@ -457,8 +458,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    @Nonnull
-    public B setTunnelEncapsulationAttribute(
+    public @Nonnull B setTunnelEncapsulationAttribute(
         @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
       _tunnelEncapsulationAttribute = tunnelEncapsulationAttribute;
       return getThis();
@@ -568,9 +568,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes._med;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGINATOR_IP)
-  public Ip getOriginatorIp() {
+  @Override
+  public @Nonnull Ip getOriginatorIp() {
     return _attributes._originatorIp;
   }
 
@@ -606,8 +606,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   @JsonProperty(PROP_RECEIVED_FROM)
-  @Nonnull
-  public ReceivedFrom getReceivedFrom() {
+  public @Nonnull ReceivedFrom getReceivedFrom() {
     return _receivedFrom;
   }
 

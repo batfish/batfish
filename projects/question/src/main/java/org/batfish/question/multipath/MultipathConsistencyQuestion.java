@@ -25,9 +25,9 @@ public class MultipathConsistencyQuestion extends Question {
   private static final String PROP_MAX_TRACES = "maxTraces";
   private static final String PROP_PATH_CONSTRAINTS = "pathConstraints";
 
-  @Nonnull private final PacketHeaderConstraints _headerConstraints;
+  private final @Nonnull PacketHeaderConstraints _headerConstraints;
   private final int _maxTraces;
-  @Nonnull private final PathConstraintsInput _pathConstraints;
+  private final @Nonnull PathConstraintsInput _pathConstraints;
 
   @JsonCreator
   public MultipathConsistencyQuestion(

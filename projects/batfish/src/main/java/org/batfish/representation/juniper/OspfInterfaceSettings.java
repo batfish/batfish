@@ -28,14 +28,14 @@ public class OspfInterfaceSettings implements Serializable {
     P2P
   }
 
-  @Nonnull private final Ip _ospfArea;
-  @Nullable private Integer _ospfCost;
-  @Nullable private Integer _ospfDeadInterval;
-  @Nullable private Boolean _ospfDisable;
-  @Nullable private Integer _ospfHelloInterval;
-  @Nullable private OspfInterfaceType _ospfInterfaceType;
+  private final @Nonnull Ip _ospfArea;
+  private @Nullable Integer _ospfCost;
+  private @Nullable Integer _ospfDeadInterval;
+  private @Nullable Boolean _ospfDisable;
+  private @Nullable Integer _ospfHelloInterval;
+  private @Nullable OspfInterfaceType _ospfInterfaceType;
   private boolean _ospfPassive;
-  @Nonnull private final Set<InterfaceOspfNeighbor> _ospfNeighbors;
+  private final @Nonnull Set<InterfaceOspfNeighbor> _ospfNeighbors;
 
   public OspfInterfaceSettings(Ip ospfArea) {
     _ospfArea = ospfArea;

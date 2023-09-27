@@ -321,6 +321,7 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -2945,6 +2946,11 @@ public final class FlatJuniperGrammarTest {
             .filter(gr -> gr.getNetwork().equals(Prefix.parse("3.0.0.0/8")))
             .findAny()
             .get();
+    GeneratedRoute gr4 =
+        generatedRoutes.stream()
+            .filter(gr -> gr.getNetwork().equals(Prefix.parse("4.4.4.4/32")))
+            .findAny()
+            .get();
 
     // policies should be generated only for the active ones
     assertThat(
@@ -2970,6 +2976,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(gr1.getDiscard(), equalTo(false));
     assertThat(gr2.getDiscard(), equalTo(false));
     assertThat(gr3.getDiscard(), equalTo(false));
+    assertThat(gr4.getDiscard(), equalTo(false));
   }
 
   @Test
@@ -2983,6 +2990,20 @@ public final class FlatJuniperGrammarTest {
             .getCommunities()
             .getCommunities(),
         contains(StandardCommunity.of(65537L)));
+  }
+
+  /**
+   * When local-address of a BGP peer group is unconfigured and default-address-selection flag is
+   * on, BGP peer local IP is null and the VRF's source IP inference is set to use loopback IP.
+   */
+  @Test
+  public void testBgpDefaultAddressSelection() throws IOException {
+    Configuration config = parseConfig("bgp-default-address-selection");
+    Ip loopback = Ip.parse("1.1.1.1");
+    assertEquals(config.getDefaultVrf().getSourceIpInference(), UseConstantIp.create(loopback));
+    assertThat(
+        getOnlyElement(config.getDefaultVrf().getBgpProcess().getAllPeerConfigs()).getLocalIp(),
+        nullValue());
   }
 
   @Test
@@ -4697,9 +4718,13 @@ public final class FlatJuniperGrammarTest {
     result =
         networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("7.7.7.0/23")).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
+    // exact /32 for ip address should match
+    result =
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("9.9.9.9/32")).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
     // random prefix should not match
     result =
-        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("9.9.9.0/24")).build()));
+        networkPolicy.call(envWithRoute(c, srb.setNetwork(Prefix.parse("99.99.99.0/24")).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
 
     /*
@@ -5228,8 +5253,8 @@ public final class FlatJuniperGrammarTest {
     Ip pool1Start = Prefix.parse("10.10.10.10/24").getFirstHostIp();
     Ip pool1End = Prefix.parse("10.10.10.10/24").getLastHostIp();
 
-    Ip pool2Start = Ip.parse("10.10.10.10");
-    Ip pool2End = Ip.parse("10.10.10.20");
+    Ip pool5Start = Ip.parse("50.50.50.50");
+    Ip pool5End = Ip.parse("50.50.50.60");
 
     Transformation ruleSetRIRule1Transformation =
         when(match(
@@ -5253,7 +5278,7 @@ public final class FlatJuniperGrammarTest {
                     .setDstIps(new IpSpaceReference("global~DA-NAME"))
                     .setSrcIps(Prefix.parse("2.2.2.2/24").toIpSpace())
                     .build()))
-            .apply(assignDestinationIp(pool2Start, pool2End))
+            .apply(assignDestinationIp(pool5Start, pool5End))
             .setOrElse(ruleSetZoneRule3Transformation)
             .build();
 
@@ -5291,15 +5316,37 @@ public final class FlatJuniperGrammarTest {
 
     // test pools
     Map<String, NatPool> pools = nat.getPools();
-    assertThat(pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2")));
+    assertThat(
+        pools.keySet(), equalTo(ImmutableSet.of("POOL1", "POOL2", "POOL3", "POOL4", "POOL5")));
 
     NatPool pool1 = pools.get("POOL1");
     assertThat(pool1.getFromAddress(), equalTo(Ip.parse("10.10.10.1")));
     assertThat(pool1.getToAddress(), equalTo(Ip.parse("10.10.10.254")));
+    assertThat(pool1.getPortAddressTranslation(), nullValue());
 
     NatPool pool2 = pools.get("POOL2");
-    assertThat(pool2.getFromAddress(), equalTo(Ip.parse("10.10.10.10")));
-    assertThat(pool2.getToAddress(), equalTo(Ip.parse("10.10.10.20")));
+    assertThat(pool2.getFromAddress(), equalTo(Ip.parse("20.20.20.1")));
+    assertThat(pool2.getToAddress(), equalTo(Ip.parse("20.20.20.254")));
+    assertThat(pool2.getPortAddressTranslation(), instanceOf(PatPool.class));
+    PatPool pat2 = (PatPool) pool2.getPortAddressTranslation();
+    assertThat(pat2.getToPort(), allOf(equalTo(pat2.getFromPort()), equalTo(22)));
+
+    NatPool pool3 = pools.get("POOL3");
+    assertThat(pool3.getFromAddress(), equalTo(Ip.parse("30.30.30.30")));
+    assertThat(pool3.getToAddress(), equalTo(Ip.parse("30.30.30.30")));
+    assertThat(pool3.getPortAddressTranslation(), nullValue());
+
+    NatPool pool4 = pools.get("POOL4");
+    assertThat(pool4.getFromAddress(), equalTo(Ip.parse("40.40.40.40")));
+    assertThat(pool4.getToAddress(), equalTo(Ip.parse("40.40.40.40")));
+    assertThat(pool4.getPortAddressTranslation(), instanceOf(PatPool.class));
+    PatPool pat4 = (PatPool) pool4.getPortAddressTranslation();
+    assertThat(pat4.getToPort(), allOf(equalTo(pat4.getFromPort()), equalTo(44)));
+
+    NatPool pool5 = pools.get("POOL5");
+    assertThat(pool5.getFromAddress(), equalTo(Ip.parse("50.50.50.50")));
+    assertThat(pool5.getToAddress(), equalTo(Ip.parse("50.50.50.60")));
+    assertThat(pool5.getPortAddressTranslation(), nullValue());
 
     // test rule sets
     Map<String, NatRuleSet> ruleSets = nat.getRuleSets();
@@ -5353,7 +5400,7 @@ public final class FlatJuniperGrammarTest {
         contains(
             new NatRuleMatchSrcAddr(Prefix.parse("2.2.2.2/24")),
             new NatRuleMatchDstAddrName("DA-NAME")));
-    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL2")));
+    assertThat(rule2.getThen(), equalTo(new NatRuleThenPool("POOL5")));
 
     // test rule3
     NatRule rule3 = rules.get(2);
@@ -6150,6 +6197,12 @@ public final class FlatJuniperGrammarTest {
                             .setNextHopIp(Ip.parse("1.2.3.5"))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("11.0.0.0/32"))
+                            .setNextHopIp(Ip.parse("1.2.3.6"))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -6265,14 +6318,22 @@ public final class FlatJuniperGrammarTest {
   public void testSnmpClientIps() {
     Configuration c = parseConfig("snmp");
     Map<String, SnmpCommunity> communities = c.getDefaultVrf().getSnmpServer().getCommunities();
+    assertThat(communities, hasKeys("COMM1", "COMM2"));
     {
-      assertThat(communities, hasKey("COMM1"));
       SnmpCommunity comm = communities.get("COMM1");
       assertThat(
           comm.getClientIps(),
           equalTo(
               AclIpSpace.union(
                   Prefix.parse("1.2.3.4/31").toIpSpace(), Prefix.parse("10.0.0.0/8").toIpSpace())));
+    }
+    {
+      SnmpCommunity comm = communities.get("COMM2");
+      assertThat(
+          comm.getClientIps(),
+          equalTo(
+              AclIpSpace.union(
+                  Ip.parse("2.3.4.5").toIpSpace(), Prefix.parse("20.0.0.0/8").toIpSpace())));
     }
   }
 

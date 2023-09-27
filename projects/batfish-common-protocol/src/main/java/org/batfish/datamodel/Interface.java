@@ -54,21 +54,21 @@ public final class Interface extends ComparableStructure<String> {
     private @Nonnull Map<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
     private @Nullable IntegerSpace _allowedVlans;
     private boolean _autoState;
-    @Nullable private Double _bandwidth;
+    private @Nullable Double _bandwidth;
     private @Nullable String _channelGroup;
     private @Nonnull SortedSet<String> _channelGroupMembers;
     private SortedSet<String> _declaredNames;
-    @Nonnull private Set<Dependency> _dependencies = ImmutableSet.of();
-    @Nullable private String _description;
+    private @Nonnull Set<Dependency> _dependencies = ImmutableSet.of();
+    private @Nullable String _description;
     private @Nonnull SortedSet<Ip> _dhcpRelayAddresses;
-    @Nullable private EigrpInterfaceSettings _eigrp;
-    @Nullable private Integer _encapsulationVlan;
+    private @Nullable EigrpInterfaceSettings _eigrp;
+    private @Nullable Integer _encapsulationVlan;
     private boolean _hmm;
     private Map<Integer, HsrpGroup> _hsrpGroups;
     private String _hsrpVersion;
     private @Nullable String _humanName;
     private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
-    @Nullable private IpAccessList _incomingFilter;
+    private @Nullable IpAccessList _incomingFilter;
     private Transformation _incomingTransformation;
     private IsisInterfaceSettings _isis;
     private @Nullable Boolean _lineUp;
@@ -78,20 +78,20 @@ public final class Interface extends ComparableStructure<String> {
     private @Nullable Supplier<String> _nameGenerator;
     private @Nullable Integer _nativeVlan;
     private OspfInterfaceSettings _ospfSettings;
-    @Nullable private IpAccessList _outgoingFilter;
-    @Nullable private IpAccessList _outgoingOriginalFlowFilter;
+    private @Nullable IpAccessList _outgoingFilter;
+    private @Nullable IpAccessList _outgoingOriginalFlowFilter;
     private Transformation _outgoingTransformation;
     private Configuration _owner;
     private String _packetPolicy;
-    @Nullable private IpAccessList _postTransformationIncomingFilter;
+    private @Nullable IpAccessList _postTransformationIncomingFilter;
     private boolean _proxyArp;
-    @Nullable private IpAccessList _preTransformationOutgoingFilter;
+    private @Nullable IpAccessList _preTransformationOutgoingFilter;
     private Set<? extends InterfaceAddress> _secondaryAddresses;
     private @Nullable Double _speed;
     private @Nullable Boolean _switchport;
     private @Nullable SwitchportMode _switchportMode;
     private @Nonnull IpSpace _additionalArpIps;
-    @Nullable private TunnelConfiguration _tunnelConfig;
+    private @Nullable TunnelConfiguration _tunnelConfig;
     private InterfaceType _type;
     private @Nullable Integer _vlan;
     private Vrf _vrf;
@@ -536,8 +536,8 @@ public final class Interface extends ComparableStructure<String> {
    */
   @ParametersAreNonnullByDefault
   public static final class Dependency implements Serializable {
-    @Nonnull private final String _interfaceName;
-    @Nonnull private final DependencyType _type;
+    private final @Nonnull String _interfaceName;
+    private final @Nonnull DependencyType _type;
 
     public Dependency(String interfaceName, DependencyType type) {
       _interfaceName = interfaceName;
@@ -548,13 +548,11 @@ public final class Interface extends ComparableStructure<String> {
      * Note that the named interface may not actually exist on the device, e.g., if the user
      * configured a tunnel update-source that does not exist.
      */
-    @Nonnull
-    public String getInterfaceName() {
+    public @Nonnull String getInterfaceName() {
       return _interfaceName;
     }
 
-    @Nonnull
-    public DependencyType getType() {
+    public @Nonnull DependencyType getType() {
       return _type;
     }
 
@@ -922,55 +920,58 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
-  @Nullable private Integer _accessVlan;
+  private @Nullable Integer _accessVlan;
   private boolean _active;
   private @Nonnull IpSpace _additionalArpIps;
   private boolean _adminUp;
   private @Nonnull IntegerSpace _allowedVlans;
-  @Nonnull private SortedSet<InterfaceAddress> _allAddresses;
-  @Nonnull private SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
+  private @Nonnull SortedSet<InterfaceAddress> _allAddresses;
+  private @Nonnull SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> _addressMetadata;
+
   /** Cache of all concrete addresses */
-  @Nullable private transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+  private @Nullable transient Set<ConcreteInterfaceAddress> _allConcreteAddresses;
+
   /** Cache of all link-local addresses */
-  @Nullable private transient Set<LinkLocalAddress> _allLinkLocalAddresses;
+  private @Nullable transient Set<LinkLocalAddress> _allLinkLocalAddresses;
 
   private boolean _autoState;
-  @Nullable private Double _bandwidth;
+  private @Nullable Double _bandwidth;
   private @Nullable Boolean _blacklisted;
   private String _channelGroup;
   private SortedSet<String> _channelGroupMembers;
   private String _cryptoMap;
   private SortedSet<String> _declaredNames;
+
   /** Set of interface dependencies required for this interface to active */
-  @Nonnull private Set<Dependency> _dependencies;
+  private @Nonnull Set<Dependency> _dependencies;
 
   private String _description;
   private List<Ip> _dhcpRelayAddresses;
-  @Nullable private EigrpInterfaceSettings _eigrp;
-  @Nullable private Integer _encapsulationVlan;
-  @Nullable private FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
+  private @Nullable EigrpInterfaceSettings _eigrp;
+  private @Nullable Integer _encapsulationVlan;
+  private @Nullable FirewallSessionInterfaceInfo _firewallSessionInterfaceInfo;
   private boolean _hmm;
   private Map<Integer, HsrpGroup> _hsrpGroups;
   private @Nullable String _humanName;
   private @Nullable InactiveReason _inactiveReason;
-  @Nullable private String _inboundFilterName;
-  @Nullable private String _incomingFilterName;
+  private @Nullable String _inboundFilterName;
+  private @Nullable String _incomingFilterName;
   private Transformation _incomingTransformation;
   private InterfaceType _interfaceType;
   private IsisInterfaceSettings _isis;
   private @Nullable Boolean _lineUp;
-  @Nullable private Integer _mlagId;
+  private @Nullable Integer _mlagId;
   private int _mtu;
-  @Nullable private Integer _nativeVlan;
-  @Nullable private OspfInterfaceSettings _ospfSettings;
-  @Nullable private String _outgoingFilterName;
-  @Nullable private String _outgoingOriginalFlowFilterName;
+  private @Nullable Integer _nativeVlan;
+  private @Nullable OspfInterfaceSettings _ospfSettings;
+  private @Nullable String _outgoingFilterName;
+  private @Nullable String _outgoingOriginalFlowFilterName;
   private Transformation _outgoingTransformation;
   private Configuration _owner;
   private InterfaceAddress _address;
-  @Nullable private String _postTransformationIncomingFilterName;
+  private @Nullable String _postTransformationIncomingFilterName;
   private boolean _proxyArp;
-  @Nullable private String _preTransformationOutgoingFilterName;
+  private @Nullable String _preTransformationOutgoingFilterName;
   private boolean _ripEnabled;
   private boolean _ripPassive;
   private String _packetPolicyName;
@@ -979,7 +980,7 @@ public final class Interface extends ComparableStructure<String> {
   private boolean _switchport;
   private SwitchportMode _switchportMode;
   private SwitchportEncapsulationType _switchportTrunkEncapsulation;
-  @Nullable private TunnelConfiguration _tunnelConfig;
+  private @Nullable TunnelConfiguration _tunnelConfig;
   private Integer _vlan;
   private Vrf _vrf;
   private transient String _vrfName;
@@ -1148,8 +1149,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** Number of access VLAN when switchport mode is ACCESS. */
   @JsonProperty(PROP_ACCESS_VLAN)
-  @Nullable
-  public Integer getAccessVlan() {
+  public @Nullable Integer getAccessVlan() {
     return _accessVlan;
   }
 
@@ -1165,8 +1165,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_ADDRESS_METADATA)
-  @Nonnull
-  public SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> getAddressMetadata() {
+  public @Nonnull SortedMap<ConcreteInterfaceAddress, ConnectedRouteMetadata> getAddressMetadata() {
     return _addressMetadata;
   }
 
@@ -1213,8 +1212,7 @@ public final class Interface extends ComparableStructure<String> {
     return _allLinkLocalAddresses;
   }
 
-  @Nonnull
-  public Set<InterfaceAddress> getAllAddresses() {
+  public @Nonnull Set<InterfaceAddress> getAllAddresses() {
     return _allAddresses;
   }
 
@@ -1229,8 +1227,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The nominal bandwidth of this interface in bits/sec for use in protocol cost calculations. */
   @JsonProperty(PROP_BANDWIDTH)
-  @Nullable
-  public Double getBandwidth() {
+  public @Nullable Double getBandwidth() {
     return _bandwidth;
   }
 
@@ -1266,8 +1263,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** Return the set of interfaces this interface depends on (see {@link Dependency}). */
   @JsonIgnore
-  @Nonnull
-  public Set<Dependency> getDependencies() {
+  public @Nonnull Set<Dependency> getDependencies() {
     return _dependencies;
   }
 
@@ -1327,8 +1323,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  @Nullable
-  public IpAccessList getInboundFilter() {
+  public @Nullable IpAccessList getInboundFilter() {
     return getIpAccessList(_inboundFilterName);
   }
 
@@ -1366,8 +1361,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonProperty(PROP_MLAG_ID)
-  @Nullable
-  public Integer getMlagId() {
+  public @Nullable Integer getMlagId() {
     return _mlagId;
   }
 
@@ -1379,8 +1373,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The native VLAN of this interface when switchport mode is TRUNK. */
   @JsonProperty(PROP_NATIVE_VLAN)
-  @Nullable
-  public Integer getNativeVlan() {
+  public @Nullable Integer getNativeVlan() {
     return _nativeVlan;
   }
 
@@ -1393,15 +1386,13 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The OSPF area to which this interface belongs. */
   @JsonIgnore
-  @Nullable
-  public Long getOspfAreaName() {
+  public @Nullable Long getOspfAreaName() {
     return (_ospfSettings != null) ? _ospfSettings.getAreaName() : null;
   }
 
   /** The explicit OSPF cost of this interface. If unset, the cost is automatically calculated. */
   @JsonIgnore
-  @Nullable
-  public Integer getOspfCost() {
+  public @Nullable Integer getOspfCost() {
     return (_ospfSettings != null) ? _ospfSettings.getCost() : null;
   }
 
@@ -1444,8 +1435,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   @JsonIgnore
-  @Nullable
-  public IpAccessList getOutgoingFilter() {
+  public @Nullable IpAccessList getOutgoingFilter() {
     return getIpAccessList(_outgoingFilterName);
   }
 
@@ -1457,8 +1447,7 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The IPV4 access-list used to filter traffic that is sent out this interface. Stored as @id. */
   @JsonProperty(PROP_OUTGOING_FILTER)
-  @Nullable
-  private String getOutgoingFilterName() {
+  private @Nullable String getOutgoingFilterName() {
     return _outgoingFilterName;
   }
 
@@ -1467,8 +1456,7 @@ public final class Interface extends ComparableStructure<String> {
    * flow that entered the node (before any transformations).
    */
   @JsonProperty(PROP_OUTGOING_ORIGINAL_FLOW_FILTER)
-  @Nullable
-  private String getOutgoingOriginalFlowFilterName() {
+  private @Nullable String getOutgoingOriginalFlowFilterName() {
     return _outgoingOriginalFlowFilterName;
   }
 
@@ -1484,48 +1472,41 @@ public final class Interface extends ComparableStructure<String> {
 
   /** The primary IPV4 address/network of this interface. */
   @JsonProperty(PROP_PREFIX)
-  @Nullable
-  public InterfaceAddress getAddress() {
+  public @Nullable InterfaceAddress getAddress() {
     return _address;
   }
 
   @JsonIgnore
-  @Nullable
-  public ConcreteInterfaceAddress getConcreteAddress() {
+  public @Nullable ConcreteInterfaceAddress getConcreteAddress() {
     return _address instanceof ConcreteInterfaceAddress
         ? (ConcreteInterfaceAddress) _address
         : null;
   }
 
   @JsonIgnore
-  @Nullable
-  public LinkLocalAddress getLinkLocalAddress() {
+  public @Nullable LinkLocalAddress getLinkLocalAddress() {
     return _address instanceof LinkLocalAddress ? (LinkLocalAddress) _address : null;
   }
 
   @JsonIgnore
-  @Nullable
-  public IpAccessList getPostTransformationIncomingFilter() {
+  public @Nullable IpAccessList getPostTransformationIncomingFilter() {
     return getIpAccessList(_postTransformationIncomingFilterName);
   }
 
   /** The IPV4 access-list used to filter incoming traffic after applying destination NAT. */
   @JsonProperty(PROP_POST_TRANSFORMATION_INCOMING_FILTER)
-  @Nullable
-  private String getPostTransformationIncomingFilterName() {
+  private @Nullable String getPostTransformationIncomingFilterName() {
     return _postTransformationIncomingFilterName;
   }
 
   @JsonIgnore
-  @Nullable
-  public IpAccessList getPreTransformationOutgoingFilter() {
+  public @Nullable IpAccessList getPreTransformationOutgoingFilter() {
     return getIpAccessList(_preTransformationOutgoingFilterName);
   }
 
   /** The IPV4 access-list used to filter outgoing traffic before applying source NAT. */
   @JsonProperty(PROP_PRE_TRANSFORMATION_OUTGOING_FILTER)
-  @Nullable
-  private String getPreTransformationOutgoingFilterName() {
+  private @Nullable String getPreTransformationOutgoingFilterName() {
     return _preTransformationOutgoingFilterName;
   }
 
@@ -1595,8 +1576,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** Return non-IPSec tunnel settings associated with this interface */
-  @Nullable
-  public TunnelConfiguration getTunnelConfig() {
+  public @Nullable TunnelConfiguration getTunnelConfig() {
     return _tunnelConfig;
   }
 
@@ -2220,8 +2200,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** Helper to get an IpAccessList object given its name. */
-  @Nullable
-  private IpAccessList getIpAccessList(@Nullable String name) {
+  private @Nullable IpAccessList getIpAccessList(@Nullable String name) {
     return _owner == null || name == null
         ? null
         : checkNotNull(_owner.getIpAccessLists().get(name));

@@ -15,7 +15,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralAsList extends AsPathListExpr {
   private static final String PROP_LIST = "list";
 
-  @Nonnull private List<AsExpr> _list;
+  private @Nonnull List<AsExpr> _list;
 
   @JsonCreator
   private static LiteralAsList jsonCreator(@Nullable @JsonProperty(PROP_LIST) List<AsExpr> list) {
@@ -49,8 +49,7 @@ public final class LiteralAsList extends AsPathListExpr {
   }
 
   @JsonProperty(PROP_LIST)
-  @Nonnull
-  public List<AsExpr> getList() {
+  public @Nonnull List<AsExpr> getList() {
     return _list;
   }
 

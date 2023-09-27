@@ -32,18 +32,15 @@ public final class BgpVrfConfiguration implements Serializable {
     _routerId = null; // use device's default router id unless overridden.
   }
 
-  @Nullable
-  public BgpVrfIpv4AddressFamilyConfiguration getIpv4UnicastAddressFamily() {
+  public @Nullable BgpVrfIpv4AddressFamilyConfiguration getIpv4UnicastAddressFamily() {
     return (BgpVrfIpv4AddressFamilyConfiguration) _addressFamilies.get(Type.IPV4_UNICAST);
   }
 
-  @Nullable
-  public BgpVrfIpv6AddressFamilyConfiguration getIpv6UnicastAddressFamily() {
+  public @Nullable BgpVrfIpv6AddressFamilyConfiguration getIpv6UnicastAddressFamily() {
     return (BgpVrfIpv6AddressFamilyConfiguration) _addressFamilies.get(Type.IPV6_UNICAST);
   }
 
-  @Nullable
-  public BgpVrfL2VpnEvpnAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
+  public @Nullable BgpVrfL2VpnEvpnAddressFamilyConfiguration getL2VpnEvpnAddressFamily() {
     return (BgpVrfL2VpnEvpnAddressFamilyConfiguration) _addressFamilies.get(Type.L2VPN_EVPN);
   }
 
@@ -173,8 +170,7 @@ public final class BgpVrfConfiguration implements Serializable {
     _bestpathMedNonDeterministic = bestpathMedNonDeterministic;
   }
 
-  @Nullable
-  public Long getLocalAs() {
+  public @Nullable Long getLocalAs() {
     return _localAs;
   }
 
@@ -182,8 +178,7 @@ public final class BgpVrfConfiguration implements Serializable {
     _localAs = localAs;
   }
 
-  @Nullable
-  public Ip getClusterId() {
+  public @Nullable Ip getClusterId() {
     return _clusterId;
   }
 
@@ -199,8 +194,7 @@ public final class BgpVrfConfiguration implements Serializable {
     _logNeighborChanges = log;
   }
 
-  @Nullable
-  public Integer getMaxasLimit() {
+  public @Nullable Integer getMaxasLimit() {
     return _maxAsLimit;
   }
 
@@ -208,8 +202,7 @@ public final class BgpVrfConfiguration implements Serializable {
     _maxAsLimit = maxAsLimit;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -225,13 +218,13 @@ public final class BgpVrfConfiguration implements Serializable {
   private boolean _bestpathMedConfed;
   private boolean _bestpathMedMissingAsWorst;
   private boolean _bestpathMedNonDeterministic;
-  @Nullable private Ip _clusterId;
-  @Nullable private Long _localAs;
+  private @Nullable Ip _clusterId;
+  private @Nullable Long _localAs;
   private boolean _logNeighborChanges;
-  @Nullable private Integer _maxAsLimit;
+  private @Nullable Integer _maxAsLimit;
   private final Map<Ip, BgpVrfNeighborConfiguration> _neighbors;
   private final Map<Ip6, BgpVrfNeighborConfiguration> _neighbors6;
   private final Map<Prefix, BgpVrfNeighborConfiguration> _passiveNeighbors;
   private final Map<Prefix6, BgpVrfNeighborConfiguration> _passiveNeighbors6;
-  @Nullable private Ip _routerId;
+  private @Nullable Ip _routerId;
 }

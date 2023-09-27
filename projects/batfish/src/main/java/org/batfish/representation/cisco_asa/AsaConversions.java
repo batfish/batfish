@@ -188,8 +188,7 @@ public class AsaConversions {
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
       // TODO: Confirm that an undefined attribute-map can be treated as unset
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     return BgpAggregate.of(
@@ -320,8 +319,7 @@ public class AsaConversions {
    * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
    * in the given configuration's routing policies.
    */
-  @Nullable
-  static String generateBgpImportPolicy(
+  static @Nullable String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
     // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
@@ -698,7 +696,7 @@ public class AsaConversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(
@@ -977,8 +975,7 @@ public class AsaConversions {
    * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
-  @Nullable
-  static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
+  static @Nullable IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
     List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (AclLine line : ipAccessList.getLines()) {
@@ -1026,8 +1023,7 @@ public class AsaConversions {
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
-  @Nullable
-  private static String getIkePhase1Policy(
+  private static @Nullable String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
@@ -1082,8 +1078,7 @@ public class AsaConversions {
     return ipsecPhase2Policy;
   }
 
-  @Nullable
-  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+  static @Nullable org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
       EigrpProcess proc, String vrfName, Configuration c, AsaConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder();
@@ -1138,8 +1133,7 @@ public class AsaConversions {
   }
 
   /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
-  @Nonnull
-  static BooleanExpr matchOwnAsn(long localAsn) {
+  static @Nonnull BooleanExpr matchOwnAsn(long localAsn) {
     return new Conjunction(
         ImmutableList.of(
             new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX),
@@ -1165,8 +1159,7 @@ public class AsaConversions {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
-  private static If convertEigrpRedistributionPolicy(
+  private static @Nullable If convertEigrpRedistributionPolicy(
       EigrpRedistributionPolicy policy, EigrpProcess proc, AsaConfiguration oldConfig) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
@@ -1562,8 +1555,7 @@ public class AsaConversions {
         .build();
   }
 
-  @Nonnull
-  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
     return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
@@ -1571,8 +1563,7 @@ public class AsaConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       StandardCommunityList ipCommunityListStandard) {
     return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
@@ -1580,8 +1571,8 @@ public class AsaConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      StandardCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
         CommunitySetMatchAll.matchAll(
@@ -1590,8 +1581,8 @@ public class AsaConversions {
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
-  @Nonnull
-  private static CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      ExpandedCommunityListLine line) {
 
     String regex = line.getRegex();
 
@@ -1612,26 +1603,22 @@ public class AsaConversions {
 
   // This method should only be used if the line's regex has a special form; see
   // toCommunitySetAclLine(ExpandedCommunityListLine) above.
-  @Nonnull
-  private static CommunitySetAclLine toCommunitySetAclLineOptimized(
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLineOptimized(
       ExpandedCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(), new HasCommunity(toCommunityMatchRegex(line.getRegex())));
   }
 
-  @Nonnull
-  private static CommunityMatchRegex toCommunityMatchRegex(String regex) {
+  private static @Nonnull CommunityMatchRegex toCommunityMatchRegex(String regex) {
     return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
   }
 
-  @Nonnull
-  private static CommunitySetAclLine toCommunitySetAclLineUnoptimized(
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLineUnoptimized(
       ExpandedCommunityListLine line) {
     return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
-  @Nonnull
-  private static String toJavaRegex(String ciscoRegex) {
+  private static @Nonnull String toJavaRegex(String ciscoRegex) {
     String withoutQuotes;
     if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
       withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
@@ -1719,8 +1706,7 @@ public class AsaConversions {
 
   /** Helper to convert Cisco VS OSPF network type to VI model type. */
   @VisibleForTesting
-  @Nullable
-  static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings warnings) {
     if (type == null) {
       // default is broadcast for all Ethernet interfaces

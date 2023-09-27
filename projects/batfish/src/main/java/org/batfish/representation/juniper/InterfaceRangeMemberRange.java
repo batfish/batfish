@@ -22,7 +22,7 @@ public class InterfaceRangeMemberRange implements Serializable {
 
   private class InterfaceComponents implements Serializable {
 
-    @Nonnull final String _type;
+    final @Nonnull String _type;
     final int _fpc;
     final int _pic;
     final int _port;
@@ -67,9 +67,9 @@ public class InterfaceRangeMemberRange implements Serializable {
     }
   }
 
-  @Nonnull private final InterfaceComponents _fromInterface;
+  private final @Nonnull InterfaceComponents _fromInterface;
 
-  @Nonnull private final InterfaceComponents _toInterface;
+  private final @Nonnull InterfaceComponents _toInterface;
 
   public InterfaceRangeMemberRange(String fromInterfaceId, String toInterface) {
     _fromInterface = new InterfaceComponents(fromInterfaceId);
@@ -120,13 +120,11 @@ public class InterfaceRangeMemberRange implements Serializable {
         .toString();
   }
 
-  @Nonnull
-  public InterfaceComponents getFromInterface() {
+  public @Nonnull InterfaceComponents getFromInterface() {
     return _fromInterface;
   }
 
-  @Nonnull
-  public InterfaceComponents getToInterface() {
+  public @Nonnull InterfaceComponents getToInterface() {
     return _toInterface;
   }
 }

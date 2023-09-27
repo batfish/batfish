@@ -18,7 +18,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
   public static final class InboundStepDetail {
     private static final String PROP_INTERFACE = "interface";
 
-    @Nonnull private final String _interface;
+    private final @Nonnull String _interface;
 
     public InboundStepDetail(@Nonnull String iface) {
       _interface = iface;
@@ -32,8 +32,7 @@ public final class InboundStep extends Step<InboundStepDetail> {
     }
 
     @JsonProperty
-    @Nonnull
-    public String getInterface() {
+    public @Nonnull String getInterface() {
       return _interface;
     }
 

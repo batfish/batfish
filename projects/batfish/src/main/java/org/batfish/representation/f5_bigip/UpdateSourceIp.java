@@ -18,5 +18,5 @@ public final class UpdateSourceIp implements UpdateSource {
     return visitor.visitUpdateSourceIp(this);
   }
 
-  private @Nonnull final Ip _ip;
+  private final @Nonnull Ip _ip;
 }

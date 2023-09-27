@@ -98,7 +98,7 @@ public class NamedStructureRoleConsistencyQuestionPlugin extends QuestionPlugin 
     private static final String PROP_STRUCT_TYPE = "structType";
     private static final String PROP_HYPOTHESIS = "hypothesis";
 
-    @Nullable private String _roleDimension;
+    private @Nullable String _roleDimension;
 
     private String _structType;
 

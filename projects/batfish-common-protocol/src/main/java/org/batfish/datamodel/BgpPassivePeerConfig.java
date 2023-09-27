@@ -20,15 +20,16 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   private static final String PROP_PEER_PREFIX = "peerPrefix";
 
   /** The prefix from which remote peers can connect. */
-  @Nullable private Prefix _peerPrefix;
+  private @Nullable Prefix _peerPrefix;
 
   @JsonCreator
   private static @Nonnull BgpPassivePeerConfig create(
       @JsonProperty(PROP_APPLIED_RIB_GROUP) @Nullable RibGroup appliedRibGroup,
       @JsonProperty(PROP_AUTHENTICATION_SETTINGS) @Nullable
           BgpAuthenticationSettings authenticationSettings,
+      @JsonProperty(PROP_CHECK_LOCAL_IP_ON_ACCEPT) @Nullable Boolean checkLocalIpOnAccept,
       @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
-      @Nullable @JsonProperty(PROP_CONFEDERATION_AS) Long confederation,
+      @JsonProperty(PROP_CONFEDERATION_AS) @Nullable Long confederation,
       @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
       @JsonProperty(PROP_EBGP_MULTIHOP) boolean ebgpMultihop,
@@ -46,6 +47,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     return new BgpPassivePeerConfig(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -66,6 +68,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   private BgpPassivePeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Boolean checkLocalIpOnAccept,
       @Nullable Long clusterId,
       @Nullable Long confederation,
       int defaultMetric,
@@ -84,6 +87,7 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
     super(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -131,19 +135,19 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpPassivePeerConfig> {
-    @Nullable private Prefix _peerPrefix;
+    private @Nullable Prefix _peerPrefix;
 
     protected Builder() {
       super();
     }
 
     @Override
-    @Nonnull
-    public BgpPassivePeerConfig build() {
+    public @Nonnull BgpPassivePeerConfig build() {
       BgpPassivePeerConfig bgpPeerConfig =
           new BgpPassivePeerConfig(
               _appliedRibGroup,
               _authenticationSettings,
+              _checkLocalIpOnAccept,
               _clusterId,
               _confederation,
               _defaultMetric,

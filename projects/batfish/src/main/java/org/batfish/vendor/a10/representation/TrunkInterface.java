@@ -23,8 +23,7 @@ public final class TrunkInterface extends Interface {
   }
 
   /** Number of members of this trunk that must be up for the trunk to be considered up. */
-  @Nullable
-  public Integer getPortsThreshold() {
+  public @Nullable Integer getPortsThreshold() {
     return _portsThreshold;
   }
 
@@ -35,8 +34,7 @@ public final class TrunkInterface extends Interface {
    * <p>If the type for this trunk is not explicitly configured in its children interface(s), then
    * it will have the default type.
    */
-  @Nonnull
-  public TrunkGroup.Type getTrunkTypeEffective() {
+  public @Nonnull TrunkGroup.Type getTrunkTypeEffective() {
     return firstNonNull(_trunkType, DEFAULT_TRUNK_TYPE);
   }
 
@@ -50,7 +48,7 @@ public final class TrunkInterface extends Interface {
     _members = new HashSet<>();
   }
 
-  @Nonnull private final Set<InterfaceReference> _members;
-  @Nullable private Integer _portsThreshold;
-  @Nullable private final TrunkGroup.Type _trunkType;
+  private final @Nonnull Set<InterfaceReference> _members;
+  private @Nullable Integer _portsThreshold;
+  private final @Nullable TrunkGroup.Type _trunkType;
 }

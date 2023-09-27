@@ -112,9 +112,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static class AvailabilityZone implements Serializable {
 
-    @Nonnull private final String _subnetId;
+    private final @Nonnull String _subnetId;
 
-    @Nonnull private final String _zoneName;
+    private final @Nonnull String _zoneName;
 
     @JsonCreator
     private static AvailabilityZone create(
@@ -131,13 +131,11 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       _zoneName = zoneName;
     }
 
-    @Nonnull
-    public String getSubnetId() {
+    public @Nonnull String getSubnetId() {
       return _subnetId;
     }
 
-    @Nonnull
-    public String getZoneName() {
+    public @Nonnull String getZoneName() {
       return _zoneName;
     }
 
@@ -167,19 +165,19 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private String _arn;
+  private @Nonnull String _arn;
 
-  @Nonnull private final List<AvailabilityZone> _availabilityZones;
+  private final @Nonnull List<AvailabilityZone> _availabilityZones;
 
-  @Nonnull private final String _dnsName;
+  private final @Nonnull String _dnsName;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nonnull private final Scheme _scheme;
+  private final @Nonnull Scheme _scheme;
 
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   @JsonCreator
   private static LoadBalancer create(
@@ -288,8 +286,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     if (lbListener != null) {
       listeners = lbListener.getListeners();
     } else {
-      warnings.redFlag(
-          String.format("Listeners not found for load balancer %s (%s).", _name, _arn));
+      warnings.redFlagf("Listeners not found for load balancer %s (%s).", _name, _arn);
     }
 
     IpAccessList incomingFilter = computeListenerFilter(listeners);
@@ -437,8 +434,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    * targets in enabled availability zones:
    * https://docs.aws.amazon.com/elasticloadbalancing/latest/network/target-group-health-checks.html
    */
-  @Nonnull
-  static Set<TargetHealthDescription> getActiveTargets(
+  static @Nonnull Set<TargetHealthDescription> getActiveTargets(
       LoadBalancerTargetHealth targetHealth,
       TargetGroup targetGroup,
       Set<String> enabledTargetZones,
@@ -492,7 +488,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     TargetGroup targetGroup = region.getTargetGroups().get(targetGroupArn);
     if (targetGroup == null) {
-      warnings.redFlag(String.format("Target group ARN %s not found", targetGroupArn));
+      warnings.redFlagf("Target group ARN %s not found", targetGroupArn);
       return null;
     }
 
@@ -534,8 +530,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    * already been checked with {@link #isTargetInValidAvailabilityZone(TargetHealthDescription,
    * TargetGroup.Type, Set, Region)}.
    */
-  @Nullable
-  static Ip getTargetIp(
+  static @Nullable Ip getTargetIp(
       LoadBalancerTarget target, TargetGroup.Type targetGroupType, Region region) {
     return targetGroupType.equals(IP)
         ? Ip.parse(target.getId())
@@ -559,7 +554,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     Ip targetIp = getTargetIp(target, targetGroupType, region);
     if (targetIp == null) {
-      warnings.redFlag(String.format("Could not determine IP for load balancer target %s", target));
+      warnings.redFlagf("Could not determine IP for load balancer target %s", target);
       return null;
     }
     TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);
@@ -767,33 +762,27 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     return _arn;
   }
 
-  @Nonnull
-  public List<AvailabilityZone> getAvailabilityZones() {
+  public @Nonnull List<AvailabilityZone> getAvailabilityZones() {
     return _availabilityZones;
   }
 
-  @Nonnull
-  public String getDnsName() {
+  public @Nonnull String getDnsName() {
     return _dnsName;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Scheme getScheme() {
+  public @Nonnull Scheme getScheme() {
     return _scheme;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 

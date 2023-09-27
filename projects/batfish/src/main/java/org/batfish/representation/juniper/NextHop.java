@@ -8,8 +8,8 @@ import org.batfish.datamodel.Ip;
 
 /** Represents a next-hop for Juniper static routes */
 public class NextHop implements Serializable {
-  @Nullable private Ip _nextHopIp;
-  @Nullable private String _nextHopInterface;
+  private @Nullable Ip _nextHopIp;
+  private @Nullable String _nextHopInterface;
 
   public NextHop(@Nonnull String nextHopInterface) {
     _nextHopInterface = nextHopInterface;
@@ -19,13 +19,11 @@ public class NextHop implements Serializable {
     _nextHopIp = nextHopIp;
   }
 
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
-  @Nullable
-  public Ip getNextHopIp() {
+  public @Nullable Ip getNextHopIp() {
     return _nextHopIp;
   }
 

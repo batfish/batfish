@@ -56,13 +56,13 @@ public final class ConfigAtomicPredicates {
   private final AsPathRegexAtomicPredicates _asPathRegexAtomicPredicates;
 
   /** The list of next-hop interface names that appear in the given configuration. */
-  private final ImmutableList<String> _nextHopInterfaces;
+  private final List<String> _nextHopInterfaces;
 
   /** The list of "tracks" that appear in the given configuration. */
-  private final ImmutableList<String> _tracks;
+  private final List<String> _tracks;
 
   /** The list of source VRFs that appear in the given configuration. */
-  private final ImmutableList<String> _sourceVrfs;
+  private final List<String> _sourceVrfs;
 
   /**
    * Compute atomic predicates for the given router's configuration.
@@ -382,15 +382,15 @@ public final class ConfigAtomicPredicates {
     return _asPathRegexAtomicPredicates;
   }
 
-  public ImmutableList<String> getNextHopInterfaces() {
+  public List<String> getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
-  public ImmutableList<String> getTracks() {
+  public List<String> getTracks() {
     return _tracks;
   }
 
-  public ImmutableList<String> getSourceVrfs() {
+  public List<String> getSourceVrfs() {
     return _sourceVrfs;
   }
 }

@@ -32,8 +32,7 @@ public final class LocationInfoUtils {
    * @return the host IP space of connected host subnets (subnets shorter than {@link
    *     HOST_SUBNET_MAX_PREFIX_LENGTH}).
    */
-  @Nonnull
-  public static IpSpace connectedHostSubnetHostIps(Interface iface) {
+  public static @Nonnull IpSpace connectedHostSubnetHostIps(Interface iface) {
     return firstNonNull(
         AclIpSpace.union(
             iface.getAllConcreteAddresses().stream()
@@ -49,8 +48,7 @@ public final class LocationInfoUtils {
   /**
    * @return the host IP space of all connected subnets.
    */
-  @Nonnull
-  public static IpSpace connectedSubnetHostIps(Interface iface) {
+  public static @Nonnull IpSpace connectedSubnetHostIps(Interface iface) {
     return firstNonNull(
         AclIpSpace.union(
             iface.getAllConcreteAddresses().stream()

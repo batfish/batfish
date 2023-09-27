@@ -2,8 +2,12 @@
 #
 set system host-name nat-dest
 #
+
 set security nat destination pool POOL1 address 10.10.10.10/24
-set security nat destination pool POOL2 address 10.10.10.10 to 10.10.10.20
+set security nat destination pool POOL2 address 20.20.20.20/24 port 22
+set security nat destination pool POOL3 address 30.30.30.30
+set security nat destination pool POOL4 address 40.40.40.40 port 44
+set security nat destination pool POOL5 address 50.50.50.50 to 50.50.50.60
 #
 set security nat destination rule-set RULE-SET-RI from routing-instance RI
 set security nat destination rule-set RULE-SET-RI rule RULE1 match source-port 5
@@ -18,7 +22,7 @@ set security nat destination rule-set RULE-SET-ZONE rule RULE1 then destination-
 #
 set security nat destination rule-set RULE-SET-ZONE rule RULE2 match source-address 2.2.2.2/24
 set security nat destination rule-set RULE-SET-ZONE rule RULE2 match destination-address-name DA-NAME
-set security nat destination rule-set RULE-SET-ZONE rule RULE2 then destination-nat pool POOL2
+set security nat destination rule-set RULE-SET-ZONE rule RULE2 then destination-nat pool POOL5
 #
 set security nat destination rule-set RULE-SET-ZONE rule RULE3 match source-address 3.3.3.3/24
 set security nat destination rule-set RULE-SET-ZONE rule RULE3 match destination-address 1.1.1.1/32

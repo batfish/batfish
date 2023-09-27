@@ -21,7 +21,7 @@ public final class IcmpTypesApplication extends IcmpApplication {
   public static final IcmpTypesApplication ALL =
       new IcmpTypesApplication(ImmutableList.of(new SubRange(0, MAX_TYPE)));
 
-  @Nonnull private final List<SubRange> _types;
+  private final @Nonnull List<SubRange> _types;
 
   public IcmpTypesApplication(int type) {
     this(ImmutableList.of(SubRange.singleton(type)));
@@ -31,8 +31,7 @@ public final class IcmpTypesApplication extends IcmpApplication {
     _types = ImmutableList.copyOf(types);
   }
 
-  @Nonnull
-  public List<SubRange> getTypes() {
+  public @Nonnull List<SubRange> getTypes() {
     return _types;
   }
 

@@ -19,8 +19,8 @@ public class ErrorDetails implements Serializable {
   private static final String PROP_PARSE_EXCEPTION_CONTEXT = "Parse_Exception_Context";
   private static final String PROP_MESSAGE = "Message";
 
-  @Nullable private final ParseExceptionContext _parseExceptionContext;
-  @Nullable private final String _message;
+  private final @Nullable ParseExceptionContext _parseExceptionContext;
+  private final @Nullable String _message;
 
   @JsonCreator
   public ErrorDetails(
@@ -56,14 +56,12 @@ public class ErrorDetails implements Serializable {
   }
 
   @JsonProperty(PROP_MESSAGE)
-  @Nullable
-  public String getMessage() {
+  public @Nullable String getMessage() {
     return _message;
   }
 
   @JsonProperty(PROP_PARSE_EXCEPTION_CONTEXT)
-  @Nullable
-  public ParseExceptionContext getParseExceptionContext() {
+  public @Nullable ParseExceptionContext getParseExceptionContext() {
     return _parseExceptionContext;
   }
 
@@ -74,9 +72,9 @@ public class ErrorDetails implements Serializable {
     private static final String PROP_LINE_NUMBER = "Line_Number";
     private static final String PROP_PARSER_CONTEXT = "Parser_Context";
 
-    @Nullable private final String _lineContent;
-    @Nullable private final Integer _lineNumber;
-    @Nullable private final String _parserContext;
+    private final @Nullable String _lineContent;
+    private final @Nullable Integer _lineNumber;
+    private final @Nullable String _parserContext;
 
     @JsonCreator
     public ParseExceptionContext(
@@ -135,20 +133,17 @@ public class ErrorDetails implements Serializable {
     }
 
     @JsonProperty(PROP_LINE_CONTENT)
-    @Nullable
-    public String getLineContent() {
+    public @Nullable String getLineContent() {
       return _lineContent;
     }
 
     @JsonProperty(PROP_LINE_NUMBER)
-    @Nullable
-    public Integer getLineNumber() {
+    public @Nullable Integer getLineNumber() {
       return _lineNumber;
     }
 
     @JsonProperty(PROP_PARSER_CONTEXT)
-    @Nullable
-    public String getParserContext() {
+    public @Nullable String getParserContext() {
       return _parserContext;
     }
   }

@@ -39,8 +39,8 @@ public final class ExtendedCommunity extends Community {
   private final long _value;
 
   // Cached string representations
-  @Nullable private transient String _str;
-  @Nullable private transient String _regexStr;
+  private @Nullable transient String _str;
+  private @Nullable transient String _regexStr;
 
   private ExtendedCommunity(int type, int subType, long value) {
     checkArgument(VALID_TYPES.contains(type), "Not a valid BGP extended community type: %s", type);
@@ -60,8 +60,7 @@ public final class ExtendedCommunity extends Community {
     return parse(value);
   }
 
-  @Nonnull
-  public static ExtendedCommunity parse(String communityStr) {
+  public static @Nonnull ExtendedCommunity parse(String communityStr) {
     // TODO: move vendor-specific parsing into vendor-specific context, remove redundant validation.
 
     String[] parts = communityStr.trim().split(":");
@@ -158,8 +157,7 @@ public final class ExtendedCommunity extends Community {
     return of((int) typeByte << 8 | (int) subTypeByte, gaLong, laLong);
   }
 
-  @Nonnull
-  public static Optional<ExtendedCommunity> tryParse(String text) {
+  public static @Nonnull Optional<ExtendedCommunity> tryParse(String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {
@@ -302,18 +300,15 @@ public final class ExtendedCommunity extends Community {
   }
 
   /** Return true if the value field contains a global and local administrator */
-  @Nonnull
-  private boolean hasGlobalAndLocalAdministrator() {
+  private @Nonnull boolean hasGlobalAndLocalAdministrator() {
     return !(_type == 0x03 || _type == 0x43);
   }
 
-  @Nonnull
-  private int globalAdministratorBits() {
+  private @Nonnull int globalAdministratorBits() {
     return _type == 0x00 || _type == 0x40 ? 16 : 32;
   }
 
-  @Nonnull
-  private int localAdministratorBits() {
+  private @Nonnull int localAdministratorBits() {
     return 48 - globalAdministratorBits();
   }
 

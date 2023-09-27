@@ -27,17 +27,17 @@ public class StaticRoute implements Serializable {
 
   private int _metric;
 
-  @Nonnull private Set<String> _nextHopInterface;
+  private @Nonnull Set<String> _nextHopInterface;
 
-  @Nonnull private Set<Ip> _nextHopIp;
+  private @Nonnull Set<Ip> _nextHopIp;
 
   private List<String> _policies;
 
   private Prefix _prefix;
 
-  @Nullable private String _nextTable;
+  private @Nullable String _nextTable;
 
-  @Nullable private Boolean _resolve;
+  private @Nullable Boolean _resolve;
 
   /**
    * Each qualified next hop will produce a separate static route using properties of the static
@@ -47,7 +47,7 @@ public class StaticRoute implements Serializable {
 
   private Long _tag;
 
-  @Nullable private Boolean _noInstall;
+  private @Nullable Boolean _noInstall;
 
   public StaticRoute(Prefix prefix) {
     _communities = new TreeSet<>();
@@ -84,8 +84,7 @@ public class StaticRoute implements Serializable {
     return _nextHopIp;
   }
 
-  @Nullable
-  public Boolean getNoInstall() {
+  public @Nullable Boolean getNoInstall() {
     return _noInstall;
   }
 
@@ -145,8 +144,7 @@ public class StaticRoute implements Serializable {
     _tag = tag;
   }
 
-  @Nullable
-  public Boolean getResolve() {
+  public @Nullable Boolean getResolve() {
     return _resolve;
   }
 
@@ -158,8 +156,7 @@ public class StaticRoute implements Serializable {
    * The name of a delegate routing instance/table that should traffic matching this route in its
    * own routing instance.
    */
-  @Nullable
-  public String getNextTable() {
+  public @Nullable String getNextTable() {
     return _nextTable;
   }
 

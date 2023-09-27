@@ -11,7 +11,7 @@ import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 /** A {@link RouteMapMatch} that matches routes based on the route's AS path. */
 public final class RouteMapMatchAsPath implements RouteMapMatch {
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public RouteMapMatchAsPath(@Nonnull String name) {
     _name = name;

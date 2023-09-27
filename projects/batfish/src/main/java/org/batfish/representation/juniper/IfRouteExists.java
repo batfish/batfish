@@ -9,8 +9,7 @@ import org.batfish.datamodel.Prefix;
 @ParametersAreNonnullByDefault
 public final class IfRouteExists implements Serializable {
 
-  @Nullable
-  public Prefix getPrefix() {
+  public @Nullable Prefix getPrefix() {
     return _prefix;
   }
 
@@ -18,8 +17,7 @@ public final class IfRouteExists implements Serializable {
     _prefix = prefix;
   }
 
-  @Nullable
-  public String getTable() {
+  public @Nullable String getTable() {
     return _table;
   }
 

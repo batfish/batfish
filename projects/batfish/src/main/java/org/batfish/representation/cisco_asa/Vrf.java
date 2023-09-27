@@ -12,21 +12,21 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
 
 public final class Vrf implements Serializable {
-  @Nonnull private final Map<Long, EigrpProcess> _eigrpProcesses;
-  @Nullable private BgpProcess _bgpProcess;
-  @Nullable private String _description;
-  @Nullable private IsisProcess _isisProcess;
-  @Nonnull private final String _name;
-  @Nonnull private Map<String, OspfProcess> _ospfProcesses;
-  @Nullable private RipProcess _ripProcess;
-  @Nullable private RouteDistinguisher _routeDistinguisher;
+  private final @Nonnull Map<Long, EigrpProcess> _eigrpProcesses;
+  private @Nullable BgpProcess _bgpProcess;
+  private @Nullable String _description;
+  private @Nullable IsisProcess _isisProcess;
+  private final @Nonnull String _name;
+  private @Nonnull Map<String, OspfProcess> _ospfProcesses;
+  private @Nullable RipProcess _ripProcess;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
 
   private boolean _shutdown;
-  @Nonnull private final Set<StaticRoute> _staticRoutes;
-  @Nullable private Integer _vni;
+  private final @Nonnull Set<StaticRoute> _staticRoutes;
+  private @Nullable Integer _vni;
 
-  @Nonnull private final Map<AddressFamilyType, VrfAddressFamily> _addressFamilies;
-  @Nonnull private final VrfAddressFamily _genericAddressFamily;
+  private final @Nonnull Map<AddressFamilyType, VrfAddressFamily> _addressFamilies;
+  private final @Nonnull VrfAddressFamily _genericAddressFamily;
 
   public Vrf(@Nonnull String name) {
     _addressFamilies = new HashMap<>(4);
@@ -38,34 +38,28 @@ public final class Vrf implements Serializable {
     _staticRoutes = new HashSet<>();
   }
 
-  @Nullable
-  public BgpProcess getBgpProcess() {
+  public @Nullable BgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nonnull
-  public Map<Long, EigrpProcess> getEigrpProcesses() {
+  public @Nonnull Map<Long, EigrpProcess> getEigrpProcesses() {
     return _eigrpProcesses;
   }
 
-  @Nullable
-  public IsisProcess getIsisProcess() {
+  public @Nullable IsisProcess getIsisProcess() {
     return _isisProcess;
   }
 
   /** Configuration available under address-family ipv4 (unicast). */
-  @Nullable
-  public VrfAddressFamily getIpv4UnicastAddressFamily() {
+  public @Nullable VrfAddressFamily getIpv4UnicastAddressFamily() {
     return _addressFamilies.get(AddressFamilyType.IPV4_UNICAST);
   }
 
-  @Nonnull
-  public VrfAddressFamily getOrCreateIpv4UnicastAddressFamily() {
+  public @Nonnull VrfAddressFamily getOrCreateIpv4UnicastAddressFamily() {
     return _addressFamilies.computeIfAbsent(
         AddressFamilyType.IPV4_UNICAST, k -> new VrfAddressFamily());
   }
@@ -75,24 +69,20 @@ public final class Vrf implements Serializable {
    * inherit these if unset at the AF level. Note that not all commands can be typed at the VRF
    * level. We rely on the parser/extractor to avoid impossible configurations.
    */
-  @Nonnull
-  public VrfAddressFamily getGenericAddressFamilyConfig() {
+  public @Nonnull VrfAddressFamily getGenericAddressFamilyConfig() {
     return _genericAddressFamily;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
   /** Return OSPF processes defined on this VRF. Guaranteed to be in insertion order */
-  @Nonnull
-  public Map<String, OspfProcess> getOspfProcesses() {
+  public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
 
-  @Nullable
-  public RipProcess getRipProcess() {
+  public @Nullable RipProcess getRipProcess() {
     return _ripProcess;
   }
 
@@ -100,8 +90,7 @@ public final class Vrf implements Serializable {
    * The route distinguisher to attach to VPN originating from this VRF. Will be {@code null} if it
    * must be auto-derived.
    */
-  @Nullable
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -111,13 +100,11 @@ public final class Vrf implements Serializable {
   }
 
   /** Layer 3 VNI number associated with this VRF */
-  @Nullable
-  public Integer getVni() {
+  public @Nullable Integer getVni() {
     return _vni;
   }
 
-  @Nonnull
-  public Set<StaticRoute> getStaticRoutes() {
+  public @Nonnull Set<StaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 

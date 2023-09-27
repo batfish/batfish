@@ -32,10 +32,9 @@ public final class CustomUrlCategoryReference implements Reference {
 
   /** Return the name of the referenced Category */
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

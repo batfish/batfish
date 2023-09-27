@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import com.google.common.collect.Range;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -58,6 +59,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -117,6 +119,7 @@ import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -1106,6 +1109,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetAdminDistance() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetAdministrativeCost(new LiteralInt(255)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    MutableBDDInteger ad = expected.getAdminDist();
+    expected.setAdminDist(MutableBDDInteger.makeFromValue(ad.getFactory(), 8, 255));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
   public void testMatchTag() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1833,7 +1858,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     // get the unique atomic predicate that corresponds to " 40$"
     Integer ap =
@@ -1844,7 +1869,7 @@ public class TransferBDDTest {
             .iterator()
             .next();
 
-    BDD expectedBDD = aps[ap];
+    BDD expectedBDD = aps.value(ap);
 
     assertTrue(
         equalsForTesting(
@@ -1872,7 +1897,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD[] aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
 
     assertEquals(3, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
 
@@ -1882,7 +1907,7 @@ public class TransferBDDTest {
     Integer ap1 = regexMap.get(new SymbolicAsPathRegex(" 40$")).iterator().next();
     Integer ap2 = regexMap.get(new SymbolicAsPathRegex("^$")).iterator().next();
 
-    BDD expectedBDD = aps[ap1].or(aps[ap2]);
+    BDD expectedBDD = aps.value(ap1).or(aps.value(ap2));
 
     assertTrue(
         equalsForTesting(
@@ -2289,6 +2314,83 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testDisjunctionForAsPathGroup() {
+    _policyBuilder.addStatement(
+        new If(
+            new Disjunction(
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(" 40$")),
+                MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of("^$"))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    // get the unique atomic predicate that corresponds to the union of " 40$" and "^$"
+    Integer ap =
+        regexMap
+            .get(
+                SymbolicAsPathRegex.union(
+                    ImmutableList.of(
+                        new SymbolicAsPathRegex(" 40$"), new SymbolicAsPathRegex("^$"))))
+            .iterator()
+            .next();
+
+    BDD expectedBDD = aps.value(ap);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testAsSetsMatchingRanges() {
+    AsSetsMatchingRanges asExpr =
+        AsSetsMatchingRanges.of(true, true, ImmutableList.of(Range.closed(10L, 15L)));
+    _policyBuilder.addStatement(
+        new If(
+            MatchAsPath.of(InputAsPath.instance(), asExpr),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
+
+    assertEquals(2, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    Map<SymbolicAsPathRegex, Set<Integer>> regexMap =
+        _configAPs.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
+    // get the unique atomic predicate that corresponds to the AsSetsMatchingRanges constraint
+    Integer ap = regexMap.get(new SymbolicAsPathRegex(asExpr)).iterator().next();
+
+    BDD expectedBDD = aps.value(ap);
+
+    assertTrue(
+        equalsForTesting(
+            paths,
+            ImmutableList.of(
+                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 

@@ -11,7 +11,7 @@ public class StaticRoute implements Serializable {
 
   private int _distance;
 
-  @Nullable private String _nextHopInterface;
+  private @Nullable String _nextHopInterface;
 
   private Ip _nextHopIp;
 
@@ -19,9 +19,9 @@ public class StaticRoute implements Serializable {
 
   private Prefix _prefix;
 
-  @Nullable private Long _tag;
+  private @Nullable Long _tag;
 
-  @Nullable private Integer _track;
+  private @Nullable Integer _track;
 
   public StaticRoute(
       Prefix prefix,
@@ -65,8 +65,7 @@ public class StaticRoute implements Serializable {
     return _distance;
   }
 
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
@@ -82,13 +81,11 @@ public class StaticRoute implements Serializable {
     return _prefix;
   }
 
-  @Nullable
-  public Long getTag() {
+  public @Nullable Long getTag() {
     return _tag;
   }
 
-  @Nullable
-  public Integer getTrack() {
+  public @Nullable Integer getTrack() {
     return _track;
   }
 

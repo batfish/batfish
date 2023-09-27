@@ -2131,8 +2131,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * descendants and uses the provided collection of groups to expand indirect descendants/map UUIDs
    * to objects.
    */
-  @Nullable
-  private static Addrgrp getParentAddrgrp(
+  private static @Nullable Addrgrp getParentAddrgrp(
       BatfishUUID childUuid,
       Collection<BatfishUUID> candidateParents,
       Collection<Addrgrp> allAddrgrps) {
@@ -2177,8 +2176,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * UUIDs and their descendants and uses the provided collection of service groups to expand
    * indirect descendants/map UUIDs to objects.
    */
-  @Nullable
-  private static ServiceGroup getParentServiceGroup(
+  private static @Nullable ServiceGroup getParentServiceGroup(
       BatfishUUID childUuid,
       Collection<BatfishUUID> candidateParents,
       Collection<ServiceGroup> allServiceGroups) {
@@ -3124,6 +3122,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentAccessListRuleNameValid;
 
   private Address _currentAddress;
+
   /**
    * Whether the current address has invalid lines that would prevent committing the address in CLI.
    * This field being true does not guarantee the current address is valid; use {@link
@@ -3140,6 +3139,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private InternetServiceName _currentInternetServiceName;
   private boolean _currentInternetServiceNameNameValid;
   private Policy _currentPolicy;
+
   /**
    * Whether the current policy has invalid lines that would prevent committing the policy in CLI.
    * This field being true does not guarantee the current policy is valid; use {@link
@@ -3158,6 +3158,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private SecondaryIp _currentSecondaryip;
   private boolean _currentSecondaryipNameValid;
   private Service _currentService;
+
   /**
    * Whether the current service has invalid lines that would prevent committing the service in CLI.
    * This field being true does not guarantee the current service is valid; use {@link
@@ -3171,6 +3172,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private StaticRoute _currentStaticRoute;
   private boolean _currentStaticRouteNumValid;
   private Zone _currentZone;
+
   /** Whether the current zone has an invalid name. */
   private boolean _currentZoneNameValid;
 

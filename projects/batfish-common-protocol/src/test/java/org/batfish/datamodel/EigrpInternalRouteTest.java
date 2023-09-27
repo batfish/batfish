@@ -1,11 +1,11 @@
 package org.batfish.datamodel;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.WideMetric;
-import org.hamcrest.Matchers;
 import org.junit.Test;
 
 public class EigrpInternalRouteTest {
@@ -22,6 +22,6 @@ public class EigrpInternalRouteTest {
                     .build())
             .setProcessAsn(2L)
             .build();
-    assertThat(r.toBuilder().build(), Matchers.equalTo(r));
+    assertThat(r.toBuilder().build(), equalTo(r));
   }
 }

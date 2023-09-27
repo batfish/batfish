@@ -35,7 +35,7 @@ public class ParseVendorConfigurationResult
   private VendorConfiguration _vc;
 
   /** Job-level (not file-level) warnings */
-  @Nonnull private final Warnings _warnings;
+  private final @Nonnull Warnings _warnings;
 
   public ParseVendorConfigurationResult(
       long elapsedTime,
@@ -119,8 +119,7 @@ public class ParseVendorConfigurationResult
       }
       if (_duplicateHostnames.containsKey(hostname)) {
         String modifiedNewName = getModifiedName(hostname, _vc.getFilename());
-        _warnings.redFlag(
-            String.format("Duplicate hostname %s. Changed to %s", hostname, modifiedNewName));
+        _warnings.redFlagf("Duplicate hostname %s. Changed to %s", hostname, modifiedNewName);
         _vc.setHostname(modifiedNewName);
         _duplicateHostnames.put(hostname, modifiedNewName);
         hostname = modifiedNewName;
@@ -202,8 +201,7 @@ public class ParseVendorConfigurationResult
     return _vc;
   }
 
-  @Nonnull
-  public ConfigurationFormat getConfigurationFormat() {
+  public @Nonnull ConfigurationFormat getConfigurationFormat() {
     return _format;
   }
 

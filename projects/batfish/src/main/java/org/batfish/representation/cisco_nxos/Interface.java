@@ -22,16 +22,20 @@ public final class Interface implements Serializable {
 
   /** Loopback bandwidth (bits/s) */
   private static final double DEFAULT_LOOPBACK_BANDWIDTH = 8E9D;
+
   /** Management bandwidth (bits/s) */
   private static final double DEFAULT_MGMT_BANDWIDTH = 1E9D;
+
   /**
    * Default interface delay in tens of microseconds: "10 microseconds for all interfaces except
    * loopback ports"
    * https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/interfaces/command/cisco_nexus7000_interfaces_command_ref/d_commands.html#wp1043520423
    */
   private static final int DEFAULT_INTERFACE_DELAY = 1;
+
   /** Default loopback delay in tens of microseconds */
   private static final int DEFAULT_LOOPBACK_DELAY = 500;
+
   /** NX-OS Ethernet 802.3z - may not apply for non-NX-OS */
   private static final double DEFAULT_NXOS_ETHERNET_SPEED = 1E9D;
 
@@ -373,8 +377,7 @@ public final class Interface implements Serializable {
     return _parentInterface;
   }
 
-  @Nullable
-  public String getPbrPolicy() {
+  public @Nullable String getPbrPolicy() {
     return _pbrPolicy;
   }
 
@@ -421,8 +424,7 @@ public final class Interface implements Serializable {
     _speedMbps = speedMbps;
   }
 
-  @Nullable
-  public SwitchportMode getSwitchportMode() {
+  public @Nullable SwitchportMode getSwitchportMode() {
     return _switchportMode;
   }
 

@@ -14,7 +14,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 public final class LiteralIsisLevel extends IsisLevelExpr {
   private static final String PROP_LEVEL = "level";
 
-  @Nonnull private IsisLevel _level;
+  private @Nonnull IsisLevel _level;
 
   @JsonCreator
   private static LiteralIsisLevel jsonCreator(@Nullable @JsonProperty(PROP_LEVEL) IsisLevel level) {
@@ -43,8 +43,7 @@ public final class LiteralIsisLevel extends IsisLevelExpr {
   }
 
   @JsonProperty(PROP_LEVEL)
-  @Nonnull
-  public IsisLevel getLevel() {
+  public @Nonnull IsisLevel getLevel() {
     return _level;
   }
 

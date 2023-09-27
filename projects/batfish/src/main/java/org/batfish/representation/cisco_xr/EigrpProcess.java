@@ -31,7 +31,7 @@ public class EigrpProcess implements Serializable {
   private @Nullable Long _asn;
   private boolean _autoSummary;
   private @Nullable EigrpMetric _defaultMetric;
-  @Nullable private Ip _routerId;
+  private @Nullable Ip _routerId;
   private boolean _passiveInterfaceDefault;
 
   public EigrpProcess(@Nullable Long asn, EigrpProcessMode mode, @Nonnull String vrfName) {
@@ -74,8 +74,7 @@ public class EigrpProcess implements Serializable {
     return _addressFamily;
   }
 
-  @Nullable
-  public Long getAsn() {
+  public @Nullable Long getAsn() {
     return _asn;
   }
 
@@ -87,8 +86,7 @@ public class EigrpProcess implements Serializable {
     return _autoSummary;
   }
 
-  @Nullable
-  public EigrpMetric getDefaultMetric() {
+  public @Nullable EigrpMetric getDefaultMetric() {
     return _defaultMetric;
   }
 
@@ -120,8 +118,7 @@ public class EigrpProcess implements Serializable {
     return _redistributionPolicies;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 

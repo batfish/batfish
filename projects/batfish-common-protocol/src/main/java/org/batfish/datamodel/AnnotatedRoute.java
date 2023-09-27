@@ -12,8 +12,8 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class AnnotatedRoute<R extends AbstractRoute>
     implements AbstractRouteDecorator, Serializable {
 
-  @Nonnull private final R _route;
-  @Nonnull private final String _sourceVrf;
+  private final @Nonnull R _route;
+  private final @Nonnull String _sourceVrf;
   private transient int _hashCode;
 
   public AnnotatedRoute(R route, String sourceVrf) {
@@ -27,18 +27,15 @@ public final class AnnotatedRoute<R extends AbstractRoute>
   }
 
   @Override
-  @Nonnull
-  public Prefix getNetwork() {
+  public @Nonnull Prefix getNetwork() {
     return _route.getNetwork();
   }
 
-  @Nonnull
-  public R getRoute() {
+  public @Nonnull R getRoute() {
     return _route;
   }
 
-  @Nonnull
-  public String getSourceVrf() {
+  public @Nonnull String getSourceVrf() {
     return _sourceVrf;
   }
 

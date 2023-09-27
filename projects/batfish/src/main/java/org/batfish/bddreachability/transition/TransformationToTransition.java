@@ -157,8 +157,7 @@ public class TransformationToTransition {
         : reverse(toTransition(returnFlowTransformation(transformation)));
   }
 
-  @Nonnull
-  private Transition computeTransition(Transformation transformation) {
+  private @Nonnull Transition computeTransition(Transformation transformation) {
     BDD guard = _ipAccessListToBdd.toBdd(transformation.getGuard());
     Transition steps = computeSteps(transformation.getTransformationSteps());
 

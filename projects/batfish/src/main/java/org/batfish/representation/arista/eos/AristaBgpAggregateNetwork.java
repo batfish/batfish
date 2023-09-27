@@ -5,16 +5,15 @@ import javax.annotation.Nullable;
 
 /** Aggregate network configuration */
 public final class AristaBgpAggregateNetwork implements Serializable {
-  @Nullable private Boolean _advertiseOnly;
-  @Nullable private Boolean _asSet;
-  @Nullable private String _attributeMap;
-  @Nullable private String _matchMap;
-  @Nullable private Boolean _summaryOnly;
+  private @Nullable Boolean _advertiseOnly;
+  private @Nullable Boolean _asSet;
+  private @Nullable String _attributeMap;
+  private @Nullable String _matchMap;
+  private @Nullable Boolean _summaryOnly;
 
   public AristaBgpAggregateNetwork() {}
 
-  @Nullable
-  public Boolean getAdvertiseOnly() {
+  public @Nullable Boolean getAdvertiseOnly() {
     return _advertiseOnly;
   }
 
@@ -22,8 +21,7 @@ public final class AristaBgpAggregateNetwork implements Serializable {
     _advertiseOnly = advertiseOnly;
   }
 
-  @Nullable
-  public Boolean getAsSet() {
+  public @Nullable Boolean getAsSet() {
     return _asSet;
   }
 
@@ -31,8 +29,7 @@ public final class AristaBgpAggregateNetwork implements Serializable {
     _asSet = asSet;
   }
 
-  @Nullable
-  public String getAttributeMap() {
+  public @Nullable String getAttributeMap() {
     return _attributeMap;
   }
 
@@ -40,8 +37,7 @@ public final class AristaBgpAggregateNetwork implements Serializable {
     _attributeMap = attributeMap;
   }
 
-  @Nullable
-  public String getMatchMap() {
+  public @Nullable String getMatchMap() {
     return _matchMap;
   }
 
@@ -49,8 +45,7 @@ public final class AristaBgpAggregateNetwork implements Serializable {
     _matchMap = matchMap;
   }
 
-  @Nullable
-  public Boolean getSummaryOnly() {
+  public @Nullable Boolean getSummaryOnly() {
     return _summaryOnly;
   }
 

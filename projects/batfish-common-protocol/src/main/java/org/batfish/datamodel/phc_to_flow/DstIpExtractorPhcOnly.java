@@ -22,5 +22,5 @@ public final class DstIpExtractorPhcOnly implements FieldExtractor<Ip> {
     return _helper.inferDstIpFromHeaderDstIp(headerDstIp);
   }
 
-  private @Nonnull final IpFieldExtractorContext _helper;
+  private final @Nonnull IpFieldExtractorContext _helper;
 }

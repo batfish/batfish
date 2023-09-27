@@ -115,11 +115,11 @@ public final class Layer3VniConfig extends VniConfig
 
   public static final class Builder {
 
-    @Nullable private Integer _vni;
-    @Nullable private String _vrf;
-    @Nullable private RouteDistinguisher _rd;
-    @Nullable private ExtendedCommunity _routeTarget;
-    @Nullable private String _importRouteTarget;
+    private @Nullable Integer _vni;
+    private @Nullable String _vrf;
+    private @Nullable RouteDistinguisher _rd;
+    private @Nullable ExtendedCommunity _routeTarget;
+    private @Nullable String _importRouteTarget;
     private boolean _advertiseV4Unicast;
 
     private Builder() {}

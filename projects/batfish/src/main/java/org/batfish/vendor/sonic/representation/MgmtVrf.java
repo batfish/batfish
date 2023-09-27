@@ -17,7 +17,7 @@ public class MgmtVrf implements Serializable {
   private static final String PROP_MGMT_VRF_ENABLED = "mgmtVrfEnabled";
   private static final String PROP_IN_BAND_MGMT_ENABLED = "in_band_mgmt_enabled";
 
-  private @Nullable final Boolean _mgmtVrfEnabled;
+  private final @Nullable Boolean _mgmtVrfEnabled;
 
   public @Nonnull Optional<Boolean> getMgmtVrfEnabled() {
     return Optional.ofNullable(_mgmtVrfEnabled);
@@ -25,7 +25,7 @@ public class MgmtVrf implements Serializable {
 
   @SuppressWarnings("unused") // "parse" and ignore PROP_IN_BAND_MGMT_ENABLED
   @JsonCreator
-  private @Nonnull static MgmtVrf create(
+  private static @Nonnull MgmtVrf create(
       @Nullable @JsonProperty(PROP_IN_BAND_MGMT_ENABLED) String inBandMgmtEnabled,
       @Nullable @JsonProperty(PROP_MGMT_VRF_ENABLED) String mgmtVrfEnabled) {
     return MgmtVrf.builder()
@@ -62,7 +62,7 @@ public class MgmtVrf implements Serializable {
         .toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

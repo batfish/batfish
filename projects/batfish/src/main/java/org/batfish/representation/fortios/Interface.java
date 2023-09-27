@@ -56,23 +56,19 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   @Override
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public String getAlias() {
+  public @Nullable String getAlias() {
     return _alias;
   }
 
-  @Nullable
-  public String getVdom() {
+  public @Nullable String getVdom() {
     return _vdom;
   }
 
-  @Nullable
-  public ConcreteInterfaceAddress getIp() {
+  public @Nullable ConcreteInterfaceAddress getIp() {
     return _ip;
   }
 
@@ -98,8 +94,7 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   @VisibleForTesting
-  @Nullable
-  public Integer getMtu() {
+  public @Nullable Integer getMtu() {
     return _mtu;
   }
 
@@ -111,23 +106,19 @@ public final class Interface implements InterfaceOrZone, Serializable {
   }
 
   @VisibleForTesting
-  @Nullable
-  public Boolean getMtuOverride() {
+  public @Nullable Boolean getMtuOverride() {
     return _mtuOverride;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public String getInterface() {
+  public @Nullable String getInterface() {
     return _interface;
   }
 
-  @Nullable
-  public Boolean getSecondaryIp() {
+  public @Nullable Boolean getSecondaryIp() {
     return _secondaryIp;
   }
 
@@ -139,29 +130,24 @@ public final class Interface implements InterfaceOrZone, Serializable {
     return firstNonNull(_secondaryIp, DEFAULT_SECONDARY_IP_ENABLED);
   }
 
-  @Nonnull
-  public Map<String, SecondaryIp> getSecondaryip() {
+  public @Nonnull Map<String, SecondaryIp> getSecondaryip() {
     return _secondaryip;
   }
 
-  @Nullable
-  public Speed getSpeed() {
+  public @Nullable Speed getSpeed() {
     return _speed;
   }
 
-  @Nonnull
-  public Speed getSpeedEffective() {
+  public @Nonnull Speed getSpeedEffective() {
     return firstNonNull(_speed, DEFAULT_SPEED);
   }
 
-  @Nullable
-  public Integer getVlanid() {
+  public @Nullable Integer getVlanid() {
     return _vlanid;
   }
 
   @VisibleForTesting
-  @Nullable
-  public Integer getVrf() {
+  public @Nullable Integer getVrf() {
     return _vrf;
   }
 
@@ -231,22 +217,24 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _secondaryip = new HashMap<>();
   }
 
-  @Nonnull private final String _name;
-  @Nullable private String _alias;
-  @Nullable private String _vdom;
-  @Nullable private ConcreteInterfaceAddress _ip;
-  @Nullable private Type _type;
-  @Nonnull private Status _status;
-  @Nullable private Boolean _mtuOverride;
-  @Nullable private Integer _mtu;
-  @Nullable private String _description;
-  @Nullable private String _interface;
-  /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
-  @Nullable private Boolean _secondaryIp;
-  /** Map of name/number to {@code SecondaryIp} */
-  @Nonnull private Map<String, SecondaryIp> _secondaryip;
+  private final @Nonnull String _name;
+  private @Nullable String _alias;
+  private @Nullable String _vdom;
+  private @Nullable ConcreteInterfaceAddress _ip;
+  private @Nullable Type _type;
+  private @Nonnull Status _status;
+  private @Nullable Boolean _mtuOverride;
+  private @Nullable Integer _mtu;
+  private @Nullable String _description;
+  private @Nullable String _interface;
 
-  @Nullable private Speed _speed;
-  @Nullable private Integer _vlanid;
-  @Nullable private Integer _vrf;
+  /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
+  private @Nullable Boolean _secondaryIp;
+
+  /** Map of name/number to {@code SecondaryIp} */
+  private @Nonnull Map<String, SecondaryIp> _secondaryip;
+
+  private @Nullable Speed _speed;
+  private @Nullable Integer _vlanid;
+  private @Nullable Integer _vrf;
 }

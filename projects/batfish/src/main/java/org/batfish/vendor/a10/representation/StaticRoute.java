@@ -9,18 +9,15 @@ import org.batfish.datamodel.Ip;
 public final class StaticRoute implements Serializable {
   public static final int DEFAULT_STATIC_ROUTE_DISTANCE = 1;
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public Integer getDistance() {
+  public @Nullable Integer getDistance() {
     return _distance;
   }
 
-  @Nonnull
-  public Ip getForwardingRouterAddress() {
+  public @Nonnull Ip getForwardingRouterAddress() {
     return _forwardingRouterAddress;
   }
 
@@ -31,7 +28,7 @@ public final class StaticRoute implements Serializable {
     _forwardingRouterAddress = forwardingRouterAddress;
   }
 
-  @Nullable private final String _description;
-  @Nullable private final Integer _distance;
-  @Nonnull private final Ip _forwardingRouterAddress;
+  private final @Nullable String _description;
+  private final @Nullable Integer _distance;
+  private final @Nonnull Ip _forwardingRouterAddress;
 }

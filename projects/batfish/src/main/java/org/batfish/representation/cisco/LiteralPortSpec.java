@@ -12,7 +12,7 @@ import org.batfish.datamodel.SubRange;
 public final class LiteralPortSpec implements PortSpec {
   public static LiteralPortSpec ALL_PORTS = new LiteralPortSpec(IntegerSpace.PORTS.getSubRanges());
 
-  private @Nonnull final List<SubRange> _ports;
+  private final @Nonnull List<SubRange> _ports;
 
   public LiteralPortSpec(Iterable<SubRange> ports) {
     _ports = ImmutableList.copyOf(ports);

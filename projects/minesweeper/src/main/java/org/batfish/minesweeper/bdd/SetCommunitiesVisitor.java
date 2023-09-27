@@ -44,7 +44,9 @@ public class SetCommunitiesVisitor
       CommunitySetDifference communitySetDifference, Arg arg) {
     CommunityAPDispositions initial = communitySetDifference.getInitial().accept(this, arg);
     BDD toDelete =
-        communitySetDifference.getRemovalCriterion().accept(new CommunityMatchExprToBDD(), arg);
+        CommunitySetMatchExprToBDD.toCommunitySetConstraint(
+            communitySetDifference.getRemovalCriterion().accept(new CommunityMatchExprToBDD(), arg),
+            arg);
     BDD[] commAPBDDs = arg.getBDDRoute().getCommunityAtomicPredicates();
     IntegerSpace.Builder shouldDelete = IntegerSpace.builder();
     IntegerSpace.Builder shouldNotDelete = IntegerSpace.builder();

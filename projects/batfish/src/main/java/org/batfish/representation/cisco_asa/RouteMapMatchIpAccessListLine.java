@@ -16,20 +16,18 @@ import org.batfish.datamodel.routing_policy.expr.NamedPrefixSet;
 @ParametersAreNonnullByDefault
 public final class RouteMapMatchIpAccessListLine extends RouteMapMatchLine {
 
-  @Nonnull private final Set<String> _listNames;
+  private final @Nonnull Set<String> _listNames;
 
   public RouteMapMatchIpAccessListLine(Set<String> listNames) {
     _listNames = listNames;
   }
 
-  @Nonnull
-  public Set<String> getListNames() {
+  public @Nonnull Set<String> getListNames() {
     return _listNames;
   }
 
   @Override
-  @Nonnull
-  public BooleanExpr toBooleanExpr(Configuration c, AsaConfiguration cc, Warnings w) {
+  public @Nonnull BooleanExpr toBooleanExpr(Configuration c, AsaConfiguration cc, Warnings w) {
     Disjunction d = new Disjunction();
     List<BooleanExpr> disjuncts = d.getDisjuncts();
     for (String listName : _listNames) {

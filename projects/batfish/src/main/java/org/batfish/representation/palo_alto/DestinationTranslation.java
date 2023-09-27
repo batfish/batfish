@@ -9,16 +9,14 @@ import org.batfish.representation.palo_alto.RuleEndpoint.Type;
 /** Represents destination-translation clause in Palo Alto NAT rule */
 public class DestinationTranslation implements Serializable {
 
-  @Nullable private RuleEndpoint _translatedAddress;
-  @Nullable private Integer _translatedPort;
+  private @Nullable RuleEndpoint _translatedAddress;
+  private @Nullable Integer _translatedPort;
 
-  @Nullable
-  public RuleEndpoint getTranslatedAddress() {
+  public @Nullable RuleEndpoint getTranslatedAddress() {
     return _translatedAddress;
   }
 
-  @Nullable
-  public Integer getTranslatedPort() {
+  public @Nullable Integer getTranslatedPort() {
     return _translatedPort;
   }
 

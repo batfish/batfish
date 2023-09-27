@@ -54,7 +54,7 @@ pocond_if_route_exists
   )
 ;
 
-pocondi_prefix: prefix=ip_prefix;
+pocondi_prefix: prefix = ip_prefix;
 
 pocondi_table: TABLE name = junos_name;
 
@@ -124,7 +124,7 @@ poplt_apply_path
 
 poplt_network
 :
-   network = ip_prefix
+   network = ip_prefix_default_32
 ;
 
 poplt_network6
@@ -338,7 +338,7 @@ popsf_route_filter
 :
    ROUTE_FILTER
    (
-      ip_prefix
+      prefix = ip_prefix_default_32
       | ipv6_prefix
    ) popsfrf_common then = popsfrf_then?
 ;
@@ -430,7 +430,7 @@ popsfrf_through
 :
    THROUGH
    (
-      ip_prefix
+      prefix = ip_prefix_default_32
       | ipv6_prefix
    )
 ;

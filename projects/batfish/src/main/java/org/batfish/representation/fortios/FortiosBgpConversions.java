@@ -108,7 +108,7 @@ public final class FortiosBgpConversions {
       // this is the standard way to disable BGP in FortiOS
       return;
     } else if (as == 65535L || as == 4294967295L) {
-      w.redFlag(String.format("Ignoring BGP process: AS %s is proscribed by RFC 7300", as));
+      w.redFlagf("Ignoring BGP process: AS %s is proscribed by RFC 7300", as);
       return;
     }
     // TODO Infer router-id if not explicitly configured

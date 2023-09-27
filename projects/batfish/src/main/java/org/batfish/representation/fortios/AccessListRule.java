@@ -18,23 +18,19 @@ public class AccessListRule implements Serializable {
   public static final Action DEFAULT_ACTION = Action.PERMIT;
   public static final boolean DEFAULT_EXACT_MATCH = false;
 
-  @Nonnull
-  public String getNumber() {
+  public @Nonnull String getNumber() {
     return _number;
   }
 
-  @Nullable
-  public Action getAction() {
+  public @Nullable Action getAction() {
     return _action;
   }
 
-  @Nonnull
-  public Action getActionEffective() {
+  public @Nonnull Action getActionEffective() {
     return firstNonNull(_action, DEFAULT_ACTION);
   }
 
-  @Nullable
-  public Boolean getExactMatch() {
+  public @Nullable Boolean getExactMatch() {
     return _exactMatch;
   }
 
@@ -42,13 +38,11 @@ public class AccessListRule implements Serializable {
     return firstNonNull(_exactMatch, DEFAULT_EXACT_MATCH);
   }
 
-  @Nullable
-  public Prefix getPrefix() {
+  public @Nullable Prefix getPrefix() {
     return _prefix;
   }
 
-  @Nullable
-  public IpWildcard getWildcard() {
+  public @Nullable IpWildcard getWildcard() {
     return _wildcard;
   }
 
@@ -74,9 +68,9 @@ public class AccessListRule implements Serializable {
     _number = number;
   }
 
-  @Nonnull private final String _number;
-  @Nullable private Action _action;
-  @Nullable private Prefix _prefix;
-  @Nullable private IpWildcard _wildcard;
-  @Nullable private Boolean _exactMatch;
+  private final @Nonnull String _number;
+  private @Nullable Action _action;
+  private @Nullable Prefix _prefix;
+  private @Nullable IpWildcard _wildcard;
+  private @Nullable Boolean _exactMatch;
 }

@@ -50,8 +50,7 @@ public class VirtualServerPort implements Serializable {
     UDP
   }
 
-  @Nullable
-  public String getAccessList() {
+  public @Nullable String getAccessList() {
     return _accessList;
   }
 
@@ -59,8 +58,7 @@ public class VirtualServerPort implements Serializable {
     _accessList = accessList;
   }
 
-  @Nullable
-  public String getAflex() {
+  public @Nullable String getAflex() {
     return _aflex;
   }
 
@@ -68,24 +66,20 @@ public class VirtualServerPort implements Serializable {
     _aflex = aflex;
   }
 
-  @Nullable
-  public Integer getBucketCount() {
+  public @Nullable Integer getBucketCount() {
     return _bucketCount;
   }
 
   /** Description from the cli: Use default server selection method if prefer method failed. */
-  @Nullable
-  public Boolean getDefSelectionIfPrefFailed() {
+  public @Nullable Boolean getDefSelectionIfPrefFailed() {
     return _defSelectionIfPrefFailed;
   }
 
-  @Nullable
-  public Boolean getEnable() {
+  public @Nullable Boolean getEnable() {
     return _enable;
   }
 
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -93,23 +87,19 @@ public class VirtualServerPort implements Serializable {
     return _number;
   }
 
-  @Nullable
-  public Integer getRange() {
+  public @Nullable Integer getRange() {
     return _range;
   }
 
-  @Nullable
-  public String getServiceGroup() {
+  public @Nullable String getServiceGroup() {
     return _serviceGroup;
   }
 
-  @Nullable
-  public String getSourceNat() {
+  public @Nullable String getSourceNat() {
     return _sourceNat;
   }
 
-  @Nonnull
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 
@@ -145,8 +135,7 @@ public class VirtualServerPort implements Serializable {
    * From docs: Force the ACOS device to send replies to clients back through the last hop on which
    * the request for the virtual port's service was received.
    */
-  @Nullable
-  public Boolean getUseRcvHopForResp() {
+  public @Nullable Boolean getUseRcvHopForResp() {
     return _useRcvHopForResp;
   }
 
@@ -160,16 +149,16 @@ public class VirtualServerPort implements Serializable {
     _range = range;
   }
 
-  @Nullable private String _accessList;
-  @Nullable private String _aflex;
-  @Nullable private Integer _bucketCount;
-  @Nullable private Boolean _defSelectionIfPrefFailed;
-  @Nullable private Boolean _enable;
-  @Nullable private String _name;
+  private @Nullable String _accessList;
+  private @Nullable String _aflex;
+  private @Nullable Integer _bucketCount;
+  private @Nullable Boolean _defSelectionIfPrefFailed;
+  private @Nullable Boolean _enable;
+  private @Nullable String _name;
   private final int _number;
-  @Nullable private Integer _range;
-  @Nullable private String _serviceGroup;
-  @Nullable private String _sourceNat;
-  @Nonnull private Type _type;
-  @Nullable private Boolean _useRcvHopForResp;
+  private @Nullable Integer _range;
+  private @Nullable String _serviceGroup;
+  private @Nullable String _sourceNat;
+  private @Nonnull Type _type;
+  private @Nullable Boolean _useRcvHopForResp;
 }

@@ -29,8 +29,7 @@ public class OspfAreaStub implements OspfAreaTypeSettings {
     _defaultRouteDisable = defaultRouteDisable;
   }
 
-  @Nullable
-  public Integer getDefaultRouteMetric() {
+  public @Nullable Integer getDefaultRouteMetric() {
     return _defaultRouteMetric;
   }
 
@@ -38,8 +37,7 @@ public class OspfAreaStub implements OspfAreaTypeSettings {
     _defaultRouteMetric = defaultRouteMetric;
   }
 
-  @Nullable
-  public Boolean getAcceptSummary() {
+  public @Nullable Boolean getAcceptSummary() {
     return _acceptSummary;
   }
 
@@ -52,6 +50,6 @@ public class OspfAreaStub implements OspfAreaTypeSettings {
   //////////////////////////////////////////
 
   private boolean _defaultRouteDisable;
-  @Nullable private Integer _defaultRouteMetric;
-  @Nullable private Boolean _acceptSummary;
+  private @Nullable Integer _defaultRouteMetric;
+  private @Nullable Boolean _acceptSummary;
 }

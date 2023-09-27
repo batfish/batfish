@@ -193,7 +193,7 @@ natp_address
       prefix = ip_prefix (PORT port_num = port_number)?
       | from_address = ip_address TO to_address = ip_address
       | from_prefix = ip_prefix TO to_prefix = ip_prefix
-      | ip = ip_address PORT port_num = port_number
+      | ip = ip_address (PORT port_num = port_number)?
    )
 ;
 

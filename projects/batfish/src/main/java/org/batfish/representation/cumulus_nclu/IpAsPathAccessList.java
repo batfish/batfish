@@ -22,13 +22,11 @@ public class IpAsPathAccessList implements Serializable {
     _lines.add(line);
   }
 
-  @Nonnull
-  public List<IpAsPathAccessListLine> getLines() {
+  public @Nonnull List<IpAsPathAccessListLine> getLines() {
     return _lines;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 }

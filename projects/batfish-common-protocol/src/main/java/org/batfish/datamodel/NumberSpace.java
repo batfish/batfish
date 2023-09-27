@@ -170,7 +170,7 @@ public abstract class NumberSpace<
    * Invariant: always ensure ranges are stored in canonical form (enforced in builder methods)
    * and immutable (enforced in constructor)
    */
-  @Nonnull final RangeSet<T> _rangeset;
+  final @Nonnull RangeSet<T> _rangeset;
 
   protected NumberSpace(RangeSet<T> rangeset) {
     _rangeset = ImmutableRangeSet.copyOf(rangeset);

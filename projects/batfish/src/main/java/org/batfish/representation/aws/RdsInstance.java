@@ -40,9 +40,9 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class DbSubnetGroup {
 
-    @Nonnull private final String _vpcId;
+    private final @Nonnull String _vpcId;
 
-    @Nonnull private final List<DbSubnet> _dbSubnets;
+    private final @Nonnull List<DbSubnet> _dbSubnets;
 
     @JsonCreator
     private static DbSubnetGroup create(
@@ -74,11 +74,11 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class DbSubnet {
 
-    @Nonnull private final String _availabilityZone;
+    private final @Nonnull String _availabilityZone;
 
-    @Nonnull private final String _identifier;
+    private final @Nonnull String _identifier;
 
-    @Nonnull private final String _status;
+    private final @Nonnull String _status;
 
     @JsonCreator
     private static DbSubnet create(
@@ -118,7 +118,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class DbSubnetAz {
 
-    @Nonnull private final String _name;
+    private final @Nonnull String _name;
 
     @JsonCreator
     private static DbSubnetAz create(@Nullable @JsonProperty(JSON_KEY_NAME) String name) {
@@ -140,8 +140,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class VpcSecurityGroup {
 
-    @Nonnull private final String _status;
-    @Nonnull private final String _id;
+    private final @Nonnull String _status;
+    private final @Nonnull String _id;
 
     @JsonCreator
     private static VpcSecurityGroup create(
@@ -168,19 +168,19 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _dbInstanceIdentifier;
+  private final @Nonnull String _dbInstanceIdentifier;
 
-  @Nonnull private final String _dbInstanceStatus;
+  private final @Nonnull String _dbInstanceStatus;
 
-  @Nonnull private final ListMultimap<String, String> _azsSubnetIds;
+  private final @Nonnull ListMultimap<String, String> _azsSubnetIds;
 
-  @Nonnull private final String _availabilityZone;
+  private final @Nonnull String _availabilityZone;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   private final boolean _multiAz;
 
-  @Nonnull private final List<String> _securityGroups;
+  private final @Nonnull List<String> _securityGroups;
 
   @JsonCreator
   private static RdsInstance create(
@@ -249,8 +249,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     return _azsSubnetIds;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 
@@ -258,18 +257,15 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     return _multiAz;
   }
 
-  @Nonnull
-  public String getAvailabilityZone() {
+  public @Nonnull String getAvailabilityZone() {
     return _availabilityZone;
   }
 
-  @Nonnull
-  public List<String> getSecurityGroups() {
+  public @Nonnull List<String> getSecurityGroups() {
     return _securityGroups;
   }
 
-  @Nonnull
-  public String getDbInstanceStatus() {
+  public @Nonnull String getDbInstanceStatus() {
     return _dbInstanceStatus;
   }
 

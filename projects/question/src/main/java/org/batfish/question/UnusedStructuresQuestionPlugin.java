@@ -150,7 +150,7 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
   public static class UnusedStructuresQuestion extends Question {
     private static final String PROP_NODES = "nodes";
 
-    @Nullable private final String _nodes;
+    private final @Nullable String _nodes;
 
     @JsonCreator
     private static UnusedStructuresQuestion create(@JsonProperty(PROP_NODES) String nodes) {
