@@ -94,14 +94,14 @@ public final class MutableBDDInteger extends BDDInteger {
         _bitvec.length <= 63, "Only BDDInteger of 63 or fewer bits can be converted to long");
 
     // explicitly treat as false any variables that do not appear in the given SAT assignment but
-    // are part of the support of this MutableBDDInteger; this is necessary to properly get models
-    // for situations like increments, where this object represents a function of the original
-    // BDD variables.
+    // are part of the support of this MutableBDDInteger. this is necessary to properly get models
+    // in the face of mutation, where this object represents a function of the original BDD
+    // variables.
     BDD fullSatAssignment =
         satAssignment.satOne(
             satAssignment
                 .getFactory()
-                .andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toList())),
+                .andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet())),
             false);
 
     long value = 0;
