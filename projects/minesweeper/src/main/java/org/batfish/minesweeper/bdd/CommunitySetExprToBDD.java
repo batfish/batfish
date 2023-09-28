@@ -38,7 +38,7 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
     BDD positive = communitySetDifference.getInitial().accept(this, arg);
     BDD negative =
         communitySetDifference.getRemovalCriterion().accept(new CommunityMatchExprToBDD(), arg);
-    return positive.diffWith(negative);
+    return positive.diffWith(CommunitySetMatchExprToBDD.toCommunitySetConstraint(negative, arg));
   }
 
   @Override

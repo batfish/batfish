@@ -267,7 +267,7 @@ public class CommunityMatchExprToBDDTest {
 
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("20:30"));
 
-    assertEquals(_arg.getBDDRoute().anyCommunity().diff(cvarToBDD(cvar2)), result);
+    assertEquals(cvarToBDD(cvar2).not(), result);
   }
 
   @Test
