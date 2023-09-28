@@ -2,7 +2,6 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -114,19 +113,10 @@ public class CommunitySetMatchExprToBDD
   @Override
   public BDD visitHasCommunity(HasCommunity hasCommunity, Arg arg) {
 
-    /**
-     * we can't treat a BDD for a single community as a BDD for a community set, or else its
-     * constraints could be satisfied by multiple communities in the set, which each satisfy some of
-     * the constraints. therefore, we instead determine the largest disjunction of atomic predicates
-     * that each satisfies all the single-community constraints. any community set that satisfies
-     * this disjunction must contain at least one community that suffices.
+    /*
+     * first get a BDD for the constraint on a single community that must be in the set. we use the
+     * original route here so that the constraint will be in terms of the community APs.
      */
-
-    /**
-     * first get a BDD for the single community constraints. we use the original route here so that
-     * the constraint will be in terms of the community APs.
-     */
-    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
     BDD matchExprBDD =
         hasCommunity
             .getExpr()
@@ -134,28 +124,8 @@ public class CommunitySetMatchExprToBDD
                 new CommunityMatchExprToBDD(),
                 new Arg(arg.getTransferBDD(), arg.getTransferBDD().getOriginalRoute()));
 
-    /**
-     * now figure out which atomic predicates satisfy matchExprBDD. when considering each atomic
-     * predicate, we use the exactlyOneAP helper function to include the fact that all other atomic
-     * predicates will be false, which must be the case since atomic predicates are disjoint.
-     * otherwise, we would not be able to show that ap1 satisfies the community constraint (ap1 /\
-     * !ap2), for example.
-     */
-    IntStream disjuncts =
-        IntStream.range(0, originalAPs.length)
-            .filter(i -> !exactlyOneAP(originalAPs, i, arg).diffSat(matchExprBDD));
-
-    /**
-     * finally return a disjunction of all the satisfying atomic predicates. two important notes.
-     * first, here we do NOT use the exactlyOneAP function, because we are returning a BDD for a
-     * community set, which can satisfy multiple atomic predicates due to multiple elements of the
-     * set. second, we now use the APs in the arg, which properly handles configuration formats like
-     * Juniper that require matching on the current route rather than the original input route.
-     */
-    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
-    return arg.getTransferBDD()
-        .getFactory()
-        .orAll(disjuncts.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+    // then convert a constraint on individual communities to a constraint on a community set
+    return toCommunitySetConstraint(matchExprBDD, arg);
   }
 
   @Override
@@ -174,13 +144,81 @@ public class CommunitySetMatchExprToBDD
         .orAll(commAPs.stream().map(ap -> apBDDs[ap]).collect(Collectors.toList()));
   }
 
-  /*
-  Return a BDD that represents the scenario where the ith BDD in aps is satisfied and all others
-  are falsified.
+  /**
+   * Converts a constraint on individual communities to a constraint on community sets. This
+   * involves figuring out which community atomic predicates satisfy the given community constraint,
+   * and then producing a disjunction of them.
+   *
+   * @param commConstraint the community constraint
+   * @param arg provides access to the context that we need, such as the atomic predicates
+   * @return a community set constraint
    */
-  static BDD exactlyOneAP(BDD[] aps, int i, Arg arg) {
-    ArrayList<BDD> negs = new ArrayList<>(Arrays.asList(aps));
-    negs.remove(i);
-    return aps[i].diff(arg.getTransferBDD().getFactory().orAll(negs));
+  public static BDD toCommunitySetConstraint(BDD commConstraint, Arg arg) {
+    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
+    /*
+     * The given community constraint is a predicate on community atomic predicates that must be
+     * satisfied by *some* element of the route's community set. We can't directly treat this
+     * predicate as a predicate on community sets for a few reasons. First, negation on an
+     * individual community is not the same as negation on a community set. For example, the
+     * single-community constraint (ap1 /\ !ap2) is satisfied if there exists a community that
+     * satisfies ap1 and falsifies ap2. But as a community-set constraint, this same predicate
+     * requires the set to contain a community satisfying ap1 and to not contain any communities
+     * satisfying ap2. Second, community atomic predicates represent disjoint communities, by
+     * construction. So the single-community constraint (ap1 /\ ap2) is not satisfiable. But as a
+     * community-set constraint, this same predicate is satisfied by a community set containing a
+     * community satisfying ap1 and another community satisfying ap2.
+     *
+     * Therefore, to convert a single-community constraint to a community-set constraint, we
+     * identify all communities that satisfy the single-community constraint, taking into account
+     * the fact that atomic predicates are disjoint, and then we produce a disjunction of them as
+     * the community-set constraint.
+     */
+
+    // consider each atomic predicate in turn
+    IntStream satisfyingAPs =
+        IntStream.range(0, originalAPs.length)
+            .filter(
+                i -> {
+                  // check that the ith AP is compatible with the single-community constraint
+                  BDD model = commConstraint.and(originalAPs[i]).satOne();
+                  if (model.isZero()) {
+                    return false;
+                  }
+                  // if so, check that all other variables in the produced model are negated;
+                  // this implies that the ith AP on its own is sufficient to satisfy the constraint
+                  return allNegativeLiterals(model.exist(originalAPs[i]));
+                });
+
+    // TODO: Two potential performance optimizations to consider in the future.  First, a binary
+    // encoding of atomic predicates for single-community constraints, for example using the
+    // BDDDomain class, would avoid the need to explicitly enforce disjointness of atomic
+    // predicates. Second, it may be possible to traverse commConstraint once to find all relevant
+    // APs, instead of traversing models of the constraint.
+
+    /*
+     * finally return a disjunction of all the satisfying atomic predicates. we use the APs in
+     * the arg, which properly handles configuration formats like Juniper that require matching on
+     * the current route rather than the original input route.
+     */
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    return arg.getTransferBDD()
+        .getFactory()
+        .orAll(satisfyingAPs.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+  }
+
+  /**
+   * Checks whether all variables in the given variable assignment are negated.
+   *
+   * @param model the variable assignment
+   * @return a boolean indicating whether the check succeeded
+   */
+  static boolean allNegativeLiterals(BDD model) {
+    if (model.isZero() || model.isOne()) {
+      return true;
+    }
+    if (model.high().isZero()) {
+      return allNegativeLiterals(model.low());
+    }
+    return false;
   }
 }

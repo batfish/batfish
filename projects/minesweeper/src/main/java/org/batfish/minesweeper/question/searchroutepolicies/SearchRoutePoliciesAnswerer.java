@@ -162,11 +162,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+      BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
+          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -187,7 +187,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // the same as what the user was asking for.  if this ever fails then either TRP or SRP
       // is modeling something incorrectly (or both).
       // TODO: We can also take this validation further by using a variant of
-      // satAssignmentToInputRoute to produce the output route from our fullModel and the final
+      // satAssignmentToInputRoute to produce the output route from our model and the final
       // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
       // result.
       checkState(

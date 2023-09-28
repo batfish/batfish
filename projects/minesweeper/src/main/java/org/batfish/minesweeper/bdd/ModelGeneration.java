@@ -53,16 +53,29 @@ public class ModelGeneration {
   }
 
   /**
+   * Determine whether a given boolean formula must be true according to the given satisfying
+   * assignment. This method properly handles assignments that are partial (missing truth values for
+   * some variables).
+   *
+   * @param b the boolean formula, represented as a BDD
+   * @param model the model
+   * @return a boolean
+   */
+  static boolean mustBeTrueInModel(BDD b, BDD model) {
+    return !model.diffSat(b);
+  }
+
+  /**
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
    * set of communities for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model of the symbolic route constraints
+   * @param model a (possibly partial) model of the symbolic route constraints
    * @param r the symbolic route
    * @param configAPs an object that provides information about the community atomic predicates
    * @return a set of communities
    */
   static Set<Community> satAssignmentToCommunities(
-      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+      BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -73,7 +86,7 @@ public class ModelGeneration {
     int numStandardAPs = configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
     // handle standard community literals and regexes
     for (int i = 0; i < numStandardAPs; i++) {
-      if (aps[i].andSat(fullModel)) {
+      if (mustBeTrueInModel(aps[i], model)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
         // see RegexAtomicPredicates::initAtomicPredicates
@@ -98,7 +111,7 @@ public class ModelGeneration {
     // handle extended/large community literals
     for (Map.Entry<Integer, CommunityVar> entry :
         configAPs.getNonStandardCommunityLiterals().entrySet()) {
-      if (aps[entry.getKey()].andSat(fullModel)) {
+      if (mustBeTrueInModel(aps[entry.getKey()], model)) {
         assert entry.getValue().getLiteralValue() != null;
         comms.add(entry.getValue().getLiteralValue());
       }
@@ -110,12 +123,12 @@ public class ModelGeneration {
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce
    * an AS-path for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model of the symbolic route constraints
+   * @param model a (possibly partial) model of the symbolic route constraints
    * @param r the symbolic route
    * @param configAPs an object provides information about the AS-path regex atomic predicates
    * @return an AsPath
    */
-  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+  static AsPath satAssignmentToAsPath(BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getAsPathRegexAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -124,7 +137,7 @@ public class ModelGeneration {
     // find all atomic predicates that are required to be true in the given model
     List<Integer> trueAPs =
         IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-            .filter(i -> aps[i].andSat(fullModel))
+            .filter(i -> mustBeTrueInModel(aps[i], model))
             .boxed()
             .collect(Collectors.toList());
 
@@ -202,12 +215,11 @@ public class ModelGeneration {
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
    *
-   * @param fullModel the satisfying assignment
+   * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
    * @return a route
    */
-  public static Bgpv4Route satAssignmentToInputRoute(
-      BDD fullModel, ConfigAtomicPredicates configAPs) {
+  public static Bgpv4Route satAssignmentToInputRoute(BDD model, ConfigAtomicPredicates configAPs) {
 
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
@@ -215,31 +227,31 @@ public class ModelGeneration {
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
             .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
-    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
 
-    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(fullModel));
-    long len = r.getPrefixLength().satAssignmentToLong(fullModel);
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(model));
+    long len = r.getPrefixLength().satAssignmentToLong(model);
     builder.setNetwork(Prefix.create(ip, (int) len));
 
-    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(fullModel));
-    builder.setAdmin(r.getAdminDist().satAssignmentToInt(fullModel));
-    builder.setMetric(r.getMed().satAssignmentToLong(fullModel));
-    builder.setTag(r.getTag().satAssignmentToLong(fullModel));
-    builder.setOriginType(r.getOriginType().satAssignmentToValue(fullModel));
-    builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(fullModel));
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(model));
+    builder.setAdmin(r.getAdminDist().satAssignmentToInt(model));
+    builder.setMetric(r.getMed().satAssignmentToLong(model));
+    builder.setTag(r.getTag().satAssignmentToLong(model));
+    builder.setOriginType(r.getOriginType().satAssignmentToValue(model));
+    builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(model));
 
     // if the cluster list length is N, create the cluster list 0,...,N-1
-    long clusterListLength = r.getClusterListLength().satAssignmentToLong(fullModel);
+    long clusterListLength = r.getClusterListLength().satAssignmentToLong(model);
     builder.setClusterList(
         LongStream.range(0, clusterListLength).boxed().collect(ImmutableSet.toImmutableSet()));
 
-    Set<Community> communities = satAssignmentToCommunities(fullModel, r, configAPs);
+    Set<Community> communities = satAssignmentToCommunities(model, r, configAPs);
     builder.setCommunities(communities);
 
-    AsPath asPath = satAssignmentToAsPath(fullModel, r, configAPs);
+    AsPath asPath = satAssignmentToAsPath(model, r, configAPs);
     builder.setAsPath(asPath);
 
-    NextHop nextHop = satAssignmentToNextHop(fullModel, r, configAPs);
+    NextHop nextHop = satAssignmentToNextHop(model, r, configAPs);
     builder.setNextHop(nextHop);
 
     return builder.build();
@@ -250,21 +262,20 @@ public class ModelGeneration {
    * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
    * consistent with the assignment.
    *
-   * @param fullModel the satisfying assignment
+   * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
    * @return a pair of a predicate on tracks and an optional source VRF
    */
   public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
-      BDD fullModel, ConfigAtomicPredicates configAPs) {
+      BDD model, ConfigAtomicPredicates configAPs) {
 
-    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
 
-    List<String> successfulTracks =
-        allSatisfyingItems(configAPs.getTracks(), r.getTracks(), fullModel);
+    List<String> successfulTracks = allSatisfyingItems(configAPs.getTracks(), r.getTracks(), model);
 
     // see if the route should have a source VRF, and if so then add it
     List<String> sourceVrfs =
-        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), fullModel);
+        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
     checkState(
         sourceVrfs.size() <= 1,
         "Error in symbolic route analysis: at most one source VRF can be in the environment");
@@ -274,10 +285,9 @@ public class ModelGeneration {
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable
   // assignment.
-  private static List<String> allSatisfyingItems(
-      List<String> items, BDD[] itemBDDs, BDD fullModel) {
+  private static List<String> allSatisfyingItems(List<String> items, BDD[] itemBDDs, BDD model) {
     return IntStream.range(0, itemBDDs.length)
-        .filter(i -> itemBDDs[i].andSat(fullModel))
+        .filter(i -> mustBeTrueInModel(itemBDDs[i], model))
         .mapToObj(items::get)
         .collect(ImmutableList.toImmutableList());
   }
@@ -299,10 +309,10 @@ public class ModelGeneration {
     }
   }
 
-  // Produces a full model of the given constraints, which represents a concrete route announcement
-  // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
-  // the constraints.  The same approach could be used to provide default values for other fields in
-  // the future.
+  // Produces a model of the given constraints, which represents a concrete route announcement
+  // that is consistent with the constraints.  The model uses certain defaults for certain fields,
+  // like the prefix, if they are consistent with the constraints. Note that the model is a partial
+  // assignment -- variables that don't matter are not assigned a truth value.
   public static BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates configAPs) {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
@@ -334,6 +344,6 @@ public class ModelGeneration {
     augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
     augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
     augmentedConstraints = tryAddingConstraint(lessPreferredPrefixes, augmentedConstraints);
-    return augmentedConstraints.fullSatOne();
+    return augmentedConstraints.satOne();
   }
 }

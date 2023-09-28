@@ -403,16 +403,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Create a BDD representing the constraint that the route announcement has at least one
-   * community.
-   *
-   * @return the bdd
-   */
-  public BDD anyCommunity() {
-    return _factory.orAll(_communityAtomicPredicates);
-  }
-
-  /**
    * Create a BDD representing the constraint that the value of a specific enum attribute in the
    * route announcement's protocol is a member of the given set.
    *
