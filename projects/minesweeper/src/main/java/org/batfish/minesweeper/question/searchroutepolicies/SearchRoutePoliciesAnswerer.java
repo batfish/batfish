@@ -49,7 +49,6 @@ import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
-import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDDomain;
 import org.batfish.minesweeper.bdd.BDDRoute;
@@ -337,7 +336,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param route the symbolic route
    * @return the BDD
    */
-  private BDD asPathRegexConstraintsToBDD(
+  private BDD asPathRegexConstraintListToBDD(
       List<RegexConstraint> regexConstraints, ConfigAtomicPredicates configAPs, BDDRoute route) {
     return TransferBDD.asPathRegexesToBDD(
         regexConstraints.stream()
@@ -352,16 +351,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Convert community regex constraints from a {@link BgpRouteConstraints} object to a BDD.
    *
    * @param regexes the user-defined regex constraints
-   * @param atomicPredicates information about the atomic predicates corresponding to the regexes
-   * @param atomicPredicateBDDs one BDD per atomic predicate, coming from a {@link BDDRoute} object
-   * @param factory the BDD factory
+   * @param configAPs information about the community atomic predicates
+   * @param route the symbolic route
    * @return the overall constraint as a BDD
    */
   private BDD communityRegexConstraintsToBDD(
-      RegexConstraints regexes,
-      RegexAtomicPredicates<CommunityVar> atomicPredicates,
-      BDD[] atomicPredicateBDDs,
-      BDDFactory factory) {
+      RegexConstraints regexes, ConfigAtomicPredicates configAPs, BDDRoute route) {
+
+    BDDFactory factory = route.getFactory();
+
     /*
      * disjoin all positive regex constraints, each of which is itself logically represented as the
      * disjunction of its corresponding atomic predicates. special case: if there are no positive
@@ -375,8 +373,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                     .map(RegexConstraint::getRegex)
                     .map(CommunityVar::from)
                     .flatMap(
-                        regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
-                    .map(i -> atomicPredicateBDDs[i])
+                        regex ->
+                            configAPs
+                                .getStandardCommunityAtomicPredicates()
+                                .getRegexAtomicPredicates()
+                                .get(regex)
+                                .stream())
+                    .map(i -> route.getCommunityAtomicPredicates()[i])
                     .collect(ImmutableSet.toImmutableSet()));
     // disjoin all negative regex constraints, similarly
     BDD negativeConstraints =
@@ -384,8 +387,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             regexes.getNegativeRegexConstraints().stream()
                 .map(RegexConstraint::getRegex)
                 .map(CommunityVar::from)
-                .flatMap(regex -> atomicPredicates.getRegexAtomicPredicates().get(regex).stream())
-                .map(i -> atomicPredicateBDDs[i])
+                .flatMap(
+                    regex ->
+                        configAPs
+                            .getStandardCommunityAtomicPredicates()
+                            .getRegexAtomicPredicates()
+                            .get(regex)
+                            .stream())
+                .map(i -> route.getCommunityAtomicPredicates()[i])
                 .collect(ImmutableSet.toImmutableSet()));
 
     return positiveConstraints.diffWith(negativeConstraints);
@@ -448,12 +457,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
-    result.andWith(
-        communityRegexConstraintsToBDD(
-            constraints.getCommunities(),
-            configAPs.getStandardCommunityAtomicPredicates(),
-            r.getCommunityAtomicPredicates(),
-            r.getFactory()));
+    result.andWith(communityRegexConstraintsToBDD(constraints.getCommunities(), configAPs, r));
     if (outputRoute) {
       // AS-path constraints on the output route need to take any prepends into account
       result.andWith(
@@ -464,8 +468,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       // convert the positive and negative constraints to BDDs and return their difference;
       // if the positive constraints are empty then treat it as logically true
       result.andWith(
-          (pos.isEmpty() ? r.getFactory().one() : asPathRegexConstraintsToBDD(pos, configAPs, r))
-              .diffWith(asPathRegexConstraintsToBDD(neg, configAPs, r)));
+          (pos.isEmpty() ? r.getFactory().one() : asPathRegexConstraintListToBDD(pos, configAPs, r))
+              .diffWith(asPathRegexConstraintListToBDD(neg, configAPs, r)));
     }
     result.andWith(nextHopIpConstraintsToBDD(constraints.getNextHopIp(), r, outputRoute));
     result.andWith(setToBDD(constraints.getOriginType(), r, r.getOriginType()));
