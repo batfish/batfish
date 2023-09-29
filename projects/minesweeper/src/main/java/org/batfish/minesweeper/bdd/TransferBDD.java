@@ -239,8 +239,8 @@ public class TransferBDD {
    *
    * @param regexes the regexes of interest
    * @param apMap a map from regexes to their corresponding sets of atomic predicates
-   * @return the set of relevant atomic predicates
    * @param <T> the specific type of the regexes
+   * @return the set of relevant atomic predicates
    */
   static <T extends SymbolicRegex> Set<Integer> atomicPredicatesFor(
       Set<T> regexes, Map<T, Set<Integer>> apMap) {
@@ -940,7 +940,7 @@ public class TransferBDD {
     } else if (stmt instanceof BufferedStatement) {
       curP.debug("BufferedStatement");
       BufferedStatement bufStmt = (BufferedStatement) stmt;
-      /**
+      /*
        * The {@link Environment} class for simulating route policies keeps track of whether a
        * statement is buffered, but it currently does not seem to ever use that information. So we
        * ignore it.
