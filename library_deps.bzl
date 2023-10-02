@@ -28,7 +28,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.ibm.icu:icu4j:69.1",
     "commons-beanutils:commons-beanutils:1.9.4",
     "commons-cli:commons-cli:1.5.0",
-    "commons-io:commons-io:2.13.0",
+    "commons-io:commons-io:2.14.0",
     "dk.brics:automaton:1.12-4",
     "jakarta.activation:jakarta.activation-api:1.2.2",
     "jakarta.annotation:jakarta.annotation-api:1.3.5",
