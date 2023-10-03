@@ -157,7 +157,7 @@ public final class MutableBDDInteger extends BDDInteger {
   /*
    * Add two BDDs bitwise to create a new BDD
    */
-  public BDDInteger add(BDDInteger other) {
+  public MutableBDDInteger add(BDDInteger other) {
     BDD[] as = _bitvec;
     BDD[] bs = other._bitvec;
 
@@ -165,7 +165,7 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
 
     BDD carry = _factory.zero();
-    BDDInteger sum = new MutableBDDInteger(_factory, as.length);
+    MutableBDDInteger sum = new MutableBDDInteger(_factory, as.length);
     BDD[] cs = sum._bitvec;
     for (int i = cs.length - 1; i > 0; --i) {
       cs[i] = as[i].xor(bs[i]).xor(carry);
