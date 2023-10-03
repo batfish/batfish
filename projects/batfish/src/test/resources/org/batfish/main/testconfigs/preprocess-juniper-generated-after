@@ -1,0 +1,5 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set system host-name preprocess-juniper-generated
+set interfaces xe-0/0/0 unit 0 mtu 2345
+set interfaces xe-0/0/1
+set interfaces xe-99/99/99 unit 0 description last

@@ -30,6 +30,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
   private final String _header;
   private final Integer _headerLineCount;
   private boolean _inBrackets;
+  private boolean _inDelete;
   private FlattenerLineMap _lineMap;
   private List<List<WordContext>> _stack;
   private final String _text;
@@ -103,8 +104,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     _extraLines.add(extraLinesBuilder.build());
     _currentStatement = new ArrayList<>();
     _stack.add(_currentStatement);
+    _inDelete = false;
     for (TagContext tagCtx : ctx.tag()) {
       constructTagCommand(tagCtx, ctx.words);
+      _inDelete |= tagCtx.DELETE() != null;
     }
   }
 
@@ -114,6 +117,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
     recordExtraLines(firstWordLine);
     _extraLines.remove(_extraLines.size() - 1);
     _stack.remove(_stack.size() - 1);
+    _inDelete = false;
     // Finished recording set lines for this node key, so pop up
   }
 
@@ -144,6 +148,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public void exitWord(WordContext ctx) {
+    if (_inDelete) {
+      // Do not add this word to a line being built.
+      return;
+    }
     if (_inBrackets) {
       _currentBracketedWords.add(ctx);
     } else {
@@ -166,6 +174,8 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
       return "activate";
     } else if (ctx.INACTIVE() != null) {
       return "deactivate";
+    } else if (ctx.DELETE() != null) {
+      return "delete";
     } else {
       assert ctx.REPLACE() != null;
       return "delete";
