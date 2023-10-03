@@ -57,6 +57,7 @@ word
 tag
 :
   ACTIVE
+  | DELETE
   | INACTIVE
   | REPLACE
 ;

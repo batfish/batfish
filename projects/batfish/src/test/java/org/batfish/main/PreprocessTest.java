@@ -76,6 +76,11 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testJuniperGenerated() throws IOException {
+    assertValidPair("preprocess-juniper-generated-before", "preprocess-juniper-generated-after");
+  }
+
+  @Test
   public void testMainBadArgs() throws IOException {
     _thrown.expect(IllegalArgumentException.class);
     main(new String[] {});
