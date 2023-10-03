@@ -1,0 +1,25 @@
+#
+set system host-name preprocess-juniper-generated
+
+#### xe-0/0/0 should have mtu only
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.0.0/32
+set interfaces xe-0/0/0 unit 0 family inet mtu 1500
+interfaces {
+  # Note: replace overwrites the entire block, so inet address is lost too
+  replace: xe-0/0/0 {
+    unit 0 {
+      mtu 2345;
+    }
+  }
+}
+
+#### xe-0/0/1 should be empty
+set interfaces xe-0/0/1 unit 0 family inet address 11.0.0.0/32
+interfaces {
+  xe-0/0/1 {
+    delete: unit 0;
+  }
+}
+
+#### Trailing lines should remain
+set interfaces xe-99/99/99 unit 0 description last
