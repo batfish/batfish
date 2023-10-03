@@ -161,6 +161,7 @@ s_null
          | MULTI_CHASSIS
          | POE
          | VIRTUAL_CHASSIS
+         | FORWARDING_OPTIONS DHCP_SECURITY
       ) null_filler
    )
    | ri_null
@@ -180,6 +181,13 @@ s_vlans
    )
 ;
 
+sl_vlans_null
+:
+   (
+      FORWARDING_OPTIONS DHCP_SECURITY
+   ) null_filler
+;
+
 s_vlans_named
 :
   name = junos_name
@@ -192,6 +200,7 @@ s_vlans_named
     | vlt_vlan_id
     | vlt_vlan_id_list
     | vlt_vni_id
+    | sl_vlans_null
   )
 ;
 
