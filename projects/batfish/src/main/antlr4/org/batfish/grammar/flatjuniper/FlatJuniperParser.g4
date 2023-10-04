@@ -185,11 +185,11 @@ vlt_forwarding_options
    FORWARDING_OPTIONS
    (
       apply
-      | vltfo_null
+      | vlt_fo_null
    )
 ;
 
-vltfo_null
+vlt_fo_null
 :
    (
       DHCP_SECURITY
