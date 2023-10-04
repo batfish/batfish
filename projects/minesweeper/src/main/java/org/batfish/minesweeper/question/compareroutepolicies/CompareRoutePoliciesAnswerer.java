@@ -31,6 +31,7 @@ import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.BgpRoute;
+import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
@@ -248,7 +249,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param configAPs an object providing the atomic predicates for the policy's owner configuration
    * @return a set of differences
    */
-  private List<Row> comparePolicies(
+  private Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> comparePolicies(
       RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     // The set of differences if any.
     List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
@@ -327,10 +328,13 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       }
     }
     return differences.stream()
-        .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()))
-        .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
-        .collect(Collectors.toList());
+        .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()));
   }
+
+  //      return differences.stream()
+  //              .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()))
+  //          .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
+  //          .collect(Collectors.toList());
 
   /**
    * Search all of the route policies of a particular node for behaviors of interest.
@@ -344,7 +348,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param reference the reference snapshot
    * @return all results from analyzing those route policies
    */
-  private Stream<Row> comparePoliciesForNode(
+  private Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> comparePoliciesForNode(
       String node,
       Stream<RoutingPolicy> policies,
       Stream<RoutingPolicy> referencePolicies,
@@ -408,7 +412,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                   currentPoliciesList.stream()
                       .flatMap(
                           currentPolicy ->
-                              comparePolicies(referencePolicy, currentPolicy, configAPs).stream()));
+                              comparePolicies(referencePolicy, currentPolicy, configAPs)));
     } else {
       // In this case we only compare policies with the same name.
       // Create a stream of policy tuples (referencePolicy, currentPolicy) for policies with the
@@ -433,8 +437,7 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
               })
           .flatMap(
               policyTuple ->
-                  comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs)
-                      .stream());
+                  comparePolicies(policyTuple.getFirst(), policyTuple.getSecond(), configAPs));
     }
   }
 
@@ -450,9 +453,12 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
    * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
    * with route-maps in r1 of the new snapshot.
+   *
+   * <p>This method returns a structured representation suitable for use by other questions, rather
+   * than a TableAnswer.
    */
-  @Override
-  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+  public Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> answerDiffHelper(
+      NetworkSnapshot snapshot, NetworkSnapshot reference) {
 
     SpecifierContext currentContext = _batfish.specifierContext(snapshot);
     SpecifierContext referenceContext = _batfish.specifierContext(reference);
@@ -462,38 +468,48 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     Stream<String> nodes = currentNodes.stream().filter(referenceNodes::contains);
 
     // Using stream.sorted() to ensure consistent order.
-    List<Row> rows =
-        nodes
-            .sorted()
-            .flatMap(
-                node -> {
-                  // If the referencePolicySpecifier is null then use the policies from
-                  // policySpecifier and do a 1-1 comparison based on policy name equality.
-                  if (_referencePolicySpecifier == null) {
-                    return comparePoliciesForNode(
-                        node,
-                        _policySpecifier.resolve(node, currentContext).stream().sorted(),
-                        _policySpecifier.resolve(node, referenceContext).stream().sorted(),
-                        false,
-                        snapshot,
-                        reference);
-                  } else {
-                    // Otherwise cross-compare all policies in each set (policySpecifier and
-                    // referencePolicySpecifier)
-                    return comparePoliciesForNode(
-                        node,
-                        _policySpecifier.resolve(node, currentContext).stream().sorted(),
-                        _referencePolicySpecifier.resolve(node, referenceContext).stream().sorted(),
-                        true,
-                        snapshot,
-                        reference);
-                  }
-                })
-            .collect(ImmutableList.toImmutableList());
+    return nodes
+        .sorted()
+        .flatMap(
+            node -> {
+              // If the referencePolicySpecifier is null then use the policies from
+              // policySpecifier and do a 1-1 comparison based on policy name equality.
+              if (_referencePolicySpecifier == null) {
+                return comparePoliciesForNode(
+                    node,
+                    _policySpecifier.resolve(node, currentContext).stream().sorted(),
+                    _policySpecifier.resolve(node, referenceContext).stream().sorted(),
+                    false,
+                    snapshot,
+                    reference);
+              } else {
+                // Otherwise cross-compare all policies in each set (policySpecifier and
+                // referencePolicySpecifier)
+                return comparePoliciesForNode(
+                    node,
+                    _policySpecifier.resolve(node, currentContext).stream().sorted(),
+                    _referencePolicySpecifier.resolve(node, referenceContext).stream().sorted(),
+                    true,
+                    snapshot,
+                    reference);
+              }
+            });
+  }
+
+  public static TableAnswerElement toTableAnswer(Question question, List<Row> rows) {
     TableAnswerElement answerElement =
         new TableAnswerElement(TestRoutePoliciesAnswerer.compareMetadata());
-    answerElement.postProcessAnswer(_question, rows);
+    answerElement.postProcessAnswer(question, rows);
     return answerElement;
+  }
+
+  @Override
+  public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {
+    List<Row> rows =
+        answerDiffHelper(snapshot, reference)
+            .map(t -> TestRoutePoliciesAnswerer.toCompareRow(t.getFirst(), t.getSecond()))
+            .collect(ImmutableList.toImmutableList());
+    return toTableAnswer(_question, rows);
   }
 
   @VisibleForTesting
