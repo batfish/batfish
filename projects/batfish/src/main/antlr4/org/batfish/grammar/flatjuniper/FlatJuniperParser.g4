@@ -161,7 +161,6 @@ s_null
          | MULTI_CHASSIS
          | POE
          | VIRTUAL_CHASSIS
-         | FORWARDING_OPTIONS DHCP_SECURITY
       ) null_filler
    )
    | ri_null
