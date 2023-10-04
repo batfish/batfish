@@ -7953,9 +7953,8 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testVlanForwardingOptionsDhcpSecurity() {
-     // doesn't crash.
-     parseJuniperConfig("vlan-forwarding-options");
- 
+    // doesn't crash.
+    parseJuniperConfig("vlan-forwarding-options");
   }
 
   @Test
