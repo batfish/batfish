@@ -181,10 +181,19 @@ s_vlans
    )
 ;
 
-sl_vlans_null
+vlt_forwarding_options
+:
+   FORWARDING_OPTIONS
+   (
+      apply
+      | vltfo_null
+   )
+;
+
+vltfo_null
 :
    (
-      FORWARDING_OPTIONS DHCP_SECURITY
+      DHCP_SECURITY
    ) null_filler
 ;
 
@@ -195,12 +204,12 @@ s_vlans_named
     apply
     | vlt_description
     | vlt_filter
+    | vlt_forwarding_options    
     | vlt_interface
     | vlt_l3_interface
     | vlt_vlan_id
     | vlt_vlan_id_list
     | vlt_vni_id
-    | sl_vlans_null
   )
 ;
 
