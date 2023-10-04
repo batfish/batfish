@@ -1,0 +1,5 @@
+#
+set system host-name vlan-forwarding-options
+#
+set vlans VLAN_10 vlan-id 10
+set vlans VLAN_10 forwarding-options dhcp-security

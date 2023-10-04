@@ -543,6 +543,8 @@ DHCP_LOCAL_SERVER: 'dhcp-local-server';
 
 DHCP_RELAY: 'dhcp-relay';
 
+DHCP_SECURITY: 'dhcp-security';
+
 DIRECT: 'direct';
 
 DISABLE: 'disable';
