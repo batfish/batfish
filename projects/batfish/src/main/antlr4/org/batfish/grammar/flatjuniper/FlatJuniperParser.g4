@@ -180,22 +180,6 @@ s_vlans
    )
 ;
 
-vlt_forwarding_options
-:
-   FORWARDING_OPTIONS
-   (
-      apply
-      | vlt_fo_null
-   )
-;
-
-vlt_fo_null
-:
-   (
-      DHCP_SECURITY
-   ) null_filler
-;
-
 s_vlans_named
 :
   name = junos_name
@@ -203,7 +187,7 @@ s_vlans_named
     apply
     | vlt_description
     | vlt_filter
-    | vlt_forwarding_options    
+    | vlt_forwarding_options
     | vlt_interface
     | vlt_l3_interface
     | vlt_vlan_id
@@ -236,6 +220,22 @@ vlt_filter
       INPUT
       | OUTPUT
    ) name = filter_name
+;
+
+vlt_forwarding_options
+:
+   FORWARDING_OPTIONS
+   (
+      apply
+      | vltfo_null
+   )
+;
+
+vltfo_null
+:
+   (
+      DHCP_SECURITY
+   ) null_filler
 ;
 
 vlt_interface
