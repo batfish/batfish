@@ -613,8 +613,12 @@ ENCRYPTION_ALGORITHM: 'encryption-algorithm';
 
 ENFORCE_FIRST_AS: 'enforce-first-as';
 
+ENGINE_ID: 'engine-id';
+
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
+
 EQUAL_COST_PATHS: 'equal-cost-paths';
+
 ESP: 'esp';
 
 ESP_HEADER: 'ESP-header';

@@ -59,6 +59,7 @@ snmp_null
    (
       CONTACT
       | DESCRIPTION
+      | ENGINE_ID
       | FILTER_DUPLICATES
       | INTERFACE
       | LOCATION
