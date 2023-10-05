@@ -1,8 +1,7 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
-import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.datamodel.AbstractRoute.MAX_ADMIN_DISTANCE;
+import static org.batfish.datamodel.AbstractRoute.checkAdmin;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -36,8 +35,7 @@ public abstract class AbstractRouteBuilder<
 
   public S setAdmin(int admin) {
     // TODO: too many tests set -1 via Route#UNSET_ADMIN here, so we don't check lower bound.
-    checkArgument(
-        admin <= MAX_ADMIN_DISTANCE, "Invalid admin distance %s > %s", admin, MAX_ADMIN_DISTANCE);
+    checkAdmin(admin, Integer.MIN_VALUE);
     _admin = admin;
     return getThis();
   }

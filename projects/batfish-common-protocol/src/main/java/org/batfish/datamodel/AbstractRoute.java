@@ -29,7 +29,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   // The maximum (VI) value for admin distance. Most OSes limit it to 255, and so do most networks,
   // but at least one OS (Junos) allows values up to 2^32-1.
   // TODO(https://github.com/batfish/batfish/issues/8808): update if we need to.
-  public static final int MAX_ADMIN_DISTANCE = 255;
+  public static final int MAX_ADMIN_DISTANCE = Integer.MAX_VALUE;
 
   static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
   public static final String PROP_METRIC = "metric";
@@ -46,15 +46,22 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   protected final long _tag;
   protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
+  /** Helper to check admin distance validity. */
+  @SuppressWarnings("ComparisonOutOfRange")
+  static void checkAdmin(int admin, int lower) {
+    checkArgument(
+        admin >= lower && admin <= MAX_ADMIN_DISTANCE,
+        "Invalid admin distance %s is not in [%s,%s]",
+        admin,
+        lower,
+        MAX_ADMIN_DISTANCE);
+  }
+
   @JsonCreator
   protected AbstractRoute(
       @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
-    checkArgument(
-        admin >= 0 && admin <= MAX_ADMIN_DISTANCE,
-        "Invalid admin distance %s is not in [0,%s]",
-        admin,
-        MAX_ADMIN_DISTANCE);
+    checkAdmin(admin, 0);
     _network = network;
     _admin = admin;
     _nonForwarding = nonForwarding;
