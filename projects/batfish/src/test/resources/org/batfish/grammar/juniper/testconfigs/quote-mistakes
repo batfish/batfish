@@ -1,0 +1,5 @@
+set system host-name quote-mistakes
+#
+# Don't crash if flattening or input configs lead to mangled configs
+set interfaces xe-0/0/0 description "foo bar" unit 0 ip address 1.2.3.4/31
+#
