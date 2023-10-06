@@ -2125,17 +2125,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return tcpFlagsList;
   }
 
-  static @Nonnull String unquote(String text) {
-    if (text.length() == 0) {
-      return text;
-    }
-    if (text.charAt(0) != '"') {
-      return text;
-    } else if (text.charAt(text.length() - 1) != '"') {
-      throw new BatfishException("Improperly-quoted string");
+  static @Nonnull Optional<String> unquote(String text) {
+    if (text.isEmpty()) {
+      return Optional.of(text);
+    } else if (text.charAt(0) != '"') {
+      return Optional.of(text);
+    } else if (text.length() < 2 || text.charAt(text.length() - 1) != '"') {
+      // Invalid quoting
+      return Optional.empty();
     } else {
-      return text.substring(1, text.length() - 1);
+      return Optional.of(text.substring(1, text.length() - 1));
     }
+  }
+
+  private @Nonnull String unquote(String text, ParserRuleContext ctx) {
+    Optional<String> unquoted = unquote(text);
+    if (!unquoted.isPresent()) {
+      warn(ctx, "Improperly-quoted string");
+      return text;
+    }
+    return unquoted.get();
   }
 
   private JuniperConfiguration _configuration;
@@ -2722,7 +2731,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.interface_id() == null) {
       currentInterface = _currentLogicalSystem.getGlobalMasterInterface();
     } else {
-      InterfaceId interfaceId = new InterfaceId(ctx.interface_id());
+      InterfaceId interfaceId = toInterfaceId(ctx.interface_id());
       String ifaceName = interfaceId.getParentName();
       Map<String, Interface> interfaces;
       String nodeDevicePrefix = "";
@@ -2999,7 +3008,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(AS_PATH, name, ctx, _parser);
     _currentLogicalSystem
         .getAsPaths()
-        .put(name, new org.batfish.representation.juniper.AsPath(unquote(ctx.regex.getText())));
+        .put(
+            name, new org.batfish.representation.juniper.AsPath(unquote(ctx.regex.getText(), ctx)));
   }
 
   @Override
@@ -3024,7 +3034,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         name,
         AS_PATH_GROUP_AS_PATH_SELF_REFERENCE,
         getLine(ctx.name.getStart()));
-    String asPathStr = unquote(ctx.regex.getText());
+    String asPathStr = unquote(ctx.regex.getText(), ctx);
     // intentional overwrite
     _currentAsPathGroup.getAsPaths().put(name, new NamedAsPath(name, asPathStr));
   }
@@ -4404,7 +4414,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEo_redundant_parent(Eo_redundant_parentContext ctx) {
-    String interfaceName = new InterfaceId(ctx.name).getFullName();
+    String interfaceName = toInterfaceId(ctx.name).getFullName();
     _currentInterfaceOrRange.setRedundantParentInterface(interfaceName);
   }
 
@@ -5120,7 +5130,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     String member =
         unquote(
             (ctx.interface_id() == null ? ctx.DOUBLE_QUOTED_STRING() : ctx.interface_id())
-                .getText());
+                .getText(),
+            ctx);
     try {
       InterfaceRangeMember mc = new InterfaceRangeMember(member);
       ((InterfaceRange) _currentInterfaceOrRange).getMembers().add(mc);
@@ -6547,7 +6558,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitSeikp_pre_shared_key(Seikp_pre_shared_keyContext ctx) {
-    String key = unquote(ctx.key.getText());
+    String key = unquote(ctx.key.getText(), ctx);
     String decodedKeyHash = decryptIfNeededAndHash(key, getLine(ctx.key));
     _currentIkePolicy.setPreSharedKeyHash(decodedKeyHash);
   }
@@ -7050,7 +7061,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.SCRUBBED() != null) {
       return saltAndHash(text);
     }
-    return decryptIfNeededAndHash(unquote(text), getLine(ctx.start));
+    return decryptIfNeededAndHash(unquote(text, ctx), getLine(ctx.start));
   }
 
   private @Nonnull String saltAndHash(@Nonnull String text) {
@@ -7194,7 +7205,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBd_routing_interface(Bd_routing_interfaceContext ctx) {
-    String iface = new InterfaceId(ctx.interface_id()).getFullName();
+    String iface = toInterfaceId(ctx.interface_id()).getFullName();
     if (!iface.startsWith("irb")) {
       warn(ctx, "Only IRB interfaces are supported for routing-interface");
       return;
@@ -7341,8 +7352,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static class InterfaceId {
     private static final Pattern DIGITS = Pattern.compile("[0-9]+");
 
-    private InterfaceId(Interface_idContext ctx) {
-      String fullText = unquote(ctx.getText());
+    private InterfaceId(String fullText) {
       String[] parentAndUnit = fullText.split("\\.", -1);
       assert parentAndUnit.length == 1 || parentAndUnit.length == 2;
       String exceptUnit = parentAndUnit[0];
@@ -7395,12 +7405,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     private final @Nullable String _unit;
   }
 
-  private static String getParentInterfaceName(Interface_idContext id) {
-    return new InterfaceId(id).getParentName();
+  private String getParentInterfaceName(Interface_idContext id) {
+    return toInterfaceId(id).getParentName();
   }
 
-  private static String getInterfaceFullName(Interface_idContext id) {
-    return new InterfaceId(id).getFullName();
+  private String getInterfaceFullName(Interface_idContext id) {
+    return toInterfaceId(id).getFullName();
   }
 
   private String initIkeProposal(IkeProposal proposal) {
@@ -7488,7 +7498,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
    */
   private @Nonnull Interface initRoutingInterface(Interface_idContext id) {
     Map<String, Interface> interfaces;
-    InterfaceId interfaceId = new InterfaceId(id);
+    InterfaceId interfaceId = toInterfaceId(id);
     if (interfaceId.getNode() != null) {
       String nodeDeviceName = interfaceId.getNode();
       NodeDevice nodeDevice =
@@ -7608,40 +7618,45 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return AsPath.of(asPath);
   }
 
-  private static @Nonnull String toString(Address_specifier_nameContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull InterfaceId toInterfaceId(Interface_idContext ctx) {
+    String text = unquote(ctx.getText(), ctx);
+    return new InterfaceId(text);
   }
 
-  private static @Nonnull String toString(Junos_nameContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull String toString(Address_specifier_nameContext ctx) {
+    return unquote(ctx.getText(), ctx);
   }
 
-  private static @Nonnull String toString(ZoneContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull String toString(Junos_nameContext ctx) {
+    return unquote(ctx.getText(), ctx);
   }
 
-  private static @Nonnull String toString(Sy_porttypeContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull String toString(ZoneContext ctx) {
+    return unquote(ctx.getText(), ctx);
+  }
+
+  private @Nonnull String toString(Sy_porttypeContext ctx) {
+    return unquote(ctx.getText(), ctx);
   }
 
   private static @Nonnull String toString(Line_typeContext ctx) {
     return ctx.getText();
   }
 
-  private static @Nonnull String toString(DescriptionContext ctx) {
-    return unquote(ctx.text.getText());
+  private @Nonnull String toString(DescriptionContext ctx) {
+    return unquote(ctx.text.getText(), ctx);
   }
 
-  private static @Nonnull String toString(Filter_nameContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull String toString(Filter_nameContext ctx) {
+    return unquote(ctx.getText(), ctx);
   }
 
   private static @Nonnull String toString(Tacplus_server_hostContext ctx) {
     return ctx.getText();
   }
 
-  private static @Nonnull String toString(Name_or_ipContext ctx) {
-    return unquote(ctx.getText());
+  private @Nonnull String toString(Name_or_ipContext ctx) {
+    return unquote(ctx.getText(), ctx);
   }
 
   private String toComplexPolicyStatement(

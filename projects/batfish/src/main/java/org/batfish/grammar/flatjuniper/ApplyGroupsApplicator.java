@@ -53,7 +53,7 @@ public class ApplyGroupsApplicator extends FlatJuniperParserBaseListener {
     if (_inGroup) {
       return;
     }
-    String groupName = unquote(ctx.name.getText());
+    String groupName = unquote(ctx.name.getText()).orElse(ctx.name.getText());
     if (groupName.equals("${node}")) {
       processGroup("node0", true, false);
       processGroup("node1", true, true);
