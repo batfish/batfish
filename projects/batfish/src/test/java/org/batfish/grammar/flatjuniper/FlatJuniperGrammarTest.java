@@ -7967,5 +7967,18 @@ public final class FlatJuniperGrammarTest {
     assertFalse(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getHasIpv6());
   }
 
+  @Test
+  public void testQuotingMistakesDontCrash() throws IOException {
+    String hostname = "quote-mistakes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(pvcae, hasParseWarning("configs/" + hostname, equalTo("Improperly-quoted string")));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c, hasInterface("xe-0/0/0", hasDescription("\"foo bar\" unit 0 ip address 1.2.3.4/31")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
