@@ -126,8 +126,9 @@ public class CommunitySetMatchExprVarCollectorTest {
         new CommunitySetMatchRegex(
             new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
             "^65000:123 65011:12[3]$");
-    _expectedException.expect(UnsupportedOperationException.class);
-    cmsr.accept(_varCollector, _baseConfig);
+
+    Set<CommunityVar> result = _varCollector.visitCommunitySetMatchRegex(cmsr, _baseConfig);
+    assertEquals(ImmutableSet.of(), result);
   }
 
   @Test

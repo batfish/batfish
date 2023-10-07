@@ -149,7 +149,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
       ExtendedCommunityGlobalAdministratorHighMatch extendedCommunityGlobalAdministratorHighMatch,
       Arg arg) {
     throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+        extendedCommunityGlobalAdministratorHighMatch.toString());
   }
 
   @Override
@@ -157,22 +157,20 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
       ExtendedCommunityGlobalAdministratorLowMatch extendedCommunityGlobalAdministratorLowMatch,
       Arg arg) {
     throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+        extendedCommunityGlobalAdministratorLowMatch.toString());
   }
 
   @Override
   public BDD visitExtendedCommunityGlobalAdministratorMatch(
       ExtendedCommunityGlobalAdministratorMatch extendedCommunityGlobalAdministratorMatch,
       Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    throw new UnsupportedOperationException(extendedCommunityGlobalAdministratorMatch.toString());
   }
 
   @Override
   public BDD visitExtendedCommunityLocalAdministratorMatch(
       ExtendedCommunityLocalAdministratorMatch extendedCommunityLocalAdministratorMatch, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matches on extended communities");
+    throw new UnsupportedOperationException(extendedCommunityLocalAdministratorMatch.toString());
   }
 
   @Override
@@ -225,9 +223,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
     return optCVar
         .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
         .orElseThrow(
-            () ->
-                new UnsupportedOperationException(
-                    "Currently not supporting match expression: " + standardCommunityHighMatch));
+            () -> new UnsupportedOperationException(standardCommunityHighMatch.toString()));
   }
 
   @Override
@@ -239,10 +235,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
     // StandardCommunityLowMatch, so we throw an exception
     return optCVar
         .map(cvar -> CommunitySetMatchExprToBDD.communityVarsToBDD(ImmutableSet.of(cvar), arg))
-        .orElseThrow(
-            () ->
-                new UnsupportedOperationException(
-                    "Currently not supporting match expression: " + standardCommunityLowMatch));
+        .orElseThrow(() -> new UnsupportedOperationException(standardCommunityLowMatch.toString()));
   }
 
   @Override

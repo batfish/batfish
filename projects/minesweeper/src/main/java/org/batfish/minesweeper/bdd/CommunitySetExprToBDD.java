@@ -73,8 +73,7 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
 
   @Override
   public BDD visitInputCommunities(InputCommunities inputCommunities, Arg arg) {
-    throw new UnsupportedOperationException(
-        "Currently not supporting matching on input communities");
+    throw new UnsupportedOperationException(inputCommunities.toString());
   }
 
   @Override
