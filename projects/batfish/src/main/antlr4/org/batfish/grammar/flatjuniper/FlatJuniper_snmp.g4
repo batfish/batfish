@@ -68,6 +68,7 @@ snmp_null
       | TRACEOPTIONS
       | TRAP_OPTIONS
       | VIEW
+      | V3
    ) null_filler
 ;
 
