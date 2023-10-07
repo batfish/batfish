@@ -17,10 +17,16 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link AsPathMatchExprToRegexes}. */
 public class AsPathMatchExprToRegexesTest {
@@ -34,6 +40,8 @@ public class AsPathMatchExprToRegexesTest {
   private static final String ASPATH2 = "^$";
   private SymbolicAsPathRegex _asPath1Regex;
   private SymbolicAsPathRegex _asPath2Regex;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -98,5 +106,13 @@ public class AsPathMatchExprToRegexesTest {
         AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.closed(11L, 14L)));
     assertEquals(
         ImmutableSet.of(new SymbolicAsPathRegex(expr)), expr.accept(_matchExprToRegexes, _arg));
+  }
+
+  @Test
+  public void testHasAsPathLength() {
+    HasAsPathLength hapl =
+        HasAsPathLength.of(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
+    _expectedException.expect(UnsupportedOperationException.class);
+    hapl.accept(_matchExprToRegexes, _arg);
   }
 }

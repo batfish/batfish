@@ -106,6 +106,7 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
+import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
 import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
@@ -1010,6 +1011,26 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testSetWeightUnsupported() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetWeight(new VarInt("var")))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setUnsupported(true);
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
   public void testSetAdminDistance() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1024,6 +1045,26 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger ad = expected.getAdminDist();
     expected.setAdminDist(MutableBDDInteger.makeFromValue(ad.getFactory(), 8, 255));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+  }
+
+  @Test
+  public void testSetAdminDistanceUnsupported() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(new SetAdministrativeCost(new VarInt("var")))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    expected.setUnsupported(true);
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
@@ -1204,6 +1245,28 @@ public class TransferBDDTest {
     assertTrue(
         equalsForTesting(
             paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+  }
+
+  @Test
+  public void testMatchMetricUnsupported() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchMetric(IntComparator.EQ, new VarLong("var")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    any.setUnsupported(true);
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
   }
 
   @Test

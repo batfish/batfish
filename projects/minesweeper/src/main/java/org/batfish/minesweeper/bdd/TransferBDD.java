@@ -544,7 +544,7 @@ public class TransferBDD {
           finalResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
           break;
         default:
-          throw new UnsupportedOperationException(b.getType().toString());
+          throw new IllegalArgumentException("Unexpected boolean expression " + b.getType());
       }
 
     } else if (expr instanceof LegacyMatchAsPath) {
@@ -1176,7 +1176,8 @@ public class TransferBDD {
       case LT:
         return bddInt.leq(val).and(bddInt.value(val).not());
       default:
-        throw new UnsupportedOperationException(comp.getClass().getSimpleName());
+        throw new IllegalArgumentException(
+            "Unexpected int comparison " + comp.getClass().getSimpleName());
     }
   }
 
