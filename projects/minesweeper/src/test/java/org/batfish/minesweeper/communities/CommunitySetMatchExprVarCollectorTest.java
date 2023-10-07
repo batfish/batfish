@@ -23,12 +23,14 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprRef
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
 import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /** Tests for {@link CommunitySetMatchExprVarCollector}. */
 public class CommunitySetMatchExprVarCollectorTest {
@@ -38,8 +40,6 @@ public class CommunitySetMatchExprVarCollectorTest {
 
   private static final Community COMM1 = StandardCommunity.parse("20:30");
   private static final Community COMM2 = StandardCommunity.parse("21:30");
-
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -151,5 +151,14 @@ public class CommunitySetMatchExprVarCollectorTest {
     CommunityVar cvar = CommunityVar.from(COMM1);
 
     assertEquals(ImmutableSet.of(cvar), result);
+  }
+
+  @Test
+  public void testVisitHasSize() {
+    HasSize hs = new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
+
+    Set<CommunityVar> result = _varCollector.visitHasSize(hs, _baseConfig);
+
+    assertEquals(ImmutableSet.of(), result);
   }
 }
