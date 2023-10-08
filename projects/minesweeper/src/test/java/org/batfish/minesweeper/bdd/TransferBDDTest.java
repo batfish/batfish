@@ -1324,6 +1324,28 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testMatchClusterListLengthUnsupported() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    MatchClusterListLength.of(IntComparator.EQ, new VarInt("var")),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
+            .build();
+    _configAPs = new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+
+    BDDRoute any = anyRoute(tbdd.getFactory());
+    any.setUnsupported(true);
+
+    assertTrue(
+        equalsForTesting(
+            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+  }
+
+  @Test
   public void testTrackSucceeded() {
     RoutingPolicy policy =
         _policyBuilder
