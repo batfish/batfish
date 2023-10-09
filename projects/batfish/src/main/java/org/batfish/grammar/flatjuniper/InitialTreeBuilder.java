@@ -2,16 +2,12 @@ package org.batfish.grammar.flatjuniper;
 
 import org.antlr.v4.runtime.tree.ErrorNode;
 import org.antlr.v4.runtime.tree.TerminalNode;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groupsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Apply_groups_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.S_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 
 public final class InitialTreeBuilder extends FlatJuniperParserBaseListener {
-
-  private boolean _addLine;
 
   private HierarchyPath _currentPath;
 
@@ -30,19 +26,6 @@ public final class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void enterApply_groups_except(Apply_groups_exceptContext ctx) {
-    _addLine = false;
-    _hierarchy.addMasterPath(_currentPath, null, null);
-    String groupName = ctx.name.getText();
-    _hierarchy.setApplyGroupsExcept(_currentPath, groupName);
-  }
-
-  @Override
-  public void enterSet_line(Set_lineContext ctx) {
-    _addLine = true;
-  }
-
-  @Override
   public void enterSet_line_tail(Set_line_tailContext ctx) {
     _enablePathRecording = true;
     _enableWildcards = false;
@@ -50,17 +33,10 @@ public final class InitialTreeBuilder extends FlatJuniperParserBaseListener {
   }
 
   @Override
-  public void exitApply_groups(Apply_groupsContext ctx) {
-    _addLine = false;
-  }
-
-  @Override
   public void exitSet_line(Set_lineContext ctx) {
-    if (_addLine) {
-      _hierarchy.addMasterPath(_currentPath, ctx, null);
-      _lastPath = _currentPath;
-      _currentPath = null;
-    }
+    _hierarchy.addMasterPath(_currentPath, ctx, null);
+    _lastPath = _currentPath;
+    _currentPath = null;
   }
 
   @Override

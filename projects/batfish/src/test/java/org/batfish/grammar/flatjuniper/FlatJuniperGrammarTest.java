@@ -4862,14 +4862,15 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, INTERFACE, "lo0", containsInAnyOrder(4, 8)));
+            filename, INTERFACE, "lo0", containsInAnyOrder(4, 7, 8)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
             filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
     assertThat(
         ccae,
-        hasDefinedStructureWithDefinitionLines(filename, PREFIX_LIST, "p2", containsInAnyOrder(5)));
+        hasDefinedStructureWithDefinitionLines(
+            filename, PREFIX_LIST, "p2", containsInAnyOrder(5, 11)));
 
     // Confirm undefined references are also tracked properly for apply-groups related references
     assertThat(

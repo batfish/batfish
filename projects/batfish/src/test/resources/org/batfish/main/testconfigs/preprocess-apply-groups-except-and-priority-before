@@ -1,0 +1,18 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+set system host-name preprocess-apply-groups-except-and-priority
+set groups INCLUDE3 interfaces <*> unit <*> family inet filter input-list i3
+set groups INCLUDE1 interfaces <*> unit <*> family inet filter input-list i1
+set groups INCLUDE2 interfaces <*> unit <*> family inet filter input-list i2
+set groups EXCLUDE1 interfaces <*> unit <*> family inet filter input-list e1
+set groups EXCLUDE1 interfaces <*> unit <*> family inet filter input-list e2
+set groups EXCLUDE1 interfaces <*> unit <*> family inet filter input-list e3
+set interfaces ae1 apply-groups INCLUDE1
+set interfaces ae1 apply-groups INCLUDE2
+set interfaces ae1 apply-groups EXCLUDE1
+set interfaces ae1 apply-groups EXCLUDE2
+set interfaces ae1 unit 0 apply-groups-except EXCLUDE1
+set interfaces ae1 unit 0 apply-groups-except EXCLUDE2
+set interfaces ae1 unit 0 apply-groups-except family inet filter input-list apply-groups-except EXCLUDE3
+set apply-groups INCLUDE3
+set apply-groups EXCEPT3
+set interfaces ae1 unit 0 family inet address 1.1.1.1/31

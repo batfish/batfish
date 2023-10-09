@@ -75,18 +75,15 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     GroupTreeBuilder gb = new GroupTreeBuilder(hierarchy);
     walker.walk(gb, tree);
 
-    ApplyGroupsApplicator hb;
+    // Run until convergence: [set groups A apply-groups B] is valid
+    ApplyGroupsMarker agm = new ApplyGroupsMarker(hierarchy, w);
+    boolean changed;
     do {
-      // Run until convergence: [set groups A apply-groups B] is valid
-      hb = new ApplyGroupsApplicator(hierarchy, w);
-      walker.walk(hb, tree);
-    } while (hb.getChanged());
+      walker.walk(agm, tree);
+      changed = GroupInheritor.inheritGroups(hierarchy, tree);
+    } while (changed);
     GroupPruner.prune(tree);
 
-    WildcardApplicator wa = new WildcardApplicator(hierarchy);
-    walker.walk(wa, tree);
-    WildcardPruner wp = new WildcardPruner();
-    walker.walk(wp, tree);
     walker.walk(dlp, tree);
 
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, w);

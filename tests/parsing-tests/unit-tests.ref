@@ -74600,13 +74600,21 @@
         "configs/isr_voip" : { },
         "configs/juniper-interfaces" : {
           "interface" : {
-            "xe-0/0/0" : {
-              "definitionLines" : "4",
+            "node1::xe-0/0/0:0" : {
+              "definitionLines" : "8-9",
               "numReferrers" : 2
             },
-            "xe-0/0/0:0" : {
-              "definitionLines" : "4-5,15",
+            "node1:xe-0/0/0" : {
+              "definitionLines" : "7",
+              "numReferrers" : 1
+            },
+            "xe-0/0/0" : {
+              "definitionLines" : "4,10,13",
               "numReferrers" : 4
+            },
+            "xe-0/0/0:0" : {
+              "definitionLines" : "4-5,11-12,15",
+              "numReferrers" : 6
             },
             "xe-0/0/0:0.0" : {
               "definitionLines" : "5,15",
@@ -81825,15 +81833,30 @@
         },
         "configs/juniper-interfaces" : {
           "interface" : {
+            "node1::xe-0/0/0:0" : {
+              "interface" : [
+                8,
+                9
+              ]
+            },
+            "node1:xe-0/0/0" : {
+              "interface" : [
+                7
+              ]
+            },
             "xe-0/0/0" : {
               "interface" : [
-                4
+                4,
+                10,
+                13
               ]
             },
             "xe-0/0/0:0" : {
               "interface" : [
                 4,
                 5,
+                11,
+                12,
                 15
               ]
             },
