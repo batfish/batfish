@@ -22,8 +22,8 @@ public final class MatchPrefixSet extends BooleanExpr {
   private static final String PROP_PREFIX = "prefix";
   private static final String PROP_PREFIX_SET = "prefixSet";
 
-  @Nonnull private final PrefixExpr _prefix;
-  @Nonnull private final PrefixSetExpr _prefixSet;
+  private final @Nonnull PrefixExpr _prefix;
+  private final @Nonnull PrefixSetExpr _prefixSet;
 
   @JsonCreator
   private static MatchPrefixSet jsonCreator(
@@ -54,14 +54,12 @@ public final class MatchPrefixSet extends BooleanExpr {
   }
 
   @JsonProperty(PROP_PREFIX)
-  @Nonnull
-  public PrefixExpr getPrefix() {
+  public @Nonnull PrefixExpr getPrefix() {
     return _prefix;
   }
 
   @JsonProperty(PROP_PREFIX_SET)
-  @Nonnull
-  public PrefixSetExpr getPrefixSet() {
+  public @Nonnull PrefixSetExpr getPrefixSet() {
     return _prefixSet;
   }
 

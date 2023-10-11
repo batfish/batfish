@@ -49,9 +49,9 @@ public class OspfProcess implements Serializable {
 
   private Long _defaultMetric;
 
-  @Nullable private DistributeList _inboundGlobalDistributeList;
+  private @Nullable DistributeList _inboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _inboundIInterfaceDistributeLists;
+  private @Nonnull Map<String, DistributeList> _inboundIInterfaceDistributeLists;
 
   private Long _maxMetricExternalLsa;
 
@@ -71,9 +71,9 @@ public class OspfProcess implements Serializable {
 
   private Map<Long, StubSettings> _stubs;
 
-  @Nullable private DistributeList _outboundGlobalDistributeList;
+  private @Nullable DistributeList _outboundGlobalDistributeList;
 
-  @Nonnull private Map<String, DistributeList> _outboundInterfaceDistributeLists;
+  private @Nonnull Map<String, DistributeList> _outboundInterfaceDistributeLists;
 
   private boolean _passiveInterfaceDefault;
 
@@ -172,13 +172,11 @@ public class OspfProcess implements Serializable {
     return _defaultMetric;
   }
 
-  @Nullable
-  public DistributeList getInboundGlobalDistributeList() {
+  public @Nullable DistributeList getInboundGlobalDistributeList() {
     return _inboundGlobalDistributeList;
   }
 
-  @Nonnull
-  public Map<String, DistributeList> getInboundInterfaceDistributeLists() {
+  public @Nonnull Map<String, DistributeList> getInboundInterfaceDistributeLists() {
     return _inboundIInterfaceDistributeLists;
   }
 
@@ -214,13 +212,11 @@ public class OspfProcess implements Serializable {
     return _nssas;
   }
 
-  @Nullable
-  public DistributeList getOutboundGlobalDistributeList() {
+  public @Nullable DistributeList getOutboundGlobalDistributeList() {
     return _outboundGlobalDistributeList;
   }
 
-  @Nonnull
-  public Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
+  public @Nonnull Map<String, DistributeList> getOutboundInterfaceDistributeLists() {
     return _outboundInterfaceDistributeLists;
   }
 

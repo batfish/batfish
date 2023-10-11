@@ -284,7 +284,9 @@ public final class AristaConfiguration extends VendorConfiguration {
   public static final String DEFAULT_VRF_NAME = "default";
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.arista.com/en/um-eos/eos-border-gateway-protocol-bgp#xx1116652
+  // - Distance values range from 1 to 255
+  static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
@@ -351,7 +353,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return output;
   }
 
-  @Nullable private AristaBgpProcess _aristaBgp;
+  private @Nullable AristaBgpProcess _aristaBgp;
 
   private final Map<String, IpAsPathAccessList> _asPathAccessLists;
 
@@ -371,7 +373,7 @@ public final class AristaConfiguration extends VendorConfiguration {
 
   private AristaEosVxlan _eosVxlan;
 
-  @Nullable private MlagConfiguration _eosMlagConfiguration;
+  private @Nullable MlagConfiguration _eosMlagConfiguration;
 
   private final Map<String, ExpandedCommunityList> _expandedCommunityLists;
 
@@ -534,8 +536,7 @@ public final class AristaConfiguration extends VendorConfiguration {
             line -> ((RouteMapMatchIpv6AccessListLine) line).getListNames().contains(eaListName));
   }
 
-  @Nullable
-  public AristaBgpProcess getAristaBgp() {
+  public @Nullable AristaBgpProcess getAristaBgp() {
     return _aristaBgp;
   }
 
@@ -575,8 +576,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return _eosVxlan;
   }
 
-  @Nullable
-  public MlagConfiguration getEosMlagConfiguration() {
+  public @Nullable MlagConfiguration getEosMlagConfiguration() {
     return _eosMlagConfiguration;
   }
 
@@ -976,7 +976,7 @@ public final class AristaConfiguration extends VendorConfiguration {
         continue;
       }
       if (protocolConversions.get(type) == null) {
-        _w.redFlag(String.format("Redistribution of %s routes is not yet supported", type));
+        _w.redFlagf("Redistribution of %s routes is not yet supported", type);
         continue;
       }
       ImmutableList.Builder<BooleanExpr> conditions = ImmutableList.builder();
@@ -1668,8 +1668,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     iface.setOspfSettings(ospfSettings.build());
   }
 
-  @Nullable
-  private Mlag toMlag(@Nullable MlagConfiguration mlag) {
+  private @Nullable Mlag toMlag(@Nullable MlagConfiguration mlag) {
     if (mlag == null || mlag.getDomainId() == null) {
       return null;
     }
@@ -2445,7 +2444,7 @@ public final class AristaConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (!iface.getShutdown() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig
@@ -2713,8 +2712,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)

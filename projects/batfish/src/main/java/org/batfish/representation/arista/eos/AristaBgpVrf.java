@@ -16,62 +16,62 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 public final class AristaBgpVrf implements Serializable {
 
   private boolean _defaultIpv4Unicast;
-  @Nullable private Boolean _advertiseInactive;
-  @Nullable private Integer _allowAsIn;
-  @Nullable private Boolean _alwaysCompareMed;
-  @Nullable private Boolean _bestpathAsPathMultipathRelax;
-  @Nullable private AristaBgpBestpathTieBreaker _bestpathTieBreaker;
+  private @Nullable Boolean _advertiseInactive;
+  private @Nullable Integer _allowAsIn;
+  private @Nullable Boolean _alwaysCompareMed;
+  private @Nullable Boolean _bestpathAsPathMultipathRelax;
+  private @Nullable AristaBgpBestpathTieBreaker _bestpathTieBreaker;
 
-  @Nullable private Boolean _clientToClientReflection;
-  @Nullable private Ip _clusterId;
-  @Nullable private Long _confederationIdentifier;
-  @Nullable private LongSpace _confederationPeers;
-  @Nullable private Long _defaultMetric;
-  @Nullable private Integer _ebgpAdminDistance;
-  @Nullable private Boolean _enforceFirstAs;
-  @Nullable private ExtendedCommunity _exportRouteTarget;
-  @Nullable private Integer _ibgpAdminDistance;
-  @Nullable private ExtendedCommunity _importRouteTarget;
-  @Nullable private Integer _holdTimer;
-  @Nullable private Integer _keepAliveTimer;
-  @Nullable private Integer _listenLimit;
-  @Nullable private Integer _localAdminDistance;
-  @Nullable private Long _localAs;
-  @Nullable private Integer _maxPaths;
-  @Nullable private Integer _maxPathsEcmp;
-  @Nonnull private final String _name;
-  @Nullable private Boolean _nextHopUnchanged;
+  private @Nullable Boolean _clientToClientReflection;
+  private @Nullable Ip _clusterId;
+  private @Nullable Long _confederationIdentifier;
+  private @Nullable LongSpace _confederationPeers;
+  private @Nullable Long _defaultMetric;
+  private @Nullable Integer _ebgpAdminDistance;
+  private @Nullable Boolean _enforceFirstAs;
+  private @Nullable ExtendedCommunity _exportRouteTarget;
+  private @Nullable Integer _ibgpAdminDistance;
+  private @Nullable ExtendedCommunity _importRouteTarget;
+  private @Nullable Integer _holdTimer;
+  private @Nullable Integer _keepAliveTimer;
+  private @Nullable Integer _listenLimit;
+  private @Nullable Integer _localAdminDistance;
+  private @Nullable Long _localAs;
+  private @Nullable Integer _maxPaths;
+  private @Nullable Integer _maxPathsEcmp;
+  private final @Nonnull String _name;
+  private @Nullable Boolean _nextHopUnchanged;
 
-  @Nonnull
-  private final Map<AristaRedistributeType, AristaBgpRedistributionPolicy> _redistributionPolicies;
+  private final @Nonnull Map<AristaRedistributeType, AristaBgpRedistributionPolicy>
+      _redistributionPolicies;
 
-  @Nullable private RouteDistinguisher _routeDistinguisher;
-  @Nullable private Ip _routerId;
-  @Nullable private Boolean _shutdown;
-  @Nonnull private final Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
-  @Nonnull private final Map<Prefix6, AristaBgpAggregateNetwork> _v6aggregates;
-  @Nonnull private final Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
-  @Nonnull private final Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
+  private @Nullable Ip _routerId;
+  private @Nullable Boolean _shutdown;
+  private final @Nonnull Map<Prefix, AristaBgpAggregateNetwork> _v4aggregates;
+  private final @Nonnull Map<Prefix6, AristaBgpAggregateNetwork> _v6aggregates;
+  private final @Nonnull Map<Ip, AristaBgpV4Neighbor> _v4neighbors;
+  private final @Nonnull Map<Prefix, AristaBgpV4DynamicNeighbor> _v4DynamicNeighbors;
 
-  @Nullable private AristaBgpVrfEvpnAddressFamily _evpnAf;
+  private @Nullable AristaBgpVrfEvpnAddressFamily _evpnAf;
 
-  @Nullable private AristaBgpVrfFlowSpecAddressFamily _flowSpecV4Af;
-  @Nullable private AristaBgpVrfFlowSpecAddressFamily _flowSpecV6Af;
+  private @Nullable AristaBgpVrfFlowSpecAddressFamily _flowSpecV4Af;
+  private @Nullable AristaBgpVrfFlowSpecAddressFamily _flowSpecV6Af;
 
   // TODO: do these need to be different families, or 1 v4-specific but not unicast-specific?
-  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
-  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4LabeledUnicastAf;
-  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
-  @Nullable private AristaBgpVrfIpv4UnicastAddressFamily _v4SrTeAf;
+  private @Nullable AristaBgpVrfIpv4UnicastAddressFamily _v4UnicastAf;
+  private @Nullable AristaBgpVrfIpv4UnicastAddressFamily _v4LabeledUnicastAf;
+  private @Nullable AristaBgpVrfIpv4UnicastAddressFamily _v4MulticastAf;
+  private @Nullable AristaBgpVrfIpv4UnicastAddressFamily _v4SrTeAf;
 
   // TODO: do these need to be different families, or 1 v6-specific but not unicast-specific?
-  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6LabeledUnicastAf;
-  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6MulticastAf;
-  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
-  @Nullable private AristaBgpVrfIpv6UnicastAddressFamily _v6SrTeAf;
+  private @Nullable AristaBgpVrfIpv6UnicastAddressFamily _v6LabeledUnicastAf;
+  private @Nullable AristaBgpVrfIpv6UnicastAddressFamily _v6MulticastAf;
+  private @Nullable AristaBgpVrfIpv6UnicastAddressFamily _v6UnicastAf;
+  private @Nullable AristaBgpVrfIpv6UnicastAddressFamily _v6SrTeAf;
 
-  @Nullable private AristaBgpVrfVpnAddressFamily _vpnV4Af;
-  @Nullable private AristaBgpVrfVpnAddressFamily _vpnV6Af;
+  private @Nullable AristaBgpVrfVpnAddressFamily _vpnV4Af;
+  private @Nullable AristaBgpVrfVpnAddressFamily _vpnV6Af;
 
   public AristaBgpVrf(String name) {
     _name = name;
@@ -91,8 +91,7 @@ public final class AristaBgpVrf implements Serializable {
     _defaultIpv4Unicast = defaultIpv4Unicast;
   }
 
-  @Nullable
-  public Boolean getAdvertiseInactive() {
+  public @Nullable Boolean getAdvertiseInactive() {
     return _advertiseInactive;
   }
 
@@ -100,8 +99,7 @@ public final class AristaBgpVrf implements Serializable {
     _advertiseInactive = advertiseInactive;
   }
 
-  @Nullable
-  public Integer getAllowAsIn() {
+  public @Nullable Integer getAllowAsIn() {
     return _allowAsIn;
   }
 
@@ -109,8 +107,7 @@ public final class AristaBgpVrf implements Serializable {
     _allowAsIn = allowAsIn;
   }
 
-  @Nullable
-  public Boolean getAlwaysCompareMed() {
+  public @Nullable Boolean getAlwaysCompareMed() {
     return _alwaysCompareMed;
   }
 
@@ -118,8 +115,7 @@ public final class AristaBgpVrf implements Serializable {
     _alwaysCompareMed = alwaysCompareMed;
   }
 
-  @Nullable
-  public Boolean getBestpathAsPathMultipathRelax() {
+  public @Nullable Boolean getBestpathAsPathMultipathRelax() {
     return _bestpathAsPathMultipathRelax;
   }
 
@@ -127,8 +123,7 @@ public final class AristaBgpVrf implements Serializable {
     _bestpathAsPathMultipathRelax = bestpathAsPathMultipathRelax;
   }
 
-  @Nullable
-  public AristaBgpBestpathTieBreaker getBestpathTieBreaker() {
+  public @Nullable AristaBgpBestpathTieBreaker getBestpathTieBreaker() {
     return _bestpathTieBreaker;
   }
 
@@ -136,8 +131,7 @@ public final class AristaBgpVrf implements Serializable {
     _bestpathTieBreaker = bestpathTieBreaker;
   }
 
-  @Nullable
-  public Boolean getClientToClientReflection() {
+  public @Nullable Boolean getClientToClientReflection() {
     return _clientToClientReflection;
   }
 
@@ -145,8 +139,7 @@ public final class AristaBgpVrf implements Serializable {
     _clientToClientReflection = clientToClientReflection;
   }
 
-  @Nullable
-  public Ip getClusterId() {
+  public @Nullable Ip getClusterId() {
     return _clusterId;
   }
 
@@ -154,8 +147,7 @@ public final class AristaBgpVrf implements Serializable {
     _clusterId = clusterId;
   }
 
-  @Nullable
-  public Long getConfederationIdentifier() {
+  public @Nullable Long getConfederationIdentifier() {
     return _confederationIdentifier;
   }
 
@@ -163,8 +155,7 @@ public final class AristaBgpVrf implements Serializable {
     _confederationIdentifier = confederationIdentifier;
   }
 
-  @Nullable
-  public LongSpace getConfederationPeers() {
+  public @Nullable LongSpace getConfederationPeers() {
     return _confederationPeers;
   }
 
@@ -172,8 +163,7 @@ public final class AristaBgpVrf implements Serializable {
     _confederationPeers = confederationPeers;
   }
 
-  @Nullable
-  public Long getDefaultMetric() {
+  public @Nullable Long getDefaultMetric() {
     return _defaultMetric;
   }
 
@@ -181,8 +171,7 @@ public final class AristaBgpVrf implements Serializable {
     _defaultMetric = defaultMetric;
   }
 
-  @Nullable
-  public Integer getEbgpAdminDistance() {
+  public @Nullable Integer getEbgpAdminDistance() {
     return _ebgpAdminDistance;
   }
 
@@ -190,8 +179,7 @@ public final class AristaBgpVrf implements Serializable {
     _ebgpAdminDistance = ebgpAdminDistance;
   }
 
-  @Nullable
-  public Boolean getEnforceFirstAs() {
+  public @Nullable Boolean getEnforceFirstAs() {
     return _enforceFirstAs;
   }
 
@@ -199,8 +187,7 @@ public final class AristaBgpVrf implements Serializable {
     _enforceFirstAs = enforceFirstAs;
   }
 
-  @Nullable
-  public Integer getIbgpAdminDistance() {
+  public @Nullable Integer getIbgpAdminDistance() {
     return _ibgpAdminDistance;
   }
 
@@ -208,8 +195,7 @@ public final class AristaBgpVrf implements Serializable {
     _ibgpAdminDistance = ibgpAdminDistance;
   }
 
-  @Nullable
-  public Integer getLocalAdminDistance() {
+  public @Nullable Integer getLocalAdminDistance() {
     return _localAdminDistance;
   }
 
@@ -217,8 +203,7 @@ public final class AristaBgpVrf implements Serializable {
     _localAdminDistance = localAdminDistance;
   }
 
-  @Nullable
-  public ExtendedCommunity getExportRouteTarget() {
+  public @Nullable ExtendedCommunity getExportRouteTarget() {
     return _exportRouteTarget;
   }
 
@@ -226,16 +211,14 @@ public final class AristaBgpVrf implements Serializable {
     _exportRouteTarget = exportRouteTarget;
   }
 
-  @Nonnull
-  public AristaBgpVrfEvpnAddressFamily getOrCreateEvpnAf() {
+  public @Nonnull AristaBgpVrfEvpnAddressFamily getOrCreateEvpnAf() {
     if (_evpnAf == null) {
       _evpnAf = new AristaBgpVrfEvpnAddressFamily();
     }
     return _evpnAf;
   }
 
-  @Nullable
-  public AristaBgpVrfEvpnAddressFamily getEvpnAf() {
+  public @Nullable AristaBgpVrfEvpnAddressFamily getEvpnAf() {
     return _evpnAf;
   }
 
@@ -265,8 +248,7 @@ public final class AristaBgpVrf implements Serializable {
     return _flowSpecV6Af;
   }
 
-  @Nullable
-  public ExtendedCommunity getImportRouteTarget() {
+  public @Nullable ExtendedCommunity getImportRouteTarget() {
     return _importRouteTarget;
   }
 
@@ -275,8 +257,7 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   /** Hold timer, in seconds */
-  @Nullable
-  public Integer getHoldTimer() {
+  public @Nullable Integer getHoldTimer() {
     return _holdTimer;
   }
 
@@ -286,13 +267,11 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   /** Keepalive timer, in seconds */
-  @Nullable
-  public Integer getKeepAliveTimer() {
+  public @Nullable Integer getKeepAliveTimer() {
     return _keepAliveTimer;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -302,8 +281,7 @@ public final class AristaBgpVrf implements Serializable {
   }
 
   /** Maximum number of dynamic/passive connections */
-  @Nullable
-  public Integer getListenLimit() {
+  public @Nullable Integer getListenLimit() {
     return _listenLimit;
   }
 
@@ -312,8 +290,7 @@ public final class AristaBgpVrf implements Serializable {
     return this;
   }
 
-  @Nullable
-  public Long getLocalAs() {
+  public @Nullable Long getLocalAs() {
     return _localAs;
   }
 
@@ -321,8 +298,7 @@ public final class AristaBgpVrf implements Serializable {
     _localAs = localAs;
   }
 
-  @Nullable
-  public Integer getMaxPaths() {
+  public @Nullable Integer getMaxPaths() {
     return _maxPaths;
   }
 
@@ -330,8 +306,7 @@ public final class AristaBgpVrf implements Serializable {
     _maxPaths = maxPaths;
   }
 
-  @Nullable
-  public Integer getMaxPathsEcmp() {
+  public @Nullable Integer getMaxPathsEcmp() {
     return _maxPathsEcmp;
   }
 
@@ -339,8 +314,7 @@ public final class AristaBgpVrf implements Serializable {
     _maxPathsEcmp = maxPathsEcmp;
   }
 
-  @Nullable
-  public Boolean getNextHopUnchanged() {
+  public @Nullable Boolean getNextHopUnchanged() {
     return _nextHopUnchanged;
   }
 
@@ -348,8 +322,8 @@ public final class AristaBgpVrf implements Serializable {
     _nextHopUnchanged = nextHopUnchanged;
   }
 
-  @Nonnull
-  public Map<AristaRedistributeType, AristaBgpRedistributionPolicy> getRedistributionPolicies() {
+  public @Nonnull Map<AristaRedistributeType, AristaBgpRedistributionPolicy>
+      getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 
@@ -361,8 +335,7 @@ public final class AristaBgpVrf implements Serializable {
     _redistributionPolicies.remove(type);
   }
 
-  @Nullable
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -370,8 +343,7 @@ public final class AristaBgpVrf implements Serializable {
     _routeDistinguisher = routeDistinguisher;
   }
 
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -379,8 +351,7 @@ public final class AristaBgpVrf implements Serializable {
     _routerId = routerId;
   }
 
-  @Nullable
-  public Boolean getShutdown() {
+  public @Nullable Boolean getShutdown() {
     return _shutdown;
   }
 
@@ -388,160 +359,134 @@ public final class AristaBgpVrf implements Serializable {
     _shutdown = shutdown;
   }
 
-  @Nonnull
-  public Map<Prefix, AristaBgpAggregateNetwork> getV4aggregates() {
+  public @Nonnull Map<Prefix, AristaBgpAggregateNetwork> getV4aggregates() {
     return _v4aggregates;
   }
 
-  @Nonnull
-  public Map<Prefix6, AristaBgpAggregateNetwork> getV6aggregates() {
+  public @Nonnull Map<Prefix6, AristaBgpAggregateNetwork> getV6aggregates() {
     return _v6aggregates;
   }
 
-  @Nonnull
-  public Map<Prefix, AristaBgpV4DynamicNeighbor> getV4DynamicNeighbors() {
+  public @Nonnull Map<Prefix, AristaBgpV4DynamicNeighbor> getV4DynamicNeighbors() {
     return _v4DynamicNeighbors;
   }
 
-  @Nonnull
-  public AristaBgpV4DynamicNeighbor getOrCreateV4DynamicNeighbor(Prefix prefix) {
+  public @Nonnull AristaBgpV4DynamicNeighbor getOrCreateV4DynamicNeighbor(Prefix prefix) {
     return _v4DynamicNeighbors.computeIfAbsent(prefix, AristaBgpV4DynamicNeighbor::new);
   }
 
-  @Nonnull
-  public Map<Ip, AristaBgpV4Neighbor> getV4neighbors() {
+  public @Nonnull Map<Ip, AristaBgpV4Neighbor> getV4neighbors() {
     return _v4neighbors;
   }
 
-  @Nonnull
-  public AristaBgpV4Neighbor getOrCreateV4Neighbor(Ip address) {
+  public @Nonnull AristaBgpV4Neighbor getOrCreateV4Neighbor(Ip address) {
     return _v4neighbors.computeIfAbsent(address, AristaBgpV4Neighbor::new);
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4MulticastAf() {
+  public @Nonnull AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4MulticastAf() {
     if (_v4MulticastAf == null) {
       _v4MulticastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4MulticastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv4UnicastAddressFamily getV4MulticastAf() {
+  public @Nullable AristaBgpVrfIpv4UnicastAddressFamily getV4MulticastAf() {
     return _v4MulticastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4SrTeAf() {
+  public @Nonnull AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4SrTeAf() {
     if (_v4SrTeAf == null) {
       _v4SrTeAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4SrTeAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv4UnicastAddressFamily getV4SrTeAf() {
+  public @Nullable AristaBgpVrfIpv4UnicastAddressFamily getV4SrTeAf() {
     return _v4SrTeAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv4UnicastAddressFamily getV4UnicastAf() {
+  public @Nullable AristaBgpVrfIpv4UnicastAddressFamily getV4UnicastAf() {
     return _v4UnicastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
+  public @Nonnull AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4UnicastAf() {
     if (_v4UnicastAf == null) {
       _v4UnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4UnicastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv4UnicastAddressFamily getV4LabeledUnicastAf() {
+  public @Nullable AristaBgpVrfIpv4UnicastAddressFamily getV4LabeledUnicastAf() {
     return _v4LabeledUnicastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4LabeledUnicastAf() {
+  public @Nonnull AristaBgpVrfIpv4UnicastAddressFamily getOrCreateV4LabeledUnicastAf() {
     if (_v4LabeledUnicastAf == null) {
       _v4LabeledUnicastAf = new AristaBgpVrfIpv4UnicastAddressFamily();
     }
     return _v4LabeledUnicastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6LabeledUnicastAf() {
+  public @Nonnull AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6LabeledUnicastAf() {
     if (_v6LabeledUnicastAf == null) {
       _v6LabeledUnicastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
     }
     return _v6LabeledUnicastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv6UnicastAddressFamily getV6LabeledUnicastAf() {
+  public @Nullable AristaBgpVrfIpv6UnicastAddressFamily getV6LabeledUnicastAf() {
     return _v6LabeledUnicastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6MulticastAf() {
+  public @Nonnull AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6MulticastAf() {
     if (_v6MulticastAf == null) {
       _v6MulticastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
     }
     return _v6MulticastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv6UnicastAddressFamily getV6MulticastAf() {
+  public @Nullable AristaBgpVrfIpv6UnicastAddressFamily getV6MulticastAf() {
     return _v6MulticastAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6SrTeAf() {
+  public @Nonnull AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6SrTeAf() {
     if (_v6SrTeAf == null) {
       _v6SrTeAf = new AristaBgpVrfIpv6UnicastAddressFamily();
     }
     return _v6SrTeAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv6UnicastAddressFamily getV6SrTeAf() {
+  public @Nullable AristaBgpVrfIpv6UnicastAddressFamily getV6SrTeAf() {
     return _v6SrTeAf;
   }
 
-  @Nonnull
-  public AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6UnicastAf() {
+  public @Nonnull AristaBgpVrfIpv6UnicastAddressFamily getOrCreateV6UnicastAf() {
     if (_v6UnicastAf == null) {
       _v6UnicastAf = new AristaBgpVrfIpv6UnicastAddressFamily();
     }
     return _v6UnicastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
+  public @Nullable AristaBgpVrfIpv6UnicastAddressFamily getV6UnicastAf() {
     return _v6UnicastAf;
   }
 
-  @Nullable
-  public AristaBgpVrfVpnAddressFamily getVpnV4Af() {
+  public @Nullable AristaBgpVrfVpnAddressFamily getVpnV4Af() {
     return _vpnV4Af;
   }
 
-  @Nonnull
-  public AristaBgpVrfVpnAddressFamily getOrCreateVpnV4Af() {
+  public @Nonnull AristaBgpVrfVpnAddressFamily getOrCreateVpnV4Af() {
     if (_vpnV4Af == null) {
       _vpnV4Af = new AristaBgpVrfVpnAddressFamily();
     }
     return _vpnV4Af;
   }
 
-  @Nullable
-  public AristaBgpVrfVpnAddressFamily getVpnV6Af() {
+  public @Nullable AristaBgpVrfVpnAddressFamily getVpnV6Af() {
     return _vpnV6Af;
   }
 
-  @Nonnull
-  public AristaBgpVrfVpnAddressFamily getOrCreateVpnV6Af() {
+  public @Nonnull AristaBgpVrfVpnAddressFamily getOrCreateVpnV6Af() {
     if (_vpnV6Af == null) {
       _vpnV6Af = new AristaBgpVrfVpnAddressFamily();
     }

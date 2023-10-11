@@ -23,8 +23,7 @@ public class CryptoMapSet implements Serializable {
     _dynamic = dynamic;
   }
 
-  @Nonnull
-  public List<CryptoMapEntry> getCryptoMapEntries() {
+  public @Nonnull List<CryptoMapEntry> getCryptoMapEntries() {
     return _cryptoMapEntries;
   }
 }

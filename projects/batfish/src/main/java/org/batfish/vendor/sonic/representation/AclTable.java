@@ -58,14 +58,14 @@ public class AclTable implements Serializable {
   private static final String PROP_STAGE = "stage";
   private static final String PROP_TYPE = "type";
 
-  private @Nonnull final List<String> _ports;
-  private @Nonnull final List<String> _services;
-  private @Nullable final Stage _stage;
-  private @Nullable final Type _type;
+  private final @Nonnull List<String> _ports;
+  private final @Nonnull List<String> _services;
+  private final @Nullable Stage _stage;
+  private final @Nullable Type _type;
 
   @SuppressWarnings("unused")
   @JsonCreator
-  private @Nonnull static AclTable create(
+  private static @Nonnull AclTable create(
       @Nullable @JsonProperty(PROP_POLICY_DESC) String policyDesc, // ignore
       @Nullable @JsonProperty(PROP_PORTS) List<String> ports,
       @Nullable @JsonProperty(PROP_SERVICES) List<String> services,
@@ -122,7 +122,7 @@ public class AclTable implements Serializable {
         .toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

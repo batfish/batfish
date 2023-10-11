@@ -124,8 +124,7 @@ public class A10Conversion {
 
   /** Returns the {@link IntegerSpace} representing the specified {@link ServerPort}'s ports. */
   @VisibleForTesting
-  @Nonnull
-  static IntegerSpace toIntegerSpace(ServerPort port) {
+  static @Nonnull IntegerSpace toIntegerSpace(ServerPort port) {
     return IntegerSpace.of(new SubRange(port.getNumber(), getEndPort(port)))
         .intersection(IntegerSpace.PORTS);
   }
@@ -134,8 +133,7 @@ public class A10Conversion {
    * Returns the {@link IntegerSpace} representing the specified {@link VirtualServerPort}'s ports.
    */
   @VisibleForTesting
-  @Nonnull
-  static IntegerSpace toIntegerSpace(VirtualServerPort port) {
+  static @Nonnull IntegerSpace toIntegerSpace(VirtualServerPort port) {
     return IntegerSpace.of(toSubRange(port)).intersection(IntegerSpace.PORTS);
   }
 
@@ -155,8 +153,7 @@ public class A10Conversion {
 
   /** Returns the {@link IpProtocol} corresponding to the specified virtual-server port. */
   @VisibleForTesting
-  @Nonnull
-  static Optional<IpProtocol> toProtocol(VirtualServerPort port) {
+  static @Nonnull Optional<IpProtocol> toProtocol(VirtualServerPort port) {
     VirtualServerPort.Type type = port.getType();
     if (VIRTUAL_TCP_PORT_TYPES.contains(type)) {
       return Optional.of(IpProtocol.TCP);
@@ -166,8 +163,7 @@ public class A10Conversion {
   }
 
   /** Returns the source transformation step for the specified NAT pool. */
-  @Nonnull
-  static TransformationStep toSnatTransformationStep(NatPool pool) {
+  static @Nonnull TransformationStep toSnatTransformationStep(NatPool pool) {
     return new ApplyAll(
         assignSourceIp(pool.getStart(), pool.getEnd()),
         assignSourcePort(SNAT_PORT_POOL_START, SNAT_PORT_POOL_END));
@@ -178,8 +174,7 @@ public class A10Conversion {
    * corresponds to the transformation for a single member of the service-group.
    */
   @VisibleForTesting
-  @Nonnull
-  static List<TransformationStep> toDstTransformationSteps(
+  static @Nonnull List<TransformationStep> toDstTransformationSteps(
       ServiceGroup serviceGroup, Map<String, Server> servers) {
     return serviceGroup.getMembers().values().stream()
         .map(
@@ -206,14 +201,12 @@ public class A10Conversion {
   }
 
   /** Returns the destination IP transformation step for the specified server. */
-  @Nonnull
-  private static TransformationStep toDstIpTransformationStep(Server server) {
+  private static @Nonnull TransformationStep toDstIpTransformationStep(Server server) {
     return assignDestinationIp(ServerTargetToIp.INSTANCE.visit(server.getTarget()));
   }
 
   /** Returns the destination port transformation step for the specified server. */
-  @Nonnull
-  private static TransformationStep toDstPortTransformationStep(ServerPort serverPort) {
+  private static @Nonnull TransformationStep toDstPortTransformationStep(ServerPort serverPort) {
     IntegerSpace portRange = toIntegerSpace(serverPort);
     return assignDestinationPort(portRange.least(), portRange.greatest());
   }
@@ -745,8 +738,7 @@ public class A10Conversion {
             });
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private static @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN_COST)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN_COST)

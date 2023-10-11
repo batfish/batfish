@@ -510,7 +510,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String snatPoolName = snat.getSnatpool();
     if (snatPoolName == null) {
       // Cannot translate without pool
-      _w.redFlag(String.format("Cannot SNAT for snat '%s' without snatpool", snat.getName()));
+      _w.redFlagf("Cannot SNAT for snat '%s' without snatpool", snat.getName());
       return Optional.empty();
     }
     SnatPool snatPool = _snatPools.get(snatPoolName);
@@ -527,7 +527,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       return Optional.empty();
     }
     if (snat.getIpv4Origins().isEmpty()) {
-      _w.redFlag(String.format("Cannot SNAT for snat '%s' without origins", snat.getName()));
+      _w.redFlagf("Cannot SNAT for snat '%s' without origins", snat.getName());
       return Optional.empty();
     }
 
@@ -615,7 +615,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String destination = virtual.getDestination();
     if (destination == null) {
       // Cannot match without destination node
-      _w.redFlag(String.format("Virtual '%s' is missing destination", virtual.getName()));
+      _w.redFlagf("Virtual '%s' is missing destination", virtual.getName());
       return Optional.empty();
     }
     VirtualAddress virtualAddress = _virtualAddresses.get(destination);
@@ -634,7 +634,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
       // Cannot match without destination port
-      _w.redFlag(String.format("Virtual '%s' is missing destination port", virtual.getName()));
+      _w.redFlagf("Virtual '%s' is missing destination port", virtual.getName());
       return Optional.empty();
     }
     Ip destinationMask = firstNonNull(virtualAddress.getMask(), Ip.MAX);
@@ -692,7 +692,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String destination = virtual.getDestination();
     if (destination == null) {
       // Cannot match without destination node
-      _w.redFlag(String.format("Virtual '%s' is missing destination", virtual.getName()));
+      _w.redFlagf("Virtual '%s' is missing destination", virtual.getName());
       return Optional.empty();
     }
     VirtualAddress virtualAddress = _virtualAddresses.get(destination);
@@ -715,7 +715,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Integer destinationPort = virtual.getDestinationPort();
     if (destinationPort == null) {
       // Cannot match without destination port
-      _w.redFlag(String.format("Virtual '%s' is missing destination port", virtual.getName()));
+      _w.redFlagf("Virtual '%s' is missing destination port", virtual.getName());
       return Optional.empty();
     }
     Prefix source = virtual.getSource();
@@ -1510,7 +1510,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     Integer vlanId = vlan.getTag();
     newIface.setVlan(vlanId);
     if (vlanId == null) {
-      _w.redFlag(String.format("Deactivating vlan %s because it has no tag set", vlan.getName()));
+      _w.redFlagf("Deactivating vlan %s because it has no tag set", vlan.getName());
       newIface.deactivate(InactiveReason.INCOMPLETE);
     }
     newIface.setBandwidth(Interface.DEFAULT_BANDWIDTH);
@@ -2114,8 +2114,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
    *
    * @see <a href="https://github.com/coreswitch/zebra/blob/master/docs/router-id.md">zebra docs</a>
    */
-  @Nonnull
-  static Ip inferRouterId(Configuration c, String vrf, Warnings w, String processDesc) {
+  static @Nonnull Ip inferRouterId(Configuration c, String vrf, Warnings w, String processDesc) {
     Optional<Ip> highestIp =
         c.getAllInterfaces(vrf).values().stream()
             .map(org.batfish.datamodel.Interface::getConcreteAddress)

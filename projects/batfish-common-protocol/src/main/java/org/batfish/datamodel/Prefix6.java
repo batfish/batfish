@@ -70,8 +70,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
    * Return an {@link Optional} {@link Prefix6} from a string, or {@link Optional#empty} if the
    * string does not represent a {@link Prefix6}.
    */
-  @Nonnull
-  public static Optional<Prefix6> tryParse(@Nonnull String text) {
+  public static @Nonnull Optional<Prefix6> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
     } catch (BatfishException e) {

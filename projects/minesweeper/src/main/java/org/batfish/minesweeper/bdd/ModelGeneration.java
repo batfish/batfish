@@ -1,7 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
 import static com.google.common.base.Preconditions.checkState;
-import static org.batfish.datamodel.LineAction.PERMIT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -20,28 +19,21 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
-import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
-import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.route.nh.NextHop;
-import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
-import org.batfish.question.testroutepolicies.Result;
-import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -61,16 +53,29 @@ public class ModelGeneration {
   }
 
   /**
+   * Determine whether a given boolean formula must be true according to the given satisfying
+   * assignment. This method properly handles assignments that are partial (missing truth values for
+   * some variables).
+   *
+   * @param b the boolean formula, represented as a BDD
+   * @param model the model
+   * @return a boolean
+   */
+  static boolean mustBeTrueInModel(BDD b, BDD model) {
+    return !model.diffSat(b);
+  }
+
+  /**
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
    * set of communities for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model of the symbolic route constraints
+   * @param model a (possibly partial) model of the symbolic route constraints
    * @param r the symbolic route
    * @param configAPs an object that provides information about the community atomic predicates
    * @return a set of communities
    */
   static Set<Community> satAssignmentToCommunities(
-      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+      BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getCommunityAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -81,7 +86,7 @@ public class ModelGeneration {
     int numStandardAPs = configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates();
     // handle standard community literals and regexes
     for (int i = 0; i < numStandardAPs; i++) {
-      if (aps[i].andSat(fullModel)) {
+      if (mustBeTrueInModel(aps[i], model)) {
         Automaton a = apAutomata.get(i);
         // community atomic predicates should always be non-empty;
         // see RegexAtomicPredicates::initAtomicPredicates
@@ -106,7 +111,7 @@ public class ModelGeneration {
     // handle extended/large community literals
     for (Map.Entry<Integer, CommunityVar> entry :
         configAPs.getNonStandardCommunityLiterals().entrySet()) {
-      if (aps[entry.getKey()].andSat(fullModel)) {
+      if (mustBeTrueInModel(aps[entry.getKey()], model)) {
         assert entry.getValue().getLiteralValue() != null;
         comms.add(entry.getValue().getLiteralValue());
       }
@@ -118,12 +123,12 @@ public class ModelGeneration {
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce
    * an AS-path for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model of the symbolic route constraints
+   * @param model a (possibly partial) model of the symbolic route constraints
    * @param r the symbolic route
    * @param configAPs an object provides information about the AS-path regex atomic predicates
    * @return an AsPath
    */
-  static AsPath satAssignmentToAsPath(BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
+  static AsPath satAssignmentToAsPath(BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
     BDD[] aps = r.getAsPathRegexAtomicPredicates();
     Map<Integer, Automaton> apAutomata =
@@ -132,16 +137,21 @@ public class ModelGeneration {
     // find all atomic predicates that are required to be true in the given model
     List<Integer> trueAPs =
         IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-            .filter(i -> aps[i].andSat(fullModel))
+            .filter(i -> mustBeTrueInModel(aps[i], model))
             .boxed()
             .collect(Collectors.toList());
 
     // since atomic predicates are disjoint, at most one of them should be true in the model
     checkState(
-        trueAPs.size() == 1,
-        "Error in symbolic AS-path analysis: exactly one atomic predicate should be true");
+        trueAPs.size() <= 1,
+        "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
 
-    Automaton asPathRegexAutomaton = apAutomata.get(trueAPs.get(0));
+    // create an automaton for the language of AS-paths that are true in the model
+    Automaton asPathRegexAutomaton = SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton();
+    for (Integer i : trueAPs) {
+      asPathRegexAutomaton = asPathRegexAutomaton.intersection(apAutomata.get(i));
+    }
+
     String asPathStr = asPathRegexAutomaton.getShortestExample(true);
     // As-path regex automata should only accept strings with this property;
     // see SymbolicAsPathRegex::toAutomaton
@@ -205,110 +215,11 @@ public class ModelGeneration {
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
    *
-   * @param fullModel the satisfying assignment
-   * @param configAPs an object that provides information about the atomic predicates in the model
+   * @param model the satisfying assignment
+   * @param configAPs an object that provides information about the community atomic predicates
    * @return a route
    */
-  public static Bgpv4Route satAssignmentToInputRoute(
-      BDD fullModel, ConfigAtomicPredicates configAPs) {
-    return satAssignmentToRoute(
-        fullModel, new BDDRoute(fullModel.getFactory(), configAPs), configAPs);
-  }
-
-  /**
-   * Check whether the results of symbolic analysis are consistent with a given concrete
-   * input-output result (which would typically come from running Batfish's route-map simulation
-   * question {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}).
-   * Specifically, check that the symbolic analysis agrees with the given result, on the action
-   * (permit or deny) that the route map will take on the given input route announcement as well as
-   * on the output route that will result (in the case that the route is permitted).
-   *
-   * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
-   *     some path
-   * @param bddRoute a symbolic representation of the output route produced along that path
-   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
-   *     of atomic predicates in the bddRoute
-   * @param action the action that the symbolic analysis determined is taken on that path
-   * @param direction whether the route map is used as an import or export policy
-   * @param expectedResult the expected input-output behavior
-   * @return a boolean indicating whether the check succeeded
-   */
-  public static boolean validateModel(
-      BDD fullModel,
-      BDDRoute bddRoute,
-      ConfigAtomicPredicates configAPs,
-      LineAction action,
-      Environment.Direction direction,
-      Result<BgpRoute> expectedResult) {
-    if (!expectedResult.getAction().equals(action)) {
-      return false;
-    }
-    if (action == PERMIT) {
-      BgpRoute outputRouteFromModel =
-          satAssignmentToOutputRoute(fullModel, bddRoute, configAPs, direction);
-      return expectedResult.getOutputRoute().equals(outputRouteFromModel);
-    }
-    return true;
-  }
-
-  /**
-   * Produce the concrete output route that is represented by the given assignment of values to BDD
-   * variables as well as resulting {@link BDDRoute} from the symbolic route analysis.
-   *
-   * <p>Note: This method assumes that any AS-prepending that happens along the given path has
-   * already been accounted for through an update to the AS-path atomic predicates appropriately
-   * (see {@link org.batfish.minesweeper.AsPathRegexAtomicPredicates#prependAPs(List)}).
-   *
-   * @param fullModel the satisfying assignment
-   * @param bddRoute symbolic representation of the output route
-   * @param configAPs an object that provides information about the atomic predicates in the
-   *     fullModel and bddRoute
-   * @param direction whether the route map is used as an import or export policy
-   * @return a route
-   */
-  private static BgpRoute satAssignmentToOutputRoute(
-      BDD fullModel,
-      BDDRoute bddRoute,
-      ConfigAtomicPredicates configAPs,
-      Environment.Direction direction) {
-    BgpRoute.Builder builder =
-        TestRoutePoliciesAnswerer.toQuestionBgpRoute(
-            satAssignmentToRoute(fullModel, bddRoute, configAPs))
-            .toBuilder();
-    if (direction == Environment.Direction.OUT && !bddRoute.getNextHopSet()) {
-      // in the OUT direction the next hop is ignored unless explicitly set
-      builder.setNextHopConcrete(NextHopDiscard.instance());
-    } else {
-      switch (bddRoute.getNextHopType()) {
-        case BGP_PEER_ADDRESS:
-          builder.setNextHop(NextHopBgpPeerAddress.instance());
-          break;
-        case DISCARDED:
-          builder.setNextHopConcrete(NextHopDiscard.instance());
-          break;
-        case SELF:
-          builder.setNextHop(NextHopSelf.instance());
-          break;
-        default:
-          break;
-      }
-    }
-
-    return builder.build();
-  }
-
-  /**
-   * Produce the concrete route that is represented by the given assignment of values to BDD
-   * variables and {@link BDDRoute} from the symbolic route analysis.
-   *
-   * @param fullModel the satisfying assignment
-   * @param bddRoute symbolic representation of the desired route
-   * @param configAPs an object that provides information about the atomic predicates in the
-   *     fullModel and bddRoute
-   * @return a route
-   */
-  private static Bgpv4Route satAssignmentToRoute(
-      BDD fullModel, BDDRoute bddRoute, ConfigAtomicPredicates configAPs) {
+  public static Bgpv4Route satAssignmentToInputRoute(BDD model, ConfigAtomicPredicates configAPs) {
 
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
@@ -316,30 +227,31 @@ public class ModelGeneration {
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
             .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
-    Ip ip = Ip.create(bddRoute.getPrefix().satAssignmentToLong(fullModel));
-    long len = bddRoute.getPrefixLength().satAssignmentToLong(fullModel);
+    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
+
+    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(model));
+    long len = r.getPrefixLength().satAssignmentToLong(model);
     builder.setNetwork(Prefix.create(ip, (int) len));
 
-    builder.setLocalPreference(bddRoute.getLocalPref().satAssignmentToLong(fullModel));
-    builder.setAdmin(bddRoute.getAdminDist().satAssignmentToInt(fullModel));
-    builder.setMetric(bddRoute.getMed().satAssignmentToLong(fullModel));
-    builder.setTag(bddRoute.getTag().satAssignmentToLong(fullModel));
-    builder.setWeight(bddRoute.getWeight().satAssignmentToInt(fullModel));
-    builder.setOriginType(bddRoute.getOriginType().satAssignmentToValue(fullModel));
-    builder.setProtocol(bddRoute.getProtocolHistory().satAssignmentToValue(fullModel));
+    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(model));
+    builder.setAdmin(r.getAdminDist().satAssignmentToInt(model));
+    builder.setMetric(r.getMed().satAssignmentToLong(model));
+    builder.setTag(r.getTag().satAssignmentToLong(model));
+    builder.setOriginType(r.getOriginType().satAssignmentToValue(model));
+    builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(model));
 
     // if the cluster list length is N, create the cluster list 0,...,N-1
-    long clusterListLength = bddRoute.getClusterListLength().satAssignmentToLong(fullModel);
+    long clusterListLength = r.getClusterListLength().satAssignmentToLong(model);
     builder.setClusterList(
         LongStream.range(0, clusterListLength).boxed().collect(ImmutableSet.toImmutableSet()));
 
-    Set<Community> communities = satAssignmentToCommunities(fullModel, bddRoute, configAPs);
+    Set<Community> communities = satAssignmentToCommunities(model, r, configAPs);
     builder.setCommunities(communities);
 
-    AsPath asPath = satAssignmentToAsPath(fullModel, bddRoute, configAPs);
+    AsPath asPath = satAssignmentToAsPath(model, r, configAPs);
     builder.setAsPath(asPath);
 
-    NextHop nextHop = satAssignmentToNextHop(fullModel, bddRoute, configAPs);
+    NextHop nextHop = satAssignmentToNextHop(model, r, configAPs);
     builder.setNextHop(nextHop);
 
     return builder.build();
@@ -350,21 +262,20 @@ public class ModelGeneration {
    * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
    * consistent with the assignment.
    *
-   * @param fullModel the satisfying assignment
+   * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
    * @return a pair of a predicate on tracks and an optional source VRF
    */
   public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
-      BDD fullModel, ConfigAtomicPredicates configAPs) {
+      BDD model, ConfigAtomicPredicates configAPs) {
 
-    BDDRoute r = new BDDRoute(fullModel.getFactory(), configAPs);
+    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
 
-    List<String> successfulTracks =
-        allSatisfyingItems(configAPs.getTracks(), r.getTracks(), fullModel);
+    List<String> successfulTracks = allSatisfyingItems(configAPs.getTracks(), r.getTracks(), model);
 
     // see if the route should have a source VRF, and if so then add it
     List<String> sourceVrfs =
-        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), fullModel);
+        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
     checkState(
         sourceVrfs.size() <= 1,
         "Error in symbolic route analysis: at most one source VRF can be in the environment");
@@ -374,10 +285,9 @@ public class ModelGeneration {
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable
   // assignment.
-  private static List<String> allSatisfyingItems(
-      List<String> items, BDD[] itemBDDs, BDD fullModel) {
+  private static List<String> allSatisfyingItems(List<String> items, BDD[] itemBDDs, BDD model) {
     return IntStream.range(0, itemBDDs.length)
-        .filter(i -> itemBDDs[i].andSat(fullModel))
+        .filter(i -> mustBeTrueInModel(itemBDDs[i], model))
         .mapToObj(items::get)
         .collect(ImmutableList.toImmutableList());
   }
@@ -399,10 +309,10 @@ public class ModelGeneration {
     }
   }
 
-  // Produces a full model of the given constraints, which represents a concrete route announcement
-  // that is consistent with the constraints.  The protocol defaults to BGP if it is consistent with
-  // the constraints.  The same approach could be used to provide default values for other fields in
-  // the future.
+  // Produces a model of the given constraints, which represents a concrete route announcement
+  // that is consistent with the constraints.  The model uses certain defaults for certain fields,
+  // like the prefix, if they are consistent with the constraints. Note that the model is a partial
+  // assignment -- variables that don't matter are not assigned a truth value.
   public static BDD constraintsToModel(BDD constraints, ConfigAtomicPredicates configAPs) {
     BDDRoute route = new BDDRoute(constraints.getFactory(), configAPs);
     // set the protocol field to BGP if it is consistent with the constraints
@@ -434,6 +344,6 @@ public class ModelGeneration {
     augmentedConstraints = tryAddingConstraint(defaultLP, augmentedConstraints);
     augmentedConstraints = tryAddingConstraint(prefixes, augmentedConstraints);
     augmentedConstraints = tryAddingConstraint(lessPreferredPrefixes, augmentedConstraints);
-    return augmentedConstraints.fullSatOne();
+    return augmentedConstraints.satOne();
   }
 }

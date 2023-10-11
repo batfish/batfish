@@ -26,8 +26,7 @@ public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializab
   }
 
   /** Return default metric if configured. */
-  @Nullable
-  public EigrpMetric getDefaultMetric() {
+  public @Nullable EigrpMetric getDefaultMetric() {
     return _defaultMetric;
   }
 
@@ -68,7 +67,7 @@ public abstract class EigrpVrfIpAddressFamilyConfiguration implements Serializab
     _redistributionPolicies.put(instance, new RedistributionPolicy(instance, routeMap));
   }
 
-  @Nullable private EigrpMetric _defaultMetric;
+  private @Nullable EigrpMetric _defaultMetric;
   private final Set<Prefix> _networks;
   private final Map<RoutingProtocolInstance, RedistributionPolicy> _redistributionPolicies;
 }

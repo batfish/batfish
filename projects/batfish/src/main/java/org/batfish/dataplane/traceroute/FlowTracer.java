@@ -229,6 +229,7 @@ class FlowTracer {
   private final int _origNewSessionsSize; // size of _newSessions at construction
   private final Flow _originalFlow;
   private final @Nonnull String _vrfName;
+
   /** Only create one in-memory instance of the same breadcrumb. */
   private final @Nonnull Interner<Breadcrumb> _breadcrumbInterner;
 
@@ -258,8 +259,7 @@ class FlowTracer {
   private Flow _currentFlow;
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
-  @Nonnull
-  static FlowTracer initialFlowTracer(
+  static @Nonnull FlowTracer initialFlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       String node,
       @Nullable String ingressInterface,
@@ -270,8 +270,7 @@ class FlowTracer {
   }
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
-  @Nonnull
-  static FlowTracer initialFlowTracer(
+  static @Nonnull FlowTracer initialFlowTracer(
       TracerouteEngineImplContext tracerouteContext,
       String node,
       @Nullable String ingressInterface,
@@ -509,8 +508,7 @@ class FlowTracer {
         enterIface -> forkTracerFollowEdge(exitIface, enterIface).processHop());
   }
 
-  @Nonnull
-  private ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface) {
+  private @Nonnull ExitOutputIfaceStep buildExitOutputIfaceStep(String outputIface) {
     return ExitOutputIfaceStep.builder()
         .setDetail(
             ExitOutputIfaceStepDetail.builder()
@@ -521,8 +519,7 @@ class FlowTracer {
         .build();
   }
 
-  @Nonnull
-  private ArpErrorStep buildArpErrorStep(String outputIface, Ip nhIp, StepAction action) {
+  private @Nonnull ArpErrorStep buildArpErrorStep(String outputIface, Ip nhIp, StepAction action) {
     return ArpErrorStep.builder()
         .setDetail(
             ArpErrorStepDetail.builder()
@@ -533,8 +530,8 @@ class FlowTracer {
         .build();
   }
 
-  @Nonnull
-  private DeliveredStep buildDeliveredStep(String outputIface, Ip nhIp, StepAction action) {
+  private @Nonnull DeliveredStep buildDeliveredStep(
+      String outputIface, Ip nhIp, StepAction action) {
     return DeliveredStep.builder()
         .setDetail(
             DeliveredStepDetail.builder()
@@ -853,8 +850,7 @@ class FlowTracer {
     }
   }
 
-  @Nonnull
-  private OriginateStep buildOriginateStep() {
+  private @Nonnull OriginateStep buildOriginateStep() {
     return OriginateStep.builder()
         .setDetail(OriginateStepDetail.builder().setOriginatingVrf(_vrfName).build())
         .setAction(StepAction.ORIGINATED)
@@ -1249,8 +1245,7 @@ class FlowTracer {
    * FirewallSessionInterfaceInfo#getSessionInterfaces() interfaces} defined in the given {@code
    * firewallSessionInterfaceInfo}
    */
-  @Nullable
-  private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+  private @Nullable FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull FirewallSessionInterfaceInfo firewallSessionInterfaceInfo) {
     if (!firewallSessionInterfaceInfo.canSetUpSessionForFlowFrom(
         firstNonNull(_ingressInterface, SOURCE_ORIGINATING_FROM_DEVICE))) {
@@ -1265,16 +1260,14 @@ class FlowTracer {
         action, new IncomingSessionScope(firewallSessionInterfaceInfo.getSessionInterfaces()));
   }
 
-  @Nullable
-  private FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+  private @Nullable FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       @Nonnull SessionAction sessionAction, @Nonnull SessionScope sessionScope) {
     return buildFirewallSessionTraceInfo(
         _currentNode.getName(), _currentFlow, _originalFlow, sessionAction, sessionScope);
   }
 
   @VisibleForTesting
-  @Nullable
-  static FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
+  static @Nullable FirewallSessionTraceInfo buildFirewallSessionTraceInfo(
       String currentNode,
       Flow currentFlow,
       Flow originalFlow,
@@ -1294,8 +1287,7 @@ class FlowTracer {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static SessionAction getSessionAction(
+  static @Nonnull SessionAction getSessionAction(
       Action action,
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {

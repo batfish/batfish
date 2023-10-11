@@ -134,8 +134,7 @@ public final class IsoAddress implements Serializable {
     return _systemId;
   }
 
-  @Nonnull
-  public String getSystemIdString() {
+  public @Nonnull String getSystemIdString() {
     StringBuilder sb = new StringBuilder();
     for (byte b : _systemId) {
       sb.append(String.format("%02X", b));

@@ -407,7 +407,7 @@ public class Conversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(
@@ -623,8 +623,7 @@ public class Conversions {
    * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
-  @Nullable
-  static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
+  static @Nullable IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
     List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (AclLine line : ipAccessList.getLines()) {
@@ -672,8 +671,7 @@ public class Conversions {
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
-  @Nullable
-  private static String getIkePhase1Policy(
+  private static @Nullable String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
@@ -1033,8 +1031,7 @@ public class Conversions {
 
   /** Helper to convert Cisco VS OSPF network type to VI model type. */
   @VisibleForTesting
-  @Nullable
-  static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings warnings) {
     if (type == null) {
       // default is broadcast for all Ethernet interfaces

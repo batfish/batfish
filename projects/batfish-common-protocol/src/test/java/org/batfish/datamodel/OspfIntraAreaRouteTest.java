@@ -24,7 +24,7 @@ public class OspfIntraAreaRouteTest {
     new EqualsTester()
         .addEqualityGroup(r, r, builder.build())
         .addEqualityGroup(builder.setNetwork(Prefix.parse("1.1.1.1/32")).build())
-        .addEqualityGroup(builder.setAdmin(1000).build())
+        .addEqualityGroup(builder.setAdmin(100).build())
         .addEqualityGroup(builder.setArea(2L).build())
         .addEqualityGroup(builder.setMetric(20L).build())
         .addEqualityGroup(

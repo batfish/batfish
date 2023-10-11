@@ -59,23 +59,29 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   private static final int MAX_RESOLUTION_DEPTH = 10;
 
   /** Main RIB to use for IGP cost estimation and next hop resolution */
-  @Nullable protected final GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
+  protected final @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> _mainRib;
+
   /** Tie breaker to use if all route attributes appear to be equal */
-  @Nonnull protected final BgpTieBreaker _tieBreaker;
+  protected final @Nonnull BgpTieBreaker _tieBreaker;
+
   /** Maximum number of paths to install. Unconstrained (infinite) if {@code null} */
-  @Nullable protected final Integer _maxPaths;
+  protected final @Nullable Integer _maxPaths;
+
   /**
    * For multipath: how strict should the comparison of AS Path be for paths to be considered equal
    */
-  @Nullable protected final MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
+  protected final @Nullable MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
+
   // Best BGP paths. Invariant: must be re-evaluated (per prefix) each time a route is added or
   // evicted
-  @Nonnull protected final Map<Prefix, R> _bestPaths;
+  protected final @Nonnull Map<Prefix, R> _bestPaths;
+
   /**
    * This logical clock helps us keep track when routes were merged into the RIB to determine their
    * age. It's incremented each time a route is merged into the RIB.
    */
   protected long _logicalClock;
+
   /** Map to keep track when routes were merged in. */
   protected Map<R, Long> _logicalArrivalTime;
 
@@ -338,8 +344,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   /** Represents the result of a route being added or removed in a potentially multipath BGP RIB. */
   public static class MultipathRibDelta<T extends BgpRoute<?, ?>> {
-    @Nonnull private final RibDelta<T> _bestPathDelta;
-    @Nonnull private final RibDelta<T> _multipathDelta;
+    private final @Nonnull RibDelta<T> _bestPathDelta;
+    private final @Nonnull RibDelta<T> _multipathDelta;
 
     public MultipathRibDelta(RibDelta<T> bestPathDelta, RibDelta<T> multipathDelta) {
       _bestPathDelta = bestPathDelta;

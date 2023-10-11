@@ -33,5 +33,5 @@ public final class RdSetParameterReference implements RdMatchExpr {
     return _name.hashCode();
   }
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 }

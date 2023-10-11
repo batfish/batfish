@@ -287,7 +287,11 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  public static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/routers/xr12000/software/xr12k_r4-0/routing/configuration/guide/rc40xr12k_chapter6.html
+  // An administrative distance is an integer from 0 to 255. In general, the higher the value, the
+  // lower the trust rating. An administrative distance of 255 means the routing information source
+  // cannot be trusted at all and should be ignored.
+  public static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
@@ -441,7 +445,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
 
   private final Map<String, XrCommunitySet> _communitySets;
 
-  @Nonnull private final Map<String, RdSet> _rdSets;
+  private final @Nonnull Map<String, RdSet> _rdSets;
 
   public CiscoXrConfiguration() {
     _asPathSets = new TreeMap<>();
@@ -695,7 +699,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -1337,15 +1341,14 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return newIface;
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(
+      Interface iface, EigrpProcessMode mode) {
     Optional<Double> bw =
         Stream.of(iface.getBandwidth(), Interface.getDefaultBandwidth(iface.getName(), _vendor))
             .filter(Objects::nonNull)
             .findFirst();
     if (!bw.isPresent()) {
-      _w.redFlag(
-          String.format("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName()));
+      _w.redFlagf("Missing bandwidth for %s, EIGRP metric will be wrong", iface.getName());
     }
     EigrpMetricValues values =
         EigrpMetricValues.builder()
@@ -2132,7 +2135,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig
@@ -2335,8 +2338,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     return _communitySets;
   }
 
-  @Nonnull
-  public Map<String, RdSet> getRdSets() {
+  public @Nonnull Map<String, RdSet> getRdSets() {
     return _rdSets;
   }
 }

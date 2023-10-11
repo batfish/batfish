@@ -770,9 +770,9 @@ public class IncrementalDataPlanePluginTest {
     DataPlane dp = result._dataPlane;
 
     BgpPeerConfigId initiator =
-        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.0/32"), false);
+        new BgpPeerConfigId("node1", "~Vrf_0~", Prefix.parse("1.0.0.1/32"), false);
     BgpPeerConfigId listener =
-        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.1/32"), false);
+        new BgpPeerConfigId("node2", "~Vrf_1~", Prefix.parse("1.0.0.0/32"), false);
 
     Ip initiatorLocalIp = Ip.parse("1.0.0.0");
     BgpActivePeerConfig source =
@@ -784,6 +784,13 @@ public class IncrementalDataPlanePluginTest {
             .setRemoteAs(2L)
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
+    BgpActivePeerConfig.Builder destB =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(listener.getRemotePeerPrefix().getStartIp())
+            .setEbgpMultihop(false)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build());
 
     // the neighbor should be reachable because it is only one hop away from the initiator
     assertTrue(
@@ -791,6 +798,30 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
+            destB.build(),
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+
+    // But if the listener has a local IP configured that does not match initiator's peer, will not
+    // be created
+    destB.setLocalIp(Ip.parse("2.2.2.2")).setCheckLocalIpOnAccept(true);
+    assertFalse(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            destB.build(),
+            initiatorLocalIp,
+            new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
+
+    // But if the listener is on a weird vendor that doesn't check local IP, it will be accepted.
+    destB.setLocalIp(Ip.parse("2.2.2.2")).setCheckLocalIpOnAccept(false);
+    assertTrue(
+        BgpTopologyUtils.canEstablishBgpSession(
+            initiator,
+            listener,
+            source,
+            destB.build(),
             initiatorLocalIp,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
@@ -866,12 +897,22 @@ public class IncrementalDataPlanePluginTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
+    BgpActivePeerConfig dest =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(listener.getRemotePeerPrefix().getStartIp())
+            .setEbgpMultihop(false)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
     // the neighbor should be not be reachable because it is two hops away from the initiator
     assertFalse(
         BgpTopologyUtils.canEstablishBgpSession(
             initiator,
             listener,
             source,
+            dest,
             initiatorLocalIp,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
@@ -947,12 +988,22 @@ public class IncrementalDataPlanePluginTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
+    BgpActivePeerConfig dest =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(listener.getRemotePeerPrefix().getStartIp())
+            .setEbgpMultihop(true)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
     // the neighbor should be reachable because multi-hops are allowed
     assertTrue(
         BgpTopologyUtils.canEstablishBgpSession(
             initiator,
             listener,
             source,
+            dest,
             initiatorLocalIp,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
@@ -1031,6 +1082,15 @@ public class IncrementalDataPlanePluginTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
+    BgpActivePeerConfig dest =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(listener.getRemotePeerPrefix().getStartIp())
+            .setEbgpMultihop(true)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
     // the neighbor should not be reachable even though multihops are allowed as traceroute would be
     // denied in on node 3
     assertFalse(
@@ -1038,6 +1098,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
+            dest,
             initiatorLocalIp,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }
@@ -1116,6 +1177,15 @@ public class IncrementalDataPlanePluginTest {
             .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
             .build();
 
+    BgpActivePeerConfig dest =
+        BgpActivePeerConfig.builder()
+            .setPeerAddress(listener.getRemotePeerPrefix().getStartIp())
+            .setEbgpMultihop(true)
+            .setLocalAs(2L)
+            .setRemoteAs(1L)
+            .setIpv4UnicastAddressFamily(Ipv4UnicastAddressFamily.builder().build())
+            .build();
+
     // neighbor should be reachable because ACL allows established connection back into node1 and
     // allows everything out
     assertTrue(
@@ -1123,6 +1193,7 @@ public class IncrementalDataPlanePluginTest {
             initiator,
             listener,
             source,
+            dest,
             initiatorLocalIp,
             new TracerouteEngineImpl(dp, result._topologies.getLayer3Topology(), configs)));
   }

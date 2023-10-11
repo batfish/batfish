@@ -1,6 +1,7 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.datamodel.routing_policy.Common.DEFAULT_UNDERSCORE_REPLACEMENT;
+import static org.batfish.minesweeper.CommunityVar.COMMUNITY_NUM_REGEX;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
@@ -39,7 +40,8 @@ public class CommunityVarTest {
     assertThat(cv2.toAutomaton(), equalTo(new RegExp("^large:10:20:30$").toAutomaton()));
 
     assertThat(cv3.toAutomaton(), equalTo(CommunityVar.COMMUNITY_FSM));
-    assertThat(cv4.toAutomaton(), equalTo(new RegExp("^40:(0|[1-9][0-9]*)$").toAutomaton()));
+    assertThat(
+        cv4.toAutomaton(), equalTo(new RegExp("^40:" + COMMUNITY_NUM_REGEX + "$").toAutomaton()));
     assertThat(cv5.toAutomaton(), equalTo(new RegExp("^40:50$").toAutomaton()));
 
     assertThat(cv6.toAutomaton(), equalTo(new RegExp("^0:[1-9]0$").toAutomaton()));

@@ -15,6 +15,7 @@ import org.batfish.specifier.SpecifierFactories;
 public class DefinedStructuresQuestion extends Question {
   /** An optional filename for all defined structures returned. */
   private static final String PROP_FILENAME = "filename";
+
   /** A filter on nodes for which to return files defining structures. */
   private static final String PROP_NODES = "nodes";
 
@@ -24,10 +25,10 @@ public class DefinedStructuresQuestion extends Question {
   /** A filter on vendor-specific structure types. */
   private static final String PROP_TYPES = "types";
 
-  @Nullable private final String _filename;
-  @Nullable private final String _nodes;
-  @Nonnull private final String _types;
-  @Nonnull private final String _names;
+  private final @Nullable String _filename;
+  private final @Nullable String _nodes;
+  private final @Nonnull String _types;
+  private final @Nonnull String _names;
 
   @JsonCreator
   private static DefinedStructuresQuestion jsonCreator(
@@ -64,14 +65,12 @@ public class DefinedStructuresQuestion extends Question {
   }
 
   @JsonProperty(PROP_FILENAME)
-  @Nullable
-  public String getFilename() {
+  public @Nullable String getFilename() {
     return _filename;
   }
 
   @JsonProperty(PROP_NAMES)
-  @Nonnull
-  public String getNames() {
+  public @Nonnull String getNames() {
     return _names;
   }
 
@@ -88,8 +87,7 @@ public class DefinedStructuresQuestion extends Question {
   }
 
   @JsonProperty(PROP_TYPES)
-  @Nonnull
-  public String getTypes() {
+  public @Nonnull String getTypes() {
     return _types;
   }
 }

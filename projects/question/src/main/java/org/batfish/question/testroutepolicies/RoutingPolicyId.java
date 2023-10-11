@@ -36,13 +36,11 @@ final class RoutingPolicyId implements Comparable<RoutingPolicyId> {
     return Objects.equals(_node, that._node) && Objects.equals(_policy, that._policy);
   }
 
-  @Nonnull
-  public String getNode() {
+  public @Nonnull String getNode() {
     return _node;
   }
 
-  @Nonnull
-  public String getPolicy() {
+  public @Nonnull String getPolicy() {
     return _policy;
   }
 

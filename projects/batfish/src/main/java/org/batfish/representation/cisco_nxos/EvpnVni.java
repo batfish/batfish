@@ -19,8 +19,7 @@ public final class EvpnVni implements Serializable {
     _exportRt = exportRt;
   }
 
-  @Nullable
-  public ExtendedCommunityOrAuto getImportRt() {
+  public @Nullable ExtendedCommunityOrAuto getImportRt() {
     return _importRt;
   }
 

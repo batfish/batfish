@@ -25,9 +25,9 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
   private static final String PROP_CHILD_GROUP_NAMES = "childGroupNames";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private SortedSet<String> _addresses;
-  @Nonnull private SortedSet<String> _childGroupNames;
-  @Nonnull private String _name;
+  private @Nonnull SortedSet<String> _addresses;
+  private @Nonnull SortedSet<String> _childGroupNames;
+  private @Nonnull String _name;
 
   @JsonCreator
   private static AddressGroup create(
@@ -73,20 +73,17 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
   }
 
   @JsonProperty(PROP_ADDRESSES)
-  @Nonnull
-  public SortedSet<String> getAddresses() {
+  public @Nonnull SortedSet<String> getAddresses() {
     return _addresses;
   }
 
   @JsonProperty(PROP_CHILD_GROUP_NAMES)
-  @Nonnull
-  public SortedSet<String> getChildGroupNames() {
+  public @Nonnull SortedSet<String> getChildGroupNames() {
     return _childGroupNames;
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

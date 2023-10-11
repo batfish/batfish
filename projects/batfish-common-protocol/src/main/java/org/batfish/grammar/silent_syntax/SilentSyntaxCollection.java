@@ -23,8 +23,7 @@ public final class SilentSyntaxCollection implements Serializable {
       _text = text;
     }
 
-    @Nonnull
-    public String getRuleName() {
+    public @Nonnull String getRuleName() {
       return _ruleName;
     }
 
@@ -32,8 +31,7 @@ public final class SilentSyntaxCollection implements Serializable {
       return _line;
     }
 
-    @Nonnull
-    public String getText() {
+    public @Nonnull String getText() {
       return _text;
     }
 
@@ -54,17 +52,16 @@ public final class SilentSyntaxCollection implements Serializable {
       return Objects.hash(_ruleName, _line, _text);
     }
 
-    @Nonnull private final String _ruleName;
+    private final @Nonnull String _ruleName;
     private final int _line;
-    @Nonnull private final String _text;
+    private final @Nonnull String _text;
   }
 
   public SilentSyntaxCollection() {
     _elements = new LinkedList<>();
   }
 
-  @Nonnull
-  public Collection<SilentSyntaxElem> getElements() {
+  public @Nonnull Collection<SilentSyntaxElem> getElements() {
     return ImmutableList.copyOf(_elements);
   }
 
@@ -72,5 +69,5 @@ public final class SilentSyntaxCollection implements Serializable {
     _elements.add(element);
   }
 
-  @Nonnull private List<SilentSyntaxElem> _elements;
+  private @Nonnull List<SilentSyntaxElem> _elements;
 }

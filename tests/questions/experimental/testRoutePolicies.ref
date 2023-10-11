@@ -3,6 +3,7 @@
   "direction" : "IN",
   "inputRoutes" : [
     {
+      "adminDistance" : 0,
       "localPreference" : 0,
       "metric" : 0,
       "network" : "0.0.0.0/0",

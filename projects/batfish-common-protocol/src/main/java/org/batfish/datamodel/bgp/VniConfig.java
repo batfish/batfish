@@ -24,10 +24,10 @@ public abstract class VniConfig implements Serializable {
   public static final String PROP_IMPORT_ROUTE_TARGET = "importRouteTarget";
 
   protected final int _vni;
-  @Nonnull protected final String _vrf;
-  @Nonnull protected final RouteDistinguisher _rd;
-  @Nonnull protected final ExtendedCommunity _routeTarget;
-  @Nonnull protected final String _importRouteTarget;
+  protected final @Nonnull String _vrf;
+  protected final @Nonnull RouteDistinguisher _rd;
+  protected final @Nonnull ExtendedCommunity _routeTarget;
+  protected final @Nonnull String _importRouteTarget;
 
   protected VniConfig(
       int vni,
@@ -43,8 +43,7 @@ public abstract class VniConfig implements Serializable {
   }
 
   /** Return an import route target pattern equivalent to "*:VNI" */
-  @Nonnull
-  public static String importRtPatternForAnyAs(int vni) {
+  public static @Nonnull String importRtPatternForAnyAs(int vni) {
     checkArgument(vni > 0 && vni < 1 << 24, "VNI value %d is not in the valid range 1-16777215");
     return String.format("^\\d+:%d$", vni);
   }
@@ -76,8 +75,7 @@ public abstract class VniConfig implements Serializable {
   }
 
   /** The import route target pattern. Can be compiled into a {@link Pattern} */
-  @Nonnull
-  public String getImportRouteTarget() {
+  public @Nonnull String getImportRouteTarget() {
     return _importRouteTarget;
   }
 

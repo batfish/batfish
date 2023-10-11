@@ -21,7 +21,7 @@ public final class LinkLocalAddress extends InterfaceAddress {
   private static final Prefix PREFIX = Prefix.create(Ip.parse("169.254.0.0"), NETWORK_BITS);
   private static final String STR_PREFIX = "link-local";
 
-  @Nonnull private final Ip _ip;
+  private final @Nonnull Ip _ip;
 
   private LinkLocalAddress(Ip ip) {
     _ip = ip;
@@ -33,8 +33,7 @@ public final class LinkLocalAddress extends InterfaceAddress {
     return new LinkLocalAddress(ip);
   }
 
-  @Nonnull
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 

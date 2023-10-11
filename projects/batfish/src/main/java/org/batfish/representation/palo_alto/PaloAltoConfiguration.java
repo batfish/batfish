@@ -210,7 +210,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _domain;
 
-  @Nullable private HighAvailability _highAvailability;
+  private @Nullable HighAvailability _highAvailability;
 
   private String _hostname;
   private String _rawHostname;
@@ -874,31 +874,31 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     String ruleName = rule.getName();
     boolean valid = true;
     if (rule.getApplication() == null) {
-      _w.redFlag(String.format("No application set for application-override rule %s", ruleName));
+      _w.redFlagf("No application set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getDestination().isEmpty()) {
-      _w.redFlag(String.format("No destination set for application-override rule %s", ruleName));
+      _w.redFlagf("No destination set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getSource().isEmpty()) {
-      _w.redFlag(String.format("No source set for application-override rule %s", ruleName));
+      _w.redFlagf("No source set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getFrom().isEmpty()) {
-      _w.redFlag(String.format("No from-zone set for application-override rule %s", ruleName));
+      _w.redFlagf("No from-zone set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getTo().isEmpty()) {
-      _w.redFlag(String.format("No to-zone set for application-override rule %s", ruleName));
+      _w.redFlagf("No to-zone set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getPort().equals(IntegerSpace.EMPTY)) {
-      _w.redFlag(String.format("No port set for application-override rule %s", ruleName));
+      _w.redFlagf("No port set for application-override rule %s", ruleName);
       valid = false;
     }
     if (rule.getIpProtocol() == null) {
-      _w.redFlag(String.format("No protocol set for application-override rule %s", ruleName));
+      _w.redFlagf("No protocol set for application-override rule %s", ruleName);
       valid = false;
     }
     return valid;
@@ -1588,8 +1588,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         rejecting(matchExternalFromZoneInterface));
   }
 
-  @Nullable
-  private IpSpace ipSpaceFromRuleEndpoints(
+  private @Nullable IpSpace ipSpaceFromRuleEndpoints(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
     return AclIpSpace.union(
         endpoints.stream()
@@ -1597,8 +1596,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
-  @Nonnull
-  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
+  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -1609,8 +1607,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  private List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
+  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
@@ -1621,8 +1618,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
-  private RangeSet<Ip> ipRangeSetFromRuleEndpoints(
+  private @Nonnull RangeSet<Ip> ipRangeSetFromRuleEndpoints(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w) {
     RangeSet<Ip> rangeSet = TreeRangeSet.create();
     endpoints.stream()
@@ -1752,7 +1748,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         serviceDisjuncts.add(
             new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else {
-        _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
+        _w.redFlagf("No matching service group/object found for: %s", serviceName);
       }
     }
     return Optional.of(new OrMatchExpr(serviceDisjuncts));
@@ -2439,7 +2435,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return Optional.of(
           new PacketMatchExpr(new MatchHeaderSpace(ServiceBuiltIn.SERVICE_HTTPS.getHeaderSpace())));
     } else {
-      _w.redFlag(String.format("No matching service group/object found for: %s", serviceName));
+      _w.redFlagf("No matching service group/object found for: %s", serviceName);
     }
     return Optional.empty();
   }
@@ -2621,7 +2617,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     if (peer.getPeerAddress() == null) {
-      _w.redFlag(String.format("Missing peer-address for peer %s; disabling it", peer.getName()));
+      _w.redFlagf("Missing peer-address for peer %s; disabling it", peer.getName());
       return;
     }
 
@@ -2643,8 +2639,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     } else if (pg.getTypeAndOptions() instanceof EbgpPeerGroupType) {
       // Peer AS must be set and not equal to Local AS.
       if (peerAs == null) {
-        _w.redFlag(
-            String.format("eBGP peer %s must have peer-as set; disabling it", peer.getName()));
+        _w.redFlagf("eBGP peer %s must have peer-as set; disabling it", peer.getName());
         return;
       }
       if (peerAs == localAs) {
@@ -2723,15 +2718,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Router ID must be configured manually or you cannot enable the router.
     if (bgp.getRouterId() == null) {
-      _w.redFlag(
-          String.format("virtual-router %s bgp has no router-id; disabling it", vr.getName()));
+      _w.redFlagf("virtual-router %s bgp has no router-id; disabling it", vr.getName());
       return Optional.empty();
     }
 
     // Local AS must be configured manually or you cannot enable the router.
     if (bgp.getLocalAs() == null) {
-      _w.redFlag(
-          String.format("virtual-router %s bgp has no local-as; disabling it", vr.getName()));
+      _w.redFlagf("virtual-router %s bgp has no local-as; disabling it", vr.getName());
       return Optional.empty();
     }
 
@@ -2764,8 +2757,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Router ID is ensured to be present by the CLI/UI
     if (ospf.getRouterId() == null) {
-      _w.redFlag(
-          String.format("Virtual-router %s ospf has no router-id; disabling it.", vr.getName()));
+      _w.redFlagf("Virtual-router %s ospf has no router-id; disabling it.", vr.getName());
       return Optional.empty();
     }
     OspfProcess.Builder ospfProcessBuilder = OspfProcess.builder();
@@ -2883,8 +2875,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     viIface.setOspfSettings(ospfSettings.build());
   }
 
-  @Nullable
-  private OspfNetworkType toNetworkType(@Nullable LinkType linkType) {
+  private @Nullable OspfNetworkType toNetworkType(@Nullable LinkType linkType) {
     if (linkType == null) {
       return null;
     }
@@ -2936,8 +2927,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           && nextVrf == null
           && sr.getNextHopIp() == null
           && sr.getNextHopInterface() == null) {
-        _w.redFlag(
-            String.format("Cannot convert static route %s, as it has no nexthop.", e.getKey()));
+        _w.redFlagf("Cannot convert static route %s, as it has no nexthop.", e.getKey());
         continue;
       }
       vrf.getStaticRoutes()
@@ -3118,7 +3108,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
     DeviceGroup parent = panoramaDeviceGroups.get(parentName);
     if (parents.contains(parent)) {
-      _w.redFlag(String.format("Device-group %s cannot be inherited more than once.", parentName));
+      _w.redFlagf("Device-group %s cannot be inherited more than once.", parentName);
       return;
     }
     if (parent == null) {
@@ -3307,7 +3297,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           if (managedConfigurations.containsKey(deviceId)) {
             managedConfigurations.get(deviceId).setHostname(hostname);
           } else {
-            _w.redFlag(String.format("Cannot set hostname for unknown device id %s.", deviceId));
+            _w.redFlagf("Cannot set hostname for unknown device id %s.", deviceId);
           }
         });
     return ImmutableList.copyOf(managedConfigurations.values());
@@ -3656,13 +3646,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     _shared = shared;
   }
 
-  @Nullable
-  public HighAvailability getHighAvailability() {
+  public @Nullable HighAvailability getHighAvailability() {
     return _highAvailability;
   }
 
-  @Nonnull
-  public HighAvailability getOrCreateHighAvailability() {
+  public @Nonnull HighAvailability getOrCreateHighAvailability() {
     if (_highAvailability == null) {
       _highAvailability = new HighAvailability();
     }

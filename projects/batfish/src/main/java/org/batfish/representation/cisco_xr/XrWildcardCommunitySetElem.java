@@ -6,8 +6,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class XrWildcardCommunitySetElem implements XrCommunitySetElem {
 
-  @Nonnull
-  public static XrWildcardCommunitySetElem instance() {
+  public static @Nonnull XrWildcardCommunitySetElem instance() {
     return INSTANCE;
   }
 

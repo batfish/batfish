@@ -1,0 +1,45 @@
+!RANCID-CONTENT-TYPE: cisco
+hostname rrcb
+!
+interface GigabitEthernet0/0
+ description to AS1
+ ip address 10.0.14.1 255.255.255.254
+!
+interface GigabitEthernet0/1
+ description to rr
+ ip address 10.0.46.0 255.255.255.254
+!
+!
+ip route 4.0.0.0 255.255.255.255 Null0
+!
+route-map rm-to-as1 deny 100
+!
+route-map rm-from-as1 permit 100
+!
+route-map rm-to-rr permit 100
+!
+route-map rm-from-rr deny 100
+!
+
+router bgp 2
+  bgp router-id 4.4.4.4
+  neighbor 10.0.14.0 remote-as 1
+  !
+  neighbor 10.0.46.1 remote-as 2
+  neighbor 10.0.46.1 update-source GigabitEthernet0/1
+  !
+  address-family ipv4 unicast
+    !
+    redistribute static
+    !
+    aggregate-address 4.0.0.0 255.255.255.254
+    !
+    neighbor 10.0.14.0 activate
+    neighbor 10.0.14.0 route-map rm-to-as1 out
+    neighbor 10.0.14.0 route-map rm-from-as1 in
+    !
+    neighbor 10.0.46.1 activate
+    neighbor 10.0.46.1 route-map rm-to-rr out
+    neighbor 10.0.46.1 route-map rm-from-rr in
+  !
+!

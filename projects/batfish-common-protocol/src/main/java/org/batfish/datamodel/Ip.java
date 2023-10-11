@@ -222,8 +222,7 @@ public class Ip implements Comparable<Ip>, Serializable {
     return _ip >> numTrailingZeros == Ip.MAX.asLong() >> numTrailingZeros;
   }
 
-  @Nonnull
-  public IpIpSpace toIpSpace() {
+  public @Nonnull IpIpSpace toIpSpace() {
     return IpIpSpace.create(this);
   }
 

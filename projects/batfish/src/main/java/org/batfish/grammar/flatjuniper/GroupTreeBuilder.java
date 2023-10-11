@@ -74,7 +74,7 @@ public class GroupTreeBuilder extends FlatJuniperParserBaseListener {
     HierarchyPath path = _currentPath;
     assert path != null;
     _currentPath = null;
-    String groupName = unquote(ctx.name.getText());
+    String groupName = unquote(ctx.name.getText()).orElse(ctx.name.getText());
     HierarchyTree tree = _hierarchy.getTree(groupName);
     if (tree == null) {
       tree = _hierarchy.newTree(groupName);

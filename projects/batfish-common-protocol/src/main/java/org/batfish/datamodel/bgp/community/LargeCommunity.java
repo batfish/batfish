@@ -22,7 +22,7 @@ public final class LargeCommunity extends Community {
   private final long _localData2;
 
   // Cached string representation
-  @Nullable private String _str;
+  private @Nullable String _str;
 
   private LargeCommunity(long globalAdministrator, long localData1, long localData2) {
     _globalAdministrator = globalAdministrator;
@@ -48,8 +48,7 @@ public final class LargeCommunity extends Community {
         Long.parseUnsignedLong(parts[3]));
   }
 
-  @Nonnull
-  public static Optional<LargeCommunity> tryParse(String text) {
+  public static @Nonnull Optional<LargeCommunity> tryParse(String text) {
     try {
       return Optional.of(parse(text));
     } catch (IllegalArgumentException e) {

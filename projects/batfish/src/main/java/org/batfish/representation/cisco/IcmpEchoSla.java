@@ -35,18 +35,15 @@ public final class IcmpEchoSla extends IpSla implements HasWritableVrf {
     _vrf = vrf;
   }
 
-  @Nullable
-  public Ip getDestinationIp() {
+  public @Nullable Ip getDestinationIp() {
     return _destinationIp;
   }
 
-  @Nullable
-  public String getSourceInterface() {
+  public @Nullable String getSourceInterface() {
     return _sourceInterface;
   }
 
-  @Nullable
-  public Ip getSourceIp() {
+  public @Nullable Ip getSourceIp() {
     return _sourceIp;
   }
 

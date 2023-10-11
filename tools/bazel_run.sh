@@ -9,4 +9,17 @@ if ! type "${CMD}" &> /dev/null; then
   CMD="bazel"
 fi
 
-${CMD} build //projects/allinone:allinone_main && ./bazel-bin/projects/allinone/allinone_main --jvm_flag=-Xmx12g -runclient false -coordinatorargs "-templatedirs ./questions"
+if [ "${1-}" = "-d" ]
+then
+  DEBUG="--jvm_flag=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5009 --jvm_flag=-ea"
+else
+  DEBUG=
+fi
+
+
+${CMD} build //projects/allinone:allinone_main
+./bazel-bin/projects/allinone/allinone_main \
+    --jvm_flag=-Xmx12g \
+    ${DEBUG} \
+    -runclient false \
+    -coordinatorargs "-templatedirs ./questions"

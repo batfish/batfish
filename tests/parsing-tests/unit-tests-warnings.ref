@@ -1115,6 +1115,48 @@
       },
       {
         "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 201,
+        "Text" : "vtep-source-interface lo0.0",
+        "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 203,
+        "Text" : "vrf-import fabric",
+        "Parser_Context" : "[ri_vrf_import ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 211,
+        "Text" : "vrf-target target:100:100",
+        "Parser_Context" : "[evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 209,
+        "Text" : "vni-options vni 100 vrf-target target:100:100",
+        "Parser_Context" : "[e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 214,
+        "Text" : "vrf-target target:101:101",
+        "Parser_Context" : "[evo_vrf_target e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
+        "Line" : 209,
+        "Text" : "vni-options vni 101 vrf-target target:101:101",
+        "Parser_Context" : "[e_vni_options p_evpn s_protocols ri_protocols ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/gh-2658-juniper-vrf-import-export.cfg",
         "Line" : 221,
         "Text" : "bridge-domains bd_100 vlan-id 100",
         "Parser_Context" : "[s_bridge_domains ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -1248,56 +1290,63 @@
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 48,
+        "Line" : 42,
+        "Text" : "next-ip 1.2.3.6",
+        "Parser_Context" : "[fftt_next_ip fft_then ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "Filter-based forwarding with next-hop-ip is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_firewall",
+        "Line" : 50,
         "Text" : "ip-options any",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 49,
+        "Line" : 51,
         "Text" : "ip-options loose-source-route",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 50,
+        "Line" : 52,
         "Text" : "ip-options route-record",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 51,
+        "Line" : 53,
         "Text" : "ip-options router-alert",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 52,
+        "Line" : 54,
         "Text" : "ip-options security",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 53,
+        "Line" : 55,
         "Text" : "ip-options stream-id",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 54,
+        "Line" : 56,
         "Text" : "ip-options strict-source-route",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/juniper_firewall",
-        "Line" : 55,
+        "Line" : 57,
         "Text" : "ip-options timestamp",
         "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
@@ -1314,6 +1363,13 @@
         "Line" : 12,
         "Text" : "priority 65",
         "Parser_Context" : "[isil_priority isi_level is_interface p_isis s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_misc",
+        "Line" : 9,
+        "Text" : "vtep-source-interface lo0.0",
+        "Parser_Context" : "[ri_vtep_source_interface ri_named_routing_instance s_routing_instances s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1409,10 +1465,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 199 results",
+      "notes" : "Found 203 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 199
+      "numResults" : 203
     }
   }
 ]

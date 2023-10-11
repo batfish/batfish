@@ -57,8 +57,7 @@ public final class Vrf implements Serializable {
     return _id;
   }
 
-  @Nonnull
-  public List<NameServer> getNameServers() {
+  public @Nonnull List<NameServer> getNameServers() {
     return _nameServers;
   }
 
@@ -115,7 +114,7 @@ public final class Vrf implements Serializable {
   private @Nullable String _description;
   private final @Nonnull String _name;
   private final int _id;
-  @Nonnull private final List<NameServer> _nameServers;
+  private final @Nonnull List<NameServer> _nameServers;
   private @Nullable RouteDistinguisherOrAuto _rd;
   private boolean _shutdown;
   private final Map<StaticRoute.StaticRouteKey, StaticRoute> _staticRoutes;

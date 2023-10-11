@@ -43,14 +43,12 @@ public final class FilterDifference {
   }
 
   /** Return the name of the filter */
-  @Nonnull
-  public String getFilterName() {
+  public @Nonnull String getFilterName() {
     return _filterName;
   }
 
   /** Return the hostname of the filter */
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
@@ -58,8 +56,7 @@ public final class FilterDifference {
    * Return the index of the matched line in the current filter, or null if the difference is for
    * when no line matches.
    */
-  @Nullable
-  public Integer getCurrentIndex() {
+  public @Nullable Integer getCurrentIndex() {
     return _index;
   }
 
@@ -67,8 +64,7 @@ public final class FilterDifference {
    * Return the index of the matched line in the reference filter, or null if the difference is for
    * when no line matches.
    */
-  @Nullable
-  public Integer getReferenceIndex() {
+  public @Nullable Integer getReferenceIndex() {
     return _referenceIndex;
   }
 }

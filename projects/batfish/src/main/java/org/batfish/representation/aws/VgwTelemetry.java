@@ -24,11 +24,11 @@ final class VgwTelemetry implements Serializable {
 
   private final int _acceptedRouteCount;
 
-  @Nonnull private final Ip _outsideIpAddress;
+  private final @Nonnull Ip _outsideIpAddress;
 
-  @Nonnull private final String _status;
+  private final @Nonnull String _status;
 
-  @Nonnull private final String _statusMessage;
+  private final @Nonnull String _statusMessage;
 
   @JsonCreator
   private static VgwTelemetry create(

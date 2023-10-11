@@ -12,9 +12,9 @@ import org.batfish.datamodel.ospf.OspfAreaSummary;
 public class OspfArea implements Serializable {
   private final long _areaNum;
   private final Map<String, OspfInterfaceSettings> _interfaceSettings;
-  @Nullable private NssaSettings _nssaSettings;
+  private @Nullable NssaSettings _nssaSettings;
   private final OspfSettings _ospfSettings;
-  @Nullable private StubSettings _stubSettings;
+  private @Nullable StubSettings _stubSettings;
   private final Map<Prefix, OspfAreaSummary> _summaries;
 
   public OspfArea(long areaNum) {

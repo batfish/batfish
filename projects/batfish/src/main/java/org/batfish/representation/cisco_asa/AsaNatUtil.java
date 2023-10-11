@@ -31,8 +31,7 @@ import org.batfish.representation.cisco_asa.AsaNat.Section;
 final class AsaNatUtil {
   private AsaNatUtil() {}
 
-  @Nullable
-  static Transformation.Builder dynamicTransformation(
+  static @Nullable Transformation.Builder dynamicTransformation(
       AccessListAddressSpecifier realSource,
       AccessListAddressSpecifier mappedSource,
       String insideInterface,
@@ -81,8 +80,7 @@ final class AsaNatUtil {
     return Prefix.create(specifier.getIpWildcard().getIp(), prefix.getPrefixLength());
   }
 
-  @Nullable
-  private static Prefix getNetworkObjectPrefix(
+  private static @Nullable Prefix getNetworkObjectPrefix(
       NetworkObjectAddressSpecifier specifier,
       Map<String, NetworkObject> networkObjects,
       Warnings w) {
@@ -121,8 +119,7 @@ final class AsaNatUtil {
    * @return True if the object NAT is an identity NAT, or false if it is not. If the answer could
    *     not be determined because the NAT is not supported or invalid, returns null.
    */
-  @Nullable
-  static Boolean isIdentityObjectNat(
+  static @Nullable Boolean isIdentityObjectNat(
       AsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
     checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
 
@@ -205,8 +202,7 @@ final class AsaNatUtil {
     }
   }
 
-  @Nullable
-  static Transformation.Builder staticTransformation(
+  static @Nullable Transformation.Builder staticTransformation(
       AccessListAddressSpecifier matchAddress,
       AccessListAddressSpecifier shiftAddress,
       String insideInterface,
@@ -302,8 +298,7 @@ final class AsaNatUtil {
    * @param convertedNats A list of partially built {@link Transformation}s.
    * @return A single {@link Transformation} or null if empty
    */
-  @Nullable
-  static Transformation toTransformationChain(
+  static @Nullable Transformation toTransformationChain(
       List<Optional<Transformation.Builder>> convertedNats) {
 
     // Start at the end of the chain and go backwards.

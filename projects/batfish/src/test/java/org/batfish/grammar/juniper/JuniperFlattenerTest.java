@@ -56,6 +56,33 @@ public class JuniperFlattenerTest {
     assertThat(flatText, containsString(String.join("\n", copies)));
   }
 
+  /** Test that configurations with `apply-flags omit` are flattened correctly. */
+  @Test
+  public void testFlattenWithApplyFlagsOmit() {
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + "flatten-with-apply-flags-omit", UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assert flattener instanceof JuniperFlattener;
+    String flatText = flattener.getFlattenedConfigurationText();
+    assertThat(
+        flatText,
+        equalTo(
+            String.join(
+                    "\n",
+                    new String[] {
+                      "####BATFISH FLATTENED JUNIPER CONFIG####",
+                      "set system login",
+                      "set system root-authentication",
+                      "set system host-name flatten-with-apply-flags-omit"
+                    })
+                + '\n'));
+  }
+
   /** Test for https://github.com/batfish/batfish/issues/6149. */
   @Test
   public void testGH6149Flatten() {

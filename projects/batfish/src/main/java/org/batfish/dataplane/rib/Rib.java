@@ -390,8 +390,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
   }
 
   @Override
-  @Nonnull
-  public RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
+  public @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> mergeRouteGetDelta(
       AnnotatedRoute<AbstractRoute> route) {
     return !route.getRoute().getNonRouting()
         ? _resolvabilityEnforcer != null

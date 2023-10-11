@@ -24,10 +24,10 @@ public final class EvpnAddressFamily extends AddressFamily {
   private static final String PROP_PROPAGATE_UNMATCHED = "propagateUnmatched";
   private static final String PROP_NVE_IP = "nveIp";
 
-  @Nonnull private final SortedSet<Layer2VniConfig> _l2VNIs;
-  @Nonnull private final SortedSet<Layer3VniConfig> _l3VNIs;
+  private final @Nonnull SortedSet<Layer2VniConfig> _l2VNIs;
+  private final @Nonnull SortedSet<Layer3VniConfig> _l3VNIs;
   private final boolean _propagateUnmatched;
-  @Nullable private final Ip _nveIp;
+  private final @Nullable Ip _nveIp;
 
   protected EvpnAddressFamily(
       // super fields
@@ -161,16 +161,15 @@ public final class EvpnAddressFamily extends AddressFamily {
         _propagateUnmatched);
   }
 
-  @Nonnull
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
   public static final class Builder extends AddressFamily.Builder<Builder, EvpnAddressFamily> {
-    @Nonnull private SortedSet<Layer2VniConfig> _l2Vnis;
-    @Nonnull private SortedSet<Layer3VniConfig> _l3Vnis;
-    @Nullable private Boolean _propagateUnmatched;
-    @Nullable private Ip _nveIp;
+    private @Nonnull SortedSet<Layer2VniConfig> _l2Vnis;
+    private @Nonnull SortedSet<Layer3VniConfig> _l3Vnis;
+    private @Nullable Boolean _propagateUnmatched;
+    private @Nullable Ip _nveIp;
 
     private Builder() {
       _l2Vnis = ImmutableSortedSet.of();
@@ -178,26 +177,22 @@ public final class EvpnAddressFamily extends AddressFamily {
       _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
-    @Nonnull
-    public Builder setL2Vnis(Collection<Layer2VniConfig> l2Vnis) {
+    public @Nonnull Builder setL2Vnis(Collection<Layer2VniConfig> l2Vnis) {
       _l2Vnis = ImmutableSortedSet.copyOf(l2Vnis);
       return getThis();
     }
 
-    @Nonnull
-    public Builder setL3Vnis(Collection<Layer3VniConfig> l3Vnis) {
+    public @Nonnull Builder setL3Vnis(Collection<Layer3VniConfig> l3Vnis) {
       _l3Vnis = ImmutableSortedSet.copyOf(l3Vnis);
       return getThis();
     }
 
-    @Nonnull
-    public Builder setPropagateUnmatched(boolean propagateUnmatched) {
+    public @Nonnull Builder setPropagateUnmatched(boolean propagateUnmatched) {
       _propagateUnmatched = propagateUnmatched;
       return getThis();
     }
 
-    @Nonnull
-    public Builder setNveIp(@Nullable Ip nveIp) {
+    public @Nonnull Builder setNveIp(@Nullable Ip nveIp) {
       _nveIp = nveIp;
       return getThis();
     }

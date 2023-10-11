@@ -32,9 +32,9 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   static final class Association implements Serializable {
 
-    @Nonnull private final String _routeTableId;
+    private final @Nonnull String _routeTableId;
 
-    @Nonnull private final String _state;
+    private final @Nonnull String _state;
 
     @JsonCreator
     private static Association create(
@@ -52,13 +52,11 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
       _state = state;
     }
 
-    @Nonnull
-    public String getRouteTableId() {
+    public @Nonnull String getRouteTableId() {
       return _routeTableId;
     }
 
-    @Nonnull
-    public String getState() {
+    public @Nonnull String getState() {
       return _state;
     }
 
@@ -81,19 +79,19 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final String _attachmentId;
+  private final @Nonnull String _attachmentId;
 
-  @Nonnull private final String _gatewayId;
+  private final @Nonnull String _gatewayId;
 
-  @Nonnull private final String _gatewayOwnerId;
+  private final @Nonnull String _gatewayOwnerId;
 
-  @Nonnull private final ResourceType _resourceType;
+  private final @Nonnull ResourceType _resourceType;
 
-  @Nonnull private final String _resourceId;
+  private final @Nonnull String _resourceId;
 
-  @Nonnull private final String _resourceOwnerId;
+  private final @Nonnull String _resourceOwnerId;
 
-  @Nullable private final Association _association;
+  private final @Nullable Association _association;
 
   @JsonCreator
   private static TransitGatewayAttachment create(
@@ -141,8 +139,7 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     _association = association;
   }
 
-  @Nullable
-  public Association getAssociation() {
+  public @Nullable Association getAssociation() {
     return _association;
   }
 
@@ -152,28 +149,23 @@ final class TransitGatewayAttachment implements AwsVpcEntity, Serializable {
     return _attachmentId;
   }
 
-  @Nonnull
-  public String getGatewayId() {
+  public @Nonnull String getGatewayId() {
     return _gatewayId;
   }
 
-  @Nonnull
-  public String getGatewayOwnerId() {
+  public @Nonnull String getGatewayOwnerId() {
     return _gatewayOwnerId;
   }
 
-  @Nonnull
-  public ResourceType getResourceType() {
+  public @Nonnull ResourceType getResourceType() {
     return _resourceType;
   }
 
-  @Nonnull
-  public String getResourceId() {
+  public @Nonnull String getResourceId() {
     return _resourceId;
   }
 
-  @Nonnull
-  public String getResourceOwnerId() {
+  public @Nonnull String getResourceOwnerId() {
     return _resourceOwnerId;
   }
 

@@ -34,11 +34,11 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
   @ParametersAreNonnullByDefault
   static class TargetHealth implements Serializable {
 
-    @Nullable private final String _description;
+    private final @Nullable String _description;
 
-    @Nullable private final String _reason;
+    private final @Nullable String _reason;
 
-    @Nonnull private final HealthState _state;
+    private final @Nonnull HealthState _state;
 
     @JsonCreator
     private static TargetHealth create(
@@ -60,18 +60,15 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
       _state = state;
     }
 
-    @Nullable
-    public String getDescription() {
+    public @Nullable String getDescription() {
       return _description;
     }
 
-    @Nullable
-    public String getReason() {
+    public @Nullable String getReason() {
       return _reason;
     }
 
-    @Nonnull
-    public HealthState getState() {
+    public @Nonnull HealthState getState() {
       return _state;
     }
 
@@ -109,9 +106,9 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
   @ParametersAreNonnullByDefault
   public static class TargetHealthDescription implements Serializable {
 
-    @Nonnull private final LoadBalancerTarget _target;
+    private final @Nonnull LoadBalancerTarget _target;
 
-    @Nonnull private final TargetHealth _targetHealth;
+    private final @Nonnull TargetHealth _targetHealth;
 
     @JsonCreator
     private static TargetHealthDescription create(
@@ -128,13 +125,11 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
       _targetHealth = targetHealth;
     }
 
-    @Nonnull
-    public LoadBalancerTarget getTarget() {
+    public @Nonnull LoadBalancerTarget getTarget() {
       return _target;
     }
 
-    @Nonnull
-    public TargetHealth getTargetHealth() {
+    public @Nonnull TargetHealth getTargetHealth() {
       return _targetHealth;
     }
 
@@ -164,9 +159,9 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
     }
   }
 
-  @Nonnull private final String _targetGroupArn;
+  private final @Nonnull String _targetGroupArn;
 
-  @Nonnull private final List<TargetHealthDescription> _targetHealthDescriptions;
+  private final @Nonnull List<TargetHealthDescription> _targetHealthDescriptions;
 
   @JsonCreator
   private static LoadBalancerTargetHealth create(
@@ -193,8 +188,7 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
     return _targetGroupArn;
   }
 
-  @Nonnull
-  public List<TargetHealthDescription> getTargetHealthDescriptions() {
+  public @Nonnull List<TargetHealthDescription> getTargetHealthDescriptions() {
     return _targetHealthDescriptions;
   }
 

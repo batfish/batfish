@@ -26,6 +26,7 @@ import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.NextHopResult;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
+import org.batfish.datamodel.route.nh.LegacyNextHops;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -33,12 +34,16 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 /** A user facing representation for IPv4 BGP route */
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
+
+  public static final int DEFAULT_AD = 0;
+  public static final String PROP_ADMINISTRATIVE_DISTANCE = "adminDistance";
   public static final String PROP_AS_PATH = "asPath";
   public static final String PROP_CLUSTER_LIST = "clusterList";
   public static final String PROP_COMMUNITIES = "communities";
   public static final String PROP_LOCAL_PREFERENCE = "localPreference";
   public static final String PROP_METRIC = "metric";
   public static final String PROP_NETWORK = "network";
+  public static final String PROP_NEXT_HOP_IP = "nextHopIp";
   public static final String PROP_NEXT_HOP = "nextHop";
   public static final String PROP_ORIGINATOR_IP = "originatorIp";
   public static final String PROP_ORIGIN_MECHANISM = "originMechanism";
@@ -51,24 +56,26 @@ public final class BgpRoute {
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
-  @Nonnull private final AsPath _asPath;
-  @Nonnull private final Set<Long> _clusterList;
-  @Nonnull private final SortedSet<Community> _communities;
+  private final @Nullable Integer _adminDist;
+  private final @Nonnull AsPath _asPath;
+  private final @Nonnull Set<Long> _clusterList;
+  private final @Nonnull SortedSet<Community> _communities;
   private final long _localPreference;
   private final long _metric;
-  @Nonnull private final Prefix _network;
-  @Nonnull private final NextHopResult _nextHop;
-  @Nonnull private final Ip _originatorIp;
-  @Nonnull private final OriginMechanism _originMechanism;
-  @Nonnull private final OriginType _originType;
-  @Nullable private final Integer _pathId;
-  @Nonnull private final RoutingProtocol _protocol;
-  @Nullable private final RoutingProtocol _srcProtocol;
+  private final @Nonnull Prefix _network;
+  private final @Nonnull NextHopResult _nextHop;
+  private final @Nonnull Ip _originatorIp;
+  private final @Nonnull OriginMechanism _originMechanism;
+  private final @Nonnull OriginType _originType;
+  private final @Nullable Integer _pathId;
+  private final @Nonnull RoutingProtocol _protocol;
+  private final @Nullable RoutingProtocol _srcProtocol;
   private final long _tag;
-  @Nullable private final TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+  private final @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
   private final int _weight;
 
   private BgpRoute(
+      @Nullable Integer adminDist,
       AsPath asPath,
       Set<Long> clusterList,
       SortedSet<Community> communities,
@@ -85,6 +92,7 @@ public final class BgpRoute {
       long tag,
       @Nullable TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       int weight) {
+    _adminDist = adminDist;
     _asPath = asPath;
     _clusterList = clusterList;
     _communities = communities;
@@ -105,6 +113,7 @@ public final class BgpRoute {
 
   @JsonCreator
   private static BgpRoute jsonCreator(
+      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) Integer adminDist,
       @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
       @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
       @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
@@ -112,6 +121,7 @@ public final class BgpRoute {
       @JsonProperty(PROP_METRIC) long metric,
       @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
       @Nullable @JsonProperty(PROP_NEXT_HOP) NextHopResult nextHop,
+      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
       @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
       @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
       @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
@@ -129,13 +139,14 @@ public final class BgpRoute {
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
     checkArgument(protocol != null, "%s must be specified", PROP_PROTOCOL);
     return new BgpRoute(
+        firstNonNull(adminDist, DEFAULT_AD),
         firstNonNull(asPath, AsPath.empty()),
         firstNonNull(clusterList, ImmutableSet.of()),
         firstNonNull(communities, ImmutableSortedSet.of()),
         localPreference,
         metric,
         network,
-        firstNonNull(nextHop, new NextHopConcrete(NextHopDiscard.instance())),
+        firstNonNull(nextHop, ipToNextHopResult(nextHopIp)),
         originatorIp,
         firstNonNull(originMechanism, LEARNED),
         originType,
@@ -145,6 +156,22 @@ public final class BgpRoute {
         tag,
         tunnelEncapsulationAttribute,
         weight);
+  }
+
+  private static NextHopResult ipToNextHopResult(@Nullable Ip nextHopIp) {
+    NextHop nh;
+    if (nextHopIp == null || nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
+      nh = NextHopDiscard.instance();
+    } else {
+      nh = NextHopIp.of(nextHopIp);
+    }
+    return new NextHopConcrete(nh);
+  }
+
+  @Nullable
+  @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE)
+  public Integer getAdminDist() {
+    return _adminDist;
   }
 
   @Nonnull
@@ -181,10 +208,18 @@ public final class BgpRoute {
     return _network;
   }
 
-  @Nonnull
   @JsonProperty(PROP_NEXT_HOP)
-  public NextHopResult getNextHop() {
+  public @Nonnull NextHopResult getNextHop() {
     return _nextHop;
+  }
+
+  @JsonProperty(PROP_NEXT_HOP_IP)
+  private @Nullable Ip getNextHopIpJson() {
+    if (_nextHop instanceof NextHopConcrete) {
+      return LegacyNextHops.getNextHopIp(((NextHopConcrete) _nextHop).getNextHop()).orElse(null);
+    } else {
+      return null;
+    }
   }
 
   @Nonnull
@@ -252,6 +287,7 @@ public final class BgpRoute {
         && _metric == bgpRoute._metric
         && _tag == bgpRoute._tag
         && _weight == bgpRoute._weight
+        && Objects.equals(_adminDist, bgpRoute._adminDist)
         && Objects.equals(_asPath, bgpRoute._asPath)
         && Objects.equals(_clusterList, bgpRoute._clusterList)
         && Objects.equals(_communities, bgpRoute._communities)
@@ -269,6 +305,7 @@ public final class BgpRoute {
   @Override
   public int hashCode() {
     return Objects.hash(
+        _adminDist,
         _asPath,
         _clusterList,
         _communities,
@@ -293,6 +330,7 @@ public final class BgpRoute {
 
   public Builder toBuilder() {
     return builder()
+        .setAdminDist(_adminDist)
         .setAsPath(_asPath)
         .setClusterList(_clusterList)
         .setCommunities(_communities)
@@ -315,21 +353,22 @@ public final class BgpRoute {
   @ParametersAreNonnullByDefault
   public static final class Builder {
 
-    @Nonnull private AsPath _asPath;
-    @Nonnull private Set<Long> _clusterList;
-    @Nonnull private SortedSet<Community> _communities;
+    private @Nullable Integer _adminDist;
+    private @Nonnull AsPath _asPath;
+    private @Nonnull Set<Long> _clusterList;
+    private @Nonnull SortedSet<Community> _communities;
     private long _localPreference;
     private long _metric;
-    @Nullable private Prefix _network;
-    @Nullable private NextHopResult _nextHop;
-    @Nullable private Ip _originatorIp;
-    @Nullable private OriginMechanism _originMechanism;
-    @Nullable private OriginType _originType;
-    @Nullable private Integer _pathId;
-    @Nullable private RoutingProtocol _protocol;
-    @Nullable private RoutingProtocol _srcProtocol;
+    private @Nullable Prefix _network;
+    private @Nullable NextHopResult _nextHop;
+    private @Nullable Ip _originatorIp;
+    private @Nullable OriginMechanism _originMechanism;
+    private @Nullable OriginType _originType;
+    private @Nullable Integer _pathId;
+    private @Nullable RoutingProtocol _protocol;
+    private @Nullable RoutingProtocol _srcProtocol;
     private long _tag;
-    @Nullable private TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+    private @Nullable TunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
     private int _weight;
 
     public Builder() {
@@ -344,6 +383,7 @@ public final class BgpRoute {
       checkArgument(_originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
       checkArgument(_protocol != null, "%s must be specified", PROP_PROTOCOL);
       return new BgpRoute(
+          firstNonNull(_adminDist, DEFAULT_AD),
           _asPath,
           _clusterList,
           _communities,
@@ -360,6 +400,11 @@ public final class BgpRoute {
           _tag,
           _tunnelEncapsulationAttribute,
           _weight);
+    }
+
+    public Builder setAdminDist(@Nullable Integer adminDist) {
+      _adminDist = adminDist;
+      return this;
     }
 
     public Builder setAsPath(AsPath asPath) {
@@ -398,13 +443,7 @@ public final class BgpRoute {
     }
 
     public Builder setNextHopIp(Ip nextHopIp) {
-      NextHop nh;
-      if (nextHopIp.equals(UNSET_ROUTE_NEXT_HOP_IP)) {
-        nh = NextHopDiscard.instance();
-      } else {
-        nh = NextHopIp.of(nextHopIp);
-      }
-      _nextHop = new NextHopConcrete(nh);
+      _nextHop = ipToNextHopResult(nextHopIp);
       return this;
     }
 
@@ -480,6 +519,7 @@ public final class BgpRoute {
         .add("tag", _tag)
         .add("tunnelEncapsulationAttribute", _tunnelEncapsulationAttribute)
         .add("weight", _weight)
+        .add("adminDist", _adminDist)
         .toString();
   }
 }

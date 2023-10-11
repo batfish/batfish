@@ -125,8 +125,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
     _staticRoutes = toImmutableMap(_staticRoutes);
   }
 
-  @Nonnull
-  public Map<Integer, BondingGroup> getBondingGroups() {
+  public @Nonnull Map<Integer, BondingGroup> getBondingGroups() {
     return _bondingGroups;
   }
 
@@ -913,8 +912,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Optional#empty} if the interface is not a bond interface or if the bonding group does not
    * exist.
    */
-  @Nonnull
-  private Optional<BondingGroup> getBondingGroup(String ifaceName) {
+  private @Nonnull Optional<BondingGroup> getBondingGroup(String ifaceName) {
     Pattern p = Pattern.compile("bond(\\d+)");
     Matcher res = p.matcher(ifaceName);
     if (res.matches()) {
@@ -927,8 +925,7 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
    * Returns the parent bonding group number for the specified interface, or {@link Optional#empty}
    * if it is not a member of a bonding group.
    */
-  @Nonnull
-  private Optional<Integer> getParentBondingGroupNumber(Interface iface) {
+  private @Nonnull Optional<Integer> getParentBondingGroupNumber(Interface iface) {
     return _bondingGroups.values().stream()
         .filter(bg -> bg.getInterfaces().contains(iface.getName()))
         .findFirst()
@@ -982,16 +979,16 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
   }
 
   /** Get bonding interface name from its bonding group number. */
-  @Nonnull
-  public static String getBondInterfaceName(int groupNumber) {
+  public static @Nonnull String getBondInterfaceName(int groupNumber) {
     return "bond" + groupNumber;
   }
 
-  @Nonnull private Map<Integer, BondingGroup> _bondingGroups;
+  private @Nonnull Map<Integer, BondingGroup> _bondingGroups;
   private Configuration _c;
   private String _hostname;
 
   private Map<String, Interface> _interfaces;
+
   /** destination prefix -> static route definition */
   private Map<Prefix, StaticRoute> _staticRoutes;
 

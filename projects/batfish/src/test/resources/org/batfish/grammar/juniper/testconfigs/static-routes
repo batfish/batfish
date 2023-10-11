@@ -14,6 +14,8 @@ set routing-options static route 7.0.0.0/8 next-table ri2.inet.0
 # Static route with only qualified-next-hops is valid
 set routing-options static route 10.0.0.0/16 qualified-next-hop 1.2.3.4
 set routing-options static route 10.0.0.0/16 qualified-next-hop 1.2.3.5
+# note: /32 is implicit
+set routing-options static route 11.0.0.0 next-hop 1.2.3.6
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5

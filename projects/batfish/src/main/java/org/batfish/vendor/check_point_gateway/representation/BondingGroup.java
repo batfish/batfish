@@ -29,23 +29,19 @@ public class BondingGroup implements Serializable {
 
   public static Mode DEFAULT_MODE = Mode.ROUND_ROBIN;
 
-  @Nonnull
-  public Set<String> getInterfaces() {
+  public @Nonnull Set<String> getInterfaces() {
     return _interfaces;
   }
 
-  @Nullable
-  public LacpRate getLacpRate() {
+  public @Nullable LacpRate getLacpRate() {
     return _lacpRate;
   }
 
-  @Nullable
-  public Mode getMode() {
+  public @Nullable Mode getMode() {
     return _mode;
   }
 
-  @Nonnull
-  public Mode getModeEffective() {
+  public @Nonnull Mode getModeEffective() {
     return firstNonNull(_mode, DEFAULT_MODE);
   }
 
@@ -53,8 +49,7 @@ public class BondingGroup implements Serializable {
     return _number;
   }
 
-  @Nullable
-  public XmitHashPolicy getXmitHashPolicy() {
+  public @Nullable XmitHashPolicy getXmitHashPolicy() {
     return _xmitHashPolicy;
   }
 
@@ -75,9 +70,9 @@ public class BondingGroup implements Serializable {
     _interfaces = new HashSet<>();
   }
 
-  @Nonnull private final Set<String> _interfaces;
+  private final @Nonnull Set<String> _interfaces;
   private final int _number;
-  @Nullable private LacpRate _lacpRate;
-  @Nullable private Mode _mode;
-  @Nullable private XmitHashPolicy _xmitHashPolicy;
+  private @Nullable LacpRate _lacpRate;
+  private @Nullable Mode _mode;
+  private @Nullable XmitHashPolicy _xmitHashPolicy;
 }

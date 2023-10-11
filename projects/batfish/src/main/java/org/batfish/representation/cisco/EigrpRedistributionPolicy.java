@@ -14,8 +14,7 @@ public class EigrpRedistributionPolicy extends RedistributionPolicy {
     super(instance);
   }
 
-  @Nullable
-  public EigrpMetricValues getMetric() {
+  public @Nullable EigrpMetricValues getMetric() {
     return _metric;
   }
 

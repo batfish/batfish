@@ -98,13 +98,13 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   public static final Ip CLAG_LINK_LOCAL_IP = Ip.parse("169.254.40.94");
   @VisibleForTesting public static final String CLAG_DOMAIN_ID = "~CLAG_DOMAIN~";
 
-  @Nonnull private String _hostname;
+  private @Nonnull String _hostname;
 
-  @Nonnull private final CumulusInterfacesConfiguration _interfacesConfiguration;
+  private final @Nonnull CumulusInterfacesConfiguration _interfacesConfiguration;
 
-  @Nonnull private final FrrConfiguration _frrConfiguration;
+  private final @Nonnull FrrConfiguration _frrConfiguration;
 
-  @Nonnull private final CumulusPortsConfiguration _portsConfiguration;
+  private final @Nonnull CumulusPortsConfiguration _portsConfiguration;
 
   private transient SetMultimap<String, Prefix> _ownedPrefixesByVrf;
 
@@ -125,8 +125,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   }
 
   @Override
-  @Nonnull
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
@@ -454,7 +453,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       return;
     }
 
-    _w.redFlag(String.format("Unable to determine interface type for %s", i.getName()));
+    _w.redFlagf("Unable to determine interface type for %s", i.getName());
     // Leave as UNKNOWN.
   }
 
@@ -731,8 +730,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
             });
   }
 
-  @Nonnull
-  private static org.batfish.datamodel.Vrf getOrCreateVrf(
+  private static @Nonnull org.batfish.datamodel.Vrf getOrCreateVrf(
       Configuration c, @Nullable String vrfName) {
     if (vrfName == null) {
       return c.getVrfs().get(DEFAULT_VRF_NAME);
@@ -848,8 +846,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
         });
   }
 
-  @Nonnull
-  public CumulusInterfacesConfiguration getInterfacesConfiguration() {
+  public @Nonnull CumulusInterfacesConfiguration getInterfacesConfiguration() {
     return _interfacesConfiguration;
   }
 
@@ -858,14 +855,12 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     return _frrConfiguration;
   }
 
-  @Nonnull
-  public CumulusPortsConfiguration getPortsConfiguration() {
+  public @Nonnull CumulusPortsConfiguration getPortsConfiguration() {
     return _portsConfiguration;
   }
 
   @Override
-  @Nonnull
-  public Map<String, Vxlan> getVxlans() {
+  public @Nonnull Map<String, Vxlan> getVxlans() {
     return _interfacesConfiguration.getInterfaces().values().stream()
         .filter(InterfaceConverter::isVxlan)
         .map(InterfaceConverter::convertVxlan)

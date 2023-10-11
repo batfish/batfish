@@ -20,7 +20,7 @@ public final class SetTunnelEncapsulationAttribute extends Statement {
   private static final String PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE_EXPR =
       "tunnelEncapsulationAttributeExpr";
 
-  @Nonnull private final TunnelEncapsulationAttributeExpr _expr;
+  private final @Nonnull TunnelEncapsulationAttributeExpr _expr;
 
   @JsonCreator
   private static SetTunnelEncapsulationAttribute jsonCreator(
@@ -57,8 +57,7 @@ public final class SetTunnelEncapsulationAttribute extends Statement {
   }
 
   @Override
-  @Nonnull
-  public Result execute(Environment environment) {
+  public @Nonnull Result execute(Environment environment) {
     if (!(environment.getOutputRoute() instanceof BgpRoute.Builder<?, ?>)) {
       // Do nothing for non-BGP routes
       return new Result();

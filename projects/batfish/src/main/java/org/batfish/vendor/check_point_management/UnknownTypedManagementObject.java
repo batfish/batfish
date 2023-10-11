@@ -15,8 +15,7 @@ import javax.annotation.Nullable;
  */
 public class UnknownTypedManagementObject extends TypedManagementObject {
 
-  @Nonnull
-  public String getType() {
+  public @Nonnull String getType() {
     return _type;
   }
 

@@ -29,19 +29,16 @@ public final class VrfForwardingBehavior implements Serializable {
    * For each edge, dst IPs for which the vrf will forward out the source of the edge and receive an
    * ARP reply from the target of the edge.
    */
-  @Nonnull
-  public Map<Edge, IpSpace> getArpTrueEdge() {
+  public @Nonnull Map<Edge, IpSpace> getArpTrueEdge() {
     return _arpTrueEdge;
   }
 
-  @Nonnull
-  public Map<String, InterfaceForwardingBehavior> getInterfaceForwardingBehavior() {
+  public @Nonnull Map<String, InterfaceForwardingBehavior> getInterfaceForwardingBehavior() {
     return _interfaceForwardingBehavior;
   }
 
   /** Destination IPs for which this VRF delegates to another VRF. */
-  @Nonnull
-  public Map<String, IpSpace> getNextVrfIps() {
+  public @Nonnull Map<String, IpSpace> getNextVrfIps() {
     return _nextVrf;
   }
 

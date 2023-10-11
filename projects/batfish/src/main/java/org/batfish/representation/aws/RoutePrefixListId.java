@@ -10,7 +10,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class RoutePrefixListId extends Route {
 
-  @Nonnull private final String _prefixListId;
+  private final @Nonnull String _prefixListId;
 
   RoutePrefixListId(
       String prefixListId, State state, @Nullable String target, TargetType targetType) {
@@ -18,8 +18,7 @@ final class RoutePrefixListId extends Route {
     _prefixListId = prefixListId;
   }
 
-  @Nonnull
-  public String getPrefixListId() {
+  public @Nonnull String getPrefixListId() {
     return _prefixListId;
   }
 

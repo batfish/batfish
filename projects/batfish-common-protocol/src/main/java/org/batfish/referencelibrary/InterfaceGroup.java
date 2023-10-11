@@ -22,8 +22,8 @@ public class InterfaceGroup implements Comparable<InterfaceGroup>, Serializable 
   private static final String PROP_INTERFACES = "interfaces";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private final SortedSet<NodeInterfacePair> _interfaces;
-  @Nonnull private final String _name;
+  private final @Nonnull SortedSet<NodeInterfacePair> _interfaces;
+  private final @Nonnull String _name;
 
   @JsonCreator
   private static InterfaceGroup jsonCreator(
@@ -55,14 +55,12 @@ public class InterfaceGroup implements Comparable<InterfaceGroup>, Serializable 
   }
 
   @JsonProperty(PROP_INTERFACES)
-  @Nonnull
-  public SortedSet<NodeInterfacePair> getInterfaces() {
+  public @Nonnull SortedSet<NodeInterfacePair> getInterfaces() {
     return _interfaces;
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

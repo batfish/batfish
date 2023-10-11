@@ -33,7 +33,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
   }
 
   private final long _value;
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
   private RouteDistinguisher(long value, Type type) {
     _value = value;
@@ -47,8 +47,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
   }
 
   /** Attempt to create a route distinguisher from a given string value */
-  @Nonnull
-  public static RouteDistinguisher parse(String value) {
+  public static @Nonnull RouteDistinguisher parse(String value) {
     String[] arr = value.split(":");
     checkArgument(arr.length == 2, "At most one occurrence of ':' is allowed. Input was %s", value);
     // First element will dictate type of the route distinguisher
@@ -72,8 +71,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
    * @param asn1 a valid 2-byte administrator subfield
    * @param asn2 a valid 4-byte assigned number subfield
    */
-  @Nonnull
-  public static RouteDistinguisher from(int asn1, long asn2) {
+  public static @Nonnull RouteDistinguisher from(int asn1, long asn2) {
     checkArgument(asn1 >= 0 && asn1 <= 0xFFFF, ERR_MSG_SHORT_TEMPLATE, asn1);
     checkArgument(asn2 >= 0 && asn2 <= 0xFFFFFFFFL, ERR_MSG_INT_TEMPLATE, asn2);
     return new RouteDistinguisher(((long) asn1 << 32) | asn2, Type.TYPE0);
@@ -85,8 +83,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
    * @param ip a valid 4-byte IP address as the administrator subfield
    * @param asn a valid 2-byte assigned number subfield
    */
-  @Nonnull
-  public static RouteDistinguisher from(Ip ip, int asn) {
+  public static @Nonnull RouteDistinguisher from(Ip ip, int asn) {
     checkArgument(ip.asLong() >= 0, "Invalid IP value specified: %s", ip);
     checkArgument(asn >= 0 && asn <= 0xFFFFL, ERR_MSG_SHORT_TEMPLATE, asn);
     return new RouteDistinguisher((ip.asLong() << 16) | asn, Type.TYPE1);
@@ -98,8 +95,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
    * @param asn1 a valid 4-byte administrator subfield
    * @param asn2 a valid 2-byte assigned number subfield
    */
-  @Nonnull
-  public static RouteDistinguisher from(long asn1, int asn2) {
+  public static @Nonnull RouteDistinguisher from(long asn1, int asn2) {
     checkArgument(asn1 >= 0 && asn1 <= 0xFFFFFFFFL, ERR_MSG_INT_TEMPLATE, asn1);
     checkArgument(asn2 >= 0 && asn2 <= 0xFFFFL, ERR_MSG_SHORT_TEMPLATE, asn2);
     return new RouteDistinguisher((asn1 << 16) | asn2, Type.TYPE2);
@@ -112,8 +108,7 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
    * @param asn2 a valid 2-byte assigned number subfield
    * @throws IllegalArgumentException if the values are not
    */
-  @Nonnull
-  public static RouteDistinguisher from(long asn1, long asn2) {
+  public static @Nonnull RouteDistinguisher from(long asn1, long asn2) {
     if (asn1 <= 0xFFFF) {
       return from((int) asn1, asn2);
     }

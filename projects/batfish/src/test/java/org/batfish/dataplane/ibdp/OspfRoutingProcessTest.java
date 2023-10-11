@@ -131,9 +131,9 @@ public class OspfRoutingProcessTest {
           RoutingProtocol.OSPF_IA,
           200,
           RoutingProtocol.OSPF_E1,
-          300,
+          220,
           RoutingProtocol.OSPF_E2,
-          400);
+          230);
 
   @Before
   public void setUp() {
@@ -799,7 +799,7 @@ public class OspfRoutingProcessTest {
                 .setCostToAdvertiser(10)
                 .setMetric(10)
                 .setNextHop(NextHopInterface.of("e1", nextHopIp))
-                .setAdmin(300)
+                .setAdmin(220)
                 .setNonRouting(false)
                 .build()));
   }
@@ -828,7 +828,7 @@ public class OspfRoutingProcessTest {
                 .setCostToAdvertiser(10)
                 .setNextHop(NextHopInterface.of("e1", nextHopIp))
                 .setNonRouting(false)
-                .setAdmin(400)
+                .setAdmin(230)
                 .build()));
   }
 
@@ -1101,7 +1101,7 @@ public class OspfRoutingProcessTest {
                 .setLsaMetric(0)
                 .setCostToAdvertiser(0)
                 .setArea(OspfRoute.NO_AREA)
-                .setAdmin(300)
+                .setAdmin(220)
                 .setAdvertiser(_c.getHostname())
                 .setNonRouting(true)
                 .build()));

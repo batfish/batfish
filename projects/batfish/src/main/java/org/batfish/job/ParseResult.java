@@ -20,11 +20,11 @@ import org.batfish.vendor.VendorConfiguration;
 @ParametersAreNonnullByDefault
 public class ParseResult implements Serializable {
 
-  @Nullable private final VendorConfiguration _config;
-  @Nullable private final Throwable _failureCause;
-  @Nonnull private final Map<String, FileParseResult> _fileResults;
-  @Nonnull private final ConfigurationFormat _format;
-  @Nonnull private final Warnings _warnings;
+  private final @Nullable VendorConfiguration _config;
+  private final @Nullable Throwable _failureCause;
+  private final @Nonnull Map<String, FileParseResult> _fileResults;
+  private final @Nonnull ConfigurationFormat _format;
+  private final @Nonnull Warnings _warnings;
 
   public ParseResult(
       @Nullable VendorConfiguration config,
@@ -42,13 +42,11 @@ public class ParseResult implements Serializable {
     _warnings = warnings;
   }
 
-  @Nullable
-  public VendorConfiguration getConfig() {
+  public @Nullable VendorConfiguration getConfig() {
     return _config;
   }
 
-  @Nullable
-  public Throwable getFailureCause() {
+  public @Nullable Throwable getFailureCause() {
     return _failureCause;
   }
 
@@ -57,13 +55,11 @@ public class ParseResult implements Serializable {
    * map. Warnings not specific to a file are in {@link #getWarnings()}
    */
   // TODO: Make package private after downstreams are ported off
-  @Nonnull
-  public Map<String, FileParseResult> getFileResults() {
+  public @Nonnull Map<String, FileParseResult> getFileResults() {
     return _fileResults;
   }
 
-  @Nonnull
-  public ConfigurationFormat getFormat() {
+  public @Nonnull ConfigurationFormat getFormat() {
     return _format;
   }
 
@@ -71,8 +67,7 @@ public class ParseResult implements Serializable {
    * Get job-level (not file-specific) warnings. File-specific warnings (e.g., parse warnings) can
    * be accessed via {@link #getWarnings(String)} ()}.
    */
-  @Nonnull
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _warnings;
   }
 

@@ -16,7 +16,7 @@ public final class Node {
 
   private final Configuration _c;
   private final SortedMap<String, VirtualRouter> _virtualRouters;
-  @Nonnull private final RoutingPolicies _routingPolicies;
+  private final @Nonnull RoutingPolicies _routingPolicies;
 
   /**
    * Create a new node based on the configuration. Initializes virtual routers based on {@link
@@ -38,14 +38,12 @@ public final class Node {
   /**
    * @return The {@link Configuration} backing this Node
    */
-  @Nonnull
-  public Configuration getConfiguration() {
+  public @Nonnull Configuration getConfiguration() {
     return _c;
   }
 
   /** Returns all routing policies present in the configuration of this node. */
-  @Nonnull
-  public RoutingPolicies getRoutingPolicies() {
+  public @Nonnull RoutingPolicies getRoutingPolicies() {
     return _routingPolicies;
   }
 

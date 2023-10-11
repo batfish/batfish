@@ -410,8 +410,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   @SuppressWarnings("unused")
   private @Nullable <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, @Nullable U defaultReturnValue) {
-    _w.redFlag(
-        String.format("Could not convert to %s: %s", returnType.getSimpleName(), getFullText(ctx)));
+    _w.redFlagf("Could not convert to %s: %s", returnType.getSimpleName(), getFullText(ctx));
     return defaultReturnValue;
   }
 
@@ -424,7 +423,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
-      _w.redFlag(String.format("Invalid name '%s' for bond in: %s", name, getFullText(ctx)));
+      _w.redFlagf("Invalid name '%s' for bond in: %s", name, getFullText(ctx));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
@@ -515,7 +514,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         return null;
       }
     } else {
-      _w.redFlag(String.format("Interface name '%s' is invalid in: %s", name, getFullText(ctx)));
+      _w.redFlagf("Interface name '%s' is invalid in: %s", name, getFullText(ctx));
       return null;
     }
     return new Interface(name, type, superInterfaceName, encapsulationVlan);
@@ -530,7 +529,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
-      _w.redFlag(String.format("Invalid name '%s' for vrf in: %s", name, getFullText(ctx)));
+      _w.redFlagf("Invalid name '%s' for vrf in: %s", name, getFullText(ctx));
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
@@ -566,7 +565,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         || PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()
         || SUBINTERFACE_PATTERN.matcher(name).matches()
         || VLAN_INTERFACE_PATTERN.matcher(name).matches()) {
-      _w.redFlag(String.format("Invalid name '%s' for vxlan in: %s", name, getFullText(ctx)));
+      _w.redFlagf("Invalid name '%s' for vxlan in: %s", name, getFullText(ctx));
       return null;
     }
     if (_c.getBonds().containsKey(name)) {

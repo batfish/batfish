@@ -12,7 +12,7 @@ import org.batfish.datamodel.routing_policy.statement.Statement;
 /** Clause of 'set origin' in route map. */
 public class RouteMapSetOrigin implements RouteMapSet {
 
-  private @Nonnull final OriginType _originType;
+  private final @Nonnull OriginType _originType;
 
   public RouteMapSetOrigin(OriginType originType) {
     _originType = originType;

@@ -32,10 +32,9 @@ public final class VirtualServerTargetAddress6 implements VirtualServerTarget {
     return _address6.hashCode();
   }
 
-  @Nonnull
-  public Ip6 getAddress6() {
+  public @Nonnull Ip6 getAddress6() {
     return _address6;
   }
 
-  @Nonnull private final Ip6 _address6;
+  private final @Nonnull Ip6 _address6;
 }

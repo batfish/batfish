@@ -4,6 +4,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.math.IntMath;
+import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.common.bdd.MutableBDDInteger;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
@@ -128,7 +130,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    * BDDRoute to accurately represent the effects of multiple execution paths, unless those paths
    * prepend the same exact sequence of ASes to the AS-path.
    */
-  @Nonnull private List<Long> _prependedASes;
+  private @Nonnull List<Long> _prependedASes;
 
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
@@ -196,11 +198,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       int numTracks) {
     _factory = factory;
 
+    int bitsToRepresentAdmin = IntMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
+    // or else we need to do tricks in the BDDInteger.
+    assert LongMath.isPowerOfTwo(1L + AbstractRoute.MAX_ADMIN_DISTANCE);
     int numVars = factory.varNum();
     int numNeeded =
         32 * 6
             + 16
-            + 8
+            + bitsToRepresentAdmin
             + 6
             + numCommAtomicPredicates
             + numAsPathRegexAtomicPredicates
@@ -240,9 +245,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _weight = MutableBDDInteger.makeFromIndex(factory, 16, idx, false);
     addBitNames("weight", 16, idx, false);
     idx += 16;
-    _adminDist = MutableBDDInteger.makeFromIndex(factory, 8, idx, false);
-    addBitNames("ad", 8, idx, false);
-    idx += 8;
+    _adminDist = MutableBDDInteger.makeFromIndex(factory, bitsToRepresentAdmin, idx, false);
+    addBitNames("ad", bitsToRepresentAdmin, idx, false);
+    idx += bitsToRepresentAdmin;
     _localPref = MutableBDDInteger.makeFromIndex(factory, 32, idx, false);
     addBitNames("lp", 32, idx, false);
     idx += 32;
@@ -403,16 +408,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Create a BDD representing the constraint that the route announcement has at least one
-   * community.
-   *
-   * @return the bdd
-   */
-  public BDD anyCommunity() {
-    return _factory.orAll(_communityAtomicPredicates);
-  }
-
-  /**
    * Create a BDD representing the constraint that the value of a specific enum attribute in the
    * route announcement's protocol is a member of the given set.
    *
@@ -457,12 +452,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
-    // exactly one AS-path regex atomic predicate should be true, since by construction their
+    // at most one AS-path regex atomic predicate should be true, since by construction their
     // regexes are all pairwise disjoint
-    // Note: a similar constraint does not apply to community regexes because a route has a set
+    // Note: the same constraint does not apply to community regexes because a route has a set
     // of communities, so more than one regex can be simultaneously true
-    BDD asPathConstraint =
-        atMostOneOf(_asPathRegexAtomicPredicates).and(_factory.orAll(_asPathRegexAtomicPredicates));
+    BDD asPathConstraint = atMostOneOf(_asPathRegexAtomicPredicates);
     // at most one source VRF should be in the environment
     BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP

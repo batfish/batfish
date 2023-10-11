@@ -12,7 +12,7 @@ ip route 1.2.39.69 255.255.255.255 POS5/3:10
 ip route 0.0.0.0 0.0.0.0 loopback 66 100
 ip route 0.0.0.0 0.0.0.0 loopback99 150
 ip route 0.0.0.0 0.0.0.0 dialer 1 250
-ip route 0.0.0.0 0.0.0.0 Dialer2 300
+ip route 0.0.0.0 0.0.0.0 Dialer2 253
 !
 ip route 1.2.3.0 255.255.255.128 2.3.4.5 10 name bippety
 ip route vrf myvrf 0.0.0.0 0.0.0.0 5.6.7.8 global
@@ -21,6 +21,6 @@ ip route vrf myvrf 0.0.0.0 0.0.0.0 5.6.7.8 global 100 name boppety
 ipv6 route ::/0 loopback 66 100
 ipv6 route ::/0 loopback99 150
 ipv6 route ::/0 dialer 1 250
-ipv6 route ::/0 Dialer2 300
+ipv6 route ::/0 Dialer2 253
 !
 end

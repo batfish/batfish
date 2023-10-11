@@ -28,19 +28,16 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
-import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
-import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
@@ -58,17 +55,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class CompareRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
+  private final @Nonnull Environment.Direction _direction;
 
-  @Nonnull private final String _policySpecifierString;
-  @Nullable private final String _referencePolicySpecifierString;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nullable private final RoutingPolicySpecifier _referencePolicySpecifier;
+  private final @Nonnull String _policySpecifierString;
+  private final @Nullable String _referencePolicySpecifierString;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nullable RoutingPolicySpecifier _referencePolicySpecifier;
 
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   public CompareRoutePoliciesAnswerer(
       org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesQuestion question,
@@ -108,10 +105,9 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   private Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
       BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
-    BDD fullModel = constraintsToModel(constraints, configAPs);
+    BDD model = constraintsToModel(constraints, configAPs);
     return new Tuple<>(
-        satAssignmentToInputRoute(fullModel, configAPs),
-        satAssignmentToEnvironment(fullModel, configAPs));
+        satAssignmentToInputRoute(model, configAPs), satAssignmentToEnvironment(model, configAPs));
   }
 
   /**
@@ -194,63 +190,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Check that the results of symbolic analysis are consistent with the given concrete result from
-   * route simulation.
-   *
-   * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
-   *     a given path
-   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
-   *     of atomic predicates
-   * @param path the symbolic representation of that path
-   * @param result the expected input-output behavior
-   * @return a boolean indicating whether the check succeeded
-   */
-  private boolean validateModel(
-      BDD fullModel,
-      ConfigAtomicPredicates configAPs,
-      TransferReturn path,
-      Result<BgpRoute> result) {
-    // update the atomic predicates to include any prepended ASes on this path
-    ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
-    AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
-    aps.prependAPs(path.getFirst().getPrependedASes());
-
-    return ModelGeneration.validateModel(
-        fullModel,
-        path.getFirst(),
-        configAPsCopy,
-        path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
-        _direction,
-        result);
-  }
-
-  /**
-   * Check that the example of a behavioral difference between the two route maps the symbolic
-   * analysis finds is consistent with the results from the concrete route simulation.
-   *
-   * @param constraints representation of the set of input routes that should exhibit a difference
-   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
-   *     of atomic predicates
-   * @param path the symbolic representation of the path through the original route map
-   * @param otherPath the symbolic representation of the path through the other route map
-   * @param result the expected behavior of the original route map on an input that should exhibit a
-   *     difference
-   * @param otherResult the expected behavior of the other route map on the same input
-   * @return a boolean indicating whether the check succeeded
-   */
-  private boolean validateDifference(
-      BDD constraints,
-      ConfigAtomicPredicates configAPs,
-      TransferReturn path,
-      TransferReturn otherPath,
-      Result<BgpRoute> result,
-      Result<BgpRoute> otherResult) {
-    BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
-    return validateModel(fullModel, configAPs, path, result)
-        && validateModel(fullModel, configAPs, otherPath, otherResult);
-  }
-
-  /**
    * Compare two route policies for behavioral differences.
    *
    * @param referencePolicy the routing policy of the reference snapshot
@@ -327,11 +266,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
             differences.add(new Tuple<>(otherResult, refResult));
-
-            // As a sanity check, compare the simulated results above with what the symbolic route
-            // analysis predicts will happen.
-            assert validateDifference(
-                finalConstraints, configAPs, path, otherPath, refResult, otherResult);
           }
         }
       }
@@ -460,10 +394,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * will do a 1-1 comparison with the policies found in policySpecifier. Note, this only compares
    * across the same hostnames between the two snapshots, i.e., it will compare route-maps in r1
    * with route-maps in r1 of the new snapshot.
-   *
-   * @param snapshot the current snapshot
-   * @param reference the reference snapshot
-   * @return
    */
   @Override
   public AnswerElement answerDiff(NetworkSnapshot snapshot, NetworkSnapshot reference) {

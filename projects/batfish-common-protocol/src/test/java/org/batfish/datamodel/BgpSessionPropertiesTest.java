@@ -341,7 +341,6 @@ public class BgpSessionPropertiesTest {
     BgpPassivePeerConfig p2 =
         BgpPassivePeerConfig.builder()
             .setPeerPrefix(Prefix.create(ip1, 24))
-            .setLocalIp(Ip.AUTO)
             .setLocalAs(as2)
             .setRemoteAs(as1)
             .setIpv4UnicastAddressFamily(addressFamily)

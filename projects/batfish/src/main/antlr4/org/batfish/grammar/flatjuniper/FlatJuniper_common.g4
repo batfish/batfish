@@ -202,6 +202,8 @@ ip_address_and_mask: IP_ADDRESS_AND_MASK;
 
 ip_prefix: IP_PREFIX;
 
+ip_prefix_default_32: IP_PREFIX | IP_ADDRESS;
+
 ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;

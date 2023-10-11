@@ -21,8 +21,8 @@ public class IspFilter {
   private static final String PROP_ONLY_REMOTE_ASNS = "onlyRemoteAsns";
   private static final String PROP_ONLY_REMOTE_IPS = "onlyRemoteIps";
 
-  @Nonnull private final List<Long> _onlyRemoteAsns;
-  @Nonnull private final List<Ip> _onlyRemoteIps;
+  private final @Nonnull List<Long> _onlyRemoteAsns;
+  private final @Nonnull List<Ip> _onlyRemoteIps;
 
   public IspFilter(@Nonnull List<Long> onlyRemoteAsns, @Nonnull List<Ip> onlyRemoteIps) {
     _onlyRemoteAsns = ImmutableList.copyOf(onlyRemoteAsns);
@@ -57,14 +57,12 @@ public class IspFilter {
   }
 
   @JsonProperty(PROP_ONLY_REMOTE_ASNS)
-  @Nonnull
-  public List<Long> getOnlyRemoteAsns() {
+  public @Nonnull List<Long> getOnlyRemoteAsns() {
     return _onlyRemoteAsns;
   }
 
   @JsonProperty(PROP_ONLY_REMOTE_IPS)
-  @Nonnull
-  public List<Ip> getOnlyRemoteIps() {
+  public @Nonnull List<Ip> getOnlyRemoteIps() {
     return _onlyRemoteIps;
   }
 }

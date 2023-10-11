@@ -5,12 +5,14 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
+import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,5 +70,13 @@ public class AsPathMatchExprAsPathCollectorTest {
     assertEquals(
         ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1)),
         AsPathMatchRegex.of(ASPATH1).accept(_collector, _baseConfig));
+  }
+
+  @Test
+  public void testAsSetsMatchingRanges() {
+    AsSetsMatchingRanges expr =
+        AsSetsMatchingRanges.of(false, true, ImmutableList.of(Range.closed(11L, 14L)));
+    assertEquals(
+        ImmutableSet.of(new SymbolicAsPathRegex(expr)), expr.accept(_collector, _baseConfig));
   }
 }

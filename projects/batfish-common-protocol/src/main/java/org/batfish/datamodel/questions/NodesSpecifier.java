@@ -48,13 +48,13 @@ public class NodesSpecifier {
 
   public static final NodesSpecifier NONE = new NodesSpecifier("");
 
-  @Nonnull private final String _expression;
+  private final @Nonnull String _expression;
 
-  @Nonnull private final Pattern _regex;
+  private final @Nonnull Pattern _regex;
 
-  @Nullable private final String _roleDimension;
+  private final @Nullable String _roleDimension;
 
-  @Nonnull private final Type _type;
+  private final @Nonnull Type _type;
 
   private final boolean _caseSensitive;
 

@@ -208,8 +208,8 @@ final class Conversions {
     return commonExportPolicy;
   }
 
-  @Nullable
-  private static If redistRuleToIfStatement(RedistRule redistRule, RedistProfile redistProfile) {
+  private static @Nullable If redistRuleToIfStatement(
+      RedistRule redistRule, RedistProfile redistProfile) {
     // TODO: handle priority of redist profile
     RedistProfileFilter filter = redistProfile.getFilter();
     if (filter == null) {
@@ -293,8 +293,7 @@ final class Conversions {
         .build();
   }
 
-  @Nullable
-  static RoutingPolicy computeAndSetPerPeerImportPolicy(
+  static @Nullable RoutingPolicy computeAndSetPerPeerImportPolicy(
       BgpPeer peer, Configuration c, VirtualRouter vr, BgpVr bgpVr, String peerGroupName) {
     List<PolicyRule> importPolicyRulesUsedByThisPeer =
         bgpVr.getImportPolicyRules().values().stream()

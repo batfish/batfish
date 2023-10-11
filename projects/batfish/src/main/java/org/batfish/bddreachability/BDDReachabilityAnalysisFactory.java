@@ -1127,8 +1127,7 @@ public final class BDDReachabilityAnalysisFactory {
             });
   }
 
-  @Nonnull
-  private Stream<Edge> generateRules_VrfAccept_NodeAccept() {
+  private @Nonnull Stream<Edge> generateRules_VrfAccept_NodeAccept() {
     return _ifaceAcceptBDDs.entrySet().stream()
         .flatMap(
             nodeEntry -> {

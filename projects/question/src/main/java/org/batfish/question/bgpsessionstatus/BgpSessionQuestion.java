@@ -27,16 +27,16 @@ public abstract class BgpSessionQuestion extends Question {
 
   public static final String PROP_TYPE = "type";
 
-  @Nullable protected final String _nodes;
+  protected final @Nullable String _nodes;
 
-  @Nullable protected final String _remoteNodes;
+  protected final @Nullable String _remoteNodes;
 
-  @Nullable protected final String _status;
+  protected final @Nullable String _status;
 
-  @Nullable protected final String _type;
+  protected final @Nullable String _type;
 
   // caches what _type expands to (optimization)
-  @Nonnull private final Set<SessionType> _expandedTypes;
+  private final @Nonnull Set<SessionType> _expandedTypes;
 
   /**
    * Create a new BGP session question.

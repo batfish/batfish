@@ -22,37 +22,37 @@ public class Ipv6AccessListLine implements Serializable {
 
   public static class Builder {
 
-    @Nullable private LineAction _action;
+    private @Nullable LineAction _action;
 
-    @Nullable private Set<Integer> _dscps;
+    private @Nullable Set<Integer> _dscps;
 
-    @Nullable private String _dstAddressGroup;
+    private @Nullable String _dstAddressGroup;
 
-    @Nullable private Ip6Wildcard _dstIpWildcard;
+    private @Nullable Ip6Wildcard _dstIpWildcard;
 
-    @Nullable private List<SubRange> _dstPortRanges;
+    private @Nullable List<SubRange> _dstPortRanges;
 
-    @Nullable private Integer _icmpCode;
+    private @Nullable Integer _icmpCode;
 
-    @Nullable private Integer _icmpType;
+    private @Nullable Integer _icmpType;
 
-    @Nullable private String _name;
+    private @Nullable String _name;
 
-    @Nullable private Ipv6Nexthop _nexthop1;
+    private @Nullable Ipv6Nexthop _nexthop1;
 
-    @Nullable private Ipv6Nexthop _nexthop2;
+    private @Nullable Ipv6Nexthop _nexthop2;
 
-    @Nullable private Ipv6Nexthop _nexthop3;
+    private @Nullable Ipv6Nexthop _nexthop3;
 
-    @Nullable private IpProtocol _protocol;
+    private @Nullable IpProtocol _protocol;
 
-    @Nullable private String _srcAddressGroup;
+    private @Nullable String _srcAddressGroup;
 
-    @Nullable private Ip6Wildcard _srcIpWildcard;
+    private @Nullable Ip6Wildcard _srcIpWildcard;
 
-    @Nullable private List<SubRange> _srcPortRanges;
+    private @Nullable List<SubRange> _srcPortRanges;
 
-    @Nullable private List<TcpFlagsMatchConditions> _tcpFlags;
+    private @Nullable List<TcpFlagsMatchConditions> _tcpFlags;
 
     private Builder() {}
 
@@ -145,37 +145,37 @@ public class Ipv6AccessListLine implements Serializable {
     return new Ipv6AccessListLine.Builder();
   }
 
-  @Nonnull private final LineAction _action;
+  private final @Nonnull LineAction _action;
 
-  @Nonnull private final Set<Integer> _dscps;
+  private final @Nonnull Set<Integer> _dscps;
 
-  @Nullable private final String _dstAddressGroup;
+  private final @Nullable String _dstAddressGroup;
 
-  @Nonnull private final Ip6Wildcard _dstIpWildcard;
+  private final @Nonnull Ip6Wildcard _dstIpWildcard;
 
-  @Nonnull private final List<SubRange> _dstPortRanges;
+  private final @Nonnull List<SubRange> _dstPortRanges;
 
-  @Nullable private final Integer _icmpCode;
+  private final @Nullable Integer _icmpCode;
 
-  @Nullable private final Integer _icmpType;
+  private final @Nullable Integer _icmpType;
 
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
-  @Nullable private final Ipv6Nexthop _nexthop1;
+  private final @Nullable Ipv6Nexthop _nexthop1;
 
-  @Nullable private final Ipv6Nexthop _nexthop2;
+  private final @Nullable Ipv6Nexthop _nexthop2;
 
-  @Nullable private final Ipv6Nexthop _nexthop3;
+  private final @Nullable Ipv6Nexthop _nexthop3;
 
-  @Nullable private final IpProtocol _protocol;
+  private final @Nullable IpProtocol _protocol;
 
-  @Nullable private final String _srcAddressGroup;
+  private final @Nullable String _srcAddressGroup;
 
-  @Nonnull private final Ip6Wildcard _srcIpWildcard;
+  private final @Nonnull Ip6Wildcard _srcIpWildcard;
 
-  @Nonnull private final List<SubRange> _srcPortRanges;
+  private final @Nonnull List<SubRange> _srcPortRanges;
 
-  @Nonnull private final List<TcpFlagsMatchConditions> _tcpFlags;
+  private final @Nonnull List<TcpFlagsMatchConditions> _tcpFlags;
 
   private Ipv6AccessListLine(Ipv6AccessListLine.Builder builder) {
     _action = requireNonNull(builder._action);
@@ -196,83 +196,67 @@ public class Ipv6AccessListLine implements Serializable {
     _tcpFlags = ImmutableList.copyOf(requireNonNull(builder._tcpFlags));
   }
 
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  @Nonnull
-  public Ip6Wildcard getDestinationIpWildcard() {
+  public @Nonnull Ip6Wildcard getDestinationIpWildcard() {
     return _dstIpWildcard;
   }
 
-  @Nonnull
-  public Set<Integer> getDscps() {
+  public @Nonnull Set<Integer> getDscps() {
     return _dscps;
   }
 
-  @Nullable
-  public String getDstAddressGroup() {
+  public @Nullable String getDstAddressGroup() {
     return _dstAddressGroup;
   }
 
-  @Nonnull
-  public List<SubRange> getDstPorts() {
+  public @Nonnull List<SubRange> getDstPorts() {
     return _dstPortRanges;
   }
 
-  @Nullable
-  public Integer getIcmpCode() {
+  public @Nullable Integer getIcmpCode() {
     return _icmpCode;
   }
 
-  @Nullable
-  public Integer getIcmpType() {
+  public @Nullable Integer getIcmpType() {
     return _icmpType;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Ipv6Nexthop getNexthop1() {
+  public @Nullable Ipv6Nexthop getNexthop1() {
     return _nexthop1;
   }
 
-  @Nullable
-  public Ipv6Nexthop getNexthop2() {
+  public @Nullable Ipv6Nexthop getNexthop2() {
     return _nexthop2;
   }
 
-  @Nullable
-  public Ipv6Nexthop getNexthop3() {
+  public @Nullable Ipv6Nexthop getNexthop3() {
     return _nexthop3;
   }
 
-  @Nonnull
-  public Optional<IpProtocol> getProtocol() {
+  public @Nonnull Optional<IpProtocol> getProtocol() {
     return Optional.ofNullable(_protocol);
   }
 
-  @Nonnull
-  public Ip6Wildcard getSourceIpWildcard() {
+  public @Nonnull Ip6Wildcard getSourceIpWildcard() {
     return _srcIpWildcard;
   }
 
-  @Nullable
-  public String getSrcAddressGroup() {
+  public @Nullable String getSrcAddressGroup() {
     return _srcAddressGroup;
   }
 
-  @Nonnull
-  public List<SubRange> getSrcPorts() {
+  public @Nonnull List<SubRange> getSrcPorts() {
     return _srcPortRanges;
   }
 
-  @Nonnull
-  public List<TcpFlagsMatchConditions> getTcpFlags() {
+  public @Nonnull List<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 

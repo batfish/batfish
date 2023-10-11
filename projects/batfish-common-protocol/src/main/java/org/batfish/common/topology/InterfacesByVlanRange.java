@@ -72,20 +72,17 @@ class InterfacesByVlanRange {
   }
 
   /** Return the mapping of all ranges to sets of interfaces as an unmodifiable map */
-  @Nonnull
-  public Map<Range<Integer>, Set<String>> getMap() {
+  public @Nonnull Map<Range<Integer>, Set<String>> getMap() {
     return _ranges;
   }
 
   /** Return the set of interfaces for a given VLAN, or an empty set. */
-  @Nonnull
-  public Set<String> get(int vlan) {
+  public @Nonnull Set<String> get(int vlan) {
     return Optional.ofNullable(getRange(vlan)).map(_ranges::get).orElse(ImmutableSet.of());
   }
 
   /** Return the range matching given VLAN, or {@code null} if no match is present. */
-  @Nullable
-  public Range<Integer> getRange(int vlan) {
+  public @Nullable Range<Integer> getRange(int vlan) {
     return _ranges.keySet().stream().filter(r -> r.contains(vlan)).findFirst().orElse(null);
   }
 

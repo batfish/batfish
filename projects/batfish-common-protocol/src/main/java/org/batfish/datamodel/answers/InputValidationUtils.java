@@ -27,8 +27,7 @@ public final class InputValidationUtils {
    * variable types that are top-level (e.g., nodeSpec), and not sub parts (e.g., address group
    * names).
    */
-  @Nonnull
-  public static InputValidationNotes validate(
+  public static @Nonnull InputValidationNotes validate(
       Variable.Type varType,
       String query,
       CompletionMetadata completionMetadata,
@@ -207,8 +206,7 @@ public final class InputValidationUtils {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static InputValidationNotes validateSourceLocation(
+  static @Nonnull InputValidationNotes validateSourceLocation(
       String query, boolean tracerouteSource, CompletionMetadata completionMetadata) {
     Validity validity =
         autoCompleteSourceLocation(query, tracerouteSource, completionMetadata).stream()

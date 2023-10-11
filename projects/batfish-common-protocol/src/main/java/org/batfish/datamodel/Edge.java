@@ -22,8 +22,8 @@ public class Edge implements Serializable, Comparable<Edge> {
   private static final String PROP_NODE1 = "node1";
   private static final String PROP_NODE2 = "node2";
 
-  @Nonnull private final NodeInterfacePair _tail;
-  @Nonnull private final NodeInterfacePair _head;
+  private final @Nonnull NodeInterfacePair _tail;
+  private final @Nonnull NodeInterfacePair _head;
 
   /**
    * Create a new directed edge connecting two node/interface pairs from {@code tail} to {@code
@@ -72,14 +72,12 @@ public class Edge implements Serializable, Comparable<Edge> {
   }
 
   @JsonIgnore
-  @Nonnull
-  public NodeInterfacePair getTail() {
+  public @Nonnull NodeInterfacePair getTail() {
     return _tail;
   }
 
   @JsonIgnore
-  @Nonnull
-  public NodeInterfacePair getHead() {
+  public @Nonnull NodeInterfacePair getHead() {
     return _head;
   }
 

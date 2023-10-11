@@ -63,8 +63,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   }
 
   /** ACL specifying matching traffic (mutually exclusive with {@link #getRouteMap() route-map}) */
-  @Nullable
-  public String getAclName() {
+  public @Nullable String getAclName() {
     return _aclName;
   }
 
@@ -151,8 +150,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
   }
 
   /** Converts given ACL name to an int if possible, otherwise returns null. */
-  @Nullable
-  private static Integer toIntOrNull(@Nullable String aclName) {
+  private static @Nullable Integer toIntOrNull(@Nullable String aclName) {
     try {
       return Integer.parseInt(aclName); // throws same error for null and non-numeric names
     } catch (NumberFormatException e) {
@@ -360,13 +358,13 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
     if (_aclName != null) {
       // ACL is configured. Make sure it exists and is a standard ACL
       if (!ipAccessLists.containsKey(_aclName)) {
-        w.redFlag(String.format("Ignoring NAT rule with undefined ACL %s", _aclName));
+        w.redFlagf("Ignoring NAT rule with undefined ACL %s", _aclName);
         return true;
       }
       if (!CiscoStructureType.IPV4_ACCESS_LIST_STANDARD
           .getDescription()
           .equals(ipAccessLists.get(_aclName).getSourceType())) {
-        w.redFlag(String.format("Ignoring NAT rule with ACL %s: ACL is not standard", _aclName));
+        w.redFlagf("Ignoring NAT rule with ACL %s: ACL is not standard", _aclName);
         // Cisco IOS only supports standard ACLs for dynamic NAT.
         return true;
       }
@@ -377,7 +375,7 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
         return true;
       }
       if (!routeMaps.containsKey(getRouteMap())) {
-        w.redFlag(String.format("Ignoring NAT rule with undefined route-map %s", getRouteMap()));
+        w.redFlagf("Ignoring NAT rule with undefined route-map %s", getRouteMap());
         return true;
       }
     }
@@ -395,11 +393,11 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
       }
       Interface iface = interfaces.get(_interface);
       if (iface == null || iface.getAddress() == null) {
-        w.redFlag(String.format("Ignoring NAT rule with undefined interface %s", _interface));
+        w.redFlagf("Ignoring NAT rule with undefined interface %s", _interface);
         return true;
       }
     } else if (!natPools.containsKey(_natPool)) {
-      w.redFlag(String.format("Ignoring NAT rule with undefined pool %s", _natPool));
+      w.redFlagf("Ignoring NAT rule with undefined pool %s", _natPool);
       return true;
     }
 

@@ -15,13 +15,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 class PotentialMatch {
 
   /** The anchor where this match hinges on and we use for auto completion */
-  @Nonnull private final PathElement _anchor;
+  private final @Nonnull PathElement _anchor;
 
   /** What the user entered for this match */
-  @Nonnull private final String _matchPrefix;
+  private final @Nonnull String _matchPrefix;
 
   /** The list of elements along the path we are analyzing */
-  @Nonnull private final List<PathElement> _path;
+  private final @Nonnull List<PathElement> _path;
 
   PotentialMatch(PathElement anchor, String matchPrefix, List<PathElement> path) {
     _anchor = anchor;

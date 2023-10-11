@@ -14,11 +14,10 @@ public final class CumulusPortsConfiguration implements Serializable {
 
   /** settings defined in the file */
   public static final class PortSettings implements Serializable {
-    @Nullable private Integer _speed;
-    @Nullable private Boolean _disabled;
+    private @Nullable Integer _speed;
+    private @Nullable Boolean _disabled;
 
-    @Nullable
-    public Integer getSpeed() {
+    public @Nullable Integer getSpeed() {
       return _speed;
     }
 
@@ -26,8 +25,7 @@ public final class CumulusPortsConfiguration implements Serializable {
       _speed = speed;
     }
 
-    @Nullable
-    public Boolean getDisabled() {
+    public @Nullable Boolean getDisabled() {
       return _disabled;
     }
 
@@ -82,7 +80,7 @@ public final class CumulusPortsConfiguration implements Serializable {
     }
   }
 
-  @Nonnull private final Map<String, PortSettings> _portSettings;
+  private final @Nonnull Map<String, PortSettings> _portSettings;
 
   public CumulusPortsConfiguration() {
     _portSettings = new HashMap<>();
@@ -96,8 +94,7 @@ public final class CumulusPortsConfiguration implements Serializable {
     _portSettings.computeIfAbsent(ifaceName, iface -> new PortSettings()).setDisabled(disabled);
   }
 
-  @Nonnull
-  public Map<String, PortSettings> getPortSettings() {
+  public @Nonnull Map<String, PortSettings> getPortSettings() {
     return _portSettings;
   }
 }

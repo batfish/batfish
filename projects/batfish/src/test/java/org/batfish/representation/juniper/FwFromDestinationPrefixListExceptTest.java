@@ -1,7 +1,7 @@
 package org.batfish.representation.juniper;
 
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasNotDstIps;
-import static org.hamcrest.core.IsEqual.equalTo;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
 import org.batfish.common.Warnings;

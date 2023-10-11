@@ -76,7 +76,7 @@ final class CiscoIosNatUtil {
       RouteMap routeMap, Set<String> validAclNames, String ifaceName, Warnings w) {
     List<AclLineMatchExpr> clauseExprs = new ArrayList<>();
     if (routeMap.getClauses().isEmpty()) {
-      w.redFlag(String.format("Ignoring NAT rule with empty route-map %s", routeMap.getName()));
+      w.redFlagf("Ignoring NAT rule with empty route-map %s", routeMap.getName());
       return Optional.empty();
     }
     for (RouteMapClause clause : routeMap.getClauses().values()) {
@@ -158,11 +158,11 @@ final class CiscoIosNatUtil {
   @VisibleForTesting
   static class RouteMapMatchLineToExprVisitor
       implements RouteMapMatchLine.RouteMapMatchLineVisitor<Optional<AclLineMatchExpr>> {
-    @Nonnull private final String _ifaceName;
-    @Nonnull private final String _rmName;
+    private final @Nonnull String _ifaceName;
+    private final @Nonnull String _rmName;
     private final int _seqNum;
-    @Nonnull private final Set<String> _validAclNames;
-    @Nonnull private final Warnings _w;
+    private final @Nonnull Set<String> _validAclNames;
+    private final @Nonnull Warnings _w;
 
     RouteMapMatchLineToExprVisitor(
         String rmName, int seqNum, Set<String> validAclNames, String ifaceName, Warnings w) {
@@ -313,19 +313,17 @@ final class CiscoIosNatUtil {
     return new TrueExpr(TraceElement.of(String.format("Matched outside interface %s", ifaceName)));
   }
 
-  @Nonnull
-  static Transformation toOutgoingTransformationChain(Map<CiscoIosNat, Builder> convertedNats) {
+  static @Nonnull Transformation toOutgoingTransformationChain(
+      Map<CiscoIosNat, Builder> convertedNats) {
     return toTransformationChain(convertedNats, true);
   }
 
-  @Nonnull
-  static Transformation toIncomingTransformationChain(
+  static @Nonnull Transformation toIncomingTransformationChain(
       Map<CiscoIosNat, Transformation.Builder> convertedNats) {
     return toTransformationChain(convertedNats, false);
   }
 
-  @Nonnull
-  private static Transformation toTransformationChain(
+  private static @Nonnull Transformation toTransformationChain(
       Map<CiscoIosNat, Transformation.Builder> convertedNats, boolean outgoing) {
 
     Map<IpField, List<Builder>> transformationsByField =

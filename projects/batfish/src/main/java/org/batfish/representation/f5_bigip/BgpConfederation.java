@@ -13,8 +13,7 @@ public final class BgpConfederation implements Serializable {
     _peers = new ArrayList<>();
   }
 
-  @Nullable
-  public Long getId() {
+  public @Nullable Long getId() {
     return _id;
   }
 
@@ -22,11 +21,10 @@ public final class BgpConfederation implements Serializable {
     _id = id;
   }
 
-  @Nonnull
-  public List<Long> getPeers() {
+  public @Nonnull List<Long> getPeers() {
     return _peers;
   }
 
   private @Nullable Long _id;
-  private @Nonnull final List<Long> _peers;
+  private final @Nonnull List<Long> _peers;
 }

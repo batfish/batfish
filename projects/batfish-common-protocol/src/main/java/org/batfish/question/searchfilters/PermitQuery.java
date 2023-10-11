@@ -20,8 +20,8 @@ public class PermitQuery implements SearchFiltersQuery {
   }
 
   @Override
-  @Nonnull
-  public BDD getMatchingBdd(IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, BDDPacket pkt) {
+  public @Nonnull BDD getMatchingBdd(
+      IpAccessList acl, IpAccessListToBdd ipAccessListToBdd, BDDPacket pkt) {
     return ipAccessListToBdd.toBdd(acl);
   }
 }

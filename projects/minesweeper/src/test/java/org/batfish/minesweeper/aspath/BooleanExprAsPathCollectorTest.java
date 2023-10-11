@@ -17,6 +17,7 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
@@ -91,13 +92,33 @@ public class BooleanExprAsPathCollectorTest {
   }
 
   @Test
-  public void testVisitDisjunction() {
+  public void testVisitDisjunctionOfAsPathMatches() {
 
     Disjunction d =
         new Disjunction(
             ImmutableList.of(
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
                 MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2))));
+
+    Set<SymbolicAsPathRegex> result =
+        _collector.visitDisjunction(d, new Tuple<>(new HashSet<>(), _baseConfig));
+
+    Set<SymbolicAsPathRegex> expected =
+        ImmutableSet.of(new SymbolicAsPathRegex("(" + ASPATH1 + ")" + "|(" + ASPATH2 + ")"));
+
+    assertEquals(expected, result);
+  }
+
+  @Test
+  public void testVisitDisjunctionOfNotAllAsPathMatches() {
+
+    Disjunction d =
+        new Disjunction(
+            ImmutableList.of(
+                new Disjunction(
+                    BooleanExprs.FALSE,
+                    MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH1)),
+                    MatchAsPath.of(InputAsPath.instance(), AsPathMatchRegex.of(ASPATH2)))));
 
     Set<SymbolicAsPathRegex> result =
         _collector.visitDisjunction(d, new Tuple<>(new HashSet<>(), _baseConfig));

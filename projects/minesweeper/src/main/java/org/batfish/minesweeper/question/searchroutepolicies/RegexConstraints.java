@@ -23,7 +23,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public class RegexConstraints {
 
-  @Nonnull private final Set<RegexConstraint> _regexConstraints;
+  private final @Nonnull Set<RegexConstraint> _regexConstraints;
 
   public RegexConstraints() {
     this(ImmutableList.of());

@@ -19,8 +19,8 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
   private static final String PROP_FILTERS = "filters";
   private static final String PROP_NAME = "name";
 
-  @Nonnull private final List<String> _filters;
-  @Nonnull private final String _name;
+  private final @Nonnull List<String> _filters;
+  private final @Nonnull String _name;
 
   @JsonCreator
   public FilterGroup(
@@ -51,14 +51,12 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
   }
 
   @JsonProperty(PROP_FILTERS)
-  @Nonnull
-  public List<String> getFilters() {
+  public @Nonnull List<String> getFilters() {
     return _filters;
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

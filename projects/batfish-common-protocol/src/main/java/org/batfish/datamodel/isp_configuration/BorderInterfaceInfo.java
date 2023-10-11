@@ -30,7 +30,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 public class BorderInterfaceInfo {
   private static final String PROP_BORDER_INTERFACE = "borderInterface";
 
-  @Nonnull private final NodeInterfacePair _borderInterface;
+  private final @Nonnull NodeInterfacePair _borderInterface;
 
   public BorderInterfaceInfo(@Nonnull NodeInterfacePair borderInterface) {
     _borderInterface = borderInterface;
@@ -61,8 +61,7 @@ public class BorderInterfaceInfo {
   }
 
   @JsonProperty(PROP_BORDER_INTERFACE)
-  @Nonnull
-  public NodeInterfacePair getBorderInterface() {
+  public @Nonnull NodeInterfacePair getBorderInterface() {
     return _borderInterface;
   }
 }

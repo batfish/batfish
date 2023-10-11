@@ -130,7 +130,7 @@ public final class VirtualRouter {
   @Nullable BgpRoutingProcess _bgpRoutingProcess;
 
   /** Parent configuration for this virtual router */
-  @Nonnull private final Configuration _c;
+  private final @Nonnull Configuration _c;
 
   /** The RIB containing connected routes */
   private ConnectedRib _connectedRib;
@@ -180,9 +180,10 @@ public final class VirtualRouter {
   RibDelta<AnnotatedRoute<AbstractRoute>> _mainRibDeltaPrevRound;
 
   /** The VRF name for this virtual router */
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
+
   /** Parent {@link Node} on which this virtual router resides */
-  @Nonnull private final Node _node;
+  private final @Nonnull Node _node;
 
   private Map<String, OspfRoutingProcess> _ospfProcesses;
 
@@ -199,7 +200,7 @@ public final class VirtualRouter {
   private Rib _generatedRib;
 
   /** Metadata about propagated prefixes to/from neighbors */
-  @Nonnull private PrefixTracer _prefixTracer;
+  private @Nonnull PrefixTracer _prefixTracer;
 
   /** List of all EIGRP processes in this VRF */
   @VisibleForTesting ImmutableMap<Long, EigrpRoutingProcess> _eigrpProcesses;
@@ -209,6 +210,7 @@ public final class VirtualRouter {
    * based on EVPN route advertisements).
    */
   private Set<Layer2Vni> _layer2Vnis;
+
   /**
    * Map of VNI to Layer 3 VNI settings that are updated dynamically as the dataplane is being
    * computed (e.g., based on EVPN route advertisements).
@@ -218,8 +220,8 @@ public final class VirtualRouter {
   /** A {@link Vrf} that this virtual router represents */
   final Vrf _vrf;
 
-  @Nonnull
-  private final ResolutionRestriction<AnnotatedRoute<AbstractRoute>> _resolutionRestriction;
+  private final @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
+      _resolutionRestriction;
 
   private static final Logger LOGGER = LogManager.getLogger(VirtualRouter.class);
 
@@ -751,8 +753,7 @@ public final class VirtualRouter {
   }
 
   /** Generate connected routes for a given active interface. */
-  @Nonnull
-  private static Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
+  private static @Nonnull Stream<ConnectedRoute> generateConnectedRoutes(@Nonnull Interface iface) {
     assert iface.getActive();
     return iface.getAllConcreteAddresses().stream()
         .filter(addr -> shouldGenerateConnectedRoute(iface.getAddressMetadata().get(addr)))
@@ -780,8 +781,7 @@ public final class VirtualRouter {
 
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @Nonnull
-  static ConnectedRoute generateConnectedRoute(
+  static @Nonnull ConnectedRoute generateConnectedRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
       @Nullable ConnectedRouteMetadata metadata) {
@@ -849,8 +849,7 @@ public final class VirtualRouter {
    * generates no local routes based on {@link ConnectedRouteMetadata#getGenerateLocalRoute()} or
    * Batfish policy (only addresses with network length of < /32 are considered).
    */
-  @Nonnull
-  private static Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
+  private static @Nonnull Stream<LocalRoute> generateLocalRoutes(@Nonnull Interface iface) {
     if (!iface.getActive()) {
       return iface.getAllConcreteAddresses().stream()
           .map(
@@ -887,8 +886,7 @@ public final class VirtualRouter {
 
   /** Generate a connected route for a given address (and associated metadata). */
   @VisibleForTesting
-  @Nonnull
-  static LocalRoute generateLocalRoute(
+  static @Nonnull LocalRoute generateLocalRoute(
       @Nonnull ConcreteInterfaceAddress address,
       @Nonnull String ifaceName,
       @Nullable ConnectedRouteMetadata metadata) {
@@ -913,8 +911,7 @@ public final class VirtualRouter {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static Optional<LocalRoute> generateLocalNullRouteForDownInterface(
+  static @Nonnull Optional<LocalRoute> generateLocalNullRouteForDownInterface(
       ConcreteInterfaceAddress address, @Nullable ConnectedRouteMetadata meta) {
     if (meta == null || !firstNonNull(meta.getGenerateLocalNullRouteIfDown(), false)) {
       return Optional.empty();
@@ -1841,8 +1838,7 @@ public final class VirtualRouter {
   }
 
   /** Return the VRF name */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 }

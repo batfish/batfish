@@ -19,9 +19,9 @@ public class Exclusion {
   private static final String PROP_NAME = "name";
   private static final String PROP_SPECIFICATION = "specification";
 
-  @Nonnull final String _name;
+  final @Nonnull String _name;
 
-  @Nonnull final ObjectNode _specification;
+  final @Nonnull ObjectNode _specification;
 
   @JsonCreator
   public Exclusion(

@@ -19,11 +19,11 @@ public class Port implements Serializable {
   private static final String PROP_MTU = "mtu";
   private static final String PROP_SPEED = "speed";
 
-  private @Nullable final Boolean _adminStatusUp;
-  private @Nullable final String _alias;
-  private @Nullable final String _description;
-  private @Nullable final Integer _mtu;
-  private @Nullable final Integer _speed;
+  private final @Nullable Boolean _adminStatusUp;
+  private final @Nullable String _alias;
+  private final @Nullable String _description;
+  private final @Nullable Integer _mtu;
+  private final @Nullable Integer _speed;
 
   public @Nonnull Optional<Boolean> getAdminStatusUp() {
     return Optional.ofNullable(_adminStatusUp);
@@ -46,7 +46,7 @@ public class Port implements Serializable {
   }
 
   @JsonCreator
-  private @Nonnull static Port create(
+  private static @Nonnull Port create(
       @Nullable @JsonProperty(PROP_ADMIN_STATUS) String adminStatus,
       @Nullable @JsonProperty(PROP_ALIAS) String alias,
       @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
@@ -107,7 +107,7 @@ public class Port implements Serializable {
         .toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

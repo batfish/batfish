@@ -12,10 +12,10 @@ import javax.annotation.Nonnull;
  * where {@link #hashCode()} is different for different types.
  */
 public abstract class EdgeStateExpr implements StateExpr {
-  @Nonnull private final String _srcHostname;
-  @Nonnull private final String _srcInterface;
-  @Nonnull private final String _dstHostname;
-  @Nonnull private final String _dstInterface;
+  private final @Nonnull String _srcHostname;
+  private final @Nonnull String _srcInterface;
+  private final @Nonnull String _dstHostname;
+  private final @Nonnull String _dstInterface;
 
   public EdgeStateExpr(
       @Nonnull String srcNode,
@@ -28,23 +28,19 @@ public abstract class EdgeStateExpr implements StateExpr {
     _dstInterface = dstIface;
   }
 
-  @Nonnull
-  public final String getDstIface() {
+  public final @Nonnull String getDstIface() {
     return _dstInterface;
   }
 
-  @Nonnull
-  public final String getDstNode() {
+  public final @Nonnull String getDstNode() {
     return _dstHostname;
   }
 
-  @Nonnull
-  public final String getSrcIface() {
+  public final @Nonnull String getSrcIface() {
     return _srcInterface;
   }
 
-  @Nonnull
-  public final String getSrcNode() {
+  public final @Nonnull String getSrcNode() {
     return _srcHostname;
   }
 

@@ -80,24 +80,24 @@ public abstract class BooleanExprMatchCollector<T>
 
   @Override
   public Set<T> visitConjunction(Conjunction conjunction, Tuple<Set<String>, Configuration> arg) {
-    return visitAll(conjunction.getConjuncts(), arg);
+    return visitAll(this, conjunction.getConjuncts(), arg);
   }
 
   @Override
   public Set<T> visitConjunctionChain(
       ConjunctionChain conjunctionChain, Tuple<Set<String>, Configuration> arg) {
-    return visitAll(conjunctionChain.getSubroutines(), arg);
+    return visitAll(this, conjunctionChain.getSubroutines(), arg);
   }
 
   @Override
   public Set<T> visitDisjunction(Disjunction disjunction, Tuple<Set<String>, Configuration> arg) {
-    return visitAll(disjunction.getDisjuncts(), arg);
+    return visitAll(this, disjunction.getDisjuncts(), arg);
   }
 
   @Override
   public Set<T> visitFirstMatchChain(
       FirstMatchChain firstMatchChain, Tuple<Set<String>, Configuration> arg) {
-    return visitAll(firstMatchChain.getSubroutines(), arg);
+    return visitAll(this, firstMatchChain.getSubroutines(), arg);
   }
 
   @Override
@@ -237,9 +237,20 @@ public abstract class BooleanExprMatchCollector<T>
         .build();
   }
 
-  private Set<T> visitAll(List<BooleanExpr> exprs, Tuple<Set<String>, Configuration> arg) {
+  /**
+   * A helper function to visit all elements of a list of boolean expressions.
+   *
+   * @param visitor the specific BooleanExprMatchCollector visitor to use
+   * @param exprs the list of expressions
+   * @param arg the argument that the visitor expects
+   * @return a set containing the results of visiting each expression
+   */
+  public static <T> Set<T> visitAll(
+      BooleanExprMatchCollector<T> visitor,
+      List<BooleanExpr> exprs,
+      Tuple<Set<String>, Configuration> arg) {
     return exprs.stream()
-        .flatMap(expr -> expr.accept(this, arg).stream())
+        .flatMap(expr -> expr.accept(visitor, arg).stream())
         .collect(ImmutableSet.toImmutableSet());
   }
 }

@@ -18,13 +18,14 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   private static final String PROP_PEER_ADDRESS = "peerAddress";
 
   /** The remote peer's IP address */
-  @Nullable private final Ip _peerAddress;
+  private final @Nullable Ip _peerAddress;
 
   @JsonCreator
   private static @Nonnull BgpActivePeerConfig create(
       @JsonProperty(PROP_APPLIED_RIB_GROUP) @Nullable RibGroup appliedRibGroup,
       @JsonProperty(PROP_AUTHENTICATION_SETTINGS) @Nullable
           BgpAuthenticationSettings authenticationSettings,
+      @JsonProperty(PROP_CHECK_LOCAL_IP_ON_ACCEPT) @Nullable Boolean checkLocalIpOnAccept,
       @JsonProperty(PROP_CLUSTER_ID) @Nullable Long clusterId,
       @JsonProperty(PROP_CONFEDERATION_AS) @Nullable Long confederation,
       @JsonProperty(PROP_DEFAULT_METRIC) int defaultMetric,
@@ -44,6 +45,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     return new BgpActivePeerConfig(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -64,6 +66,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   private BgpActivePeerConfig(
       @Nullable RibGroup appliedRibGroup,
       @Nullable BgpAuthenticationSettings authenticationSettings,
+      @Nullable Boolean checkLocalIpOnAccept,
       @Nullable Long clusterId,
       @Nullable Long confederation,
       int defaultMetric,
@@ -82,6 +85,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     super(
         appliedRibGroup,
         authenticationSettings,
+        checkLocalIpOnAccept,
         clusterId,
         confederation,
         defaultMetric,
@@ -134,7 +138,7 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   }
 
   public static class Builder extends BgpPeerConfig.Builder<Builder, BgpActivePeerConfig> {
-    @Nullable private Ip _peerAddress;
+    private @Nullable Ip _peerAddress;
 
     protected Builder() {
       super();
@@ -146,12 +150,12 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
     }
 
     @Override
-    @Nonnull
-    public BgpActivePeerConfig build() {
+    public @Nonnull BgpActivePeerConfig build() {
       BgpActivePeerConfig bgpPeerConfig =
           new BgpActivePeerConfig(
               _appliedRibGroup,
               _authenticationSettings,
+              _checkLocalIpOnAccept,
               _clusterId,
               _confederation,
               _defaultMetric,

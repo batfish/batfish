@@ -46,9 +46,9 @@ public class AwsPrefixes {
   @ParametersAreNonnullByDefault
   static class AwsPrefix {
 
-    @Nonnull private final Prefix _prefix;
+    private final @Nonnull Prefix _prefix;
 
-    @Nonnull private final String _serviceName;
+    private final @Nonnull String _serviceName;
 
     @JsonCreator
     private static AwsPrefix create(
@@ -64,13 +64,11 @@ public class AwsPrefixes {
       _serviceName = serviceName;
     }
 
-    @Nonnull
-    public Prefix getPrefix() {
+    public @Nonnull Prefix getPrefix() {
       return _prefix;
     }
 
-    @Nonnull
-    public String getServiceName() {
+    public @Nonnull String getServiceName() {
       return _serviceName;
     }
   }

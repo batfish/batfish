@@ -20,9 +20,9 @@ public class OspfProcess implements Serializable {
   public static final long MAX_METRIC_ROUTER_LSA = 0xFFFFL;
 
   private final Map<Long, OspfArea> _areas;
-  @Nullable private OspfDefaultInformationOriginate _defaultInformationOriginate;
+  private @Nullable OspfDefaultInformationOriginate _defaultInformationOriginate;
   private Long _defaultMetric;
-  @Nullable private DistributeList _distributeListOut;
+  private @Nullable DistributeList _distributeListOut;
   private Long _maxMetricExternalLsa;
   private boolean _maxMetricIncludeStub;
   private boolean _maxMetricRouterLsa;
@@ -69,8 +69,7 @@ public class OspfProcess implements Serializable {
     return _defaultMetric;
   }
 
-  @Nullable
-  public DistributeList getDistributeListOut() {
+  public @Nullable DistributeList getDistributeListOut() {
     return _distributeListOut;
   }
 

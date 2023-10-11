@@ -336,7 +336,11 @@ public final class AsaConfiguration extends VendorConfiguration {
 
   public static final String MANAGEMENT_VRF_NAME = "management";
 
-  static final int MAX_ADMINISTRATIVE_COST = 32767;
+  // https://www.cisco.com/c/en/us/td/docs/security/asa/asa910/configuration/general/asa-910-general-config/route-static.html
+  // The distance argument is the administrative distance for the route, between 1 and 254.
+  // 2023-09-22 dhalperi@: seems like we should allow 255, which is likely in some cases.
+  // TODO: disallow 255 for some CLI commands that don't allow it.
+  static final int MAX_ADMINISTRATIVE_COST = 255;
 
   public static final String MANAGEMENT_INTERFACE_PREFIX = "mgmt";
 
@@ -842,8 +846,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     return _routeMaps;
   }
 
-  @Nullable
-  private String getASASecurityLevelZoneName(Interface iface) {
+  private @Nullable String getASASecurityLevelZoneName(Interface iface) {
     Integer level = iface.getSecurityLevel();
     if (level == null) {
       return null;
@@ -903,7 +906,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       }
     } else {
       if (lpg instanceof DynamicIpBgpPeerGroup) {
-        updateSource = Ip.AUTO;
+        updateSource = null;
       } else {
         Ip neighborAddress = lpg.getNeighborPrefix().getStartIp();
         for (org.batfish.datamodel.Interface iface : c.getAllInterfaces(vrfName).values()) {
@@ -1728,8 +1731,8 @@ public final class AsaConfiguration extends VendorConfiguration {
     return String.format("~EIGRP_EXPORT_POLICY_%s_%s_%s~", vrfName, asn, ifaceName);
   }
 
-  @Nonnull
-  private EigrpMetric computeEigrpMetricForInterface(Interface iface, EigrpProcessMode mode) {
+  private @Nonnull EigrpMetric computeEigrpMetricForInterface(
+      Interface iface, EigrpProcessMode mode) {
     Long bw =
         Stream.of(
                 iface.getBandwidth(),
@@ -1886,8 +1889,7 @@ public final class AsaConfiguration extends VendorConfiguration {
    * have an inbound ACL. Note: this could be shared among out-interfaces in the same security
    * level, but for now we're recomputing it for each one.
    */
-  @Nonnull
-  private List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
+  private @Nonnull List<ExprAclLine> getAsaInterSecurityLevelDenyAclLines(int level) {
     return _interfacesBySecurityLevel.keySet().stream()
         .filter(l -> l < level)
         .map(
@@ -3054,7 +3056,7 @@ public final class AsaConfiguration extends VendorConfiguration {
       Tunnel tunnel = iface.getTunnel();
       if (iface.getActive() && tunnel != null && tunnel.getMode() == TunnelMode.IPSEC_IPV4) {
         if (tunnel.getIpsecProfileName() == null) {
-          _w.redFlag(String.format("No IPSec Profile set for IPSec tunnel %s", name));
+          _w.redFlagf("No IPSec Profile set for IPSec tunnel %s", name);
           continue;
         }
         // convert to IpsecPeerConfig
@@ -3434,8 +3436,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     return ImmutableList.of(c);
   }
 
-  @Nonnull
-  private org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
+  private @Nonnull org.batfish.datamodel.BgpProcess.Builder bgpProcessBuilder() {
     return org.batfish.datamodel.BgpProcess.builder()
         .setEbgpAdminCost(DEFAULT_EBGP_ADMIN)
         .setIbgpAdminCost(DEFAULT_IBGP_ADMIN)

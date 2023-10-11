@@ -28,15 +28,15 @@ public final class AddressObject implements Serializable {
     PREFIX
   }
 
-  @Nullable private String _description;
-  @Nonnull private final String _name;
-  @Nonnull private final Set<String> _tags;
-  @Nullable private Type _type;
+  private @Nullable String _description;
+  private final @Nonnull String _name;
+  private final @Nonnull Set<String> _tags;
+  private @Nullable Type _type;
 
   // Only one can be set
-  @Nullable private Ip _ip;
-  @Nullable private Range<Ip> _ipRange;
-  @Nullable private IpPrefix _prefix;
+  private @Nullable Ip _ip;
+  private @Nullable Range<Ip> _ipRange;
+  private @Nullable IpPrefix _prefix;
 
   public AddressObject(String name) {
     _name = name;
@@ -49,13 +49,11 @@ public final class AddressObject implements Serializable {
     _prefix = null;
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nonnull
-  public IpSpace getIpSpace() {
+  public @Nonnull IpSpace getIpSpace() {
     if (_ip != null) {
       return _ip.toIpSpace();
     } else if (_prefix != null) {
@@ -72,8 +70,7 @@ public final class AddressObject implements Serializable {
    * Convert this address object into a {@link ConcreteInterfaceAddress} if possible. For some types
    * of address objects this is not possible and returns {@code null} instead.
    */
-  @Nullable
-  public ConcreteInterfaceAddress toConcreteInterfaceAddress(Warnings w) {
+  public @Nullable ConcreteInterfaceAddress toConcreteInterfaceAddress(Warnings w) {
     if (_ip != null) {
       return ConcreteInterfaceAddress.create(_ip, Prefix.MAX_PREFIX_LENGTH);
     } else if (_prefix != null) {
@@ -88,8 +85,7 @@ public final class AddressObject implements Serializable {
   }
 
   /** Returns all addresses owned by this address object as an IP {@link RangeSet}. */
-  @Nonnull
-  public RangeSet<Ip> getAddressAsRangeSet() {
+  public @Nonnull RangeSet<Ip> getAddressAsRangeSet() {
     if (_ip != null) {
       return ImmutableRangeSet.of(Range.singleton(_ip));
     } else if (_prefix != null) {
@@ -101,13 +97,11 @@ public final class AddressObject implements Serializable {
     return ImmutableRangeSet.of();
   }
 
-  @Nullable
-  public Ip getIp() {
+  public @Nullable Ip getIp() {
     return _ip;
   }
 
-  @Nullable
-  public Range<Ip> getIpRange() {
+  public @Nullable Range<Ip> getIpRange() {
     return _ipRange;
   }
 
@@ -115,23 +109,19 @@ public final class AddressObject implements Serializable {
    * Get {@link IpPrefix} for this address, if it exists. This can be used for specifying an
    * interface address, so it preserves the initial (not canonical) base ip address.
    */
-  @Nullable
-  public IpPrefix getIpPrefix() {
+  public @Nullable IpPrefix getIpPrefix() {
     return _prefix;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
-  public Set<String> getTags() {
+  public @Nonnull Set<String> getTags() {
     return _tags;
   }
 
-  @Nullable
-  public Type getType() {
+  public @Nullable Type getType() {
     return _type;
   }
 

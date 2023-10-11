@@ -27,7 +27,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static final class CidrBlock {
-    @Nonnull private final Prefix _cidrBlock;
+    private final @Nonnull Prefix _cidrBlock;
 
     @JsonCreator
     private static CidrBlock create(@Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock) {
@@ -48,9 +48,9 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static final class VpcInfo {
-    @Nonnull private final String _vpcId;
+    private final @Nonnull String _vpcId;
 
-    @Nonnull private final List<Prefix> _cidrBlocks;
+    private final @Nonnull List<Prefix> _cidrBlocks;
 
     @JsonCreator
     private static VpcInfo create(
@@ -81,15 +81,15 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nonnull private final List<Prefix> _accepterVpcCidrBlock;
+  private final @Nonnull List<Prefix> _accepterVpcCidrBlock;
 
-  @Nonnull private final String _accepterVpcId;
+  private final @Nonnull String _accepterVpcId;
 
-  @Nonnull private final List<Prefix> _requesterVpcCidrBlock;
+  private final @Nonnull List<Prefix> _requesterVpcCidrBlock;
 
-  @Nonnull private final String _requesterVpcId;
+  private final @Nonnull String _requesterVpcId;
 
-  @Nonnull private final String _vpcPeeringConnectionId;
+  private final @Nonnull String _vpcPeeringConnectionId;
 
   @JsonCreator
   private static VpcPeeringConnection create(

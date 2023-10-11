@@ -8,21 +8,19 @@ import org.batfish.datamodel.Prefix;
 
 /** Config for dynamic BGP neighbors (created using "bgp listen range") */
 public class AristaBgpV4DynamicNeighbor extends AristaBgpNeighbor implements AristaBgpHasPeerGroup {
-  @Nonnull private final Prefix _range;
-  @Nullable private String _peerFilter;
-  @Nullable private String _peerGroup;
+  private final @Nonnull Prefix _range;
+  private @Nullable String _peerFilter;
+  private @Nullable String _peerGroup;
 
   public AristaBgpV4DynamicNeighbor(@Nonnull Prefix range) {
     _range = range;
   }
 
-  @Nonnull
-  public Prefix getRange() {
+  public @Nonnull Prefix getRange() {
     return _range;
   }
 
-  @Nullable
-  public String getPeerFilter() {
+  public @Nullable String getPeerFilter() {
     return _peerFilter;
   }
 
@@ -32,8 +30,7 @@ public class AristaBgpV4DynamicNeighbor extends AristaBgpNeighbor implements Ari
   }
 
   @Override
-  @Nullable
-  public String getPeerGroup() {
+  public @Nullable String getPeerGroup() {
     return _peerGroup;
   }
 

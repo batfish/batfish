@@ -24,9 +24,9 @@ public final class TransitGatewayConverter {
   /* Transit Gateway with metadata about which account and region it came from. Required for conversion */
   @VisibleForTesting
   static final class TransitGatewayWithMetadata {
-    @Nonnull private TransitGateway _gateway;
-    @Nonnull private Region _region;
-    @Nonnull private String _accountId;
+    private @Nonnull TransitGateway _gateway;
+    private @Nonnull Region _region;
+    private @Nonnull String _accountId;
 
     @VisibleForTesting
     TransitGatewayWithMetadata(TransitGateway gateway, Region region, String accountId) {
@@ -43,13 +43,11 @@ public final class TransitGatewayConverter {
       return _gateway.getId();
     }
 
-    @Nonnull
-    public TransitGateway getGateway() {
+    public @Nonnull TransitGateway getGateway() {
       return _gateway;
     }
 
-    @Nonnull
-    public Region getRegion() {
+    public @Nonnull Region getRegion() {
       return _region;
     }
   }
@@ -118,8 +116,7 @@ public final class TransitGatewayConverter {
   }
 
   @VisibleForTesting
-  @Nullable
-  static TransitGatewayWithMetadata findOriginalGateway(
+  static @Nullable TransitGatewayWithMetadata findOriginalGateway(
       Collection<TransitGatewayWithMetadata> tgws) {
     checkArgument(!tgws.isEmpty());
     checkArgument(

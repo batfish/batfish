@@ -17,13 +17,13 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 final class CustomerGateway implements AwsVpcEntity, Serializable {
 
-  @Nonnull private final String _bgpAsn;
+  private final @Nonnull String _bgpAsn;
 
-  @Nonnull private final String _customerGatewayId;
+  private final @Nonnull String _customerGatewayId;
 
-  @Nonnull private final Ip _ipAddress;
+  private final @Nonnull Ip _ipAddress;
 
-  @Nonnull private final String _type;
+  private final @Nonnull String _type;
 
   @JsonCreator
   private static CustomerGateway create(
@@ -46,13 +46,11 @@ final class CustomerGateway implements AwsVpcEntity, Serializable {
     _bgpAsn = bgpAsn;
   }
 
-  @Nonnull
-  public String getBgpAsn() {
+  public @Nonnull String getBgpAsn() {
     return _bgpAsn;
   }
 
-  @Nonnull
-  public String getCustomerGatewayId() {
+  public @Nonnull String getCustomerGatewayId() {
     return _customerGatewayId;
   }
 
@@ -61,13 +59,11 @@ final class CustomerGateway implements AwsVpcEntity, Serializable {
     return _customerGatewayId;
   }
 
-  @Nonnull
-  public Ip getIpAddress() {
+  public @Nonnull Ip getIpAddress() {
     return _ipAddress;
   }
 
-  @Nonnull
-  public String getType() {
+  public @Nonnull String getType() {
     return _type;
   }
 

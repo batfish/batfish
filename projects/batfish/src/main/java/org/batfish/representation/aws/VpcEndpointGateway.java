@@ -134,7 +134,7 @@ public final class VpcEndpointGateway extends VpcEndpoint {
             .findAny();
 
     if (!prefixList.isPresent()) {
-      warnings.redFlag(String.format("Prefix list not found for VPC endpoint %s", serviceName));
+      warnings.redFlagf("Prefix list not found for VPC endpoint %s", serviceName);
       return ImmutableList.of();
     }
 

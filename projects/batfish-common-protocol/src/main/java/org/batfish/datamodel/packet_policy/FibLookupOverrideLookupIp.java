@@ -35,9 +35,9 @@ public final class FibLookupOverrideLookupIp implements Action {
   private static final String PROP_REQUIRE_CONNECTED = "requireConnected";
   private static final String PROP_VRF_EXPR = "vrfExpr";
 
-  @Nonnull private final List<Ip> _ips;
-  @Nonnull private final VrfExpr _vrfExpr;
-  @Nonnull private final Action _defaultAction;
+  private final @Nonnull List<Ip> _ips;
+  private final @Nonnull VrfExpr _vrfExpr;
+  private final @Nonnull Action _defaultAction;
   private final boolean _requireConnected;
 
   private FibLookupOverrideLookupIp(
@@ -131,40 +131,35 @@ public final class FibLookupOverrideLookupIp implements Action {
   }
 
   public static final class Builder {
-    @Nullable private List<Ip> _ips;
-    @Nullable private VrfExpr _vrfExpr;
-    @Nullable private Action _defaultAction;
+    private @Nullable List<Ip> _ips;
+    private @Nullable VrfExpr _vrfExpr;
+    private @Nullable Action _defaultAction;
     // This is the common case: next hop needs to be directly connected
     private boolean _requireConnected = true;
 
     private Builder() {}
 
-    @Nonnull
-    public Builder setIps(List<Ip> ips) {
+    public @Nonnull Builder setIps(List<Ip> ips) {
       _ips = ips;
       return this;
     }
 
-    @Nonnull
-    public Builder setVrfExpr(VrfExpr vrfExpr) {
+    public @Nonnull Builder setVrfExpr(VrfExpr vrfExpr) {
       _vrfExpr = vrfExpr;
       return this;
     }
 
-    @Nonnull
-    public Builder setDefaultAction(Action defaultAction) {
+    public @Nonnull Builder setDefaultAction(Action defaultAction) {
       _defaultAction = defaultAction;
       return this;
     }
 
-    @Nonnull
-    public Builder setRequireConnected(boolean requireConnected) {
+    public @Nonnull Builder setRequireConnected(boolean requireConnected) {
       _requireConnected = requireConnected;
       return this;
     }
 
-    @Nonnull
-    public FibLookupOverrideLookupIp build() {
+    public @Nonnull FibLookupOverrideLookupIp build() {
       checkArgument(_ips != null, "Missing %s", PROP_IPS);
       checkArgument(_vrfExpr != null, "Missing %s", PROP_VRF_EXPR);
       checkArgument(_defaultAction != null, "Missing %s", PROP_DEFAULT_ACTION);

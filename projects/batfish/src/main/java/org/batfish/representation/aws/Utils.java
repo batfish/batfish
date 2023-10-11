@@ -199,8 +199,7 @@ public final class Utils {
    *     "icmpv6", "-1" or protocol numbers ranging 0-255.
    * @return {@link IpProtocol} or {@code null} parsed from the protocol string
    */
-  @Nullable
-  public static IpProtocol toIpProtocol(String ipProtocolAsString) {
+  public static @Nullable IpProtocol toIpProtocol(String ipProtocolAsString) {
     switch (ipProtocolAsString) {
       case "tcp":
         return IpProtocol.TCP;
@@ -237,34 +236,30 @@ public final class Utils {
     vrf.getStaticRoutes().add(staticRoute);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
+  static @Nonnull StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp) {
     return toStaticRoute(targetPrefix, nextHopIp, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
+  static @Nonnull StaticRoute toStaticRoute(
+      Prefix targetPrefix, Ip nextHopIp, boolean nonForwarding) {
     return toStaticRoute(targetPrefix, null, nextHopIp, nonForwarding);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
+  static @Nonnull StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, null, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(
+  static @Nonnull StaticRoute toStaticRoute(
       Prefix targetPrefix, String nextHopInterfaceName, boolean nonForwarding) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, null, nonForwarding);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
+  static @Nonnull StaticRoute toStaticRoute(
+      Prefix targetPrefix, String nextHopInterfaceName, Ip nextHopIp) {
     return toStaticRoute(targetPrefix, nextHopInterfaceName, nextHopIp, false);
   }
 
-  @Nonnull
-  static StaticRoute toStaticRoute(
+  static @Nonnull StaticRoute toStaticRoute(
       Prefix targetPrefix,
       @Nullable String nextHopInterfaceName,
       @Nullable Ip nextHopIp,
@@ -327,8 +322,7 @@ public final class Utils {
    *
    * @retruns The Interface on the gateway for the new link or null if the VPC is not found.
    */
-  @Nullable
-  static Interface connectGatewayToVpc(
+  static @Nullable Interface connectGatewayToVpc(
       String gatewayId,
       Configuration gatewayCfg,
       String vpcId,
@@ -338,20 +332,19 @@ public final class Utils {
 
     Vpc vpc = region.getVpcs().get(vpcId);
     if (vpc == null) {
-      warnings.redFlag(
-          String.format("VPC with id %s not found in region %s", vpcId, region.getName()));
+      warnings.redFlagf("VPC with id %s not found in region %s", vpcId, region.getName());
       return null;
     }
 
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
-      warnings.redFlag(String.format("Configuration for VPC with id %s not found", vpcId));
+      warnings.redFlagf("Configuration for VPC with id %s not found", vpcId);
       return null;
     }
 
     String vrfNameOnVpc = Vpc.vrfNameForLink(gatewayId);
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, vpcId);
       return null;
     }
 
@@ -416,8 +409,7 @@ public final class Utils {
    * Returns the IP address of the interface with name {@code ifaceName} in {@code configuration}.
    * Throws an exception if the interface is not present or does not have an assigned address
    */
-  @Nonnull
-  static Ip getInterfaceLinkLocalIp(Configuration configuration, String ifaceName) {
+  static @Nonnull Ip getInterfaceLinkLocalIp(Configuration configuration, String ifaceName) {
     InterfaceAddress ifaceAddress = getInterfaceAddress(configuration, ifaceName);
     if (ifaceAddress instanceof LinkLocalAddress) {
       return ((LinkLocalAddress) ifaceAddress).getIp();
@@ -475,8 +467,7 @@ public final class Utils {
     }
     Set<ConcreteInterfaceAddress> ifaceAddresses = ifaceAddressesBuilder.build();
     if (ifaceAddresses.isEmpty()) {
-      warnings.redFlag(
-          String.format("No valid address found for interface '%s'", netInterface.getId()));
+      warnings.redFlagf("No valid address found for interface '%s'", netInterface.getId());
     }
     @Nullable
     ConcreteInterfaceAddress primaryAddress =

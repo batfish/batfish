@@ -5,6 +5,7 @@ import static org.batfish.datamodel.BgpRoute.PROP_AS_PATH;
 import static org.batfish.datamodel.BgpRoute.PROP_COMMUNITIES;
 import static org.batfish.datamodel.BgpRoute.PROP_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
+import static org.batfish.datamodel.questions.BgpRoute.PROP_ADMINISTRATIVE_DISTANCE;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_NEXT_HOP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGINATOR_IP;
 import static org.batfish.datamodel.questions.BgpRoute.PROP_ORIGIN_TYPE;
@@ -102,9 +103,17 @@ public class BgpRouteDiffTest {
     assertThat(
         routeDiffs(route1, route2).getDiffs(), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
 
+    // change administrative distance
+    route1 = builder().setAdminDist(1).build();
+    route2 = builder().setAdminDist(2).build();
+    assertThat(
+        routeDiffs(route1, route2).getDiffs(),
+        contains(new BgpRouteDiff(PROP_ADMINISTRATIVE_DISTANCE, "1", "2")));
+
     // change all properties
     route1 =
         builder()
+            .setAdminDist(1)
             .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)))
             .setLocalPreference(1)
@@ -117,6 +126,7 @@ public class BgpRouteDiffTest {
             .build();
     route2 =
         builder()
+            .setAdminDist(2)
             .setAsPath(AsPath.ofSingletonAsSets(2L, 3L))
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2L), StandardCommunity.of(3L)))
             .setLocalPreference(2)
@@ -131,6 +141,7 @@ public class BgpRouteDiffTest {
     assertThat(
         routeDiffs(route1, route2).getDiffs(),
         containsInAnyOrder(
+            new BgpRouteDiff(PROP_ADMINISTRATIVE_DISTANCE, "1", "2"),
             new BgpRouteDiff(PROP_AS_PATH, "[1, 2]", "[2, 3]"),
             new BgpRouteDiff(PROP_COMMUNITIES, "[0:1, 0:2]", "[0:2, 0:3]"),
             new BgpRouteDiff(PROP_LOCAL_PREFERENCE, "1", "2"),

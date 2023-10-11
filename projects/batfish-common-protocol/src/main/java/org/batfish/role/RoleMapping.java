@@ -30,15 +30,15 @@ public class RoleMapping {
   private static final String PROP_CANONICAL_ROLE_NAMES = "canonicalRoleNames";
 
   // a name for this mapping
-  @Nullable private String _name;
+  private @Nullable String _name;
   // the regular expression that induces this role mapping on node names
-  @Nonnull private String _regex;
+  private @Nonnull String _regex;
   /* a map from each role dimension name to the list of regex groups
   that signify the role name for that dimension */
-  @Nonnull private Map<String, List<Integer>> _roleDimensionGroups;
+  private @Nonnull Map<String, List<Integer>> _roleDimensionGroups;
   /* for each role dimension, a map from the default role name that was
   obtained from the node name to a canonical role name */
-  @Nonnull private Map<String, Map<String, String>> _canonicalRoleNames;
+  private @Nonnull Map<String, Map<String, String>> _canonicalRoleNames;
 
   @JsonCreator
   public RoleMapping(
@@ -60,26 +60,22 @@ public class RoleMapping {
   }
 
   @JsonProperty(PROP_CANONICAL_ROLE_NAMES)
-  @Nonnull
-  public Map<String, Map<String, String>> getCanonicalRoleNames() {
+  public @Nonnull Map<String, Map<String, String>> getCanonicalRoleNames() {
     return _canonicalRoleNames;
   }
 
   @JsonProperty(PROP_NAME)
-  @Nonnull
-  public Optional<String> getName() {
+  public @Nonnull Optional<String> getName() {
     return Optional.ofNullable(_name);
   }
 
   @JsonProperty(PROP_ROLE_DIMENSION_GROUPS)
-  @Nonnull
-  public Map<String, List<Integer>> getRoleDimensionsGroups() {
+  public @Nonnull Map<String, List<Integer>> getRoleDimensionsGroups() {
     return _roleDimensionGroups;
   }
 
   @JsonProperty(PROP_REGEX)
-  @Nonnull
-  public String getRegex() {
+  public @Nonnull String getRegex() {
     return _regex;
   }
 

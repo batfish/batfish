@@ -69,8 +69,8 @@ public final class Annotate {
                     settings))));
   }
 
-  @Nonnull
-  private static Map<Path, String> annotate(Map<Path, String> inputData, Settings settings) {
+  private static @Nonnull Map<Path, String> annotate(
+      Map<Path, String> inputData, Settings settings) {
     // For each (path, text) in inputData, return an entry (path, annotated text).
     Map<Path, String> outputData = new ConcurrentHashMap<>(inputData.size());
     inputData.entrySet().parallelStream()
@@ -86,8 +86,8 @@ public final class Annotate {
   }
 
   /** Return annotated input text, or {@code null} if there is an error. */
-  @Nullable
-  private static String annotateText(Path inputFile, String inputText, Settings settings) {
+  private static @Nullable String annotateText(
+      Path inputFile, String inputText, Settings settings) {
     LOGGER.debug("Preprocessing: {}", inputFile);
     // preprocess the input text
     String preprocessedText;
@@ -124,8 +124,7 @@ public final class Annotate {
         getCommentHeader(parseResult.getConfigurationFormat()));
   }
 
-  @Nonnull
-  private static String annotatePreprocessedFile(
+  private static @Nonnull String annotatePreprocessedFile(
       String inputText,
       SilentSyntaxCollection silentSyntax,
       Warnings warnings,
@@ -154,8 +153,7 @@ public final class Annotate {
   }
 
   @VisibleForTesting
-  @Nonnull
-  static String printElem(String commentHeader, SilentSyntaxElem silentSyntaxElem) {
+  static @Nonnull String printElem(String commentHeader, SilentSyntaxElem silentSyntaxElem) {
     // TODO: optional extra debug information
     return String.format(
         "%s SILENTLY IGNORED: %s\n", commentHeader, silentSyntaxElem.getText().trim());
@@ -178,8 +176,7 @@ public final class Annotate {
 
   private static final Logger LOGGER = LogManager.getLogger(Annotate.class);
 
-  @Nonnull
-  private static String getCommentHeader(ConfigurationFormat format) {
+  private static @Nonnull String getCommentHeader(ConfigurationFormat format) {
     switch (format) {
       case F5:
       case F5_BIGIP_STRUCTURED:

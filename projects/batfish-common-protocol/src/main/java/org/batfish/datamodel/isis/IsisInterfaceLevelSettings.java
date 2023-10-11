@@ -98,17 +98,17 @@ public class IsisInterfaceLevelSettings implements Serializable {
         firstNonNull(mode, UNSET));
   }
 
-  @Nullable private final Long _cost;
+  private final @Nullable Long _cost;
 
-  @Nullable private final String _helloAuthenticationKey;
+  private final @Nullable String _helloAuthenticationKey;
 
-  @Nullable private final IsisHelloAuthenticationType _helloAuthenticationType;
+  private final @Nullable IsisHelloAuthenticationType _helloAuthenticationType;
 
-  @Nullable private final Integer _helloInterval;
+  private final @Nullable Integer _helloInterval;
 
-  @Nullable private final Integer _holdTime;
+  private final @Nullable Integer _holdTime;
 
-  @Nonnull private final IsisInterfaceMode _mode;
+  private final @Nonnull IsisInterfaceMode _mode;
 
   private IsisInterfaceLevelSettings(
       @Nullable Long cost,

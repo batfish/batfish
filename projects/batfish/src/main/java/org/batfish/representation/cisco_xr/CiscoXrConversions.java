@@ -383,7 +383,7 @@ public class CiscoXrConversions {
     // undefined -> null for best effort on invalid config
     String routePolicy = vsAggregate.getRoutePolicy();
     if (routePolicy != null && !c.getRoutingPolicies().containsKey(routePolicy)) {
-      w.redFlag(String.format("Ignoring undefined aggregate-address route-policy %s", routePolicy));
+      w.redFlagf("Ignoring undefined aggregate-address route-policy %s", routePolicy);
       routePolicy = null;
     }
     // TODO: handle as-set by generating generation policy wrapping route-policy
@@ -843,8 +843,7 @@ public class CiscoXrConversions {
    * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
    * in the given configuration's routing policies.
    */
-  @Nullable
-  static String generateBgpImportPolicy(
+  static @Nullable String generateBgpImportPolicy(
       LeafBgpPeerGroup lpg, long localAs, String vrfName, Configuration c) {
     // TODO Support filter-list
     // https://www.cisco.com/c/en/us/support/docs/ip/border-gateway-protocol-bgp/5816-bgpfaq-5816.html
@@ -1130,7 +1129,7 @@ public class CiscoXrConversions {
               "Invalid local address interface configured for ISAKMP profile %s",
               isakmpProfileName));
     } else if (isakmpProfile.getKeyring() == null) {
-      w.redFlag(String.format("Keyring not set for ISAKMP profile %s", isakmpProfileName));
+      w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
       w.redFlag(
           String.format(
@@ -1349,8 +1348,7 @@ public class CiscoXrConversions {
    * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
-  @Nullable
-  static IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
+  static @Nullable IpAccessList createAclWithSymmetricalLines(IpAccessList ipAccessList) {
     List<AclLine> aclLines = new ArrayList<>(ipAccessList.getLines());
 
     for (AclLine line : ipAccessList.getLines()) {
@@ -1456,8 +1454,7 @@ public class CiscoXrConversions {
    * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
    * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
    */
-  @Nullable
-  private static String getIkePhase1Policy(
+  private static @Nullable String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
@@ -1510,8 +1507,7 @@ public class CiscoXrConversions {
     return ipsecPhase2Policy;
   }
 
-  @Nullable
-  static org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
+  static @Nullable org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
       EigrpProcess proc, String vrfName, Configuration c, CiscoXrConfiguration oldConfig) {
     org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
         org.batfish.datamodel.eigrp.EigrpProcess.builder()
@@ -1563,8 +1559,7 @@ public class CiscoXrConversions {
   }
 
   /** Creates an {@link If} statement to allow EIGRP routes redistributed from supplied localAsn */
-  @Nonnull
-  private static If ifToAllowEigrpToOwnAsn(long localAsn) {
+  private static @Nonnull If ifToAllowEigrpToOwnAsn(long localAsn) {
     return new If(
         new Conjunction(
             ImmutableList.of(
@@ -1593,8 +1588,7 @@ public class CiscoXrConversions {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
-  private static If convertEigrpRedistributionPolicy(
+  private static @Nullable If convertEigrpRedistributionPolicy(
       EigrpRedistributionPolicy policy, EigrpProcess proc, CiscoXrConfiguration oldConfig) {
     RoutingProtocol protocol = policy.getSourceProtocol();
     // All redistribution must match the specified protocol.
@@ -1950,8 +1944,7 @@ public class CiscoXrConversions {
 
   /** Helper to convert CiscoXr VS OSPF network type to VI model type. */
   @VisibleForTesting
-  @Nullable
-  static org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
+  static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
       @Nullable OspfNetworkType type, Warnings warnings) {
     if (type == null) {
       // default is broadcast for all Ethernet interfaces
@@ -1968,8 +1961,7 @@ public class CiscoXrConversions {
       case POINT_TO_MULTIPOINT:
         return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
-        warnings.redFlag(
-            String.format("Conversion of CiscoXr OSPF network type '%s' is not handled.", type));
+        warnings.redFlagf("Conversion of CiscoXr OSPF network type '%s' is not handled.", type);
         return null;
     }
   }
@@ -2115,8 +2107,8 @@ public class CiscoXrConversions {
     return vrf.getVrfLeakConfig();
   }
 
-  @Nonnull
-  private static BgpVrfLeakConfig.Builder bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight() {
+  private static @Nonnull BgpVrfLeakConfig.Builder
+      bgpVrfLeakConfigBuilderWithDefaultAdminAndWeight() {
     return BgpVrfLeakConfig.builder()
         // TODO: input and honor result of 'bgp distance' command argument 3 (local BGP admin)
         .setAdmin(DEFAULT_EBGP_ADMIN)

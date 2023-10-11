@@ -482,7 +482,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private PaloAltoCombinedParser _parser;
   private final String _text;
   private final Warnings _w;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   /** Should file at most one warning about ignored application statements */
   private boolean _filedWarningApplicationStatementIgnored = false;
@@ -794,8 +794,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
-  @Nonnull
-  private Rulebase getRulebase() {
+  private @Nonnull Rulebase getRulebase() {
     Rulebase rulebase;
     if (_currentRuleScope == RulebaseId.DEFAULT) {
       rulebase = _currentVsys.getRulebase();
@@ -2676,8 +2675,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         .ifPresent(_currentNatRule::setActiveActiveDeviceBinding);
   }
 
-  @Nonnull
-  private Optional<NatRule.ActiveActiveDeviceBinding> toActiveActiveDeviceBinding(
+  private @Nonnull Optional<NatRule.ActiveActiveDeviceBinding> toActiveActiveDeviceBinding(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
     if (deviceBinding.PRIMARY() != null) {
       warn(ctx, "Batfish currently models this as active-active-device-binding both");

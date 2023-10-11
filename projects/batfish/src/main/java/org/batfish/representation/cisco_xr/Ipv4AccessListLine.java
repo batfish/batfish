@@ -14,15 +14,15 @@ public class Ipv4AccessListLine implements Serializable {
 
   public static class Builder {
 
-    @Nullable private LineAction _action;
-    @Nullable private AccessListAddressSpecifier _dstAddressSpecifier;
-    @Nullable private String _name;
-    @Nullable private Ipv4Nexthop _nexthop1;
-    @Nullable private Ipv4Nexthop _nexthop2;
-    @Nullable private Ipv4Nexthop _nexthop3;
-    @Nullable private AccessListServiceSpecifier _serviceSpecifier;
-    @Nullable private Long _seq;
-    @Nullable private AccessListAddressSpecifier _srcAddressSpecifier;
+    private @Nullable LineAction _action;
+    private @Nullable AccessListAddressSpecifier _dstAddressSpecifier;
+    private @Nullable String _name;
+    private @Nullable Ipv4Nexthop _nexthop1;
+    private @Nullable Ipv4Nexthop _nexthop2;
+    private @Nullable Ipv4Nexthop _nexthop3;
+    private @Nullable AccessListServiceSpecifier _serviceSpecifier;
+    private @Nullable Long _seq;
+    private @Nullable AccessListAddressSpecifier _srcAddressSpecifier;
 
     private Builder() {}
 
@@ -76,20 +76,19 @@ public class Ipv4AccessListLine implements Serializable {
     }
   }
 
-  @Nonnull
-  public static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 
   private final long _seq;
-  @Nonnull private final LineAction _action;
-  @Nonnull private final String _name;
-  @Nonnull private final AccessListAddressSpecifier _srcAddressSpecifier;
-  @Nonnull private final AccessListAddressSpecifier _dstAddressSpecifier;
-  @Nonnull private final AccessListServiceSpecifier _serviceSpecifier;
-  @Nullable private final Ipv4Nexthop _nexthop1;
-  @Nullable private final Ipv4Nexthop _nexthop2;
-  @Nullable private final Ipv4Nexthop _nexthop3;
+  private final @Nonnull LineAction _action;
+  private final @Nonnull String _name;
+  private final @Nonnull AccessListAddressSpecifier _srcAddressSpecifier;
+  private final @Nonnull AccessListAddressSpecifier _dstAddressSpecifier;
+  private final @Nonnull AccessListServiceSpecifier _serviceSpecifier;
+  private final @Nullable Ipv4Nexthop _nexthop1;
+  private final @Nullable Ipv4Nexthop _nexthop2;
+  private final @Nullable Ipv4Nexthop _nexthop3;
 
   private Ipv4AccessListLine(Builder builder) {
     _action = requireNonNull(builder._action);
@@ -103,38 +102,31 @@ public class Ipv4AccessListLine implements Serializable {
     _nexthop3 = builder._nexthop3;
   }
 
-  @Nonnull
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  @Nonnull
-  public AccessListAddressSpecifier getDestinationAddressSpecifier() {
+  public @Nonnull AccessListAddressSpecifier getDestinationAddressSpecifier() {
     return _dstAddressSpecifier;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
-  public Ipv4Nexthop getNexthop1() {
+  public @Nullable Ipv4Nexthop getNexthop1() {
     return _nexthop1;
   }
 
-  @Nullable
-  public Ipv4Nexthop getNexthop2() {
+  public @Nullable Ipv4Nexthop getNexthop2() {
     return _nexthop2;
   }
 
-  @Nullable
-  public Ipv4Nexthop getNexthop3() {
+  public @Nullable Ipv4Nexthop getNexthop3() {
     return _nexthop3;
   }
 
-  @Nonnull
-  public AccessListServiceSpecifier getServiceSpecifier() {
+  public @Nonnull AccessListServiceSpecifier getServiceSpecifier() {
     return _serviceSpecifier;
   }
 
@@ -142,8 +134,7 @@ public class Ipv4AccessListLine implements Serializable {
     return _seq;
   }
 
-  @Nonnull
-  public AccessListAddressSpecifier getSourceAddressSpecifier() {
+  public @Nonnull AccessListAddressSpecifier getSourceAddressSpecifier() {
     return _srcAddressSpecifier;
   }
 

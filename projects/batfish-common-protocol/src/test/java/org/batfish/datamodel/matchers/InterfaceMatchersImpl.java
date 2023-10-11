@@ -36,8 +36,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Integer featureValueOf(Interface actual) {
+    protected @Nullable Integer featureValueOf(Interface actual) {
       return actual.getAccessVlan();
     }
   }
@@ -186,8 +185,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected EigrpInterfaceSettings featureValueOf(Interface actual) {
+    protected @Nullable EigrpInterfaceSettings featureValueOf(Interface actual) {
       return actual.getEigrp();
     }
   }
@@ -198,8 +196,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Integer featureValueOf(Interface actual) {
+    protected @Nullable Integer featureValueOf(Interface actual) {
       return actual.getEncapsulationVlan();
     }
   }
@@ -260,8 +257,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Integer featureValueOf(Interface actual) {
+    protected @Nullable Integer featureValueOf(Interface actual) {
       return actual.getMlagId();
     }
   }
@@ -294,8 +290,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Integer featureValueOf(Interface actual) {
+    protected @Nullable Integer featureValueOf(Interface actual) {
       return actual.getNativeVlan();
     }
   }
@@ -472,8 +467,7 @@ final class InterfaceMatchersImpl {
     }
 
     @Override
-    @Nullable
-    protected Integer featureValueOf(Interface actual) {
+    protected @Nullable Integer featureValueOf(Interface actual) {
       return actual.getVlan();
     }
   }

@@ -48,24 +48,24 @@ public final class OspfProcess implements Serializable {
 
     private static final long DEFAULT_SUMMARY_DISCARD_METRIC = 0L;
 
-    @Nullable private Map<RoutingProtocol, Integer> _adminCosts;
-    @Nullable private String _exportPolicy;
-    @Nullable private Long _maxMetricExternalNetworks;
-    @Nullable private Long _maxMetricStubNetworks;
-    @Nullable private Long _maxMetricSummaryNetworks;
-    @Nullable private Long _maxMetricTransitLinks;
-    @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _neighborConfigs;
-    @Nullable private String _processId;
-    @Nullable private Supplier<String> _processIdGenerator;
-    @Nullable private Double _referenceBandwidth;
-    @Nullable private Vrf _vrf;
-    @Nullable private Map<Long, OspfArea> _areas;
-    @Nullable private Set<String> _exportPolicySources;
-    @Nullable private Set<GeneratedRoute> _generatedRoutes;
-    @Nullable private Boolean _rfc1583Compatible;
-    @Nullable private Ip _routerId;
-    @Nullable private Integer _summaryAdminCost;
-    @Nullable private Long _summaryDiscardMetric;
+    private @Nullable Map<RoutingProtocol, Integer> _adminCosts;
+    private @Nullable String _exportPolicy;
+    private @Nullable Long _maxMetricExternalNetworks;
+    private @Nullable Long _maxMetricStubNetworks;
+    private @Nullable Long _maxMetricSummaryNetworks;
+    private @Nullable Long _maxMetricTransitLinks;
+    private @Nonnull Map<OspfNeighborConfigId, OspfNeighborConfig> _neighborConfigs;
+    private @Nullable String _processId;
+    private @Nullable Supplier<String> _processIdGenerator;
+    private @Nullable Double _referenceBandwidth;
+    private @Nullable Vrf _vrf;
+    private @Nullable Map<Long, OspfArea> _areas;
+    private @Nullable Set<String> _exportPolicySources;
+    private @Nullable Set<GeneratedRoute> _generatedRoutes;
+    private @Nullable Boolean _rfc1583Compatible;
+    private @Nullable Ip _routerId;
+    private @Nullable Integer _summaryAdminCost;
+    private @Nullable Long _summaryDiscardMetric;
 
     private Builder(@Nullable Supplier<String> processIdGenerator) {
       // Default to Cisco IOS values
@@ -250,24 +250,25 @@ public final class OspfProcess implements Serializable {
     return new Builder(null);
   }
 
-  @Nonnull private final Map<RoutingProtocol, Integer> _adminCosts;
+  private final @Nonnull Map<RoutingProtocol, Integer> _adminCosts;
 
-  @Nonnull private Map<Long, OspfArea> _areas;
-  @Nullable private String _exportPolicy;
-  @Nonnull private Set<String> _exportPolicySources;
-  @Nonnull private Set<GeneratedRoute> _generatedRoutes;
-  @Nullable private Long _maxMetricExternalNetworks;
-  @Nullable private Long _maxMetricStubNetworks;
-  @Nullable private Long _maxMetricSummaryNetworks;
-  @Nullable private Long _maxMetricTransitLinks;
+  private @Nonnull Map<Long, OspfArea> _areas;
+  private @Nullable String _exportPolicy;
+  private @Nonnull Set<String> _exportPolicySources;
+  private @Nonnull Set<GeneratedRoute> _generatedRoutes;
+  private @Nullable Long _maxMetricExternalNetworks;
+  private @Nullable Long _maxMetricStubNetworks;
+  private @Nullable Long _maxMetricSummaryNetworks;
+  private @Nullable Long _maxMetricTransitLinks;
   private transient Map<IpLink, OspfNeighbor> _ospfNeighbors;
-  /** Mapping from interface name to an OSPF config */
-  @Nonnull private Map<OspfNeighborConfigId, OspfNeighborConfig> _ospfNeighborConfigs;
 
-  @Nonnull private final String _processId;
-  @Nonnull private Double _referenceBandwidth;
-  @Nullable private Boolean _rfc1583Compatible;
-  @Nonnull private Ip _routerId;
+  /** Mapping from interface name to an OSPF config */
+  private @Nonnull Map<OspfNeighborConfigId, OspfNeighborConfig> _ospfNeighborConfigs;
+
+  private final @Nonnull String _processId;
+  private @Nonnull Double _referenceBandwidth;
+  private @Nullable Boolean _rfc1583Compatible;
+  private @Nonnull Ip _routerId;
   private int _summaryAdminCost;
   private long _summaryDiscardMetric;
 
@@ -411,8 +412,7 @@ public final class OspfProcess implements Serializable {
    * into OSPF and how
    */
   @JsonProperty(PROP_EXPORT_POLICY)
-  @Nullable
-  public String getExportPolicy() {
+  public @Nullable String getExportPolicy() {
     return _exportPolicy;
   }
 

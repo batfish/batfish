@@ -33,7 +33,7 @@ final class IssueAggregation {
   static final class ParseWarningTriplet {
     final String _text;
     final String _parserContext;
-    @Nullable final String _comment;
+    final @Nullable String _comment;
 
     ParseWarningTriplet(ParseWarning w) {
       this(w.getText(), w.getParserContext(), w.getComment());
@@ -70,9 +70,9 @@ final class IssueAggregation {
    * numbers to allow useful aggregation.
    */
   static final class ErrorDetailsTriplet {
-    @Nullable final String _lineContent;
-    @Nullable final String _message;
-    @Nullable final String _parserContext;
+    final @Nullable String _lineContent;
+    final @Nullable String _message;
+    final @Nullable String _parserContext;
 
     ErrorDetailsTriplet(@Nonnull ErrorDetails details) {
       ParseExceptionContext pec = details.getParseExceptionContext();

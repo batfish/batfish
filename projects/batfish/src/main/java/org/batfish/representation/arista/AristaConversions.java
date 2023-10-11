@@ -118,8 +118,7 @@ import org.batfish.representation.arista.eos.AristaEosVxlan;
 @ParametersAreNonnullByDefault
 final class AristaConversions {
   /** Computes the router ID. */
-  @Nonnull
-  static Ip getBgpRouterId(
+  static @Nonnull Ip getBgpRouterId(
       AristaBgpVrf vrfConfig, String vrfName, Map<String, Interface> vrfInterfaces, Warnings w) {
     // If Router ID is configured in the VRF-Specific BGP config, it always wins.
     if (vrfConfig.getRouterId() != null) {
@@ -230,8 +229,7 @@ final class AristaConversions {
     // TODO: verify undefined attribute-map can be treated as omitted
     String attributeMap = vsAggregate.getAttributeMap();
     if (attributeMap != null && !c.getRoutingPolicies().containsKey(attributeMap)) {
-      w.redFlag(
-          String.format("Ignoring undefined aggregate-address attribute-map %s", attributeMap));
+      w.redFlagf("Ignoring undefined aggregate-address attribute-map %s", attributeMap);
       attributeMap = null;
     }
     return BgpAggregate.of(
@@ -242,8 +240,7 @@ final class AristaConversions {
         attributeMap);
   }
 
-  @Nonnull
-  static Map<Ip, BgpActivePeerConfig> getNeighbors(
+  static @Nonnull Map<Ip, BgpActivePeerConfig> getNeighbors(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -276,8 +273,7 @@ final class AristaConversions {
                             warnings)));
   }
 
-  @Nonnull
-  static Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
+  static @Nonnull Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -310,8 +306,7 @@ final class AristaConversions {
                             warnings)));
   }
 
-  @Nullable
-  private static Ip computeUpdateSource(
+  private static @Nullable Ip computeUpdateSource(
       String vrfName,
       Map<String, Interface> vrfInterfaces,
       Prefix prefix,
@@ -334,7 +329,7 @@ final class AristaConversions {
       }
       return address.getIp();
     } else if (dynamic) {
-      return Ip.AUTO;
+      return null;
     }
     Optional<Ip> firstMatchingInterfaceAddress =
         vrfInterfaces.values().stream()
@@ -369,8 +364,7 @@ final class AristaConversions {
     }
   }
 
-  @Nonnull
-  private static BgpPeerConfig toBgpNeighbor(
+  private static @Nonnull BgpPeerConfig toBgpNeighbor(
       Configuration c,
       Vrf vrf,
       BgpProcess proc,
@@ -786,8 +780,7 @@ final class AristaConversions {
         .map(ConcreteInterfaceAddress::getIp);
   }
 
-  @Nonnull
-  static Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
+  static @Nonnull Optional<Vrf> getVrfForVlan(Configuration c, int vlan) {
     return c.getVrfs().values().stream()
         .filter(vrf -> c.getAllInterfaces(vrf.getName()).containsKey(String.format("Vlan%d", vlan)))
         .findFirst();
@@ -801,8 +794,7 @@ final class AristaConversions {
     return String.format("BGP neighbor %s in vrf %s", prefix.toString(), v.getName());
   }
 
-  @Nonnull
-  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       ExpandedCommunityList ipCommunityListExpanded) {
     return CommunitySetAcl.acl(
         ipCommunityListExpanded.getLines().stream()
@@ -810,8 +802,7 @@ final class AristaConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  static CommunitySetMatchExpr toCommunitySetMatchExpr(
+  static @Nonnull CommunitySetMatchExpr toCommunitySetMatchExpr(
       StandardCommunityList ipCommunityListStandard) {
     return CommunitySetAcl.acl(
         ipCommunityListStandard.getLines().stream()
@@ -819,8 +810,8 @@ final class AristaConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  private static CommunitySetAclLine toCommunitySetAclLine(StandardCommunityListLine line) {
+  private static @Nonnull CommunitySetAclLine toCommunitySetAclLine(
+      StandardCommunityListLine line) {
     return new CommunitySetAclLine(
         line.getAction(),
         CommunitySetMatchAll.matchAll(
@@ -829,22 +820,21 @@ final class AristaConversions {
                 .collect(ImmutableSet.toImmutableSet())));
   }
 
-  @Nonnull
-  static CommunityMatchExpr toCommunityMatchExpr(ExpandedCommunityList ipCommunityListExpanded) {
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      ExpandedCommunityList ipCommunityListExpanded) {
     return CommunityAcl.acl(
         ipCommunityListExpanded.getLines().stream()
             .map(AristaConversions::toCommunityAclLine)
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  private static CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
+  private static @Nonnull CommunityAclLine toCommunityAclLine(ExpandedCommunityListLine line) {
     return new CommunityAclLine(
         line.getAction(), AristaConversions.toCommunityMatchRegex(line.getRegex()));
   }
 
-  @Nonnull
-  static CommunityMatchExpr toCommunityMatchExpr(StandardCommunityList ipCommunityListStandard) {
+  static @Nonnull CommunityMatchExpr toCommunityMatchExpr(
+      StandardCommunityList ipCommunityListStandard) {
     Set<Community> whitelist = new HashSet<>();
     Set<Community> blacklist = new HashSet<>();
     for (StandardCommunityListLine line : ipCommunityListStandard.getLines()) {
@@ -866,18 +856,15 @@ final class AristaConversions {
     return new CommunityIn(new LiteralCommunitySet(CommunitySet.of(whitelist)));
   }
 
-  @Nonnull
-  static CommunityMatchRegex toCommunityMatchRegex(String regex) {
+  static @Nonnull CommunityMatchRegex toCommunityMatchRegex(String regex) {
     return new CommunityMatchRegex(ColonSeparatedRendering.instance(), toJavaRegex(regex));
   }
 
-  @Nonnull
-  static CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
+  static @Nonnull CommunitySetAclLine toCommunitySetAclLine(ExpandedCommunityListLine line) {
     return new CommunitySetAclLine(line.getAction(), toMatchExpr(toJavaRegex(line.getRegex())));
   }
 
-  @Nonnull
-  static String toJavaRegex(String ciscoRegex) {
+  static @Nonnull String toJavaRegex(String ciscoRegex) {
     String withoutQuotes;
     if (ciscoRegex.charAt(0) == '"' && ciscoRegex.charAt(ciscoRegex.length() - 1) == '"') {
       withoutQuotes = ciscoRegex.substring(1, ciscoRegex.length() - 1);
@@ -888,8 +875,7 @@ final class AristaConversions {
     return output;
   }
 
-  @Nonnull
-  static CommunitySet toCommunitySet(StandardCommunityList list) {
+  static @Nonnull CommunitySet toCommunitySet(StandardCommunityList list) {
     return CommunitySet.of(
         list.getLines().stream()
             .filter(
@@ -898,14 +884,12 @@ final class AristaConversions {
             .collect(ImmutableList.toImmutableList()));
   }
 
-  @Nonnull
-  static CommunitySet toCommunitySet(ExpandedCommunityList list) {
+  static @Nonnull CommunitySet toCommunitySet(ExpandedCommunityList list) {
     // Cannot use expanded list for setting communities
     return CommunitySet.empty();
   }
 
-  @Nonnull
-  static Collection<RoutingProtocol> toOspfRedistributionProtocols(
+  static @Nonnull Collection<RoutingProtocol> toOspfRedistributionProtocols(
       RedistributionSourceProtocol protocol) {
     switch (protocol) {
       case BGP_ANY:

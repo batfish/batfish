@@ -67,34 +67,29 @@ public final class MatchSessionStep extends Step<MatchSessionStepDetail> {
      */
     @Deprecated
     @JsonProperty(PROP_INCOMING_INTERFACES)
-    @Nonnull
-    private Set<String> getIncomingInterfaces() {
+    private @Nonnull Set<String> getIncomingInterfaces() {
       return _sessionScope instanceof IncomingSessionScope
           ? ((IncomingSessionScope) _sessionScope).getIncomingInterfaces()
           : ImmutableSet.of();
     }
 
     @JsonProperty(PROP_SESSION_ACTION)
-    @Nonnull
-    public SessionAction getSessionAction() {
+    public @Nonnull SessionAction getSessionAction() {
       return _sessionAction;
     }
 
     @JsonProperty(PROP_SESSION_SCOPE)
-    @Nonnull
-    public SessionScope getSessionScope() {
+    public @Nonnull SessionScope getSessionScope() {
       return _sessionScope;
     }
 
     @JsonProperty(PROP_MATCH_CRITERIA)
-    @Nonnull
-    public SessionMatchExpr getMatchCriteria() {
+    public @Nonnull SessionMatchExpr getMatchCriteria() {
       return _matchCriteria;
     }
 
     @JsonProperty(PROP_TRANSFORMATION)
-    @Nonnull
-    public Set<FlowDiff> getTransformation() {
+    public @Nonnull Set<FlowDiff> getTransformation() {
       return _transformation;
     }
 

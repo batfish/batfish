@@ -1,7 +1,7 @@
 package org.batfish.job;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.collection.IsMapContaining.hasEntry;
+import static org.hamcrest.Matchers.hasEntry;
 
 import com.google.common.collect.ImmutableList;
 import java.util.SortedMap;

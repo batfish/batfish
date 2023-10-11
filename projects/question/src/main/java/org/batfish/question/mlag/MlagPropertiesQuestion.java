@@ -45,14 +45,12 @@ public final class MlagPropertiesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodeSpecInput() {
+  public @Nullable String getNodeSpecInput() {
     return _nodeSpecInput;
   }
 
   @JsonProperty(PROP_MLAG_IDS)
-  @Nullable
-  public String getMlagIdSpecInput() {
+  public @Nullable String getMlagIdSpecInput() {
     return _mlagIdSpecInput;
   }
 

@@ -6,5 +6,6 @@ public enum NxosMajorVersion {
   NXOS6,
   NXOS7,
   NXOS9,
+  NXOS10,
   UNKNOWN
 }

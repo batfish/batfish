@@ -31,8 +31,8 @@ public class RouteMap implements Serializable {
     _rules = new LinkedHashMap<>();
   }
 
-  @Nonnull private final String _name;
-  @Nullable private String _comments;
+  private final @Nonnull String _name;
+  private @Nullable String _comments;
   // Note: using LinkedHashMap here to preserve insertion order
-  @Nonnull private final Map<String, RouteMapRule> _rules;
+  private final @Nonnull Map<String, RouteMapRule> _rules;
 }

@@ -5,37 +5,23 @@ options {
 }
 
 ACTIVE: 'active:';
+DELETE: 'delete:';
+INACTIVE: 'inactive:';
+REPLACE: 'replace:';
 
-REPLACE
-:
-  'replace:'
-;
+CLOSE_BRACE: '}';
+CLOSE_BRACKET: ']';
+CLOSE_PAREN: ')';
 
-CLOSE_BRACE
-:
-   '}'
-;
-
-CLOSE_BRACKET
-:
-   ']'
-;
-
-CLOSE_PAREN
-:
-   ')'
-;
+OPEN_BRACE: '{';
+OPEN_BRACKET: '[';
+OPEN_PAREN: '(';
 
 // The start of a flat line
 START_FLAT_LINE
 :
-  F_WhitespaceChar* ('activate'|'deactivate'|'delete'|'insert'|'set')
+  F_WhitespaceChar* ('activate'|'deactivate'|'delete'|'insert'|'set') F_WhitespaceChar+
   {lastTokenType() == -1 || lastTokenType() == NEWLINE}? -> pushMode(M_FLAT_LINE)
-;
-
-INACTIVE
-:
-   'inactive:'
 ;
 
 // Handle Juniper-style and RANCID-header-style line comments, as well as end-of-line comments
@@ -55,24 +41,10 @@ MULTILINE_COMMENT
   }
 ;
 
-OPEN_BRACE
-:
-   '{'
-;
-
-OPEN_BRACKET
-:
-   '['
-;
-
-OPEN_PAREN
-:
-   '('
-;
 
 SEMICOLON
 :
-   ';' F_SECRET_DATA?
+   F_OMITTED? ';' F_SECRET_DATA?
 ;
 
 WORD
@@ -133,6 +105,10 @@ F_QuotedString
 :
    '"' ~'"'* '"'
 ;
+
+// This may appear before a semicolon if settings are present to hide certain secrets.
+// For example: set system login apply-flags omit
+F_OMITTED: '{ /* OMITTED */ }';
 
 // This may appear after a semicolon when there is a secret key in the file
 // Search for examples online.

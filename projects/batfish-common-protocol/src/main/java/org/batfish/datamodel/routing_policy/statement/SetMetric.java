@@ -16,7 +16,7 @@ import org.batfish.datamodel.routing_policy.expr.LongExpr;
 public final class SetMetric extends Statement {
   private static final String PROP_METRIC = "metric";
 
-  @Nonnull private final LongExpr _metric;
+  private final @Nonnull LongExpr _metric;
 
   @JsonCreator
   private static SetMetric jsonCreator(@Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
@@ -56,8 +56,7 @@ public final class SetMetric extends Statement {
   }
 
   @JsonProperty(PROP_METRIC)
-  @Nonnull
-  public LongExpr getMetric() {
+  public @Nonnull LongExpr getMetric() {
     return _metric;
   }
 

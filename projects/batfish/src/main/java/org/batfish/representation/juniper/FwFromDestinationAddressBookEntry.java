@@ -21,7 +21,7 @@ public final class FwFromDestinationAddressBookEntry implements FwFrom {
   private final AddressBook _globalAddressBook;
 
   // if zone is null, consult the global address book; o/w, the zone's address book
-  @Nullable final Zone _zone;
+  final @Nullable Zone _zone;
 
   public FwFromDestinationAddressBookEntry(
       Zone zone, AddressBook globalAddressBook, String addressBookEntryName) {
@@ -46,8 +46,7 @@ public final class FwFromDestinationAddressBookEntry implements FwFrom {
     String addressBookName = addressBook.getAddressBookName(_addressBookEntryName);
     IpSpace referencedIpSpace;
     if (addressBookName == null) {
-      w.redFlag(
-          String.format("Missing destination address-book entry '%s'", _addressBookEntryName));
+      w.redFlagf("Missing destination address-book entry '%s'", _addressBookEntryName);
       // match nothing
       referencedIpSpace = EmptyIpSpace.INSTANCE;
     } else {

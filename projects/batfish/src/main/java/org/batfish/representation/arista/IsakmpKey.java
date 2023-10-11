@@ -7,9 +7,9 @@ import org.batfish.datamodel.IpSpace;
 
 /** Stores the ISAKMP key which are not part of any keyring or RSA pub keys */
 public class IsakmpKey implements Serializable {
-  @Nonnull private IpSpace _address;
-  @Nonnull private String _key;
-  @Nonnull private IkeKeyType _ikeKeyType;
+  private @Nonnull IpSpace _address;
+  private @Nonnull String _key;
+  private @Nonnull IkeKeyType _ikeKeyType;
 
   public IsakmpKey(@Nonnull IpSpace address, @Nonnull String key, @Nonnull IkeKeyType ikeKeyType) {
     _address = address;
@@ -17,18 +17,15 @@ public class IsakmpKey implements Serializable {
     _ikeKeyType = ikeKeyType;
   }
 
-  @Nonnull
-  public IpSpace getAddress() {
+  public @Nonnull IpSpace getAddress() {
     return _address;
   }
 
-  @Nonnull
-  public String getKey() {
+  public @Nonnull String getKey() {
     return _key;
   }
 
-  @Nonnull
-  public IkeKeyType getIkeKeyType() {
+  public @Nonnull IkeKeyType getIkeKeyType() {
     return _ikeKeyType;
   }
 }

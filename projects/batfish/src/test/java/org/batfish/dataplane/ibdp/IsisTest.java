@@ -118,7 +118,6 @@ public class IsisTest {
    *
    * @param r1Level1Passive Whether to make IS-IS passive on level 1 of r1's interface to r2
    * @param r1Level2Passive Whether to make IS-IS passive on level 2 of r1's interface to r2
-   * @return
    */
   private IbdpResult setUpPassiveIsis(boolean r1Level1Passive, boolean r1Level2Passive) {
     NetworkFactory nf = new NetworkFactory();

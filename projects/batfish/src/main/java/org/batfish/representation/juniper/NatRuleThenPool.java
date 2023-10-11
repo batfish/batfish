@@ -46,8 +46,7 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     return Objects.equals(_poolName, that._poolName);
   }
 
-  @Nonnull
-  public String getPoolName() {
+  public @Nonnull String getPoolName() {
     return _poolName;
   }
 
@@ -78,7 +77,7 @@ public final class NatRuleThenPool implements NatRuleThen, Serializable {
     Ip from = pool.getFromAddress();
     Ip to = pool.getToAddress();
     if (from.asLong() > to.asLong()) {
-      warnings.redFlag(String.format("NAT pool %s is invalid: %s - %s", _poolName, from, to));
+      warnings.redFlagf("NAT pool %s is invalid: %s - %s", _poolName, from, to);
       return ImmutableList.of();
     }
 

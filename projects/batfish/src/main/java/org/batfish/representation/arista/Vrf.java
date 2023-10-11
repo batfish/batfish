@@ -11,19 +11,19 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 
 public final class Vrf implements Serializable {
-  @Nullable private String _description;
-  @Nullable private IsisProcess _isisProcess;
+  private @Nullable String _description;
+  private @Nullable IsisProcess _isisProcess;
   private final @Nonnull Map<String, LoggingHost> _loggingHosts;
   private @Nullable String _loggingSourceInterface;
-  @Nonnull private final String _name;
-  @Nonnull private Map<String, OspfProcess> _ospfProcesses;
-  @Nullable private RipProcess _ripProcess;
-  @Nullable private RouteDistinguisher _routeDistinguisher;
-  @Nullable private ExtendedCommunity _routeExportTarget;
-  @Nullable private ExtendedCommunity _routeImportTarget;
+  private final @Nonnull String _name;
+  private @Nonnull Map<String, OspfProcess> _ospfProcesses;
+  private @Nullable RipProcess _ripProcess;
+  private @Nullable RouteDistinguisher _routeDistinguisher;
+  private @Nullable ExtendedCommunity _routeExportTarget;
+  private @Nullable ExtendedCommunity _routeImportTarget;
   private boolean _shutdown;
-  @Nonnull private final Map<Prefix, StaticRouteManager> _staticRoutes;
-  @Nullable private Integer _vni;
+  private final @Nonnull Map<Prefix, StaticRouteManager> _staticRoutes;
+  private @Nullable Integer _vni;
 
   public Vrf(@Nonnull String name) {
     _name = name;
@@ -33,13 +33,11 @@ public final class Vrf implements Serializable {
     _staticRoutes = new HashMap<>(0);
   }
 
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
-  @Nullable
-  public IsisProcess getIsisProcess() {
+  public @Nullable IsisProcess getIsisProcess() {
     return _isisProcess;
   }
 
@@ -55,19 +53,16 @@ public final class Vrf implements Serializable {
     _loggingSourceInterface = loggingSourceInterface;
   }
 
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
   /** Return OSPF processes defined on this VRF. Guaranteed to be in insertion order */
-  @Nonnull
-  public Map<String, OspfProcess> getOspfProcesses() {
+  public @Nonnull Map<String, OspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
 
-  @Nullable
-  public RipProcess getRipProcess() {
+  public @Nullable RipProcess getRipProcess() {
     return _ripProcess;
   }
 
@@ -75,8 +70,7 @@ public final class Vrf implements Serializable {
    * The route distinguisher to attach to VPN originating from this VRF. Will be {@code null} if it
    * must be auto-derived.
    */
-  @Nullable
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -84,8 +78,7 @@ public final class Vrf implements Serializable {
    * The route target value to attach to VPN routes originating from this VRF. Will be {@code null}
    * if it must be auto-derived.
    */
-  @Nullable
-  public ExtendedCommunity getRouteExportTarget() {
+  public @Nullable ExtendedCommunity getRouteExportTarget() {
     return _routeExportTarget;
   }
 
@@ -93,8 +86,7 @@ public final class Vrf implements Serializable {
    * Routes that contain this route target community should be merged into this VRF. Will be {@code
    * null} if it must be auto-derived.
    */
-  @Nullable
-  public ExtendedCommunity getRouteImportTarget() {
+  public @Nullable ExtendedCommunity getRouteImportTarget() {
     return _routeImportTarget;
   }
 
@@ -104,8 +96,7 @@ public final class Vrf implements Serializable {
   }
 
   /** Layer 3 VNI number associated with this VRF */
-  @Nullable
-  public Integer getVni() {
+  public @Nullable Integer getVni() {
     return _vni;
   }
 

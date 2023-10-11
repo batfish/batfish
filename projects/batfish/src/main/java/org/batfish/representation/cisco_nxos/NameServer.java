@@ -24,8 +24,7 @@ public final class NameServer implements Serializable {
   }
 
   /** VRF to use for fallback name resolution */
-  @Nullable
-  public String getUseVrf() {
+  public @Nullable String getUseVrf() {
     return _useVrf;
   }
 
@@ -51,6 +50,6 @@ public final class NameServer implements Serializable {
     return MoreObjects.toStringHelper(this).add("ip", _ip).add("useVrf", _useVrf).toString();
   }
 
-  @Nonnull private final String _ip;
-  @Nullable private final String _useVrf;
+  private final @Nonnull String _ip;
+  private final @Nullable String _useVrf;
 }

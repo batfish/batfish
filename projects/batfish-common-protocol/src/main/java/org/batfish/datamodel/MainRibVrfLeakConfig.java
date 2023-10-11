@@ -66,8 +66,8 @@ public final class MainRibVrfLeakConfig implements Serializable {
   private static final String PROP_IMPORT_FROM_VRF = "importFromVrf";
   private static final String PROP_IMPORT_POLICY = "importPolicy";
 
-  @Nullable private final String _importPolicy;
-  @Nonnull private final String _importFromVrf;
+  private final @Nullable String _importPolicy;
+  private final @Nonnull String _importFromVrf;
 
   private MainRibVrfLeakConfig(@Nullable String importPolicy, String importFromVrf) {
     _importPolicy = importPolicy;
@@ -100,8 +100,8 @@ public final class MainRibVrfLeakConfig implements Serializable {
       return new MainRibVrfLeakConfig(_importPolicy, _importFromVrf);
     }
 
-    @Nullable private String _importPolicy;
-    @Nullable private String _importFromVrf;
+    private @Nullable String _importPolicy;
+    private @Nullable String _importFromVrf;
 
     private Builder() {}
   }

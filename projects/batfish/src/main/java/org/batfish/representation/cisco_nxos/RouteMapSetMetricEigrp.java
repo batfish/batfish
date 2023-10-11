@@ -5,14 +5,13 @@ import javax.annotation.Nonnull;
 /** A {@link RouteMapSet} that sets the EIGRP metric for a route. */
 public final class RouteMapSetMetricEigrp implements RouteMapSet {
 
-  @Nonnull private final EigrpMetric _metric;
+  private final @Nonnull EigrpMetric _metric;
 
   public RouteMapSetMetricEigrp(EigrpMetric metric) {
     _metric = metric;
   }
 
-  @Nonnull
-  public EigrpMetric getMetric() {
+  public @Nonnull EigrpMetric getMetric() {
     return _metric;
   }
 

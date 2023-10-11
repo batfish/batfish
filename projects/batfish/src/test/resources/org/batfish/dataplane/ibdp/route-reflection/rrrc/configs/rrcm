@@ -1,0 +1,39 @@
+#RANCID-CONTENT-TYPE: juniper
+#
+set system host-name rrcm
+#
+set interfaces xe-0/0/0 description "to AS1"
+set interfaces xe-0/0/0 unit 0 family inet address 10.0.15.1/31
+#
+set interfaces xe-0/0/1 description "to rr"
+set interfaces xe-0/0/1 unit 0 family inet address 10.0.56.0/31
+#
+set routing-options autonomous-system 2
+set routing-options router-id 5.5.5.5
+#
+set routing-options static route 5.0.0.0/32 discard
+set routing-options aggregate route 5.0.0.0/31
+#
+set policy-options policy-statement ps-to-as1 then reject
+#
+set policy-options policy-statement ps-from-as1 then accept
+#
+set policy-options policy-statement ps-to-rr from protocol static
+set policy-options policy-statement ps-to-rr from protocol aggregate
+set policy-options policy-statement ps-to-rr from protocol bgp
+set policy-options policy-statement ps-to-rr then accept
+#
+set policy-options policy-statement ps-from-rr then reject
+#
+set protocols bgp group e peer-as 1
+set protocols bgp group e type external
+set protocols bgp group e export ps-to-as1
+set protocols bgp group e import ps-from-as1
+set protocols bgp group e neighbor 10.0.15.0 local-address 10.0.15.1
+#
+set protocols bgp group i peer-as 2
+set protocols bgp group i type internal
+set protocols bgp group i export ps-to-rr
+set protocols bgp group i import ps-from-rr
+set protocols bgp group i neighbor 10.0.56.1 local-address 10.0.56.0
+#

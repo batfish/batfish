@@ -44,14 +44,12 @@ public final class GatewayOrServerPolicy implements Serializable {
    * The source package for access and NAT rules for this device, if {@code access-policy-installed}
    * is {@code true}.
    */
-  @Nullable
-  public String getAccessPolicyName() {
+  public @Nullable String getAccessPolicyName() {
     return _accessPolicyName;
   }
 
   /** The name of the installed package, if {@code threat-policy-installed} is {@code true}. */
-  @Nullable
-  public String getThreatPolicyName() {
+  public @Nullable String getThreatPolicyName() {
     return _threatPolicyName;
   }
 

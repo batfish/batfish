@@ -55,18 +55,15 @@ public final class Edge {
     return Objects.hash(_postState, _preState, _transition);
   }
 
-  @Nonnull
-  public StateExpr getPostState() {
+  public @Nonnull StateExpr getPostState() {
     return _postState;
   }
 
-  @Nonnull
-  public StateExpr getPreState() {
+  public @Nonnull StateExpr getPreState() {
     return _preState;
   }
 
-  @Nonnull
-  public Transition getTransition() {
+  public @Nonnull Transition getTransition() {
     return _transition;
   }
 

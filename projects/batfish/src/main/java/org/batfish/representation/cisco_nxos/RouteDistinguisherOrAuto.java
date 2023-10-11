@@ -23,8 +23,7 @@ public final class RouteDistinguisherOrAuto implements Serializable {
     return _routeDistinguisher == null;
   }
 
-  @Nullable
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nullable RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -52,5 +51,5 @@ public final class RouteDistinguisherOrAuto implements Serializable {
     return Objects.hashCode(_routeDistinguisher);
   }
 
-  @Nullable private final RouteDistinguisher _routeDistinguisher;
+  private final @Nullable RouteDistinguisher _routeDistinguisher;
 }

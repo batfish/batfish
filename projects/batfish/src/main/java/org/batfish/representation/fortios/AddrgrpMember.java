@@ -33,6 +33,6 @@ public abstract class AddrgrpMember implements FortiosRenameableObject, Serializ
     _fabricObject = fabricObject;
   }
 
-  @Nullable private String _comment;
-  @Nullable private Boolean _fabricObject;
+  private @Nullable String _comment;
+  private @Nullable Boolean _fabricObject;
 }

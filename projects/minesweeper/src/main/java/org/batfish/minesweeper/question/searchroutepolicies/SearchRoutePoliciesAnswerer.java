@@ -4,6 +4,7 @@ import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
+import static org.parboiled.common.Preconditions.checkState;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.BoundType;
@@ -72,17 +73,17 @@ import org.batfish.specifier.SpecifierFactories;
 @ParametersAreNonnullByDefault
 public final class SearchRoutePoliciesAnswerer extends Answerer {
 
-  @Nonnull private final Environment.Direction _direction;
-  @Nonnull private final BgpRouteConstraints _inputConstraints;
-  @Nonnull private final BgpRouteConstraints _outputConstraints;
-  @Nonnull private final NodeSpecifier _nodeSpecifier;
-  @Nonnull private final RoutingPolicySpecifier _policySpecifier;
-  @Nonnull private final LineAction _action;
+  private final @Nonnull Environment.Direction _direction;
+  private final @Nonnull BgpRouteConstraints _inputConstraints;
+  private final @Nonnull BgpRouteConstraints _outputConstraints;
+  private final @Nonnull NodeSpecifier _nodeSpecifier;
+  private final @Nonnull RoutingPolicySpecifier _policySpecifier;
+  private final @Nonnull LineAction _action;
 
   private final PathOption _pathOption;
 
-  @Nonnull private final Set<String> _communityRegexes;
-  @Nonnull private final Set<String> _asPathRegexes;
+  private final @Nonnull Set<String> _communityRegexes;
+  private final @Nonnull Set<String> _asPathRegexes;
 
   /**
    * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
@@ -90,8 +91,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * Environment}. For our purposes the specific property values can be anything, so we use this
    * dummy object.
    */
-  @Nonnull
-  public static BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
+  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
       BgpSessionProperties.builder()
           .setLocalAs(1)
           .setLocalIp(Ip.parse("1.1.1.1"))
@@ -162,11 +162,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     if (constraints.isZero()) {
       return Optional.empty();
     } else {
-      BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+      BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, configAPs);
+          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -183,11 +183,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
       Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
-      // As a sanity check, compare the simulated result above with what the symbolic route
-      // analysis predicts will happen.
-      assert ModelGeneration.validateModel(
-          fullModel, outputRoute, configAPs, _action, _direction, result);
-
+      // sanity check: make sure that the accept/deny status produced by TestRoutePolicies is
+      // the same as what the user was asking for.  if this ever fails then either TRP or SRP
+      // is modeling something incorrectly (or both).
+      // TODO: We can also take this validation further by using a variant of
+      // satAssignmentToInputRoute to produce the output route from our model and the final
+      // BDDRoute from the symbolic analysis (as we used to do) and then compare that to the TRP
+      // result.
+      checkState(
+          result.getAction().equals(_action),
+          "SearchRoutePolicies and TestRoutePolicies disagree on the behavior of a route map");
       return Optional.of(new RowAndRoute(inRoute, toRow(result)));
     }
   }
@@ -512,7 +517,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
         intersection = intersection.and(outConstraints);
       }
-
       Optional<RowAndRoute> result =
           constraintsToResult(intersection, policy, outConfigAPs, outputRoute);
       if (result.isPresent()) {

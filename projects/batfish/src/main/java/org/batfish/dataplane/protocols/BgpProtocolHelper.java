@@ -67,8 +67,7 @@ public final class BgpProtocolHelper {
    *     edge: i.e. the edge from {@code localNeighbor} to {@code remoteNeighbor}
    * @param afType {@link AddressFamily.Type} the address family for which to look up the settings
    */
-  @Nullable
-  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
+  public static @Nullable <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       B transformBgpRoutePreExport(
           BgpPeerConfig localNeighbor,
           BgpPeerConfig remoteNeighbor,
@@ -101,16 +100,9 @@ public final class BgpProtocolHelper {
 
     // Set originatorIP
     if (localSessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
-      // eBGP session and not iBGP route: override the originator
+      // eBGP session or not iBGP route: override the originator
       builder.setOriginatorIp(localBgpProcess.getRouterId());
     }
-
-    // note whether new route is received from route reflector client
-    AddressFamily toNeighborAf = remoteNeighbor.getAddressFamily(afType);
-    assert toNeighborAf
-        != null; // invariant of proper queue setup and route exchange for this AF type
-    builder.setReceivedFromRouteReflectorClient(
-        !localSessionProperties.isEbgp() && toNeighborAf.getRouteReflectorClient());
 
     AddressFamily af = localNeighbor.getAddressFamily(afType);
     assert af != null;
@@ -256,8 +248,7 @@ public final class BgpProtocolHelper {
    *
    * <p>Return {@code null} if the route should not be imported.
    */
-  @Nullable
-  public static <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
+  public static @Nullable <R extends BgpRoute<B, R>, B extends BgpRoute.Builder<B, R>>
       B transformBgpRouteOnImport(
           BgpRoute<B, R> route,
           long localAs,
@@ -301,8 +292,7 @@ public final class BgpProtocolHelper {
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
    * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
-  @Nonnull
-  public static Bgpv4Route convertGeneratedRouteToBgp(
+  public static @Nonnull Bgpv4Route convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy attributePolicy,
       Ip routerId,
@@ -392,8 +382,7 @@ public final class BgpProtocolHelper {
    * <p>The builder returned will have default local preference, redistribute origin mechanism,
    * incomplete origin type, and most other fields unset.
    */
-  @Nonnull
-  public static Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
+  public static @Nonnull Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
       AbstractRouteDecorator routeDecorator,
       Ip routerId,
       Ip nextHopIp,

@@ -28,13 +28,13 @@ abstract class NetworkAclEntry implements Serializable {
 
   protected final boolean _isEgress;
 
-  @Nonnull protected final String _protocol;
+  protected final @Nonnull String _protocol;
 
   protected final int _ruleNumber;
 
-  @Nullable protected final IcmpTypeCode _icmpTypeCode;
+  protected final @Nullable IcmpTypeCode _icmpTypeCode;
 
-  @Nullable protected final PortRange _portRange;
+  protected final @Nullable PortRange _portRange;
 
   @JsonCreator
   private static NetworkAclEntry create(
@@ -104,8 +104,7 @@ abstract class NetworkAclEntry implements Serializable {
     return _isEgress;
   }
 
-  @Nullable
-  public IcmpTypeCode getIcmpTypeCode() {
+  public @Nullable IcmpTypeCode getIcmpTypeCode() {
     return _icmpTypeCode;
   }
 

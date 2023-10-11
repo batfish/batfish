@@ -16,20 +16,17 @@ import javax.annotation.Nullable;
  */
 public final class Default {
   /** Get default IP protocol and port information. */
-  @Nullable
-  public Port getPort() {
+  public @Nullable Port getPort() {
     return _port;
   }
 
   /** Get the IP protocol number used for identifying the application. */
-  @Nullable
-  public String getIdentByIpProtocol() {
+  public @Nullable String getIdentByIpProtocol() {
     return _identByIpProtocol;
   }
 
   /** Get the ICMP type used for identifying the application. */
-  @Nullable
-  public String getIdentByIcmpType() {
+  public @Nullable String getIdentByIcmpType() {
     return _identByIcmpType;
   }
 
@@ -66,7 +63,7 @@ public final class Default {
     _identByIcmpType = identByIcmpType;
   }
 
-  @Nullable private final Port _port;
-  @Nullable private final String _identByIpProtocol;
-  @Nullable private final String _identByIcmpType;
+  private final @Nullable Port _port;
+  private final @Nullable String _identByIpProtocol;
+  private final @Nullable String _identByIcmpType;
 }

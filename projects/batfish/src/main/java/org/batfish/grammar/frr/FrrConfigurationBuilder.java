@@ -292,7 +292,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   private final FrrCombinedParser _parser;
   private final Warnings _w;
   private final String _text;
-  @Nonnull private final SilentSyntaxCollection _silentSyntax;
+  private final @Nonnull SilentSyntaxCollection _silentSyntax;
 
   private @Nullable Vrf _currentVrf;
   private RouteMapEntry _currentRouteMapEntry;
@@ -328,8 +328,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
   }
 
   @Override
-  @Nonnull
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -356,8 +355,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     }
   }
 
-  @Nonnull
-  private Long toLong(Uint32Context ctx) {
+  private @Nonnull Long toLong(Uint32Context ctx) {
     return Long.parseUnsignedLong(ctx.getText());
   }
 
@@ -1915,8 +1913,7 @@ public class FrrConfigurationBuilder extends FrrParserBaseListener implements Si
     } else {
       String vrfName = ctx.vrf.getText();
       if (!_vc.hasVrf(vrfName) && !_frr.getVrfs().containsKey(vrfName)) {
-        _w.redFlag(
-            String.format("the static route is ignored since vrf %s is not defined", vrfName));
+        _w.redFlagf("the static route is ignored since vrf %s is not defined", vrfName);
         return;
       }
       _frr.getOrCreateVrf(vrfName).getStaticRoutes().add(route);

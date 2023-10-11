@@ -25,9 +25,9 @@ public class RoutingInstance implements Serializable {
   private static final double DEFAULT_OSPF_REFERENCE_BANDWIDTH = 1E9;
   static final String MASTER_INTERFACE_NAME = "MASTER_INTERFACE";
 
-  @Nullable private Long _as;
+  private @Nullable Long _as;
   private AggregateRoute _aggregateRouteDefaults;
-  @Nonnull private Map<RoutingProtocol, String> _appliedRibGroups;
+  private @Nonnull Map<RoutingProtocol, String> _appliedRibGroups;
   private Long _confederation;
   private Set<Long> _confederationMembers;
   private final SortedMap<String, DhcpRelayGroup> _dhcpRelayGroups;
@@ -42,24 +42,24 @@ public class RoutingInstance implements Serializable {
   private final List<String> _instanceImports;
   private final Map<String, Interface> _interfaces;
   private Map<Prefix, IpBgpGroup> _ipBgpGroups;
-  @Nonnull private final IsisSettings _isisSettings;
-  @Nullable private IsisInterfaceSettings _interfaceAllIsisSettings;
-  @Nullable private Integer _loops;
+  private final @Nonnull IsisSettings _isisSettings;
+  private @Nullable IsisInterfaceSettings _interfaceAllIsisSettings;
+  private @Nullable Integer _loops;
   private BgpGroup _masterBgpGroup;
   private final @Nonnull String _name;
   private Map<String, NamedBgpGroup> _namedBgpGroups;
   private final Map<String, NodeDevice> _nodeDevices;
   private Map<Long, OspfArea> _ospfAreas;
   private List<String> _ospfExportPolicies;
-  @Nullable private Boolean _ospfDisable;
+  private @Nullable Boolean _ospfDisable;
   private double _ospfReferenceBandwidth;
-  @Nullable private OspfInterfaceSettings _interfaceAllOspfSettings;
+  private @Nullable OspfInterfaceSettings _interfaceAllOspfSettings;
   private final Map<String, RoutingInformationBase> _ribs;
   private Ip _routeDistinguisherId;
   private Ip _routerId;
   private SnmpServer _snmpServer;
   private final JuniperSystem _system;
-  @Nullable private Resolution _resolution;
+  private @Nullable Resolution _resolution;
   private @Nonnull Map<String, BridgeDomain> _bridgeDomains;
 
   public RoutingInstance(@Nonnull String name) {
@@ -107,13 +107,11 @@ public class RoutingInstance implements Serializable {
     _bridgeDomains = ImmutableMap.of();
   }
 
-  @Nullable
-  public Long getAs() {
+  public @Nullable Long getAs() {
     return _as;
   }
 
-  @Nonnull
-  public Map<RoutingProtocol, String> getAppliedRibGroups() {
+  public @Nonnull Map<RoutingProtocol, String> getAppliedRibGroups() {
     return _appliedRibGroups;
   }
 
@@ -183,13 +181,11 @@ public class RoutingInstance implements Serializable {
     return _ipBgpGroups;
   }
 
-  @Nonnull
-  public IsisSettings getIsisSettings() {
+  public @Nonnull IsisSettings getIsisSettings() {
     return _isisSettings;
   }
 
-  @Nullable
-  public Integer getLoops() {
+  public @Nullable Integer getLoops() {
     return _loops;
   }
 
@@ -217,8 +213,7 @@ public class RoutingInstance implements Serializable {
     return _ospfExportPolicies;
   }
 
-  @Nullable
-  public Boolean getOspfDisable() {
+  public @Nullable Boolean getOspfDisable() {
     return _ospfDisable;
   }
 

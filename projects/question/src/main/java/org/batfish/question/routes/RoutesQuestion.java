@@ -77,15 +77,15 @@ public class RoutesQuestion extends Question {
 
   private final PrefixMatchType _prefixMatchType;
 
-  @Nullable private final Prefix _network;
+  private final @Nullable Prefix _network;
 
-  @Nullable private final String _nodes;
+  private final @Nullable String _nodes;
 
-  @Nonnull private final String _protocols;
+  private final @Nonnull String _protocols;
 
-  @Nonnull private final RibProtocol _rib;
+  private final @Nonnull RibProtocol _rib;
 
-  @Nonnull private final String _vrfs;
+  private final @Nonnull String _vrfs;
 
   /**
    * Create a new question.
@@ -142,8 +142,7 @@ public class RoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_PREFIX_MATCH_TYPE)
-  @Nonnull
-  public PrefixMatchType getPrefixMatchType() {
+  public @Nonnull PrefixMatchType getPrefixMatchType() {
     return _prefixMatchType;
   }
 
@@ -153,14 +152,12 @@ public class RoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_NETWORK)
-  @Nullable
-  public Prefix getNetwork() {
+  public @Nullable Prefix getNetwork() {
     return _network;
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
@@ -171,8 +168,7 @@ public class RoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_PROTOCOLS)
-  @Nonnull
-  public String getProtocols() {
+  public @Nonnull String getProtocols() {
     return _protocols;
   }
 
@@ -182,14 +178,12 @@ public class RoutesQuestion extends Question {
   }
 
   @JsonProperty(PROP_RIB)
-  @Nonnull
-  public RibProtocol getRib() {
+  public @Nonnull RibProtocol getRib() {
     return _rib;
   }
 
   @JsonProperty(PROP_VRFS)
-  @Nonnull
-  public String getVrfs() {
+  public @Nonnull String getVrfs() {
     return _vrfs;
   }
 }

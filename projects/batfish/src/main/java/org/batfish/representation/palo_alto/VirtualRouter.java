@@ -44,8 +44,7 @@ public class VirtualRouter implements Serializable {
     return _redistProfiles.computeIfAbsent(name, RedistProfile::new);
   }
 
-  @Nullable
-  public OspfVr getOspf() {
+  public @Nullable OspfVr getOspf() {
     return _ospf;
   }
 
@@ -70,7 +69,7 @@ public class VirtualRouter implements Serializable {
 
   // Private implementation details
 
-  private @Nonnull final AdminDistances _adminDists;
+  private final @Nonnull AdminDistances _adminDists;
   private @Nullable BgpVr _bgp;
   private final NavigableSet<String> _interfaceNames;
   private final String _name;

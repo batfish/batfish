@@ -30,7 +30,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class Attachment {
 
-    @Nullable private final String _instanceId;
+    private final @Nullable String _instanceId;
 
     @JsonCreator
     private static Attachment create(
@@ -56,7 +56,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
   @ParametersAreNonnullByDefault
   private static final class Group {
 
-    @Nonnull private final String _id;
+    private final @Nonnull String _id;
 
     @JsonCreator
     private static Group create(@Nullable @JsonProperty(JSON_KEY_GROUP_ID) String id) {
@@ -74,21 +74,21 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     }
   }
 
-  @Nullable private final String _attachmentInstanceId;
+  private final @Nullable String _attachmentInstanceId;
 
-  @Nonnull private final String _description;
+  private final @Nonnull String _description;
 
-  @Nonnull private final List<String> _groups;
+  private final @Nonnull List<String> _groups;
 
-  @Nonnull private final String _networkInterfaceId;
+  private final @Nonnull String _networkInterfaceId;
 
-  @Nonnull private final List<PrivateIpAddress> _privateIpAddresses;
+  private final @Nonnull List<PrivateIpAddress> _privateIpAddresses;
 
-  @Nonnull private final String _subnetId;
+  private final @Nonnull String _subnetId;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
   @JsonCreator
   private static NetworkInterface create(
@@ -152,26 +152,22 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     getPrimaryPrivateIp();
   }
 
-  @Nonnull
-  public PrivateIpAddress getPrimaryPrivateIp() {
+  public @Nonnull PrivateIpAddress getPrimaryPrivateIp() {
     return _privateIpAddresses.stream()
         .filter(PrivateIpAddress::isPrimary)
         .findFirst()
         .orElseThrow(() -> new IllegalArgumentException("No primary private Ip address found"));
   }
 
-  @Nullable
-  public String getAttachmentInstanceId() {
+  public @Nullable String getAttachmentInstanceId() {
     return _attachmentInstanceId;
   }
 
-  @Nonnull
-  public String getDescription() {
+  public @Nonnull String getDescription() {
     return _description;
   }
 
-  @Nonnull
-  public List<String> getGroups() {
+  public @Nonnull List<String> getGroups() {
     return _groups;
   }
 
@@ -180,23 +176,19 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     return _networkInterfaceId;
   }
 
-  @Nonnull
-  public List<PrivateIpAddress> getPrivateIpAddresses() {
+  public @Nonnull List<PrivateIpAddress> getPrivateIpAddresses() {
     return _privateIpAddresses;
   }
 
-  @Nonnull
-  public String getSubnetId() {
+  public @Nonnull String getSubnetId() {
     return _subnetId;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 
-  @Nonnull
-  public Map<String, String> getTags() {
+  public @Nonnull Map<String, String> getTags() {
     return _tags;
   }
 

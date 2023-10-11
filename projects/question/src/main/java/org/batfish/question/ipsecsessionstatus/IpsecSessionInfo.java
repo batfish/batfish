@@ -11,23 +11,23 @@ import org.batfish.datamodel.questions.IpsecSessionStatus;
 /** Captures the configuration state of an IPSec session */
 public class IpsecSessionInfo {
 
-  @Nonnull private String _initiatorHostname;
+  private @Nonnull String _initiatorHostname;
 
-  @Nonnull private String _initiatorInterface;
+  private @Nonnull String _initiatorInterface;
 
-  @Nonnull private Ip _initiatorIp;
+  private @Nonnull Ip _initiatorIp;
 
-  @Nullable private String _initiatorTunnelInterface;
+  private @Nullable String _initiatorTunnelInterface;
 
-  @Nullable private String _responderHostname;
+  private @Nullable String _responderHostname;
 
-  @Nullable private String _responderInterface;
+  private @Nullable String _responderInterface;
 
-  @Nullable private Ip _responderIp;
+  private @Nullable Ip _responderIp;
 
-  @Nullable private String _responderTunnelInterface;
+  private @Nullable String _responderTunnelInterface;
 
-  @Nonnull private IpsecSessionStatus _ipsecSessionStatus;
+  private @Nonnull IpsecSessionStatus _ipsecSessionStatus;
 
   private IpsecSessionInfo(
       @Nonnull String initiatorHostname,
@@ -50,48 +50,39 @@ public class IpsecSessionInfo {
     _ipsecSessionStatus = firstNonNull(ipsecSessionStatus, MISSING_END_POINT);
   }
 
-  @Nonnull
-  public String getInitiatorHostname() {
+  public @Nonnull String getInitiatorHostname() {
     return _initiatorHostname;
   }
 
-  @Nonnull
-  public String getInitiatorInterface() {
+  public @Nonnull String getInitiatorInterface() {
     return _initiatorInterface;
   }
 
-  @Nonnull
-  public Ip getInitiatorIp() {
+  public @Nonnull Ip getInitiatorIp() {
     return _initiatorIp;
   }
 
-  @Nullable
-  public String getInitiatorTunnelInterface() {
+  public @Nullable String getInitiatorTunnelInterface() {
     return _initiatorTunnelInterface;
   }
 
-  @Nullable
-  public String getResponderHostname() {
+  public @Nullable String getResponderHostname() {
     return _responderHostname;
   }
 
-  @Nullable
-  public String getResponderInterface() {
+  public @Nullable String getResponderInterface() {
     return _responderInterface;
   }
 
-  @Nullable
-  public String getResponderTunnelInterface() {
+  public @Nullable String getResponderTunnelInterface() {
     return _responderTunnelInterface;
   }
 
-  @Nullable
-  public Ip getResponderIp() {
+  public @Nullable Ip getResponderIp() {
     return _responderIp;
   }
 
-  @Nonnull
-  public IpsecSessionStatus getIpsecSessionStatus() {
+  public @Nonnull IpsecSessionStatus getIpsecSessionStatus() {
     return _ipsecSessionStatus;
   }
 

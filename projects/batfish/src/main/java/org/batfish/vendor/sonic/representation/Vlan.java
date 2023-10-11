@@ -21,9 +21,9 @@ public class Vlan implements Serializable {
   private static final String PROP_MEMBERS = "members";
   private static final String PROP_VLANID = "vlanid";
 
-  private @Nonnull final List<String> _dhcpServers;
-  private @Nonnull final List<String> _members;
-  private @Nullable final Integer _vlanId;
+  private final @Nonnull List<String> _dhcpServers;
+  private final @Nonnull List<String> _members;
+  private final @Nullable Integer _vlanId;
 
   public @Nonnull List<String> getDhcpServers() {
     return _dhcpServers;
@@ -38,7 +38,7 @@ public class Vlan implements Serializable {
   }
 
   @JsonCreator
-  private @Nonnull static Vlan create(
+  private static @Nonnull Vlan create(
       @Nullable @JsonProperty(PROP_DHCP_SERVERS) List<String> dhcpServers,
       @Nullable @JsonProperty(PROP_MEMBERS) ImmutableList<String> members,
       @Nullable @JsonProperty(PROP_VLANID) JsonNode vlanIdInput) {
@@ -81,7 +81,7 @@ public class Vlan implements Serializable {
         .toString();
   }
 
-  public @Nonnull static Builder builder() {
+  public static @Nonnull Builder builder() {
     return new Builder();
   }
 

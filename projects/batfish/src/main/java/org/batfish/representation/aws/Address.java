@@ -20,13 +20,13 @@ import org.batfish.datamodel.Ip;
 @ParametersAreNonnullByDefault
 public final class Address implements AwsVpcEntity, Serializable {
 
-  @Nullable private final String _instanceId;
+  private final @Nullable String _instanceId;
 
-  @Nullable private final Ip _privateIp;
+  private final @Nullable Ip _privateIp;
 
-  @Nonnull private final Ip _publicIp;
+  private final @Nonnull Ip _publicIp;
 
-  @Nonnull private final String _allocationId;
+  private final @Nonnull String _allocationId;
 
   @JsonCreator
   private static Address create(
@@ -56,23 +56,19 @@ public final class Address implements AwsVpcEntity, Serializable {
     return _publicIp.toString();
   }
 
-  @Nullable
-  public String getInstanceId() {
+  public @Nullable String getInstanceId() {
     return _instanceId;
   }
 
-  @Nullable
-  public Ip getPrivateIp() {
+  public @Nullable Ip getPrivateIp() {
     return _privateIp;
   }
 
-  @Nonnull
-  public Ip getPublicIp() {
+  public @Nonnull Ip getPublicIp() {
     return _publicIp;
   }
 
-  @Nonnull
-  public String getAllocationId() {
+  public @Nonnull String getAllocationId() {
     return _allocationId;
   }
 

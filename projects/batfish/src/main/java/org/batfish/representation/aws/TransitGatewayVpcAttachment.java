@@ -21,13 +21,13 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
 
-  @Nonnull private final String _attachmentId;
+  private final @Nonnull String _attachmentId;
 
-  @Nonnull private final String _gatewayId;
+  private final @Nonnull String _gatewayId;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
-  @Nonnull private final List<String> _subnetIds;
+  private final @Nonnull List<String> _subnetIds;
 
   @JsonCreator
   private static TransitGatewayVpcAttachment create(
@@ -58,8 +58,7 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
    * Returns the list of availability zones that this attachment is present in. This is based on the
    * subnets that it is connected to.
    */
-  @Nonnull
-  public List<String> getAvailabilityZones(Region region) {
+  public @Nonnull List<String> getAvailabilityZones(Region region) {
     return _subnetIds.stream()
         .map(s -> region.getSubnets().get(s))
         .filter(java.util.Objects::nonNull)
@@ -73,18 +72,15 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
     return _attachmentId;
   }
 
-  @Nonnull
-  public String getGatewayId() {
+  public @Nonnull String getGatewayId() {
     return _gatewayId;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 
-  @Nonnull
-  public List<String> getSubnetIds() {
+  public @Nonnull List<String> getSubnetIds() {
     return _subnetIds;
   }
 

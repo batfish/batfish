@@ -13,8 +13,8 @@ public final class OspfInterfaceConfigurationQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_PROPERTIES = "properties";
 
-  @Nullable private final String _nodes;
-  @Nullable private final String _properties;
+  private final @Nullable String _nodes;
+  private final @Nullable String _properties;
 
   @JsonCreator
   private static OspfInterfaceConfigurationQuestion create(
@@ -39,14 +39,12 @@ public final class OspfInterfaceConfigurationQuestion extends Question {
   }
 
   @JsonProperty(PROP_NODES)
-  @Nullable
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
   @JsonProperty(PROP_PROPERTIES)
-  @Nullable
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 

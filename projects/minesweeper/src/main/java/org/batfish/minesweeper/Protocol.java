@@ -36,8 +36,7 @@ public class Protocol {
 
   public static final Protocol BEST = new Protocol(Type.BEST);
 
-  @Nullable
-  public static Protocol fromRoutingProtocol(RoutingProtocol p) {
+  public static @Nullable Protocol fromRoutingProtocol(RoutingProtocol p) {
     switch (p) {
       case CONNECTED:
         return Protocol.CONNECTED;

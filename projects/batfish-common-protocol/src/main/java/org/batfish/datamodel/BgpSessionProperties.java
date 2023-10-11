@@ -94,7 +94,7 @@ public final class BgpSessionProperties {
 
   public static final class Builder {
 
-    @Nullable private Collection<EvpnAddressFamily.Type> _addressFamilies;
+    private @Nullable Collection<EvpnAddressFamily.Type> _addressFamilies;
     private @Nullable Long _localAs;
     private @Nullable Long _remoteAs;
     private @Nullable Ip _localIp;
@@ -127,8 +127,7 @@ public final class BgpSessionProperties {
           _replaceNonLocalAsesOnExport);
     }
 
-    @Nonnull
-    public Builder setAddressFamilies(Collection<Type> addressFamilies) {
+    public @Nonnull Builder setAddressFamilies(Collection<Type> addressFamilies) {
       _addressFamilies = addressFamilies;
       return this;
     }
@@ -178,14 +177,14 @@ public final class BgpSessionProperties {
     return new Builder();
   }
 
-  @Nonnull private final Set<AddressFamily.Type> _addressFamilies;
+  private final @Nonnull Set<AddressFamily.Type> _addressFamilies;
   private final long _localAs;
   private final long _remoteAs;
-  @Nonnull private final Ip _localIp;
-  @Nonnull private final Ip _remoteIp;
+  private final @Nonnull Ip _localIp;
+  private final @Nonnull Ip _remoteIp;
   private final SessionType _sessionType;
-  @Nonnull private final Map<Type, RouteExchange> _routeExchangeSettings;
-  @Nonnull private final ConfedSessionType _confedSessionType;
+  private final @Nonnull Map<Type, RouteExchange> _routeExchangeSettings;
+  private final @Nonnull ConfedSessionType _confedSessionType;
 
   private final boolean _replaceNonLocalAsesOnExport;
 
@@ -267,15 +266,13 @@ public final class BgpSessionProperties {
 
   /** IP of local peer for this session */
   @JsonProperty(PROP_TAIL_IP)
-  @Nonnull
-  public Ip getLocalIp() {
+  public @Nonnull Ip getLocalIp() {
     return _localIp;
   }
 
   /** IP of remote peer for this session */
   @JsonProperty(PROP_HEAD_IP)
-  @Nonnull
-  public Ip getRemoteIp() {
+  public @Nonnull Ip getRemoteIp() {
     return _remoteIp;
   }
 
@@ -286,8 +283,7 @@ public final class BgpSessionProperties {
   }
 
   @JsonProperty(PROP_CONFEDERATION_TYPE)
-  @Nonnull
-  public ConfedSessionType getConfedSessionType() {
+  public @Nonnull ConfedSessionType getConfedSessionType() {
     return _confedSessionType;
   }
 
@@ -324,8 +320,7 @@ public final class BgpSessionProperties {
 
   /** Get the route exchange settings, keyed by address family type */
   @JsonProperty(PROP_ROUTE_EXCHANGE)
-  @Nonnull
-  public Map<Type, RouteExchange> getRouteExchangeSettings() {
+  public @Nonnull Map<Type, RouteExchange> getRouteExchangeSettings() {
     return _routeExchangeSettings;
   }
 

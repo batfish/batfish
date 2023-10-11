@@ -12,7 +12,7 @@ import org.batfish.datamodel.collections.NodeInterfacePair;
 /** A {@link InterfaceSpecifier} that matches interface names (case insensitive). */
 @ParametersAreNonnullByDefault
 public final class NameInterfaceSpecifier implements InterfaceSpecifier {
-  @Nonnull private final String _name;
+  private final @Nonnull String _name;
 
   public NameInterfaceSpecifier(String name) {
     _name = name;

@@ -1,6 +1,10 @@
 package org.batfish.minesweeper;
 
+import static org.hamcrest.Matchers.allOf;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasValue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -77,12 +81,15 @@ public class AsPathRegexAtomicPredicatesTest {
     copy2.prependAPs(ImmutableList.of(10L, 20L));
     Map<Integer, Automaton> copy2AutomataMap = copy2.getAtomicPredicateAutomata();
     assertEquals(copy2AutomataMap.keySet().size(), 2);
-    assertEquals(
-        copy2AutomataMap.get(0),
-        new RegExp("^^10 20 .*")
-            .toAutomaton()
-            .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
-    assertEquals(copy2AutomataMap.get(1), new RegExp("^^10 20$").toAutomaton());
+    assertThat(
+        copy2AutomataMap,
+        allOf(
+            hasValue(equalTo(new RegExp("^^10 20$").toAutomaton())),
+            hasValue(
+                equalTo(
+                    new RegExp("^^10 20 .*")
+                        .toAutomaton()
+                        .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton())))));
   }
 
   @Test
@@ -101,12 +108,15 @@ public class AsPathRegexAtomicPredicatesTest {
                 new RegexConstraint("^40 ", false), new RegexConstraint("^50 ", false))));
     Map<Integer, Automaton> copy2AutomataMap = copy2.getAtomicPredicateAutomata();
     assertEquals(copy2AutomataMap.keySet().size(), 2);
-    assertEquals(
-        copy2AutomataMap.get(0),
-        new RegExp("^^(40|50) .*")
-            .toAutomaton()
-            .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
-    assertEquals(copy2AutomataMap.get(1), Automaton.makeEmpty());
+    assertThat(
+        copy2AutomataMap,
+        allOf(
+            hasValue(equalTo(Automaton.makeEmpty())),
+            hasValue(
+                equalTo(
+                    new RegExp("^^(40|50) .*")
+                        .toAutomaton()
+                        .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton())))));
 
     AsPathRegexAtomicPredicates copy3 = new AsPathRegexAtomicPredicates(twoAPs);
     copy3.constrainAPs(
@@ -115,12 +125,15 @@ public class AsPathRegexAtomicPredicatesTest {
                 new RegexConstraint("^40 ", true), new RegexConstraint("^50 ", true))));
     Map<Integer, Automaton> copy3AutomataMap = copy3.getAtomicPredicateAutomata();
     assertEquals(copy3AutomataMap.keySet().size(), 2);
-    assertEquals(
-        copy3AutomataMap.get(0),
-        new RegExp("^^.+$")
-            .toAutomaton()
-            .intersection(new RegExp("^^(40|50) .*").toAutomaton().complement())
-            .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton()));
-    assertEquals(copy3AutomataMap.get(1), new RegExp("^^$").toAutomaton());
+    assertThat(
+        copy3AutomataMap,
+        allOf(
+            hasValue(equalTo(new RegExp("^^$").toAutomaton())),
+            hasValue(
+                equalTo(
+                    new RegExp("^^.+$")
+                        .toAutomaton()
+                        .intersection(new RegExp("^^(40|50) .*").toAutomaton().complement())
+                        .intersection(SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton())))));
   }
 }

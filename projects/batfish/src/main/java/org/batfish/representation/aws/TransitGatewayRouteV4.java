@@ -13,7 +13,7 @@ import org.batfish.representation.aws.Route.State;
 @ParametersAreNonnullByDefault
 final class TransitGatewayRouteV4 extends TransitGatewayRoute {
 
-  @Nonnull private final Prefix _destinationCidrBlock;
+  private final @Nonnull Prefix _destinationCidrBlock;
 
   TransitGatewayRouteV4(
       Prefix destinationCidrBlock, State state, Type type, List<String> attachmentIds) {
@@ -21,8 +21,7 @@ final class TransitGatewayRouteV4 extends TransitGatewayRoute {
     _destinationCidrBlock = destinationCidrBlock;
   }
 
-  @Nonnull
-  public Prefix getDestinationCidrBlock() {
+  public @Nonnull Prefix getDestinationCidrBlock() {
     return _destinationCidrBlock;
   }
 

@@ -99,15 +99,15 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   /** Incoming filter on the interface facing the VPC */
   static final String INCOMING_NAT_FILTER_NAME = "~INCOMING~NAT~FILTER~";
 
-  @Nonnull private final List<NatGatewayAddress> _natGatewayAddresses;
+  private final @Nonnull List<NatGatewayAddress> _natGatewayAddresses;
 
-  @Nonnull private final String _natGatewayId;
+  private final @Nonnull String _natGatewayId;
 
-  @Nonnull private final String _subnetId;
+  private final @Nonnull String _subnetId;
 
-  @Nonnull private final Map<String, String> _tags;
+  private final @Nonnull Map<String, String> _tags;
 
-  @Nonnull private final String _vpcId;
+  private final @Nonnull String _vpcId;
 
   @JsonCreator
   private static NatGateway create(
@@ -160,8 +160,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     return _subnetId;
   }
 
-  @Nonnull
-  public String getVpcId() {
+  public @Nonnull String getVpcId() {
     return _vpcId;
   }
 
@@ -186,8 +185,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     Subnet subnet = region.getSubnets().get(_subnetId);
     if (subnet == null) {
-      warnings.redFlag(
-          String.format("Subnet %s not found for NAT gateway %s.", _subnetId, _natGatewayId));
+      warnings.redFlagf("Subnet %s not found for NAT gateway %s.", _subnetId, _natGatewayId);
       return cfgNode;
     }
     Interface ifaceToSubnet =
@@ -278,7 +276,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     String vrfNameOnVpc = Vpc.vrfNameForLink(_natGatewayId);
 
     if (!vpcCfg.getVrfs().containsKey(vrfNameOnVpc)) {
-      warnings.redFlag(String.format("VRF %s not found on VPC %s", vrfNameOnVpc, _vpcId));
+      warnings.redFlagf("VRF %s not found on VPC %s", vrfNameOnVpc, _vpcId);
       return null;
     }
 

@@ -38,6 +38,7 @@ import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.common.topology.Layer1Node;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -125,7 +126,7 @@ public final class IspModelingUtils {
           Prefix.parse("192.168.0.0/16"));
 
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
-  static final int HIGH_ADMINISTRATIVE_COST = 32767; // maximum possible
+  static final int HIGH_ADMINISTRATIVE_COST = AbstractRoute.MAX_ADMIN_DISTANCE;
 
   /** Returns the hostname that will be used for the ISP model with the given ASN. */
   public static String getDefaultIspNodeName(long asn) {
@@ -162,9 +163,9 @@ public final class IspModelingUtils {
 
   public static class ModeledNodes {
 
-    @Nonnull private final Map<String, Configuration> _configurations;
+    private final @Nonnull Map<String, Configuration> _configurations;
 
-    @Nonnull private final Set<Layer1Edge> _layer1Edgesdges;
+    private final @Nonnull Set<Layer1Edge> _layer1Edgesdges;
 
     public ModeledNodes() {
       _configurations = new HashMap<>();
@@ -179,13 +180,11 @@ public final class IspModelingUtils {
       _layer1Edgesdges.add(edge);
     }
 
-    @Nonnull
-    public Map<String, Configuration> getConfigurations() {
+    public @Nonnull Map<String, Configuration> getConfigurations() {
       return ImmutableMap.copyOf(_configurations);
     }
 
-    @Nonnull
-    public Set<Layer1Edge> getLayer1Edges() {
+    public @Nonnull Set<Layer1Edge> getLayer1Edges() {
       return ImmutableSet.copyOf(_layer1Edgesdges);
     }
   }
@@ -415,8 +414,7 @@ public final class IspModelingUtils {
             .findFirst()
             .orElse(null);
     if (snapshotIface == null) {
-      warnings.redFlag(
-          String.format("ISP Modeling: Non-existent border interface %s", nodeInterfacePair));
+      warnings.redFlagf("ISP Modeling: Non-existent border interface %s", nodeInterfacePair);
       return ImmutableList.of();
     }
 
@@ -519,8 +517,7 @@ public final class IspModelingUtils {
     // 0a. Resolve the device indicated by the BgpPeerInfo.
     Configuration snapshotBgpHost = configurations.get(bgpPeerInfo.getHostname());
     if (snapshotBgpHost == null) {
-      warnings.redFlag(
-          String.format("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname()));
+      warnings.redFlagf("ISP Modeling: Non-existent border node %s", bgpPeerInfo.getHostname());
       return Optional.empty();
     }
 
@@ -1136,8 +1133,7 @@ public final class IspModelingUtils {
    * on this node will be same, returning the Local AS of the any eBGP peer will suffice.
    */
   @VisibleForTesting
-  @Nonnull
-  static Long getAsnOfIspNode(Configuration ispConfiguration) {
+  static @Nonnull Long getAsnOfIspNode(Configuration ispConfiguration) {
     checkState(
         Objects.nonNull(ispConfiguration.getDefaultVrf()), "default VRF should be present in ISP");
     checkState(
