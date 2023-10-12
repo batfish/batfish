@@ -2722,6 +2722,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testNameServer() {
+    Configuration config = parseConfig("name-server");
+    assertThat(config.getDnsServers(), contains("1.2.3.4"));
+  }
+
+  @Test
   public void testAggregateDefaults() {
     Configuration config = parseConfig("aggregate-defaults");
 

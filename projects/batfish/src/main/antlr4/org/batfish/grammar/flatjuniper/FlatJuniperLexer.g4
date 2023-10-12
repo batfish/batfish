@@ -1819,7 +1819,7 @@ NAME_LITERALLY: 'name' -> pushMode(M_Name);
 
 NAME_RESOLUTION: 'name-resolution';
 
-NAME_SERVER: 'name-server' -> pushMode(M_Name);
+NAME_SERVER: 'name-server';
 
 NAT: 'nat';
 
