@@ -27,12 +27,20 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAny;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchExprReference;
+import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.communities.TypesFirstAscendingSpaceSeparated;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD} */
 public class CommunitySetMatchExprToBDDTest {
@@ -43,6 +51,8 @@ public class CommunitySetMatchExprToBDDTest {
   private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetMatchExprToBDD _communitySetMatchExprToBDD;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -151,6 +161,16 @@ public class CommunitySetMatchExprToBDDTest {
   }
 
   @Test
+  public void testVisitCommunitySetMatchRegex() {
+    CommunitySetMatchRegex csmr =
+        new CommunitySetMatchRegex(
+            new TypesFirstAscendingSpaceSeparated(ColonSeparatedRendering.instance()),
+            "^65000:123 65011:12[3]$");
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg);
+  }
+
+  @Test
   public void testVisitCommunitySetNot() {
     CommunitySetNot csn =
         new CommunitySetNot(new HasCommunity(new CommunityIs(StandardCommunity.parse("20:30"))));
@@ -194,6 +214,13 @@ public class CommunitySetMatchExprToBDDTest {
     CommunityVar cvar = CommunityVar.from(StandardCommunity.parse("21:30"));
 
     assertEquals(cvarToBDD(cvar), result);
+  }
+
+  @Test
+  public void testVisitHasSize() {
+    HasSize hs = new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetMatchExprToBDD.visitHasSize(hs, _arg);
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

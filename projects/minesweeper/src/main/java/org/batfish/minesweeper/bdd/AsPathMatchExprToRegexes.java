@@ -55,6 +55,6 @@ public class AsPathMatchExprToRegexes
   @Override
   public Set<SymbolicAsPathRegex> visitHasAsPathLength(
       HasAsPathLength hasAsPathLength, CommunitySetMatchExprToBDD.Arg arg) {
-    throw new UnsupportedOperationException("Currently not supporting matching on AS path length");
+    throw new UnsupportedOperationException(hasAsPathLength.toString());
   }
 }
