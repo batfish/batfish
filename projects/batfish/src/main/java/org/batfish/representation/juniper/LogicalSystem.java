@@ -108,7 +108,7 @@ public class LogicalSystem implements Serializable {
 
   private @Nullable SwitchOptions _switchOptions;
 
-  @Nullable private Map<Integer, VniOptions> _vniOptions;
+  private Map<Integer, VniOptions> _vniOptions;
 
   private final Map<String, Zone> _zones;
 

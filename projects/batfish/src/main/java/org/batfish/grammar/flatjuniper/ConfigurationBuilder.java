@@ -1926,6 +1926,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
   }
 
+  private @Nonnull Optional<Integer> toInteger(
+      ParserRuleContext messageCtx, E_vni_optionsContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, VNI_NUMBER_RANGE, "vni");
+  }
+
   private static @Nonnull IpOptions toIpOptions(Ip_optionContext ctx) {
     if (ctx.LOOSE_SOURCE_ROUTE() != null) {
       return IpOptions.LOOSE_SOURCE_ROUTE;
@@ -2051,18 +2056,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static @Nonnull ExtendedCommunity toExtendedCommunity(Extended_communityContext ctx) {
     // Parser is not strict, need to validate parsed token is valid and won't crash
-    // ExtendedCommunity.parse.
-    //      nxos example
-    //      if (ctx.hi0 != null) {
-    //          assert ctx.lo0 != null;
-    //          return ExtendedCommunity.target((long) toInteger(ctx.hi0), toLong(ctx.lo0));
-    //      } else {
-    //          assert ctx.hi2 != null;
-    //          assert ctx.lo2 != null;
-    //          return ExtendedCommunity.target(toLong(ctx.hi2), (long) toInteger(ctx.lo2));
-    //      }
-
-    //      The acceptable patterns / values for extended communities in a Juniper Junos operating
+    // The acceptable patterns / values for extended communities in a Juniper Junos operating
     // system are as follows:
     //
     //      4-octet AS number: 00000000-22222222
@@ -2071,7 +2065,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     //      The first two patterns are used for standard extended communities, while the third
     // pattern is used for large extended communities.
 
-    //              The AS number in an extended community can be any value between 0 and 65535. The
+    // The AS number in an extended community can be any value between 0 and 65535. The
     // value in an extended community can be any value between 0 and 4294967295.
     return ExtendedCommunity.parse(ctx.getText());
   }
@@ -4482,7 +4476,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterE_vni_options(E_vni_optionsContext ctx) {
     _currentVni = toInt(ctx.id);
-    assert _currentLogicalSystem.getVniOptions() != null;
     _currentLogicalSystem.getVniOptions().putIfAbsent(toInt(ctx.id), new VniOptions(toInt(ctx.id)));
   }
 
@@ -4502,11 +4495,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitEvovt_community(Evovt_communityContext ctx) {
-    _currentLogicalSystem
-        .getVniOptions()
-        .get(_currentVni)
-        .setVrfTargetCommunityorAuto(
-            ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.extended_community())));
+    if (ctx.extended_community() != null) {
+      _currentLogicalSystem
+          .getVniOptions()
+          .get(_currentVni)
+          .setVrfTargetCommunityorAuto(
+              ExtendedCommunityOrAuto.of(toExtendedCommunity(ctx.extended_community())));
+    }
   }
 
   @Override
