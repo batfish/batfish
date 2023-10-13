@@ -11,6 +11,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
+import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 import static org.batfish.datamodel.routing_policy.statement.Statements.ReturnFalse;
@@ -828,7 +829,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         evpnAfBuilder
             .setPropagateUnmatched(true)
             .setAddressFamilyCapabilities(
-                AddressFamilyCapabilities.builder().setAllowRemoteAsOut(ALWAYS).build());
+                AddressFamilyCapabilities.builder().setAllowRemoteAsOut(NEVER).build());
         evpnAfBuilder.setL3Vnis(convertL3Evpn().build());
         neighbor.setEvpnAddressFamily(evpnAfBuilder.build());
       }
@@ -2104,128 +2105,89 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return groupsBuilder.build();
   }
 
-  private @Nullable ImmutableSet.Builder<Layer3VniConfig> convertL3Evpn() {
+  private @Nonnull ImmutableSet.Builder<Layer3VniConfig> convertL3Evpn() {
     ImmutableSet.Builder<Layer3VniConfig> l3Vnis = ImmutableSet.builder();
     for (Vlan vxlan : _masterLogicalSystem.getNamedVlans().values()) {
       String l3Interface = vxlan.getL3Interface();
-      // vniId and l3interface must be defined for a l3vni.
       if (vxlan.getVniId() == null || l3Interface == null) {
         continue;
-      } else {
-        // RT can be set at: evpn vni-options, RI, or switch-options.
-        ExtendedCommunity routeTarget = null;
-        // If route target is set under vni-options stanza it takes precedence
-        if (_masterLogicalSystem.getVniOptions() != null) {
-          if (_masterLogicalSystem.getVniOptions().get(vxlan.getVniId()) != null) {
-            if (_masterLogicalSystem
-                .getVniOptions()
-                .get(vxlan.getVniId())
-                .getVrfTargetCommunityorAuto()
-                .isAuto()) {
-              // RT-Auto is used.
-              // https://datatracker.ietf.org/doc/html/draft-ietf-bess-evpn-overlay-01#section-5.1.2.1
-              // format of ASN:x while ‘x’ is called the local administrator (4 octets long). ‘x’ is
-              // derived:
-              // The last 3 octets are used for the service ID – the VNI. (VNI -> Hex) 3 octets
-              // long, pad as necessary.
-              // The first octet is divided into several fields – bit 1 (0 for auto derived RT), the
-              // next 3 bits identify the type (1 for VXLAN), and the last 4 bits identify the
-              // domain ID (0, for this case). So this gives us 0x0001 0x0000, which makes it 0x10.
-              // In total, 0x10 and (hex of vni), thus 0x10<hex of vni> then -> decimal value.
-              long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
-              routeTarget =
-                  ExtendedCommunity.parse(
-                      "target:"
-                          + _masterLogicalSystem.getDefaultRoutingInstance().getAs()
-                          + ":"
-                          + num);
-            } else {
-              // RT is manually defined under vni-options
-              routeTarget =
-                  _masterLogicalSystem
-                      .getVniOptions()
-                      .get(vxlan.getVniId())
-                      .getVrfTargetCommunityorAuto()
-                      .getExtendedCommunity();
-            }
-          }
+      }
 
-          // Check for RT config under RI
-        } else if (getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance() != null) {
-          // TODO: Currently can't get RT from RI
-          continue;
-          // Finally, check for RT under switch-options
-        } else {
-          if (_masterLogicalSystem.getSwitchOptions().getVrfTargetCommunityorAuto().isAuto()) {
-            long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
-            routeTarget =
-                ExtendedCommunity.parse(
-                    "target:"
-                        + _masterLogicalSystem.getDefaultRoutingInstance().getAs()
-                        + ":"
-                        + num);
-          } else {
-            routeTarget =
-                ExtendedCommunity.parse(
-                    _masterLogicalSystem
-                        .getSwitchOptions()
-                        .getVrfTargetCommunityorAuto()
-                        .toString());
-          }
-        }
-        if (routeTarget == null) {
-          long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
-          routeTarget =
-              ExtendedCommunity.parse(
-                  "target:" + _masterLogicalSystem.getDefaultRoutingInstance().getAs() + ":" + num);
-        }
-        // Check if RD is manually configured under RI.
-        if (getInterfaceOrUnitByName(l3Interface)
+      ExtendedCommunity routeTarget = determineRouteTarget(vxlan);
+
+      if (routeTarget == null) {
+        long num = Long.decode("0x10" + Integer.toHexString(vxlan.getVniId()));
+        routeTarget = getDefaultRouteTarget(num);
+      }
+
+      String createdRd = determineRouteDistinguisher(vxlan, l3Interface);
+
+      l3Vnis.add(buildLayer3VniConfig(vxlan, routeTarget, createdRd, l3Interface));
+    }
+
+    return l3Vnis;
+  }
+
+  private ExtendedCommunity determineRouteTarget(Vlan vxlan) {
+    ExtendedCommunity routeTarget = null;
+    if (_masterLogicalSystem.getVniOptions() != null
+        && _masterLogicalSystem.getVniOptions().containsKey(vxlan.getVniId())) {
+      VniOptions vniOptions = _masterLogicalSystem.getVniOptions().get(vxlan.getVniId());
+      if (vniOptions.getVrfTargetCommunityorAuto().isAuto()) {
+        routeTarget = generateAutoRouteTarget(vxlan.getVniId());
+      } else {
+        routeTarget = vniOptions.getVrfTargetCommunityorAuto().getExtendedCommunity();
+      }
+    }
+    return routeTarget;
+  }
+
+  private ExtendedCommunity generateAutoRouteTarget(int vniId) {
+    long num = Long.decode("0x10" + Integer.toHexString(vniId));
+    return ExtendedCommunity.parse(
+        "target:" + _masterLogicalSystem.getDefaultRoutingInstance().getAs() + ":" + num);
+  }
+
+  private ExtendedCommunity getDefaultRouteTarget(long num) {
+    return ExtendedCommunity.parse(
+        "target:" + _masterLogicalSystem.getDefaultRoutingInstance().getAs() + ":" + num);
+  }
+
+  private String determineRouteDistinguisher(Vlan vxlan, String l3Interface) {
+    String createdRd = null;
+    if (getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance() != null
+        && getInterfaceOrUnitByName(l3Interface)
                 .get()
                 .getRoutingInstance()
                 .getRouteDistinguisherId()
             != null) {
-          String createdRd =
-              getInterfaceOrUnitByName(l3Interface)
-                      .get()
-                      .getRoutingInstance()
-                      .getRouteDistinguisherId()
-                  + ":"
-                  + getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getAs();
-          l3Vnis.add(
-              Layer3VniConfig.builder()
-                  .setAdvertiseV4Unicast(true)
-                  .setVni(vxlan.getVniId())
-                  .setRouteTarget(routeTarget)
-                  .setImportRouteTarget(routeTarget.toString())
-                  .setRouteDistinguisher(RouteDistinguisher.parse(createdRd))
-                  .setVrf(
-                      getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
-                  .build());
-        } else {
-          // RI is used, but RD is not manually configured. Junos takes route-distinguisher-id +
-          // random number to generate unique RD.
-          Random random = new Random();
-          int number = random.ints(4096, 9999).findFirst().getAsInt();
-          if (vxlan.getVlanId() != null) {
-            number = vxlan.getVlanId();
-          }
-          Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
-          String createdRd = rdIp.toString() + ":" + number;
-          l3Vnis.add(
-              Layer3VniConfig.builder()
-                  .setAdvertiseV4Unicast(true)
-                  .setVni(vxlan.getVniId())
-                  .setRouteTarget(routeTarget)
-                  .setImportRouteTarget(routeTarget.toString())
-                  .setRouteDistinguisher(RouteDistinguisher.parse(createdRd))
-                  .setVrf(
-                      getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
-                  .build());
-        }
-      }
+      createdRd =
+          getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getRouteDistinguisherId()
+              + ":"
+              + getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getAs();
     }
-    return l3Vnis;
+    if (createdRd == null) {
+      Random random = new Random();
+      int number = random.ints(4096, 9999).findFirst().getAsInt();
+      if (vxlan.getVlanId() != null) {
+        number = vxlan.getVlanId();
+      }
+      Ip rdIp = _masterLogicalSystem.getDefaultRoutingInstance().getRouteDistinguisherId();
+      createdRd = rdIp.toString() + ":" + number;
+    }
+    return createdRd;
+  }
+
+  private Layer3VniConfig buildLayer3VniConfig(
+      Vlan vxlan, ExtendedCommunity routeTarget, String createdRd, String l3Interface) {
+    return Layer3VniConfig.builder()
+        .setAdvertiseV4Unicast(true)
+        .setVni(vxlan.getVniId())
+        .setRouteTarget(routeTarget)
+        .setImportRouteTarget(routeTarget.toString())
+        .setRouteDistinguisher(RouteDistinguisher.parse(createdRd))
+        .setVrf(getInterfaceOrUnitByName(l3Interface).get().getRoutingInstance().getName())
+        .build();
   }
 
   private void convertL3Vni() {
