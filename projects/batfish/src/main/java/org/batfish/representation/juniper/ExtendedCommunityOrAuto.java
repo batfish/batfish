@@ -23,8 +23,7 @@ public final class ExtendedCommunityOrAuto implements Serializable {
     return _extendedCommunity == null;
   }
 
-  @Nullable
-  public ExtendedCommunity getExtendedCommunity() {
+  public @Nullable ExtendedCommunity getExtendedCommunity() {
     return _extendedCommunity;
   }
 
@@ -52,5 +51,5 @@ public final class ExtendedCommunityOrAuto implements Serializable {
     return Objects.hashCode(_extendedCommunity);
   }
 
-  @Nullable private final ExtendedCommunity _extendedCommunity;
+  private final @Nullable ExtendedCommunity _extendedCommunity;
 }
