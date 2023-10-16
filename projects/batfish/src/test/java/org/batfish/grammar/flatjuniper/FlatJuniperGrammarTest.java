@@ -4272,6 +4272,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisIgnoreAttachedBit() {
+    parseConfig("isis-ignore-attached-bit");
+    // don't crash.
+  }
+
+  @Test
   public void testIsisInterfaceAndLevelDisable() {
     Configuration c = parseConfig("isis-interface-and-level-disable");
     IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
