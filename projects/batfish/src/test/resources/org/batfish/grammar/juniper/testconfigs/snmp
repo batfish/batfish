@@ -12,3 +12,6 @@ set snmp client-list SNMPCL 20.0.0.0/8
 set snmp community COMM2 client-list-name SNMPCL
 #
 set snmp engine-id local engine_id_name
+#
+set snmp v3 vacm security-to-group security-model usm security-name snmp-poller-1 group view-all
+
