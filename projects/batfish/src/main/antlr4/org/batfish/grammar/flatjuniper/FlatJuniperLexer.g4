@@ -3089,6 +3089,8 @@ SINGLE_QUOTE
 
 UNDERSCORE: '_';
 
+V3: 'v3';
+
 WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
