@@ -56,6 +56,10 @@ public final class Hierarchy {
     return builder.build();
   }
 
+  /**
+   * Merge hierarchy from the group trees into the main tree where main tree nodes have been
+   * annotated with {@code apply-groups}. Returns {@code true} iff the hierarchy was modified.
+   */
   public boolean inheritGroups(Flat_juniper_configurationContext ctx) {
     HierarchyPath globalPath = new HierarchyPath();
     return inheritGroups(ctx, _masterTree._root, globalPath, ImmutableList.of(), ImmutableSet.of());
@@ -65,7 +69,7 @@ public final class Hierarchy {
    * Insert new hierarchy and configuration lines for each applied group into the main tree so that:
    *
    * <ol>
-   *   <li>Inherited lines resulting from the first applied group come after lines from subsequent *
+   *   <li>Inherited lines resulting from the first applied group come after lines from subsequent
    *       applied groups at the same level of hierarchy. This conforms to priority indicated in <a
    *       href="https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/ref/statement/apply-groups.html#apply-groups__d65612e42">Juniper
    *       apply-groups documentation</a>

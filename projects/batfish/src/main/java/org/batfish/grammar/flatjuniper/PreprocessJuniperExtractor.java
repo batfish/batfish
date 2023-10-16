@@ -30,13 +30,12 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    * <p>Pre-processing consists of:
    *
    * <ol>
-   *   <li>Applying insertions (moves) and deletions
-   *   <li>Pruning lines deactivated by 'deactivate' lines
-   *   <li>Pruning 'deactivate' lines
+   *   <li>Applying insertions (moves) and deletions via {@link ActivationLinePruner}
+   *   <li>Pruning lines deactivated by 'deactivate' lines via {@link DeactivatedLinePruner}
+   *   <li>Pruning 'deactivate' lines via {@link DeactivatedLinePruner}
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
-   *       'apply-groups-except' lines;
-   *   <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
-   *   <li>Pruning wildcard lines
+   *       'apply-groups-except' lines via {@link GroupInheritor}
+   *   <li>Pruning 'groups' lines via {@link GroupPruner}
    *   <li>Generating lines corresponding to 'apply-path' lines
    *   <li>TODO: Pruning 'apply-path' lines
    * </ol>
