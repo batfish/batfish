@@ -219,7 +219,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  private static @Nullable org.batfish.datamodel.questions.BgpRoute toQuestionsBgpRoute(
+  /**
+   * Convert a {@link Bgpv4Route} to an equivalent {@link BgpRoute}. The former class is used by the
+   * Batfish route simulation, while the latter class is the format that is used in results by
+   * {@link TestRoutePoliciesQuestion} and other route-policy analysis questions.
+   *
+   * @param dataplaneBgpRoute the original route
+   * @return a version of the route suitable for output from this analysis
+   */
+  @Nullable
+  public static org.batfish.datamodel.questions.BgpRoute toQuestionBgpRoute(
       @Nullable Bgpv4Route dataplaneBgpRoute) {
     if (dataplaneBgpRoute == null) {
       return null;
@@ -227,7 +236,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return org.batfish.datamodel.questions.BgpRoute.builder()
         .setAdminDist(dataplaneBgpRoute.getAdministrativeCost())
         .setWeight(dataplaneBgpRoute.getWeight())
-        // TODO: The next-hop IP AUTO/NONE (Ip.AUTO) is used to denote multiple different things;
+        // TODO: The class NextHopDiscard is used to denote multiple different things;
         // we should distinguish these uses clearly from one another in the results returned by this
         // question. If the simulated route map has direction OUT, AUTO/NONE indicates that the
         // route map does not explicitly set the next hop.  If the simulated route map has direction
@@ -423,9 +432,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result) {
     return new Result<>(
         result.getPolicyId(),
-        toQuestionsBgpRoute(result.getInputRoute()),
+        toQuestionBgpRoute(result.getInputRoute()),
         result.getAction(),
-        toQuestionsBgpRoute(result.getOutputRoute()),
+        toQuestionBgpRoute(result.getOutputRoute()),
         result.getTrace());
   }
 
@@ -463,9 +472,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     }
 
     org.batfish.datamodel.questions.BgpRoute snapshotOutputRoute =
-        toQuestionsBgpRoute(snapshotResult.getOutputRoute());
+        toQuestionBgpRoute(snapshotResult.getOutputRoute());
     org.batfish.datamodel.questions.BgpRoute referenceOutputRoute =
-        toQuestionsBgpRoute(referenceResult.getOutputRoute());
+        toQuestionBgpRoute(referenceResult.getOutputRoute());
 
     boolean equalAction = snapshotResult.getAction() == referenceResult.getAction();
     boolean equalOutputRoutes = Objects.equals(snapshotOutputRoute, referenceOutputRoute);
@@ -481,7 +490,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return Row.builder()
         .put(COL_NODE, new Node(policyId.getNode()))
         .put(COL_POLICY_NAME, policyId.getPolicy())
-        .put(COL_INPUT_ROUTE, toQuestionsBgpRoute(inputRoute))
+        .put(COL_INPUT_ROUTE, toQuestionBgpRoute(inputRoute))
         .put(baseColumnName(COL_ACTION), snapshotResult.getAction())
         .put(deltaColumnName(COL_ACTION), referenceResult.getAction())
         .put(baseColumnName(COL_OUTPUT_ROUTE), snapshotOutputRoute)
