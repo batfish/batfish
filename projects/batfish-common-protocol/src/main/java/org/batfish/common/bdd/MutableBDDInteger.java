@@ -8,6 +8,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
@@ -92,12 +93,23 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(
         _bitvec.length <= 63, "Only BDDInteger of 63 or fewer bits can be converted to long");
 
+    // we must "complete" the given partial assignment in order to properly get models in the face
+    // of mutation, where this object represents a function of the original BDD variables. we could
+    // use BDD::fullSatOne to do that, but if there are many BDD variables then that will create a
+    // very large BDD, which can cause performance issues. instead we only explicitly treat as false
+    // the variables that do not appear in the given SAT assignment but are part of the support of
+    // this MutableBDDInteger.
+    BDD fullSatAssignment =
+        satAssignment.satOne(
+            satAssignment
+                .getFactory()
+                .andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet())),
+            false);
+
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
-      // a.diff(b) is a.and(b.not()). When the input is only a partial assignment (like satOne),
-      // this biases towards lexicographically smaller solutions: set a 1 only if you can't set 0.
-      if (!satAssignment.diffSat(bitBDD)) {
+      if (fullSatAssignment.andSat(bitBDD)) {
         value |= 1L << i;
       }
     }
@@ -147,7 +159,7 @@ public final class MutableBDDInteger extends BDDInteger {
   /*
    * Add two BDDs bitwise to create a new BDD
    */
-  public BDDInteger add(BDDInteger other) {
+  public MutableBDDInteger add(BDDInteger other) {
     BDD[] as = _bitvec;
     BDD[] bs = other._bitvec;
 
@@ -155,7 +167,7 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
 
     BDD carry = _factory.zero();
-    BDDInteger sum = new MutableBDDInteger(_factory, as.length);
+    MutableBDDInteger sum = new MutableBDDInteger(_factory, as.length);
     BDD[] cs = sum._bitvec;
     for (int i = cs.length - 1; i > 0; --i) {
       cs[i] = as[i].xor(bs[i]).xor(carry);

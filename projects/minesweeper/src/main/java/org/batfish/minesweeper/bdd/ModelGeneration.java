@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
 import static com.google.common.base.Preconditions.checkState;
+import static org.batfish.datamodel.LineAction.PERMIT;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -19,21 +20,28 @@ import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
+import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.route.nh.NextHop;
+import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
-import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.question.testroutepolicies.Result;
+import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
 public class ModelGeneration {
   private static Optional<Community> stringToCommunity(String str) {
@@ -130,27 +138,10 @@ public class ModelGeneration {
    */
   static AsPath satAssignmentToAsPath(BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
 
-    BDD[] aps = r.getAsPathRegexAtomicPredicates();
+    Integer ap = r.getAsPathRegexAtomicPredicates().satAssignmentToValue(model);
     Map<Integer, Automaton> apAutomata =
         configAPs.getAsPathRegexAtomicPredicates().getAtomicPredicateAutomata();
-
-    // find all atomic predicates that are required to be true in the given model
-    List<Integer> trueAPs =
-        IntStream.range(0, configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates())
-            .filter(i -> mustBeTrueInModel(aps[i], model))
-            .boxed()
-            .collect(Collectors.toList());
-
-    // since atomic predicates are disjoint, at most one of them should be true in the model
-    checkState(
-        trueAPs.size() <= 1,
-        "Error in symbolic AS-path analysis: at most one atomic predicate should be true");
-
-    // create an automaton for the language of AS-paths that are true in the model
-    Automaton asPathRegexAutomaton = SymbolicAsPathRegex.ALL_AS_PATHS.toAutomaton();
-    for (Integer i : trueAPs) {
-      asPathRegexAutomaton = asPathRegexAutomaton.intersection(apAutomata.get(i));
-    }
+    Automaton asPathRegexAutomaton = apAutomata.get(ap);
 
     String asPathStr = asPathRegexAutomaton.getShortestExample(true);
     // As-path regex automata should only accept strings with this property;
@@ -183,24 +174,17 @@ public class ModelGeneration {
    * Given a single satisfying assignment to the constraints from symbolic route analysis, produce a
    * next-hop for a given symbolic route that is consistent with the assignment.
    *
-   * @param fullModel a full model of the symbolic route constraints
+   * @param model a (possibly partial) model of the symbolic route constraints
    * @param r the symbolic route
    * @param configAPs an object provides information about the AS-path regex atomic predicates
    * @return a next-hop
    */
-  static NextHop satAssignmentToNextHop(
-      BDD fullModel, BDDRoute r, ConfigAtomicPredicates configAPs) {
-    // Note: this is the only part of model generation that relies on the fact that we are solving
-    // for the input route.  If we also want to produce the output route from the model, given the
-    // BDDRoute that results from symbolic analysis, we need to consider the direction of the route
-    // map (in or out) as well as the values of the other next-hop-related in the BDDRoute, in order
-    // to do it properly.
-
-    Ip ip = Ip.create(r.getNextHop().satAssignmentToLong(fullModel));
+  static NextHop satAssignmentToNextHop(BDD model, BDDRoute r, ConfigAtomicPredicates configAPs) {
+    Ip ip = Ip.create(r.getNextHop().satAssignmentToLong(model));
     // if we matched on a next-hop interface then include the interface name in the produced
     // next-hop
     List<String> nextHopInterfaces =
-        allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), fullModel);
+        allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), model);
     checkState(
         nextHopInterfaces.size() <= 1,
         "Error in symbolic route analysis: at most one next-hop interface can be set");
@@ -215,11 +199,108 @@ public class ModelGeneration {
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
    *
-   * @param model the satisfying assignment
-   * @param configAPs an object that provides information about the community atomic predicates
+   * @param model the (possibly partial) satisfying assignment
+   * @param configAPs an object that provides information about the atomic predicates in the model
    * @return a route
    */
   public static Bgpv4Route satAssignmentToInputRoute(BDD model, ConfigAtomicPredicates configAPs) {
+    return satAssignmentToRoute(model, new BDDRoute(model.getFactory(), configAPs), configAPs);
+  }
+
+  /**
+   * Check whether the results of symbolic analysis are consistent with a given concrete
+   * input-output result (which would typically come from running Batfish's route-map simulation
+   * question {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}).
+   * Specifically, check that the symbolic analysis agrees with the given result, on the action
+   * (permit or deny) that the route map will take on the given input route announcement as well as
+   * on the output route that will result (in the case that the route is permitted).
+   *
+   * @param model a (possibly partial) satisfying assignment to the constraints from symbolic route
+   *     analysis along some path
+   * @param bddRoute a symbolic representation of the output route produced along that path
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates in the bddRoute
+   * @param action the action that the symbolic analysis determined is taken on that path
+   * @param direction whether the route map is used as an import or export policy
+   * @param expectedResult the expected input-output behavior
+   * @return a boolean indicating whether the check succeeded
+   */
+  public static boolean validateModel(
+      BDD model,
+      BDDRoute bddRoute,
+      ConfigAtomicPredicates configAPs,
+      LineAction action,
+      Environment.Direction direction,
+      Result<BgpRoute> expectedResult) {
+    if (!expectedResult.getAction().equals(action)) {
+      return false;
+    }
+    if (action == PERMIT) {
+      BgpRoute outputRouteFromModel =
+          satAssignmentToOutputRoute(model, bddRoute, configAPs, direction);
+      return expectedResult.getOutputRoute().equals(outputRouteFromModel);
+    }
+    return true;
+  }
+
+  /**
+   * Produce the concrete output route that is represented by the given assignment of values to BDD
+   * variables as well as resulting {@link BDDRoute} from the symbolic route analysis.
+   *
+   * <p>Note: This method assumes that any AS-prepending that happens along the given path has
+   * already been accounted for through an update to the AS-path atomic predicates appropriately
+   * (see {@link org.batfish.minesweeper.AsPathRegexAtomicPredicates#prependAPs(List)}).
+   *
+   * @param model the (possibly partial) satisfying assignment
+   * @param bddRoute symbolic representation of the output route
+   * @param configAPs an object that provides information about the atomic predicates in the model
+   *     and bddRoute
+   * @param direction whether the route map is used as an import or export policy
+   * @return a route
+   */
+  private static BgpRoute satAssignmentToOutputRoute(
+      BDD model,
+      BDDRoute bddRoute,
+      ConfigAtomicPredicates configAPs,
+      Environment.Direction direction) {
+    BgpRoute.Builder builder =
+        TestRoutePoliciesAnswerer.toQuestionBgpRoute(
+            satAssignmentToRoute(model, bddRoute, configAPs))
+            .toBuilder();
+    if (direction == Environment.Direction.OUT && !bddRoute.getNextHopSet()) {
+      // in the OUT direction the next hop is ignored unless explicitly set
+      builder.setNextHopConcrete(NextHopDiscard.instance());
+    } else {
+      switch (bddRoute.getNextHopType()) {
+        case BGP_PEER_ADDRESS:
+          builder.setNextHop(NextHopBgpPeerAddress.instance());
+          break;
+        case DISCARDED:
+          builder.setNextHopConcrete(NextHopDiscard.instance());
+          break;
+        case SELF:
+          builder.setNextHop(NextHopSelf.instance());
+          break;
+        default:
+          break;
+      }
+    }
+
+    return builder.build();
+  }
+
+  /**
+   * Produce the concrete route that is represented by the given assignment of values to BDD
+   * variables and {@link BDDRoute} from the symbolic route analysis.
+   *
+   * @param model the (possibly partial) satisfying assignment
+   * @param bddRoute symbolic representation of the desired route
+   * @param configAPs an object that provides information about the atomic predicates in the model
+   *     and bddRoute
+   * @return a route
+   */
+  private static Bgpv4Route satAssignmentToRoute(
+      BDD model, BDDRoute bddRoute, ConfigAtomicPredicates configAPs) {
 
     Bgpv4Route.Builder builder =
         Bgpv4Route.builder()
@@ -227,31 +308,30 @@ public class ModelGeneration {
             .setReceivedFrom(ReceivedFromSelf.instance()) /* dummy value until supported */
             .setOriginMechanism(OriginMechanism.LEARNED) /* dummy value until supported */;
 
-    BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
-
-    Ip ip = Ip.create(r.getPrefix().satAssignmentToLong(model));
-    long len = r.getPrefixLength().satAssignmentToLong(model);
+    Ip ip = Ip.create(bddRoute.getPrefix().satAssignmentToLong(model));
+    long len = bddRoute.getPrefixLength().satAssignmentToLong(model);
     builder.setNetwork(Prefix.create(ip, (int) len));
 
-    builder.setLocalPreference(r.getLocalPref().satAssignmentToLong(model));
-    builder.setAdmin(r.getAdminDist().satAssignmentToInt(model));
-    builder.setMetric(r.getMed().satAssignmentToLong(model));
-    builder.setTag(r.getTag().satAssignmentToLong(model));
-    builder.setOriginType(r.getOriginType().satAssignmentToValue(model));
-    builder.setProtocol(r.getProtocolHistory().satAssignmentToValue(model));
+    builder.setLocalPreference(bddRoute.getLocalPref().satAssignmentToLong(model));
+    builder.setAdmin(bddRoute.getAdminDist().satAssignmentToInt(model));
+    builder.setMetric(bddRoute.getMed().satAssignmentToLong(model));
+    builder.setTag(bddRoute.getTag().satAssignmentToLong(model));
+    builder.setWeight(bddRoute.getWeight().satAssignmentToInt(model));
+    builder.setOriginType(bddRoute.getOriginType().satAssignmentToValue(model));
+    builder.setProtocol(bddRoute.getProtocolHistory().satAssignmentToValue(model));
 
     // if the cluster list length is N, create the cluster list 0,...,N-1
-    long clusterListLength = r.getClusterListLength().satAssignmentToLong(model);
+    long clusterListLength = bddRoute.getClusterListLength().satAssignmentToLong(model);
     builder.setClusterList(
         LongStream.range(0, clusterListLength).boxed().collect(ImmutableSet.toImmutableSet()));
 
-    Set<Community> communities = satAssignmentToCommunities(model, r, configAPs);
+    Set<Community> communities = satAssignmentToCommunities(model, bddRoute, configAPs);
     builder.setCommunities(communities);
 
-    AsPath asPath = satAssignmentToAsPath(model, r, configAPs);
+    AsPath asPath = satAssignmentToAsPath(model, bddRoute, configAPs);
     builder.setAsPath(asPath);
 
-    NextHop nextHop = satAssignmentToNextHop(model, r, configAPs);
+    NextHop nextHop = satAssignmentToNextHop(model, bddRoute, configAPs);
     builder.setNextHop(nextHop);
 
     return builder.build();
