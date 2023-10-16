@@ -36,7 +36,7 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
    *       'apply-groups-except' lines via {@link GroupInheritor}
    *   <li>Pruning 'groups' lines via {@link GroupPruner}
-   *   <li>Generating lines corresponding to 'apply-path' lines
+   *   <li>Generating lines corresponding to 'apply-path' lines via {@link ApplyPathApplicator}
    *   <li>TODO: Pruning 'apply-path' lines
    * </ol>
    *
