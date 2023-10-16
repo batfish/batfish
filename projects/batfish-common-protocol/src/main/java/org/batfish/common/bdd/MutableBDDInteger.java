@@ -93,10 +93,12 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(
         _bitvec.length <= 63, "Only BDDInteger of 63 or fewer bits can be converted to long");
 
-    // explicitly treat as false any variables that do not appear in the given SAT assignment but
-    // are part of the support of this MutableBDDInteger. this is necessary to properly get models
-    // in the face of mutation, where this object represents a function of the original BDD
-    // variables.
+    // we must "complete" the given partial assignment in order to properly get models in the face
+    // of mutation, where this object represents a function of the original BDD variables. we could
+    // use BDD::fullSatOne to do that, but if there are many BDD variables then that will create a
+    // very large BDD, which can cause performance issues. instead we only explicitly treat as false
+    // the variables that do not appear in the given SAT assignment but are part of the support of
+    // this MutableBDDInteger.
     BDD fullSatAssignment =
         satAssignment.satOne(
             satAssignment
