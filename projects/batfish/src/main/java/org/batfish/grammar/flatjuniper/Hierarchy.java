@@ -93,14 +93,15 @@ public final class Hierarchy {
                 .addAll(inheritorNode._exceptGroups)
                 .addAll(ancestralExceptGroups)
                 .build();
-    // there are groups to attempt to inherit
     boolean isListNode = IS_LIST_PATH_TREE.isListPath(inheritorNodePath);
+    // Inherit just the immediate children that should be added to this node.
     boolean modified =
         isListNode
             ? inheritGroupsIntoListNode(
                 ctx, inheritorNode, inheritorNodePath, prioritizedGroups, exceptGroups)
             : inheritGroupsIntoNonListNode(
                 ctx, inheritorNode, inheritorNodePath, prioritizedGroups, exceptGroups);
+    // Now that this level is done, recursively inherit at all of this node's children.
     for (HierarchyChildNode child : inheritorNode._children.values()) {
       inheritorNodePath._nodes.add(child);
       modified =
