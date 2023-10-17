@@ -893,8 +893,8 @@ public final class Hierarchy {
       return _groupName;
     }
 
-    /** Mark a group as being applied at given path in the main tree. */
-    public void markApplyGroups(HierarchyPath path, String groupName) {
+    /** Mark a group as being applied at given path in this tree. */
+    private void markApplyGroups(HierarchyPath path, String groupName) {
       if (path._nodes.isEmpty()) {
         _root.addGroup(groupName);
       } else {
@@ -903,8 +903,8 @@ public final class Hierarchy {
       }
     }
 
-    /** Mark a group as being excluded from inheritance at a given path in the main tree. */
-    public void markApplyGroupsExcept(HierarchyPath path, String groupName) {
+    /** Mark a group as being excluded from inheritance at a given path in this tree. */
+    private void markApplyGroupsExcept(HierarchyPath path, String groupName) {
       if (path._nodes.isEmpty()) {
         _root.addExceptGroup(groupName);
       } else {
@@ -989,10 +989,12 @@ public final class Hierarchy {
     return newTree;
   }
 
+  /** Mark a group as being applied at given path in the main tree. */
   public void markApplyGroups(HierarchyPath path, String groupName) {
     _masterTree.markApplyGroups(path, groupName);
   }
 
+  /** Mark a group as being excluded from inheritance at a given path in the main tree. */
   public void markApplyGroupsExcept(HierarchyPath path, String groupName) {
     _masterTree.markApplyGroupsExcept(path, groupName);
   }
