@@ -295,11 +295,7 @@ public final class Hierarchy {
     if (exceptGroups.contains(group)) {
       return null;
     }
-    HierarchyNode groupNode = groupTree.findFirstMatchPathNode(inheritorNodePath);
-    if (groupNode == null) {
-      return null;
-    }
-    return groupNode;
+    return groupTree.findFirstMatchPathNode(inheritorNodePath);
   }
 
   private boolean isClusterGroup(String group) {
