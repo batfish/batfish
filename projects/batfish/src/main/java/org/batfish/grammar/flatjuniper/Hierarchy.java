@@ -343,6 +343,14 @@ public final class Hierarchy {
 
   public static class HierarchyTree {
 
+    /**
+     * Return the node in this tree that matches the given path of literals, using the first
+     * matching node in this tree at each depth.
+     *
+     * <p>TODO: backtracking(?) on wildcard choices that eventually fail at greater depth
+     *
+     * <p>TODO: correct wildcard visitation order
+     */
     public @Nullable HierarchyNode findFirstMatchPathNode(HierarchyPath literalPath) {
       HierarchyNode current = _root;
       for (HierarchyChildNode toMatchNext : literalPath._nodes) {
@@ -506,17 +514,6 @@ public final class Hierarchy {
         _children.put(node._unquotedText, node);
       }
 
-      public void prependChildNode(HierarchyChildNode node) {
-        if (_children.isEmpty()) {
-          addChildNode(node);
-          return;
-        }
-        Map<String, HierarchyChildNode> old = new LinkedHashMap<>(_children);
-        _children.clear();
-        addChildNode(node);
-        _children.putAll(old);
-      }
-
       public HierarchyChildNode getChildNode(String text) {
         return _children.get(text);
       }
@@ -525,6 +522,10 @@ public final class Hierarchy {
         return _children;
       }
 
+      /**
+       * Return the first child of this node that matches the given node, or {@code null} if no
+       * child matches.
+       */
       public @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
         for (HierarchyChildNode child : _children.values()) {
           if (child.matches(node)) {
@@ -892,6 +893,7 @@ public final class Hierarchy {
       return _groupName;
     }
 
+    /** Mark a group as being applied at given path in the main tree. */
     public void markApplyGroups(HierarchyPath path, String groupName) {
       if (path._nodes.isEmpty()) {
         _root.addGroup(groupName);
@@ -901,6 +903,7 @@ public final class Hierarchy {
       }
     }
 
+    /** Mark a group as being excluded from inheritance at a given path in the main tree. */
     public void markApplyGroupsExcept(HierarchyPath path, String groupName) {
       if (path._nodes.isEmpty()) {
         _root.addExceptGroup(groupName);
@@ -949,10 +952,6 @@ public final class Hierarchy {
     _deactivateTree.findExactPathMatchNode(path).setDeactivated(true);
   }
 
-  public void removeSetLine(HierarchyPath path) {
-    _masterTree.findExactPathMatchNode(path)._line = null;
-  }
-
   public void removeDeactivatePath(HierarchyPath path, Activate_lineContext ctx) {
     _deactivateTree.addPath(path, null, null);
     _deactivateTree.findExactPathMatchNode(path).setDeactivated(false);
@@ -974,10 +973,6 @@ public final class Hierarchy {
       Flat_juniper_configurationContext configurationContext) {
     return _masterTree.getApplyPathLines(
         basePath, applyPathPath, configurationContext, _tokenInputs);
-  }
-
-  public HierarchyTree getMasterTree() {
-    return _masterTree;
   }
 
   public HierarchyTree getTree(String groupName) {

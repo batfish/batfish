@@ -44,7 +44,7 @@ public class ApplyGroupsMarker extends FlatJuniperParserBaseListener {
     _hierarchy.addMasterPath(_currentPath, null, null);
     Optional<String> maybeGroupName = toString(ctx.name);
     if (!maybeGroupName.isPresent()) {
-      // TODO: warn
+      // already warned
       return;
     }
     String groupName = maybeGroupName.get();
