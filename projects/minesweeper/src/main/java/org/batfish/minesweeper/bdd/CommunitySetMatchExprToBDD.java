@@ -99,10 +99,7 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitCommunitySetMatchRegex(CommunitySetMatchRegex communitySetMatchRegex, Arg arg) {
-    // We've already ensured in CommunitySetMatchExprVarCollector that there are no community-set
-    // regexes, so this code should be unreachable.
-    throw new IllegalStateException(
-        String.format("Unexpected community set match regex %s", communitySetMatchRegex));
+    throw new UnsupportedOperationException(communitySetMatchRegex.toString());
   }
 
   @Override
@@ -130,7 +127,7 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitHasSize(HasSize hasSize, Arg arg) {
-    throw new UnsupportedOperationException();
+    throw new UnsupportedOperationException(hasSize.toString());
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {

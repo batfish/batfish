@@ -59,6 +59,7 @@ snmp_null
    (
       CONTACT
       | DESCRIPTION
+      | ENGINE_ID
       | FILTER_DUPLICATES
       | INTERFACE
       | LOCATION
@@ -67,6 +68,7 @@ snmp_null
       | TRACEOPTIONS
       | TRAP_OPTIONS
       | VIEW
+      | V3
    ) null_filler
 ;
 

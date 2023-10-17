@@ -543,6 +543,8 @@ DHCP_LOCAL_SERVER: 'dhcp-local-server';
 
 DHCP_RELAY: 'dhcp-relay';
 
+DHCP_SECURITY: 'dhcp-security';
+
 DIRECT: 'direct';
 
 DISABLE: 'disable';
@@ -611,8 +613,12 @@ ENCRYPTION_ALGORITHM: 'encryption-algorithm';
 
 ENFORCE_FIRST_AS: 'enforce-first-as';
 
+ENGINE_ID: 'engine-id';
+
 ENHANCED_HASH_KEY: 'enhanced-hash-key';
+
 EQUAL_COST_PATHS: 'equal-cost-paths';
+
 ESP: 'esp';
 
 ESP_HEADER: 'ESP-header';
@@ -902,6 +908,8 @@ IGMP: 'igmp';
 IGMP_SNOOPING: 'igmp-snooping';
 
 IGNORE: 'ignore';
+
+IGNORE_ATTACHED_BIT: 'ignore-attached-bit';
 
 IGNORE_L3_INCOMPLETES: 'ignore-l3-incompletes';
 
@@ -3082,6 +3090,8 @@ SINGLE_QUOTE
 ;
 
 UNDERSCORE: '_';
+
+V3: 'v3';
 
 WS
 :

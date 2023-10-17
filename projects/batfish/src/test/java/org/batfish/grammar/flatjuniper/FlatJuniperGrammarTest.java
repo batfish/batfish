@@ -4272,6 +4272,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIsisIgnoreAttachedBit() {
+    parseConfig("isis-ignore-attached-bit");
+    // don't crash.
+  }
+
+  @Test
   public void testIsisInterfaceAndLevelDisable() {
     Configuration c = parseConfig("isis-interface-and-level-disable");
     IsisProcess proc = c.getVrfs().get(DEFAULT_VRF_NAME).getIsisProcess();
@@ -7952,6 +7958,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testVlanForwardingOptionsDhcpSecurity() {
+    // doesn't crash.
+    parseJuniperConfig("vlan-forwarding-options");
+  }
+
+  @Test
   public void testApplyPathMixedIpAndNotIpOrPrefixExtraction() {
     String hostname = "apply-path-mixed-ip-and-not-ip-or-prefix";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
@@ -7959,6 +7971,19 @@ public final class FlatJuniperGrammarTest {
         vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getPrefixes(),
         contains(Prefix.strict("192.0.2.1/32")));
     assertFalse(vc.getMasterLogicalSystem().getPrefixLists().get("pl1").getHasIpv6());
+  }
+
+  @Test
+  public void testQuotingMistakesDontCrash() throws IOException {
+    String hostname = "quote-mistakes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(pvcae, hasParseWarning("configs/" + hostname, equalTo("Improperly-quoted string")));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(
+        c, hasInterface("xe-0/0/0", hasDescription("\"foo bar\" unit 0 ip address 1.2.3.4/31")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

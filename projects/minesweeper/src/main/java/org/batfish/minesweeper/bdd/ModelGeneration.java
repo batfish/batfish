@@ -332,7 +332,6 @@ public class ModelGeneration {
     builder.setAsPath(asPath);
 
     NextHop nextHop = satAssignmentToNextHop(model, bddRoute, configAPs);
-
     builder.setNextHop(nextHop);
 
     return builder.build();

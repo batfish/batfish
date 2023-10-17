@@ -390,6 +390,7 @@ public class Vrf extends ComparableStructure<String> {
   }
 
   /** Source IP inference of locally generated IP packets, defaults to {@link InferFromFib}. */
+  @JsonIgnore
   public @Nonnull SourceIpInference getSourceIpInference() {
     return _sourceIpInference;
   }

@@ -22,13 +22,16 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExprReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetReference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetUnion;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLowExprs;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.junit.Before;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 /** Tests for {@link org.batfish.minesweeper.bdd.CommunitySetExprToBDD}. */
 public class CommunitySetExprToBDDTest {
@@ -39,6 +42,8 @@ public class CommunitySetExprToBDDTest {
   private ConfigAtomicPredicates _configAPs;
   private CommunitySetMatchExprToBDD.Arg _arg;
   private CommunitySetExprToBDD _communitySetExprToBDD;
+
+  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -154,6 +159,12 @@ public class CommunitySetExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from(StandardCommunity.parse("21:30"));
 
     assertEquals(cvarToBDD(cvar1).or(cvarToBDD(cvar2)), result);
+  }
+
+  @Test
+  public void testVisitInputCommunities() {
+    _expectedException.expect(UnsupportedOperationException.class);
+    _communitySetExprToBDD.visitInputCommunities(InputCommunities.instance(), _arg);
   }
 
   private BDD cvarToBDD(CommunityVar cvar) {

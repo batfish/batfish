@@ -17,6 +17,11 @@ is_export
   EXPORT expr = policy_expression
 ;
 
+is_ignore_attached_bit
+:
+  IGNORE_ATTACHED_BIT
+;
+
 is_interface
 :
   INTERFACE
@@ -255,6 +260,7 @@ p_isis
   (
     apply
     | is_export
+    | is_ignore_attached_bit
     | is_interface
     | is_level
     | is_null

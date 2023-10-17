@@ -100,7 +100,7 @@ public final class Hierarchy {
 
       private HierarchyChildNode(String text, int lineNumber) {
         _text = text;
-        _unquotedText = unquote(text);
+        _unquotedText = unquote(text).orElse(text);
         _lineNumber = lineNumber;
       }
 
