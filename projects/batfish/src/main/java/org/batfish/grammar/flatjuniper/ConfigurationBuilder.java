@@ -386,6 +386,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_ignore_attached_bitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
@@ -5170,6 +5171,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         .getIsisSettings()
         .getExportPolicies()
         .add(toComplexPolicyStatement(ctx.expr, ISIS_EXPORT_POLICY));
+  }
+
+  @Override
+  public void exitIs_ignore_attached_bit(Is_ignore_attached_bitContext ctx) {
+    todo(ctx);
   }
 
   @Override

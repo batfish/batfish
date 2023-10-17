@@ -28,16 +28,19 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
+import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer;
@@ -133,16 +136,18 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @return A BDD that denotes at least one of the differences in the given diffs list. Only
-   *     capturing differences in communities and as-path for now; the rest are not necessary
-   *     because they do not have additive semantics, like "set community additive" and "set as-path
-   *     prepend". (actually, I think you might be able to plus on the local-pref value, TODO:
-   *     check)
+   *     capturing differences in communities for now; the rest are not necessary because they do
+   *     not have additive semantics, like "set community additive". Note that AS-path prepends are
+   *     recorded concretely rather than symbolically in {@link BDDRoute}s, so their differences are
+   *     also ignored here. (actually, I think you might be able to plus on the local-pref value,
+   *     TODO: check)
    */
   private BDD counterExampleOutputConstraints(
       BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
     BDD acc = factory.zero();
     for (BDDRouteDiff.DifferenceType d : diffs) {
       switch (d) {
+        case AS_PATH:
         case OSPF_METRIC:
         case LOCAL_PREF:
         case MED:
@@ -165,17 +170,6 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
             acc = acc.or(outConstraint);
           }
           break;
-        case AS_PATH:
-          BDD[] asPathAtomicPredicates = r1.getAsPathRegexAtomicPredicates();
-          BDD[] otherAsPathAtomicPredicates = r2.getAsPathRegexAtomicPredicates();
-          for (int i = 0; i < asPathAtomicPredicates.length; i++) {
-            BDD outConstraint = asPathAtomicPredicates[i].xor(otherAsPathAtomicPredicates[i]);
-            // If there is a scenario where the two outputs differ at this community then ensure
-            // this scenario
-            // manifests during model generation.
-            acc = acc.or(outConstraint);
-          }
-          break;
         default:
           throw new UnsupportedOperationException(d.name());
       }
@@ -187,6 +181,63 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
       // otherwise return true.
       return factory.one();
     }
+  }
+
+  /**
+   * Check that the results of symbolic analysis are consistent with the given concrete result from
+   * route simulation.
+   *
+   * @param fullModel a satisfying assignment to the constraints from symbolic route analysis along
+   *     a given path
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of that path
+   * @param result the expected input-output behavior
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateModel(
+      BDD fullModel,
+      ConfigAtomicPredicates configAPs,
+      TransferReturn path,
+      Result<BgpRoute> result) {
+    // update the atomic predicates to include any prepended ASes on this path
+    ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
+    AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
+    aps.prependAPs(path.getFirst().getPrependedASes());
+
+    return ModelGeneration.validateModel(
+        fullModel,
+        path.getFirst(),
+        configAPsCopy,
+        path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
+        _direction,
+        result);
+  }
+
+  /**
+   * Check that the example of a behavioral difference between the two route maps the symbolic
+   * analysis finds is consistent with the results from the concrete route simulation.
+   *
+   * @param constraints representation of the set of input routes that should exhibit a difference
+   * @param configAPs the {@link ConfigAtomicPredicates} object, which enables proper interpretation
+   *     of atomic predicates
+   * @param path the symbolic representation of the path through the original route map
+   * @param otherPath the symbolic representation of the path through the other route map
+   * @param result the expected behavior of the original route map on an input that should exhibit a
+   *     difference
+   * @param otherResult the expected behavior of the other route map on the same input
+   * @return a boolean indicating whether the check succeeded
+   */
+  private boolean validateDifference(
+      BDD constraints,
+      ConfigAtomicPredicates configAPs,
+      TransferReturn path,
+      TransferReturn otherPath,
+      Result<BgpRoute> result,
+      Result<BgpRoute> otherResult) {
+    BDD fullModel = ModelGeneration.constraintsToModel(constraints, configAPs);
+    return validateModel(fullModel, configAPs, path, result)
+        && validateModel(fullModel, configAPs, otherPath, otherResult);
   }
 
   /**
@@ -266,6 +317,11 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
                 SearchRoutePoliciesAnswerer.simulatePolicy(
                     referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
             differences.add(new Tuple<>(otherResult, refResult));
+
+            // As a sanity check, compare the simulated results above with what the symbolic route
+            // analysis predicts will happen.
+            assert validateDifference(
+                finalConstraints, configAPs, path, otherPath, refResult, otherResult);
           }
         }
       }

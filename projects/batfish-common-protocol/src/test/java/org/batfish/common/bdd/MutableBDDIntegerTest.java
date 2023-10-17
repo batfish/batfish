@@ -2,6 +2,7 @@ package org.batfish.common.bdd;
 
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -69,7 +70,7 @@ public class MutableBDDIntegerTest {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
-    BDDInteger xPlus1 = x.add(constant1);
+    MutableBDDInteger xPlus1 = x.add(constant1);
 
     assertTrue(x.value(0).equals(xPlus1.value(1))); // x == 0 <==> x+1 == 1
     assertTrue(x.value(1).equals(xPlus1.value(2))); // x == 1 <==> x+1 == 2
@@ -80,6 +81,19 @@ public class MutableBDDIntegerTest {
     assertThat(xPlus1.getValuesSatisfying(xPlus1.value(3L), 100), contains(3L));
     assertThat(xPlus1.getValuesSatisfying(x.value(3L), 100), contains(4L));
     assertThat(x.getValuesSatisfying(xPlus1.value(3L), 100), contains(2L));
+
+    // Check that partial satisfying assignments also work properly
+    MutableBDDInteger constant16 = MutableBDDInteger.makeFromValue(factory, 5, 16);
+    BDDInteger xPlus16 = x.add(constant16);
+    MutableBDDInteger constant31 = MutableBDDInteger.makeFromValue(factory, 5, 31);
+    BDDInteger xPlus32 = xPlus1.add(constant31);
+    BDDInteger xPlusx = x.add(x);
+    assertThat(x.satAssignmentToLong(factory.one()), equalTo(0L));
+    assertThat(x.satAssignmentToLong(x._bitvec[4]), equalTo(1L));
+    assertThat(xPlus1.satAssignmentToLong(factory.one()), equalTo(1L));
+    assertThat(xPlus16.satAssignmentToLong(factory.one()), equalTo(16L));
+    assertThat(xPlus32.satAssignmentToLong(factory.one()), equalTo(0L));
+    assertThat(xPlusx.satAssignmentToLong(x._bitvec[4]), equalTo(2L));
   }
 
   @Test

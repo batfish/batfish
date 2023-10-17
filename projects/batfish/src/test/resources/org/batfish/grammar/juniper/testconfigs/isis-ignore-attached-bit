@@ -1,0 +1,5 @@
+#
+set system host-name isis-ignore-attached-bit
+#
+set protocols isis ignore-attached-bit
+#
