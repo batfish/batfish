@@ -61,7 +61,7 @@ sy_host_name
 
 sy_name_server
 :
-  NAME_SERVER server = ip_address
+  NAME_SERVER server = ip_address (SOURCE_ADDRESS src = ip_address)?
 ;
 
 sy_ntp

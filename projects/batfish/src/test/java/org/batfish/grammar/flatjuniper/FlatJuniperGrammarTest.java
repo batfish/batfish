@@ -2724,7 +2724,8 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testNameServer() {
     Configuration config = parseConfig("name-server");
-    assertThat(config.getDnsServers(), contains("1.2.3.4"));
+    assertEquals(config.getDnsServers().toArray()[0], "1.2.3.4");
+    assertEquals(config.getDnsServers().toArray()[1], "2.0.0.0");
   }
 
   @Test
