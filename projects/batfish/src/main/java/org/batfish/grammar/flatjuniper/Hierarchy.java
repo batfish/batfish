@@ -1065,9 +1065,9 @@ public final class Hierarchy {
     }
 
     /**
-     * Returns {@code true} iff the {@code subpathEndInclusive}th node of {@code path} corresponds
-     * to a list node in the Juniper grammar, according to the rules identifying such list nodes
-     * that have been instantiated in this tree.
+     * Returns {@code true} iff the {@code path} corresponds to a node whose children are an ordered
+     * list in the Juniper grammar, according to the rules identifying such nodes that have been
+     * instantiated in this tree.
      */
     private boolean isListPath(HierarchyPath path) {
       IsListPathNode currentIsListPathNode = _root;
@@ -1086,14 +1086,14 @@ public final class Hierarchy {
      * Add a rule identifying list nodes in the Juniper grammar.
      *
      * <p>The rule must be a space-separated list of strings, each of which is either literal text
-     * or a wildcard.
+     * or a wildcard, and which each represent a matcher for a successively deeper segment of a path
+     * in the Juniper hierarchy.
      *
      * <p>For instance, adding a rule {@code foo bar <*> baz} means that the {@code baz} in the
      * Juniper line {@code set groups somegroupname foo bar someusertext baz} should be treated as a
-     * list node, and therefore groups lines starting this way should be appended to the end of the
-     * existing lines with common text up to {@code someusertest}. HOWEVER, this is disregarded if
-     * the main hierarchy already contains a path through {@code baz}, though a separate longer rule
-     * might still be applied in that case.
+     * node whose children are an ordered list; and therefore children from group nodes whose path
+     * matches {@code baz} should be appended after non-inherited children of {@code baz}, and also
+     * after such children inherited from higher-priority groups.
      */
     private void addListPathRule(String listPathRule) {
       String[] components = listPathRule.split(" ");
@@ -1118,8 +1118,8 @@ public final class Hierarchy {
   }
 
   /**
-   * Returns {@code true} iff the {@code subpathEndInclusive}th node of {@code path} corresponds to
-   * a list node in the Juniper grammar.
+   * Returns {@code true} iff the {@code path} corresponds to a node whose children are an ordered
+   * list in the Juniper grammar.
    */
   @VisibleForTesting
   static boolean isListPath(HierarchyPath path) {
@@ -1128,7 +1128,10 @@ public final class Hierarchy {
 
   private static final IsListPathTree IS_LIST_PATH_TREE = buildIsListPathTree();
 
-  /** Build the tree used for determining whether a hierarchy subpath ends in a Juniper list node */
+  /**
+   * Build the tree used for determining whether a hierarchy path ends in a node whose children are
+   * an ordered list in the Juniper grammar.
+   */
   private static synchronized @Nonnull IsListPathTree buildIsListPathTree() {
     IsListPathTree tree = new IsListPathTree();
     for (String listPath : getJuniperListPaths()) {
