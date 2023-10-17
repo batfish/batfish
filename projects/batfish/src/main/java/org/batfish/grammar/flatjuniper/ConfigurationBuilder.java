@@ -7031,7 +7031,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSy_name_server(Sy_name_serverContext ctx) {
     Set<String> dnsServers = _currentLogicalSystem.getDnsServers();
-    String hostname = toString(ctx.hostname);
+    String hostname = toIp(ctx.server).toString();
     dnsServers.add(hostname);
   }
 
