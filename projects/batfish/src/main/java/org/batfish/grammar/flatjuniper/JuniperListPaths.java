@@ -21,7 +21,14 @@ public final class JuniperListPaths {
         "firewall family inet filter <*> term",
         "firewall filter <*> term",
         "interfaces <*> unit <*> family inet filter input-list",
+        "interfaces <*> unit <*> family inet filter output-list",
         "policy-options policy-statement <*> term",
+        "protocols bgp group <*> export",
+        "protocols bgp group <*> import",
+        "security nat destination rule-set <*> rule",
+        "security nat destination rule-set <*> rule <*> match source-address-name",
+        "security nat source rule-set <*> rule",
+        "security nat source rule-set <*> rule <*> then source-nat pool",
         "security policies from-zone <*> to-zone <*> policy",
         "system domain-search"
       };
