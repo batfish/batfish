@@ -6,6 +6,7 @@ import static org.batfish.grammar.flatjuniper.JuniperListPaths.getJuniperListPat
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
@@ -52,9 +53,15 @@ public final class Hierarchy {
 
   /** Dump all set lines and error nodes from the main tree. */
   public @Nonnull List<ParseTree> extractParseTrees() {
-    ImmutableList.Builder<ParseTree> builder = ImmutableList.builder();
+    ImmutableList.Builder<ParseTree> builder =
+        ImmutableList.builderWithExpectedSize(countParseTrees());
     _masterTree._root.dumpParseTrees(builder);
     return builder.build();
+  }
+
+  /** Returns the number of parse trees that would be dumped by {@link #extractParseTrees()}. */
+  private int countParseTrees() {
+    return _masterTree._root.countParseTrees();
   }
 
   /**
@@ -396,6 +403,11 @@ public final class Hierarchy {
         dumpChildParseTrees(builder);
       }
 
+      @Override
+      protected int countParseTrees() {
+        return (_line != null ? 1 : 0) + _errorNodes.size() + countChildParseTrees();
+      }
+
       public abstract boolean isMatchedBy(HierarchyLiteralNode node);
 
       public abstract boolean isMatchedBy(HierarchyWildcardNode node);
@@ -465,6 +477,12 @@ public final class Hierarchy {
       public abstract void dumpParseTrees(ImmutableList.Builder<ParseTree> builder);
 
       /**
+       * Returns the number of parse trees that would be returned by {@link
+       * #dumpParseTrees(Builder)}.
+       */
+      protected abstract int countParseTrees();
+
+      /**
        * Dump child node parse trees, using prioritized list of groups where priority decreases with
        * increasing index
        */
@@ -472,6 +490,18 @@ public final class Hierarchy {
         for (HierarchyChildNode child : _children.values()) {
           child.dumpParseTrees(builder);
         }
+      }
+
+      /**
+       * Returns the number of parse tress that would be returned by {@link
+       * #dumpChildParseTrees(Builder)}.
+       */
+      protected final int countChildParseTrees() {
+        int count = 0;
+        for (HierarchyChildNode child : _children.values()) {
+          count += child.countParseTrees();
+        }
+        return count;
       }
 
       /**
@@ -581,6 +611,11 @@ public final class Hierarchy {
       public void dumpParseTrees(ImmutableList.Builder<ParseTree> builder) {
         builder.addAll(_errorNodes);
         dumpChildParseTrees(builder);
+      }
+
+      @Override
+      protected int countParseTrees() {
+        return countChildParseTrees() + _errorNodes.size();
       }
     }
 
