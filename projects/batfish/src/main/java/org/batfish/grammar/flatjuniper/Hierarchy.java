@@ -50,6 +50,7 @@ import org.batfish.representation.juniper.GroupWildcard;
 @ParametersAreNonnullByDefault
 public final class Hierarchy {
 
+  /** Dump all set lines and error nodes from the main tree. */
   public @Nonnull List<ParseTree> extractParseTrees() {
     ImmutableList.Builder<ParseTree> builder = ImmutableList.builder();
     _masterTree._root.dumpParseTrees(builder);
@@ -77,6 +78,8 @@ public final class Hierarchy {
    *       values from groups come after non-inherited list-like values, while non-list-like values
    *       from groups come before non-inherited non-list-like values.
    * </ol>
+   *
+   * Returns {@code true} iff the hierarchy was modified.
    */
   public boolean inheritGroups(
       Flat_juniper_configurationContext ctx,
@@ -111,6 +114,10 @@ public final class Hierarchy {
     return modified;
   }
 
+  /**
+   * Inherit groups applied at this node whose children are either a scalar value, or whose order
+   * does not matter. Returns {@code true} iff the hierarchy was modified.
+   */
   private boolean inheritGroupsIntoNonListNode(
       Flat_juniper_configurationContext ctx,
       HierarchyNode inheritorNode,
@@ -168,6 +175,10 @@ public final class Hierarchy {
     }
   }
 
+  /**
+   * Inherit from a given group node's child into a main tree node whose children are either a
+   * scalar value, or whose order does not matter.
+   */
   private void inheritGroupNodeChildIntoNonListNode(
       Flat_juniper_configurationContext ctx,
       HierarchyNode inheritorNode,
@@ -198,6 +209,10 @@ public final class Hierarchy {
     }
   }
 
+  /**
+   * Inherit groups applied at this node whose children are an ordered list. Returns {@code true}
+   * iff the hierarchy was modified.
+   */
   private boolean inheritGroupsIntoListNode(
       Flat_juniper_configurationContext ctx,
       HierarchyNode inheritorNode,
@@ -220,6 +235,10 @@ public final class Hierarchy {
     return modified;
   }
 
+  /**
+   * Inherit from a given group node's child into a main tree node whose children are an ordered
+   * list. Returns {@code true} iff the hierarchy was modified.
+   */
   private boolean inheritGroupNodeChildIntoListNode(
       Flat_juniper_configurationContext ctx,
       HierarchyNode inheritorNode,
@@ -247,6 +266,10 @@ public final class Hierarchy {
     return true;
   }
 
+  /**
+   * Non-thread-safe helper for generating a set line in group inheritance code. Modifies supplied
+   * {@link HierarchyPath} temporarily for efficiency.
+   */
   private @Nonnull Set_lineContext inheritSetLineHelper(
       Flat_juniper_configurationContext ctx,
       HierarchyPath pathToPenultimateNode,
