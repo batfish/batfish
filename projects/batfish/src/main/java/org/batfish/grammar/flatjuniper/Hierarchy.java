@@ -350,9 +350,8 @@ public final class Hierarchy {
      * Return the node in this tree that matches the given path of literals, using the first
      * matching node in this tree at each depth.
      *
-     * <p>TODO: backtracking(?) on wildcard choices that eventually fail at greater depth
-     *
-     * <p>TODO: correct wildcard visitation order
+     * <p>TODO: Fix logic here and/or at caller to fix x-failed test {@code
+     * FlatJuniperGrammarTest.testApplyGroupsWildcardNestingExtraction}.
      */
     public @Nullable HierarchyNode findFirstMatchPathNode(HierarchyPath literalPath) {
       HierarchyNode current = _root;

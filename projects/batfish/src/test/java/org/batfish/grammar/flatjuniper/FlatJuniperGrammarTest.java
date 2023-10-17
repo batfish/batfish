@@ -7987,5 +7987,27 @@ public final class FlatJuniperGrammarTest {
         c, hasInterface("xe-0/0/0", hasDescription("\"foo bar\" unit 0 ip address 1.2.3.4/31")));
   }
 
+  /**
+   * TODO: Fix and un-xfail. To fix, should backtrack and try alternate (shallow, wildcard) paths
+   * when inheriting groups lines and no match is found. See {@link GroupInheritor}.
+   */
+  @Test
+  public void testApplyGroupsWildcardNestingExtraction() {
+    String hostname = "wildcard-nesting";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Set<ConcreteInterfaceAddress> assignedAddresses =
+        vc.getMasterLogicalSystem()
+            .getInterfaces()
+            .get("xe-0/0/0")
+            .getUnits()
+            .get("xe-0/0/0.20")
+            .getAllAddresses();
+    assertThat(assignedAddresses, not(hasItem(ConcreteInterfaceAddress.parse("1.0.0.1/31"))));
+
+    // TODO: fix and remove expected assertion error
+    _thrown.expect(AssertionError.class);
+    assertThat(assignedAddresses, hasItem(ConcreteInterfaceAddress.parse("2.0.0.1/31")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
