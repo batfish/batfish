@@ -742,19 +742,19 @@ public class TransferBDD {
            *
            * <p>This code, {@link TransferBDD}, properly handles two common cases: 1) platforms that
            * never use these directives, so that the original route attributes are always read; and
-           * 2) platforms that always use the SetRead... and SetWrite... directives up front, so
-           * that the current route attributes are always read. In principle these directives can
-           * allow for a wider range of semantics to be expressed. For example, it is possible for
-           * writing to intermediate attributes to be turned off at some point, so that later writes
-           * are no longer recorded there (and hence are not seen by later reads). We can handle
-           * such situations by introducing an explicit {@link BDDRoute} to represent the
-           * intermediate BGP attributes.
+           * 2) platforms that use the SetRead... and SetWrite... directives in such a way as to
+           * ensure that they always read from the current set of route attributes, which reflect
+           * all updates made so far by the route map. In principle these directives can allow for a
+           * wider range of semantics to be expressed. For example, it is possible for writing to
+           * intermediate attributes to be turned off at some point, so that later writes are no
+           * longer recorded there (and hence are not seen by later reads). We can handle such
+           * situations by introducing an explicit {@link BDDRoute} to represent the intermediate
+           * BGP attributes.
            */
         case SetReadIntermediateBgpAttributes:
           curP = curP.setReadIntermediateBgpAttributes(true);
           return ImmutableList.of(toTransferBDDState(curP, result));
         case SetWriteIntermediateBgpAttributes:
-        case UnsetWriteIntermediateBgpAttributes:
           return ImmutableList.of(toTransferBDDState(curP, result));
 
         default:
