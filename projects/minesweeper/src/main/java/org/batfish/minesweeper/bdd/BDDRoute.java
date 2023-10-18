@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.minesweeper.bdd.BDDDomain.numBits;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -193,7 +195,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       int numTracks) {
     _factory = factory;
 
-    int bitsToRepresentAdmin = numBits(AbstractRoute.MAX_ADMIN_DISTANCE);
+    int bitsToRepresentAdmin = IntMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
     // or else we need to do tricks in the BDDInteger.
     assert LongMath.isPowerOfTwo(1L + AbstractRoute.MAX_ADMIN_DISTANCE);
     int numVars = factory.varNum();
@@ -379,14 +381,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopInterfaces = new BDDDomain<>(pred, route._nextHopInterfaces);
     _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
-  }
-
-  // Compute the number of bits needed to represent the given number in binary.
-  private static int numBits(int numValues) {
-    if (numValues == 0) {
-      return 0;
-    }
-    return IntMath.log2(numValues, RoundingMode.CEILING);
   }
 
   /*
