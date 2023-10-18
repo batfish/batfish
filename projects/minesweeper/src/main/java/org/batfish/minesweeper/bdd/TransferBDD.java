@@ -593,6 +593,7 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchSourceVrf) {
       MatchSourceVrf msv = (MatchSourceVrf) expr;
+      // we add 1 to the index since 0 in the BDDDomain is used to represent the absence of a value
       int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf()) + 1;
       BDD sourceVrfPred = p.getData().getSourceVrfs().value(index);
       finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
@@ -615,6 +616,8 @@ public class TransferBDD {
           mi.getInterfaces().stream()
               .map(
                   nhi -> {
+                    // we add 1 to the index since 0 in the BDDDomain is used to represent the
+                    // absence of a value
                     int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi) + 1;
                     return p.getData().getNextHopInterfaces().value(index);
                   })

@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
@@ -184,7 +185,7 @@ public class ModelGeneration {
     // if we matched on a next-hop interface then include the interface name in the produced
     // next-hop
     String nextHopInterface =
-        optionalItem(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), model);
+        optionalSatisfyingItem(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), model);
     if (nextHopInterface == null) {
       return NextHopIp.of(ip);
     } else {
@@ -351,7 +352,7 @@ public class ModelGeneration {
     List<String> successfulTracks = allSatisfyingItems(configAPs.getTracks(), r.getTracks(), model);
 
     // get the optional (and hence possibly null) source VRF
-    String sourceVrf = optionalItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
+    String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
 
     return new Tuple<>(successfulTracks::contains, sourceVrf);
   }
@@ -365,7 +366,19 @@ public class ModelGeneration {
         .collect(ImmutableList.toImmutableList());
   }
 
-  private static String optionalItem(List<String> items, BDDDomain<Integer> itemsBDD, BDD model) {
+  /**
+   * Returns the (possibly null, if none) item that is consistent with the given variable
+   * assignment.
+   *
+   * @param items the list of items
+   * @param itemsBDD the symbolic representation of the items
+   * @param model the variable assignment
+   * @return the unique item consistent with the model, or null if there is none
+   */
+  private static @Nullable String optionalSatisfyingItem(
+      List<String> items, BDDDomain<Integer> itemsBDD, BDD model) {
+    // we subtract 1 to get the list index, since the 0th value in the BDDDomain is used to
+    // represent that there is no value chosen
     int index = itemsBDD.satAssignmentToValue(model) - 1;
     if (index == -1) {
       return null;

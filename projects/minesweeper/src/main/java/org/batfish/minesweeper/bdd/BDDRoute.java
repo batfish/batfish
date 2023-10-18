@@ -278,6 +278,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("as-path atomic predicates", len, idx, false);
     idx += len;
 
+    // we track one extra value for the next-hop interfaces and source VRFs, to represent
+    // "none", since these are optional parts of a route
     _nextHopInterfaces =
         new BDDDomain<>(
             factory,
@@ -286,7 +288,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     len = _nextHopInterfaces.getInteger().size();
     addBitNames("next-hop interfaces", len, idx, false);
     idx += len;
-
     _sourceVrfs =
         new BDDDomain<>(
             factory,
