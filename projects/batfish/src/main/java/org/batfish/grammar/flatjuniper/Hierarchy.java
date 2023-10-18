@@ -49,10 +49,11 @@ import org.batfish.grammar.flatjuniper.Hierarchy.HierarchyTree.HierarchyPath;
 import org.batfish.representation.juniper.GroupWildcard;
 
 @ParametersAreNonnullByDefault
-public final class Hierarchy {
+final class Hierarchy {
 
   /** Dump all set lines and error nodes from the main tree. */
-  public @Nonnull List<ParseTree> extractParseTrees() {
+  @Nonnull
+  List<ParseTree> extractParseTrees() {
     ImmutableList.Builder<ParseTree> builder =
         ImmutableList.builderWithExpectedSize(countParseTrees());
     _masterTree._root.dumpParseTrees(builder);
@@ -68,7 +69,7 @@ public final class Hierarchy {
    * Merge hierarchy from the group trees into the main tree where main tree nodes have been
    * annotated with {@code apply-groups}. Returns {@code true} iff the hierarchy was modified.
    */
-  public boolean inheritGroups(Flat_juniper_configurationContext ctx) {
+  boolean inheritGroups(Flat_juniper_configurationContext ctx) {
     HierarchyPath globalPath = new HierarchyPath();
     return inheritGroups(ctx, _masterTree._root, globalPath, ImmutableList.of(), ImmutableSet.of());
   }
@@ -88,7 +89,7 @@ public final class Hierarchy {
    *
    * Returns {@code true} iff the hierarchy was modified.
    */
-  public boolean inheritGroups(
+  private boolean inheritGroups(
       Flat_juniper_configurationContext ctx,
       HierarchyNode inheritorNode,
       HierarchyPath inheritorNodePath,
@@ -183,8 +184,13 @@ public final class Hierarchy {
   }
 
   /**
-   * Inherit from a given group node's child into a main tree node whose children are either a
-   * scalar value, or whose order does not matter.
+   * Inherit from a given group node's child into a main tree node such that an existing child in
+   * the main tree with the same key will appear afterward. For a scalar-valued child, this means
+   * the existing main tree child will have higher priority; for list nodes, this means the
+   * inherited child will have higher priority. In that latter case, this may not be correct for
+   * lists where order matters.
+   *
+   * <p>See <a href="https://github.com/batfish/batfish/issues/8818">GH8818</a>
    */
   private void inheritGroupNodeChildIntoNonListNode(
       Flat_juniper_configurationContext ctx,
@@ -333,7 +339,7 @@ public final class Hierarchy {
 
     private final Map<Token, String> _tokenInputs;
 
-    public TokenInputMarker(String input, Map<Token, String> tokenInputs) {
+    private TokenInputMarker(String input, Map<Token, String> tokenInputs) {
       _input = input;
       _tokenInputs = tokenInputs;
     }
@@ -344,7 +350,7 @@ public final class Hierarchy {
     }
   }
 
-  public static class HierarchyTree {
+  static class HierarchyTree {
 
     /**
      * Return the node in this tree that matches the given path of literals, using the first
@@ -353,7 +359,7 @@ public final class Hierarchy {
      * <p>TODO: Fix logic here and/or at caller to fix x-failed test {@code
      * FlatJuniperGrammarTest.testApplyGroupsWildcardNestingExtraction}.
      */
-    public @Nullable HierarchyNode findFirstMatchPathNode(HierarchyPath literalPath) {
+    private @Nullable HierarchyNode findFirstMatchPathNode(HierarchyPath literalPath) {
       HierarchyNode current = _root;
       for (HierarchyChildNode toMatchNext : literalPath._nodes) {
         current = current.getFirstMatchingChildNode(toMatchNext);
@@ -391,10 +397,10 @@ public final class Hierarchy {
        * Create a copy of this node. Does not copy non-transitive node attributes: {@link
        * #_deactivated}.
        */
-      public abstract HierarchyChildNode copy();
+      protected abstract HierarchyChildNode copy();
 
       @Override
-      public void dumpParseTrees(ImmutableList.Builder<ParseTree> builder) {
+      protected void dumpParseTrees(ImmutableList.Builder<ParseTree> builder) {
         if (_line != null) {
           builder.add(_line);
         }
@@ -407,17 +413,17 @@ public final class Hierarchy {
         return (_line != null ? 1 : 0) + _errorNodes.size() + countChildParseTrees();
       }
 
-      public abstract boolean isMatchedBy(HierarchyLiteralNode node);
+      protected abstract boolean isMatchedBy(HierarchyLiteralNode node);
 
-      public abstract boolean isMatchedBy(HierarchyWildcardNode node);
+      protected abstract boolean isMatchedBy(HierarchyWildcardNode node);
 
-      public abstract boolean matches(HierarchyChildNode node);
+      protected abstract boolean matches(HierarchyChildNode node);
 
-      public boolean getDeactivated() {
+      private boolean getDeactivated() {
         return _deactivated;
       }
 
-      public void setDeactivated(boolean deactivated) {
+      private void setDeactivated(boolean deactivated) {
         _deactivated = deactivated;
       }
     }
@@ -429,22 +435,22 @@ public final class Hierarchy {
       }
 
       @Override
-      public HierarchyChildNode copy() {
+      protected HierarchyChildNode copy() {
         return new HierarchyLiteralNode(_text, _lineNumber);
       }
 
       @Override
-      public boolean isMatchedBy(HierarchyLiteralNode node) {
+      protected boolean isMatchedBy(HierarchyLiteralNode node) {
         return _unquotedText.equals(node._unquotedText);
       }
 
       @Override
-      public boolean isMatchedBy(HierarchyWildcardNode node) {
+      protected boolean isMatchedBy(HierarchyWildcardNode node) {
         return matchWithJuniperRegex(_unquotedText, node._wildcard);
       }
 
       @Override
-      public boolean matches(HierarchyChildNode node) {
+      protected boolean matches(HierarchyChildNode node) {
         return node.isMatchedBy(this);
       }
 
@@ -454,12 +460,12 @@ public final class Hierarchy {
       }
     }
 
-    public abstract static class HierarchyNode {
-      protected Set<String> _exceptGroups;
-      protected final @Nonnull Set<String> _appliedGroups;
-      private Map<String, HierarchyChildNode> _children;
+    abstract static class HierarchyNode {
+      private final @Nonnull Set<String> _exceptGroups;
+      private final @Nonnull Set<String> _appliedGroups;
+      private @Nonnull Map<String, HierarchyChildNode> _children;
 
-      protected List<ErrorNode> _errorNodes;
+      @Nonnull List<ErrorNode> _errorNodes;
 
       protected final @Nonnull List<String> prependPrioritizedGroups(
           List<String> ancestralAppliedGroups) {
@@ -473,7 +479,7 @@ public final class Hierarchy {
       }
 
       /** Dump parse trees recursively into {@code builder}. */
-      public abstract void dumpParseTrees(ImmutableList.Builder<ParseTree> builder);
+      protected abstract void dumpParseTrees(ImmutableList.Builder<ParseTree> builder);
 
       /**
        * Returns the number of parse trees that would be returned by {@link
@@ -520,30 +526,30 @@ public final class Hierarchy {
         }
       }
 
-      public HierarchyNode() {
+      private HierarchyNode() {
         _children = new LinkedHashMap<>();
         _appliedGroups = new LinkedHashSet<>();
         _exceptGroups = new HashSet<>();
         _errorNodes = ImmutableList.of();
       }
 
-      public void addGroup(String groupName) {
+      void addGroup(String groupName) {
         _appliedGroups.add(groupName);
       }
 
-      public void addExceptGroup(String groupName) {
+      void addExceptGroup(String groupName) {
         _exceptGroups.add(groupName);
       }
 
-      public void addChildNode(HierarchyChildNode node) {
+      private void addChildNode(HierarchyChildNode node) {
         _children.put(node._unquotedText, node);
       }
 
-      public HierarchyChildNode getChildNode(String text) {
+      private HierarchyChildNode getChildNode(String text) {
         return _children.get(text);
       }
 
-      public Map<String, HierarchyChildNode> getChildren() {
+      private Map<String, HierarchyChildNode> getChildren() {
         return _children;
       }
 
@@ -551,7 +557,7 @@ public final class Hierarchy {
        * Return the first child of this node that matches the given node, or {@code null} if no
        * child matches.
        */
-      public @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
+      private @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
         for (HierarchyChildNode child : _children.values()) {
           if (child.matches(node)) {
             return child;
@@ -560,41 +566,38 @@ public final class Hierarchy {
         return null;
       }
 
-      public boolean isWildcard() {
+      boolean isWildcard() {
         return false;
       }
     }
 
-    public static final class HierarchyPath {
+    static final class HierarchyPath {
 
       private boolean _containsWildcard;
       private final List<HierarchyChildNode> _nodes;
       private StatementContext _statement;
 
-      public HierarchyPath() {
+      HierarchyPath() {
         _nodes = new ArrayList<>();
       }
 
-      public void addNode(String text, int lineNumber) {
+      void addNode(String text, int lineNumber) {
         HierarchyChildNode newNode = new HierarchyLiteralNode(text, lineNumber);
         _nodes.add(newNode);
       }
 
-      public void addWildcardNode(String text, int lineNumber) {
+      void addWildcardNode(String text, int lineNumber) {
         _containsWildcard = true;
         HierarchyChildNode newNode = new HierarchyWildcardNode(text, lineNumber);
         _nodes.add(newNode);
       }
 
-      public boolean containsWildcard() {
-        return _containsWildcard;
-      }
-
-      public String pathString() {
+      @Nonnull
+      String pathString() {
         return _nodes.stream().map(node -> node._text).collect(Collectors.joining(" "));
       }
 
-      public void setStatement(StatementContext statement) {
+      void setStatement(StatementContext statement) {
         _statement = statement;
       }
 
@@ -607,7 +610,7 @@ public final class Hierarchy {
     private static final class HierarchyRootNode extends HierarchyNode {
 
       @Override
-      public void dumpParseTrees(ImmutableList.Builder<ParseTree> builder) {
+      protected void dumpParseTrees(ImmutableList.Builder<ParseTree> builder) {
         builder.addAll(_errorNodes);
         dumpChildParseTrees(builder);
       }
@@ -632,28 +635,28 @@ public final class Hierarchy {
       }
 
       @Override
-      public HierarchyChildNode copy() {
+      protected HierarchyChildNode copy() {
         return new HierarchyWildcardNode(_text, _lineNumber);
       }
 
       @Override
-      public boolean isMatchedBy(HierarchyLiteralNode node) {
+      protected boolean isMatchedBy(HierarchyLiteralNode node) {
         return false;
       }
 
       @Override
-      public boolean isMatchedBy(HierarchyWildcardNode node) {
+      protected boolean isMatchedBy(HierarchyWildcardNode node) {
         // TODO: check whether this is the only way to match two wildcards
         return _unquotedText.equals(node._unquotedText);
       }
 
       @Override
-      public boolean isWildcard() {
+      protected boolean isWildcard() {
         return true;
       }
 
       @Override
-      public boolean matches(HierarchyChildNode node) {
+      protected boolean matches(HierarchyChildNode node) {
         return node.isMatchedBy(this);
       }
 
@@ -722,12 +725,9 @@ public final class Hierarchy {
       };
     }
 
-    private final @Nullable String _groupName;
-
     private final HierarchyRootNode _root;
 
-    private HierarchyTree(@Nullable String groupName) {
-      _groupName = groupName;
+    private HierarchyTree() {
       _root = new HierarchyRootNode();
     }
 
@@ -856,7 +856,7 @@ public final class Hierarchy {
       walker.walk(listener, newConfiguration);
     }
 
-    public List<ParseTree> getApplyPathLines(
+    private @Nonnull List<ParseTree> getApplyPathLines(
         HierarchyPath basePath,
         HierarchyPath applyPathPath,
         Flat_juniper_configurationContext configurationContext,
@@ -890,7 +890,7 @@ public final class Hierarchy {
       return lines;
     }
 
-    private List<HierarchyChildNode> getApplyPathPrefixes(HierarchyPath path) {
+    private @Nonnull List<HierarchyChildNode> getApplyPathPrefixes(HierarchyPath path) {
       List<HierarchyChildNode> prefixes = new ArrayList<>();
       getApplyPathPrefixes(path, _root, 0, prefixes);
       return prefixes;
@@ -916,10 +916,6 @@ public final class Hierarchy {
           }
         }
       }
-    }
-
-    public String getGroupName() {
-      return _groupName;
     }
 
     /** Mark a group as being applied at given path in this tree. */
@@ -963,30 +959,30 @@ public final class Hierarchy {
 
   private final Map<Token, String> _tokenInputs;
 
-  public Hierarchy() {
+  Hierarchy() {
     _trees = new HashMap<>();
-    _masterTree = new HierarchyTree(null);
-    _deactivateTree = new HierarchyTree(null);
+    _masterTree = new HierarchyTree();
+    _deactivateTree = new HierarchyTree();
     _tokenInputs = new HashMap<>();
   }
 
   /** Add an error node to the root that would be printed first by {@link #toSetLines}. */
-  public void addMasterRootErrorNode(ErrorNode node) {
+  void addMasterRootErrorNode(ErrorNode node) {
     _masterTree._root._errorNodes =
         ImmutableList.<ErrorNode>builder().addAll(_masterTree._root._errorNodes).add(node).build();
   }
 
-  public void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
+  void addDeactivatePath(HierarchyPath path, Deactivate_lineContext ctx) {
     _deactivateTree.addPath(path, null, null);
     _deactivateTree.findExactPathMatchNode(path).setDeactivated(true);
   }
 
-  public void removeDeactivatePath(HierarchyPath path, Activate_lineContext ctx) {
+  void removeDeactivatePath(HierarchyPath path, Activate_lineContext ctx) {
     _deactivateTree.addPath(path, null, null);
     _deactivateTree.findExactPathMatchNode(path).setDeactivated(false);
   }
 
-  public void addMasterPath(
+  void addMasterPath(
       HierarchyPath path, @Nullable Set_lineContext ctx, @Nullable ErrorNode errorNode) {
     if (path._nodes.isEmpty()) {
       assert ctx == null;
@@ -996,7 +992,8 @@ public final class Hierarchy {
     }
   }
 
-  public List<ParseTree> getApplyPathLines(
+  @Nonnull
+  List<ParseTree> getApplyPathLines(
       HierarchyPath basePath,
       HierarchyPath applyPathPath,
       Flat_juniper_configurationContext configurationContext) {
@@ -1004,27 +1001,27 @@ public final class Hierarchy {
         basePath, applyPathPath, configurationContext, _tokenInputs);
   }
 
-  public HierarchyTree getTree(String groupName) {
+  HierarchyTree getTree(String groupName) {
     return _trees.get(groupName);
   }
 
-  public boolean isDeactivated(HierarchyPath path) {
+  boolean isDeactivated(HierarchyPath path) {
     return _deactivateTree.isSubPathDeactivated(path);
   }
 
-  public HierarchyTree newTree(String groupName) {
-    HierarchyTree newTree = new HierarchyTree(groupName);
+  HierarchyTree newTree(String groupName) {
+    HierarchyTree newTree = new HierarchyTree();
     _trees.put(groupName, newTree);
     return newTree;
   }
 
   /** Mark a group as being applied at given path in the main tree. */
-  public void markApplyGroups(HierarchyPath path, String groupName) {
+  void markApplyGroups(HierarchyPath path, String groupName) {
     _masterTree.markApplyGroups(path, groupName);
   }
 
   /** Mark a group as being excluded from inheritance at a given path in the main tree. */
-  public void markApplyGroupsExcept(HierarchyPath path, String groupName) {
+  void markApplyGroupsExcept(HierarchyPath path, String groupName) {
     _masterTree.markApplyGroupsExcept(path, groupName);
   }
 
@@ -1033,7 +1030,8 @@ public final class Hierarchy {
     return candidate.matches(regex);
   }
 
-  public Map<Token, String> getTokenInputs() {
+  @Nonnull
+  Map<Token, String> getTokenInputs() {
     return _tokenInputs;
   }
 
@@ -1042,7 +1040,8 @@ public final class Hierarchy {
    * master tree, i.e. all the set lines in the configuration from which this {@link Hierarchy} was
    * produced.
    */
-  public @Nonnull String toSetLines(@Nonnull String header) {
+  @Nonnull
+  String toSetLines(@Nonnull String header) {
     return _masterTree.toSetLines(header);
   }
 
