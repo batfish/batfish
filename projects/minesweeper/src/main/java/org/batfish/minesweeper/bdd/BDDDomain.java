@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.math.IntMath;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
@@ -49,13 +51,10 @@ public class BDDDomain<T> {
    * @return the number of bits required
    */
   public static int numBits(int size) {
-    double log = Math.log((double) size);
-    double base = Math.log((double) 2);
     if (size == 0) {
       return 0;
-    } else {
-      return (int) Math.ceil(log / base);
     }
+    return IntMath.log2(size, RoundingMode.CEILING);
   }
 
   public BDD value(T value) {
