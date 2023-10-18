@@ -741,17 +741,16 @@ public final class Hierarchy {
         @Nullable Set_lineContext setLineContext,
         @Nullable ErrorNode errorNode) {
       AddPathResult result = AddPathResult.UNMODIFIED;
-      HierarchyNode currentNode = _root;
+      HierarchyNode currentNodeInThisTree = _root;
       HierarchyChildNode matchNode = null;
-      for (int i = 0; i < path._nodes.size(); i++) {
-        HierarchyChildNode currentPathNode = path._nodes.get(i);
-        matchNode = currentNode.getChildNode(currentPathNode._unquotedText);
+      for (HierarchyChildNode currentPathNode : path._nodes) {
+        matchNode = currentNodeInThisTree.getChildNode(currentPathNode._unquotedText);
         if (matchNode == null) {
           result = AddPathResult.MODIFIED;
           matchNode = currentPathNode.copy();
-          currentNode.addChildNode(matchNode);
+          currentNodeInThisTree.addChildNode(matchNode);
         }
-        currentNode = matchNode;
+        currentNodeInThisTree = matchNode;
       }
       assert matchNode != null;
       matchNode._line = setLineContext;

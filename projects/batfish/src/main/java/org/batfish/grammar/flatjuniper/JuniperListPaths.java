@@ -26,9 +26,11 @@ public final class JuniperListPaths {
         "protocols bgp group <*> export",
         "protocols bgp group <*> import",
         "security nat destination rule-set <*> rule",
+        // https://www.juniper.net/documentation/us/en/software/junos/nat/topics/ref/statement/security-edit-source-address-name-nat-destination.html
         "security nat destination rule-set <*> rule <*> match source-address-name",
         "security nat source rule-set <*> rule",
-        "security nat source rule-set <*> rule <*> then source-nat pool",
+        // https://www.juniper.net/documentation/us/en/software/junos/nat/topics/ref/statement/security-edit-source-address-name-nat-source.html
+        "security nat source rule-set <*> rule <*> match source-address-name",
         "security policies from-zone <*> to-zone <*> policy",
         "system domain-search"
       };
