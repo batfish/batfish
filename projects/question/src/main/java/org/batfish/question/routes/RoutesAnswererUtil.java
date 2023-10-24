@@ -456,7 +456,11 @@ public class RoutesAnswererUtil {
         .put(COL_PATH_ID, bgpv4Route.getPathId())
         .put(
             COL_CLUSTER_LIST,
-            bgpv4Route.getClusterList().isEmpty() ? null : bgpv4Route.getClusterList())
+            bgpv4Route.getClusterList().isEmpty()
+                ? null
+                : bgpv4Route.getClusterList().stream()
+                    .sorted()
+                    .collect(ImmutableList.toImmutableList()))
         .put(COL_TAG, bgpv4Route.getTag() == Route.UNSET_ROUTE_TAG ? null : bgpv4Route.getTag())
         .put(COL_STATUS, statuses)
         .put(
