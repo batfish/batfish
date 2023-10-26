@@ -1337,6 +1337,13 @@ public class Bgpv4RibTest {
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.of(RouteAdvertisement.withdrawing(dependentRoute))));
       assertThat(bgpRib.getTypedRoutes(), empty());
+
+      // Re-add resolving route from main RIB and update BGP. Dependent route should be reactivated
+      mainRibDelta = mainRib.mergeRouteGetDelta(resolvingRoute);
+      assertThat(
+          bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
+          equalTo(RibDelta.of(RouteAdvertisement.adding(dependentRoute))));
+      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
     }
   }
 

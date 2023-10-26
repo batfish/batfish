@@ -286,10 +286,18 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
             nhip -> {
               boolean resolvable = isResolvable(nhip);
               for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
-                MultipathRibDelta<Bgpv4Route> delta =
-                    resolvable
-                        ? super.multipathMergeRouteGetDelta(affectedRoute)
-                        : super.multipathRemoveRouteGetDelta(affectedRoute);
+                MultipathRibDelta<Bgpv4Route> delta;
+                if (resolvable) {
+                  delta = super.multipathMergeRouteGetDelta(affectedRoute);
+                } else {
+                  // Note this step removes affectedRoute from resolvability enforcer due to super
+                  // class calling this class's removeRouteGetDelta
+                  delta = super.multipathRemoveRouteGetDelta(affectedRoute);
+                  // Re-add affected route to resolvability enforcer so it can potentially be
+                  // reactivated by a future main RIB update
+                  // TODO: fix call chain so we don't have to re-add
+                  _resolvabilityEnforcer.addBgpRoute(affectedRoute);
+                }
                 bestPathDelta.from(delta.getBestPathDelta());
                 multipathDelta.from(delta.getMultipathDelta());
               }
