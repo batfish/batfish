@@ -866,6 +866,29 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testBgpNexthopRouteMapConversion() throws IOException {
+    String hostname = "nxos_bgp_nexthop_route_map";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(
+        c.getDefaultVrf().getBgpProcess().getNextHopIpResolverRestrictionPolicy(),
+        equalTo("RM_DEFINED"));
+    assertThat(
+        c.getVrfs()
+            .get("VRF_USING_UNDEFINED_NH_RM")
+            .getBgpProcess()
+            .getNextHopIpResolverRestrictionPolicy(),
+        // conversion should throw out this undefined reference
+        nullValue());
+    assertThat(
+        c.getVrfs()
+            .get("VRF_USING_NO_NH_RM")
+            .getBgpProcess()
+            .getNextHopIpResolverRestrictionPolicy(),
+        nullValue());
+  }
+
+  @Test
   public void testBgpNoNeighbor() throws IOException {
     /*
      For each neighbor type (IPv4 active/passive, IPv6 active/passive), both within and outside of

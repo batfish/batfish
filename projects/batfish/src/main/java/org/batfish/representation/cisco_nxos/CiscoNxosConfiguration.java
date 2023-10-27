@@ -598,6 +598,14 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       // Batfish seems to only track the IPv4 properties for multipath ebgp/ibgp.
       newBgpProcess.setMultipathEbgp(ipv4af.getMaximumPathsEbgp() > 1);
       newBgpProcess.setMultipathIbgp(ipv4af.getMaximumPathsIbgp() > 1);
+
+      // nexthop route-map
+      String nhRouteMap = ipv4af.getNexthopRouteMap();
+      if (nhRouteMap != null && _routeMaps.containsKey(nhRouteMap)) {
+        // Fail open for undefined reference (we warn elsewhere)
+        // TODO: verify behavior for undefined nexthop route-map
+        newBgpProcess.setNextHopIpResolverRestrictionPolicy(nhRouteMap);
+      }
     }
 
     // Generate aggregate routes.
