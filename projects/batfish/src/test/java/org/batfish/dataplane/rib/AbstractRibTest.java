@@ -476,7 +476,8 @@ public class AbstractRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Ip originator1 = Ip.parse("1.1.1.1");
     Ip originator2 = Ip.parse("2.2.2.2");
     Bgpv4Route.Builder routeBuilder =

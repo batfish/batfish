@@ -85,6 +85,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
@@ -401,6 +402,15 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     MultipathEquivalentAsPathMatchMode multiPathMatchMode =
         firstNonNull(_process.getMultipathEquivalentAsPathMatchMode(), EXACT_PATH);
     boolean clusterListAsIbgpCost = _process.getClusterListAsIbgpCost();
+    ResolutionRestriction<AnnotatedRoute<AbstractRoute>> nextHopIpResolverRestriction;
+    String nextHopIpResolverRestrictionPolicyName = process.getNextHopIpResolverRestrictionPolicy();
+    if (nextHopIpResolverRestrictionPolicyName == null) {
+      nextHopIpResolverRestriction = ResolutionRestriction.alwaysTrue();
+    } else {
+      nextHopIpResolverRestriction =
+          configuration.getRoutingPolicies().get(nextHopIpResolverRestrictionPolicyName)
+              ::processReadOnly;
+    }
     _ebgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -410,7 +420,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker(),
             _process.getNetworkNextHopIpTieBreaker(),
-            _process.getRedistributeNextHopIpTieBreaker());
+            _process.getRedistributeNextHopIpTieBreaker(),
+            nextHopIpResolverRestriction);
     _ibgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -420,7 +431,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker(),
             _process.getNetworkNextHopIpTieBreaker(),
-            _process.getRedistributeNextHopIpTieBreaker());
+            _process.getRedistributeNextHopIpTieBreaker(),
+            nextHopIpResolverRestriction);
     _bgpv4Rib =
         new Bgpv4Rib(
             _mainRib,
@@ -430,7 +442,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker(),
             _process.getNetworkNextHopIpTieBreaker(),
-            _process.getRedistributeNextHopIpTieBreaker());
+            _process.getRedistributeNextHopIpTieBreaker(),
+            nextHopIpResolverRestriction);
 
     _mainRibDelta = RibDelta.empty();
 

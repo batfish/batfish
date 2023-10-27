@@ -220,6 +220,9 @@ public class BgpProcess implements Serializable {
       "redistributeNextHopIpTieBreaker";
   private static final String PROP_TRACKS = "tracks";
 
+  private static final String PROP_NEXT_HOP_IP_RESOLVER_RESTRICTION_POLICY =
+      "nextHopIpResolverRestrictionPolicy";
+
   private boolean _clientToClientReflection;
   private @Nullable BgpConfederation _confederation;
   private final int _ebgpAdminCost;
@@ -264,6 +267,7 @@ public class BgpProcess implements Serializable {
   private final @Nonnull NextHopIpTieBreaker _redistributeNextHopIpTieBreaker;
 
   private @Nonnull Set<String> _tracks;
+  private @Nullable String _nextHopIpResolverRestrictionPolicy;
 
   /**
    * a list of prefixes from bgp network statements that will be unconditionally advertised if
@@ -701,5 +705,16 @@ public class BgpProcess implements Serializable {
   @JsonProperty(PROP_TRACKS)
   public void setTracks(@Nonnull Set<String> tracks) {
     _tracks = tracks;
+  }
+
+  @JsonProperty(PROP_NEXT_HOP_IP_RESOLVER_RESTRICTION_POLICY)
+  public @Nullable String getNextHopIpResolverRestrictionPolicy() {
+    return _nextHopIpResolverRestrictionPolicy;
+  }
+
+  @JsonProperty(PROP_NEXT_HOP_IP_RESOLVER_RESTRICTION_POLICY)
+  public void setNextHopIpResolverRestrictionPolicy(
+      @Nullable String nextHopIpResolverRestrictionPolicy) {
+    _nextHopIpResolverRestrictionPolicy = nextHopIpResolverRestrictionPolicy;
   }
 }
