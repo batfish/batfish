@@ -71,6 +71,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopInterface;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchExprReference;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackMethods;
@@ -819,5 +820,73 @@ public final class ConvertConfigurationJobTest {
             hasText(
                 "Removing reference to undefined track 'absent' in BGP process for vrf"
                     + " 'default'")));
+  }
+
+  @Test
+  public void testRemoveUndefinedRoutingPolicyReferences() {
+    Configuration c =
+        Configuration.builder()
+            .setHostname("c")
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .build();
+
+    Vrf vWithUndefined = Vrf.builder().setOwner(c).setName("vWithUndefined").build();
+    BgpProcess procWithUndefined =
+        BgpProcess.builder()
+            .setRouterId(Ip.ZERO)
+            .setEbgpAdminCost(1)
+            .setIbgpAdminCost(1)
+            .setLocalAdminCost(1)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setVrf(vWithUndefined)
+            .build();
+    procWithUndefined.setNextHopIpResolverRestrictionPolicy("absent");
+
+    Vrf vWithDefined = Vrf.builder().setOwner(c).setName("vWithDefined").build();
+    BgpProcess procWithDefined =
+        BgpProcess.builder()
+            .setRouterId(Ip.ZERO)
+            .setEbgpAdminCost(1)
+            .setIbgpAdminCost(1)
+            .setLocalAdminCost(1)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setVrf(vWithDefined)
+            .build();
+    procWithDefined.setNextHopIpResolverRestrictionPolicy("present");
+
+    Vrf vWithNone = Vrf.builder().setOwner(c).setName("vWithNone").build();
+    BgpProcess procWithNone =
+        BgpProcess.builder()
+            .setRouterId(Ip.ZERO)
+            .setEbgpAdminCost(1)
+            .setIbgpAdminCost(1)
+            .setLocalAdminCost(1)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setVrf(vWithNone)
+            .build();
+
+    RoutingPolicy.builder().setName("present").setOwner(c).build();
+
+    Warnings w = new Warnings(false, true, false);
+    VendorConfiguration vc = baseVendorConfig();
+    finalizeConfiguration(c, vc, w);
+
+    assertThat(procWithDefined.getNextHopIpResolverRestrictionPolicy(), equalTo("present"));
+    assertThat(procWithUndefined.getNextHopIpResolverRestrictionPolicy(), nullValue());
+    assertThat(procWithNone.getNextHopIpResolverRestrictionPolicy(), nullValue());
+    assertThat(
+        w.getRedFlagWarnings(),
+        containsInAnyOrder(
+            hasText(
+                "Removing reference to undefined nextHopIpResolverRestrictionPolicy 'absent' in BGP"
+                    + " process for vrf 'vWithUndefined'")));
   }
 }
