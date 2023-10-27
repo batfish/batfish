@@ -831,9 +831,7 @@ public final class ConvertConfigurationJobTest {
             .setDefaultCrossZoneAction(LineAction.PERMIT)
             .setDefaultInboundAction(LineAction.PERMIT)
             .build();
-
-    Vrf vWithUndefined = Vrf.builder().setOwner(c).setName("vWithUndefined").build();
-    BgpProcess procWithUndefined =
+    BgpProcess.Builder bgpProcessBuilder =
         BgpProcess.builder()
             .setRouterId(Ip.ZERO)
             .setEbgpAdminCost(1)
@@ -841,37 +839,18 @@ public final class ConvertConfigurationJobTest {
             .setLocalAdminCost(1)
             .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
             .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setVrf(vWithUndefined)
-            .build();
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+
+    Vrf vWithUndefined = Vrf.builder().setOwner(c).setName("vWithUndefined").build();
+    BgpProcess procWithUndefined = bgpProcessBuilder.setVrf(vWithUndefined).build();
     procWithUndefined.setNextHopIpResolverRestrictionPolicy("absent");
 
     Vrf vWithDefined = Vrf.builder().setOwner(c).setName("vWithDefined").build();
-    BgpProcess procWithDefined =
-        BgpProcess.builder()
-            .setRouterId(Ip.ZERO)
-            .setEbgpAdminCost(1)
-            .setIbgpAdminCost(1)
-            .setLocalAdminCost(1)
-            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
-            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setVrf(vWithDefined)
-            .build();
+    BgpProcess procWithDefined = bgpProcessBuilder.setVrf(vWithDefined).build();
     procWithDefined.setNextHopIpResolverRestrictionPolicy("present");
 
     Vrf vWithNone = Vrf.builder().setOwner(c).setName("vWithNone").build();
-    BgpProcess procWithNone =
-        BgpProcess.builder()
-            .setRouterId(Ip.ZERO)
-            .setEbgpAdminCost(1)
-            .setIbgpAdminCost(1)
-            .setLocalAdminCost(1)
-            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
-            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
-            .setVrf(vWithNone)
-            .build();
+    BgpProcess procWithNone = bgpProcessBuilder.setVrf(vWithNone).build();
 
     RoutingPolicy.builder().setName("present").setOwner(c).build();
 
