@@ -15,6 +15,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
+import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
@@ -183,15 +184,12 @@ public class ModelGeneration {
     Ip ip = Ip.create(r.getNextHop().satAssignmentToLong(model));
     // if we matched on a next-hop interface then include the interface name in the produced
     // next-hop
-    List<String> nextHopInterfaces =
-        allSatisfyingItems(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), model);
-    checkState(
-        nextHopInterfaces.size() <= 1,
-        "Error in symbolic route analysis: at most one next-hop interface can be set");
-    if (nextHopInterfaces.isEmpty()) {
+    String nextHopInterface =
+        optionalSatisfyingItem(configAPs.getNextHopInterfaces(), r.getNextHopInterfaces(), model);
+    if (nextHopInterface == null) {
       return NextHopIp.of(ip);
     } else {
-      return NextHopInterface.of(nextHopInterfaces.get(0), ip);
+      return NextHopInterface.of(nextHopInterface, ip);
     }
   }
 
@@ -353,14 +351,10 @@ public class ModelGeneration {
 
     List<String> successfulTracks = allSatisfyingItems(configAPs.getTracks(), r.getTracks(), model);
 
-    // see if the route should have a source VRF, and if so then add it
-    List<String> sourceVrfs =
-        allSatisfyingItems(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
-    checkState(
-        sourceVrfs.size() <= 1,
-        "Error in symbolic route analysis: at most one source VRF can be in the environment");
+    // get the optional (and hence possibly null) source VRF
+    String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
 
-    return new Tuple<>(successfulTracks::contains, sourceVrfs.isEmpty() ? null : sourceVrfs.get(0));
+    return new Tuple<>(successfulTracks::contains, sourceVrf);
   }
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable
@@ -370,6 +364,27 @@ public class ModelGeneration {
         .filter(i -> mustBeTrueInModel(itemBDDs[i], model))
         .mapToObj(items::get)
         .collect(ImmutableList.toImmutableList());
+  }
+
+  /**
+   * Returns the (possibly null, if none) item that is consistent with the given variable
+   * assignment.
+   *
+   * @param items the list of items
+   * @param itemsBDD the symbolic representation of the items
+   * @param model the variable assignment
+   * @return the unique item consistent with the model, or null if there is none
+   */
+  private static @Nullable String optionalSatisfyingItem(
+      List<String> items, BDDDomain<Integer> itemsBDD, BDD model) {
+    // we subtract 1 to get the list index, since the 0th value in the BDDDomain is used to
+    // represent that there is no value chosen
+    int index = itemsBDD.satAssignmentToValue(model) - 1;
+    if (index == -1) {
+      return null;
+    } else {
+      return items.get(index);
+    }
   }
 
   /**

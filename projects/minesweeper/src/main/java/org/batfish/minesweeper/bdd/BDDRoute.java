@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.minesweeper.bdd.BDDDomain.numBits;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -130,16 +132,16 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDDomain<RoutingProtocol> _protocolHistory;
 
   /**
-   * Contains a BDD variable for each next-hop interface name that may be encountered along the
-   * path. See {@link org.batfish.datamodel.routing_policy.expr.MatchInterface}.
+   * Represents the route's optional next-hop interface name. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchInterface}.
    */
-  private final BDD[] _nextHopInterfaces;
+  private final BDDDomain<Integer> _nextHopInterfaces;
 
   /**
-   * Contains a BDD variable for each source VRF that may be encountered along the path. See {@link
+   * Represents the optional source VRF from which the route was sent. See {@link
    * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
    */
-  private final BDD[] _sourceVrfs;
+  private final BDDDomain<Integer> _sourceVrfs;
 
   private MutableBDDInteger _tag;
 
@@ -203,13 +205,15 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + bitsToRepresentAdmin
             + 6
             + numCommAtomicPredicates
-            + numAsPathRegexAtomicPredicates
-            + numNextHopInterfaces
-            + numSourceVrfs
+            + numBits(numAsPathRegexAtomicPredicates)
+            // we track one extra value for the next-hop interfaces and source VRFs, to represent
+            // "none", since these are optional parts of a route
+            + numBits(numNextHopInterfaces + 1)
+            + numBits(numSourceVrfs + 1)
             + numTracks
-            + IntMath.log2(OriginType.values().length, RoundingMode.CEILING)
-            + IntMath.log2(RoutingProtocol.values().length, RoundingMode.CEILING)
-            + IntMath.log2(allMetricTypes.size(), RoundingMode.CEILING);
+            + numBits(OriginType.values().length)
+            + numBits(RoutingProtocol.values().length)
+            + numBits(allMetricTypes.size());
     if (numVars < numNeeded) {
       factory.setVarNum(numNeeded);
     }
@@ -264,10 +268,9 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "community atomic predicate " + i);
       idx++;
     }
-    // Initialize one BDD per AS-path regex atomic predicate, each of which has a corresponding
-    // BDD variable
+
     _asPathRegexAtomicPredicates =
-        new BDDDomain<Integer>(
+        new BDDDomain<>(
             factory,
             IntStream.range(0, numAsPathRegexAtomicPredicates).boxed().collect(Collectors.toList()),
             idx);
@@ -275,21 +278,25 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("as-path atomic predicates", len, idx, false);
     idx += len;
 
-    // Initialize one BDD per next-hop interface name, each of which has a corresponding BDD
-    // variable
-    _nextHopInterfaces = new BDD[numNextHopInterfaces];
-    for (int i = 0; i < numNextHopInterfaces; i++) {
-      _nextHopInterfaces[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "next-hop interface " + i);
-      idx++;
-    }
-    // Initialize one BDD per source VRF, each of which has a corresponding BDD variable
-    _sourceVrfs = new BDD[numSourceVrfs];
-    for (int i = 0; i < numSourceVrfs; i++) {
-      _sourceVrfs[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "source VRF " + i);
-      idx++;
-    }
+    // we track one extra value for the next-hop interfaces and source VRFs, to represent
+    // "none", since these are optional parts of a route
+    _nextHopInterfaces =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(0, numNextHopInterfaces + 1).boxed().collect(Collectors.toList()),
+            idx);
+    len = _nextHopInterfaces.getInteger().size();
+    addBitNames("next-hop interfaces", len, idx, false);
+    idx += len;
+    _sourceVrfs =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(0, numSourceVrfs + 1).boxed().collect(Collectors.toList()),
+            idx);
+    len = _sourceVrfs.getInteger().size();
+    addBitNames("source VRFs", len, idx, false);
+    idx += len;
+
     // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
     _tracks = new BDD[numTracks];
     for (int i = 0; i < numTracks; i++) {
@@ -331,8 +338,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _ospfMetric = new BDDDomain<>(other._ospfMetric);
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList<>(other._prependedASes);
-    _nextHopInterfaces = other._nextHopInterfaces.clone();
-    _sourceVrfs = other._sourceVrfs.clone();
+    _nextHopInterfaces = new BDDDomain<>(other._nextHopInterfaces);
+    _sourceVrfs = new BDDDomain<>(other._sourceVrfs);
     _tracks = other._tracks.clone();
     _unsupported = other._unsupported;
   }
@@ -372,8 +379,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopType = route.getNextHopType();
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
-    _nextHopInterfaces = route.getNextHopInterfaces();
-    _sourceVrfs = route.getSourceVrfs();
+    _nextHopInterfaces = new BDDDomain<>(pred, route._nextHopInterfaces);
+    _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
   }
 
@@ -411,17 +418,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     return _factory.orAll(elements.stream().map(bddDomain::value).collect(Collectors.toList()));
   }
 
-  /** Produce a constraint that at most one of the given array of BDDs is true. */
-  private BDD atMostOneOf(BDD[] bdds) {
-    BDD atMostOne = _factory.one();
-    for (int i = 0; i < bdds.length; i++) {
-      for (int j = i + 1; j < bdds.length; j++) {
-        atMostOne.andWith(bdds[i].nand(bdds[j]));
-      }
-    }
-    return atMostOne;
-  }
-
   /**
    * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
    * This method produces constraints that well-formed BGP routes must satisfy, represented as a
@@ -444,19 +440,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
-    // at most one source VRF should be in the environment
-    BDD sourceVrfConstraint = atMostOneOf(_sourceVrfs);
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
-    // at most one next-hop interface name should be selected
-    BDD nextHopInterfaceConstraint = atMostOneOf(_nextHopInterfaces);
-
-    return protocolConstraint
-        .andWith(prefLenConstraint)
-        .andWith(sourceVrfConstraint)
-        .andWith(nextHopConstraint)
-        .andWith(nextHopInterfaceConstraint);
+    return protocolConstraint.andWith(prefLenConstraint).andWith(nextHopConstraint);
   }
 
   /*
@@ -626,11 +613,11 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
-  public BDD[] getNextHopInterfaces() {
+  public BDDDomain<Integer> getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
 
-  public BDD[] getSourceVrfs() {
+  public BDDDomain<Integer> getSourceVrfs() {
     return _sourceVrfs;
   }
 
@@ -679,8 +666,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_communityAtomicPredicates, other._communityAtomicPredicates)
         && Objects.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
-        && Arrays.equals(_nextHopInterfaces, other._nextHopInterfaces)
-        && Arrays.equals(_sourceVrfs, other._sourceVrfs)
+        && Objects.equals(_nextHopInterfaces, other._nextHopInterfaces)
+        && Objects.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
         && Objects.equals(_unsupported, other._unsupported);
   }

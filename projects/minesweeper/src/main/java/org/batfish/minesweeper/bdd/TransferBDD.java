@@ -593,11 +593,9 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchSourceVrf) {
       MatchSourceVrf msv = (MatchSourceVrf) expr;
-      BDD sourceVrfPred =
-          itemToBDD(
-              msv.getSourceVrf(),
-              _configAtomicPredicates.getSourceVrfs(),
-              p.getData().getSourceVrfs());
+      // we add 1 to the index since 0 in the BDDDomain is used to represent the absence of a value
+      int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf()) + 1;
+      BDD sourceVrfPred = p.getData().getSourceVrfs().value(index);
       finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
 
     } else if (expr instanceof TrackSucceeded) {
@@ -614,13 +612,15 @@ public class TransferBDD {
         // upon, so we check for that situation here
         throw new UnsupportedOperationException(expr.toString());
       }
-      BDD[] nextHopInterfaces = p.getData().getNextHopInterfaces();
       BDD miPred =
           mi.getInterfaces().stream()
               .map(
-                  nhi ->
-                      itemToBDD(
-                          nhi, _configAtomicPredicates.getNextHopInterfaces(), nextHopInterfaces))
+                  nhi -> {
+                    // we add 1 to the index since 0 in the BDDDomain is used to represent the
+                    // absence of a value
+                    int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi) + 1;
+                    return p.getData().getNextHopInterfaces().value(index);
+                  })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
 
