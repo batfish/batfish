@@ -55,9 +55,11 @@ import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterfaces;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasIpAccessList;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRedFlagWarning;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterLists;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasHelloTime;
@@ -128,6 +130,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.getAc
 import static org.batfish.representation.cisco_nxos.CiscoNxosConfiguration.toJavaRegex;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.OBJECT_GROUP_IP_ADDRESS;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureType.ROUTE_MAP;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.BGP_NEXTHOP_ROUTE_MAP;
 import static org.batfish.representation.cisco_nxos.Conversions.generatedAttributeMapName;
 import static org.batfish.representation.cisco_nxos.Interface.defaultDelayTensOfMicroseconds;
 import static org.batfish.representation.cisco_nxos.Interface.getDefaultBandwidth;
@@ -814,6 +818,50 @@ public final class CiscoNxosGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix, 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborPrefix6, 1));
+  }
+
+  @Test
+  public void testBgpNexthopRouteMapExtraction() {
+    String hostname = "nxos_bgp_nexthop_route_map";
+    CiscoNxosConfiguration vc = parseVendorConfig(hostname);
+
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get(DEFAULT_VRF_NAME)
+            .getIpv4UnicastAddressFamily()
+            .getNexthopRouteMap(),
+        equalTo("defined"));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get("vundefined")
+            .getIpv4UnicastAddressFamily()
+            .getNexthopRouteMap(),
+        equalTo("undefined"));
+    assertThat(
+        vc.getBgpGlobalConfiguration()
+            .getVrfs()
+            .get("vnone")
+            .getIpv4UnicastAddressFamily()
+            .getNexthopRouteMap(),
+        nullValue());
+  }
+
+  @Test
+  public void testBgpNexthopRouteMapReferences() throws IOException {
+    String hostname = "nxos_bgp_nexthop_route_map";
+    String filename = String.format("configs/%s", hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(ccae, hasDefinedStructure(filename, ROUTE_MAP, "defined"));
+    assertThat(ccae, hasReferencedStructure(filename, ROUTE_MAP, "defined", BGP_NEXTHOP_ROUTE_MAP));
+
+    assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "undefined"));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "undefined", BGP_NEXTHOP_ROUTE_MAP));
   }
 
   @Test
