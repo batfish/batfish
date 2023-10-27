@@ -337,8 +337,12 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
    */
   private boolean isResolvable(Ip nhip) {
     assert _mainRib != null;
-    return _mainRib.longestPrefixMatch(nhip, alwaysTrue()).stream()
-        .anyMatch(_nextHopIpResolverRestriction);
+    for (AnnotatedRoute<AbstractRoute> route : _mainRib.longestPrefixMatch(nhip, alwaysTrue())) {
+      if (_nextHopIpResolverRestriction.test(route)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**
