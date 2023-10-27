@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.math.IntMath;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Objects;
 import net.sf.javabdd.BDD;
@@ -20,7 +22,7 @@ public class BDDDomain<T> {
   private MutableBDDInteger _integer;
 
   public BDDDomain(BDDFactory factory, List<T> values, int index) {
-    int bits = numBits(values);
+    int bits = numBits(values.size());
     _factory = factory;
     _values = values;
     _integer = MutableBDDInteger.makeFromIndex(_factory, bits, index, false);
@@ -42,15 +44,17 @@ public class BDDDomain<T> {
     _integer = other.getInteger().and(pred);
   }
 
-  private int numBits(List<T> values) {
-    int size = values.size();
-    double log = Math.log((double) size);
-    double base = Math.log((double) 2);
+  /**
+   * Returns the number of bits used to represent a domain of the given size.
+   *
+   * @param size the number of elements in the domain
+   * @return the number of bits required
+   */
+  public static int numBits(int size) {
     if (size == 0) {
       return 0;
-    } else {
-      return (int) Math.ceil(log / base);
     }
+    return IntMath.log2(size, RoundingMode.CEILING);
   }
 
   public BDD value(T value) {

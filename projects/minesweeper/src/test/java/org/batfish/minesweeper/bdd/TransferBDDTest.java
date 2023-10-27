@@ -1385,7 +1385,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD sourcePred = any.getSourceVrfs()[0];
+    BDD sourcePred = any.getSourceVrfs().value(1);
 
     assertTrue(
         equalsForTesting(
@@ -1410,7 +1410,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD intPred = any.getNextHopInterfaces()[0].or(any.getNextHopInterfaces()[1]);
+    BDD intPred = any.getNextHopInterfaces().value(1).or(any.getNextHopInterfaces().value(2));
 
     assertTrue(
         equalsForTesting(
