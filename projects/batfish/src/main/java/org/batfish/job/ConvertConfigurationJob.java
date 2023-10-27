@@ -479,6 +479,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           "Implementation error: missing default inbound action for host: '" + hostname + "'");
     }
     addTenantVniInterfaces(c);
+    removeUndefinedRoutingPolicyReferences(c, w);
     c.simplifyRoutingPolicies();
     c.computeRoutingPolicySources(w);
     verifyInterfaces(c, w);
@@ -566,6 +567,36 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         }
       }
     }
+  }
+
+  /** Remove and warn on undefined routing policy references. */
+  private static void removeUndefinedRoutingPolicyReferences(Configuration c, Warnings w) {
+    removeUndefinedBgpProcessRoutingPolicyReferences(c, w);
+  }
+
+  /** Remove and warn on undefined routing policy references within {@link BgpProcess}es. */
+  private static void removeUndefinedBgpProcessRoutingPolicyReferences(
+      Configuration c, Warnings w) {
+    c.getVrfs()
+        .forEach(
+            (vrfName, vrf) -> {
+              BgpProcess proc = vrf.getBgpProcess();
+              if (proc == null) {
+                // nothing to check
+                return;
+              }
+              // Next hop IP resolver restriction policy
+              String nextHopIpResolverRestrictionPolicyName =
+                  proc.getNextHopIpResolverRestrictionPolicy();
+              if (nextHopIpResolverRestrictionPolicyName != null
+                  && !c.getRoutingPolicies().containsKey(nextHopIpResolverRestrictionPolicyName)) {
+                proc.setNextHopIpResolverRestrictionPolicy(null);
+                w.redFlagf(
+                    "Removing reference to undefined nextHopIpResolverRestrictionPolicy '%s' in BGP"
+                        + " process for vrf '%s'",
+                    nextHopIpResolverRestrictionPolicyName, vrfName);
+              }
+            });
   }
 
   /** Remove and warn on undefined track references. */
