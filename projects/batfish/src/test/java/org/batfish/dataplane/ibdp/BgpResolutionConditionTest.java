@@ -277,7 +277,7 @@ public final class BgpResolutionConditionTest {
     assertRoute(routes, STATIC, R1, DEPENDENT_ROUTE1_NETWORK, 0, DEPENDENT_ROUTE1_NEXT_HOP_IP);
     assertRoute(routes, STATIC, R1, DEPENDENT_ROUTE2_NETWORK, 0, DEPENDENT_ROUTE2_NEXT_HOP_IP);
 
-    // r2 only installs the first route, as the second does not match the resolution restriction
+    // r2 installs both routes, as there is no resolution restriction
     assertRoute(routes, IBGP, R2, DEPENDENT_ROUTE1_NETWORK, 0, DEPENDENT_ROUTE1_NEXT_HOP_IP);
     assertRoute(routes, IBGP, R2, DEPENDENT_ROUTE2_NETWORK, 0, DEPENDENT_ROUTE2_NEXT_HOP_IP);
   }
