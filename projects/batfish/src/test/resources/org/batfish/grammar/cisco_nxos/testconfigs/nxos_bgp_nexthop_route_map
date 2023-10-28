@@ -12,18 +12,15 @@ vrf context VRF_USING_NO_NH_RM
 !
 router bgp 1
   address-family ipv4 unicast
-    ! "default" VRF uses route-map named "RM_DEFINED", defined above
     nexthop route-map RM_DEFINED
   vrf VRF_USING_UNDEFINED_NH_RM
    address-family ipv4 unicast
    !
-    !  "VRF_USING_UNDEFINED_NH_RM" VRF uses undefined route-map named "RM_UNDEFINED"
     nexthop route-map RM_UNDEFINED
    !
   !
   vrf VRF_USING_NO_NH_RM
    address-family ipv4 unicast
-   ! "VRF_USING_NO_NH_RM" VRF does not use a nexthop route-map
    !
   !
 !
