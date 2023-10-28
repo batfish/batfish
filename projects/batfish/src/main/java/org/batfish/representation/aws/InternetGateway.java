@@ -78,7 +78,7 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
     private final @Nonnull String _vpcId;
 
     @JsonCreator
-    private static Attachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+    private static Attachment create(@JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId) {
       checkArgument(vpcId != null, "Vpc id cannot be null for Internet gateway attachment");
       return new Attachment(vpcId);
     }
@@ -94,9 +94,9 @@ final class InternetGateway implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static InternetGateway create(
-      @Nullable @JsonProperty(JSON_KEY_INTERNET_GATEWAY_ID) String internetGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_ATTACHMENTS) List<Attachment> attachments,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
+      @JsonProperty(JSON_KEY_INTERNET_GATEWAY_ID) @Nullable String internetGatewayId,
+      @JsonProperty(JSON_KEY_ATTACHMENTS) @Nullable List<Attachment> attachments,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags) {
     checkArgument(internetGatewayId != null, "Id cannot be null for Internet gateway");
     checkArgument(attachments != null, "Attachments cannot be null for Internet gateway");
 

@@ -21,8 +21,8 @@ public final class AsPathAccessListLine implements Serializable, Comparable<AsPa
 
   @JsonCreator
   private static AsPathAccessListLine jsonCreator(
-      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
-      @Nullable @JsonProperty(PROP_REGEX) String regex) {
+      @JsonProperty(PROP_ACTION) @Nullable LineAction action,
+      @JsonProperty(PROP_REGEX) @Nullable String regex) {
     checkArgument(action != null, "%s must be provided", PROP_ACTION);
     checkArgument(regex != null, "%s must be provided", PROP_REGEX);
     return new AsPathAccessListLine(action, regex);

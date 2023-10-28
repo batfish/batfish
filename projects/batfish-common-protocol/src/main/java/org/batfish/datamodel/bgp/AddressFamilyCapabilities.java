@@ -64,15 +64,15 @@ public final class AddressFamilyCapabilities implements Serializable {
 
   @JsonCreator
   private static AddressFamilyCapabilities jsonCreator(
-      @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) Boolean additionalPathsReceive,
-      @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) Boolean additionalPathsSelectAll,
-      @Nullable @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) Boolean additionalPathsSend,
-      @Nullable @JsonProperty(PROP_ADVERTISE_EXTERNAL) Boolean advertiseExternal,
-      @Nullable @JsonProperty(PROP_ADVERTISE_INACTIVE) Boolean advertiseInactive,
-      @Nullable @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) Boolean allowLocalAsIn,
-      @Nullable @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) AllowRemoteAsOutMode allowRemoteAsOut,
-      @Nullable @JsonProperty(PROP_SEND_COMMUNITY) Boolean sendCommunity,
-      @Nullable @JsonProperty(PROP_SEND_EXTENDED_COMMUNITY) Boolean sendExtendedCommunity) {
+      @JsonProperty(PROP_ADDITIONAL_PATHS_RECEIVE) @Nullable Boolean additionalPathsReceive,
+      @JsonProperty(PROP_ADDITIONAL_PATHS_SELECT_ALL) @Nullable Boolean additionalPathsSelectAll,
+      @JsonProperty(PROP_ADDITIONAL_PATHS_SEND) @Nullable Boolean additionalPathsSend,
+      @JsonProperty(PROP_ADVERTISE_EXTERNAL) @Nullable Boolean advertiseExternal,
+      @JsonProperty(PROP_ADVERTISE_INACTIVE) @Nullable Boolean advertiseInactive,
+      @JsonProperty(PROP_ALLOW_LOCAL_AS_IN) @Nullable Boolean allowLocalAsIn,
+      @JsonProperty(PROP_ALLOW_REMOTE_AS_OUT) @Nullable AllowRemoteAsOutMode allowRemoteAsOut,
+      @JsonProperty(PROP_SEND_COMMUNITY) @Nullable Boolean sendCommunity,
+      @JsonProperty(PROP_SEND_EXTENDED_COMMUNITY) @Nullable Boolean sendExtendedCommunity) {
 
     checkArgument(additionalPathsReceive != null, "Missing %s", PROP_ADDITIONAL_PATHS_RECEIVE);
     checkArgument(additionalPathsSelectAll != null, "Missing %s", PROP_ADDITIONAL_PATHS_SELECT_ALL);

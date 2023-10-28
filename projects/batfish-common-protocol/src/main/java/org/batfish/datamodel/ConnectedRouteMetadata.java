@@ -37,21 +37,18 @@ public final class ConnectedRouteMetadata implements Serializable {
 
   private final @Nullable Long _tag;
 
-  @Nullable
   @JsonProperty(PROP_ADMIN)
-  public Integer getAdmin() {
+  public @Nullable Integer getAdmin() {
     return _admin;
   }
 
-  @Nullable
   @JsonProperty(PROP_GENERATE_CONNECTED_ROUTE)
-  public Boolean getGenerateConnectedRoute() {
+  public @Nullable Boolean getGenerateConnectedRoute() {
     return _generateConnectedRoute;
   }
 
-  @Nullable
   @JsonProperty(PROP_GENERATE_LOCAL_ROUTES)
-  public Boolean getGenerateLocalRoute() {
+  public @Nullable Boolean getGenerateLocalRoute() {
     return _generateLocalRoute;
   }
 
@@ -60,9 +57,8 @@ public final class ConnectedRouteMetadata implements Serializable {
     return _generateLocalNullRouteIfDown;
   }
 
-  @Nullable
   @JsonProperty(PROP_TAG)
-  public Long getTag() {
+  public @Nullable Long getTag() {
     return _tag;
   }
 
@@ -188,12 +184,12 @@ public final class ConnectedRouteMetadata implements Serializable {
 
   @JsonCreator
   private static ConnectedRouteMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_ADMIN) Integer admin,
-      @Nullable @JsonProperty(PROP_GENERATE_CONNECTED_ROUTE) Boolean generateConnectedRoute,
-      @Nullable @JsonProperty(PROP_GENERATE_LOCAL_ROUTES) Boolean generateLocalRoute,
-      @Nullable @JsonProperty(PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN)
+      @JsonProperty(PROP_ADMIN) @Nullable Integer admin,
+      @JsonProperty(PROP_GENERATE_CONNECTED_ROUTE) @Nullable Boolean generateConnectedRoute,
+      @JsonProperty(PROP_GENERATE_LOCAL_ROUTES) @Nullable Boolean generateLocalRoute,
+      @JsonProperty(PROP_GENERATE_LOCAL_NULL_ROUTE_IF_DOWN) @Nullable
           Boolean generateLocalNullRouteIfDown,
-      @Nullable @JsonProperty(PROP_TAG) Long tag) {
+      @JsonProperty(PROP_TAG) @Nullable Long tag) {
     return new ConnectedRouteMetadata(
         admin, generateConnectedRoute, generateLocalRoute, generateLocalNullRouteIfDown, tag);
   }

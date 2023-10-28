@@ -19,7 +19,7 @@ public final class Return implements Statement {
   }
 
   @JsonCreator
-  private static Return jsonCreator(@Nullable @JsonProperty(PROP_ACTION) Action action) {
+  private static Return jsonCreator(@JsonProperty(PROP_ACTION) @Nullable Action action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     return new Return(action);
   }

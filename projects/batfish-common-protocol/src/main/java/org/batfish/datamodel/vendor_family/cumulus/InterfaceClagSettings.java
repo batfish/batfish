@@ -79,7 +79,7 @@ public final class InterfaceClagSettings implements Serializable {
   private final @Nullable Integer _priority;
   private final @Nullable MacAddress _sysMac;
 
-  // no need for static @JsonCreator since all fields are @Nullable
+  // no need for static @JsonCreator since all fields are @Nullable.
   @JsonCreator
   private InterfaceClagSettings(
       @JsonProperty(PROP_BACKUP_IP) @Nullable Ip backupIp,

@@ -105,8 +105,7 @@ public final class Result<R> {
     return new Key<>(_policyId, _inputRoute);
   }
 
-  @Nullable
-  public R getOutputRoute() {
+  public @Nullable R getOutputRoute() {
     return _outputRoute;
   }
 

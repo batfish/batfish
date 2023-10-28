@@ -30,8 +30,8 @@ public class IpCompletionRelevance implements Serializable {
 
   @JsonCreator
   private static IpCompletionRelevance jsonCreator(
-      @Nullable @JsonProperty(PROP_DISPLAY) String display,
-      @Nullable @JsonProperty(PROP_MATCH_TAGS) List<String> matchTags) {
+      @JsonProperty(PROP_DISPLAY) @Nullable String display,
+      @JsonProperty(PROP_MATCH_TAGS) @Nullable List<String> matchTags) {
     checkNotNull(display, "Display for Relevance cannot be null");
     return new IpCompletionRelevance(display, firstNonNull(matchTags, ImmutableList.of()));
   }

@@ -132,8 +132,8 @@ public final class ExitOutputIfaceStep extends Step<ExitOutputIfaceStepDetail> {
 
   @JsonCreator
   private static ExitOutputIfaceStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) ExitOutputIfaceStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable ExitOutputIfaceStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new ExitOutputIfaceStep(detail, action);

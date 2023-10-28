@@ -1447,9 +1447,8 @@ public class AsaControlPlaneExtractor extends AsaParserBaseListener
     _silentSyntax = silentSyntax;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

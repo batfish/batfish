@@ -46,8 +46,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static DbSubnetGroup create(
-        @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-        @Nullable @JsonProperty(JSON_KEY_SUBNETS) List<DbSubnet> dbSubnets) {
+        @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+        @JsonProperty(JSON_KEY_SUBNETS) @Nullable List<DbSubnet> dbSubnets) {
       checkArgument(vpcId != null, "VPC Id cannot be null for DB subnet group");
       checkArgument(dbSubnets != null, "Subnets cannot be null for DB subnet group");
 
@@ -82,9 +82,9 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static DbSubnet create(
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_AVAILABILITY_ZONE) DbSubnetAz availabilityZone,
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_IDENTIFIER) String identifier,
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_STATUS) String status) {
+        @JsonProperty(JSON_KEY_SUBNET_AVAILABILITY_ZONE) @Nullable DbSubnetAz availabilityZone,
+        @JsonProperty(JSON_KEY_SUBNET_IDENTIFIER) @Nullable String identifier,
+        @JsonProperty(JSON_KEY_SUBNET_STATUS) @Nullable String status) {
       checkArgument(availabilityZone != null, "Availability zone cannot be null for DB subnet");
       checkArgument(identifier != null, "Identifier cannot be null for DB subnet");
       checkArgument(status != null, "Status cannot be null for DB subnet");
@@ -121,7 +121,7 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
     private final @Nonnull String _name;
 
     @JsonCreator
-    private static DbSubnetAz create(@Nullable @JsonProperty(JSON_KEY_NAME) String name) {
+    private static DbSubnetAz create(@JsonProperty(JSON_KEY_NAME) @Nullable String name) {
       checkArgument(name != null, "Name cannot be null for DB subnet group availability zone");
       return new DbSubnetAz(name);
     }
@@ -145,8 +145,8 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static VpcSecurityGroup create(
-        @Nullable @JsonProperty(JSON_KEY_STATUS) String status,
-        @Nullable @JsonProperty(JSON_KEY_VPC_SECURITY_GROUP_ID) String id) {
+        @JsonProperty(JSON_KEY_STATUS) @Nullable String status,
+        @JsonProperty(JSON_KEY_VPC_SECURITY_GROUP_ID) @Nullable String id) {
       checkArgument(status != null, "Status cannot be null for VPC security group");
       checkArgument(id != null, "Security group id cannot be null for VPC security group");
       return new VpcSecurityGroup(status, id);
@@ -184,12 +184,12 @@ public final class RdsInstance implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static RdsInstance create(
-      @Nullable @JsonProperty(JSON_KEY_DB_INSTANCE_IDENTIFIER) String dbInstanceIdentifier,
-      @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone,
-      @Nullable @JsonProperty(JSON_KEY_DB_SUBNET_GROUP) DbSubnetGroup dbSubnetGroup,
-      @Nullable @JsonProperty(JSON_KEY_MULTI_AZ) Boolean multiAz,
-      @Nullable @JsonProperty(JSON_KEY_DB_INSTANCE_STATUS) String dbInstanceStatus,
-      @Nullable @JsonProperty(JSON_KEY_VPC_SECURITY_GROUPS)
+      @JsonProperty(JSON_KEY_DB_INSTANCE_IDENTIFIER) @Nullable String dbInstanceIdentifier,
+      @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) @Nullable String availabilityZone,
+      @JsonProperty(JSON_KEY_DB_SUBNET_GROUP) @Nullable DbSubnetGroup dbSubnetGroup,
+      @JsonProperty(JSON_KEY_MULTI_AZ) @Nullable Boolean multiAz,
+      @JsonProperty(JSON_KEY_DB_INSTANCE_STATUS) @Nullable String dbInstanceStatus,
+      @JsonProperty(JSON_KEY_VPC_SECURITY_GROUPS) @Nullable
           List<VpcSecurityGroup> vpcSecurityGroups) {
 
     checkArgument(

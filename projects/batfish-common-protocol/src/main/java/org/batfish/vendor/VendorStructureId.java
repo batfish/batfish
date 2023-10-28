@@ -29,9 +29,9 @@ public final class VendorStructureId implements Serializable {
 
   @JsonCreator
   private static VendorStructureId jsonCreator(
-      @Nullable @JsonProperty(PROP_FILENAME) String filename,
-      @Nullable @JsonProperty(PROP_STRUCTURE_TYPE) String structureType,
-      @Nullable @JsonProperty(PROP_STRUCTURE_NAME) String structureName) {
+      @JsonProperty(PROP_FILENAME) @Nullable String filename,
+      @JsonProperty(PROP_STRUCTURE_TYPE) @Nullable String structureType,
+      @JsonProperty(PROP_STRUCTURE_NAME) @Nullable String structureName) {
     checkNotNull(filename, "%s cannot be null", PROP_FILENAME);
     checkNotNull(structureType, "%s cannot be null", PROP_STRUCTURE_TYPE);
     checkNotNull(structureName, "%s cannot be null", PROP_STRUCTURE_NAME);

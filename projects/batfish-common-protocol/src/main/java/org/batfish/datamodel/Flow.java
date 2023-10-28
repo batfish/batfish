@@ -527,9 +527,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _dscp;
   }
 
-  @Nonnull
   @JsonProperty(PROP_DST_IP)
-  public Ip getDstIp() {
+  public @Nonnull Ip getDstIp() {
     return _dstIp;
   }
 
@@ -558,27 +557,23 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _icmpType;
   }
 
-  @Nullable
   @JsonProperty(PROP_INGRESS_INTERFACE)
-  public String getIngressInterface() {
+  public @Nullable String getIngressInterface() {
     return _ingressInterface;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INGRESS_NODE)
-  public String getIngressNode() {
+  public @Nonnull String getIngressNode() {
     return _ingressNode;
   }
 
-  @Nullable
   @JsonProperty(PROP_INGRESS_VRF)
-  public String getIngressVrf() {
+  public @Nullable String getIngressVrf() {
     return _ingressVrf;
   }
 
-  @Nonnull
   @JsonProperty(PROP_IP_PROTOCOL)
-  public IpProtocol getIpProtocol() {
+  public @Nonnull IpProtocol getIpProtocol() {
     return _ipProtocol;
   }
 
@@ -587,9 +582,8 @@ public final class Flow implements Comparable<Flow>, Serializable {
     return _packetLength;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SRC_IP)
-  public Ip getSrcIp() {
+  public @Nonnull Ip getSrcIp() {
     return _srcIp;
   }
 
@@ -600,16 +594,14 @@ public final class Flow implements Comparable<Flow>, Serializable {
 
   /** Jackson use only. */
   @JsonProperty(PROP_DEPRECATED_TAG)
-  @Nonnull
   @Deprecated
-  private String getTag() {
+  private @Nonnull String getTag() {
     return "tag"; // For backwards compatibility. Older clients expect a tag
   }
 
   @JsonProperty(PROP_DEPRECATED_STATE)
-  @Nonnull
   @Deprecated
-  private String getState() {
+  private @Nonnull String getState() {
     return "NEW";
   }
 

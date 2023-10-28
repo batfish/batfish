@@ -35,9 +35,9 @@ public class RouteMapSetCommunity implements RouteMapSet {
     _additive = additive;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(
+      Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     CommunitySetExpr communities = new LiteralCommunitySet(CommunitySet.of(_communities));
 
     return Stream.of(

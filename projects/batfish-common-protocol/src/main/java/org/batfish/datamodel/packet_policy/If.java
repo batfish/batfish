@@ -30,21 +30,19 @@ public final class If implements Statement {
 
   @JsonCreator
   private static @Nonnull If jsonCreator(
-      @Nullable @JsonProperty(PROP_ACTIONS) List<Statement> actions,
-      @Nullable @JsonProperty(PROP_TRUE_STATEMENTS) BoolExpr matchCondition) {
+      @JsonProperty(PROP_ACTIONS) @Nullable List<Statement> actions,
+      @JsonProperty(PROP_TRUE_STATEMENTS) @Nullable BoolExpr matchCondition) {
     checkArgument(matchCondition != null, "Missing %s", PROP_TRUE_STATEMENTS);
     return new If(matchCondition, firstNonNull(actions, ImmutableList.of()));
   }
 
-  @Nonnull
   @JsonProperty(PROP_ACTIONS)
-  public List<Statement> getTrueStatements() {
+  public @Nonnull List<Statement> getTrueStatements() {
     return _trueStatements;
   }
 
-  @Nonnull
   @JsonProperty(PROP_TRUE_STATEMENTS)
-  public BoolExpr getMatchCondition() {
+  public @Nonnull BoolExpr getMatchCondition() {
     return _matchCondition;
   }
 

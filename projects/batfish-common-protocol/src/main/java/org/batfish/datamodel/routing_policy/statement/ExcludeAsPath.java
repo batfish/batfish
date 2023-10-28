@@ -24,7 +24,7 @@ public final class ExcludeAsPath extends Statement {
   private @Nonnull AsPathListExpr _expr;
 
   @JsonCreator
-  private static ExcludeAsPath jsonCreator(@Nullable @JsonProperty(PROP_EXPR) AsPathListExpr expr) {
+  private static ExcludeAsPath jsonCreator(@JsonProperty(PROP_EXPR) @Nullable AsPathListExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new ExcludeAsPath(expr);
   }

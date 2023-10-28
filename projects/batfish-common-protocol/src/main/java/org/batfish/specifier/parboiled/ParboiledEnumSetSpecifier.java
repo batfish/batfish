@@ -165,18 +165,17 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
       _enumValueSets = new EnumValueSets<>(allValues, groupValues);
     }
 
-    @Nonnull
     @Override
     @SuppressWarnings("unchecked")
-    public <T1> EnumValueSets<T> visitValueEnumSetAstNode(
+    public @Nonnull <T1> EnumValueSets<T> visitValueEnumSetAstNode(
         ValueEnumSetAstNode<T1> valueEnumSetAstNode) {
       T value = (T) valueEnumSetAstNode.getValue();
       return _enumValueSets.addIncluding(ImmutableSet.of(value));
     }
 
-    @Nonnull
     @Override
-    public EnumValueSets<T> visitRegexEnumSetAstNode(RegexEnumSetAstNode regexEnumSetAstNode) {
+    public @Nonnull EnumValueSets<T> visitRegexEnumSetAstNode(
+        RegexEnumSetAstNode regexEnumSetAstNode) {
       return _enumValueSets.addIncluding(
           _allValues.stream()
               .filter(prop -> regexEnumSetAstNode.getPattern().matcher(prop.toString()).find())
@@ -188,9 +187,9 @@ public final class ParboiledEnumSetSpecifier<T> implements EnumSetSpecifier<T> {
       return _enumValueSets.addExcluding(notEnumSetAstNode.getAstNode().accept(this).toValues());
     }
 
-    @Nonnull
     @Override
-    public EnumValueSets<T> visitUnionEnumSetAstNode(UnionEnumSetAstNode unionEnumSetAstNode) {
+    public @Nonnull EnumValueSets<T> visitUnionEnumSetAstNode(
+        UnionEnumSetAstNode unionEnumSetAstNode) {
       return unionEnumSetAstNode
           .getLeft()
           .accept(this)

@@ -18,9 +18,8 @@ public final class Field {
     return _optional;
   }
 
-  @Nullable
   @JsonProperty(BfConsts.PROP_TYPE)
-  public Variable.Type getType() {
+  public @Nullable Variable.Type getType() {
     return _type;
   }
 

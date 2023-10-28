@@ -19,7 +19,7 @@ public final class MatchRouteType extends BooleanExpr {
   private final @Nonnull RouteTypeExpr _type;
 
   @JsonCreator
-  private static MatchRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteTypeExpr type) {
+  private static MatchRouteType jsonCreator(@JsonProperty(PROP_TYPE) @Nullable RouteTypeExpr type) {
     checkArgument(type != null, "%s must be provided", PROP_TYPE);
     return new MatchRouteType(type);
   }

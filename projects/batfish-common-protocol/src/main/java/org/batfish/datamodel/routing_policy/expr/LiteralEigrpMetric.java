@@ -19,7 +19,7 @@ public final class LiteralEigrpMetric extends EigrpMetricExpr {
 
   @JsonCreator
   private static LiteralEigrpMetric jsonCreator(
-      @Nullable @JsonProperty(PROP_METRIC) EigrpMetricValues metric) {
+      @JsonProperty(PROP_METRIC) @Nullable EigrpMetricValues metric) {
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new LiteralEigrpMetric(metric);
   }

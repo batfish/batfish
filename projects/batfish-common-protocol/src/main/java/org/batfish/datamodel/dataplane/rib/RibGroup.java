@@ -39,25 +39,23 @@ public final class RibGroup implements Serializable {
 
   @JsonCreator
   private static RibGroup create(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_RIB_IDS) List<RibId> ribIds,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_EXPORT_RIB) RibId exportRib) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_RIB_IDS) @Nullable List<RibId> ribIds,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
+      @JsonProperty(PROP_EXPORT_RIB) @Nullable RibId exportRib) {
     checkArgument(name != null, "RibGroup: missing %s", PROP_NAME);
     checkArgument(ribIds != null, "RibGroup: missing %s", PROP_RIB_IDS);
     checkArgument(importPolicy != null, "RibGroup: missing %s", PROP_IMPORT_POLICY);
     return new RibGroup(name, ribIds, importPolicy, exportRib);
   }
 
-  @Nonnull
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nullable
   @JsonProperty(PROP_EXPORT_RIB)
-  public RibId getExportRib() {
+  public @Nullable RibId getExportRib() {
     return _exportRib;
   }
 
@@ -65,15 +63,13 @@ public final class RibGroup implements Serializable {
    * Return the import policy to apply when importing routes from protocol RIBs into {@link
    * #_importRibs}
    */
-  @Nonnull
   @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
+  public @Nonnull String getImportPolicy() {
     return _importPolicy;
   }
 
-  @Nonnull
   @JsonProperty(PROP_RIB_IDS)
-  public List<RibId> getImportRibs() {
+  public @Nonnull List<RibId> getImportRibs() {
     return _importRibs;
   }
 

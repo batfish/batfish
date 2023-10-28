@@ -312,21 +312,21 @@ public final class OspfProcess implements Serializable {
 
   @JsonCreator
   private static @Nonnull OspfProcess create(
-      @Nullable @JsonProperty(PROP_ADMIN_COSTS) SortedMap<RoutingProtocol, Integer> adminCosts,
-      @Nullable @JsonProperty(PROP_AREAS) SortedMap<Long, OspfArea> areas,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
-      @Nullable @JsonProperty(PROP_GENERATED_ROUTES) SortedSet<GeneratedRoute> generatedRoutes,
-      @Nullable @JsonProperty(PROP_MAX_METRIC_EXTERNAL_NETWORKS) Long maxMetricExternalNetworks,
-      @Nullable @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) Long maxMetricStubNetworks,
-      @Nullable @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) Long maxMetricSummaryNetworks,
-      @Nullable @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) Long maxMetricTransitLinks,
-      @Nullable @JsonProperty(PROP_PROCESS_ID) String processId,
-      @Nullable @JsonProperty(PROP_REFERENCE_BANDWIDTH) Double referenceBandwidth,
-      @Nullable @JsonProperty(PROP_RFC1583) Boolean rfc1583Compatible,
-      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
-      @Nullable @JsonProperty(PROP_SUMMARY_ADMIN) Integer summaryAdminCost,
-      @Nullable @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) Long summaryDiscardMetric) {
+      @JsonProperty(PROP_ADMIN_COSTS) @Nullable SortedMap<RoutingProtocol, Integer> adminCosts,
+      @JsonProperty(PROP_AREAS) @Nullable SortedMap<Long, OspfArea> areas,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
+      @JsonProperty(PROP_GENERATED_ROUTES) @Nullable SortedSet<GeneratedRoute> generatedRoutes,
+      @JsonProperty(PROP_MAX_METRIC_EXTERNAL_NETWORKS) @Nullable Long maxMetricExternalNetworks,
+      @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS) @Nullable Long maxMetricStubNetworks,
+      @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS) @Nullable Long maxMetricSummaryNetworks,
+      @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS) @Nullable Long maxMetricTransitLinks,
+      @JsonProperty(PROP_PROCESS_ID) @Nullable String processId,
+      @JsonProperty(PROP_REFERENCE_BANDWIDTH) @Nullable Double referenceBandwidth,
+      @JsonProperty(PROP_RFC1583) @Nullable Boolean rfc1583Compatible,
+      @JsonProperty(PROP_ROUTER_ID) @Nullable Ip routerId,
+      @JsonProperty(PROP_SUMMARY_ADMIN) @Nullable Integer summaryAdminCost,
+      @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) @Nullable Long summaryDiscardMetric) {
     OspfProcess.Builder builder = builder();
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     builder.setProcessId(processId);
@@ -382,28 +382,24 @@ public final class OspfProcess implements Serializable {
    * The admin costs assigned to routes by this process, for each OSPF routing protocol (see {@link
    * #REQUIRES_ADMIN})
    */
-  @Nonnull
   @JsonIgnore
-  public Map<RoutingProtocol, Integer> getAdminCosts() {
+  public @Nonnull Map<RoutingProtocol, Integer> getAdminCosts() {
     return _adminCosts;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ADMIN_COSTS)
-  private SortedMap<RoutingProtocol, Integer> getAdminCostsSorted() {
+  private @Nonnull SortedMap<RoutingProtocol, Integer> getAdminCostsSorted() {
     return ImmutableSortedMap.copyOf(_adminCosts);
   }
 
   /** The OSPF areas contained in this process */
-  @Nonnull
   @JsonIgnore
-  public Map<Long, OspfArea> getAreas() {
+  public @Nonnull Map<Long, OspfArea> getAreas() {
     return _areas;
   }
 
-  @Nonnull
   @JsonProperty(PROP_AREAS)
-  private SortedMap<Long, OspfArea> getAreasSorted() {
+  private @Nonnull SortedMap<Long, OspfArea> getAreasSorted() {
     return ImmutableSortedMap.copyOf(_areas);
   }
 
@@ -420,15 +416,13 @@ public final class OspfProcess implements Serializable {
    * Return the names of policies that contribute to the unified export policy. The resulting set is
    * immutable.
    */
-  @Nonnull
   @JsonIgnore
-  public Set<String> getExportPolicySources() {
+  public @Nonnull Set<String> getExportPolicySources() {
     return _exportPolicySources;
   }
 
-  @Nonnull
   @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
-  private SortedSet<String> getExportPolicySourcesSorted() {
+  private @Nonnull SortedSet<String> getExportPolicySourcesSorted() {
     return ImmutableSortedSet.copyOf(_exportPolicySources);
   }
 
@@ -436,39 +430,33 @@ public final class OspfProcess implements Serializable {
    * Generated IPV4 routes for the purpose of export into OSPF. These routes are not imported into
    * the main RIB.
    */
-  @Nonnull
   @JsonIgnore
-  public Set<GeneratedRoute> getGeneratedRoutes() {
+  public @Nonnull Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
-  @Nonnull
   @JsonProperty(PROP_GENERATED_ROUTES)
-  private SortedSet<GeneratedRoute> getGeneratedRoutesSorted() {
+  private @Nonnull SortedSet<GeneratedRoute> getGeneratedRoutesSorted() {
     return ImmutableSortedSet.copyOf(_generatedRoutes);
   }
 
-  @Nullable
   @JsonProperty(PROP_MAX_METRIC_EXTERNAL_NETWORKS)
-  public Long getMaxMetricExternalNetworks() {
+  public @Nullable Long getMaxMetricExternalNetworks() {
     return _maxMetricExternalNetworks;
   }
 
-  @Nullable
   @JsonProperty(PROP_MAX_METRIC_STUB_NETWORKS)
-  public Long getMaxMetricStubNetworks() {
+  public @Nullable Long getMaxMetricStubNetworks() {
     return _maxMetricStubNetworks;
   }
 
-  @Nullable
   @JsonProperty(PROP_MAX_METRIC_SUMMARY_NETWORKS)
-  public Long getMaxMetricSummaryNetworks() {
+  public @Nullable Long getMaxMetricSummaryNetworks() {
     return _maxMetricSummaryNetworks;
   }
 
-  @Nullable
   @JsonProperty(PROP_MAX_METRIC_TRANSIT_LINKS)
-  public Long getMaxMetricTransitLinks() {
+  public @Nullable Long getMaxMetricTransitLinks() {
     return _maxMetricTransitLinks;
   }
 
@@ -482,31 +470,27 @@ public final class OspfProcess implements Serializable {
     return _ospfNeighborConfigs;
   }
 
-  @Nonnull
   @JsonProperty(PROP_PROCESS_ID)
-  public String getProcessId() {
+  public @Nonnull String getProcessId() {
     return _processId;
   }
 
   /**
    * The reference bandwidth by which an interface's bandwidth is divided to determine its OSPF cost
    */
-  @Nonnull
   @JsonProperty(PROP_REFERENCE_BANDWIDTH)
-  public Double getReferenceBandwidth() {
+  public @Nonnull Double getReferenceBandwidth() {
     return _referenceBandwidth;
   }
 
-  @Nullable
   @JsonProperty(PROP_RFC1583)
-  public Boolean getRfc1583Compatible() {
+  public @Nullable Boolean getRfc1583Compatible() {
     return _rfc1583Compatible;
   }
 
   /** The router-id of this OSPF process */
-  @Nonnull
   @JsonProperty(PROP_ROUTER_ID)
-  public Ip getRouterId() {
+  public @Nonnull Ip getRouterId() {
     return _routerId;
   }
 

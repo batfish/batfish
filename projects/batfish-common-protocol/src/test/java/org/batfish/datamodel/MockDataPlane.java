@@ -131,33 +131,28 @@ public class MockDataPlane implements DataPlane {
     _ribs = ImmutableTable.copyOf(builder._ribs);
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     return _bgpRoutes;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
     return _bgpBackupRoutes;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnRoutes() {
     return _evpnRoutes;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
+  public @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> getEvpnBackupRoutes() {
     return _evpnBackupRoutes;
   }
 
-  @Nonnull
   @Override
-  public Map<String, Map<String, Fib>> getFibs() {
+  public @Nonnull Map<String, Map<String, Fib>> getFibs() {
     return _fibs;
   }
 
@@ -166,9 +161,8 @@ public class MockDataPlane implements DataPlane {
     return _forwardingAnalysis;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, FinalMainRib> getRibs() {
+  public @Nonnull Table<String, String, FinalMainRib> getRibs() {
     return _ribs;
   }
 
@@ -178,15 +172,13 @@ public class MockDataPlane implements DataPlane {
     return _prefixTracingInfoSummary;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+  public @Nonnull Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
     return _layer2VniSettings;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+  public @Nonnull Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
     return _layer3VniSettings;
   }
 }

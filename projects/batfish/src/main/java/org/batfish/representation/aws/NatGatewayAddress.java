@@ -27,10 +27,10 @@ final class NatGatewayAddress implements Serializable {
 
   @JsonCreator
   private static NatGatewayAddress create(
-      @Nullable @JsonProperty(JSON_KEY_ALLOCATION_ID) String allocationId,
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP) Ip privateIp,
-      @Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) Ip publicIp) {
+      @JsonProperty(JSON_KEY_ALLOCATION_ID) @Nullable String allocationId,
+      @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) @Nullable String networkInterfaceId,
+      @JsonProperty(JSON_KEY_PRIVATE_IP) @Nullable Ip privateIp,
+      @JsonProperty(JSON_KEY_PUBLIC_IP) @Nullable Ip publicIp) {
     checkArgument(allocationId != null, "Allocation id cannot be null for NAT gateway address");
     checkArgument(
         networkInterfaceId != null, "Network interface id cannot be null for NAT gateway address");

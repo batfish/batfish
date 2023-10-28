@@ -27,9 +27,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
     private @Nullable Long _lsaMetric;
     private @Nullable OspfMetricType _ospfMetricType;
 
-    @Nonnull
     @Override
-    public OspfExternalRoute build() {
+    public @Nonnull OspfExternalRoute build() {
       checkArgument(_ospfMetricType != null, "Missing OSPF external metric type");
       checkArgument(_lsaMetric != null, "Missing %s", PROP_LSA_METRIC);
       checkArgument(_area != null, "Missing %s", PROP_AREA);
@@ -76,9 +75,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return _ospfMetricType;
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 
@@ -102,9 +100,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public Builder setOspfMetricType(@Nonnull OspfMetricType ospfMetricType) {
+    public @Nonnull Builder setOspfMetricType(@Nonnull OspfMetricType ospfMetricType) {
       _ospfMetricType = ospfMetricType;
       return getThis();
     }
@@ -161,9 +158,8 @@ public abstract class OspfExternalRoute extends OspfRoute {
   @JsonIgnore
   public @Nonnull abstract OspfMetricType getOspfMetricType();
 
-  @Nonnull
   @Override
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return getOspfMetricType().toRoutingProtocol();
   }
 

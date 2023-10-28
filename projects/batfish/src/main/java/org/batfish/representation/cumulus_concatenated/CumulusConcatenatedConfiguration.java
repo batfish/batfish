@@ -142,8 +142,8 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     return ImmutableList.of(toVendorIndependentConfiguration());
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Configuration toVendorIndependentConfiguration() {
     Configuration c = new Configuration(getHostname(), ConfigurationFormat.CUMULUS_CONCATENATED);
     c.setDeviceModel(DeviceModel.CUMULUS_UNSPECIFIED);

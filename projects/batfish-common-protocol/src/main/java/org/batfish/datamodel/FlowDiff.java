@@ -67,9 +67,9 @@ public final class FlowDiff implements Comparable<FlowDiff> {
 
   @JsonCreator
   private static FlowDiff flowDiff(
-      @Nullable @JsonProperty(PROP_FIELD_NAME) String fieldName,
-      @Nullable @JsonProperty(PROP_OLD_VALUE) String oldValue,
-      @Nullable @JsonProperty(PROP_NEW_VALUE) String newValue) {
+      @JsonProperty(PROP_FIELD_NAME) @Nullable String fieldName,
+      @JsonProperty(PROP_OLD_VALUE) @Nullable String oldValue,
+      @JsonProperty(PROP_NEW_VALUE) @Nullable String newValue) {
     checkNotNull(fieldName);
     checkNotNull(oldValue);
     checkNotNull(newValue);

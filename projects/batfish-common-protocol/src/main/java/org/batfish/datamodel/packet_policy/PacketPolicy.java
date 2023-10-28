@@ -31,30 +31,27 @@ public final class PacketPolicy implements Serializable {
 
   @JsonCreator
   private static PacketPolicy jsonCreator(
-      @Nullable @JsonProperty(PROP_DEFAULT_ACTION) Return defaultAction,
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_STATEMENTS) List<Statement> statements) {
+      @JsonProperty(PROP_DEFAULT_ACTION) @Nullable Return defaultAction,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_STATEMENTS) @Nullable List<Statement> statements) {
     checkArgument(name != null, "Missing %s", PROP_DEFAULT_ACTION);
     checkArgument(defaultAction != null, "Missing %s", PROP_NAME);
     return new PacketPolicy(name, firstNonNull(statements, ImmutableList.of()), defaultAction);
   }
 
-  @Nonnull
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
   @JsonProperty(PROP_STATEMENTS)
-  public List<Statement> getStatements() {
+  public @Nonnull List<Statement> getStatements() {
     return _statements;
   }
 
   /** Return the default action for this policy */
-  @Nonnull
   @JsonProperty(PROP_DEFAULT_ACTION)
-  public Return getDefaultAction() {
+  public @Nonnull Return getDefaultAction() {
     return _defaultAction;
   }
 

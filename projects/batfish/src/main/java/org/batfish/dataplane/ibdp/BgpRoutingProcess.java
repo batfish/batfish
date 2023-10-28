@@ -193,7 +193,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Incoming EVPN type 3 advertisements into this router from each BGP neighbor that speaks EVPN
    * address family
    */
-  @Nonnull @VisibleForTesting
+  @VisibleForTesting @Nonnull
   SortedMap<EdgeId, Queue<RouteAdvertisement<EvpnType3Route>>> _evpnType3IncomingRoutes;
 
   /**
@@ -559,8 +559,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    *     desired {@link AddressFamily}. If the address family is null, the peer will be omitted from
    *     edge computation
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<EdgeId> getEdgeIdStream(
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       Function<BgpPeerConfig, AddressFamily> familyExtractor,
@@ -685,9 +685,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     }
   }
 
-  @Nonnull
   @Override
-  public RibDelta<BgpRoute<?, ?>> getUpdatesForMainRib() {
+  public @Nonnull RibDelta<BgpRoute<?, ?>> getUpdatesForMainRib() {
     RibDelta<BgpRoute<?, ?>> result = _toMainRib.build();
     _toMainRib = RibDelta.builder();
     return result;
@@ -883,9 +882,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Create a new {@link EvpnType3Route} based on given {@link Layer2Vni}. Assumes {@code vni} is
    * valid (e.g., has properly set source address).
    */
-  @Nonnull
   @VisibleForTesting
-  static EvpnType3Route initEvpnType3Route(
+  static @Nonnull EvpnType3Route initEvpnType3Route(
       Layer2Vni vni,
       ExtendedCommunity routeTarget,
       RouteDistinguisher routeDistinguisher,
@@ -2644,8 +2642,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return _bgpv4Rib.getBestPathRoutes();
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Builder<Bgpv4Route> getBgpv4DeltaBuilder() {
     return _bgpv4DeltaBuilder;
   }

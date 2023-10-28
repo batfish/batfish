@@ -58,18 +58,18 @@ public final class EvpnAddressFamily extends AddressFamily {
   @JsonCreator
   private static EvpnAddressFamily create(
       // super fields
-      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
+      @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES) @Nullable
           AddressFamilyCapabilities addressFamilyCapabilities,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources,
-      @Nullable @JsonProperty(ROUTE_REFLECTOR_CLIENT) Boolean routeReflectorClient,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
+      @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
+      @JsonProperty(ROUTE_REFLECTOR_CLIENT) @Nullable Boolean routeReflectorClient,
       // local fields
-      @Nullable @JsonProperty(PROP_L2_VNIS) Set<Layer2VniConfig> l2Vnis,
-      @Nullable @JsonProperty(PROP_L3_VNIS) Set<Layer3VniConfig> l3Vnis,
-      @Nullable @JsonProperty(PROP_NVE_IP) Ip nveIp,
-      @Nullable @JsonProperty(PROP_PROPAGATE_UNMATCHED) Boolean propagateUnmatched) {
+      @JsonProperty(PROP_L2_VNIS) @Nullable Set<Layer2VniConfig> l2Vnis,
+      @JsonProperty(PROP_L3_VNIS) @Nullable Set<Layer3VniConfig> l3Vnis,
+      @JsonProperty(PROP_NVE_IP) @Nullable Ip nveIp,
+      @JsonProperty(PROP_PROPAGATE_UNMATCHED) @Nullable Boolean propagateUnmatched) {
     checkArgument(propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);
     return new Builder()
         .setAddressFamilyCapabilities(addressFamilyCapabilities)
@@ -86,16 +86,14 @@ public final class EvpnAddressFamily extends AddressFamily {
   }
 
   /** L2 VNI associations and config */
-  @Nonnull
   @JsonProperty(PROP_L2_VNIS)
-  public SortedSet<Layer2VniConfig> getL2VNIs() {
+  public @Nonnull SortedSet<Layer2VniConfig> getL2VNIs() {
     return _l2VNIs;
   }
 
   /** L3 VNI associations and config */
-  @Nonnull
   @JsonProperty(PROP_L3_VNIS)
-  public SortedSet<Layer3VniConfig> getL3VNIs() {
+  public @Nonnull SortedSet<Layer3VniConfig> getL3VNIs() {
     return _l3VNIs;
   }
 
@@ -105,9 +103,8 @@ public final class EvpnAddressFamily extends AddressFamily {
    *
    * <p>See: https://datatracker.ietf.org/doc/html/rfc8365#section-5.1.3
    */
-  @Nullable
   @JsonProperty(PROP_NVE_IP)
-  public Ip getNveIp() {
+  public @Nullable Ip getNveIp() {
     return _nveIp;
   }
 
@@ -197,15 +194,13 @@ public final class EvpnAddressFamily extends AddressFamily {
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public Builder getThis() {
+    public @Nonnull Builder getThis() {
       return this;
     }
 
-    @Nonnull
     @Override
-    public EvpnAddressFamily build() {
+    public @Nonnull EvpnAddressFamily build() {
       checkArgument(
           _addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
       checkArgument(_propagateUnmatched != null, "Missing %s", PROP_PROPAGATE_UNMATCHED);

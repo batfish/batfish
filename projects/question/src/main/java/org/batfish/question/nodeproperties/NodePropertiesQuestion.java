@@ -33,8 +33,8 @@ public class NodePropertiesQuestion extends Question {
 
   @JsonCreator
   private static NodePropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_PROPERTIES) String properties) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_PROPERTIES) @Nullable String properties) {
     return new NodePropertiesQuestion(nodes, properties);
   }
 
@@ -71,27 +71,23 @@ public class NodePropertiesQuestion extends Question {
     return "nodeproperties";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
-  @Nullable
   @JsonProperty(PROP_PROPERTIES)
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodePropertySpecifier getPropertySpecifier() {
+  public @Nonnull NodePropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
   }
 

@@ -29,8 +29,8 @@ public final class TunnelConfiguration implements Serializable {
 
   @JsonCreator
   private static TunnelConfiguration jsonCreator(
-      @Nullable @JsonProperty(PROP_SOURCE_ADDRESS) Ip sourceAddress,
-      @Nullable @JsonProperty(PROP_DESTINATION_ADDRESS) Ip destinationAddress) {
+      @JsonProperty(PROP_SOURCE_ADDRESS) @Nullable Ip sourceAddress,
+      @JsonProperty(PROP_DESTINATION_ADDRESS) @Nullable Ip destinationAddress) {
     checkArgument(sourceAddress != null, "Missing %s", PROP_SOURCE_ADDRESS);
     checkArgument(destinationAddress != null, "Missing %s", PROP_DESTINATION_ADDRESS);
     return new TunnelConfiguration(sourceAddress, destinationAddress);

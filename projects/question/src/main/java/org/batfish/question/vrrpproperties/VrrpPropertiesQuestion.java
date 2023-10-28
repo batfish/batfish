@@ -42,10 +42,10 @@ public final class VrrpPropertiesQuestion extends Question {
 
   @JsonCreator
   private static @Nonnull VrrpPropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_INTERFACES) String interfaces,
-      @Nullable @JsonProperty(PROP_VIRTUAL_ADDRESSES) String virtualAddresses,
-      @Nullable @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) Boolean excludeShutInterfaces) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_INTERFACES) @Nullable String interfaces,
+      @JsonProperty(PROP_VIRTUAL_ADDRESSES) @Nullable String virtualAddresses,
+      @JsonProperty(PROP_EXCLUDE_SHUT_INTERFACES) @Nullable Boolean excludeShutInterfaces) {
     return new VrrpPropertiesQuestion(
         nodes, interfaces, virtualAddresses, firstNonNull(excludeShutInterfaces, false));
   }

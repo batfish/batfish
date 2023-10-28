@@ -98,22 +98,19 @@ public class RouteFilterList implements Serializable {
     return Objects.hashCode(_lines);
   }
 
-  @Nullable
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
   /** The lines against which to check an IPV4 route */
-  @Nonnull
   @JsonProperty(PROP_LINES)
-  public List<RouteFilterLine> getLines() {
+  public @Nonnull List<RouteFilterLine> getLines() {
     return _lines;
   }
 
-  @Nullable
   @JsonProperty(PROP_VENDOR_STRUCTURE_ID)
-  public VendorStructureId getVendorStructureId() {
+  public @Nullable VendorStructureId getVendorStructureId() {
     return _vendorStructureId;
   }
 

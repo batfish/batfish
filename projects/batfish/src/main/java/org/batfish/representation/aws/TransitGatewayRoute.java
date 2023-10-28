@@ -41,12 +41,12 @@ abstract class TransitGatewayRoute implements Serializable {
 
   @JsonCreator
   private static TransitGatewayRoute create(
-      @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
-      @Nullable @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK)
+      @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) @Nullable Prefix destinationCidrBlock,
+      @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK) @Nullable
           Prefix6 destinationIpv6CidrBlock,
-      @Nullable @JsonProperty(JSON_KEY_STATE) String state,
-      @Nullable @JsonProperty(JSON_KEY_TYPE) String type,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS) List<Attachment> attachments) {
+      @JsonProperty(JSON_KEY_STATE) @Nullable String state,
+      @JsonProperty(JSON_KEY_TYPE) @Nullable String type,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENTS) @Nullable List<Attachment> attachments) {
     checkArgument(
         destinationCidrBlock != null || destinationIpv6CidrBlock != null,
         "At least one of v4 or v6 destination CIDR must be present for a transit gateway static"

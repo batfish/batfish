@@ -39,9 +39,8 @@ final class ConversionStatusAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getRow(String node, ConvertStatus status) {
+  static @Nonnull Row getRow(String node, ConvertStatus status) {
     Row.TypedRowBuilder builder = Row.builder(TABLE_METADATA.toColumnMap());
     builder.put(COL_NODE, node);
     builder.put(COL_CONVERT_STATUS, status.toString());

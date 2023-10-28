@@ -29,7 +29,7 @@ public final class PrivateIpAddress implements Serializable {
     private final @Nonnull Ip _publicIp;
 
     @JsonCreator
-    private static Association create(@Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) Ip publicIp) {
+    private static Association create(@JsonProperty(JSON_KEY_PUBLIC_IP) @Nullable Ip publicIp) {
       checkNonNull(publicIp, JSON_KEY_PUBLIC_IP, "Association (Network Interface)");
       return new Association(publicIp);
     }
@@ -52,9 +52,9 @@ public final class PrivateIpAddress implements Serializable {
 
   @JsonCreator
   private static PrivateIpAddress create(
-      @Nullable @JsonProperty(JSON_KEY_PRIMARY) Boolean primary,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIp,
-      @Nullable @JsonProperty(JSON_KEY_ASSOCIATION) Association association) {
+      @JsonProperty(JSON_KEY_PRIMARY) @Nullable Boolean primary,
+      @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) @Nullable Ip privateIp,
+      @JsonProperty(JSON_KEY_ASSOCIATION) @Nullable Association association) {
     checkNonNull(primary, JSON_KEY_PRIMARY, "PrivateIpAddress");
     checkNonNull(privateIp, JSON_KEY_PRIVATE_IP_ADDRESSES, "PrivateIpAddress");
 

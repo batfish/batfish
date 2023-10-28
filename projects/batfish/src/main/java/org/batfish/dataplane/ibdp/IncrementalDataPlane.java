@@ -59,27 +59,23 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
     return _forwardingAnalysis;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+  public @Nonnull Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
     return _layer2VniSettings;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+  public @Nonnull Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
     return _layer3VniSettings;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     return _bgpRoutes;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
     return _bgpBackupRoutes;
   }
 

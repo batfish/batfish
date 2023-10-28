@@ -41,10 +41,10 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
 
   @JsonCreator
   private static StaticRoute jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_NEXT_VRF) String nextVrf,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) long tag,
@@ -88,9 +88,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   }
 
   /** Jackson use only */
-  @Nullable
   @JsonProperty(PROP_NEXT_VRF)
-  private String getNextVrf() {
+  private @Nullable String getNextVrf() {
     return LegacyNextHops.getNextVrf(_nextHop).orElse(null);
   }
 
@@ -138,9 +137,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       _recursive = true;
     }
 
-    @Nonnull
     @Override
-    public StaticRoute build() {
+    public @Nonnull StaticRoute build() {
       checkArgument(
           getAdmin() != Route.UNSET_ROUTE_ADMIN,
           "Static route cannot have unset %s",
@@ -158,9 +156,8 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
           _track);
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 

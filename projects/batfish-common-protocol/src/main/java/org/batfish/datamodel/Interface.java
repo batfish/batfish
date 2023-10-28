@@ -989,7 +989,7 @@ public final class Interface extends ComparableStructure<String> {
   private String _hsrpVersion;
 
   @JsonCreator
-  private Interface(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private Interface(@JsonProperty(PROP_NAME) @Nullable String name) {
     this(name, null);
   }
 
@@ -1378,9 +1378,8 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   /** {@link OspfInterfaceSettings} associated with this interface. */
-  @Nullable
   @JsonProperty(PROP_OSPF_SETTINGS)
-  public OspfInterfaceSettings getOspfSettings() {
+  public @Nullable OspfInterfaceSettings getOspfSettings() {
     return _ospfSettings;
   }
 
@@ -1406,16 +1405,14 @@ public final class Interface extends ComparableStructure<String> {
    * "Returns name of the routing policy which is generated from the Global and Interface level
    * inbound distribute-lists for OSPF"
    */
-  @Nullable
   @JsonIgnore
-  public String getOspfInboundDistributeListPolicy() {
+  public @Nullable String getOspfInboundDistributeListPolicy() {
     return (_ospfSettings != null) ? _ospfSettings.getInboundDistributeListPolicy() : null;
   }
 
   /** Returns the OSPF network type for this interface. */
-  @Nullable
   @JsonIgnore
-  public OspfNetworkType getOspfNetworkType() {
+  public @Nullable OspfNetworkType getOspfNetworkType() {
     return (_ospfSettings != null) ? _ospfSettings.getNetworkType() : null;
   }
 
@@ -1428,9 +1425,8 @@ public final class Interface extends ComparableStructure<String> {
     return (_ospfSettings != null) ? firstNonNull(_ospfSettings.getPassive(), false) : false;
   }
 
-  @Nullable
   @JsonIgnore
-  public String getOspfProcess() {
+  public @Nullable String getOspfProcess() {
     return (_ospfSettings != null) ? _ospfSettings.getProcess() : null;
   }
 
@@ -1439,9 +1435,8 @@ public final class Interface extends ComparableStructure<String> {
     return getIpAccessList(_outgoingFilterName);
   }
 
-  @Nullable
   @JsonIgnore
-  public IpAccessList getOutgoingOriginalFlowFilter() {
+  public @Nullable IpAccessList getOutgoingOriginalFlowFilter() {
     return getIpAccessList(_outgoingOriginalFlowFilterName);
   }
 

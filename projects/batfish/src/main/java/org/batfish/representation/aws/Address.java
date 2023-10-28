@@ -30,10 +30,10 @@ public final class Address implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static Address create(
-      @Nullable @JsonProperty(JSON_KEY_PUBLIC_IP) String publicIp,
-      @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) String privateIpAddress,
-      @Nullable @JsonProperty(JSON_KEY_ALLOCATION_ID) String allocationId) {
+      @JsonProperty(JSON_KEY_PUBLIC_IP) @Nullable String publicIp,
+      @JsonProperty(JSON_KEY_INSTANCE_ID) @Nullable String instanceId,
+      @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) @Nullable String privateIpAddress,
+      @JsonProperty(JSON_KEY_ALLOCATION_ID) @Nullable String allocationId) {
     checkArgument(publicIp != null, "Public IP of an EC2 address cannot be null");
     checkArgument(allocationId != null, "Allocation ID of an Elastic IP address cannot be null");
     return new Address(

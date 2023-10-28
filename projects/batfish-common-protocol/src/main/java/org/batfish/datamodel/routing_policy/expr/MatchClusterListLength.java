@@ -75,8 +75,8 @@ public final class MatchClusterListLength extends BooleanExpr {
 
   @JsonCreator
   private static MatchClusterListLength create(
-      @Nullable @JsonProperty(PROP_COMPARATOR) IntComparator comparator,
-      @Nullable @JsonProperty(PROP_RHS) IntExpr rhs) {
+      @JsonProperty(PROP_COMPARATOR) @Nullable IntComparator comparator,
+      @JsonProperty(PROP_RHS) @Nullable IntExpr rhs) {
     checkArgument(comparator != null, "%s must be provided", PROP_COMPARATOR);
     checkArgument(rhs != null, "%s must be provided", PROP_RHS);
     return new MatchClusterListLength(comparator, rhs);

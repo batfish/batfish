@@ -81,9 +81,8 @@ public final class ParboiledInputValidator {
                               .build()));
     }
 
-    @Nonnull
     @Override
-    public Map<String, Configuration> getConfigs() {
+    public @Nonnull Map<String, Configuration> getConfigs() {
       return _configs;
     }
 
@@ -92,9 +91,8 @@ public final class ParboiledInputValidator {
       return _referenceLibrary.getReferenceBook(bookName);
     }
 
-    @Nonnull
     @Override
-    public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
+    public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
       return _nodeRolesData.nodeRoleDimensionFor(dimension);
     }
 

@@ -46,9 +46,9 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static DefaultAction create(
-        @Nullable @JsonProperty(JSON_KEY_ORDER) Integer order,
-        @Nullable @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) String targetGroupArn,
-        @Nullable @JsonProperty(JSON_KEY_TYPE) String type) {
+        @JsonProperty(JSON_KEY_ORDER) @Nullable Integer order,
+        @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) @Nullable String targetGroupArn,
+        @JsonProperty(JSON_KEY_TYPE) @Nullable String type) {
       checkNonNull(targetGroupArn, JSON_KEY_TARGET_GROUP_ARN, "Load balancer listener");
       checkNonNull(type, JSON_KEY_TARGET_TYPE, "Load balancer listener");
 
@@ -108,10 +108,10 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Listener create(
-        @Nullable @JsonProperty(JSON_KEY_LISTENER_ARN) String listenerArn,
-        @Nullable @JsonProperty(JSON_KEY_DEFAULT_ACTIONS) List<DefaultAction> defaultActions,
-        @Nullable @JsonProperty(JSON_KEY_PROTOCOL) String protocol,
-        @Nullable @JsonProperty(JSON_KEY_PORT) Integer port) {
+        @JsonProperty(JSON_KEY_LISTENER_ARN) @Nullable String listenerArn,
+        @JsonProperty(JSON_KEY_DEFAULT_ACTIONS) @Nullable List<DefaultAction> defaultActions,
+        @JsonProperty(JSON_KEY_PROTOCOL) @Nullable String protocol,
+        @JsonProperty(JSON_KEY_PORT) @Nullable Integer port) {
       checkNonNull(listenerArn, JSON_KEY_LISTENER_ARN, "LoadBalancer listener");
       checkNonNull(defaultActions, JSON_KEY_DEFAULT_ACTIONS, "LoadBalancer listener");
       checkNonNull(protocol, JSON_KEY_PROTOCOL, "LoadBalancer listener");
@@ -246,8 +246,8 @@ public final class LoadBalancerListener implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static LoadBalancerListener create(
-      @Nullable @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) String loadBalancerArn,
-      @Nullable @JsonProperty(JSON_KEY_LISTENERS) List<Listener> listeners) {
+      @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) @Nullable String loadBalancerArn,
+      @JsonProperty(JSON_KEY_LISTENERS) @Nullable List<Listener> listeners) {
     checkNonNull(listeners, JSON_KEY_LISTENERS, "LoadBalancer listeners");
     checkNonNull(loadBalancerArn, JSON_KEY_LOAD_BALANCER_ARN, "LoadBalancer listener");
 

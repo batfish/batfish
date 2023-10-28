@@ -50,28 +50,24 @@ public abstract class AddressFamily implements Serializable {
   }
 
   /** The policy governing all advertisements sent to this peer */
-  @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
+  public @Nullable String getExportPolicy() {
     return _exportPolicy;
   }
 
-  @Nonnull
   @JsonProperty(PROP_EXPORT_POLICY_SOURCES)
-  public SortedSet<String> getExportPolicySources() {
+  public @Nonnull SortedSet<String> getExportPolicySources() {
     return _exportPolicySources;
   }
 
   /** Routing policy governing all advertisements received from this peer */
-  @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
+  public @Nullable String getImportPolicy() {
     return _importPolicy;
   }
 
-  @Nonnull
   @JsonProperty(PROP_IMPORT_POLICY_SOURCES)
-  public SortedSet<String> getImportPolicySources() {
+  public @Nonnull SortedSet<String> getImportPolicySources() {
     return _importPolicySources;
   }
 

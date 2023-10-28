@@ -24,10 +24,10 @@ public final class AclAclLine extends AclLine {
 
   @JsonCreator
   private static AclAclLine jsonCreator(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_ACL_NAME) String aclName,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
-      @Nullable @JsonProperty(PROP_VENDOR_STRUCTURE_ID) VendorStructureId vendorStructureId) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_ACL_NAME) @Nullable String aclName,
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement,
+      @JsonProperty(PROP_VENDOR_STRUCTURE_ID) @Nullable VendorStructureId vendorStructureId) {
     checkNotNull(name, "%s must be provided", PROP_NAME);
     checkNotNull(aclName, "%s must be provided", PROP_ACL_NAME);
     return new AclAclLine(name, aclName, traceElement, vendorStructureId);
@@ -46,9 +46,8 @@ public final class AclAclLine extends AclLine {
     this(name, aclName, null, null);
   }
 
-  @Nonnull
   @JsonProperty(PROP_ACL_NAME)
-  public String getAclName() {
+  public @Nonnull String getAclName() {
     return _aclName;
   }
 

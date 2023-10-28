@@ -82,14 +82,13 @@ public final class FindMatchingFilterLinesQuestion extends Question {
     return _action;
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTERS)
-  private String getFilters() {
+  private @Nullable String getFilters() {
     return _filters;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   FilterSpecifier getFilterSpecifier() {
     return _filterSpecifier;
   }
@@ -109,8 +108,8 @@ public final class FindMatchingFilterLinesQuestion extends Question {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }

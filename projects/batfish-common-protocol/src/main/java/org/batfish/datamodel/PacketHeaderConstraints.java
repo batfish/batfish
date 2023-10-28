@@ -96,20 +96,20 @@ public class PacketHeaderConstraints {
   @Deprecated
   @JsonCreator
   private static PacketHeaderConstraints create(
-      @Nullable @JsonProperty(PROP_DSCPS) IntegerSpace.Builder dscps,
-      @Nullable @JsonProperty(PROP_ECNS) IntegerSpace.Builder ecns,
-      @Nullable @JsonProperty(PROP_PACKET_LENGTHS) IntegerSpace.Builder packetLengths,
-      @Nullable @JsonProperty(PROP_FRAGMENT_OFFSETS) IntegerSpace.Builder fragmentOffsets,
-      @Nullable @JsonProperty(PROP_IP_PROTOCOLS) JsonNode ipProtocols,
-      @Nullable @JsonProperty(PROP_SRC_IPS) String srcIps,
-      @Nullable @JsonProperty(PROP_DST_IPS) String dstIps,
-      @Nullable @JsonProperty(PROP_ICMP_CODES) IntegerSpace.Builder icmpCodes,
-      @Nullable @JsonProperty(PROP_ICMP_TYPES) IntegerSpace.Builder icmpTypes,
-      @Nullable @JsonProperty(PROP_SRC_PORTS) IntegerSpace.Builder srcPorts,
-      @Nullable @JsonProperty(PROP_DST_PORTS) IntegerSpace.Builder dstPorts,
-      @Nullable @JsonProperty(PROP_APPLICATIONS) JsonNode applications,
-      @Nullable @JsonProperty(PROP_TCP_FLAGS) Set<TcpFlagsMatchConditions> tcpFlags,
-      @Nullable @JsonProperty(PROP_DEPRECATED_FLOW_STATES) Object ignored)
+      @JsonProperty(PROP_DSCPS) @Nullable IntegerSpace.Builder dscps,
+      @JsonProperty(PROP_ECNS) @Nullable IntegerSpace.Builder ecns,
+      @JsonProperty(PROP_PACKET_LENGTHS) @Nullable IntegerSpace.Builder packetLengths,
+      @JsonProperty(PROP_FRAGMENT_OFFSETS) @Nullable IntegerSpace.Builder fragmentOffsets,
+      @JsonProperty(PROP_IP_PROTOCOLS) @Nullable JsonNode ipProtocols,
+      @JsonProperty(PROP_SRC_IPS) @Nullable String srcIps,
+      @JsonProperty(PROP_DST_IPS) @Nullable String dstIps,
+      @JsonProperty(PROP_ICMP_CODES) @Nullable IntegerSpace.Builder icmpCodes,
+      @JsonProperty(PROP_ICMP_TYPES) @Nullable IntegerSpace.Builder icmpTypes,
+      @JsonProperty(PROP_SRC_PORTS) @Nullable IntegerSpace.Builder srcPorts,
+      @JsonProperty(PROP_DST_PORTS) @Nullable IntegerSpace.Builder dstPorts,
+      @JsonProperty(PROP_APPLICATIONS) @Nullable JsonNode applications,
+      @JsonProperty(PROP_TCP_FLAGS) @Nullable Set<TcpFlagsMatchConditions> tcpFlags,
+      @JsonProperty(PROP_DEPRECATED_FLOW_STATES) @Nullable Object ignored)
       throws IllegalArgumentException {
     return new PacketHeaderConstraints(
         processBuilder(dscps, VALID_DSCP),
@@ -240,27 +240,23 @@ public class PacketHeaderConstraints {
         null, null, null, null, null, null, null, null, null, null, null, null, null);
   }
 
-  @Nullable
   @JsonProperty(PROP_DSCPS)
-  public IntegerSpace getDscps() {
+  public @Nullable IntegerSpace getDscps() {
     return _dscps;
   }
 
-  @Nullable
   @JsonProperty(PROP_ECNS)
-  public IntegerSpace getEcns() {
+  public @Nullable IntegerSpace getEcns() {
     return _ecns;
   }
 
-  @Nullable
   @JsonProperty(PROP_PACKET_LENGTHS)
-  public IntegerSpace getPacketLengths() {
+  public @Nullable IntegerSpace getPacketLengths() {
     return _packetLengths;
   }
 
-  @Nullable
   @JsonProperty(PROP_FRAGMENT_OFFSETS)
-  public IntegerSpace getFragmentOffsets() {
+  public @Nullable IntegerSpace getFragmentOffsets() {
     return _fragmentOffsets;
   }
 
@@ -278,39 +274,33 @@ public class PacketHeaderConstraints {
         _ipProtocols.stream().map(IpProtocol::toString).collect(ImmutableSet.toImmutableSet()));
   }
 
-  @Nullable
   @JsonProperty(PROP_SRC_IPS)
-  public String getSrcIps() {
+  public @Nullable String getSrcIps() {
     return _srcIp;
   }
 
-  @Nullable
   @JsonProperty(PROP_DST_IPS)
-  public String getDstIps() {
+  public @Nullable String getDstIps() {
     return _dstIp;
   }
 
-  @Nullable
   @JsonProperty(PROP_ICMP_CODES)
-  public IntegerSpace getIcmpCodes() {
+  public @Nullable IntegerSpace getIcmpCodes() {
     return _icmpCode;
   }
 
-  @Nullable
   @JsonProperty(PROP_ICMP_TYPES)
-  public IntegerSpace getIcmpTypes() {
+  public @Nullable IntegerSpace getIcmpTypes() {
     return _icmpType;
   }
 
-  @Nullable
   @JsonProperty(PROP_SRC_PORTS)
-  public IntegerSpace getSrcPorts() {
+  public @Nullable IntegerSpace getSrcPorts() {
     return _srcPorts;
   }
 
-  @Nullable
   @JsonProperty(PROP_DST_PORTS)
-  public IntegerSpace getDstPorts() {
+  public @Nullable IntegerSpace getDstPorts() {
     return _dstPorts;
   }
 
@@ -323,9 +313,8 @@ public class PacketHeaderConstraints {
     return parseApplications(_applications);
   }
 
-  @Nullable
   @JsonProperty(PROP_TCP_FLAGS)
-  public Set<TcpFlagsMatchConditions> getTcpFlags() {
+  public @Nullable Set<TcpFlagsMatchConditions> getTcpFlags() {
     return _tcpFlags;
   }
 
@@ -503,9 +492,8 @@ public class PacketHeaderConstraints {
    * @return a set of {@link IpProtocol}s that are allowed. {@code null} means no constraints.
    * @throws IllegalArgumentException if the set of IP protocols resolves to an empty set.
    */
-  @Nullable
   @VisibleForTesting
-  static Set<IpProtocol> resolveIpProtocols(
+  static @Nullable Set<IpProtocol> resolveIpProtocols(
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts,
@@ -563,9 +551,8 @@ public class PacketHeaderConstraints {
    * @param applications specified applications
    * @return a set of allowed port ranges that satisfy the constraints
    */
-  @Nullable
   @VisibleForTesting
-  static IntegerSpace resolvePorts(
+  static @Nullable IntegerSpace resolvePorts(
       @Nullable IntegerSpace ports, @Nullable Set<Application> applications) {
     @Nullable
     IntegerSpace portsFromApplications =
