@@ -23,21 +23,19 @@ We provide OS-specific advice below.
 
 Do the following before doing anything
 
-1. Install [XCode from Apple Store](https://itunes.apple.com/us/app/xcode/id497799835)
-
-2. Install XCode command-line tools.
+1. Install XCode command-line tools.
     - `xcode-select --install`
 
-3. Install Homebrew. Follow [these steps](https://brew.sh/).
+1. Install Homebrew. Follow [these steps](https://brew.sh/).
 
-4. Open a fresh terminal to ensure the utilities are correctly picked up.
+1. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-5. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+1. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
    using the following commands.
     - `brew tap homebrew/cask-versions`
     - `brew install --cask temurin11`
 
-6. If you don't already have it, install Bazelisk.
+1. If you don't already have it, install Bazelisk.
     - `brew install bazelisk`
 
 ### Ubuntu
