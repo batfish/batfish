@@ -2,6 +2,8 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Optional;
@@ -9,6 +11,8 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
+  private static final LoadingCache<Prefix6, Prefix6> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
 
   public static final int MAX_PREFIX_LENGTH = 128;
 
@@ -38,6 +42,11 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   public Prefix6(Ip6 network, int prefixLength) {
     _address = network;
     _prefixLength = prefixLength;
+  }
+
+  public static Prefix6 create(Ip6 ip6, int prefixLength) {
+    Prefix6 p = new Prefix6(ip6, prefixLength);
+    return CACHE.get(p);
   }
 
   public Prefix6(Ip6 address, Ip6 mask) {
@@ -139,6 +148,11 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     result = prime * result + _address.hashCode();
     result = prime * result + _prefixLength;
     return result;
+  }
+
+  @Nonnull
+  public Ip6Space toIp6Space() {
+    return PrefixIp6Space.create(this);
   }
 
   @Override
