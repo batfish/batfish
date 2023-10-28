@@ -32,10 +32,10 @@ public class DefinedStructuresQuestion extends Question {
 
   @JsonCreator
   private static DefinedStructuresQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_FILENAME) String filename,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_TYPES) String types,
-      @Nullable @JsonProperty(PROP_NAMES) String names) {
+      @JsonProperty(PROP_FILENAME) @Nullable String filename,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_TYPES) @Nullable String types,
+      @JsonProperty(PROP_NAMES) @Nullable String names) {
     String actualFilename = Strings.isNullOrEmpty(filename) ? null : filename;
     String actualNodes = Strings.isNullOrEmpty(nodes) ? null : nodes;
     String actualTypes = Strings.isNullOrEmpty(types) ? ".*" : types;
@@ -74,14 +74,13 @@ public class DefinedStructuresQuestion extends Question {
     return _names;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }

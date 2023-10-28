@@ -24,7 +24,7 @@ public final class PacketMatchExpr implements BoolExpr {
 
   @JsonCreator
   private static PacketMatchExpr jsonCreator(
-      @Nullable @JsonProperty(PROP_EXPR) AclLineMatchExpr expr) {
+      @JsonProperty(PROP_EXPR) @Nullable AclLineMatchExpr expr) {
     checkArgument(expr != null, "Missing %s", PROP_EXPR);
     return new PacketMatchExpr(expr);
   }

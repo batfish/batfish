@@ -74,14 +74,14 @@ public class AclRule implements Serializable {
 
   @JsonCreator
   private static @Nonnull AclRule create(
-      @Nullable @JsonProperty(PROP_IP_PROTOCOL) Integer ipProtocol,
-      @Nullable @JsonProperty(PROP_DST_IP) Prefix dstIp,
-      @Nullable @JsonProperty(PROP_SRC_IP) Prefix srcIp,
-      @Nullable @JsonProperty(PROP_L4_DST_PORT) Integer l4DstPort,
-      @Nullable @JsonProperty(PROP_L4_SRC_PORT) Integer l4SrcPort,
-      @Nullable @JsonProperty(PROP_PRIORITY) Integer priority,
-      @Nullable @JsonProperty(PROP_PACKET_ACTION) PacketAction packetAction,
-      @Nullable @JsonProperty(PROP_ETHER_TYPE) Integer etherType) {
+      @JsonProperty(PROP_IP_PROTOCOL) @Nullable Integer ipProtocol,
+      @JsonProperty(PROP_DST_IP) @Nullable Prefix dstIp,
+      @JsonProperty(PROP_SRC_IP) @Nullable Prefix srcIp,
+      @JsonProperty(PROP_L4_DST_PORT) @Nullable Integer l4DstPort,
+      @JsonProperty(PROP_L4_SRC_PORT) @Nullable Integer l4SrcPort,
+      @JsonProperty(PROP_PRIORITY) @Nullable Integer priority,
+      @JsonProperty(PROP_PACKET_ACTION) @Nullable PacketAction packetAction,
+      @JsonProperty(PROP_ETHER_TYPE) @Nullable Integer etherType) {
     return AclRule.builder()
         .setIpProtocol(ipProtocol)
         .setDstIp(dstIp)

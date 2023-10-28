@@ -21,7 +21,7 @@ public final class SetOrigin extends Statement {
   private @Nonnull OriginExpr _origin;
 
   @JsonCreator
-  private static SetOrigin jsonCreator(@Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginExpr expr) {
+  private static SetOrigin jsonCreator(@JsonProperty(PROP_ORIGIN_TYPE) @Nullable OriginExpr expr) {
     checkArgument(expr != null, "Missing %s", PROP_ORIGIN_TYPE);
     return new SetOrigin(expr);
   }

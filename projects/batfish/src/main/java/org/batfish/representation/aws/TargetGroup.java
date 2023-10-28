@@ -41,12 +41,12 @@ public final class TargetGroup implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TargetGroup create(
-      @Nullable @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) String targetGroupArn,
-      @Nullable @JsonProperty(JSON_KEY_LOAD_BALANCER_ARNS) List<String> loadBalancerArns,
-      @Nullable @JsonProperty(JSON_KEY_PROTOCOL) String protocol,
-      @Nullable @JsonProperty(JSON_KEY_PORT) Integer port,
-      @Nullable @JsonProperty(JSON_KEY_TARGET_GROUP_NAME) String targetGroupName,
-      @Nullable @JsonProperty(JSON_KEY_TARGET_TYPE) String targetType) {
+      @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) @Nullable String targetGroupArn,
+      @JsonProperty(JSON_KEY_LOAD_BALANCER_ARNS) @Nullable List<String> loadBalancerArns,
+      @JsonProperty(JSON_KEY_PROTOCOL) @Nullable String protocol,
+      @JsonProperty(JSON_KEY_PORT) @Nullable Integer port,
+      @JsonProperty(JSON_KEY_TARGET_GROUP_NAME) @Nullable String targetGroupName,
+      @JsonProperty(JSON_KEY_TARGET_TYPE) @Nullable String targetType) {
     checkNonNull(targetGroupArn, JSON_KEY_TARGET_GROUP_ARN, "LoadBalancer target group");
     checkNonNull(loadBalancerArns, JSON_KEY_LOAD_BALANCER_ARNS, "LoadBalancer target group");
     checkNonNull(protocol, JSON_KEY_PROTOCOL, "LoadBalancer target group");

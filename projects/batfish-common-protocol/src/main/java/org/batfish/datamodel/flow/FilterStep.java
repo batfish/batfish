@@ -120,8 +120,8 @@ public class FilterStep extends Step<FilterStepDetail> {
 
   @JsonCreator
   private static FilterStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) FilterStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable FilterStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new FilterStep(detail, action);

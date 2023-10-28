@@ -75,15 +75,13 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
     return new BgpPeerConfigId(hostname, vrfName, peerInterface);
   }
 
-  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF_NAME)
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 
@@ -92,9 +90,8 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
    * BgpUnnumberedPeerConfig}. Exactly one of {@link #getPeerInterface()} and {@link
    * #getRemotePeerPrefix()} is nonnull.
    */
-  @Nullable
   @JsonProperty(PROP_INTERFACE)
-  public String getPeerInterface() {
+  public @Nullable String getPeerInterface() {
     return _peerInterface;
   }
 
@@ -103,16 +100,14 @@ public final class BgpPeerConfigId implements Comparable<BgpPeerConfigId> {
    * BgpUnnumberedPeerConfig}. Exactly one of {@link #getPeerInterface()} and {@link
    * #getRemotePeerPrefix()} is nonnull.
    */
-  @Nullable
   @JsonProperty(PROP_PREFIX)
-  public Prefix getRemotePeerPrefix() {
+  public @Nullable Prefix getRemotePeerPrefix() {
     return _remotePeerPrefix;
   }
 
   /** The {@link BgpPeerConfigType} of this peer ID */
-  @Nonnull
   @JsonProperty(PROP_TYPE)
-  public BgpPeerConfigType getType() {
+  public @Nonnull BgpPeerConfigType getType() {
     return _type;
   }
 

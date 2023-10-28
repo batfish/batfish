@@ -22,7 +22,7 @@ public final class SetDefaultTag extends Statement {
   private final @Nonnull LongExpr _tag;
 
   @JsonCreator
-  private static SetDefaultTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
+  private static SetDefaultTag jsonCreator(@JsonProperty(PROP_TAG) @Nullable LongExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_TAG);
     return new SetDefaultTag(expr);
   }

@@ -32,9 +32,9 @@ public final class RibId implements Serializable {
 
   @JsonCreator
   private static RibId create(
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
-      @Nullable @JsonProperty(PROP_VRF_NAME) String vrfName,
-      @Nullable @JsonProperty(PROP_RIB_NAME) String ribName) {
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_VRF_NAME) @Nullable String vrfName,
+      @JsonProperty(PROP_RIB_NAME) @Nullable String ribName) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(vrfName != null, "Missing %s", PROP_VRF_NAME);
     checkArgument(ribName != null, "Missing %s", PROP_RIB_NAME);

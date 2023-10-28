@@ -19,7 +19,7 @@ public final class SetIsisMetricType extends Statement {
 
   @JsonCreator
   private static SetIsisMetricType jsonCreator(
-      @Nullable @JsonProperty(PROP_METRIC_TYPE) IsisMetricType type) {
+      @JsonProperty(PROP_METRIC_TYPE) @Nullable IsisMetricType type) {
     checkArgument(type != null, "%s must be provided", PROP_METRIC_TYPE);
     return new SetIsisMetricType(type);
   }

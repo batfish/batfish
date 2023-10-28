@@ -308,8 +308,8 @@ public interface StorageProvider {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  @Nonnull
   @MustBeClosed
+  @Nonnull
   InputStream loadNetworkObject(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
@@ -336,8 +336,8 @@ public interface StorageProvider {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  @Nonnull
   @MustBeClosed
+  @Nonnull
   InputStream loadNetworkBlob(NetworkId networkId, String key)
       throws FileNotFoundException, IOException;
 
@@ -355,8 +355,8 @@ public interface StorageProvider {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  @Nonnull
   @MustBeClosed
+  @Nonnull
   InputStream loadSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 
@@ -384,8 +384,8 @@ public interface StorageProvider {
    * @throws FileNotFoundException if the object for the given key does not exist
    * @throws IOException if there is an error reading the object
    */
-  @Nonnull
   @MustBeClosed
+  @Nonnull
   InputStream loadSnapshotInputObject(NetworkId networkId, SnapshotId snapshotId, String key)
       throws FileNotFoundException, IOException;
 

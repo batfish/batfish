@@ -47,7 +47,7 @@ public class PolicyStep extends Step<PolicyStepDetail> {
     }
 
     @JsonCreator
-    private static PolicyStepDetail create(@Nullable @JsonProperty(PROP_POLICY) String policy) {
+    private static PolicyStepDetail create(@JsonProperty(PROP_POLICY) @Nullable String policy) {
       checkArgument(policy != null);
       return new PolicyStepDetail(policy);
     }
@@ -58,8 +58,8 @@ public class PolicyStep extends Step<PolicyStepDetail> {
 
   @JsonCreator
   private static PolicyStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) PolicyStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable PolicyStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new PolicyStep(detail, action);

@@ -21,8 +21,8 @@ public final class MultipliedAs extends AsPathListExpr {
 
   @JsonCreator
   private static MultipliedAs jsonCreator(
-      @Nullable @JsonProperty(PROP_EXPR) AsExpr expr,
-      @Nullable @JsonProperty(PROP_NUMBER) IntExpr number) {
+      @JsonProperty(PROP_EXPR) @Nullable AsExpr expr,
+      @JsonProperty(PROP_NUMBER) @Nullable IntExpr number) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     checkArgument(number != null, "%s must be provided", PROP_NUMBER);
     return new MultipliedAs(expr, number);

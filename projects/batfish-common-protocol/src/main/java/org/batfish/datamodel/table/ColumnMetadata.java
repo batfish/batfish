@@ -34,11 +34,11 @@ public final class ColumnMetadata {
   @JsonCreator
   // visible for testing.
   static ColumnMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_SCHEMA) Schema schema,
-      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
-      @Nullable @JsonProperty(PROP_IS_KEY) Boolean isKey,
-      @Nullable @JsonProperty(PROP_IS_VALUE) Boolean isValue) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_SCHEMA) @Nullable Schema schema,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_IS_KEY) @Nullable Boolean isKey,
+      @JsonProperty(PROP_IS_VALUE) @Nullable Boolean isValue) {
     checkArgument(name != null, "'name' cannot be null for ColumnMetadata");
     checkArgument(description != null, "'description' cannot be null for ColumnMetadata");
     checkArgument(schema != null, "'schema' cannot be null for ColumnMetadata");

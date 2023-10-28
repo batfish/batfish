@@ -16,7 +16,7 @@ public final class VarAsPathSet extends AsPathSetExpr {
   private @Nonnull String _var;
 
   @JsonCreator
-  private static VarAsPathSet jsonCreator(@Nullable @JsonProperty(PROP_VAR) String var) {
+  private static VarAsPathSet jsonCreator(@JsonProperty(PROP_VAR) @Nullable String var) {
     checkArgument(var != null, "%s must be provided", PROP_VAR);
     return new VarAsPathSet(var);
   }

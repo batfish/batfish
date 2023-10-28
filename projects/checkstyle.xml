@@ -27,6 +27,13 @@
     <property name="eachLine" value="true"/>
   </module>
 
+  <module name="RegexpMultiline">
+    <property name="format" value="(@Nullable|@Nonnull)\s*\n\s*@"/>
+    <property name="message" value="Nullity should annotate the type when possible"/>
+    <property name="fileExtensions" value="java"/>
+    <property name="matchAcrossLines" value="true"/>
+  </module>
+
   <!-- Filter out Checkstyle warnings that have been suppressed with the @SuppressWarnings annotation -->
   <module name="SuppressWarningsFilter"/>
 
@@ -49,7 +56,7 @@
     </module>
 
     <module name="RegexpSinglelineJava">
-      <property name="format" value="(@Nullable|@Nonnull) (private|public|protected|static|final) "/>
+      <property name="format" value="(@Nullable|@Nonnull) (private|public|protected|static|final|@\S+) "/>
       <property name="message" value="Nullity should annotate the type when possible"/>
     </module>
 

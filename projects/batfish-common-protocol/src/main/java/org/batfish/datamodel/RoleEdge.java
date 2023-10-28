@@ -35,8 +35,8 @@ public class RoleEdge implements Comparable<RoleEdge> {
 
   @JsonCreator
   private static RoleEdge jsonCreator(
-      @Nullable @JsonProperty(PROP_ROLE1) String role1,
-      @Nullable @JsonProperty(PROP_ROLE2) String role2) {
+      @JsonProperty(PROP_ROLE1) @Nullable String role1,
+      @JsonProperty(PROP_ROLE2) @Nullable String role2) {
     checkArgument(role1 != null, "Missing %s", PROP_ROLE1);
     checkArgument(role2 != null, "Missing %s", PROP_ROLE2);
     return new RoleEdge(role1, role2);

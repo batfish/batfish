@@ -18,9 +18,8 @@ public final class LiteralVrfName implements VrfExpr {
     _vrfName = vrfName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF_NAME)
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 

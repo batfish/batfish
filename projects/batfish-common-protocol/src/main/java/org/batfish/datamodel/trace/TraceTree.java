@@ -30,8 +30,8 @@ public final class TraceTree {
 
   @JsonCreator
   private static TraceTree jsonCreator(
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
-      @Nullable @JsonProperty(PROP_CHILDREN) List<TraceTree> children) {
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement,
+      @JsonProperty(PROP_CHILDREN) @Nullable List<TraceTree> children) {
     checkNotNull(traceElement, "%s cannot be null", PROP_TRACE_ELEMENT);
     return new TraceTree(traceElement, firstNonNull(children, ImmutableList.of()));
   }

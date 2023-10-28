@@ -314,21 +314,21 @@ public class BgpProcess implements Serializable {
 
   @JsonCreator
   private static BgpProcess create(
-      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
-      @Nullable @JsonProperty(PROP_CLIENT_TO_CLIENT_REFLECTION) Boolean clientToClientReflection,
-      @Nullable @JsonProperty(PROP_CONFEDERATION) BgpConfederation confederation,
-      @Nullable @JsonProperty(PROP_EBGP_ADMIN_COST) Integer ebgpAdminCost,
-      @Nullable @JsonProperty(PROP_IBGP_ADMIN_COST) Integer ibgpAdminCost,
-      @Nullable @JsonProperty(PROP_LOCAL_ADMIN_COST) Integer localAdminCost,
-      @Nullable @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY) String networkPolicy,
-      @Nullable @JsonProperty(PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY)
+      @JsonProperty(PROP_ROUTER_ID) @Nullable Ip routerId,
+      @JsonProperty(PROP_CLIENT_TO_CLIENT_REFLECTION) @Nullable Boolean clientToClientReflection,
+      @JsonProperty(PROP_CONFEDERATION) @Nullable BgpConfederation confederation,
+      @JsonProperty(PROP_EBGP_ADMIN_COST) @Nullable Integer ebgpAdminCost,
+      @JsonProperty(PROP_IBGP_ADMIN_COST) @Nullable Integer ibgpAdminCost,
+      @JsonProperty(PROP_LOCAL_ADMIN_COST) @Nullable Integer localAdminCost,
+      @JsonProperty(PROP_INDEPENDENT_NETWORK_POLICY) @Nullable String networkPolicy,
+      @JsonProperty(PROP_MAIN_RIB_INDEPENDENT_NETWORK_POLICY) @Nullable
           String mainRibIndependentNetworkPolicy,
-      @Nullable @JsonProperty(PROP_REDISTRIBUTION_POLICY) String redistributionPolicy,
-      @Nullable @JsonProperty(PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER)
+      @JsonProperty(PROP_REDISTRIBUTION_POLICY) @Nullable String redistributionPolicy,
+      @JsonProperty(PROP_LOCAL_ORIGINATION_TYPE_TIE_BREAKER) @Nullable
           LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
-      @Nullable @JsonProperty(PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER)
+      @JsonProperty(PROP_NETWORK_NEXT_HOP_IP_TIE_BREAKER) @Nullable
           NextHopIpTieBreaker networkNextHopIpTieBreaker,
-      @Nullable @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER)
+      @JsonProperty(PROP_REDISTRIBUTE_NEXT_HOP_IP_TIE_BREAKER) @Nullable
           NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
     checkArgument(routerId != null, "Missing %s", PROP_ROUTER_ID);
     checkArgument(ebgpAdminCost != null, "Missing %s", PROP_EBGP_ADMIN_COST);
@@ -463,9 +463,8 @@ public class BgpProcess implements Serializable {
   }
 
   /** Return the global confederation config */
-  @Nullable
   @JsonProperty(PROP_CONFEDERATION)
-  public BgpConfederation getConfederation() {
+  public @Nullable BgpConfederation getConfederation() {
     return _confederation;
   }
 
@@ -532,9 +531,8 @@ public class BgpProcess implements Serializable {
    * The configured router ID for this BGP process. Note that it can be overridden for individual
    * neighbors.
    */
-  @Nonnull
   @JsonProperty(PROP_ROUTER_ID)
-  public Ip getRouterId() {
+  public @Nonnull Ip getRouterId() {
     return _routerId;
   }
 

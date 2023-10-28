@@ -48,27 +48,23 @@ public final class PartialDataplane implements DataPlane {
     return _forwardingAnalysis;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
+  public @Nonnull Table<String, String, Set<Layer2Vni>> getLayer2Vnis() {
     return _layer2VniSettings;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
+  public @Nonnull Table<String, String, Set<Layer3Vni>> getLayer3Vnis() {
     return _layer3VniSettings;
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpRoutes() {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
+  public @Nonnull Table<String, String, Set<Bgpv4Route>> getBgpBackupRoutes() {
     throw new UnsupportedOperationException();
   }
 

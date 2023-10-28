@@ -144,9 +144,8 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
   }
 
   @Override
-  @Nonnull
   @JsonValue
-  public String toString() {
+  public @Nonnull String toString() {
     switch (_type) {
       case TYPE0:
         // Administrator (2 bytes):AssignedNumber (4 bytes)

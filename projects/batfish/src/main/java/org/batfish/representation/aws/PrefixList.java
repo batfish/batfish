@@ -27,9 +27,9 @@ public final class PrefixList implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static PrefixList create(
-      @Nullable @JsonProperty(JSON_KEY_CIDRS) List<Prefix> cidrs,
-      @Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_ID) String prefixListId,
-      @Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_NAME) String prefixListName) {
+      @JsonProperty(JSON_KEY_CIDRS) @Nullable List<Prefix> cidrs,
+      @JsonProperty(JSON_KEY_PREFIX_LIST_ID) @Nullable String prefixListId,
+      @JsonProperty(JSON_KEY_PREFIX_LIST_NAME) @Nullable String prefixListName) {
     checkNonNull(cidrs, JSON_KEY_CIDRS, "PrefixList");
     checkNonNull(prefixListId, JSON_KEY_PREFIX_LIST_ID, "PrefixList");
     checkNonNull(prefixListName, JSON_KEY_PREFIX_LIST_NAME, "PrefixList");

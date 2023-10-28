@@ -1924,8 +1924,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Return the {@link Vsys} this {@link Reference} points to. Handles checking the starting Vsys,
    * shared Vsys, and Panorama Vsys if applicable.
    */
-  @Nonnull
   @SuppressWarnings("fallthrough")
+  @Nonnull
   Optional<Vsys> getVsysForReference(Reference ref, Vsys vsys) {
     if (REFERENCE_IN_VSYS.visit(ref, vsys)) {
       return Optional.of(vsys);
@@ -1948,9 +1948,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Converts interface address {@code String} to {@link IpSpace} */
-  @Nullable
   @SuppressWarnings("fallthrough")
-  private ConcreteInterfaceAddress interfaceAddressToConcreteInterfaceAddress(
+  private @Nullable ConcreteInterfaceAddress interfaceAddressToConcreteInterfaceAddress(
       @Nullable InterfaceAddress address, Vsys vsys, Warnings w) {
     if (address == null) {
       return null;
@@ -1998,9 +1997,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
-  @Nonnull
   @SuppressWarnings("fallthrough")
-  private IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+  private @Nonnull IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
     // Devices use objects over constants when possible, so, check to see if there is a matching
@@ -2084,9 +2082,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Gets the {@code TraceElement} corresponding to the specified {@link RuleEndpoint}. Returns
    * {@code null} if the endpoint cannot be resolved.
    */
-  @Nullable
   @SuppressWarnings("fallthrough")
-  private TraceElement getRuleEndpointTraceElement(
+  private @Nullable TraceElement getRuleEndpointTraceElement(
       RuleEndpoint endpoint, Vsys vsys, String filename) {
     String endpointValue = endpoint.getValue();
     String vsysName = vsys.getName();
@@ -2128,9 +2125,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   }
 
   /** Converts {@link RuleEndpoint} to IP {@code RangeSet} */
-  @Nonnull
   @SuppressWarnings("fallthrough")
-  private RangeSet<Ip> ruleEndpointToIpRangeSet(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
+  private @Nonnull RangeSet<Ip> ruleEndpointToIpRangeSet(
+      RuleEndpoint endpoint, Vsys vsys, Warnings w) {
     String endpointValue = endpoint.getValue();
     // Palo Alto allows object references that look like IP addresses, ranges, etc.
     // Devices use objects over constants when possible, so, check to see if there is a matching

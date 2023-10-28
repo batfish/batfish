@@ -23,7 +23,7 @@ public class ExcludedRows {
   private List<Row> _rowsList;
 
   @JsonCreator
-  public ExcludedRows(@Nonnull @JsonProperty(PROP_EXCLUSION_NAME) String exclusionName) {
+  public ExcludedRows(@JsonProperty(PROP_EXCLUSION_NAME) @Nonnull String exclusionName) {
     _exclusionName = exclusionName;
     _rows = new Rows();
     _rowsList = new LinkedList<>();

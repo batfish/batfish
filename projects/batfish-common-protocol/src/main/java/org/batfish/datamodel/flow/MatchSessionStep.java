@@ -45,11 +45,11 @@ public final class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
     @JsonCreator
     private static MatchSessionStepDetail jsonCreator(
-        @Nullable @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces,
-        @Nullable @JsonProperty(PROP_SESSION_ACTION) SessionAction sessionAction,
-        @Nullable @JsonProperty(PROP_SESSION_SCOPE) SessionScope sessionScope,
-        @Nullable @JsonProperty(PROP_MATCH_CRITERIA) SessionMatchExpr matchCriteria,
-        @Nullable @JsonProperty(PROP_TRANSFORMATION) Set<FlowDiff> transformation) {
+        @JsonProperty(PROP_INCOMING_INTERFACES) @Nullable Set<String> incomingInterfaces,
+        @JsonProperty(PROP_SESSION_ACTION) @Nullable SessionAction sessionAction,
+        @JsonProperty(PROP_SESSION_SCOPE) @Nullable SessionScope sessionScope,
+        @JsonProperty(PROP_MATCH_CRITERIA) @Nullable SessionMatchExpr matchCriteria,
+        @JsonProperty(PROP_TRANSFORMATION) @Nullable Set<FlowDiff> transformation) {
       checkArgument(
           sessionScope != null || incomingInterfaces != null, "Missing %s", PROP_SESSION_SCOPE);
       checkArgument(sessionAction != null, "Missing %s", PROP_SESSION_ACTION);
@@ -166,8 +166,8 @@ public final class MatchSessionStep extends Step<MatchSessionStepDetail> {
 
   @JsonCreator
   private static MatchSessionStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) MatchSessionStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable MatchSessionStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new MatchSessionStep(detail);

@@ -131,9 +131,8 @@ public final class BatfishWorkerServiceWorkExecutorTest {
   private static final Task TEST_TASK = new Task(TaskStatus.Unknown);
   private static final BatfishWorkerService BATFISH_WORKER_SERVICE =
       new BatfishWorkerService() {
-        @Nullable
         @Override
-        public Task getTaskStatus(String taskId) {
+        public @Nullable Task getTaskStatus(String taskId) {
           return TEST_TASK;
         }
 
@@ -145,9 +144,8 @@ public final class BatfishWorkerServiceWorkExecutorTest {
 
   private static final BatfishWorkerService BATFISH_WORKER_SERVICE_RUNNABLE =
       new BatfishWorkerService() {
-        @Nullable
         @Override
-        public Task getTaskStatus(String taskId) {
+        public @Nullable Task getTaskStatus(String taskId) {
           return TEST_TASK;
         }
 

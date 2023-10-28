@@ -54,9 +54,8 @@ public class PreprocessPaloAltoExtractor implements PreprocessExtractor {
     return Optional.empty();
   }
 
-  @Nonnull
   @Override
-  public String getPreprocessedConfigurationText() {
+  public @Nonnull String getPreprocessedConfigurationText() {
     checkState(_preprocessedConfigurationText != null, "Must first run processParseTree");
     return _preprocessedConfigurationText;
   }

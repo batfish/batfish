@@ -21,7 +21,7 @@ public final class SetDefaultPolicy extends Statement {
 
   @JsonCreator
   private static SetDefaultPolicy jsonCreator(
-      @Nullable @JsonProperty(PROP_DEFAULT_POLICY) String defaultPolicy) {
+      @JsonProperty(PROP_DEFAULT_POLICY) @Nullable String defaultPolicy) {
     checkArgument(defaultPolicy != null, "%s must be provided", PROP_DEFAULT_POLICY);
     return new SetDefaultPolicy(defaultPolicy);
   }

@@ -14,9 +14,8 @@ public abstract class AnswerElement {
 
   protected AnswerSummary _summary;
 
-  @Nullable
   @JsonProperty(PROP_SUMMARY)
-  public final AnswerSummary getSummary() {
+  public final @Nullable AnswerSummary getSummary() {
     return _summary;
   }
 

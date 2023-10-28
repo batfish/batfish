@@ -19,7 +19,7 @@ public final class HasRoute extends BooleanExpr {
   private final @Nonnull PrefixSetExpr _expr;
 
   @JsonCreator
-  private static HasRoute jsonCreator(@Nullable @JsonProperty(PROP_EXPR) PrefixSetExpr expr) {
+  private static HasRoute jsonCreator(@JsonProperty(PROP_EXPR) @Nullable PrefixSetExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new HasRoute(expr);
   }

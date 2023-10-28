@@ -92,8 +92,8 @@ public final class IpPermissions implements Serializable {
 
     @JsonCreator
     private static IpRange create(
-        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
-        @Nullable @JsonProperty(JSON_KEY_CIDR_IP) Prefix prefix) {
+        @JsonProperty(JSON_KEY_DESCRIPTION) @Nullable String description,
+        @JsonProperty(JSON_KEY_CIDR_IP) @Nullable Prefix prefix) {
       checkArgument(prefix != null, "Prefix cannot be null in IpRange");
       return new IpRange(description, prefix);
     }
@@ -142,7 +142,7 @@ public final class IpPermissions implements Serializable {
     private final @Nonnull String _id;
 
     @JsonCreator
-    private static PrefixListId create(@Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_ID) String id) {
+    private static PrefixListId create(@JsonProperty(JSON_KEY_PREFIX_LIST_ID) @Nullable String id) {
       checkNonNull(id, JSON_KEY_PREFIX_LIST_ID, "PrefixListIds");
       return new PrefixListId(id);
     }
@@ -184,8 +184,8 @@ public final class IpPermissions implements Serializable {
 
     @JsonCreator
     private static UserIdGroupPair create(
-        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String desription,
-        @Nullable @JsonProperty(JSON_KEY_GROUP_ID) String groupId) {
+        @JsonProperty(JSON_KEY_DESCRIPTION) @Nullable String desription,
+        @JsonProperty(JSON_KEY_GROUP_ID) @Nullable String groupId) {
       checkArgument(groupId != null, "Group id cannot be null in user id group pair");
       return new UserIdGroupPair(groupId, desription);
     }
@@ -236,12 +236,12 @@ public final class IpPermissions implements Serializable {
 
   @JsonCreator
   private static IpPermissions create(
-      @Nullable @JsonProperty(JSON_KEY_IP_PROTOCOL) String ipProtocol,
-      @Nullable @JsonProperty(JSON_KEY_FROM_PORT) Integer fromPort,
-      @Nullable @JsonProperty(JSON_KEY_TO_PORT) Integer toPort,
-      @Nullable @JsonProperty(JSON_KEY_IP_RANGES) List<IpRange> ipRanges,
-      @Nullable @JsonProperty(JSON_KEY_PREFIX_LIST_IDS) List<PrefixListId> prefixes,
-      @Nullable @JsonProperty(JSON_KEY_USER_GROUP_ID_PAIRS)
+      @JsonProperty(JSON_KEY_IP_PROTOCOL) @Nullable String ipProtocol,
+      @JsonProperty(JSON_KEY_FROM_PORT) @Nullable Integer fromPort,
+      @JsonProperty(JSON_KEY_TO_PORT) @Nullable Integer toPort,
+      @JsonProperty(JSON_KEY_IP_RANGES) @Nullable List<IpRange> ipRanges,
+      @JsonProperty(JSON_KEY_PREFIX_LIST_IDS) @Nullable List<PrefixListId> prefixes,
+      @JsonProperty(JSON_KEY_USER_GROUP_ID_PAIRS) @Nullable
           List<UserIdGroupPair> userIdGroupPairs) {
     checkArgument(ipProtocol != null, "IP protocol cannot be null for IP permissions");
     checkArgument(ipRanges != null, "IP ranges cannot be null for IP permissions");

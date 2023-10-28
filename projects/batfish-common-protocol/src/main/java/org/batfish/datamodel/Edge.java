@@ -39,10 +39,10 @@ public class Edge implements Serializable, Comparable<Edge> {
 
   @JsonCreator
   private static Edge create(
-      @Nullable @JsonProperty(PROP_NODE1) String node1,
-      @Nullable @JsonProperty(PROP_INT1) String int1,
-      @Nullable @JsonProperty(PROP_NODE2) String node2,
-      @Nullable @JsonProperty(PROP_INT2) String int2) {
+      @JsonProperty(PROP_NODE1) @Nullable String node1,
+      @JsonProperty(PROP_INT1) @Nullable String int1,
+      @JsonProperty(PROP_NODE2) @Nullable String node2,
+      @JsonProperty(PROP_INT2) @Nullable String int2) {
     checkArgument(!Strings.isNullOrEmpty(node1), "Missing %s", PROP_NODE1);
     checkArgument(!Strings.isNullOrEmpty(int1), "Missing %s", PROP_INT1);
     checkArgument(!Strings.isNullOrEmpty(node2), "Missing %s", PROP_NODE2);

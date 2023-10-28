@@ -95,9 +95,8 @@ public final class LargeCommunity extends Community {
     return false;
   }
 
-  @Nonnull
   @Override
-  public String matchString() {
+  public @Nonnull String matchString() {
     return toString();
   }
 
@@ -120,18 +119,16 @@ public final class LargeCommunity extends Community {
     return Objects.hash(_globalAdministrator, _localData1, _localData2);
   }
 
-  @Nonnull
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     if (_str == null) {
       _str = "large:" + _globalAdministrator + ":" + _localData1 + ":" + _localData2;
     }
     return _str;
   }
 
-  @Nonnull
   @Override
-  protected BigInteger asBigIntImpl() {
+  protected @Nonnull BigInteger asBigIntImpl() {
     return BigInteger.valueOf(_globalAdministrator)
         .shiftLeft(64)
         .or(BigInteger.valueOf(_localData1).shiftLeft(32))

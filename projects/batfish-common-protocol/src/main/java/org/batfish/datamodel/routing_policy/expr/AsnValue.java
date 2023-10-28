@@ -51,7 +51,7 @@ public final class AsnValue extends LongExpr {
   }
 
   @JsonCreator
-  private static @Nonnull AsnValue jsonCreator(@Nullable @JsonProperty(PROP_AS) AsExpr as) {
+  private static @Nonnull AsnValue jsonCreator(@JsonProperty(PROP_AS) @Nullable AsExpr as) {
     checkArgument(as != null, "Missing %s", PROP_AS);
     return new AsnValue(as);
   }

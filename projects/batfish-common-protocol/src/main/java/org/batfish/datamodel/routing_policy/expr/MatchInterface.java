@@ -26,7 +26,7 @@ public final class MatchInterface extends BooleanExpr {
 
   @JsonCreator
   private static MatchInterface jsonCreator(
-      @Nullable @JsonProperty(PROP_INTERFACES) Set<String> interfaces) {
+      @JsonProperty(PROP_INTERFACES) @Nullable Set<String> interfaces) {
     return new MatchInterface(firstNonNull(interfaces, ImmutableSet.of()));
   }
 

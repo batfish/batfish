@@ -21,9 +21,9 @@ public final class ConnectedRoute extends AbstractRoute {
   @JsonCreator
   @SuppressWarnings("unused")
   private static ConnectedRoute create(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) String nextHopIp,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable String nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "Cannot create connected route: missing %s", PROP_NETWORK);
@@ -70,9 +70,8 @@ public final class ConnectedRoute extends AbstractRoute {
   /** Builder for {@link ConnectedRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, ConnectedRoute> {
 
-    @Nonnull
     @Override
-    public ConnectedRoute build() {
+    public @Nonnull ConnectedRoute build() {
       checkArgument(
           _nextHop != null && _nextHop instanceof NextHopInterface,
           "ConnectedRoute must have %s",
@@ -81,9 +80,8 @@ public final class ConnectedRoute extends AbstractRoute {
           getNetwork(), ((NextHopInterface) _nextHop).getInterfaceName(), getAdmin(), getTag());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
   }

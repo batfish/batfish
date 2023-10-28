@@ -27,8 +27,8 @@ final class RouteTable implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Association create(
-        @Nullable @JsonProperty(JSON_KEY_MAIN) Boolean isMain,
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId) {
+        @JsonProperty(JSON_KEY_MAIN) @Nullable Boolean isMain,
+        @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId) {
       checkArgument(isMain != null, "Main key must be present in route table association");
       return new Association(isMain, subnetId);
     }
@@ -75,10 +75,10 @@ final class RouteTable implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static RouteTable create(
-      @Nullable @JsonProperty(JSON_KEY_ROUTE_TABLE_ID) String routeTableId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_ASSOCIATIONS) List<Association> associations,
-      @Nullable @JsonProperty(JSON_KEY_ROUTES) List<Route> routes) {
+      @JsonProperty(JSON_KEY_ROUTE_TABLE_ID) @Nullable String routeTableId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_ASSOCIATIONS) @Nullable List<Association> associations,
+      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<Route> routes) {
     checkArgument(routeTableId != null, "Route table id cannot be null");
     checkArgument(vpcId != null, "VPC id cannot be null for route table");
     checkArgument(associations != null, "Associations cannot be null for route table");

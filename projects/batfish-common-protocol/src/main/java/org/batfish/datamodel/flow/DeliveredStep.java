@@ -130,8 +130,8 @@ public final class DeliveredStep extends Step<DeliveredStepDetail> {
 
   @JsonCreator
   private static DeliveredStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) DeliveredStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable DeliveredStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new DeliveredStep(detail, action);

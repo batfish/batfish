@@ -111,15 +111,13 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
     return _action == rhs._action && _ipSpace.equals(rhs._ipSpace);
   }
 
-  @Nonnull
   @JsonProperty(PROP_ACTION)
-  public LineAction getAction() {
+  public @Nonnull LineAction getAction() {
     return _action;
   }
 
-  @Nonnull
   @JsonProperty(PROP_IP_SPACE)
-  public IpSpace getIpSpace() {
+  public @Nonnull IpSpace getIpSpace() {
     return _ipSpace;
   }
 

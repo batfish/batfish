@@ -38,10 +38,10 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Propagation create(
-        @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) String attachmentId,
-        @Nullable @JsonProperty(JSON_KEY_RESOURCE_ID) String resourceId,
-        @Nullable @JsonProperty(JSON_KEY_RESOURCE_TYPE) String resourceType,
-        @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
+        @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) @Nullable String attachmentId,
+        @JsonProperty(JSON_KEY_RESOURCE_ID) @Nullable String resourceId,
+        @JsonProperty(JSON_KEY_RESOURCE_TYPE) @Nullable String resourceType,
+        @JsonProperty(JSON_KEY_STATE) @Nullable String state) {
       checkArgument(
           attachmentId != null, "Attachment id cannot be null for transit gateway attachment");
       checkArgument(
@@ -108,8 +108,8 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGatewayPropagations create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_PROPAGATIONS)
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) @Nullable String routeTableId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_PROPAGATIONS) @Nullable
           List<Propagation> propagations) {
     checkArgument(routeTableId != null, "Route table id cannot be null for transit gateway");
     checkArgument(propagations != null, "Propagations cannot be null for transit gateway");
@@ -126,9 +126,8 @@ final class TransitGatewayPropagations implements AwsVpcEntity, Serializable {
     return _propagations;
   }
 
-  @Nonnull
   @Override
-  public String getId() {
+  public @Nonnull String getId() {
     return _routeTableId;
   }
 

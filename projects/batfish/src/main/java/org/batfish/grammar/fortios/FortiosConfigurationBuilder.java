@@ -3048,9 +3048,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return type == Address.Type.IPRANGE || type == Address.Type.IPMASK;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

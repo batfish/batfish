@@ -42,7 +42,7 @@ public final class TraceElement implements Serializable {
     }
 
     @JsonCreator
-    private static TextFragment jsonCreator(@Nullable @JsonProperty(PROP_TEXT) String text) {
+    private static TextFragment jsonCreator(@JsonProperty(PROP_TEXT) @Nullable String text) {
       checkNotNull(text, "%s cannot be null", PROP_TEXT);
       return new TextFragment(text);
     }
@@ -89,8 +89,8 @@ public final class TraceElement implements Serializable {
 
     @JsonCreator
     public static LinkFragment jsonCreator(
-        @Nullable @JsonProperty(PROP_TEXT) String text,
-        @Nullable @JsonProperty(PROP_VENDOR_STRUCTURE_ID) VendorStructureId vendorStructureId) {
+        @JsonProperty(PROP_TEXT) @Nullable String text,
+        @JsonProperty(PROP_VENDOR_STRUCTURE_ID) @Nullable VendorStructureId vendorStructureId) {
       checkNotNull(text, "%s cannot be null", PROP_TEXT);
       checkNotNull(vendorStructureId, "%s cannot be null", PROP_VENDOR_STRUCTURE_ID);
       return new LinkFragment(text, vendorStructureId);
@@ -168,7 +168,7 @@ public final class TraceElement implements Serializable {
 
   @JsonCreator
   private static TraceElement jsonCreator(
-      @Nullable @JsonProperty(PROP_FRAGMENTS) List<Fragment> fragments) {
+      @JsonProperty(PROP_FRAGMENTS) @Nullable List<Fragment> fragments) {
     return new TraceElement(firstNonNull(fragments, ImmutableList.of()));
   }
 

@@ -54,11 +54,11 @@ public final class OspfNeighborConfigId implements Serializable {
 
   @JsonCreator
   private static OspfNeighborConfigId create(
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
-      @Nullable @JsonProperty(PROP_VRF) String vrf,
-      @Nullable @JsonProperty(PROP_PROCESS) String process,
-      @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
-      @Nullable @JsonProperty(PROP_ADDRESS) ConcreteInterfaceAddress address) {
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_VRF) @Nullable String vrf,
+      @JsonProperty(PROP_PROCESS) @Nullable String process,
+      @JsonProperty(PROP_INTERFACE) @Nullable String interfaceName,
+      @JsonProperty(PROP_ADDRESS) @Nullable ConcreteInterfaceAddress address) {
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(process != null, "Missing %s", PROP_PROCESS);
@@ -67,39 +67,33 @@ public final class OspfNeighborConfigId implements Serializable {
     return new OspfNeighborConfigId(hostname, vrf, process, interfaceName, address);
   }
 
-  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_PROCESS)
-  public String getProcName() {
+  public @Nonnull String getProcName() {
     return _procName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACE)
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ADDRESS)
-  public ConcreteInterfaceAddress getAddress() {
+  public @Nonnull ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeInterfacePair getNodeInterfacePair() {
+  public @Nonnull NodeInterfacePair getNodeInterfacePair() {
     return NodeInterfacePair.of(getHostname(), getInterfaceName());
   }
 

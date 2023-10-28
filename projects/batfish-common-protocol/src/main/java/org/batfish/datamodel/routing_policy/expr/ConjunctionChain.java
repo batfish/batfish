@@ -37,7 +37,7 @@ public final class ConjunctionChain extends BooleanExpr {
 
   @JsonCreator
   private static ConjunctionChain create(
-      @Nullable @JsonProperty(PROP_SUBROUTINES) List<BooleanExpr> subroutines) {
+      @JsonProperty(PROP_SUBROUTINES) @Nullable List<BooleanExpr> subroutines) {
     return new ConjunctionChain(firstNonNull(subroutines, ImmutableList.of()));
   }
 
@@ -92,9 +92,8 @@ public final class ConjunctionChain extends BooleanExpr {
     }
   }
 
-  @Nonnull
   @JsonProperty(PROP_SUBROUTINES)
-  public List<BooleanExpr> getSubroutines() {
+  public @Nonnull List<BooleanExpr> getSubroutines() {
     return _subroutines;
   }
 

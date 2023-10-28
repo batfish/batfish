@@ -121,9 +121,8 @@ public class SessionInstrumentation {
     return Streams.concat(newEdges, instrumentedEdges, sessionFibLookupEdges);
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Stream<Edge> computeSessionFibLookupSubgraph(
+  static @Nonnull Stream<Edge> computeSessionFibLookupSubgraph(
       Map<String, List<BDDFirewallSessionTraceInfo>> initializedSessions,
       BDDFibGenerator bddFibGenerator) {
     Set<String> nodesWithSessionFibLookup = computeNodesWithFibLookup(initializedSessions);
@@ -279,8 +278,8 @@ public class SessionInstrumentation {
                 hostname, ifaces, sessionFlows, transformation, _srcMgrs.get(hostname)));
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> fibLookupSessionEdges(BDDFirewallSessionTraceInfo sessionInfo) {
     return sessionInfo
         .getAction()

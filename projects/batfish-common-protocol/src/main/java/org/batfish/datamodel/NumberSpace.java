@@ -43,7 +43,6 @@ public abstract class NumberSpace<
      * Helper method to populate {@code builder} to be used within subclass {@link JsonCreator}
      * method
      */
-    @Nonnull
     @VisibleForTesting
     static <
             T extends Number & Comparable<T>,

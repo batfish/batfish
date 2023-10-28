@@ -31,9 +31,9 @@ public class AddressGroup implements Comparable<AddressGroup>, Serializable {
 
   @JsonCreator
   private static AddressGroup create(
-      @Nullable @JsonProperty(PROP_CHILD_GROUP_NAMES) SortedSet<String> addressGroups,
-      @Nullable @JsonProperty(PROP_ADDRESSES) SortedSet<String> addresses,
-      @Nullable @JsonProperty(PROP_NAME) String name) {
+      @JsonProperty(PROP_CHILD_GROUP_NAMES) @Nullable SortedSet<String> addressGroups,
+      @JsonProperty(PROP_ADDRESSES) @Nullable SortedSet<String> addresses,
+      @JsonProperty(PROP_NAME) @Nullable String name) {
     checkArgument(name != null, "Address group name cannot not be null");
 
     return new AddressGroup(name, addresses, addressGroups);

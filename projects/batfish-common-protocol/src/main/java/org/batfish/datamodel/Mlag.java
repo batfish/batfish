@@ -42,10 +42,10 @@ public final class Mlag implements Serializable {
 
   @JsonCreator
   private static Mlag create(
-      @Nullable @JsonProperty(PROP_ID) String id,
-      @Nullable @JsonProperty(PROP_PEER_ADDRESS) Ip peerAddress,
-      @Nullable @JsonProperty(PROP_PEER_INTERFACE) String peerInterface,
-      @Nullable @JsonProperty(PROP_LOCAL_INTERFACE) String localInterface) {
+      @JsonProperty(PROP_ID) @Nullable String id,
+      @JsonProperty(PROP_PEER_ADDRESS) @Nullable Ip peerAddress,
+      @JsonProperty(PROP_PEER_INTERFACE) @Nullable String peerInterface,
+      @JsonProperty(PROP_LOCAL_INTERFACE) @Nullable String localInterface) {
     checkArgument(id != null, "Missing Mlag %s", PROP_ID);
     return new Mlag(id, peerAddress, peerInterface, localInterface);
   }
@@ -55,21 +55,18 @@ public final class Mlag implements Serializable {
     return _id;
   }
 
-  @Nullable
   @JsonProperty(PROP_PEER_ADDRESS)
-  public Ip getPeerAddress() {
+  public @Nullable Ip getPeerAddress() {
     return _peerAddress;
   }
 
-  @Nullable
   @JsonProperty(PROP_PEER_INTERFACE)
-  public String getPeerInterface() {
+  public @Nullable String getPeerInterface() {
     return _peerInterface;
   }
 
-  @Nullable
   @JsonProperty(PROP_LOCAL_INTERFACE)
-  public String getLocalInterface() {
+  public @Nullable String getLocalInterface() {
     return _localInterface;
   }
 

@@ -131,8 +131,8 @@ public final class ArpErrorStep extends Step<ArpErrorStepDetail> {
 
   @JsonCreator
   private static ArpErrorStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) ArpErrorStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable ArpErrorStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new ArpErrorStep(detail, action);

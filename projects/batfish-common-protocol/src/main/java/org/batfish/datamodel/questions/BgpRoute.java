@@ -113,27 +113,27 @@ public final class BgpRoute {
 
   @JsonCreator
   private static BgpRoute jsonCreator(
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) Integer adminDist,
-      @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) SortedSet<Community> communities,
+      @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) @Nullable Integer adminDist,
+      @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
+      @JsonProperty(PROP_CLUSTER_LIST) @Nullable Set<Long> clusterList,
+      @JsonProperty(PROP_COMMUNITIES) @Nullable SortedSet<Community> communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP) NextHopResult nextHop,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
-      @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
-      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
-      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
-      @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP) @Nullable NextHopResult nextHop,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_ORIGINATOR_IP) @Nullable Ip originatorIp,
+      @JsonProperty(PROP_ORIGIN_MECHANISM) @Nullable OriginMechanism originMechanism,
+      @JsonProperty(PROP_ORIGIN_TYPE) @Nullable OriginType originType,
+      @JsonProperty(PROP_PATH_ID) @Nullable Integer pathId,
+      @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
+      @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
-      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+      @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight,
       // For backwards compatibility, does nothing
-      @Nullable @JsonProperty(PROP_CLASS) String clazz) {
+      @JsonProperty(PROP_CLASS) @Nullable String clazz) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(originatorIp != null, "%s must be specified", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);
@@ -168,27 +168,23 @@ public final class BgpRoute {
     return new NextHopConcrete(nh);
   }
 
-  @Nullable
   @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE)
-  public Integer getAdminDist() {
+  public @Nullable Integer getAdminDist() {
     return _adminDist;
   }
 
-  @Nonnull
   @JsonProperty(PROP_AS_PATH)
-  public AsPath getAsPath() {
+  public @Nonnull AsPath getAsPath() {
     return _asPath;
   }
 
-  @Nonnull
   @JsonProperty(PROP_CLUSTER_LIST)
-  public Set<Long> getClusterList() {
+  public @Nonnull Set<Long> getClusterList() {
     return _clusterList;
   }
 
-  @Nonnull
   @JsonProperty(PROP_COMMUNITIES)
-  public SortedSet<Community> getCommunities() {
+  public @Nonnull SortedSet<Community> getCommunities() {
     return _communities;
   }
 
@@ -202,9 +198,8 @@ public final class BgpRoute {
     return _metric;
   }
 
-  @Nonnull
   @JsonProperty(PROP_NETWORK)
-  public Prefix getNetwork() {
+  public @Nonnull Prefix getNetwork() {
     return _network;
   }
 
@@ -222,39 +217,33 @@ public final class BgpRoute {
     }
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGINATOR_IP)
-  public Ip getOriginatorIp() {
+  public @Nonnull Ip getOriginatorIp() {
     return _originatorIp;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGIN_MECHANISM)
-  public OriginMechanism getOriginMechanism() {
+  public @Nonnull OriginMechanism getOriginMechanism() {
     return _originMechanism;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
-  public OriginType getOriginType() {
+  public @Nonnull OriginType getOriginType() {
     return _originType;
   }
 
-  @Nullable
   @JsonProperty(PROP_PATH_ID)
-  public Integer getPathId() {
+  public @Nullable Integer getPathId() {
     return _pathId;
   }
 
-  @Nonnull
   @JsonProperty(PROP_PROTOCOL)
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return _protocol;
   }
 
-  @Nullable
   @JsonProperty(PROP_SRC_PROTOCOL)
-  public RoutingProtocol getSrcProtocol() {
+  public @Nullable RoutingProtocol getSrcProtocol() {
     return _srcProtocol;
   }
 
@@ -263,9 +252,8 @@ public final class BgpRoute {
     return _tag;
   }
 
-  @Nullable
   @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
-  public TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+  public @Nullable TunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
     return _tunnelEncapsulationAttribute;
   }
 

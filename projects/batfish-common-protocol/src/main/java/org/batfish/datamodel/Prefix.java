@@ -56,9 +56,8 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
   }
 
   /** Parse a {@link Prefix} from a string. */
-  @Nonnull
   @JsonCreator
-  public static Prefix parse(@Nullable String text) {
+  public static @Nonnull Prefix parse(@Nullable String text) {
     checkArgument(text != null, "Invalid IPv4 prefix %s", text);
     String[] parts = text.split("/");
     checkArgument(parts.length == 2, "Invalid prefix string: \"%s\"", text);

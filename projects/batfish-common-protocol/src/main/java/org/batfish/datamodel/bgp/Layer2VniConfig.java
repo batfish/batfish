@@ -29,11 +29,11 @@ public class Layer2VniConfig extends VniConfig
 
   @JsonCreator
   private static Layer2VniConfig create(
-      @Nullable @JsonProperty(PROP_VNI) Integer vni,
-      @Nullable @JsonProperty(PROP_VRF) String vrf,
-      @Nullable @JsonProperty(PROP_ROUTE_DISTINGUISHER) RouteDistinguisher rd,
-      @Nullable @JsonProperty(PROP_ROUTE_TARGET) ExtendedCommunity routeTarget,
-      @Nullable @JsonProperty(PROP_IMPORT_ROUTE_TARGET) String importRouteTarget) {
+      @JsonProperty(PROP_VNI) @Nullable Integer vni,
+      @JsonProperty(PROP_VRF) @Nullable String vrf,
+      @JsonProperty(PROP_ROUTE_DISTINGUISHER) @Nullable RouteDistinguisher rd,
+      @JsonProperty(PROP_ROUTE_TARGET) @Nullable ExtendedCommunity routeTarget,
+      @JsonProperty(PROP_IMPORT_ROUTE_TARGET) @Nullable String importRouteTarget) {
     checkArgument(vni != null, "Missing %s", PROP_VNI);
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     checkArgument(rd != null, "Missing %s", PROP_ROUTE_DISTINGUISHER);
