@@ -28,7 +28,7 @@
   </module>
 
   <module name="RegexpMultiline">
-    <property name="format" value="(@Nullable|@Nonnull)\s*\n\s*@"/>
+    <property name="format" value="(@Nullable|@Nonnull)\s*\n\s*(@|public|private|protected|static|final)"/>
     <property name="message" value="Nullity should annotate the type when possible"/>
     <property name="fileExtensions" value="java"/>
     <property name="matchAcrossLines" value="true"/>
