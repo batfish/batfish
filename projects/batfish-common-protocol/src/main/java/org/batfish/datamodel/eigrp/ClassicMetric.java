@@ -45,9 +45,8 @@ public final class ClassicMetric implements EigrpMetric {
 
   /** {@link EigrpMetricValues metric values} */
   @Override
-  @Nonnull
   @JsonProperty(PROP_VALUES)
-  public EigrpMetricValues getValues() {
+  public @Nonnull EigrpMetricValues getValues() {
     return _values;
   }
 
@@ -183,7 +182,7 @@ public final class ClassicMetric implements EigrpMetric {
 
   @JsonCreator
   private static ClassicMetric jsonCreator(
-      @Nullable @JsonProperty(PROP_VALUES) EigrpMetricValues values,
+      @JsonProperty(PROP_VALUES) @Nullable EigrpMetricValues values,
       @JsonProperty(PROP_K1) short k1,
       @JsonProperty(PROP_K2) short k2,
       @JsonProperty(PROP_K3) short k3,

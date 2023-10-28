@@ -38,7 +38,7 @@ public final class FirstMatchChain extends BooleanExpr {
 
   @JsonCreator
   private static FirstMatchChain create(
-      @Nullable @JsonProperty(PROP_SUBROUTINES) List<BooleanExpr> subroutines) {
+      @JsonProperty(PROP_SUBROUTINES) @Nullable List<BooleanExpr> subroutines) {
     return new FirstMatchChain(firstNonNull(subroutines, ImmutableList.of()));
   }
 
@@ -87,9 +87,8 @@ public final class FirstMatchChain extends BooleanExpr {
     }
   }
 
-  @Nonnull
   @JsonProperty(PROP_SUBROUTINES)
-  public List<BooleanExpr> getSubroutines() {
+  public @Nonnull List<BooleanExpr> getSubroutines() {
     return _subroutines;
   }
 

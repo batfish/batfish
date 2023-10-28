@@ -24,9 +24,8 @@ final class MlagMatchersImpl {
       super(subMatcher, "An MLAG Configuration with localInterface:", "localInterface");
     }
 
-    @Nullable
     @Override
-    protected String featureValueOf(Mlag mlag) {
+    protected @Nullable String featureValueOf(Mlag mlag) {
       return mlag.getLocalInterface();
     }
   }
@@ -47,9 +46,8 @@ final class MlagMatchersImpl {
       super(subMatcher, "An MLAG Configuration with peerInterface:", "peerInterface");
     }
 
-    @Nullable
     @Override
-    protected String featureValueOf(Mlag mlag) {
+    protected @Nullable String featureValueOf(Mlag mlag) {
       return mlag.getPeerInterface();
     }
   }

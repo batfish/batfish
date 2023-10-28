@@ -22,8 +22,8 @@ public final class IpPrefix extends PrefixExpr {
 
   @JsonCreator
   private static IpPrefix jsonCreator(
-      @Nullable @JsonProperty(PROP_IP) IpExpr ip,
-      @Nullable @JsonProperty(PROP_PREFIX_LENGTH) IntExpr prefixLength) {
+      @JsonProperty(PROP_IP) @Nullable IpExpr ip,
+      @JsonProperty(PROP_PREFIX_LENGTH) @Nullable IntExpr prefixLength) {
     checkArgument(ip != null, "%s must be provided", PROP_IP);
     checkArgument(prefixLength != null, "%s must be provided", PROP_PREFIX_LENGTH);
     return new IpPrefix(ip, prefixLength);

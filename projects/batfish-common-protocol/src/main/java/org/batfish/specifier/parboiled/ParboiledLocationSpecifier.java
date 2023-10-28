@@ -40,26 +40,24 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
       _ctxt = ctxt;
     }
 
-    @Nonnull
     @Override
-    public Set<Location> visitDifferenceLocationAstNode(
+    public @Nonnull Set<Location> visitDifferenceLocationAstNode(
         DifferenceLocationAstNode differenceLocationAstNode) {
       return Sets.difference(
           differenceLocationAstNode.getLeft().accept(this),
           differenceLocationAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<Location> visitEnterLocationAstNode(EnterLocationAstNode enterLocationAstNode) {
+    public @Nonnull Set<Location> visitEnterLocationAstNode(
+        EnterLocationAstNode enterLocationAstNode) {
       return new ToInterfaceLinkLocationSpecifier(
               new ParboiledLocationSpecifier(enterLocationAstNode.getInterfaceLocationAstNode()))
           .resolve(_ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<Location> visitInterfaceLocationAstNode(
+    public @Nonnull Set<Location> visitInterfaceLocationAstNode(
         InterfaceLocationAstNode interfaceLocationAstNode) {
       NodeSpecifier nodes =
           interfaceLocationAstNode.getNodeAstNode() == null
@@ -96,18 +94,17 @@ public final class ParboiledLocationSpecifier implements LocationSpecifier {
           .resolve(_ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<Location> visitIntersectionLocationAstNode(
+    public @Nonnull Set<Location> visitIntersectionLocationAstNode(
         IntersectionLocationAstNode intersectionLocationAstNode) {
       return Sets.intersection(
           intersectionLocationAstNode.getLeft().accept(this),
           intersectionLocationAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<Location> visitUnionLocationAstNode(UnionLocationAstNode unionLocationAstNode) {
+    public @Nonnull Set<Location> visitUnionLocationAstNode(
+        UnionLocationAstNode unionLocationAstNode) {
       return Sets.union(
           unionLocationAstNode.getLeft().accept(this),
           unionLocationAstNode.getRight().accept(this));

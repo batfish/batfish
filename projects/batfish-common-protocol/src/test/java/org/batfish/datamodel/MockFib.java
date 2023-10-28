@@ -50,23 +50,20 @@ public class MockFib implements Fib {
     _fibEntries = ImmutableMap.copyOf(builder._fibEntries);
   }
 
-  @Nonnull
   @Override
-  public Set<FibEntry> allEntries() {
+  public @Nonnull Set<FibEntry> allEntries() {
     return _fibEntries.values().stream()
         .flatMap(Set::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  @Nonnull
   @Override
-  public Set<FibEntry> get(Ip ip) {
+  public @Nonnull Set<FibEntry> get(Ip ip) {
     return firstNonNull(_fibEntries.get(ip), ImmutableSet.of());
   }
 
-  @Nonnull
   @Override
-  public Map<Prefix, IpSpace> getMatchingIps() {
+  public @Nonnull Map<Prefix, IpSpace> getMatchingIps() {
     return _matchingIps;
   }
 }

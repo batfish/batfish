@@ -19,9 +19,8 @@ public final class RouteMapSetMetricType implements RouteMapSet {
     return _metricType;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
     switch (_metricType) {
       case TYPE_1:
         return Stream.of(new SetOspfMetricType(OspfMetricType.E1));

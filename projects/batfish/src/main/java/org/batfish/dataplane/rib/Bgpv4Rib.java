@@ -195,9 +195,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
         .thenComparing(Bgpv4Route::getSrcProtocol);
   }
 
-  @Nonnull
   @Override
-  public RibDelta<Bgpv4Route> mergeRouteGetDelta(Bgpv4Route route) {
+  public @Nonnull RibDelta<Bgpv4Route> mergeRouteGetDelta(Bgpv4Route route) {
     /*
       Do not merge routes for which next hop is not reachable.
       However, due to some complications with how we create routes, we must skip this check for:
@@ -260,9 +259,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     return delta.build();
   }
 
-  @Nonnull
   @Override
-  public RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
+  public @Nonnull RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
     if (route.isTrackableLocalRoute()) {
       return removeLocalRoute(route);
     }

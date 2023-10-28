@@ -33,8 +33,8 @@ public class DeniedByAcl extends AclLineMatchExpr {
 
   @JsonCreator
   private static DeniedByAcl jsonCreator(
-      @Nullable @JsonProperty(PROP_ACL_NAME) String aclName,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @JsonProperty(PROP_ACL_NAME) @Nullable String aclName,
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     checkNotNull(aclName, "%s cannot be null", PROP_ACL_NAME);
     return new DeniedByAcl(aclName, traceElement);
   }

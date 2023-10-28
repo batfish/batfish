@@ -317,9 +317,9 @@ public final class A10Configuration extends VendorConfiguration {
     return _vrrpA;
   }
 
-  @Nonnull
   @Override
-  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+  public @Nonnull List<Configuration> toVendorIndependentConfigurations()
+      throws VendorConversionException {
     String hostname = getHostname();
     _c = new Configuration(hostname, _vendor);
     _c.setHumanName(_rawHostname);

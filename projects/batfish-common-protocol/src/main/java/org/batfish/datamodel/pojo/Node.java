@@ -36,10 +36,10 @@ public final class Node extends BfObject {
 
   @JsonCreator
   private static Node jsonCreator(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_ID) String id,
-      @Nullable @JsonProperty(PROP_MODEL) DeviceModel model,
-      @Nullable @JsonProperty(PROP_TYPE) DeviceType type) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_ID) @Nullable String id,
+      @JsonProperty(PROP_MODEL) @Nullable DeviceModel model,
+      @JsonProperty(PROP_TYPE) @Nullable DeviceType type) {
     checkArgument(name != null, "Missing: %s", PROP_NAME);
     return new Node(name, id, model, type);
   }

@@ -45,16 +45,14 @@ public final class BgpVrfLeakConfig implements Serializable {
    * Name of the import policy to apply to imported routes when leaking. If {@code null} no policy
    * is applied, all routes are allowed.
    */
-  @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
+  public @Nullable String getImportPolicy() {
     return _importPolicy;
   }
 
   /** Name of the source VRF from which to copy routes. The source VRF must have a BGP RIB. */
-  @Nonnull
   @JsonProperty(PROP_IMPORT_FROM_VRF)
-  public String getImportFromVrf() {
+  public @Nonnull String getImportFromVrf() {
     return _importFromVrf;
   }
 
@@ -122,10 +120,10 @@ public final class BgpVrfLeakConfig implements Serializable {
 
   @JsonCreator
   private static BgpVrfLeakConfig create(
-      @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
+      @JsonProperty(PROP_IMPORT_FROM_VRF) @Nullable String importFromVrf,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
       @JsonProperty(PROP_ADMIN) int admin,
-      @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+      @JsonProperty(PROP_ATTACH_ROUTE_TARGETS) @Nullable
           Iterable<ExtendedCommunity> attachRouteTargets,
       @JsonProperty(PROP_WEIGHT) int weight) {
     return builder()

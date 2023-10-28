@@ -29,8 +29,8 @@ public class TraceableStatement extends Statement {
 
   @JsonCreator
   private static TraceableStatement create(
-      @Nullable @JsonProperty(PROP_INNER_STATEMENTS) List<Statement> innerStatements,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @JsonProperty(PROP_INNER_STATEMENTS) @Nullable List<Statement> innerStatements,
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     checkArgument(traceElement != null, "Trace element cannot be null for TraceableStatement");
     return new TraceableStatement(traceElement, firstNonNull(innerStatements, ImmutableList.of()));
   }

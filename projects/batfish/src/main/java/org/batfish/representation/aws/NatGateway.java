@@ -111,11 +111,11 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static NatGateway create(
-      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ADDRESSES)
+      @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) @Nullable String natGatewayId,
+      @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags,
+      @JsonProperty(JSON_KEY_NAT_GATEWAY_ADDRESSES) @Nullable
           List<NatGatewayAddress> natGatewayAddresses) {
     checkArgument(natGatewayId != null, "NAT gateway id cannot be null");
     checkArgument(subnetId != null, "Subnet id cannot be null for nat gateway");
@@ -247,8 +247,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
    * @return the interface on the NAT gateway that connects to the VPC, or null if the VPC is not
    *     found
    */
-  @Nullable
   @VisibleForTesting
+  @Nullable
   Interface connectToVpc(
       Configuration natGwCfg,
       ConvertedConfiguration awsConfiguration,

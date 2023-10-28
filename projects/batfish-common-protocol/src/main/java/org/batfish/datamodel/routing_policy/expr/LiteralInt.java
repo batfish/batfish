@@ -15,7 +15,7 @@ public final class LiteralInt extends IntExpr {
   private int _value;
 
   @JsonCreator
-  private static LiteralInt jsonCreator(@Nullable @JsonProperty(PROP_VALUE) Integer value) {
+  private static LiteralInt jsonCreator(@JsonProperty(PROP_VALUE) @Nullable Integer value) {
     checkArgument(value != null, "%s must be provided", PROP_VALUE);
     return new LiteralInt(value);
   }

@@ -24,7 +24,7 @@ public final class BgpRouteDiffs {
 
   @JsonCreator
   private static BgpRouteDiffs jsonCreator(
-      @Nullable @JsonProperty(PROP_DIFFS) SortedSet<BgpRouteDiff> diffs) {
+      @JsonProperty(PROP_DIFFS) @Nullable SortedSet<BgpRouteDiff> diffs) {
     return new BgpRouteDiffs(firstNonNull(diffs, ImmutableSortedSet.of()));
   }
 

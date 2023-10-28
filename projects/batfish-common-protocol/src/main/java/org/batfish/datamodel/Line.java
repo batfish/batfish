@@ -46,7 +46,7 @@ public class Line extends ComparableStructure<String> {
   private SortedSet<String> _transportPreferred;
 
   @JsonCreator
-  private static Line jsonCreator(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private static Line jsonCreator(@JsonProperty(PROP_NAME) @Nullable String name) {
     checkArgument(name != null, "%s must be provided", PROP_NAME);
     return new Line(name);
   }

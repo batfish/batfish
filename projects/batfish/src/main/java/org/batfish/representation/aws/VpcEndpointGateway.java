@@ -146,9 +146,8 @@ public final class VpcEndpointGateway extends VpcEndpoint {
     return serviceName;
   }
 
-  @Nonnull
   @VisibleForTesting
-  static String humanName(Map<String, String> tags, String serviceName) {
+  static @Nonnull String humanName(Map<String, String> tags, String serviceName) {
     return tags.getOrDefault(TAG_NAME, serviceName);
   }
 

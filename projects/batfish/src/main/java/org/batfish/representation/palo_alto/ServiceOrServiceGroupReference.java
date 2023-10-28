@@ -45,8 +45,8 @@ public final class ServiceOrServiceGroupReference
   /**
    * Return the name of the vsys this reference is attached to, or return null if no match is found
    */
-  @Nullable
   @SuppressWarnings("fallthrough")
+  @Nullable
   String getVsysName(PaloAltoConfiguration pc, Vsys vsys) {
     if (vsys.getServices().containsKey(_name) || vsys.getServiceGroups().containsKey(_name)) {
       return vsys.getName();

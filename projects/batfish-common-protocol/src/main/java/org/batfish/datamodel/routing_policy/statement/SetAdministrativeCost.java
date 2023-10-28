@@ -23,7 +23,7 @@ public final class SetAdministrativeCost extends Statement {
 
   @JsonCreator
   private static SetAdministrativeCost jsonCreator(
-      @Nullable @JsonProperty(PROP_ADMIN) IntExpr admin) {
+      @JsonProperty(PROP_ADMIN) @Nullable IntExpr admin) {
     checkArgument(admin != null, "%s must be provided", PROP_ADMIN);
     return new SetAdministrativeCost(admin);
   }

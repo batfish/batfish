@@ -169,24 +169,22 @@ public final class OspfTopology {
 
     @JsonCreator
     private static EdgeId create(
-        @Nullable @JsonProperty(PROP_TAIL) OspfNeighborConfigId tail,
-        @Nullable @JsonProperty(PROP_HEAD) OspfNeighborConfigId head) {
+        @JsonProperty(PROP_TAIL) @Nullable OspfNeighborConfigId tail,
+        @JsonProperty(PROP_HEAD) @Nullable OspfNeighborConfigId head) {
       checkArgument(tail != null, "Missing %s", PROP_TAIL);
       checkArgument(head != null, "Missing %s", PROP_HEAD);
       return new EdgeId(tail, head);
     }
 
     /** Return the tail/src node */
-    @Nonnull
     @JsonProperty(PROP_TAIL)
-    public OspfNeighborConfigId getTail() {
+    public @Nonnull OspfNeighborConfigId getTail() {
       return _tail;
     }
 
     /** Return the head/dst node */
-    @Nonnull
     @JsonProperty(PROP_HEAD)
-    public OspfNeighborConfigId getHead() {
+    public @Nonnull OspfNeighborConfigId getHead() {
       return _head;
     }
 

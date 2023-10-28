@@ -294,9 +294,9 @@ public class BgpTopologyUtilsTest {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Optional<NodeInterfacePair> pairedPointToPointL3Interface(NodeInterfacePair iface) {
+    public @Nonnull Optional<NodeInterfacePair> pairedPointToPointL3Interface(
+        NodeInterfacePair iface) {
       throw new UnsupportedOperationException();
     }
 

@@ -61,14 +61,13 @@ public final class CompareFiltersQuestion extends Question {
     return "compareFilters";
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTERS)
-  public String getFilters() {
+  public @Nullable String getFilters() {
     return _filters;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(_filters, DEFAULT_FILTER_SPECIFIER);
   }
@@ -78,14 +77,13 @@ public final class CompareFiltersQuestion extends Question {
     return _ignoreComposites;
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, DEFAULT_NODE_SPECIFIER);
   }

@@ -175,15 +175,13 @@ public class UnusedStructuresQuestionPlugin extends QuestionPlugin {
       return "unusedStructures";
     }
 
-    @Nullable
     @JsonProperty(PROP_NODES)
-    public String getNodes() {
+    public @Nullable String getNodes() {
       return _nodes;
     }
 
-    @Nonnull
     @JsonIgnore
-    public NodeSpecifier getNodeSpecifier() {
+    public @Nonnull NodeSpecifier getNodeSpecifier() {
       return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
     }
   }

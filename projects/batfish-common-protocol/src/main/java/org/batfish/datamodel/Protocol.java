@@ -60,9 +60,8 @@ public enum Protocol {
     return _ipProtocol;
   }
 
-  @Nonnull
   @JsonValue
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 

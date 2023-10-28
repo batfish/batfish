@@ -43,15 +43,15 @@ public class EigrpExternalRoute extends EigrpRoute {
 
   @JsonCreator
   private static EigrpExternalRoute create(
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
-      @Nullable @JsonProperty(PROP_DESTINATION_ASN) Long destinationAsn,
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
-      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
-      @Nullable @JsonProperty(PROP_TAG) Long tag) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin,
+      @JsonProperty(PROP_DESTINATION_ASN) @Nullable Long destinationAsn,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_EIGRP_METRIC) @Nullable EigrpMetric metric,
+      @JsonProperty(PROP_EIGRP_METRIC_VERSION) @Nullable EigrpMetricVersion metricVersion,
+      @JsonProperty(PROP_PROCESS_ASN) @Nullable Long processAsn,
+      @JsonProperty(PROP_TAG) @Nullable Long tag) {
     checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
     checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
@@ -96,9 +96,8 @@ public class EigrpExternalRoute extends EigrpRoute {
 
     private Builder() {}
 
-    @Nonnull
     @Override
-    public EigrpExternalRoute build() {
+    public @Nonnull EigrpExternalRoute build() {
       checkArgument(getNetwork() != null, "EIGRP route: missing %s", PROP_NETWORK);
       checkArgument(_destinationAsn != null, "EIGRP route: missing %s", PROP_DESTINATION_ASN);
       checkArgument(_eigrpMetric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
@@ -119,9 +118,8 @@ public class EigrpExternalRoute extends EigrpRoute {
           getNonRouting());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
   }

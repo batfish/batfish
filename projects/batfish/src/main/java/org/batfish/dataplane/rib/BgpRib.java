@@ -190,9 +190,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     }
   }
 
-  @Nonnull
   @Override
-  public RibDelta<R> mergeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> mergeRouteGetDelta(R route) {
     // Evict older non-trackable-local routes for same prefix, receivedFrom, and path-id.
     // Note that trackable local routes are managed elsewhere,
     // e.g. in Bgpv4Rib.{add,remove}LocalRoute
@@ -325,9 +324,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     return actionFn.apply(route);
   }
 
-  @Nonnull
   @Override
-  public RibDelta<R> removeRouteGetDelta(R route) {
+  public @Nonnull RibDelta<R> removeRouteGetDelta(R route) {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);

@@ -22,7 +22,7 @@ public final class IpNextHop extends NextHopExpr {
   private final @Nonnull List<Ip> _ips;
 
   @JsonCreator
-  private static IpNextHop jsonCreator(@Nullable @JsonProperty(PROP_IPS) List<Ip> ips) {
+  private static IpNextHop jsonCreator(@JsonProperty(PROP_IPS) @Nullable List<Ip> ips) {
     return new IpNextHop(firstNonNull(ips, ImmutableList.of()));
   }
 

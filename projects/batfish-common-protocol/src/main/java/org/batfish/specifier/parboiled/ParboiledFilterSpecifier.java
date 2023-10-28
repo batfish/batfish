@@ -37,9 +37,8 @@ public final class ParboiledFilterSpecifier implements FilterSpecifier {
       _ctxt = ctxt;
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitDifferenceFilterAstNode(
+    public @Nonnull Set<IpAccessList> visitDifferenceFilterAstNode(
         DifferenceFilterAstNode differenceFilterAstNode) {
       return Sets.difference(
           differenceFilterAstNode.getLeft().accept(this),
@@ -65,50 +64,45 @@ public final class ParboiledFilterSpecifier implements FilterSpecifier {
               .collect(ImmutableSet.toImmutableSet());
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitInFilterAstNode(InFilterAstNode inFilterAstNode) {
+    public @Nonnull Set<IpAccessList> visitInFilterAstNode(InFilterAstNode inFilterAstNode) {
       return new InterfaceSpecifierFilterSpecifier(
               InterfaceSpecifierFilterSpecifier.Type.IN_FILTER,
               new ParboiledInterfaceSpecifier(inFilterAstNode.getInterfaceAst()))
           .resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitIntersectionFilterAstNode(
+    public @Nonnull Set<IpAccessList> visitIntersectionFilterAstNode(
         IntersectionFilterAstNode intersectionFilterAstNode) {
       return Sets.intersection(
           intersectionFilterAstNode.getLeft().accept(this),
           intersectionFilterAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitNameFilterAstNode(NameFilterAstNode nameFilterAstNode) {
+    public @Nonnull Set<IpAccessList> visitNameFilterAstNode(NameFilterAstNode nameFilterAstNode) {
       return new NameFilterSpecifier(nameFilterAstNode.getName()).resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitNameRegexFilterAstNode(
+    public @Nonnull Set<IpAccessList> visitNameRegexFilterAstNode(
         NameRegexFilterAstNode nameRegexFilterAstNode) {
       return new NameRegexFilterSpecifier(nameRegexFilterAstNode.getPattern())
           .resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitOutFilterAstNode(OutFilterAstNode inFilterAstNode) {
+    public @Nonnull Set<IpAccessList> visitOutFilterAstNode(OutFilterAstNode inFilterAstNode) {
       return new InterfaceSpecifierFilterSpecifier(
               InterfaceSpecifierFilterSpecifier.Type.OUT_FILTER,
               new ParboiledInterfaceSpecifier(inFilterAstNode.getInterfaceAst()))
           .resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<IpAccessList> visitUnionFilterAstNode(UnionFilterAstNode unionFilterAstNode) {
+    public @Nonnull Set<IpAccessList> visitUnionFilterAstNode(
+        UnionFilterAstNode unionFilterAstNode) {
       return Sets.union(
           unionFilterAstNode.getLeft().accept(this), unionFilterAstNode.getRight().accept(this));
     }

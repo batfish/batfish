@@ -417,9 +417,8 @@ public class PrefixTrieMultiMapTest {
     List<Prefix> prefixes =
         map.fold(
             new FoldOperator<Integer, List<Prefix>>() {
-              @Nonnull
               @Override
-              public List<Prefix> fold(
+              public @Nonnull List<Prefix> fold(
                   Prefix prefix,
                   Set<Integer> elems,
                   @Nullable List<Prefix> leftResult,

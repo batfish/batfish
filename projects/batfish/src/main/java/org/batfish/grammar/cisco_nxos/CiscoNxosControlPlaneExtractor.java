@@ -1418,9 +1418,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     getPreferredName(MANAGEMENT_VRF_NAME, VRF);
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

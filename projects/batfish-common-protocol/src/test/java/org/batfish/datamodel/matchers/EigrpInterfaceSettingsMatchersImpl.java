@@ -12,9 +12,8 @@ final class EigrpInterfaceSettingsMatchersImpl {
       super(subMatcher, "An EigrpInterfaceSettings with asn:", "asn");
     }
 
-    @Nonnull
     @Override
-    protected Long featureValueOf(EigrpInterfaceSettings actual) {
+    protected @Nonnull Long featureValueOf(EigrpInterfaceSettings actual) {
       return actual.getAsn();
     }
   }

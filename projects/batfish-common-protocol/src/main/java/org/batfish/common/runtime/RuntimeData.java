@@ -55,7 +55,7 @@ public final class RuntimeData {
 
   @JsonCreator
   private static RuntimeData create(
-      @Nullable @JsonProperty(PROP_INTERFACES) Map<String, InterfaceRuntimeData> interfaces) {
+      @JsonProperty(PROP_INTERFACES) @Nullable Map<String, InterfaceRuntimeData> interfaces) {
     return new RuntimeData(firstNonNull(interfaces, ImmutableMap.of()));
   }
 

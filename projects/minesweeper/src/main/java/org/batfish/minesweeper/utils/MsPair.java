@@ -39,9 +39,8 @@ public class MsPair<T1 extends Comparable<? super T1>, T2 extends Comparable<? s
     return Objects.equals(_first, other._first) && Objects.equals(_second, other._second);
   }
 
-  @Nullable
   @JsonIgnore
-  public final T1 getFirst() {
+  public final @Nullable T1 getFirst() {
     return _first;
   }
 

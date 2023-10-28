@@ -54,23 +54,20 @@ public abstract class VniConfig implements Serializable {
   }
 
   /** The VRF to which this VNI belongs */
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public String getVrf() {
+  public @Nonnull String getVrf() {
     return _vrf;
   }
 
   /** {@link RouteDistinguisher} to use when advertising this VNI */
-  @Nonnull
   @JsonProperty(PROP_ROUTE_DISTINGUISHER)
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nonnull RouteDistinguisher getRouteDistinguisher() {
     return _rd;
   }
 
   /** Route target to use when advertising this VNI (i.e., the export route target) */
-  @Nonnull
   @JsonProperty(PROP_ROUTE_TARGET)
-  public ExtendedCommunity getRouteTarget() {
+  public @Nonnull ExtendedCommunity getRouteTarget() {
     return _routeTarget;
   }
 

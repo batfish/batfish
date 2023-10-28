@@ -84,13 +84,13 @@ public class Subnet implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static Subnet create(
-      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock,
-      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_ARN) String subnetArn,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone) {
+      @JsonProperty(JSON_KEY_CIDR_BLOCK) @Nullable Prefix cidrBlock,
+      @JsonProperty(JSON_KEY_OWNER_ID) @Nullable String ownerId,
+      @JsonProperty(JSON_KEY_SUBNET_ARN) @Nullable String subnetArn,
+      @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags,
+      @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) @Nullable String availabilityZone) {
     checkNonNull(cidrBlock, JSON_KEY_CIDR_BLOCK, "Subnet");
     checkNonNull(ownerId, JSON_KEY_OWNER_ID, "Subnet");
     checkNonNull(subnetArn, JSON_KEY_SUBNET_ARN, "Subnet");

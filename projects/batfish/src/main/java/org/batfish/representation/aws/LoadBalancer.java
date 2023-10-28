@@ -118,8 +118,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static AvailabilityZone create(
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
-        @Nullable @JsonProperty(JSON_KEY_ZONE_NAME) String zoneName) {
+        @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId,
+        @JsonProperty(JSON_KEY_ZONE_NAME) @Nullable String zoneName) {
       // not parsing "LoadBalancerAddresses" -- assuming that network interfaces cover the info
       checkNonNull(subnetId, JSON_KEY_SUBNET_ID, "Load balancer availability zone");
       checkNonNull(zoneName, JSON_KEY_ZONE_NAME, "Load balancer availability zone");
@@ -181,13 +181,13 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static LoadBalancer create(
-      @Nullable @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) String arn,
-      @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONES) List<AvailabilityZone> availabilityZones,
-      @Nullable @JsonProperty(JSON_KEY_DNS_NAME) String dnsName,
-      @Nullable @JsonProperty(JSON_KEY_LOAD_BALANCER_NAME) String name,
-      @Nullable @JsonProperty(JSON_KEY_SCHEME) String scheme,
-      @Nullable @JsonProperty(JSON_KEY_TYPE) String type,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+      @JsonProperty(JSON_KEY_LOAD_BALANCER_ARN) @Nullable String arn,
+      @JsonProperty(JSON_KEY_AVAILABILITY_ZONES) @Nullable List<AvailabilityZone> availabilityZones,
+      @JsonProperty(JSON_KEY_DNS_NAME) @Nullable String dnsName,
+      @JsonProperty(JSON_KEY_LOAD_BALANCER_NAME) @Nullable String name,
+      @JsonProperty(JSON_KEY_SCHEME) @Nullable String scheme,
+      @JsonProperty(JSON_KEY_TYPE) @Nullable String type,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId) {
     checkNonNull(arn, JSON_KEY_LOAD_BALANCER_ARN, "LoadBalancer");
     checkNonNull(availabilityZones, JSON_KEY_AVAILABILITY_ZONES, "LoadBalancer");
     checkNonNull(dnsName, JSON_KEY_DNS_NAME, "LoadBalancer");
@@ -379,8 +379,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    * @return null if we cannot build a valid transformation, e.g., the listener protocol for
    *     incoming packets is not supported or none of the targets are valid.
    */
-  @Nullable
   @VisibleForTesting
+  @Nullable
   LoadBalancerTransformation computeListenerTransformation(
       LoadBalancerListener.Listener listener,
       Ip loadBalancerIp,
@@ -478,9 +478,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    *
    * @return null if a valid transformation step could not be constructed
    */
-  @Nullable
   @VisibleForTesting
-  static TransformationStep computeTargetGroupTransformationStep(
+  static @Nullable TransformationStep computeTargetGroupTransformationStep(
       String targetGroupArn,
       Ip loadBalancerIp,
       Set<String> enabledTargetZones,
@@ -544,9 +543,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    *
    * @return The transformation step or null if the Ip of the target cannot be determined.
    */
-  @Nullable
   @VisibleForTesting
-  static TransformationStep computeTargetTransformationStep(
+  static @Nullable TransformationStep computeTargetTransformationStep(
       LoadBalancerTarget target,
       TargetGroup.Type targetGroupType,
       Ip loadBalancerIp,
@@ -605,9 +603,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
   }
 
   /** Chains the provided list of transformations. */
-  @Nonnull
   @VisibleForTesting
-  static Transformation chainListenerTransformations(
+  static @Nonnull Transformation chainListenerTransformations(
       List<LoadBalancerTransformation> listenerTransformations) {
     Transformation tailTransformation = FINAL_TRANSFORMATION;
     for (int index = listenerTransformations.size() - 1; index >= 0; index--) {

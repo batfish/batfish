@@ -935,9 +935,8 @@ public final class ForwardingAnalysisImpl implements ForwardingAnalysis, Seriali
     return _arpReplies;
   }
 
-  @Nonnull
   @Override
-  public Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
+  public @Nonnull Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
     return _vrfForwardingBehavior;
   }
 

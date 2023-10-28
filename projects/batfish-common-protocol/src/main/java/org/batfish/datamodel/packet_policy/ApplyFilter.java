@@ -62,7 +62,7 @@ public class ApplyFilter implements Statement {
   }
 
   @JsonCreator
-  private static ApplyFilter create(@Nullable @JsonProperty(PROP_FILTER) String filter) {
+  private static ApplyFilter create(@JsonProperty(PROP_FILTER) @Nullable String filter) {
     checkArgument(filter != null, "Missing %s", PROP_FILTER);
     return new ApplyFilter(filter);
   }

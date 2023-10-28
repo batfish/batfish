@@ -21,9 +21,8 @@ public class ApplyTransformation implements Statement {
     _transformation = transformation;
   }
 
-  @Nonnull
   @JsonProperty(PROP_TRANSFORMATION)
-  public Transformation getTransformation() {
+  public @Nonnull Transformation getTransformation() {
     return _transformation;
   }
 
@@ -56,7 +55,7 @@ public class ApplyTransformation implements Statement {
 
   @JsonCreator
   private static ApplyTransformation create(
-      @Nullable @JsonProperty(PROP_TRANSFORMATION) Transformation transformation) {
+      @JsonProperty(PROP_TRANSFORMATION) @Nullable Transformation transformation) {
     checkArgument(transformation != null, "Missing %s", PROP_TRANSFORMATION);
     return new ApplyTransformation(transformation);
   }

@@ -227,8 +227,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param dataplaneBgpRoute the original route
    * @return a version of the route suitable for output from this analysis
    */
-  @Nullable
-  public static org.batfish.datamodel.questions.BgpRoute toQuestionBgpRoute(
+  public static @Nullable org.batfish.datamodel.questions.BgpRoute toQuestionBgpRoute(
       @Nullable Bgpv4Route dataplaneBgpRoute) {
     if (dataplaneBgpRoute == null) {
       return null;
@@ -539,14 +538,14 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .build();
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   RoutingPolicySpecifier getPolicySpecifier() {
     return _policySpecifier;
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }

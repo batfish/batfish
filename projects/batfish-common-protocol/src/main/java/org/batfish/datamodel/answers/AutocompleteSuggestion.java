@@ -153,13 +153,13 @@ public final class AutocompleteSuggestion {
 
   @JsonCreator
   private static @Nonnull AutocompleteSuggestion create(
-      @Nullable @JsonProperty(PROP_TEXT) String text,
-      @Nullable @JsonProperty(PROP_SUGGESTION_TYPE) SuggestionType suggestionType,
+      @JsonProperty(PROP_TEXT) @Nullable String text,
+      @JsonProperty(PROP_SUGGESTION_TYPE) @Nullable SuggestionType suggestionType,
       @JsonProperty(PROP_IS_PARTIAL) boolean isPartial,
-      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
       @JsonProperty(PROP_RANK) int rank,
       @JsonProperty(PROP_INSERTION_INDEX) int insertionIndex,
-      @Nullable @JsonProperty(PROP_HINT) String hint) {
+      @JsonProperty(PROP_HINT) @Nullable String hint) {
     return new AutocompleteSuggestion(
         firstNonNull(text, ""),
         firstNonNull(suggestionType, SuggestionType.UNKNOWN),

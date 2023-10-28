@@ -19,7 +19,7 @@ public final class NamedPrefixSet extends PrefixSetExpr {
   private final String _name;
 
   @JsonCreator
-  private static NamedPrefixSet create(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private static NamedPrefixSet create(@JsonProperty(PROP_NAME) @Nullable String name) {
     checkArgument(name != null, "%s must be provided", PROP_NAME);
     return new NamedPrefixSet(name);
   }

@@ -71,8 +71,8 @@ public final class BidirectionalTracerouteQuestion extends Question {
     return true;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HEADER_CONSTRAINTS)
+  @Nonnull
   PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }

@@ -496,20 +496,20 @@ public final class CompareRoutePoliciesAnswerer extends Answerer {
     return answerElement;
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   RoutingPolicySpecifier getPolicySpecifier() {
     return _policySpecifier;
   }
 
-  @Nullable
   @VisibleForTesting
+  @Nullable
   RoutingPolicySpecifier getReferencePolicySpecifier() {
     return _referencePolicySpecifier;
   }

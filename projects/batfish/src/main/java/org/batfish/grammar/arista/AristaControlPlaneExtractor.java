@@ -8453,9 +8453,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
     }
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

@@ -27,7 +27,7 @@ public class DeviceMetadata implements Serializable {
   }
 
   @JsonCreator
-  private static DeviceMetadata create(@Nullable @JsonProperty(PROP_HOSTNAME) String hostname) {
+  private static DeviceMetadata create(@JsonProperty(PROP_HOSTNAME) @Nullable String hostname) {
     return new DeviceMetadata(hostname);
   }
 

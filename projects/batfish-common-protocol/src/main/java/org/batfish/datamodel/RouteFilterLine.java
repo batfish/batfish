@@ -29,9 +29,9 @@ public final class RouteFilterLine implements Serializable {
 
   @JsonCreator
   private static RouteFilterLine create(
-      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
-      @Nullable @JsonProperty(PROP_IP_WILDCARD) IpWildcard ipWildcard,
-      @Nullable @JsonProperty(PROP_LENGTH_RANGE) SubRange lengthRange) {
+      @JsonProperty(PROP_ACTION) @Nullable LineAction action,
+      @JsonProperty(PROP_IP_WILDCARD) @Nullable IpWildcard ipWildcard,
+      @JsonProperty(PROP_LENGTH_RANGE) @Nullable SubRange lengthRange) {
     checkArgument(action != null, "% is missing", PROP_ACTION);
     checkArgument(ipWildcard != null, "% is missing", PROP_IP_WILDCARD);
     checkArgument(lengthRange != null, "% is missing", PROP_LENGTH_RANGE);

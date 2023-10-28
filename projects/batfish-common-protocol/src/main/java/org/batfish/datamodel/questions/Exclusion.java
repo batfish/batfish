@@ -25,8 +25,8 @@ public class Exclusion {
 
   @JsonCreator
   public Exclusion(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nonnull @JsonProperty(PROP_SPECIFICATION) ObjectNode exclusion) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_SPECIFICATION) @Nonnull ObjectNode exclusion) {
     _name = name == null ? exclusion.toString() : name;
     _specification = exclusion;
   }

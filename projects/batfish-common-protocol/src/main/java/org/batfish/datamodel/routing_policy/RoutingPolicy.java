@@ -94,7 +94,7 @@ public class RoutingPolicy implements Serializable {
   private @Nonnull List<Statement> _statements;
 
   @JsonCreator
-  private RoutingPolicy(@Nullable @JsonProperty(PROP_NAME) String name) {
+  private RoutingPolicy(@JsonProperty(PROP_NAME) @Nullable String name) {
     this(requireNonNull(name), null);
   }
 
@@ -175,22 +175,19 @@ public class RoutingPolicy implements Serializable {
     return _name;
   }
 
-  @Nullable
   @JsonIgnore
-  public Configuration getOwner() {
+  public @Nullable Configuration getOwner() {
     return _owner;
   }
 
-  @Nullable
   @JsonIgnore
-  public Set<String> getSources() {
+  public @Nullable Set<String> getSources() {
     return _sources;
   }
 
   /** Returns the list of routing-policy statements to execute */
-  @Nonnull
   @JsonProperty(PROP_STATEMENTS)
-  public List<Statement> getStatements() {
+  public @Nonnull List<Statement> getStatements() {
     return _statements;
   }
 

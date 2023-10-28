@@ -21,8 +21,8 @@ final class IcmpTypeCode implements Serializable {
 
   @JsonCreator
   private static IcmpTypeCode create(
-      @Nullable @JsonProperty(JSON_KEY_CODE) Integer code,
-      @Nullable @JsonProperty(JSON_KEY_TYPE) Integer type) {
+      @JsonProperty(JSON_KEY_CODE) @Nullable Integer code,
+      @JsonProperty(JSON_KEY_TYPE) @Nullable Integer type) {
     checkArgument(code != null, "Code cannot be null in IcmpTypeCode");
     checkArgument(type != null, "Type  cannot be null in IcmpTypeCode");
     return new IcmpTypeCode(type, code);

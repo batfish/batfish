@@ -18,7 +18,7 @@ public class AaaAuthenticationLoginQuestion extends Question {
 
   @JsonCreator
   private static AaaAuthenticationLoginQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes) {
     return new AaaAuthenticationLoginQuestion(nodes);
   }
 
@@ -40,9 +40,8 @@ public class AaaAuthenticationLoginQuestion extends Question {
     return "AaaAuthenticationLogin";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 

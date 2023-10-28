@@ -41,9 +41,8 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
       _ctxt = ctxt;
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitConnectedToInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitConnectedToInterfaceAstNode(
         ConnectedToInterfaceAstNode connectedToInterfaceAstNode) {
       return new InterfaceWithConnectedIpsSpecifier(
               connectedToInterfaceAstNode
@@ -52,18 +51,16 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
           .resolve(_nodes, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitDifferenceInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitDifferenceInterfaceAstNode(
         DifferenceInterfaceAstNode differenceInterfaceAstNode) {
       return Sets.difference(
           differenceInterfaceAstNode.getLeft().accept(this),
           differenceInterfaceAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitInterfaceGroupInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitInterfaceGroupInterfaceAstNode(
         InterfaceGroupInterfaceAstNode interfaceGroupInterfaceAstNode) {
       // Because we changed the input on Apr 30 2019 from (group, book) to (book, group), we
       // first interpret the user input as (book, group) if the book exists. Otherwise, we interpret
@@ -87,9 +84,8 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
               + " is not present");
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitIntersectionInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitIntersectionInterfaceAstNode(
         IntersectionInterfaceAstNode intersectionInterfaceAstNode) {
       return Sets.intersection(
           intersectionInterfaceAstNode.getLeft().accept(this),
@@ -107,48 +103,42 @@ public final class ParboiledInterfaceSpecifier implements InterfaceSpecifier {
               .resolve(_nodes, _ctxt));
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitNameInterfaceNode(
+    public @Nonnull Set<NodeInterfacePair> visitNameInterfaceNode(
         NameInterfaceAstNode nameInterfaceAstNode) {
       return new NameInterfaceSpecifier(nameInterfaceAstNode.getName()).resolve(_nodes, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitNameRegexInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitNameRegexInterfaceAstNode(
         NameRegexInterfaceAstNode nameRegexInterfaceAstNode) {
       return new NameRegexInterfaceSpecifier(nameRegexInterfaceAstNode.getPattern())
           .resolve(_nodes, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitTypeInterfaceNode(
+    public @Nonnull Set<NodeInterfacePair> visitTypeInterfaceNode(
         TypeInterfaceAstNode typeInterfaceAstNode) {
       return new TypesInterfaceSpecifier(ImmutableSet.of(typeInterfaceAstNode.getInterfaceType()))
           .resolve(_nodes, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitUnionInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitUnionInterfaceAstNode(
         UnionInterfaceAstNode unionInterfaceAstNode) {
       return Sets.union(
           unionInterfaceAstNode.getLeft().accept(this),
           unionInterfaceAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitVrfInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitVrfInterfaceAstNode(
         VrfInterfaceAstNode vrfInterfaceAstNode) {
       return new VrfNameInterfaceSpecifier(vrfInterfaceAstNode.getVrfName()).resolve(_nodes, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<NodeInterfacePair> visitZoneInterfaceAstNode(
+    public @Nonnull Set<NodeInterfacePair> visitZoneInterfaceAstNode(
         ZoneInterfaceAstNode zoneInterfaceAstNode) {
       return new ZoneNameInterfaceSpecifier(zoneInterfaceAstNode.getZoneName())
           .resolve(_nodes, _ctxt);

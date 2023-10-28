@@ -104,10 +104,10 @@ public class IpAccessList implements Serializable {
 
   @JsonCreator
   private static IpAccessList jsonCreator(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_LINES) List<AclLine> lines,
-      @Nullable @JsonProperty(PROP_SOURCE_NAME) String sourceName,
-      @Nullable @JsonProperty(PROP_SOURCE_TYPE) String sourceType) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_LINES) @Nullable List<AclLine> lines,
+      @JsonProperty(PROP_SOURCE_NAME) @Nullable String sourceName,
+      @JsonProperty(PROP_SOURCE_TYPE) @Nullable String sourceType) {
     checkArgument(name != null, "IpAccessList missing %s", PROP_NAME);
     return new IpAccessList(name, firstNonNull(lines, ImmutableList.of()), sourceName, sourceType);
   }

@@ -61,8 +61,8 @@ public class Warning implements Serializable, Comparable<Warning> {
 
   @JsonCreator
   private static Warning jsonCreator(
-      @Nullable @JsonProperty(PROP_TEXT) String text,
-      @Nullable @JsonProperty(PROP_TAG) String tag) {
+      @JsonProperty(PROP_TEXT) @Nullable String text,
+      @JsonProperty(PROP_TAG) @Nullable String tag) {
     checkArgument(text != null, "Missing %s", PROP_TEXT);
     return new Warning(text, tag);
   }

@@ -31,15 +31,13 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   /** Builder for {@link Bgpv4Route} */
   public static final class Builder extends BgpRoute.Builder<Builder, Bgpv4Route> {
 
-    @Nonnull
     @Override
-    public Builder newBuilder() {
+    public @Nonnull Builder newBuilder() {
       return new Builder();
     }
 
-    @Nonnull
     @Override
-    public Bgpv4Route build() {
+    public @Nonnull Bgpv4Route build() {
       checkArgument(_originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);
       checkArgument(_originMechanism != null, "Missing %s", PROP_ORIGIN_MECHANISM);
       checkArgument(
@@ -87,26 +85,26 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
 
   @JsonCreator
   private static Bgpv4Route jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) CommunitySet communities,
+      @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
+      @JsonProperty(PROP_COMMUNITIES) @Nullable CommunitySet communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long med,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_ORIGINATOR_IP) Ip originatorIp,
-      @Nullable @JsonProperty(PROP_CLUSTER_LIST) Set<Long> clusterList,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_ORIGINATOR_IP) @Nullable Ip originatorIp,
+      @JsonProperty(PROP_CLUSTER_LIST) @Nullable Set<Long> clusterList,
       @JsonProperty(PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT)
           boolean receivedFromRouteReflectorClient,
-      @Nullable @JsonProperty(PROP_ORIGIN_MECHANISM) OriginMechanism originMechanism,
-      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
-      @Nullable @JsonProperty(PROP_PATH_ID) Integer pathId,
-      @Nullable @JsonProperty(PROP_PROTOCOL) RoutingProtocol protocol,
-      @Nullable @JsonProperty(PROP_RECEIVED_FROM) ReceivedFrom receivedFrom,
-      @Nullable @JsonProperty(PROP_SRC_PROTOCOL) RoutingProtocol srcProtocol,
+      @JsonProperty(PROP_ORIGIN_MECHANISM) @Nullable OriginMechanism originMechanism,
+      @JsonProperty(PROP_ORIGIN_TYPE) @Nullable OriginType originType,
+      @JsonProperty(PROP_PATH_ID) @Nullable Integer pathId,
+      @JsonProperty(PROP_PROTOCOL) @Nullable RoutingProtocol protocol,
+      @JsonProperty(PROP_RECEIVED_FROM) @Nullable ReceivedFrom receivedFrom,
+      @JsonProperty(PROP_SRC_PROTOCOL) @Nullable RoutingProtocol srcProtocol,
       @JsonProperty(PROP_TAG) long tag,
-      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+      @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(originatorIp != null, "Missing %s", PROP_ORIGINATOR_IP);

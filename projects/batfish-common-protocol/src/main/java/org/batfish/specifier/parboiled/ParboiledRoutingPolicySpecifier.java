@@ -32,43 +32,38 @@ public final class ParboiledRoutingPolicySpecifier implements RoutingPolicySpeci
       _ctxt = ctxt;
     }
 
-    @Nonnull
     @Override
-    public Set<RoutingPolicy> visitDifferenceRoutingPolicyAstNode(
+    public @Nonnull Set<RoutingPolicy> visitDifferenceRoutingPolicyAstNode(
         DifferenceRoutingPolicyAstNode differenceRoutingPolicyAstNode) {
       return Sets.difference(
           differenceRoutingPolicyAstNode.getLeft().accept(this),
           differenceRoutingPolicyAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<RoutingPolicy> visitIntersectionRoutingPolicyAstNode(
+    public @Nonnull Set<RoutingPolicy> visitIntersectionRoutingPolicyAstNode(
         IntersectionRoutingPolicyAstNode intersectionRoutingPolicyAstNode) {
       return Sets.intersection(
           intersectionRoutingPolicyAstNode.getLeft().accept(this),
           intersectionRoutingPolicyAstNode.getRight().accept(this));
     }
 
-    @Nonnull
     @Override
-    public Set<RoutingPolicy> visitNameRoutingPolicyAstNode(
+    public @Nonnull Set<RoutingPolicy> visitNameRoutingPolicyAstNode(
         NameRoutingPolicyAstNode nameRoutingPolicyAstNode) {
       return new NameRoutingPolicySpecifier(nameRoutingPolicyAstNode.getName())
           .resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<RoutingPolicy> visitNameRegexRoutingPolicyAstNode(
+    public @Nonnull Set<RoutingPolicy> visitNameRegexRoutingPolicyAstNode(
         NameRegexRoutingPolicyAstNode nameRegexRoutingPolicyAstNode) {
       return new NameRegexRoutingPolicySpecifier(nameRegexRoutingPolicyAstNode.getPattern())
           .resolve(_node, _ctxt);
     }
 
-    @Nonnull
     @Override
-    public Set<RoutingPolicy> visitUnionRoutingPolicyAstNode(
+    public @Nonnull Set<RoutingPolicy> visitUnionRoutingPolicyAstNode(
         UnionRoutingPolicyAstNode unionRoutingPolicyAstNode) {
       return Sets.union(
           unionRoutingPolicyAstNode.getLeft().accept(this),

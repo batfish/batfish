@@ -27,7 +27,7 @@ public final class EvpnL3VniPropertiesQuestion extends Question {
 
   @JsonCreator
   private static @Nonnull EvpnL3VniPropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodes) {
+      @JsonProperty(PROP_NODES) @Nullable String nodes) {
     return new EvpnL3VniPropertiesQuestion(nodes);
   }
 
