@@ -87,10 +87,18 @@ j11q
     - `git clone https://github.com/batfish/batfish.git`
     - `cd batfish`
 
-2. Compile Batfish
-    - `bazel build //projects/allinone:allinone_main`
+## Running (simple)
 
-3. Run the Batfish service
+1. To build any unbuilt changes and run the Batfish service:
+    - `tools/bazel_run.sh`
+
+## Running (advanced)
+1. (Optional, done automatically in next step) Compile Batfish
+    - ```
+      bazel build //projects/allinone:allinone_main
+      ```
+
+1. Run the Batfish service
     - ```
       bazel run //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
       ```
@@ -114,7 +122,7 @@ j11q
 
    For more info, see the Bazel documentation.
 
-4. Explore using Pybatfish
+1. Explore using Pybatfish
 
    Once the service is running, you can
    use [Pybatfish](https://github.com/batfish/pybatfish) to analyze
