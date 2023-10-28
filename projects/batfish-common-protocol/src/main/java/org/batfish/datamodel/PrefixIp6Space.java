@@ -1,14 +1,29 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIp6SpaceVisitor;
 
 @ParametersAreNonnullByDefault
 public class PrefixIp6Space extends Ip6Space {
+  private static final LoadingCache<Prefix6, PrefixIp6Space> CACHE =
+      CacheBuilder.newBuilder()
+          .softValues()
+          .maximumSize(1 << 20)
+          .build(CacheLoader.from(PrefixIp6Space::new));
+
   private static final String PROP_PREFIX = "prefix";
   private final Prefix6 _prefix6;
+
+  @JsonCreator
+  static PrefixIp6Space create(@JsonProperty(PROP_PREFIX) Prefix6 prefix6) {
+    return CACHE.getUnchecked(prefix6);
+  }
 
   private PrefixIp6Space(Prefix6 prefix6) {
     _prefix6 = prefix6;

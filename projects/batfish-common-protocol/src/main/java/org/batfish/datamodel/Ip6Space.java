@@ -53,4 +53,8 @@ public abstract class Ip6Space implements Comparable<Ip6Space>, Serializable {
 
   @Override
   public abstract @Nonnull String toString();
+
+  public boolean containsIp(Ip6 ip6, Map<String, Ip6Space> namedIp6Spaces) {
+    return accept(new Ip6SpaceContainsIp(ip6, namedIp6Spaces));
+  }
 }
