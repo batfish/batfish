@@ -3,23 +3,27 @@
 hostname nxos_bgp_nexthop_route_map
 feature bgp
 !
-route-map defined permit 100
+route-map RM_DEFINED permit 100
 !
 !
-vrf context vundefined
+vrf context VRF_USING_UNDEFINED_NH_RM
 !
-vrf context vnone
+vrf context VRF_USING_NO_NH_RM
 !
 router bgp 1
   address-family ipv4 unicast
-    nexthop route-map defined
-  vrf vundefined
+    ! "default" VRF uses route-map named "RM_DEFINED", defined above
+    nexthop route-map RM_DEFINED
+  vrf VRF_USING_UNDEFINED_NH_RM
    address-family ipv4 unicast
-    nexthop route-map undefined
+   !
+    !  "VRF_USING_UNDEFINED_NH_RM" VRF uses undefined route-map named "RM_UNDEFINED"
+    nexthop route-map RM_UNDEFINED
    !
   !
-  vrf vnone
+  vrf VRF_USING_NO_NH_RM
    address-family ipv4 unicast
+   ! "VRF_USING_NO_NH_RM" VRF does not use a nexthop route-map
    !
   !
 !

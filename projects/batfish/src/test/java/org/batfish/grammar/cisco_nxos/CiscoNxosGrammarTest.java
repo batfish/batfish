@@ -831,18 +831,18 @@ public final class CiscoNxosGrammarTest {
             .get(DEFAULT_VRF_NAME)
             .getIpv4UnicastAddressFamily()
             .getNexthopRouteMap(),
-        equalTo("defined"));
+        equalTo("RM_DEFINED"));
     assertThat(
         vc.getBgpGlobalConfiguration()
             .getVrfs()
-            .get("vundefined")
+            .get("VRF_USING_UNDEFINED_NH_RM")
             .getIpv4UnicastAddressFamily()
             .getNexthopRouteMap(),
-        equalTo("undefined"));
+        equalTo("RM_UNDEFINED"));
     assertThat(
         vc.getBgpGlobalConfiguration()
             .getVrfs()
-            .get("vnone")
+            .get("VRF_USING_NO_NH_RM")
             .getIpv4UnicastAddressFamily()
             .getNexthopRouteMap(),
         nullValue());
@@ -856,12 +856,13 @@ public final class CiscoNxosGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    assertThat(ccae, hasDefinedStructure(filename, ROUTE_MAP, "defined"));
-    assertThat(ccae, hasReferencedStructure(filename, ROUTE_MAP, "defined", BGP_NEXTHOP_ROUTE_MAP));
-
-    assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "undefined"));
+    assertThat(ccae, hasDefinedStructure(filename, ROUTE_MAP, "RM_DEFINED"));
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "undefined", BGP_NEXTHOP_ROUTE_MAP));
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "RM_DEFINED", BGP_NEXTHOP_ROUTE_MAP));
+
+    assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "RM_UNDEFINED"));
+    assertThat(
+        ccae, hasReferencedStructure(filename, ROUTE_MAP, "RM_UNDEFINED", BGP_NEXTHOP_ROUTE_MAP));
   }
 
   @Test
