@@ -98,6 +98,22 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
     _maximumPathsIbgp = maximumPathsIbgp;
   }
 
+  /**
+   * Route-map used to determine whether a BGP RIB route is resolvable, applied against the main
+   * RIB's direct resolvers for the BGP RIB route's next hop.
+   *
+   * <p>See <a
+   * href="https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/unicast/configuration/guide/l3_cli_nxos/l3_advbgp.html">NXOS
+   * documentation</a> (search for {@code nexthop route-map})
+   */
+  public @Nullable String getNexthopRouteMap() {
+    return _nexthopRouteMap;
+  }
+
+  public void setNexthopRouteMap(@Nullable String nexthopRouteMap) {
+    _nexthopRouteMap = nexthopRouteMap;
+  }
+
   /** Return all redistribution policies. */
   public final @Nonnull List<RedistributionPolicy> getRedistributionPolicies() {
     return ImmutableList.copyOf(_redistributionPolicies.values());
@@ -138,6 +154,8 @@ public abstract class BgpVrfIpAddressFamilyConfiguration extends BgpVrfAddressFa
   private int _distanceLocal;
   private int _maximumPathsEbgp;
   private int _maximumPathsIbgp;
+  private @Nullable String _nexthopRouteMap;
+
   private final Map<RoutingProtocolInstance, RedistributionPolicy> _redistributionPolicies;
   private boolean _suppressInactive;
 }

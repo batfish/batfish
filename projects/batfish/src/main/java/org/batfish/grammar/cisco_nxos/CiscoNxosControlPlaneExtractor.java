@@ -3946,12 +3946,15 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_afip_nexthop_route_map(Rb_afip_nexthop_route_mapContext ctx) {
-    todo(ctx);
-    toString(ctx, ctx.mapname)
-        .ifPresent(
-            name ->
-                _c.referenceStructure(
-                    ROUTE_MAP, name, BGP_NEXTHOP_ROUTE_MAP, ctx.getStart().getLine()));
+    todo(ctx); // conversion
+    Optional<String> maybeRouteMapName = toString(ctx, ctx.mapname);
+    if (!maybeRouteMapName.isPresent()) {
+      // already warned
+      return;
+    }
+    String routeMapName = maybeRouteMapName.get();
+    _c.referenceStructure(ROUTE_MAP, routeMapName, BGP_NEXTHOP_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setNexthopRouteMap(routeMapName);
   }
 
   @Override
