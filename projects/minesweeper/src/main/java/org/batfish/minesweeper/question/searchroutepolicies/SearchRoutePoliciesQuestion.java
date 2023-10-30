@@ -90,6 +90,14 @@ public final class SearchRoutePoliciesQuestion extends Question {
     checkArgument(
         action == LineAction.PERMIT || outputConstraints.equals(DEFAULT_ROUTE_CONSTRAINTS),
         "Output route constraints can only be provided when the action is 'permit'");
+    checkArgument(
+        inputConstraints.getAsPath().getRegexConstraints().stream()
+            .allMatch(rc -> rc.getType() == RegexConstraint.RegexType.LITERAL),
+        "AS-path constraints must be AS-path literals or regexes");
+    checkArgument(
+        outputConstraints.getAsPath().getRegexConstraints().stream()
+            .allMatch(rc -> rc.getType() == RegexConstraint.RegexType.LITERAL),
+        "AS-path constraints must be AS-path literals or regexes");
     _direction = direction;
     _nodes = nodes;
     _policies = policies;

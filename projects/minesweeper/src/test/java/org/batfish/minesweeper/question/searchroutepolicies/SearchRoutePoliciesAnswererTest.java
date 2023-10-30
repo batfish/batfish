@@ -578,6 +578,72 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testNamedCommunityConstraints() {
+
+    Configuration baseConfig = _batfish.loadConfigurations(_batfish.getSnapshot()).get(HOSTNAME);
+    baseConfig.setCommunityMatchExprs(
+        ImmutableMap.of(
+            "cme1",
+            new CommunityIs(StandardCommunity.of(40, 33)),
+            "cme2",
+            new CommunityIs(StandardCommunity.of(3, 44))));
+
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(new StaticStatement(Statements.ExitAccept)).build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(
+                        ImmutableList.of(
+                            new RegexConstraint(
+                                "cme1", false, RegexConstraint.RegexType.STRUCTURE_NAME))))
+                .build(),
+            BgpRouteConstraints.builder()
+                .setCommunities(
+                    new RegexConstraints(
+                        ImmutableList.of(
+                            new RegexConstraint(
+                                "cme2", false, RegexConstraint.RegexType.STRUCTURE_NAME))))
+                .build(),
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    BgpRoute inputRoute =
+        BgpRoute.builder()
+            .setNetwork(Prefix.parse("10.0.0.0/8"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setOriginType(OriginType.EGP)
+            .setProtocol(RoutingProtocol.BGP)
+            .setNextHopIp(Ip.parse("0.0.0.1"))
+            .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
+            .setCommunities(
+                ImmutableSet.of(StandardCommunity.of(40, 33), StandardCommunity.of(3, 44)))
+            .build();
+
+    BgpRouteDiffs diff = new BgpRouteDiffs(ImmutableSet.of());
+
+    assertThat(
+        answer.getRows().getData(),
+        Matchers.contains(
+            allOf(
+                hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
+                hasColumn(COL_POLICY_NAME, equalTo(policy.getName()), Schema.STRING),
+                hasColumn(COL_ACTION, equalTo(PERMIT.toString()), Schema.STRING),
+                hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_OUTPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+  }
+
+  @Test
   public void testUnsolvableCommunityConstraint() {
     _policyBuilder.setStatements(
         ImmutableList.of(

@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.Objects;
@@ -20,14 +22,30 @@ public class RegexConstraint {
   private static final String PROP_REGEX = "regex";
   private static final String PROP_NEGATED = "negated";
 
+  private static final String PROP_TYPE = "type";
+
+  public enum RegexType {
+    LITERAL,
+    STRUCTURE_NAME
+  }
+
   private final @Nonnull String _regex;
   private final boolean _negated;
 
+  private final RegexType _type;
+
+  public RegexConstraint(String regex, boolean negated) {
+    this(regex, negated, RegexType.LITERAL);
+  }
+
   @JsonCreator
   public RegexConstraint(
-      @JsonProperty(PROP_REGEX) String regex, @JsonProperty(PROP_NEGATED) boolean negated) {
+      @JsonProperty(PROP_REGEX) String regex,
+      @JsonProperty(PROP_NEGATED) boolean negated,
+      @JsonProperty(PROP_TYPE) @Nullable RegexType type) {
     _regex = regex;
     _negated = negated;
+    _type = firstNonNull(type, RegexType.LITERAL);
   }
 
   /**
@@ -77,6 +95,11 @@ public class RegexConstraint {
     return _negated;
   }
 
+  @JsonProperty(PROP_TYPE)
+  public RegexType getType() {
+    return _type;
+  }
+
   @Override
   public boolean equals(@Nullable Object o) {
     if (this == o) {
@@ -86,11 +109,11 @@ public class RegexConstraint {
       return false;
     }
     RegexConstraint that = (RegexConstraint) o;
-    return _regex.equals(that._regex) && _negated == that._negated;
+    return _regex.equals(that._regex) && _negated == that._negated && _type == that._type;
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex, _negated);
+    return Objects.hash(_regex, _negated, _type);
   }
 }
