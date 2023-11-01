@@ -364,12 +364,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private BDD communityRegexConstraintToBDD(
       RegexConstraint regex, TransferBDD tbdd, BDDRoute route) {
     switch (regex.getType()) {
-      case STRUCTURE_NAME:
-        CommunityMatchExpr cme =
-            tbdd.getConfiguration().getCommunityMatchExprs().get(regex.getRegex());
-        return cme.accept(
-            new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
-
       case REGEX:
         return tbdd.getFactory()
             .orAll(
@@ -381,8 +375,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                     .stream()
                     .map(i -> route.getCommunityAtomicPredicates()[i])
                     .collect(ImmutableSet.toImmutableSet()));
+      case STRUCTURE_NAME:
+        CommunityMatchExpr cme =
+            tbdd.getConfiguration().getCommunityMatchExprs().get(regex.getRegex());
+        return cme.accept(
+            new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
       default:
-        throw new IllegalArgumentException("Unknown regex constraint type: " + regex.getType());
+        throw new UnsupportedOperationException(
+            "Unknown regex constraint type: " + regex.getType());
     }
   }
 
@@ -590,12 +590,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .flatMap(
                     rc -> {
                       String regex = rc.getRegex();
-                      if (rc.getType() == RegexConstraint.RegexType.STRUCTURE_NAME) {
-                        CommunityMatchExpr cme = config.getCommunityMatchExprs().get(regex);
-                        checkArgument(cme != null, "Unknown named community list: " + regex);
-                        return cme.accept(new CommunityMatchExprVarCollector(), config).stream();
-                      } else {
-                        return ImmutableList.of(CommunityVar.from(regex)).stream();
+                      switch (rc.getType()) {
+                        case REGEX:
+                          return ImmutableList.of(CommunityVar.from(regex)).stream();
+                        case STRUCTURE_NAME:
+                          CommunityMatchExpr cme = config.getCommunityMatchExprs().get(regex);
+                          checkArgument(cme != null, "Unknown named community list: " + regex);
+                          return cme.accept(new CommunityMatchExprVarCollector(), config).stream();
+                        default:
+                          throw new UnsupportedOperationException(
+                              "Unknown regex constraint type: " + rc.getType());
                       }
                     })
                 .collect(ImmutableSet.toImmutableSet()),

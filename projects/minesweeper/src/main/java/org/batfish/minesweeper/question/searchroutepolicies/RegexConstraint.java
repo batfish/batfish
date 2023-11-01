@@ -21,7 +21,6 @@ public class RegexConstraint {
 
   private static final String PROP_REGEX = "regex";
   private static final String PROP_NEGATED = "negated";
-
   private static final String PROP_TYPE = "type";
 
   public enum RegexType {
