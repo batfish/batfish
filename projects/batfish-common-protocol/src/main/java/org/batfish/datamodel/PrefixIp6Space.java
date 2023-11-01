@@ -6,6 +6,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIp6SpaceVisitor;
 
@@ -21,11 +22,11 @@ public class PrefixIp6Space extends Ip6Space {
   private final Prefix6 _prefix6;
 
   @JsonCreator
-  static PrefixIp6Space create(@JsonProperty(PROP_PREFIX) Prefix6 prefix6) {
+  private static PrefixIp6Space jsonCreator(@JsonProperty(PROP_PREFIX) @Nullable Prefix6 prefix6) {
     return CACHE.getUnchecked(prefix6);
   }
 
-  private PrefixIp6Space(Prefix6 prefix6) {
+  public PrefixIp6Space(Prefix6 prefix6) {
     _prefix6 = prefix6;
   }
 

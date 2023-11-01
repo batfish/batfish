@@ -39,7 +39,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   private int _prefixLength;
 
-  public Prefix6(Ip6 network, int prefixLength) {
+  private Prefix6(Ip6 network, int prefixLength) {
     _address = network;
     _prefixLength = prefixLength;
   }
@@ -149,9 +149,8 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     return result;
   }
 
-  @Nonnull
-  public Ip6Space toIp6Space() {
-    return PrefixIp6Space.create(this);
+  public @Nonnull Ip6Space toIp6Space() {
+    return new PrefixIp6Space(this);
   }
 
   @Override

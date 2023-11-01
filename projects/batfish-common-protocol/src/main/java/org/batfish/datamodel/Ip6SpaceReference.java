@@ -1,5 +1,6 @@
 package org.batfish.datamodel;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import java.util.Objects;
@@ -8,23 +9,24 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.visitors.GenericIp6SpaceVisitor;
 
 public class Ip6SpaceReference extends Ip6Space {
-  private static final String PROP_DESCRIPTION = "description";
   private static final String PROP_NAME = "name";
+  private static final String PROP_DESCRIPTION = "description";
 
   private final @Nullable String _description;
 
   private final @Nonnull String _name;
 
-  public Ip6SpaceReference(@Nonnull String name) {
-    this(name, null);
+  public Ip6SpaceReference(@Nonnull String name, @Nullable String description) {
+    _name = name;
+    _description = description;
   }
 
   /** A reference to a named {@link Ip6Space} */
-  public Ip6SpaceReference(
+  @JsonCreator
+  private static Ip6SpaceReference jsonCreator(
       @JsonProperty(PROP_NAME) @Nonnull String name,
       @JsonProperty(PROP_DESCRIPTION) @Nullable String description) {
-    _name = name;
-    _description = description;
+    return new Ip6SpaceReference(name, description);
   }
 
   @Override
@@ -43,12 +45,10 @@ public class Ip6SpaceReference extends Ip6Space {
     return _name.equals(rhs._name) && Objects.equals(_description, rhs._description);
   }
 
-  @JsonProperty(PROP_DESCRIPTION)
   public @Nullable String getDescription() {
     return _description;
   }
 
-  @JsonProperty(PROP_NAME)
   public String getName() {
     return _name;
   }
@@ -58,9 +58,8 @@ public class Ip6SpaceReference extends Ip6Space {
     return Objects.hash(_name, _description);
   }
 
-  @Nonnull
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     return MoreObjects.toStringHelper(getClass())
         .omitNullValues()
         .add(PROP_NAME, _name)
