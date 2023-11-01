@@ -21,12 +21,12 @@ public class Ip6SpaceMatchersImpl {
 
     @Override
     public void describeTo(Description description) {
-      description.appendText(String.format("An Ip6Space containing IP: %s", _ip6));
+      description.appendText(String.format("An Ip6Space containing IP6: %s", _ip6));
     }
 
     @Override
     protected boolean matchesSafely(Ip6Space item, Description mismatchDescription) {
-      boolean matches = item.containsIp(_ip6, _namedIp6Spaces);
+      boolean matches = item.containsIp6(_ip6, _namedIp6Spaces);
       if (!matches) {
         mismatchDescription.appendText(String.format("was %s", item));
       }

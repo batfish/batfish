@@ -11,7 +11,7 @@ public class Ip6SpaceMatchers {
   private Ip6SpaceMatchers() {}
 
   /** Provides a matcher that matches if the {@link Ip6Space} contains the specified {@link Ip6}. */
-  public static ContainsIp containsIp(@Nonnull Ip6 ip6) {
+  public static ContainsIp containsIp6(@Nonnull Ip6 ip6) {
     return new ContainsIp(ip6, ImmutableMap.of());
   }
 
