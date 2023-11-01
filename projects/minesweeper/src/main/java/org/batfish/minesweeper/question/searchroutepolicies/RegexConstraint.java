@@ -14,7 +14,9 @@ import org.batfish.common.BatfishException;
  * A class that represents a regular expression constraint for a {@link BgpRouteConstraints} object.
  * These are used for constraints on communities as well as on AS paths. Each regex is optionally
  * negated, meaning that the given route should _not_ have a community/AS-path that matches the
- * regex.
+ * regex. Regex constraints are of two types: regex literals and structure names. Currently,
+ * structure names are only supported for community constraints and must refer to a {@link
+ * org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr} in the configuration.
  */
 @ParametersAreNonnullByDefault
 public class RegexConstraint {
