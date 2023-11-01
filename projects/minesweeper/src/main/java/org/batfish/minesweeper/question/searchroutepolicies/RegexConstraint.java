@@ -25,7 +25,7 @@ public class RegexConstraint {
   private static final String PROP_TYPE = "type";
 
   public enum RegexType {
-    LITERAL,
+    REGEX,
     STRUCTURE_NAME
   }
 
@@ -35,7 +35,7 @@ public class RegexConstraint {
   private final RegexType _type;
 
   public RegexConstraint(String regex, boolean negated) {
-    this(regex, negated, RegexType.LITERAL);
+    this(regex, negated, RegexType.REGEX);
   }
 
   @JsonCreator
@@ -45,7 +45,7 @@ public class RegexConstraint {
       @JsonProperty(PROP_TYPE) @Nullable RegexType type) {
     _regex = regex;
     _negated = negated;
-    _type = firstNonNull(type, RegexType.LITERAL);
+    _type = firstNonNull(type, RegexType.REGEX);
   }
 
   /**

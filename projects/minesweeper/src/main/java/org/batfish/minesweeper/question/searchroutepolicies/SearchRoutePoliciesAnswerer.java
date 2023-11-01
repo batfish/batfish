@@ -370,7 +370,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         return cme.accept(
             new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
 
-      case LITERAL:
+      case REGEX:
         return tbdd.getFactory()
             .orAll(
                 tbdd
