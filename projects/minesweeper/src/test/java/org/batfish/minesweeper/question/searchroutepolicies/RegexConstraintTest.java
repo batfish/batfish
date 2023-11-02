@@ -30,11 +30,19 @@ public class RegexConstraintTest {
     RegexConstraint c2 = RegexConstraint.parse("!30:40");
     RegexConstraint c3 = RegexConstraint.parse("/^40:/");
     RegexConstraint c4 = RegexConstraint.parse("!/^40:/");
+    RegexConstraint c5 = RegexConstraint.parse("NAME123");
+    RegexConstraint c6 = RegexConstraint.parse("!COMM_LIST");
 
     assertThat(c1, equalTo(new RegexConstraint("^30:40$", false)));
     assertThat(c2, equalTo(new RegexConstraint("^30:40$", true)));
     assertThat(c3, equalTo(new RegexConstraint("^40:", false)));
     assertThat(c4, equalTo(new RegexConstraint("^40:", true)));
+    assertThat(
+        c5,
+        equalTo(new RegexConstraint("NAME123", false, RegexConstraint.RegexType.STRUCTURE_NAME)));
+    assertThat(
+        c6,
+        equalTo(new RegexConstraint("COMM_LIST", true, RegexConstraint.RegexType.STRUCTURE_NAME)));
   }
 
   @Test

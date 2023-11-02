@@ -92,11 +92,11 @@ public final class SearchRoutePoliciesQuestion extends Question {
         "Output route constraints can only be provided when the action is 'permit'");
     checkArgument(
         inputConstraints.getAsPath().getRegexConstraints().stream()
-            .allMatch(rc -> rc.getType() == RegexConstraint.RegexType.REGEX),
+            .allMatch(rc -> rc.getRegexType() == RegexConstraint.RegexType.REGEX),
         "AS-path constraints must be AS-path literals or regexes");
     checkArgument(
         outputConstraints.getAsPath().getRegexConstraints().stream()
-            .allMatch(rc -> rc.getType() == RegexConstraint.RegexType.REGEX),
+            .allMatch(rc -> rc.getRegexType() == RegexConstraint.RegexType.REGEX),
         "AS-path constraints must be AS-path literals or regexes");
     _direction = direction;
     _nodes = nodes;

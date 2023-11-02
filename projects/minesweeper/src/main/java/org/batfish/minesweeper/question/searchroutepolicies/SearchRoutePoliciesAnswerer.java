@@ -363,7 +363,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private BDD communityRegexConstraintToBDD(
       RegexConstraint regex, TransferBDD tbdd, BDDRoute route) {
-    switch (regex.getType()) {
+    switch (regex.getRegexType()) {
       case REGEX:
         return tbdd.getFactory()
             .orAll(
@@ -382,7 +382,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
       default:
         throw new UnsupportedOperationException(
-            "Unknown regex constraint type: " + regex.getType());
+            "Unknown regex constraint type: " + regex.getRegexType());
     }
   }
 
@@ -590,7 +590,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .flatMap(
                     rc -> {
                       String regex = rc.getRegex();
-                      switch (rc.getType()) {
+                      switch (rc.getRegexType()) {
                         case REGEX:
                           return ImmutableList.of(CommunityVar.from(regex)).stream();
                         case STRUCTURE_NAME:
@@ -599,7 +599,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                           return cme.accept(new CommunityMatchExprVarCollector(), config).stream();
                         default:
                           throw new UnsupportedOperationException(
-                              "Unknown regex constraint type: " + rc.getType());
+                              "Unknown regex constraint type: " + rc.getRegexType());
                       }
                     })
                 .collect(ImmutableSet.toImmutableSet()),
