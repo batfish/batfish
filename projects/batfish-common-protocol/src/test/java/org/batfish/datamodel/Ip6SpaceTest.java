@@ -7,6 +7,7 @@ import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
@@ -41,16 +42,14 @@ public class Ip6SpaceTest {
 
   @Test
   public void testIp6SpaceJacksonSerialization() throws IOException {
-    Ip6 ip6 = Ip6.parse("1:1:1:1::1");
-    Prefix6 p = new Prefix6(ip6, 64);
-    Ip6Space prefixIp6Space = p.toIp6Space();
-    for (Ip6Space ip6Space : ImmutableList.of(prefixIp6Space)) {
-      String jsonString = BatfishObjectMapper.writePrettyString(ip6Space);
-      Ip6Space deserializedIp6Space =
-          BatfishObjectMapper.mapper().readValue(jsonString, Ip6Space.class);
-
-      /* Ip6Space should be equal to deserialized version */
+    for (Ip6Space ip6Space :
+        ImmutableList.of(
+            Prefix6.parse("1:1:1:1::1/64").toIp6Space(),
+            new Ip6SpaceReference("s", "d"),
+            new Ip6SpaceReference("s", null))) {
+      Ip6Space deserializedIp6Space = BatfishObjectMapper.clone(ip6Space, Ip6Space.class);
       assertThat(ip6Space, equalTo(deserializedIp6Space));
+      assertThat(ip6Space, equalTo(SerializationUtils.clone(ip6Space)));
     }
   }
 }
