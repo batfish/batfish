@@ -22,24 +22,24 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
       Caffeine.newBuilder().maximumSize(1_000_000).build(w -> w);
 
   public static Ip6WildcardSetIp6Space create(
-      @Nonnull Set<Ip6Wildcard> blacklist, @Nonnull Set<Ip6Wildcard> whitelist) {
-    return CACHE.get(new Ip6WildcardSetIp6Space(blacklist, whitelist));
+      @Nonnull Set<Ip6Wildcard> blocklist, @Nonnull Set<Ip6Wildcard> allowlist) {
+    return CACHE.get(new Ip6WildcardSetIp6Space(blocklist, allowlist));
   }
 
   /** A Builder for {@link Ip6WildcardSetIp6Space}. */
   public static class Builder {
 
-    private final ImmutableSet.Builder<Ip6Wildcard> _blacklistBuilder;
+    private final ImmutableSet.Builder<Ip6Wildcard> _blocklistBuilder;
 
-    private final ImmutableSet.Builder<Ip6Wildcard> _whitelistBuilder;
+    private final ImmutableSet.Builder<Ip6Wildcard> _allowlistBuilder;
 
     private Builder() {
-      _blacklistBuilder = ImmutableSet.builder();
-      _whitelistBuilder = ImmutableSet.builder();
+      _blocklistBuilder = ImmutableSet.builder();
+      _allowlistBuilder = ImmutableSet.builder();
     }
 
     public Ip6WildcardSetIp6Space build() {
-      return create(_blacklistBuilder.build(), _whitelistBuilder.build());
+      return create(_blocklistBuilder.build(), _allowlistBuilder.build());
     }
 
     public Ip6WildcardSetIp6Space.Builder excluding(Ip6Wildcard... wildcards) {
@@ -47,7 +47,7 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
     }
 
     public Ip6WildcardSetIp6Space.Builder excluding(Iterable<Ip6Wildcard> wildcards) {
-      _blacklistBuilder.addAll(wildcards);
+      _blocklistBuilder.addAll(wildcards);
       return this;
     }
 
@@ -56,50 +56,50 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
     }
 
     public Ip6WildcardSetIp6Space.Builder including(Iterable<Ip6Wildcard> wildcards) {
-      _whitelistBuilder.addAll(wildcards);
+      _allowlistBuilder.addAll(wildcards);
       return this;
     }
   }
 
   public static final Ip6WildcardSetIp6Space ANY =
       Ip6WildcardSetIp6Space.builder().including(Ip6Wildcard.ANY).build();
-  private static final String PROP_BLACKLIST = "blacklist";
-  private static final String PROP_WHITELIST = "whitelist";
+  private static final String PROP_BLOCKLIST = "blocklist";
+  private static final String PROP_ALLOWLIST = "allowlist";
 
   public static Ip6WildcardSetIp6Space.Builder builder() {
     return new Ip6WildcardSetIp6Space.Builder();
   }
 
-  private final @Nonnull Set<Ip6Wildcard> _blacklist;
+  private final @Nonnull Set<Ip6Wildcard> _blocklist;
 
-  private final @Nonnull Set<Ip6Wildcard> _whitelist;
+  private final @Nonnull Set<Ip6Wildcard> _allowlist;
 
   private Ip6WildcardSetIp6Space(
-      @Nonnull Set<Ip6Wildcard> blacklist, @Nonnull Set<Ip6Wildcard> whitelist) {
-    _blacklist = ImmutableSet.copyOf(blacklist);
-    _whitelist = ImmutableSet.copyOf(whitelist);
+      @Nonnull Set<Ip6Wildcard> blocklist, @Nonnull Set<Ip6Wildcard> allowlist) {
+    _blocklist = ImmutableSet.copyOf(blocklist);
+    _allowlist = ImmutableSet.copyOf(allowlist);
   }
 
   @JsonCreator
   private static Ip6WildcardSetIp6Space jsonCreator(
-      @JsonProperty(PROP_BLACKLIST) Set<Ip6Wildcard> blacklist,
-      @JsonProperty(PROP_WHITELIST) Set<Ip6Wildcard> whitelist) {
+      @JsonProperty(PROP_BLOCKLIST) Set<Ip6Wildcard> blocklist,
+      @JsonProperty(PROP_ALLOWLIST) Set<Ip6Wildcard> allowlist) {
     return create(
-        blacklist == null ? ImmutableSet.of() : ImmutableSet.copyOf(blacklist),
-        whitelist == null ? ImmutableSet.of() : ImmutableSet.copyOf(whitelist));
+        blocklist == null ? ImmutableSet.of() : ImmutableSet.copyOf(blocklist),
+        allowlist == null ? ImmutableSet.of() : ImmutableSet.copyOf(allowlist));
   }
 
   @Override
-  public <R> R accept(GenericIp6SpaceVisitor<R> Ip6SpaceVisitor) {
-    return Ip6SpaceVisitor.visitIp6WildcardSetIp6Space(this);
+  public <R> R accept(GenericIp6SpaceVisitor<R> ip6SpaceVisitor) {
+    return ip6SpaceVisitor.visitIp6WildcardSetIp6Space(this);
   }
 
   @Override
   protected int compareSameClass(Ip6Space o) {
     return Comparator.comparing(
-            Ip6WildcardSetIp6Space::getBlacklist, Comparators.lexicographical(Ordering.natural()))
+            Ip6WildcardSetIp6Space::getBlockList, Comparators.lexicographical(Ordering.natural()))
         .thenComparing(
-            Ip6WildcardSetIp6Space::getWhitelist, Comparators.lexicographical(Ordering.natural()))
+            Ip6WildcardSetIp6Space::getAllowList, Comparators.lexicographical(Ordering.natural()))
         .compare(this, (Ip6WildcardSetIp6Space) o);
   }
 
@@ -107,33 +107,33 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
   protected boolean exprEquals(Object o) {
     Ip6WildcardSetIp6Space rhs = (Ip6WildcardSetIp6Space) o;
     return (_hashCode == rhs._hashCode || _hashCode == 0 || rhs._hashCode == 0)
-        && _blacklist.equals(rhs._blacklist)
-        && _whitelist.equals(rhs._whitelist);
+        && _blocklist.equals(rhs._blocklist)
+        && _allowlist.equals(rhs._allowlist);
   }
 
-  public @Nonnull Set<Ip6Wildcard> getBlacklist() {
-    return _blacklist;
+  public @Nonnull Set<Ip6Wildcard> getBlockList() {
+    return _blocklist;
   }
 
-  @JsonProperty(PROP_BLACKLIST)
-  private @Nonnull SortedSet<Ip6Wildcard> getJsonBlacklist() {
-    return ImmutableSortedSet.copyOf(_blacklist);
+  @JsonProperty(PROP_BLOCKLIST)
+  private @Nonnull SortedSet<Ip6Wildcard> getJsonBlockList() {
+    return ImmutableSortedSet.copyOf(_blocklist);
   }
 
-  public @Nonnull Set<Ip6Wildcard> getWhitelist() {
-    return _whitelist;
+  public @Nonnull Set<Ip6Wildcard> getAllowList() {
+    return _allowlist;
   }
 
-  @JsonProperty(PROP_WHITELIST)
-  private @Nonnull SortedSet<Ip6Wildcard> getJsonWhitelist() {
-    return ImmutableSortedSet.copyOf(_whitelist);
+  @JsonProperty(PROP_ALLOWLIST)
+  private @Nonnull SortedSet<Ip6Wildcard> getJsonAllowList() {
+    return ImmutableSortedSet.copyOf(_allowlist);
   }
 
   @Override
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = 31 * _blacklist.hashCode() + _whitelist.hashCode();
+      h = 31 * _blocklist.hashCode() + _allowlist.hashCode();
       _hashCode = h;
     }
     return h;
@@ -142,8 +142,8 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
   @Override
   public String toString() {
     return MoreObjects.toStringHelper(getClass())
-        .add(PROP_BLACKLIST, _blacklist)
-        .add(PROP_WHITELIST, _whitelist)
+        .add(PROP_BLOCKLIST, _blocklist)
+        .add(PROP_ALLOWLIST, _allowlist)
         .toString();
   }
 
