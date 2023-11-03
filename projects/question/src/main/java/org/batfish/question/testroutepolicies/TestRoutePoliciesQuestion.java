@@ -48,10 +48,10 @@ public final class TestRoutePoliciesQuestion extends Question {
 
   @JsonCreator
   private static TestRoutePoliciesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_DIRECTION) Direction direction,
-      @Nullable @JsonProperty(PROP_INPUT_ROUTES) List<BgpRoute> inputRoute,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_POLICIES) String policies) {
+      @JsonProperty(PROP_DIRECTION) @Nullable Direction direction,
+      @JsonProperty(PROP_INPUT_ROUTES) @Nullable List<BgpRoute> inputRoute,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_POLICIES) @Nullable String policies) {
     checkNotNull(direction, "%s must not be null", PROP_DIRECTION);
     checkNotNull(inputRoute, "%s must not be null", PROP_INPUT_ROUTES);
     return new TestRoutePoliciesQuestion(direction, inputRoute, nodes, policies);
@@ -63,15 +63,13 @@ public final class TestRoutePoliciesQuestion extends Question {
     return false;
   }
 
-  @Nonnull
   @JsonProperty(PROP_DIRECTION)
-  public Direction getDirection() {
+  public @Nonnull Direction getDirection() {
     return _direction;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INPUT_ROUTES)
-  public List<BgpRoute> getInputRoutes() {
+  public @Nonnull List<BgpRoute> getInputRoutes() {
     return _inputRoutes;
   }
 

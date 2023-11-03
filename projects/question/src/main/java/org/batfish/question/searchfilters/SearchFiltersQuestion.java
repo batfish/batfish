@@ -53,13 +53,13 @@ public final class SearchFiltersQuestion extends Question {
 
   @JsonCreator
   private static SearchFiltersQuestion create(
-      @Nullable @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) Boolean complementHeaderSpace,
-      @Nullable @JsonProperty(PROP_FILTERS) String filters,
-      @Nullable @JsonProperty(PROP_GENERATE_EXPLANATIONS) Boolean generateExplanations,
-      @Nullable @JsonProperty(PROP_HEADERS) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_START_LOCATION) String start,
-      @Nullable @JsonProperty(PROP_ACTION) String action) {
+      @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) @Nullable Boolean complementHeaderSpace,
+      @JsonProperty(PROP_FILTERS) @Nullable String filters,
+      @JsonProperty(PROP_GENERATE_EXPLANATIONS) @Nullable Boolean generateExplanations,
+      @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_START_LOCATION) @Nullable String start,
+      @JsonProperty(PROP_ACTION) @Nullable String action) {
     return new SearchFiltersQuestion(
         firstNonNull(complementHeaderSpace, false),
         filters,
@@ -129,9 +129,8 @@ public final class SearchFiltersQuestion extends Question {
     return _complementHeaderSpace;
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTERS)
-  public String getFilters() {
+  public @Nullable String getFilters() {
     return _filters;
   }
 
@@ -150,16 +149,15 @@ public final class SearchFiltersQuestion extends Question {
     return _startLocation;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   FilterSpecifier getFilterSpecifier() {
     return SpecifierFactories.getFilterSpecifierOrDefault(
         _filters, AllFiltersFilterSpecifier.INSTANCE);
   }
 
-  @Nonnull
   @JsonIgnore
-  public SearchFiltersQuery getQuery() {
+  public @Nonnull SearchFiltersQuery getQuery() {
     return _query;
   }
 
@@ -191,8 +189,8 @@ public final class SearchFiltersQuestion extends Question {
     return PacketHeaderConstraintsUtil.toAclLineMatchExpr(_headerConstraints);
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   SearchFiltersParameters toSearchFiltersParameters() {
     return SearchFiltersParameters.builder()
         .setDestinationIpSpaceSpecifier(getDestinationSpecifier())

@@ -21,7 +21,6 @@ import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.AsPathAccessListLine;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginType;
@@ -324,9 +323,10 @@ public class TransferBDD {
                   d ->
                       d instanceof MatchAsPath
                           && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
+        checkForAsPathMatchAfterUpdate(p);
         // collect all as-path regexes, produce a single regex that is their union, and then create
         // the corresponding BDD
-        BDDRoute currRoute = routeForMatching(p.getData());
+        BDDRoute currRoute = routeForMatching(p);
         Set<SymbolicAsPathRegex> asPathRegexes =
             disj.getDisjuncts().stream()
                 .flatMap(
@@ -342,7 +342,7 @@ public class TransferBDD {
                     asPathRegexesToBDD(
                         ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
                         _asPathRegexAtomicPredicates,
-                        routeForMatching(p.getData())))
+                        routeForMatching(p)))
                 .setReturnValueAccepted(true));
       } else {
         List<TransferResult> currResults = new ArrayList<>();
@@ -513,30 +513,25 @@ public class TransferBDD {
       }
       BDD mcPredicate =
           mc.getCommunitySetMatchExpr()
-              .accept(
-                  new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p.getData())));
+              .accept(new CommunitySetMatchExprToBDD(), new Arg(this, routeForMatching(p)));
       finalResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
-      BDD mtBDD =
-          matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p.getData()).getTag());
+      BDD mtBDD = matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchMetric) {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD =
-          matchLongComparison(
-              mm.getComparator(), mm.getMetric(), routeForMatching(p.getData()).getMed());
+          matchLongComparison(mm.getComparator(), mm.getMetric(), routeForMatching(p).getMed());
       finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchClusterListLength) {
       MatchClusterListLength mcll = (MatchClusterListLength) expr;
       BDD mcllBDD =
           matchIntComparison(
-              mcll.getComparator(),
-              mcll.getRhs(),
-              routeForMatching(p.getData()).getClusterListLength());
+              mcll.getComparator(), mcll.getRhs(), routeForMatching(p).getClusterListLength());
       finalResults.add(result.setReturnValueBDD(mcllBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -572,16 +567,18 @@ public class TransferBDD {
 
     } else if (expr instanceof LegacyMatchAsPath) {
       p.debug("MatchAsPath");
+      checkForAsPathMatchAfterUpdate(p);
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
           matchAsPathSetExpr(
-              p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p.getData()));
+              p.indent(), _conf, legacyMatchAsPathNode.getExpr(), routeForMatching(p));
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
+      checkForAsPathMatchAfterUpdate(p);
       MatchAsPath matchAsPath = (MatchAsPath) expr;
-      BDDRoute currRoute = routeForMatching(p.getData());
+      BDDRoute currRoute = routeForMatching(p);
       BDD asPathPredicate =
           asPathRegexesToBDD(
               matchAsPath
@@ -593,11 +590,9 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchSourceVrf) {
       MatchSourceVrf msv = (MatchSourceVrf) expr;
-      BDD sourceVrfPred =
-          itemToBDD(
-              msv.getSourceVrf(),
-              _configAtomicPredicates.getSourceVrfs(),
-              p.getData().getSourceVrfs());
+      // we add 1 to the index since 0 in the BDDDomain is used to represent the absence of a value
+      int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf()) + 1;
+      BDD sourceVrfPred = p.getData().getSourceVrfs().value(index);
       finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
 
     } else if (expr instanceof TrackSucceeded) {
@@ -614,13 +609,15 @@ public class TransferBDD {
         // upon, so we check for that situation here
         throw new UnsupportedOperationException(expr.toString());
       }
-      BDD[] nextHopInterfaces = p.getData().getNextHopInterfaces();
       BDD miPred =
           mi.getInterfaces().stream()
               .map(
-                  nhi ->
-                      itemToBDD(
-                          nhi, _configAtomicPredicates.getNextHopInterfaces(), nextHopInterfaces))
+                  nhi -> {
+                    // we add 1 to the index since 0 in the BDDDomain is used to represent the
+                    // absence of a value
+                    int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi) + 1;
+                    return p.getData().getNextHopInterfaces().value(index);
+                  })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
 
@@ -734,41 +731,30 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
-          /**
-           * These directives are used by the Batfish route simulation to properly handle route
-           * updates that implicitly involve both a "read" and a "write". For example, Batfish
-           * models an additive community set of 40:40 as a write of (InputCommunities U 40:40). But
-           * here InputCommunities should refer not to the communities of the original route, but
-           * rather to the current community set that is being built for the output route.
-           * Otherwise, for example, if two additive community set statements happen in a row then
-           * the effects of the first one will not be preserved. The same issue arises for community
-           * deletions as well as for things like AS-path prepending.
+          /*
+           * These directives are used by the Batfish route simulation to control the handling of
+           * route updates that implicitly involve both a "read" and a "write". For example, Batfish
+           * models an additive community set of 40:40 as a write of (InputCommunities U 40:40). For
+           * some config formats InputCommunities should refer to the communities of the original
+           * route, but for others it should refer to the current community set that reflects prior
+           * updates. To account for the latter semantics, Batfish inserts directives to read from
+           * and write to the intermediate attributes.
            *
-           * <p>To that end, the route simulation introduces a notion of "intermediate" BGP
-           * attributes, which reflect prior updates, and the directives below control
-           * reading/writing to those attributes. For example, to properly account for an additive
-           * community set statement, the route simulation should read from and write to the
-           * intermediate attributes.
-           *
-           * <p>This code, {@link TransferBDD}, models read-write updates properly without need for
-           * the notion of intermediate attributes. For example, the {@link SetCommunitiesVisitor}
-           * produces a set of deltas (e.g., communities that should be set/unset), and the {@link
-           * TransferBDD#updateCommunities(CommunityAPDispositions, TransferParam)} method then
-           * applies these deltas to the (symbolic) community set that is currently being built for
-           * the output route. Because we have no need for a notion of intermediate attributes, we
-           * treat the associated directives as no-ops.
-           *
-           * <p>NOTE: In principle these directives can allow for a wide range of semantics to be
-           * expressed. For example, they could be used to express a form of additive community set
-           * that should read from the original set of input communities but write to the
-           * intermediate ones. If they are ever used for a new purpose like that, then we would
-           * have to update this analysis appropriately. But from discussions it seems more likely
-           * that the notion of intermediate attributes will be reconsidered altogether in the
-           * future.
+           * <p>This code, {@link TransferBDD}, properly handles two common cases: 1) platforms that
+           * never use these directives, so that the original route attributes are always read; and
+           * 2) platforms that use the SetRead... and SetWrite... directives in such a way as to
+           * ensure that they always read from the current set of route attributes, which reflect
+           * all updates made so far by the route map. In principle these directives can allow for a
+           * wider range of semantics to be expressed. For example, it is possible for writing to
+           * intermediate attributes to be turned off at some point, so that later writes are no
+           * longer recorded there (and hence are not seen by later reads). We can handle such
+           * situations by introducing an explicit {@link BDDRoute} to represent the intermediate
+           * BGP attributes.
            */
         case SetReadIntermediateBgpAttributes:
+          curP = curP.setReadIntermediateBgpAttributes(true);
+          return ImmutableList.of(toTransferBDDState(curP, result));
         case SetWriteIntermediateBgpAttributes:
-        case UnsetWriteIntermediateBgpAttributes:
           return ImmutableList.of(toTransferBDDState(curP, result));
 
         default:
@@ -954,11 +940,6 @@ public class TransferBDD {
 
     } else if (stmt instanceof PrependAsPath) {
       curP.debug("PrependAsPath");
-      if (_useOutputAttributes) {
-        // we don't yet properly model the situation where a modified AS-path can be later matched
-        // upon, so we don't allow modifications in that case
-        throw new UnsupportedOperationException(stmt.toString());
-      }
       PrependAsPath pap = (PrependAsPath) stmt;
       prependASPath(pap.getExpr(), curP.getData());
       return ImmutableList.of(toTransferBDDState(curP, result));
@@ -1058,7 +1039,17 @@ public class TransferBDD {
   // Produce a BDD representing conditions under which the route's next-hop address is within a
   // given prefix range.
   private static BDD isRelevantForNextHop(BDDRoute record, PrefixRange range) {
-    return record.getNextHop().toBDD(range.getPrefix());
+    BDD prefixMatch = record.getNextHop().toBDD(range.getPrefix());
+    SubRange r = range.getLengthRange();
+    int lower = r.getStart();
+    int upper = r.getEnd();
+    // the next hop has a prefix length of MAX_PREFIX_LENGTH (32); check that it is in range
+    boolean lenMatch = lower <= Prefix.MAX_PREFIX_LENGTH && Prefix.MAX_PREFIX_LENGTH <= upper;
+    if (lenMatch) {
+      return prefixMatch;
+    } else {
+      return record.getFactory().zero();
+    }
   }
 
   /*
@@ -1086,6 +1077,17 @@ public class TransferBDD {
     }
     // TODO: handle other kinds of AsPathSetExprs
     throw new UnsupportedOperationException(e.toString());
+  }
+
+  // Raise an exception if we are about to match on an as-path that has been previously updated
+  // along this path; the analysis currently does not handle that situation.
+  private void checkForAsPathMatchAfterUpdate(TransferParam p)
+      throws UnsupportedOperationException {
+    if ((_useOutputAttributes || p.getReadIntermediateBgpAtttributes())
+        && !p.getData().getPrependedASes().isEmpty()) {
+      throw new UnsupportedOperationException(
+          "Matching on a modified as-path is not currently supported");
+    }
   }
 
   /* Convert an AS-path access list to a boolean formula represented as a BDD. */
@@ -1272,22 +1274,19 @@ public class TransferBDD {
     route.setPrependedASes(prependedASes);
   }
 
-  // Set the corresponding BDDs of the given community atomic predicates to either 1 or 0,
-  // depending on the value of the boolean parameter.
-  private void addOrRemoveCommunityAPs(IntegerSpace commAPs, TransferParam curP, boolean add) {
-    BDD newCommVal = mkBDD(add);
-    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-    for (int ap : commAPs.enumerate()) {
-      curP.indent().debug("Value: %s", ap);
-      curP.indent().debug("New Value: %s", newCommVal);
-      commAPBDDs[ap] = newCommVal;
-    }
-  }
-
   // Update community atomic predicates based on the given CommunityAPDispositions object
   private void updateCommunities(CommunityAPDispositions dispositions, TransferParam curP) {
-    addOrRemoveCommunityAPs(dispositions.getMustExist(), curP, true);
-    addOrRemoveCommunityAPs(dispositions.getMustNotExist(), curP, false);
+    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
+    BDD[] currAPBDDs = routeForMatching(curP).getCommunityAtomicPredicates();
+    for (int i = 0; i < currAPBDDs.length; i++) {
+      if (dispositions.getMustExist().contains(i)) {
+        commAPBDDs[i] = mkBDD(true);
+      } else if (dispositions.getMustNotExist().contains(i)) {
+        commAPBDDs[i] = mkBDD(false);
+      } else {
+        commAPBDDs[i] = currAPBDDs[i];
+      }
+    }
   }
 
   /**
@@ -1341,8 +1340,10 @@ public class TransferBDD {
   }
 
   // Returns the appropriate route to use for matching on attributes.
-  private BDDRoute routeForMatching(BDDRoute current) {
-    return _useOutputAttributes ? current : _originalRoute;
+  private BDDRoute routeForMatching(TransferParam p) {
+    return _useOutputAttributes || p.getReadIntermediateBgpAtttributes()
+        ? p.getData()
+        : _originalRoute;
   }
 
   /**

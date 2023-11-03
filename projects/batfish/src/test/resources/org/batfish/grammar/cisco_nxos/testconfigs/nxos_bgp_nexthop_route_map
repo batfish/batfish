@@ -1,0 +1,26 @@
+!RANCID-CONTENT-TYPE: cisco-nx
+!
+hostname nxos_bgp_nexthop_route_map
+feature bgp
+!
+route-map RM_DEFINED permit 100
+!
+!
+vrf context VRF_USING_UNDEFINED_NH_RM
+!
+vrf context VRF_USING_NO_NH_RM
+!
+router bgp 1
+  address-family ipv4 unicast
+    nexthop route-map RM_DEFINED
+  vrf VRF_USING_UNDEFINED_NH_RM
+   address-family ipv4 unicast
+   !
+    nexthop route-map RM_UNDEFINED
+   !
+  !
+  vrf VRF_USING_NO_NH_RM
+   address-family ipv4 unicast
+   !
+  !
+!

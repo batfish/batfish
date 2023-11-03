@@ -312,9 +312,8 @@ public final class BgpSessionProperties {
    * Return the set of address family types for which the NLRIs (i.e., routes) can be exchanged over
    * this session
    */
-  @Nonnull
   @JsonProperty(PROP_ADDRESS_FAMILIES)
-  public Set<Type> getAddressFamilies() {
+  public @Nonnull Set<Type> getAddressFamilies() {
     return _addressFamilies;
   }
 

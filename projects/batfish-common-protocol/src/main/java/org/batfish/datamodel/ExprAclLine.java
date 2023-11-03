@@ -154,11 +154,11 @@ public final class ExprAclLine extends AclLine {
 
   @JsonCreator
   private static ExprAclLine jsonCreator(
-      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
-      @Nullable @JsonProperty(PROP_MATCH_CONDITION) AclLineMatchExpr matchCondition,
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement,
-      @Nullable @JsonProperty(PROP_VENDOR_STRUCTURE_ID) VendorStructureId vendorStructureId) {
+      @JsonProperty(PROP_ACTION) @Nullable LineAction action,
+      @JsonProperty(PROP_MATCH_CONDITION) @Nullable AclLineMatchExpr matchCondition,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement,
+      @JsonProperty(PROP_VENDOR_STRUCTURE_ID) @Nullable VendorStructureId vendorStructureId) {
     return new ExprAclLine(
         checkNotNull(action, "%s cannot be null", PROP_ACTION),
         checkNotNull(matchCondition, "%s cannot be null", PROP_MATCH_CONDITION),

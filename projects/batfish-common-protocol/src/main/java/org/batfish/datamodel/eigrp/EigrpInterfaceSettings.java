@@ -44,11 +44,11 @@ public class EigrpInterfaceSettings implements Serializable {
 
   @JsonCreator
   private static EigrpInterfaceSettings create(
-      @Nullable @JsonProperty(PROP_ASN) Long asn,
+      @JsonProperty(PROP_ASN) @Nullable Long asn,
       @JsonProperty(PROP_ENABLED) boolean enabled,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_METRIC) EigrpMetric metric,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
+      @JsonProperty(PROP_METRIC) @Nullable EigrpMetric metric,
       @JsonProperty(PROP_PASSIVE) boolean passive) {
     checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(metric != null, "Missing %s", PROP_METRIC);
@@ -95,18 +95,16 @@ public class EigrpInterfaceSettings implements Serializable {
   /**
    * @return Name of the export policy for this interface if there is any
    */
-  @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
+  public @Nullable String getExportPolicy() {
     return _exportPolicy;
   }
 
   /**
    * @return Name of the import policy for this interface if there is any
    */
-  @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
+  public @Nullable String getImportPolicy() {
     return _importPolicy;
   }
 

@@ -27,7 +27,7 @@ public final class SetEigrpMetric extends Statement {
 
   @JsonCreator
   private static SetEigrpMetric jsonCreator(
-      @Nullable @JsonProperty(PROP_METRIC) EigrpMetricExpr metric) {
+      @JsonProperty(PROP_METRIC) @Nullable EigrpMetricExpr metric) {
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new SetEigrpMetric(metric);
   }

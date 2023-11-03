@@ -33,8 +33,8 @@ public final class NodeInterfacePair implements Serializable, Comparable<NodeInt
 
   @JsonCreator
   private static NodeInterfacePair jsonCreator(
-      @Nullable @JsonProperty(PROP_HOSTNAME) String node,
-      @Nullable @JsonProperty(PROP_INTERFACE) String iface) {
+      @JsonProperty(PROP_HOSTNAME) @Nullable String node,
+      @JsonProperty(PROP_INTERFACE) @Nullable String iface) {
     checkArgument(node != null, "NodeInterfacePair missing %s", PROP_HOSTNAME);
     checkArgument(iface != null, "NodeInterfacePair missing %s", PROP_INTERFACE);
     return of(node, iface);

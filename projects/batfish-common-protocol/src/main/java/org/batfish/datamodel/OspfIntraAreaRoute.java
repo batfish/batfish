@@ -20,12 +20,12 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
   @JsonCreator
   private static OspfIntraAreaRoute jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
-      @Nullable @JsonProperty(PROP_METRIC) Long metric,
-      @Nullable @JsonProperty(PROP_AREA) Long area,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin,
+      @JsonProperty(PROP_METRIC) @Nullable Long metric,
+      @JsonProperty(PROP_AREA) @Nullable Long area,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(nextHopIp != null, "%s must be specified", PROP_NEXT_HOP_IP);
@@ -55,9 +55,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     super(network, nextHop, admin, metric, area, tag, nonForwarding, nonRouting);
   }
 
-  @Nonnull
   @Override
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return RoutingProtocol.OSPF;
   }
 
@@ -69,9 +68,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
 
     private long _area;
 
-    @Nonnull
     @Override
-    public OspfIntraAreaRoute build() {
+    public @Nonnull OspfIntraAreaRoute build() {
       checkArgument(_nextHop != null);
       OspfIntraAreaRoute r =
           new OspfIntraAreaRoute(
@@ -86,9 +84,8 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
       return _cache.intern(r);
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 

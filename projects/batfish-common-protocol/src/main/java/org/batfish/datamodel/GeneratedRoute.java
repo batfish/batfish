@@ -67,9 +67,8 @@ public final class GeneratedRoute extends AbstractRoute
       _originType = OriginType.INCOMPLETE;
     }
 
-    @Nonnull
     @Override
-    public GeneratedRoute build() {
+    public @Nonnull GeneratedRoute build() {
       Prefix network = getNetwork();
       checkArgument(network != null, "Missing %s", PROP_NETWORK);
       return new GeneratedRoute(
@@ -90,21 +89,18 @@ public final class GeneratedRoute extends AbstractRoute
           getNonRouting());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 
-    @Nonnull
     @Override
-    public AsPath getAsPath() {
+    public @Nonnull AsPath getAsPath() {
       return _asPath;
     }
 
-    @Nonnull
     @Override
-    public Builder setAsPath(AsPath asPath) {
+    public @Nonnull Builder setAsPath(AsPath asPath) {
       _asPath = asPath;
       return this;
     }
@@ -114,15 +110,13 @@ public final class GeneratedRoute extends AbstractRoute
       return this;
     }
 
-    @Nonnull
     @Override
-    public CommunitySet getCommunities() {
+    public @Nonnull CommunitySet getCommunities() {
       return _communities;
     }
 
-    @Nonnull
     @Override
-    public Set<Community> getCommunitiesAsSet() {
+    public @Nonnull Set<Community> getCommunitiesAsSet() {
       return _communities.getCommunities();
     }
 
@@ -148,22 +142,19 @@ public final class GeneratedRoute extends AbstractRoute
       return _localPreference;
     }
 
-    @Nonnull
     @Override
-    public Builder setLocalPreference(long localPreference) {
+    public @Nonnull Builder setLocalPreference(long localPreference) {
       _localPreference = localPreference;
       return this;
     }
 
-    @Nonnull
     @Override
-    public OriginType getOriginType() {
+    public @Nonnull OriginType getOriginType() {
       return _originType;
     }
 
-    @Nonnull
     @Override
-    public Builder setOriginType(OriginType originType) {
+    public @Nonnull Builder setOriginType(OriginType originType) {
       _originType = originType;
       return this;
     }
@@ -173,9 +164,8 @@ public final class GeneratedRoute extends AbstractRoute
       return _weight;
     }
 
-    @Nonnull
     @Override
-    public Builder setWeight(int weight) {
+    public @Nonnull Builder setWeight(int weight) {
       _weight = weight;
       return this;
     }
@@ -209,18 +199,18 @@ public final class GeneratedRoute extends AbstractRoute
 
   @JsonCreator
   private static GeneratedRoute jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_AS_PATH) AsPath asPath,
-      @Nullable @JsonProperty(PROP_ATTRIBUTE_POLICY) String attributePolicy,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) CommunitySet communities,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
+      @JsonProperty(PROP_ATTRIBUTE_POLICY) @Nullable String attributePolicy,
+      @JsonProperty(PROP_COMMUNITIES) @Nullable CommunitySet communities,
       @JsonProperty(PROP_DISCARD) boolean discard,
-      @Nullable @JsonProperty(PROP_GENERATION_POLICY) String generationPolicy,
+      @JsonProperty(PROP_GENERATION_POLICY) @Nullable String generationPolicy,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
       @JsonProperty(PROP_METRIC) long metric,
-      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) OriginType originType,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
+      @JsonProperty(PROP_ORIGIN_TYPE) @Nullable OriginType originType,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_WEIGHT) int weight) {
     checkArgument(network != null, "GeneratedRoute missing %s", PROP_NETWORK);
@@ -275,16 +265,14 @@ public final class GeneratedRoute extends AbstractRoute
   }
 
   @JsonProperty(PROP_AS_PATH)
-  @Nonnull
   @Override
-  public AsPath getAsPath() {
+  public @Nonnull AsPath getAsPath() {
     return _asPath;
   }
 
   /** The name of the policy that sets attributes of this route */
-  @Nullable
   @JsonProperty(PROP_ATTRIBUTE_POLICY)
-  public String getAttributePolicy() {
+  public @Nullable String getAttributePolicy() {
     return _attributePolicy;
   }
 
@@ -294,16 +282,14 @@ public final class GeneratedRoute extends AbstractRoute
   }
 
   /** Return the set of all community attributes */
-  @Nonnull
   @Override
-  public final CommunitySet getCommunities() {
+  public final @Nonnull CommunitySet getCommunities() {
     return _communities;
   }
 
   /** Return the set of all community attributes */
-  @Nonnull
   @Override
-  public final Set<Community> getCommunitiesAsSet() {
+  public final @Nonnull Set<Community> getCommunitiesAsSet() {
     return _communities.getCommunities();
   }
 
@@ -314,9 +300,8 @@ public final class GeneratedRoute extends AbstractRoute
   }
 
   /** The name of the policy that will generate this route if another route matches it */
-  @Nullable
   @JsonProperty(PROP_GENERATION_POLICY)
-  public String getGenerationPolicy() {
+  public @Nullable String getGenerationPolicy() {
     return _generationPolicy;
   }
 
@@ -339,9 +324,8 @@ public final class GeneratedRoute extends AbstractRoute
   }
 
   @JsonProperty(PROP_ORIGIN_TYPE)
-  @Nonnull
   @Override
-  public OriginType getOriginType() {
+  public @Nonnull OriginType getOriginType() {
     return _originType;
   }
 
@@ -394,9 +378,8 @@ public final class GeneratedRoute extends AbstractRoute
           .thenComparing(GeneratedRoute::getDiscard)
           .thenComparing(GeneratedRoute::getGenerationPolicy, nullsLast(String::compareTo));
 
-  @Nonnull
   @Override
-  public Builder toBuilder() {
+  public @Nonnull Builder toBuilder() {
     return new Builder()
         // General route properties
         .setNetwork(getNetwork())

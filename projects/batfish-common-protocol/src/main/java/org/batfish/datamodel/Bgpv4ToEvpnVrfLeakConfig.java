@@ -35,16 +35,14 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
   }
 
   /** Name of the source VRF from which to copy routes. The source VRF must have a BGP RIB. */
-  @Nonnull
   @JsonProperty(PROP_IMPORT_FROM_VRF)
-  public String getImportFromVrf() {
+  public @Nonnull String getImportFromVrf() {
     return _importFromVrf;
   }
 
   /** Route distinguisher of the source VRF from which to copy routes. */
-  @Nonnull
   @JsonProperty(PROP_SRC_VRF_ROUTE_DISTINGUISHER)
-  public RouteDistinguisher getSrcVrfRouteDistinguisher() {
+  public @Nonnull RouteDistinguisher getSrcVrfRouteDistinguisher() {
     return _srcVrfRouteDistinguisher;
   }
 
@@ -92,10 +90,10 @@ public final class Bgpv4ToEvpnVrfLeakConfig implements Serializable {
 
   @JsonCreator
   private static Bgpv4ToEvpnVrfLeakConfig create(
-      @Nullable @JsonProperty(PROP_ATTACH_ROUTE_TARGETS)
+      @JsonProperty(PROP_ATTACH_ROUTE_TARGETS) @Nullable
           Iterable<ExtendedCommunity> attachRouteTargets,
-      @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
-      @Nullable @JsonProperty(PROP_SRC_VRF_ROUTE_DISTINGUISHER)
+      @JsonProperty(PROP_IMPORT_FROM_VRF) @Nullable String importFromVrf,
+      @JsonProperty(PROP_SRC_VRF_ROUTE_DISTINGUISHER) @Nullable
           RouteDistinguisher srcVrfRouteDistinguisher) {
     return builder()
         .setAttachRouteTargets(firstNonNull(attachRouteTargets, ImmutableSet.of()))

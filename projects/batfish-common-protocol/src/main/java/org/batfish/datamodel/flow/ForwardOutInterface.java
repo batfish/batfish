@@ -33,8 +33,8 @@ public final class ForwardOutInterface implements SessionAction {
 
   @JsonCreator
   private static ForwardOutInterface jsonCreator(
-      @Nullable @JsonProperty(PROP_NEXT_HOP) NodeInterfacePair nextHop,
-      @Nullable @JsonProperty(PROP_OUTGOING_INTERFACE) String outgoingInterface) {
+      @JsonProperty(PROP_NEXT_HOP) @Nullable NodeInterfacePair nextHop,
+      @JsonProperty(PROP_OUTGOING_INTERFACE) @Nullable String outgoingInterface) {
     checkArgument(
         outgoingInterface != null, "ForwardOutInterface missing %s", PROP_OUTGOING_INTERFACE);
     return new ForwardOutInterface(outgoingInterface, nextHop);

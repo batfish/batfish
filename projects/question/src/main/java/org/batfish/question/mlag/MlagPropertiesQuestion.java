@@ -29,8 +29,8 @@ public final class MlagPropertiesQuestion extends Question {
 
   @JsonCreator
   private static MlagPropertiesQuestion create(
-      @Nullable @JsonProperty(PROP_NODES) String nodeSpecInput,
-      @Nullable @JsonProperty(PROP_MLAG_IDS) String mlagIdSpecInput) {
+      @JsonProperty(PROP_NODES) @Nullable String nodeSpecInput,
+      @JsonProperty(PROP_MLAG_IDS) @Nullable String mlagIdSpecInput) {
     return new MlagPropertiesQuestion(nodeSpecInput, mlagIdSpecInput);
   }
 

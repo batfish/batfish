@@ -112,7 +112,7 @@ public final class SnapshotRuntimeData {
 
   @JsonCreator
   private static SnapshotRuntimeData create(
-      @Nullable @JsonProperty(PROP_RUNTIME_DATA) Map<String, RuntimeData> runtimeData) {
+      @JsonProperty(PROP_RUNTIME_DATA) @Nullable Map<String, RuntimeData> runtimeData) {
     return new SnapshotRuntimeData(firstNonNull(runtimeData, ImmutableMap.of()));
   }
 
@@ -137,9 +137,8 @@ public final class SnapshotRuntimeData {
   }
 
   @JsonIgnore
-  @Nonnull
   @SuppressWarnings("PMD.UnnecessaryCaseChange") // that's what we're asserting
-  public RuntimeData getRuntimeData(String hostname) {
+  public @Nonnull RuntimeData getRuntimeData(String hostname) {
     assert hostname.equals(hostname.toLowerCase());
     return _runtimeData.getOrDefault(hostname, RuntimeData.EMPTY_RUNTIME_DATA);
   }

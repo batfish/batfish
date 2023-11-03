@@ -28,25 +28,23 @@ public final class ParboiledNameSetSpecifier implements NameSetSpecifier {
       _allNames = allNames;
     }
 
-    @Nonnull
     @Override
-    public Set<String> visitNameNameSetAstNode(SingletonNameSetAstNode singletonNameSetAstNode) {
+    public @Nonnull Set<String> visitNameNameSetAstNode(
+        SingletonNameSetAstNode singletonNameSetAstNode) {
       return _allNames.stream()
           .filter(n -> n.equalsIgnoreCase(singletonNameSetAstNode.getName()))
           .collect(ImmutableSet.toImmutableSet());
     }
 
-    @Nonnull
     @Override
-    public Set<String> visitRegexNameSetAstNode(RegexNameSetAstNode regexNameSetAstNode) {
+    public @Nonnull Set<String> visitRegexNameSetAstNode(RegexNameSetAstNode regexNameSetAstNode) {
       return _allNames.stream()
           .filter(n -> regexNameSetAstNode.getPattern().matcher(n).find())
           .collect(ImmutableSet.toImmutableSet());
     }
 
-    @Nonnull
     @Override
-    public Set<String> visitUnionNameSetAstNode(UnionNameSetAstNode unionNameSetAstNode) {
+    public @Nonnull Set<String> visitUnionNameSetAstNode(UnionNameSetAstNode unionNameSetAstNode) {
       return Sets.union(
           unionNameSetAstNode.getLeft().accept(this), unionNameSetAstNode.getRight().accept(this));
     }

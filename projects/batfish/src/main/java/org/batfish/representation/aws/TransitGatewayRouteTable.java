@@ -30,11 +30,11 @@ final class TransitGatewayRouteTable implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGatewayRouteTable create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) String routeTableId,
-      @Nullable @JsonProperty(JSON_KEY_DEFAULT_ASSOCIATION_ROUTE_TABLE)
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String gatewayId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ROUTE_TABLE_ID) @Nullable String routeTableId,
+      @JsonProperty(JSON_KEY_DEFAULT_ASSOCIATION_ROUTE_TABLE) @Nullable
           Boolean defaultAssociationRouteTable,
-      @Nullable @JsonProperty(JSON_KEY_DEFAULT_PROPAGATION_ROUTE_TABLE)
+      @JsonProperty(JSON_KEY_DEFAULT_PROPAGATION_ROUTE_TABLE) @Nullable
           Boolean defaultPropagationRouteTable) {
     checkArgument(gatewayId != null, "Gateway id cannot be null for transit gateway route table");
     checkArgument(

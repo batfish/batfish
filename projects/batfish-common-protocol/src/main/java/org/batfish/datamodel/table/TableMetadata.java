@@ -72,9 +72,9 @@ public class TableMetadata {
 
   @JsonCreator
   private static TableMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_COLUMN_METADATA) List<ColumnMetadata> columnMetadata,
-      @Nullable @JsonProperty(PROP_DISPLAY_HINTS) DisplayHints displayHints,
-      @Nullable @JsonProperty(PROP_TEXT_DESC) String textDesc) {
+      @JsonProperty(PROP_COLUMN_METADATA) @Nullable List<ColumnMetadata> columnMetadata,
+      @JsonProperty(PROP_DISPLAY_HINTS) @Nullable DisplayHints displayHints,
+      @JsonProperty(PROP_TEXT_DESC) @Nullable String textDesc) {
     return new TableMetadata(
         columnMetadata,
         textDesc == null && displayHints != null ? displayHints.getTextDesc() : textDesc);
@@ -100,15 +100,13 @@ public class TableMetadata {
         && Objects.equals(_textDesc, ((TableMetadata) o)._textDesc);
   }
 
-  @Nonnull
   @JsonProperty(PROP_COLUMN_METADATA)
-  public List<ColumnMetadata> getColumnMetadata() {
+  public @Nonnull List<ColumnMetadata> getColumnMetadata() {
     return _columnMetadata;
   }
 
-  @Nonnull
   @JsonProperty(PROP_TEXT_DESC)
-  public String getTextDesc() {
+  public @Nonnull String getTextDesc() {
     return _textDesc;
   }
 

@@ -137,9 +137,8 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   /** The authentication setting to be used for this neighbor */
-  @Nullable
   @JsonProperty(PROP_AUTHENTICATION_SETTINGS)
-  public BgpAuthenticationSettings getAuthenticationSettings() {
+  public @Nullable BgpAuthenticationSettings getAuthenticationSettings() {
     return _authenticationSettings;
   }
 
@@ -159,9 +158,8 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   /** Confederation AS number. Only present if the peer is inside a BGP confederation */
-  @Nullable
   @JsonProperty(PROP_CONFEDERATION_AS)
-  public Long getConfederationAsn() {
+  public @Nullable Long getConfederationAsn() {
     return _confederationAsn;
   }
 
@@ -193,25 +191,22 @@ public abstract class BgpPeerConfig implements Serializable {
   }
 
   /** Generated routes specific to this peer not otherwise imported into any of this node's RIBs */
-  @Nonnull
   @JsonProperty(PROP_GENERATED_ROUTES)
-  public Set<GeneratedRoute> getGeneratedRoutes() {
+  public @Nonnull Set<GeneratedRoute> getGeneratedRoutes() {
     return _generatedRoutes;
   }
 
   /**
    * Name of a group in the original vendor-specific configuration to which this peer is assigned
    */
-  @Nullable
   @JsonProperty(PROP_GROUP)
-  public String getGroup() {
+  public @Nullable String getGroup() {
     return _group;
   }
 
   /** The local autonomous system of this peering */
-  @Nullable
   @JsonProperty(PROP_LOCAL_AS)
-  public Long getLocalAs() {
+  public @Nullable Long getLocalAs() {
     return _localAs;
   }
 

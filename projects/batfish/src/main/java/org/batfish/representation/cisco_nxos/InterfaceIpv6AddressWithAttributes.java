@@ -1,6 +1,7 @@
 package org.batfish.representation.cisco_nxos;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
+import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
@@ -17,6 +18,14 @@ public final class InterfaceIpv6AddressWithAttributes implements Serializable {
   public InterfaceIpv6AddressWithAttributes(Ip6 address6, int prefixLength) {
     _address6 = address6;
     _prefixLength = prefixLength;
+  }
+
+  public static @Nonnull InterfaceIpv6AddressWithAttributes parse(String address) {
+    String[] parts = address.split("/");
+    checkArgument(parts.length == 2, "Invalid Prefix6 string '%s'", address);
+    Ip6 address6 = Ip6.parse(parts[0]);
+    int prefixLength = Integer.parseInt(parts[1]);
+    return new InterfaceIpv6AddressWithAttributes(address6, prefixLength);
   }
 
   public @Nonnull Ip6 getAddress6() {

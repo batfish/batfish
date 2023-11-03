@@ -6528,21 +6528,18 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     return _configuration.canonicalizeInterfaceName(getFullText(ctx));
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 
@@ -9049,9 +9046,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     todo(ctx);
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

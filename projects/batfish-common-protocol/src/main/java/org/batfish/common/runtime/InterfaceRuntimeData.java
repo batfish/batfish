@@ -63,10 +63,10 @@ public final class InterfaceRuntimeData {
   @JsonCreator
   @VisibleForTesting
   InterfaceRuntimeData(
-      @Nullable @JsonProperty(PROP_ADDRESS) ConcreteInterfaceAddress address,
-      @Nullable @JsonProperty(PROP_BANDWIDTH) Double bandwidth,
-      @Nullable @JsonProperty(PROP_LINE_UP) Boolean lineUp,
-      @Nullable @JsonProperty(PROP_SPEED) Double speed) {
+      @JsonProperty(PROP_ADDRESS) @Nullable ConcreteInterfaceAddress address,
+      @JsonProperty(PROP_BANDWIDTH) @Nullable Double bandwidth,
+      @JsonProperty(PROP_LINE_UP) @Nullable Boolean lineUp,
+      @JsonProperty(PROP_SPEED) @Nullable Double speed) {
     _address = address;
     _bandwidth = bandwidth;
     _lineUp = lineUp;

@@ -132,27 +132,23 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
     return _configuration;
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 

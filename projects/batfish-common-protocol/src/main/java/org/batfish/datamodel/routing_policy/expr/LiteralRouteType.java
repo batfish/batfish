@@ -16,7 +16,7 @@ public final class LiteralRouteType extends RouteTypeExpr {
   private @Nonnull RouteType _type;
 
   @JsonCreator
-  private static LiteralRouteType jsonCreator(@Nullable @JsonProperty(PROP_TYPE) RouteType type) {
+  private static LiteralRouteType jsonCreator(@JsonProperty(PROP_TYPE) @Nullable RouteType type) {
     checkArgument(type != null, "%s must be provided", PROP_TYPE);
     return new LiteralRouteType(type);
   }

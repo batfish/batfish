@@ -46,9 +46,9 @@ public final class LocalRoute extends AbstractRoute {
   @JsonCreator
   @SuppressWarnings("unused")
   private static LocalRoute create(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_SOURCE_PREFIX_LENGTH) int sourcePrefixLength,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
       @JsonProperty(PROP_TAG) long tag) {
@@ -78,9 +78,8 @@ public final class LocalRoute extends AbstractRoute {
 
     private @Nullable Integer _sourcePrefixLength;
 
-    @Nonnull
     @Override
-    public LocalRoute build() {
+    public @Nonnull LocalRoute build() {
       checkArgument(getNetwork() != null, "LocalRoute missing %s", PROP_NETWORK);
       checkArgument(
           _sourcePrefixLength != null, "LocalRoute missing %s", PROP_SOURCE_PREFIX_LENGTH);
@@ -88,9 +87,8 @@ public final class LocalRoute extends AbstractRoute {
       return new LocalRoute(getNetwork(), _nextHop, _sourcePrefixLength, getAdmin(), getTag());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 

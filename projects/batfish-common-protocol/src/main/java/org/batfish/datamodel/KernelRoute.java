@@ -38,16 +38,14 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   /** Builder for {@link KernelRoute} */
   public static final class Builder extends AbstractRouteBuilder<Builder, KernelRoute> {
 
-    @Nonnull
     @Override
-    public KernelRoute build() {
+    public @Nonnull KernelRoute build() {
       return new KernelRoute(
           getNetwork(), getAdmin(), getTag(), _requiredOwnedIp, getNonForwarding());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 
@@ -70,7 +68,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   @JsonCreator
   @SuppressWarnings("unused")
   private static @Nonnull KernelRoute create(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_ADMINISTRATIVE_COST) int adminCost,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,

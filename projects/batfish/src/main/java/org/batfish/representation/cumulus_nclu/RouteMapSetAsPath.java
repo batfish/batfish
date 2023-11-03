@@ -23,9 +23,9 @@ public class RouteMapSetAsPath implements RouteMapSet {
     _asns = asns;
   }
 
-  @Nonnull
   @Override
-  public Stream<Statement> toStatements(Configuration c, CumulusNcluConfiguration vc, Warnings w) {
+  public @Nonnull Stream<Statement> toStatements(
+      Configuration c, CumulusNcluConfiguration vc, Warnings w) {
     List<AsExpr> asExprs =
         _asns.stream().map(ExplicitAs::new).collect(ImmutableList.toImmutableList());
     return Stream.of(new PrependAsPath(new LiteralAsList(asExprs)));

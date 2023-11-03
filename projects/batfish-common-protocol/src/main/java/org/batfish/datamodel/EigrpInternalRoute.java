@@ -33,14 +33,14 @@ public class EigrpInternalRoute extends EigrpRoute {
 
   @JsonCreator
   private static EigrpInternalRoute create(
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
-      @Nullable @JsonProperty(PROP_PROCESS_ASN) Long processAsn,
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_EIGRP_METRIC) EigrpMetric metric,
-      @Nullable @JsonProperty(PROP_EIGRP_METRIC_VERSION) EigrpMetricVersion metricVersion,
-      @Nullable @JsonProperty(PROP_TAG) Long tag) {
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin,
+      @JsonProperty(PROP_PROCESS_ASN) @Nullable Long processAsn,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_EIGRP_METRIC) @Nullable EigrpMetric metric,
+      @JsonProperty(PROP_EIGRP_METRIC_VERSION) @Nullable EigrpMetricVersion metricVersion,
+      @JsonProperty(PROP_TAG) @Nullable Long tag) {
     checkArgument(admin != null, "EIGRP route: missing %s", PROP_ADMINISTRATIVE_COST);
     checkArgument(metric != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC);
     checkArgument(metricVersion != null, "EIGRP route: missing %s", PROP_EIGRP_METRIC_VERSION);
@@ -100,9 +100,8 @@ public class EigrpInternalRoute extends EigrpRoute {
           getNonRouting());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
   }

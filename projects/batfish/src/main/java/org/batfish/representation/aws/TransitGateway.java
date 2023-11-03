@@ -83,16 +83,16 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     //    },
     @JsonCreator
     private static TransitGatewayOptions create(
-        @Nullable @JsonProperty(JSON_KEY_AMAZON_SIDE_ASN) Long amazonSideAsn,
-        @Nullable @JsonProperty(JSON_KEY_DEFAULT_ROUTE_TABLE_ASSOCIATION)
+        @JsonProperty(JSON_KEY_AMAZON_SIDE_ASN) @Nullable Long amazonSideAsn,
+        @JsonProperty(JSON_KEY_DEFAULT_ROUTE_TABLE_ASSOCIATION) @Nullable
             String defaultRouteTableAssociation,
-        @Nullable @JsonProperty(JSON_KEY_ASSOCIATION_DEFAULT_ROUTE_TABLE_ID)
+        @JsonProperty(JSON_KEY_ASSOCIATION_DEFAULT_ROUTE_TABLE_ID) @Nullable
             String associationDefaultRouteTableId,
-        @Nullable @JsonProperty(JSON_KEY_DEFAULT_ROUTE_TABLE_PROPAGATION)
+        @JsonProperty(JSON_KEY_DEFAULT_ROUTE_TABLE_PROPAGATION) @Nullable
             String defaultRouteTablePropagation,
-        @Nullable @JsonProperty(JSON_KEY_PROPAGATION_DEFAULT_ROUTE_TABLE_ID)
+        @JsonProperty(JSON_KEY_PROPAGATION_DEFAULT_ROUTE_TABLE_ID) @Nullable
             String propagationDefaultRouteTableId,
-        @Nullable @JsonProperty(JSON_KEY_VPN_ECMP_SUPPORT) String vpcEcmpSupport) {
+        @JsonProperty(JSON_KEY_VPN_ECMP_SUPPORT) @Nullable String vpcEcmpSupport) {
       checkArgument(amazonSideAsn != null, "Amazon side ASN cannot be null for a transit gateway");
       checkArgument(
           defaultRouteTableAssociation != null,
@@ -218,10 +218,10 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGateway create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_OPTIONS) TransitGatewayOptions options,
-      @Nullable @JsonProperty(JSON_KEY_OWNER_ID) String ownerId,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String gatewayId,
+      @JsonProperty(JSON_KEY_OPTIONS) @Nullable TransitGatewayOptions options,
+      @JsonProperty(JSON_KEY_OWNER_ID) @Nullable String ownerId,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags) {
     checkArgument(gatewayId != null, "Transit Gateway Id cannot be null");
     checkArgument(options != null, "Transit Gateway Options cannot be null");
     checkArgument(ownerId != null, "Transit Gateway owner ID cannot be null");

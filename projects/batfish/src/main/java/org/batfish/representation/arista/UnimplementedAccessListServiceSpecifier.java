@@ -13,9 +13,8 @@ public final class UnimplementedAccessListServiceSpecifier implements AccessList
   public static final UnimplementedAccessListServiceSpecifier INSTANCE =
       new UnimplementedAccessListServiceSpecifier();
 
-  @Nonnull
   @Override
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public @Nonnull AclLineMatchExpr toAclLineMatchExpr() {
     return FalseExpr.INSTANCE;
   }
 

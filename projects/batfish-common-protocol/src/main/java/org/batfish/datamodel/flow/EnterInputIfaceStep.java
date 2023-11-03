@@ -108,8 +108,8 @@ public final class EnterInputIfaceStep extends Step<EnterInputIfaceStepDetail> {
 
   @JsonCreator
   private static EnterInputIfaceStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) EnterInputIfaceStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable EnterInputIfaceStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new EnterInputIfaceStep(detail, action);

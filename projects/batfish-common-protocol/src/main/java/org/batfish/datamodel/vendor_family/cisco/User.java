@@ -15,7 +15,7 @@ public class User extends ComparableStructure<String> {
   private @Nullable String _role;
 
   @JsonCreator
-  public User(@Nullable @JsonProperty(PROP_NAME) String name) {
+  public User(@JsonProperty(PROP_NAME) @Nullable String name) {
     super(name);
   }
 

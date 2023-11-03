@@ -23,7 +23,7 @@ public class FileLines {
   @JsonCreator
   public FileLines(
       @JsonProperty(PROP_FILENAME) String filename,
-      @Nullable @JsonProperty(PROP_LINES) SortedSet<Integer> lines) {
+      @JsonProperty(PROP_LINES) @Nullable SortedSet<Integer> lines) {
     _filename = filename;
     _lines = firstNonNull(lines, ImmutableSortedSet.of());
   }

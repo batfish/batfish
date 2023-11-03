@@ -42,10 +42,10 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
 
   @JsonCreator
   private static EigrpNeighborConfigId create(
-      @Nullable @JsonProperty(PROP_ASN) Long asn,
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
-      @Nullable @JsonProperty(PROP_INTERFACE) String iface,
-      @Nullable @JsonProperty(PROP_VRF) String vrf) {
+      @JsonProperty(PROP_ASN) @Nullable Long asn,
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_INTERFACE) @Nullable String iface,
+      @JsonProperty(PROP_VRF) @Nullable String vrf) {
     checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(hostname != null, "Missing %s", PROP_HOSTNAME);
     checkArgument(iface != null, "Missing %s", PROP_INTERFACE);
@@ -91,39 +91,33 @@ public class EigrpNeighborConfigId implements Serializable, Comparable<EigrpNeig
     return _asn;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACE)
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public String getVrf() {
+  public @Nonnull String getVrf() {
     return _vrfName;
   }
 
-  @Nonnull
   @JsonIgnore
-  public Interface getInterface(NetworkConfigurations nc) {
+  public @Nonnull Interface getInterface(NetworkConfigurations nc) {
     return nc.getInterface(_hostname, _interfaceName).get();
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeInterfacePair getNodeInterfacePair() {
+  public @Nonnull NodeInterfacePair getNodeInterfacePair() {
     return NodeInterfacePair.of(getHostname(), getInterfaceName());
   }
 
-  @Nonnull
   @JsonIgnore
-  public EigrpInterfaceSettings getInterfaceSettings(NetworkConfigurations nc) {
+  public @Nonnull EigrpInterfaceSettings getInterfaceSettings(NetworkConfigurations nc) {
     return requireNonNull(getInterface(nc).getEigrp());
   }
 

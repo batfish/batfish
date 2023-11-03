@@ -79,15 +79,13 @@ public final class OspfProcessConfigurationQuestion extends Question {
     return _nodeSpecifier;
   }
 
-  @Nullable
   @JsonProperty(PROP_PROPERTIES)
-  public String getProperties() {
+  public @Nullable String getProperties() {
     return _properties;
   }
 
-  @Nonnull
   @JsonIgnore
-  public OspfProcessPropertySpecifier getPropertySpecifier() {
+  public @Nonnull OspfProcessPropertySpecifier getPropertySpecifier() {
     return _propertySpecifier;
   }
 

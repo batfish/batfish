@@ -74,9 +74,8 @@ public class IBatfishTestAdapter implements IBatfish {
       _batfish = batfish;
     }
 
-    @Nonnull
     @Override
-    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+    public @Nonnull IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
       return new TestIpOwners(snapshot);
     }
 
@@ -85,9 +84,8 @@ public class IBatfishTestAdapter implements IBatfish {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
+    public @Nonnull TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
@@ -96,21 +94,18 @@ public class IBatfishTestAdapter implements IBatfish {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
+    public @Nonnull L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
@@ -207,9 +202,9 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key) {
+  public @Nonnull InputStream getSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key) {
     throw new UnsupportedOperationException();
   }
 
@@ -260,9 +255,8 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public TopologyProvider getTopologyProvider() {
+  public @Nonnull TopologyProvider getTopologyProvider() {
     return new TopologyProviderTestAdapter(this);
   }
 
@@ -333,9 +327,8 @@ public class IBatfishTestAdapter implements IBatfish {
     throw new UnsupportedOperationException();
   }
 
-  @Nullable
   @Override
-  public String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
+  public @Nullable String readExternalBgpAnnouncementsFile(NetworkSnapshot snapshot) {
     throw new UnsupportedOperationException();
   }
 

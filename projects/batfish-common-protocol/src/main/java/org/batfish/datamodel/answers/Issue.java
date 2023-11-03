@@ -49,15 +49,13 @@ public class Issue {
       _minor = minor;
     }
 
-    @Nonnull
     @JsonProperty(PROP_MAJOR)
-    public String getMajor() {
+    public @Nonnull String getMajor() {
       return _major;
     }
 
-    @Nonnull
     @JsonProperty(PROP_MINOR)
-    public String getMinor() {
+    public @Nonnull String getMinor() {
       return _minor;
     }
 
@@ -148,9 +146,8 @@ public class Issue {
     return _severity;
   }
 
-  @Nonnull
   @JsonProperty(PROP_TYPE)
-  public Type getType() {
+  public @Nonnull Type getType() {
     return _type;
   }
 

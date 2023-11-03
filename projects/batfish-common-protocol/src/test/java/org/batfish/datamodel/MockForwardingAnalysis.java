@@ -20,9 +20,8 @@ public class MockForwardingAnalysis implements ForwardingAnalysis {
     return _arpReplies;
   }
 
-  @Nonnull
   @Override
-  public Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
+  public @Nonnull Map<String, Map<String, VrfForwardingBehavior>> getVrfForwardingBehavior() {
     return _vrfForwardingBehavior;
   }
 

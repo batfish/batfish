@@ -166,7 +166,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static VpnRoute create(
-        @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock) {
+        @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) @Nullable Prefix destinationCidrBlock) {
       checkArgument(
           destinationCidrBlock != null, "Destination CIDR block cannot be null in VpnRoute");
       return new VpnRoute(destinationCidrBlock);
@@ -190,7 +190,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Options create(
-        @Nullable @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) Boolean staticRoutesOnly) {
+        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
       return new Options(firstNonNull(staticRoutesOnly, false));
     }
 
@@ -230,14 +230,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static VpnConnection create(
-      @Nullable @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) String vpnConnectionId,
-      @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) String customerGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) String cgwConfiguration,
-      @Nullable @JsonProperty(JSON_KEY_ROUTES) List<VpnRoute> routes,
-      @Nullable @JsonProperty(JSON_KEY_VGW_TELEMETRY) List<VgwTelemetry> vgwTelemetrys,
-      @Nullable @JsonProperty(JSON_KEY_OPTIONS) Options options) {
+      @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
+      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) @Nullable String cgwConfiguration,
+      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<VpnRoute> routes,
+      @JsonProperty(JSON_KEY_VGW_TELEMETRY) @Nullable List<VgwTelemetry> vgwTelemetrys,
+      @JsonProperty(JSON_KEY_OPTIONS) @Nullable Options options) {
     checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
     checkArgument(
         customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");

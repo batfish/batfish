@@ -54,9 +54,8 @@ public enum NamedApplication {
     _application = application;
   }
 
-  @Nonnull
   @JsonValue
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -64,9 +63,8 @@ public enum NamedApplication {
     return _application;
   }
 
-  @Nonnull
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     return getName();
   }
 }

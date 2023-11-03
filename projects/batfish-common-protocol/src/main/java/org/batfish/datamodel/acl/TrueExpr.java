@@ -57,7 +57,7 @@ public class TrueExpr extends AclLineMatchExpr {
 
   @JsonCreator
   private static @Nonnull TrueExpr jsonCreator(
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     return new TrueExpr(traceElement);
   }
 }

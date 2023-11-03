@@ -21,12 +21,12 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
 
   @JsonCreator
   private static OspfInternalSummaryRoute jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
-      @Nullable @JsonProperty(PROP_METRIC) Long metric,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_AREA) Long area,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin,
+      @JsonProperty(PROP_METRIC) @Nullable Long metric,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_AREA) @Nullable Long area,
       @JsonProperty(PROP_TAG) long tag) {
     assert NextHop.legacyConverter(nextHopInterface, nextHopIp).equals(NextHopDiscard.instance());
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
@@ -40,9 +40,8 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
     super(network, NextHopDiscard.instance(), admin, metric, area, tag, false, false);
   }
 
-  @Nonnull
   @Override
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return RoutingProtocol.OSPF_IS;
   }
 
@@ -55,17 +54,15 @@ public class OspfInternalSummaryRoute extends OspfInternalRoute {
 
     private long _area;
 
-    @Nonnull
     @Override
-    public OspfInternalSummaryRoute build() {
+    public @Nonnull OspfInternalSummaryRoute build() {
       OspfInternalSummaryRoute r =
           new OspfInternalSummaryRoute(getNetwork(), getAdmin(), getMetric(), _area, getTag());
       return _cache.intern(r);
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 

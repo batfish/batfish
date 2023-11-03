@@ -158,9 +158,8 @@ public final class BgpUnnumberedPeerConfig extends BgpPeerConfig {
   }
 
   /** Returns the interface on which a peering may occur. */
-  @Nonnull
   @JsonProperty(PROP_PEER_INTERFACE)
-  public String getPeerInterface() {
+  public @Nonnull String getPeerInterface() {
     return _peerInterface;
   }
 

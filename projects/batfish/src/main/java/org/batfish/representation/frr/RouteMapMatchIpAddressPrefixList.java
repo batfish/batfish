@@ -23,9 +23,8 @@ public final class RouteMapMatchIpAddressPrefixList implements RouteMapMatch {
     _names = ImmutableList.copyOf(names);
   }
 
-  @Nonnull
   @Override
-  public BooleanExpr toBooleanExpr(Configuration c, FrrConfiguration vc, Warnings w) {
+  public @Nonnull BooleanExpr toBooleanExpr(Configuration c, FrrConfiguration vc, Warnings w) {
     return new Disjunction(
         _names.stream()
             .filter(vc.getIpPrefixLists()::containsKey)

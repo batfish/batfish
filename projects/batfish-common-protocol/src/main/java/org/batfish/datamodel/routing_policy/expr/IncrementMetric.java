@@ -17,7 +17,7 @@ public final class IncrementMetric extends LongExpr {
   private @Nonnull long _addend;
 
   @JsonCreator
-  private static IncrementMetric jsonCreator(@Nullable @JsonProperty(PROP_ADDEND) Long addend) {
+  private static IncrementMetric jsonCreator(@JsonProperty(PROP_ADDEND) @Nullable Long addend) {
     checkArgument(addend != null, "%s must be provided", PROP_ADDEND);
     return new IncrementMetric(addend);
   }

@@ -105,7 +105,7 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       _incomingInternalRoutes;
 
   /** Incoming external route messages into this router from each EIGRP adjacency */
-  @Nonnull @VisibleForTesting
+  @VisibleForTesting @Nonnull
   SortedMap<EigrpEdge, Queue<RouteAdvertisement<EigrpExternalRoute>>> _incomingExternalRoutes;
 
   /** Current known EIGRP topology */
@@ -188,9 +188,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     _changeSet.from(importRibDelta(_rib, externalDelta));
   }
 
-  @Nonnull
   @Override
-  public RibDelta<EigrpRoute> getUpdatesForMainRib() {
+  public @Nonnull RibDelta<EigrpRoute> getUpdatesForMainRib() {
     return _changeSet.build();
   }
 
@@ -395,8 +394,8 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     }
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Optional<EigrpExternalRoute> transformAndFilterExternalRouteFromNeighbor(
       EigrpExternalRoute route,
       EigrpMetric connectingIntfMetric,

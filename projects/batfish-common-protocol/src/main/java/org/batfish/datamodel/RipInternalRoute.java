@@ -17,11 +17,11 @@ public class RipInternalRoute extends RipRoute {
 
   @JsonCreator
   private static RipInternalRoute create(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
-      @Nullable @JsonProperty(PROP_METRIC) long metric,
-      @Nullable @JsonProperty(PROP_TAG) long tag) {
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable int admin,
+      @JsonProperty(PROP_METRIC) @Nullable long metric,
+      @JsonProperty(PROP_TAG) @Nullable long tag) {
     checkArgument(network != null);
     checkArgument(nextHopIp != null);
     return new RipInternalRoute(network, NextHopIp.of(nextHopIp), admin, metric, tag);
@@ -50,15 +50,13 @@ public class RipInternalRoute extends RipRoute {
 
     private Builder() {}
 
-    @Nonnull
     @Override
-    public RipInternalRoute build() {
+    public @Nonnull RipInternalRoute build() {
       return new RipInternalRoute(getNetwork(), _nextHop, getAdmin(), getMetric(), getTag());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
   }

@@ -605,9 +605,8 @@ public class BgpSessionCompatibilityAnswererTest {
         super(bf);
       }
 
-      @Nonnull
       @Override
-      public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
+      public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot snapshot) {
         return GlobalBroadcastNoPointToPoint.instance();
       }
     }

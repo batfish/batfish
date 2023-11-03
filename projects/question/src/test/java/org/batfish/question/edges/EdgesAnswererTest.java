@@ -975,57 +975,48 @@ public class EdgesAnswererTest {
   private static final class MockTopologyProvider implements TopologyProvider {
     private Layer1Topologies _layer1Topologies = null;
 
-    @Nonnull
     @Override
-    public BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
+    public @Nonnull BgpTopology getBgpTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull IpsecTopology getInitialIpsecTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Topology getInitialLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
+    public @Nonnull L3Adjacencies getInitialL3Adjacencies(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getInitialOspfTopology(@Nonnull NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
+    public @Nonnull VxlanTopology getInitialVxlanTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
+    public @Nonnull IpOwners getInitialIpOwners(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Topology getLayer3Topology(NetworkSnapshot snapshot) {
+    public @Nonnull Topology getLayer3Topology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Layer1Topologies getLayer1Topologies(NetworkSnapshot networkSnapshot) {
       return _layer1Topologies;
     }
 
@@ -1033,39 +1024,34 @@ public class EdgesAnswererTest {
       _layer1Topologies = layer1Topologies;
     }
 
-    @Nonnull
     @Override
-    public L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
+    public @Nonnull L3Adjacencies getL3Adjacencies(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull OspfTopology getOspfTopology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public Optional<Layer1Topology> getRawLayer1PhysicalTopology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Optional<Layer1Topology> getRawLayer1PhysicalTopology(
+        NetworkSnapshot networkSnapshot) {
       return Optional.empty();
     }
 
-    @Nonnull
     @Override
-    public Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
+    public @Nonnull Topology getRawLayer3Topology(NetworkSnapshot networkSnapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
+    public @Nonnull VxlanTopology getVxlanTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
 
-    @Nonnull
     @Override
-    public TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
+    public @Nonnull TunnelTopology getInitialTunnelTopology(NetworkSnapshot snapshot) {
       throw new UnsupportedOperationException();
     }
   }

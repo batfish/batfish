@@ -14,9 +14,8 @@ import javax.annotation.Nullable;
 public final class EvpnToBgpv4VrfLeakConfig implements Serializable {
 
   /** Name of the source VRF from which to copy routes. The source VRF must have an EVPN RIB. */
-  @Nonnull
   @JsonProperty(PROP_IMPORT_FROM_VRF)
-  public String getImportFromVrf() {
+  public @Nonnull String getImportFromVrf() {
     return _importFromVrf;
   }
 
@@ -24,9 +23,8 @@ public final class EvpnToBgpv4VrfLeakConfig implements Serializable {
    * Name of the import policy to apply to imported routes when leaking. If {@code null} no policy
    * is applied, all routes are allowed.
    */
-  @Nullable
   @JsonProperty(PROP_IMPORT_POLICY)
-  public String getImportPolicy() {
+  public @Nullable String getImportPolicy() {
     return _importPolicy;
   }
 
@@ -68,8 +66,8 @@ public final class EvpnToBgpv4VrfLeakConfig implements Serializable {
 
   @JsonCreator
   private static EvpnToBgpv4VrfLeakConfig create(
-      @Nullable @JsonProperty(PROP_IMPORT_FROM_VRF) String importFromVrf,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy) {
+      @JsonProperty(PROP_IMPORT_FROM_VRF) @Nullable String importFromVrf,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy) {
     return builder().setImportFromVrf(importFromVrf).setImportPolicy(importPolicy).build();
   }
 

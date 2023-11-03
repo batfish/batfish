@@ -22,9 +22,9 @@ public class ReferencedStructuresQuestion extends Question {
 
   @JsonCreator
   private static ReferencedStructuresQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_NAMES) String names,
-      @Nullable @JsonProperty(PROP_NODES) NodesSpecifier nodes,
-      @Nullable @JsonProperty(PROP_TYPES) String types) {
+      @JsonProperty(PROP_NAMES) @Nullable String names,
+      @JsonProperty(PROP_NODES) @Nullable NodesSpecifier nodes,
+      @JsonProperty(PROP_TYPES) @Nullable String types) {
     String actualNames = Strings.isNullOrEmpty(names) ? ".*" : names;
     NodesSpecifier actualNodes = firstNonNull(nodes, NodesSpecifier.ALL);
     String actualTypes = Strings.isNullOrEmpty(types) ? ".*" : types;

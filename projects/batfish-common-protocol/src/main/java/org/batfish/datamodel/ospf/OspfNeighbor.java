@@ -32,7 +32,7 @@ public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor
   private String _vrf;
 
   @JsonCreator
-  private static OspfNeighbor create(@Nullable @JsonProperty(PROP_NAME) IpLink ipEdge) {
+  private static OspfNeighbor create(@JsonProperty(PROP_NAME) @Nullable IpLink ipEdge) {
     checkArgument(ipEdge != null);
     return new OspfNeighbor(ipEdge);
   }

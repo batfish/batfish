@@ -229,15 +229,15 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     private static OspfStatusQuestion create(
-        @Nullable @JsonProperty(PROP_INTERFACES) String ifaceSpec,
-        @Nullable @JsonProperty(PROP_NODES) String nodeSpec,
-        @Nullable @JsonProperty(PROP_STATUS) String status) {
+        @JsonProperty(PROP_INTERFACES) @Nullable String ifaceSpec,
+        @JsonProperty(PROP_NODES) @Nullable String nodeSpec,
+        @JsonProperty(PROP_STATUS) @Nullable String status) {
       return new OspfStatusQuestion(ifaceSpec, nodeSpec, status);
     }
 
     private OspfStatusQuestion(
-        @Nullable @JsonProperty(PROP_INTERFACES) String ifaceSpec,
-        @Nullable @JsonProperty(PROP_NODES) String nodeSpec,
+        @JsonProperty(PROP_INTERFACES) @Nullable String ifaceSpec,
+        @JsonProperty(PROP_NODES) @Nullable String nodeSpec,
         @JsonProperty(PROP_STATUS) String status) {
       _interfaces = ifaceSpec;
       _nodes = nodeSpec;
@@ -257,22 +257,20 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       return "ospfstatus";
     }
 
-    @Nullable
     @JsonProperty(PROP_INTERFACES)
-    public String getInterfaces() {
+    public @Nullable String getInterfaces() {
       return _interfaces;
     }
 
-    @Nonnull
     @JsonIgnore
+    @Nonnull
     InterfaceSpecifier getInterfaceSpecifier() {
       return SpecifierFactories.getInterfaceSpecifierOrDefault(
           _interfaces, AllInterfacesInterfaceSpecifier.INSTANCE);
     }
 
-    @Nullable
     @JsonProperty(PROP_NODES)
-    public String getNodes() {
+    public @Nullable String getNodes() {
       return _nodes;
     }
 

@@ -60,10 +60,10 @@ public class LpmRoutesQuestion extends Question {
 
   @JsonCreator
   private static LpmRoutesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_IP) Ip ip,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_RIB) RibProtocol protocol) {
+      @JsonProperty(PROP_IP) @Nullable Ip ip,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_VRFS) @Nullable String vrfs,
+      @JsonProperty(PROP_RIB) @Nullable RibProtocol protocol) {
     checkArgument(ip != null, "Missing %s", PROP_IP);
     return new LpmRoutesQuestion(
         ip, nodes, firstNonNull(vrfs, VRFS_ALL), firstNonNull(protocol, RibProtocol.MAIN));
@@ -99,9 +99,8 @@ public class LpmRoutesQuestion extends Question {
     return "lpmRoutes";
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 }

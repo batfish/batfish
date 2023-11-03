@@ -33,9 +33,8 @@ public class Conjunction implements BoolExpr {
     return of(Arrays.asList(exprs));
   }
 
-  @Nonnull
   @JsonProperty(PROP_CONJUNCTS)
-  public List<BoolExpr> getConjuncts() {
+  public @Nonnull List<BoolExpr> getConjuncts() {
     return _conjuncts;
   }
 
@@ -63,7 +62,7 @@ public class Conjunction implements BoolExpr {
 
   @JsonCreator
   private static Conjunction create(
-      @Nullable @JsonProperty(PROP_CONJUNCTS) List<BoolExpr> conjuncts) {
+      @JsonProperty(PROP_CONJUNCTS) @Nullable List<BoolExpr> conjuncts) {
     checkArgument(conjuncts != null && !conjuncts.isEmpty(), "Missing %s", PROP_CONJUNCTS);
     return new Conjunction(conjuncts);
   }

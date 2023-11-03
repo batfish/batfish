@@ -21,7 +21,7 @@ public final class NodeCompletionMetadata implements Serializable {
 
   @JsonCreator
   private static NodeCompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_HUMAN_NAME) String humanName) {
+      @JsonProperty(PROP_HUMAN_NAME) @Nullable String humanName) {
     return new NodeCompletionMetadata(humanName);
   }
 

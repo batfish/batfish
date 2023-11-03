@@ -24,9 +24,9 @@ public final class LoadBalancerTarget implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static LoadBalancerTarget create(
-      @Nullable @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) String availabilityZone,
-      @Nullable @JsonProperty(JSON_KEY_ID) String id,
-      @Nullable @JsonProperty(JSON_KEY_PORT) Integer port) {
+      @JsonProperty(JSON_KEY_AVAILABILITY_ZONE) @Nullable String availabilityZone,
+      @JsonProperty(JSON_KEY_ID) @Nullable String id,
+      @JsonProperty(JSON_KEY_PORT) @Nullable Integer port) {
     // availability zone is null when the target is an instance
     checkNonNull(id, JSON_KEY_ID, "Load balancer target");
     checkNonNull(port, JSON_KEY_PORT, "Load balancer target");

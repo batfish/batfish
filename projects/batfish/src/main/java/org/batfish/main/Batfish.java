@@ -988,9 +988,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return _terminatingExceptionMessage;
   }
 
-  @Nonnull
   @Override
-  public TopologyProvider getTopologyProvider() {
+  public @Nonnull TopologyProvider getTopologyProvider() {
     return _topologyProvider;
   }
 
@@ -1982,21 +1981,18 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getNetworkObject(NetworkId networkId, String key) throws IOException {
+  public @Nonnull InputStream getNetworkObject(NetworkId networkId, String key) throws IOException {
     return _storage.loadNetworkObject(networkId, key);
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getSnapshotObject(NetworkId networkId, SnapshotId snapshotId, String key)
-      throws IOException {
+  public @Nonnull InputStream getSnapshotObject(
+      NetworkId networkId, SnapshotId snapshotId, String key) throws IOException {
     return _storage.loadSnapshotObject(networkId, snapshotId, key);
   }
 
-  @Nonnull
   @Override
   public void putSnapshotObject(
       NetworkId networkId, SnapshotId snapshotId, String key, InputStream stream)
@@ -2005,9 +2001,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
+  public @Nonnull InputStream getSnapshotInputObject(NetworkSnapshot snapshot, String key)
       throws IOException {
     return _storage.loadSnapshotInputObject(snapshot.getNetwork(), snapshot.getSnapshot(), key);
   }

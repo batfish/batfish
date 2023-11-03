@@ -2088,9 +2088,8 @@ public class Client extends AbstractClient implements IClient {
    * Computes a unified diff of the input strings, returning the empty string if the {@code
    * expected} and {@code actual} are equal.
    */
-  @Nonnull
   @VisibleForTesting
-  static String getPatch(
+  static @Nonnull String getPatch(
       String expected, String actual, String expectedFileName, String actualFileName) {
     List<String> referenceLines = Arrays.asList(expected.split("\n"));
     List<String> testLines = Arrays.asList(actual.split("\n"));

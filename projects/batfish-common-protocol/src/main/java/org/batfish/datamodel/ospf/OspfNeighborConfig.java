@@ -41,12 +41,12 @@ public final class OspfNeighborConfig implements Serializable {
 
   @JsonCreator
   private static OspfNeighborConfig create(
-      @Nullable @JsonProperty(PROP_AREA) Long area,
-      @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
-      @Nullable @JsonProperty(PROP_IP) Ip ip,
-      @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
-      @Nullable @JsonProperty(PROP_VRF) String vrf) {
+      @JsonProperty(PROP_AREA) @Nullable Long area,
+      @JsonProperty(PROP_INTERFACE) @Nullable String interfaceName,
+      @JsonProperty(PROP_IP) @Nullable Ip ip,
+      @JsonProperty(PROP_PASSIVE) @Nullable Boolean passive,
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_VRF) @Nullable String vrf) {
     checkArgument(area != null, "OspfNeighborConfig missing %s", PROP_AREA);
     checkArgument(interfaceName != null, "OspfNeighborConfig missing %s", PROP_INTERFACE);
     checkArgument(ip != null, "OspfNeighborConfig missing %s", PROP_IP);
@@ -61,27 +61,23 @@ public final class OspfNeighborConfig implements Serializable {
     return _area;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACE)
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_IP)
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 

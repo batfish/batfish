@@ -45,7 +45,7 @@ public final class MatchBgpSessionType extends BooleanExpr {
 
   @JsonCreator
   private static MatchBgpSessionType create(
-      @Nullable @JsonProperty(PROP_TYPES) Collection<Type> types) {
+      @JsonProperty(PROP_TYPES) @Nullable Collection<Type> types) {
     checkArgument(types != null, "Missing %s", PROP_TYPES);
     return new MatchBgpSessionType(types);
   }
@@ -76,9 +76,8 @@ public final class MatchBgpSessionType extends BooleanExpr {
     }
   }
 
-  @Nonnull
   @JsonProperty(PROP_TYPES)
-  public Set<Type> getTypes() {
+  public @Nonnull Set<Type> getTypes() {
     return _types;
   }
 

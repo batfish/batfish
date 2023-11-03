@@ -34,7 +34,7 @@ public final class TableAnswerElement extends AnswerElement {
   private List<String> _warnings;
 
   @JsonCreator
-  public TableAnswerElement(@Nonnull @JsonProperty(PROP_METADATA) TableMetadata tableMetadata) {
+  public TableAnswerElement(@JsonProperty(PROP_METADATA) @Nonnull TableMetadata tableMetadata) {
     _tableMetadata = tableMetadata;
     _columnNames =
         tableMetadata.getColumnMetadata().stream()
