@@ -1111,8 +1111,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       Interface_ipv6_addressContext ctx) {
     // TODO: support exotic address types
     // TODO: implement and use datamodel Ipv6InterfaceAddress instead of Prefix6
-    Prefix6 prefix6 = toPrefix6(ctx.address6_with_length);
-    return new InterfaceIpv6AddressWithAttributes(prefix6.getAddress(), prefix6.getPrefixLength());
+    return InterfaceIpv6AddressWithAttributes.parse(ctx.address6_with_length.getText());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {

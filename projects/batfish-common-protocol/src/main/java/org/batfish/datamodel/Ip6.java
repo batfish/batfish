@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.net.InetAddresses;
@@ -70,29 +72,10 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     _ip6 = ip6AsBigInteger;
   }
 
-  @JsonCreator
-  private static @Nonnull Ip6 create(@Nullable String ipAsString) {
-    if (ipAsString == null) {
-      return null;
-    }
-    return parse(ipAsString);
-  }
-
   public static @Nonnull Ip6 parse(@Nonnull String ipAsString) {
-    boolean invalid = false;
     byte[] ip6AsByteArray = null;
-    if (!ipAsString.contains(":")) {
-      invalid = true;
-    } else {
-      try {
-        ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
-      } catch (IllegalArgumentException e) {
-        invalid = true;
-      }
-    }
-    if (invalid) {
-      throw new BatfishException("Invalid ipv6 address literal: \"" + ipAsString + "\"");
-    }
+    checkArgument(ipAsString.contains(":"), "Invalid IPv6 address literal '%s'", ipAsString);
+    ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
     return new Ip6(new BigInteger(ip6AsByteArray));
   }
 
@@ -171,5 +154,13 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   public boolean valid() {
     return _ip6.compareTo(BigInteger.ZERO) >= 0
         && _ip6.compareTo(new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)) <= 0;
+  }
+
+  @JsonCreator
+  private static @Nonnull Ip6 jsonCreator(@Nullable String ipAsString) {
+    if (ipAsString == null) {
+      throw new IllegalArgumentException("Missing value for IPv6 address");
+    }
+    return parse(ipAsString);
   }
 }
