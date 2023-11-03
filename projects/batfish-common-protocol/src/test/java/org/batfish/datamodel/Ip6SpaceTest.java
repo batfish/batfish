@@ -42,7 +42,7 @@ public class Ip6SpaceTest {
   @Test
   public void testIp6SpaceJacksonSerialization() throws IOException {
     Ip6 ip6 = Ip6.parse("1:1:1:1::1");
-    Prefix6 p = Prefix6.create(ip6, 64);
+    Prefix6 p = new Prefix6(ip6, 64);
     Ip6Space prefixIp6Space = p.toIp6Space();
     for (Ip6Space ip6Space : ImmutableList.of(prefixIp6Space)) {
       String jsonString = BatfishObjectMapper.writePrettyString(ip6Space);
