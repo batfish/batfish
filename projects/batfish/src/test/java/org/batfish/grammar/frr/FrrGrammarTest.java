@@ -1143,12 +1143,12 @@ public class FrrGrammarTest {
         "neighbor 2001:db8:85a3:0:0:8a2e:0370:7334 description ipv6-neighbor",
         "neighbor swp1 interface description interface-neighbor",
         "bgp listen range 1.2.3.0/24 peer-group PG",
-        "bgp listen range 2001:db8:85a3::/32 peer-group PG");
+        "bgp listen range 2001:db8:85a3::/48 peer-group PG");
 
     String neighborIp = bgpNeighborStructureName("1.1.1.1", "default");
     String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
-    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/32", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/48", "default");
     String neighborInterface = bgpNeighborStructureName("swp1", "default");
 
     assertThat(
