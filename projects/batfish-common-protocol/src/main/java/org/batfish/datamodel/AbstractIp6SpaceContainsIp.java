@@ -15,12 +15,12 @@ public abstract class AbstractIp6SpaceContainsIp implements GenericIp6SpaceVisit
 
   @Override
   public final Boolean visitIp6WildcardSetIp6Space(Ip6WildcardSetIp6Space ip6WildcardSetIp6Space) {
-    for (Ip6Wildcard w : ip6WildcardSetIp6Space.getBlacklist()) {
+    for (Ip6Wildcard w : ip6WildcardSetIp6Space.getBlockList()) {
       if (w.contains(_ip6)) {
         return false;
       }
     }
-    for (Ip6Wildcard w : ip6WildcardSetIp6Space.getWhitelist()) {
+    for (Ip6Wildcard w : ip6WildcardSetIp6Space.getAllowList()) {
       if (w.contains(_ip6)) {
         return true;
       }

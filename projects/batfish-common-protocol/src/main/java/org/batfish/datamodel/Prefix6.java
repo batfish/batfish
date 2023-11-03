@@ -1,9 +1,9 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
-import com.github.benmanes.caffeine.cache.Caffeine;
-import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Optional;
@@ -11,9 +11,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
-  private static final LoadingCache<Prefix6, Prefix6> CACHE =
-      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
-
   public static final int MAX_PREFIX_LENGTH = 128;
 
   public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
@@ -39,14 +36,17 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   private int _prefixLength;
 
-  private Prefix6(Ip6 network, int prefixLength) {
-    _address = network;
+  public Prefix6(Ip6 network, int prefixLength) {
+    checkArgument(
+        prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
+        "Invalid prefix length %s",
+        prefixLength);
+    if (network.valid()) {
+      _address = network.getNetworkAddress(prefixLength);
+    } else {
+      _address = network;
+    }
     _prefixLength = prefixLength;
-  }
-
-  public static Prefix6 create(Ip6 ip6, int prefixLength) {
-    Prefix6 p = new Prefix6(ip6, prefixLength);
-    return CACHE.get(p);
   }
 
   public Prefix6(Ip6 address, Ip6 mask) {

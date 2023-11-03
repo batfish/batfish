@@ -58,7 +58,7 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
   }
 
   public Ip6Wildcard(Ip6 ip) {
-    this(Prefix6.create(ip, Prefix6.MAX_PREFIX_LENGTH));
+    this(new Prefix6(ip, Prefix6.MAX_PREFIX_LENGTH));
   }
 
   public Ip6Wildcard(Ip6 address, Ip6 wildcardMask) {
