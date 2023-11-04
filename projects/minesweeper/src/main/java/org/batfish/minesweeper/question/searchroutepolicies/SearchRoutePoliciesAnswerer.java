@@ -622,11 +622,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   public void validateCommunityConstraints(Set<String> nodes, SpecifierContext context) {
     Set<String> communityMatchExprNames =
-        ImmutableSet.<RegexConstraint>builder()
-            .addAll(_inputConstraints.getCommunities().getRegexConstraints())
-            .addAll(_outputConstraints.getCommunities().getRegexConstraints())
-            .build()
-            .stream()
+        Stream.concat(
+                _inputConstraints.getCommunities().getRegexConstraints().stream(),
+                _outputConstraints.getCommunities().getRegexConstraints().stream())
+            .distinct()
             .filter(rc -> rc.getRegexType() == RegexConstraint.RegexType.STRUCTURE_NAME)
             .map(RegexConstraint::getRegex)
             .collect(ImmutableSet.toImmutableSet());
@@ -636,7 +635,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 cme ->
                     checkArgument(
                         context.getConfigs().get(node).getCommunityMatchExprs().containsKey(cme),
-                        "Node " + node + "has no CommunityMatchExpr named " + cme)));
+                        "Node %s has no CommunityMatchExpr named %s",
+                        node,
+                        cme)));
   }
 
   @Override
