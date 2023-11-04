@@ -574,13 +574,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   /**
    * Search all of the route policies of a particular node for behaviors of interest.
    *
-   * @param node the node
+   * @param config the node's configuration
    * @param policies all route policies in that node
    * @return all results from analyzing those route policies
    */
   private Stream<Row> searchPoliciesForNode(
-      String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
-    Configuration config = _batfish.loadConfigurations(snapshot).get(node);
+      Configuration config, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
+    String node = config.getHostname();
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
@@ -594,9 +594,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                         case REGEX:
                           return ImmutableList.of(CommunityVar.from(regex)).stream();
                         case STRUCTURE_NAME:
-                          CommunityMatchExpr cme = config.getCommunityMatchExprs().get(regex);
-                          checkArgument(cme != null, "Unknown named community list: " + regex);
-                          return cme.accept(new CommunityMatchExprVarCollector(), config).stream();
+                          return config
+                              .getCommunityMatchExprs()
+                              .get(regex)
+                              .accept(new CommunityMatchExprVarCollector(), config)
+                              .stream();
                         default:
                           throw new UnsupportedOperationException(
                               "Unknown regex constraint type: " + rc.getRegexType());
@@ -611,14 +613,45 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }
 
+  /**
+   * Check that all community structure names that appear in user-provided community constraints
+   * refer to actual structures in each node on which this question will be run.
+   *
+   * @param nodes the nodes on which this question will be run
+   * @param context provides access to the nodes' configurations
+   */
+  public void validateCommunityConstraints(Set<String> nodes, SpecifierContext context) {
+    Set<String> communityMatchExprNames =
+        ImmutableSet.<RegexConstraint>builder()
+            .addAll(_inputConstraints.getCommunities().getRegexConstraints())
+            .addAll(_outputConstraints.getCommunities().getRegexConstraints())
+            .build()
+            .stream()
+            .filter(rc -> rc.getRegexType() == RegexConstraint.RegexType.STRUCTURE_NAME)
+            .map(RegexConstraint::getRegex)
+            .collect(ImmutableSet.toImmutableSet());
+    nodes.forEach(
+        node ->
+            communityMatchExprNames.forEach(
+                cme ->
+                    checkArgument(
+                        context.getConfigs().get(node).getCommunityMatchExprs().containsKey(cme),
+                        "Node " + node + "has no CommunityMatchExpr named " + cme)));
+  }
+
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
+    Set<String> nodes = _nodeSpecifier.resolve(context);
+    validateCommunityConstraints(_nodeSpecifier.resolve(context), context);
     List<Row> rows =
-        _nodeSpecifier.resolve(context).stream()
+        nodes.stream()
             .flatMap(
                 node ->
-                    searchPoliciesForNode(node, _policySpecifier.resolve(node, context), snapshot))
+                    searchPoliciesForNode(
+                        context.getConfigs().get(node),
+                        _policySpecifier.resolve(node, context),
+                        snapshot))
             .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());

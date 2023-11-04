@@ -4,7 +4,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import com.google.common.testing.EqualsTester;
-import org.batfish.common.BatfishException;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -47,19 +46,19 @@ public class RegexConstraintTest {
 
   @Test
   public void testDoNotParse1() {
-    _exception.expect(BatfishException.class);
+    _exception.expect(IllegalArgumentException.class);
     RegexConstraint.parse("/^40:");
   }
 
   @Test
   public void testDoNotParse2() {
-    _exception.expect(BatfishException.class);
+    _exception.expect(IllegalArgumentException.class);
     RegexConstraint.parse("^40:/");
   }
 
   @Test
   public void testDoNotParse3() {
-    _exception.expect(BatfishException.class);
+    _exception.expect(IllegalArgumentException.class);
     RegexConstraint.parse("/");
   }
 }

@@ -8,7 +8,6 @@ import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 
 /**
  * A class that represents a regular expression constraint for a {@link BgpRouteConstraints} object.
@@ -93,7 +92,7 @@ public class RegexConstraint {
         regexType = RegexType.REGEX;
       }
     } else {
-      throw new BatfishException("Invalid regex constraint: " + s);
+      throw new IllegalArgumentException("Invalid regex constraint: " + s);
     }
     return new RegexConstraint(regex, negated, regexType);
   }
