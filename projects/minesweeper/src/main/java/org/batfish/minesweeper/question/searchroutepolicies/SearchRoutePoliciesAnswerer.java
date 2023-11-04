@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.question.searchroutepolicies;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toRow;
@@ -32,6 +33,7 @@ import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
@@ -44,6 +46,7 @@ import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunityMatchExpr;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.AsPathRegexAtomicPredicates;
@@ -52,9 +55,12 @@ import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDDomain;
 import org.batfish.minesweeper.bdd.BDDRoute;
+import org.batfish.minesweeper.bdd.CommunityMatchExprToBDD;
+import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD;
 import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
@@ -78,8 +84,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private final PathOption _pathOption;
 
-  private final @Nonnull Set<String> _communityRegexes;
-  private final @Nonnull Set<String> _asPathRegexes;
+  private final @Nonnull Set<RegexConstraint> _communityRegexes;
+  private final @Nonnull Set<RegexConstraint> _asPathRegexes;
 
   /**
    * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
@@ -125,15 +131,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // community regexes, in order to minimize the number of atomic predicates that are
     // created and tracked by the analysis
     _communityRegexes =
-        ImmutableSet.<String>builder()
-            .addAll(_inputConstraints.getCommunities().getAllRegexes())
-            .addAll(_outputConstraints.getCommunities().getAllRegexes())
+        ImmutableSet.<RegexConstraint>builder()
+            .addAll(_inputConstraints.getCommunities().getRegexConstraints())
+            .addAll(_outputConstraints.getCommunities().getRegexConstraints())
             .build();
     _asPathRegexes =
-        ImmutableSet.<String>builder()
+        ImmutableSet.<RegexConstraint>builder()
             // AS-path output constraints are handled in a separate post-processing step, to
             // properly handle AS-path prepending
-            .addAll(_inputConstraints.getAsPath().getAllRegexes())
+            .addAll(_inputConstraints.getAsPath().getRegexConstraints())
             .build();
   }
 
@@ -348,21 +354,53 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Convert community regex constraints from a {@link BgpRouteConstraints} object to a BDD.
+   * Convert a community regex constraint to a BDD.
+   *
+   * @param regex the user-defined regex constraint
+   * @param tbdd information about the symbolic route analysis
+   * @param route the symbolic route
+   * @return the constraint as a BDD
+   */
+  private BDD communityRegexConstraintToBDD(
+      RegexConstraint regex, TransferBDD tbdd, BDDRoute route) {
+    switch (regex.getRegexType()) {
+      case REGEX:
+        return tbdd.getFactory()
+            .orAll(
+                tbdd
+                    .getConfigAtomicPredicates()
+                    .getStandardCommunityAtomicPredicates()
+                    .getRegexAtomicPredicates()
+                    .get(CommunityVar.from(regex.getRegex()))
+                    .stream()
+                    .map(i -> route.getCommunityAtomicPredicates()[i])
+                    .collect(ImmutableSet.toImmutableSet()));
+      case STRUCTURE_NAME:
+        CommunityMatchExpr cme =
+            tbdd.getConfiguration().getCommunityMatchExprs().get(regex.getRegex());
+        return cme.accept(
+            new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
+      default:
+        throw new UnsupportedOperationException(
+            "Unknown regex constraint type: " + regex.getRegexType());
+    }
+  }
+
+  /**
+   * Convert community regex constraints to a BDD.
    *
    * @param regexes the user-defined regex constraints
-   * @param configAPs information about the community atomic predicates
+   * @param tbdd information about the symbolic route analysis
    * @param route the symbolic route
    * @return the overall constraint as a BDD
    */
   private BDD communityRegexConstraintsToBDD(
-      RegexConstraints regexes, ConfigAtomicPredicates configAPs, BDDRoute route) {
+      RegexConstraints regexes, TransferBDD tbdd, BDDRoute route) {
 
-    BDDFactory factory = route.getFactory();
+    BDDFactory factory = tbdd.getFactory();
 
     /*
-     * disjoin all positive regex constraints, each of which is itself logically represented as the
-     * disjunction of its corresponding atomic predicates. special case: if there are no positive
+     * disjoin all positive regex constraints. special case: if there are no positive
      * constraints then treat the constraint as "true", i.e. no constraints.
      */
     BDD positiveConstraints =
@@ -370,31 +408,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             ? factory.one()
             : factory.orAll(
                 regexes.getPositiveRegexConstraints().stream()
-                    .map(RegexConstraint::getRegex)
-                    .map(CommunityVar::from)
-                    .flatMap(
-                        regex ->
-                            configAPs
-                                .getStandardCommunityAtomicPredicates()
-                                .getRegexAtomicPredicates()
-                                .get(regex)
-                                .stream())
-                    .map(i -> route.getCommunityAtomicPredicates()[i])
+                    .map(r -> communityRegexConstraintToBDD(r, tbdd, route))
                     .collect(ImmutableSet.toImmutableSet()));
     // disjoin all negative regex constraints, similarly
     BDD negativeConstraints =
         factory.orAll(
             regexes.getNegativeRegexConstraints().stream()
-                .map(RegexConstraint::getRegex)
-                .map(CommunityVar::from)
-                .flatMap(
-                    regex ->
-                        configAPs
-                            .getStandardCommunityAtomicPredicates()
-                            .getRegexAtomicPredicates()
-                            .get(regex)
-                            .stream())
-                .map(i -> route.getCommunityAtomicPredicates()[i])
+                .map(r -> communityRegexConstraintToBDD(r, tbdd, route))
                 .collect(ImmutableSet.toImmutableSet()));
 
     return positiveConstraints.diffWith(negativeConstraints);
@@ -445,10 +465,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
   // r is an input or output route, so the outputRoute flag distinguishes these cases.
   private BDD routeConstraintsToBDD(
-      BgpRouteConstraints constraints,
-      BDDRoute r,
-      boolean outputRoute,
-      ConfigAtomicPredicates configAPs) {
+      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, TransferBDD tbdd) {
+
+    ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
 
     // make sure the model we end up getting corresponds to a valid route
     BDD result = r.bgpWellFormednessConstraints();
@@ -457,7 +476,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
-    result.andWith(communityRegexConstraintsToBDD(constraints.getCommunities(), configAPs, r));
+    result.andWith(communityRegexConstraintsToBDD(constraints.getCommunities(), tbdd, r));
     if (outputRoute) {
       // AS-path constraints on the output route need to take any prepends into account
       result.andWith(
@@ -513,7 +532,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     Set<PrefixSpace> blockedPrefixes = new HashSet<>();
     BDD inConstraints =
         routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, configAPs);
+            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, tbdd);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
       BDD pathAnnouncements = path.getSecond();
@@ -529,7 +548,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       if (_action == PERMIT) {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
-            routeConstraintsToBDD(_outputConstraints, outputRoute, true, outConfigAPs);
+            routeConstraintsToBDD(
+                _outputConstraints, outputRoute, true, new TransferBDD(outConfigAPs, policy));
         intersection = intersection.and(outConstraints);
       }
 
@@ -554,34 +574,85 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   /**
    * Search all of the route policies of a particular node for behaviors of interest.
    *
-   * @param node the node
+   * @param config the node's configuration
    * @param policies all route policies in that node
    * @return all results from analyzing those route policies
    */
   private Stream<Row> searchPoliciesForNode(
-      String node, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
+      Configuration config, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
+    String node = config.getHostname();
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
             _batfish,
             snapshot,
             node,
             _communityRegexes.stream()
-                .map(CommunityVar::from)
+                .flatMap(
+                    rc -> {
+                      String regex = rc.getRegex();
+                      switch (rc.getRegexType()) {
+                        case REGEX:
+                          return ImmutableList.of(CommunityVar.from(regex)).stream();
+                        case STRUCTURE_NAME:
+                          return config
+                              .getCommunityMatchExprs()
+                              .get(regex)
+                              .accept(new CommunityMatchExprVarCollector(), config)
+                              .stream();
+                        default:
+                          throw new UnsupportedOperationException(
+                              "Unknown regex constraint type: " + rc.getRegexType());
+                      }
+                    })
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes,
+            _asPathRegexes.stream()
+                .map(RegexConstraint::getRegex)
+                .collect(ImmutableSet.toImmutableSet()),
             policies);
 
     return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }
 
+  /**
+   * Check that all community structure names that appear in user-provided community constraints
+   * refer to actual structures in each node on which this question will be run.
+   *
+   * @param nodes the nodes on which this question will be run
+   * @param context provides access to the nodes' configurations
+   */
+  public void validateCommunityConstraints(Set<String> nodes, SpecifierContext context) {
+    Set<String> communityMatchExprNames =
+        Stream.concat(
+                _inputConstraints.getCommunities().getRegexConstraints().stream(),
+                _outputConstraints.getCommunities().getRegexConstraints().stream())
+            .distinct()
+            .filter(rc -> rc.getRegexType() == RegexConstraint.RegexType.STRUCTURE_NAME)
+            .map(RegexConstraint::getRegex)
+            .collect(ImmutableSet.toImmutableSet());
+    nodes.forEach(
+        node ->
+            communityMatchExprNames.forEach(
+                cme ->
+                    checkArgument(
+                        context.getConfigs().get(node).getCommunityMatchExprs().containsKey(cme),
+                        "Node %s has no CommunityMatchExpr named %s",
+                        node,
+                        cme)));
+  }
+
   @Override
   public AnswerElement answer(NetworkSnapshot snapshot) {
     SpecifierContext context = _batfish.specifierContext(snapshot);
+    Set<String> nodes = _nodeSpecifier.resolve(context);
+    validateCommunityConstraints(_nodeSpecifier.resolve(context), context);
     List<Row> rows =
-        _nodeSpecifier.resolve(context).stream()
+        nodes.stream()
             .flatMap(
                 node ->
-                    searchPoliciesForNode(node, _policySpecifier.resolve(node, context), snapshot))
+                    searchPoliciesForNode(
+                        context.getConfigs().get(node),
+                        _policySpecifier.resolve(node, context),
+                        snapshot))
             .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());
