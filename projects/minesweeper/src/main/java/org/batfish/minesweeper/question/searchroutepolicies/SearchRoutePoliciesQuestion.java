@@ -109,14 +109,14 @@ public final class SearchRoutePoliciesQuestion extends Question {
 
   @JsonCreator
   private static SearchRoutePoliciesQuestion jsonCreator(
-      @Nullable @JsonProperty(PROP_DIRECTION) Environment.Direction direction,
-      @Nullable @JsonProperty(PROP_INPUT_CONSTRAINTS) BgpRouteConstraints inputConstraints,
-      @Nullable @JsonProperty(PROP_OUTPUT_CONSTRAINTS) BgpRouteConstraints outputConstraints,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_POLICIES) String policies,
-      @Nullable @JsonProperty(PROP_ACTION) LineAction action,
-      @Nullable @JsonProperty(PROP_PER_PATH) Boolean perPath,
-      @Nullable @JsonProperty(PROP_PATH_OPTION) PathOption pathOption) {
+      @JsonProperty(PROP_DIRECTION) @Nullable Environment.Direction direction,
+      @JsonProperty(PROP_INPUT_CONSTRAINTS) @Nullable BgpRouteConstraints inputConstraints,
+      @JsonProperty(PROP_OUTPUT_CONSTRAINTS) @Nullable BgpRouteConstraints outputConstraints,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_POLICIES) @Nullable String policies,
+      @JsonProperty(PROP_ACTION) @Nullable LineAction action,
+      @JsonProperty(PROP_PER_PATH) @Nullable Boolean perPath,
+      @JsonProperty(PROP_PATH_OPTION) @Nullable PathOption pathOption) {
     checkArgument(
         !(perPath != null && pathOption != null),
         "perPath and pathOption cannot both be set (perPath is deprecated)");

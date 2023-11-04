@@ -160,13 +160,13 @@ public class VrfLeakConfig implements Serializable {
 
   @JsonCreator
   private static VrfLeakConfig create(
-      @Nullable @JsonProperty(PROP_BGP_VRF_LEAK_CONFIGS) List<BgpVrfLeakConfig> bgpVrfLeakConfigs,
-      @Nullable @JsonProperty(PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS)
+      @JsonProperty(PROP_BGP_VRF_LEAK_CONFIGS) @Nullable List<BgpVrfLeakConfig> bgpVrfLeakConfigs,
+      @JsonProperty(PROP_BGPV4_TO_EVPN_VRF_LEAK_CONFIGS) @Nullable
           List<Bgpv4ToEvpnVrfLeakConfig> bgpv4ToEvpnVrfLeakConfigs,
-      @Nullable @JsonProperty(PROP_EVPN_TO_BGPV4_VRF_LEAK_CONFIGS)
+      @JsonProperty(PROP_EVPN_TO_BGPV4_VRF_LEAK_CONFIGS) @Nullable
           List<EvpnToBgpv4VrfLeakConfig> evpnToBgpv4VrfLeakConfigs,
-      @Nullable @JsonProperty(PROP_LEAK_AS_BGP) Boolean leakAsBgp,
-      @Nullable @JsonProperty(PROP_MAIN_RIB_VRF_LEAK_CONFIGS)
+      @JsonProperty(PROP_LEAK_AS_BGP) @Nullable Boolean leakAsBgp,
+      @JsonProperty(PROP_MAIN_RIB_VRF_LEAK_CONFIGS) @Nullable
           List<MainRibVrfLeakConfig> mainRibVrfLeakConfigs) {
     return new VrfLeakConfig(
         firstNonNull(leakAsBgp, false),

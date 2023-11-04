@@ -47,7 +47,7 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
     private final @Nonnull String _vpcId;
 
     @JsonCreator
-    private static VpcAttachment create(@Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId) {
+    private static VpcAttachment create(@JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId) {
       checkArgument(vpcId != null, "Vpc id cannot be null for VPN attachment");
       return new VpcAttachment(vpcId);
     }
@@ -70,9 +70,9 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static VpnGateway create(
-      @Nullable @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) String vpnGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ATTACHMENTS) List<VpcAttachment> vpcAttachments,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags) {
+      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
+      @JsonProperty(JSON_KEY_VPC_ATTACHMENTS) @Nullable List<VpcAttachment> vpcAttachments,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags) {
     checkArgument(vpnGatewayId != null, "Id cannot be null for VPC gateway");
     checkArgument(vpcAttachments != null, "Vpc attachments cannot be null for VPN gateway");
 

@@ -105,14 +105,14 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
 
   @JsonCreator
   private static ReferenceBook create(
-      @Nullable @JsonProperty(PROP_ADDRESS_GROUPS) List<AddressGroup> addressGroups,
-      @Nullable @JsonProperty(PROP_FILTER_GROUPS) List<FilterGroup> filterGroups,
-      @Nullable @JsonProperty(PROP_INTERFACE_GROUPS) List<InterfaceGroup> interfaceGroups,
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_SERVICE_ENDPOINTS) List<ServiceEndpoint> serviceEndpoints,
-      @Nullable @JsonProperty(PROP_SERVICE_OBJECT_GROUPS)
+      @JsonProperty(PROP_ADDRESS_GROUPS) @Nullable List<AddressGroup> addressGroups,
+      @JsonProperty(PROP_FILTER_GROUPS) @Nullable List<FilterGroup> filterGroups,
+      @JsonProperty(PROP_INTERFACE_GROUPS) @Nullable List<InterfaceGroup> interfaceGroups,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_SERVICE_ENDPOINTS) @Nullable List<ServiceEndpoint> serviceEndpoints,
+      @JsonProperty(PROP_SERVICE_OBJECT_GROUPS) @Nullable
           List<ServiceObjectGroup> serviceObjectGroups,
-      @Nullable @JsonProperty(PROP_SERVICE_OBJECTS) List<ServiceObject> serviceObjects) {
+      @JsonProperty(PROP_SERVICE_OBJECTS) @Nullable List<ServiceObject> serviceObjects) {
     checkArgument(name != null, "Reference book name cannot be null");
 
     return new ReferenceBook(
@@ -218,9 +218,8 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
     return _addressGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
-  @Nonnull
   @JsonProperty(PROP_ADDRESS_GROUPS)
-  public SortedSet<AddressGroup> getAddressGroups() {
+  public @Nonnull SortedSet<AddressGroup> getAddressGroups() {
     return _addressGroups;
   }
 
@@ -229,9 +228,8 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
     return _filterGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
-  @Nonnull
   @JsonProperty(PROP_FILTER_GROUPS)
-  public SortedSet<FilterGroup> getFilterGroups() {
+  public @Nonnull SortedSet<FilterGroup> getFilterGroups() {
     return _filterGroups;
   }
 
@@ -240,33 +238,28 @@ public class ReferenceBook implements Comparable<ReferenceBook>, Serializable {
     return _interfaceGroups.stream().filter(group -> group.getName().equals(groupName)).findAny();
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACE_GROUPS)
-  public SortedSet<InterfaceGroup> getInterfaceGroups() {
+  public @Nonnull SortedSet<InterfaceGroup> getInterfaceGroups() {
     return _interfaceGroups;
   }
 
-  @Nonnull
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SERVICE_ENDPOINTS)
-  public SortedSet<ServiceEndpoint> getServiceEndpoints() {
+  public @Nonnull SortedSet<ServiceEndpoint> getServiceEndpoints() {
     return _serviceEndpoints;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SERVICE_OBJECT_GROUPS)
-  public SortedSet<ServiceObjectGroup> getServiceObjectGroups() {
+  public @Nonnull SortedSet<ServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SERVICE_OBJECTS)
-  public SortedSet<ServiceObject> getServiceObjects() {
+  public @Nonnull SortedSet<ServiceObject> getServiceObjects() {
     return _serviceObjects;
   }
 

@@ -17,7 +17,7 @@ public final class LiteralIsisLevel extends IsisLevelExpr {
   private @Nonnull IsisLevel _level;
 
   @JsonCreator
-  private static LiteralIsisLevel jsonCreator(@Nullable @JsonProperty(PROP_LEVEL) IsisLevel level) {
+  private static LiteralIsisLevel jsonCreator(@JsonProperty(PROP_LEVEL) @Nullable IsisLevel level) {
     checkArgument(level != null, "%s must be provided", PROP_LEVEL);
     return new LiteralIsisLevel(level);
   }

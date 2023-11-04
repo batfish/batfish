@@ -22,7 +22,7 @@ public final class IpLink implements Comparable<IpLink> {
 
   @JsonCreator
   private static IpLink create(
-      @Nullable @JsonProperty(PROP_IP1) Ip ip1, @Nullable @JsonProperty(PROP_IP2) Ip ip2) {
+      @JsonProperty(PROP_IP1) @Nullable Ip ip1, @JsonProperty(PROP_IP2) @Nullable Ip ip2) {
     checkArgument(ip1 != null);
     checkArgument(ip2 != null);
     return new IpLink(ip1, ip2);

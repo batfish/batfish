@@ -24,7 +24,7 @@ public final class PrependAsPath extends Statement {
   private @Nonnull AsPathListExpr _expr;
 
   @JsonCreator
-  private static PrependAsPath jsonCreator(@Nullable @JsonProperty(PROP_EXPR) AsPathListExpr expr) {
+  private static PrependAsPath jsonCreator(@JsonProperty(PROP_EXPR) @Nullable AsPathListExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new PrependAsPath(expr);
   }

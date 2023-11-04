@@ -36,9 +36,9 @@ public final class LocationCompletionMetadata implements Serializable {
 
   @JsonCreator
   private static LocationCompletionMetadata jsonCreator(
-      @Nullable @JsonProperty(PROP_LOCATION) Location location,
-      @Nullable @JsonProperty(PROP_SOURCE_WITH_IPS) Boolean isSource,
-      @Nullable @JsonProperty(PROP_TRACEROUTE_SOURCE) Boolean isTracerouteSoure) {
+      @JsonProperty(PROP_LOCATION) @Nullable Location location,
+      @JsonProperty(PROP_SOURCE_WITH_IPS) @Nullable Boolean isSource,
+      @JsonProperty(PROP_TRACEROUTE_SOURCE) @Nullable Boolean isTracerouteSoure) {
     checkArgument(
         location != null, "%s cannot be null for LocationCompletionMetadata", PROP_LOCATION);
     checkArgument(

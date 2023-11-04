@@ -2308,9 +2308,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return builder.build();
   }
 
-  @Nullable
   @VisibleForTesting
-  static IpAccessList buildScreen(@Nullable Screen screen, String aclName) {
+  static @Nullable IpAccessList buildScreen(@Nullable Screen screen, String aclName) {
     if (screen == null || screen.getAction() == ScreenAction.ALARM_WITHOUT_DROP) {
       return null;
     }
@@ -2333,8 +2332,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .build();
   }
 
-  @Nullable
   @VisibleForTesting
+  @Nullable
   IpAccessList buildScreensPerZone(@Nonnull Zone zone, String aclName) {
     List<AclLineMatchExpr> matches =
         zone.getScreens().stream()
@@ -2362,8 +2361,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
             .build();
   }
 
-  @Nullable
   @VisibleForTesting
+  @Nullable
   IpAccessList buildScreensPerInterface(Interface iface) {
     Zone zone = _masterLogicalSystem.getInterfaceZones().get(iface.getName());
     if (zone == null) {
@@ -2949,9 +2948,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return String.format("~RIB_GROUP_IMPORT_POLICY_%s_%s~", rg.getName(), protocol);
   }
 
-  @Nonnull
   @VisibleForTesting
-  public static String generateResolutionRibImportPolicyName(String routingInstanceName) {
+  public static @Nonnull String generateResolutionRibImportPolicyName(String routingInstanceName) {
     return String.format("~RESOLUTION_IMPORT_POLICY_%s~", routingInstanceName);
   }
 
@@ -4534,9 +4532,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
    * href="https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/router-id-edit-routing-options.html">Juniper
    * router id page</a>
    */
-  @Nonnull
   @VisibleForTesting
-  static Ip getRouterId(RoutingInstance routingInstance) {
+  static @Nonnull Ip getRouterId(RoutingInstance routingInstance) {
     Ip routerId = routingInstance.getRouterId();
     if (routerId != null) {
       return routerId;

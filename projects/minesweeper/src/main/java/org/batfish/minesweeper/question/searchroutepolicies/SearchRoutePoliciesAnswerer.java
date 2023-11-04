@@ -659,14 +659,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return answerElement;
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   NodeSpecifier getNodeSpecifier() {
     return _nodeSpecifier;
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   RoutingPolicySpecifier getPolicySpecifier() {
     return _policySpecifier;
   }

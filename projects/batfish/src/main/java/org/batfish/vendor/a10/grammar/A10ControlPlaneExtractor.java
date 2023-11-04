@@ -27,9 +27,8 @@ public class A10ControlPlaneExtractor extends A10ParserBaseListener
     _silentSyntax = silentSyntax;
   }
 
-  @Nonnull
   @Override
-  public VendorConfiguration getVendorConfiguration() {
+  public @Nonnull VendorConfiguration getVendorConfiguration() {
     return _configuration;
   }
 

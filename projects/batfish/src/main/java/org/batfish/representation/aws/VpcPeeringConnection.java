@@ -30,7 +30,7 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
     private final @Nonnull Prefix _cidrBlock;
 
     @JsonCreator
-    private static CidrBlock create(@Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix cidrBlock) {
+    private static CidrBlock create(@JsonProperty(JSON_KEY_CIDR_BLOCK) @Nullable Prefix cidrBlock) {
       checkArgument(cidrBlock != null, "CidrBlock cannot null in CidrBlockSet");
       return new CidrBlock(cidrBlock);
     }
@@ -54,8 +54,8 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static VpcInfo create(
-        @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-        @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK_SET) List<CidrBlock> cidrBlockSet) {
+        @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+        @JsonProperty(JSON_KEY_CIDR_BLOCK_SET) @Nullable List<CidrBlock> cidrBlockSet) {
       checkArgument(vpcId != null, "VPC id cannot be null in VPC info");
       checkArgument(cidrBlockSet != null, "CIDR block set cannot null in VPC info");
       return new VpcInfo(
@@ -93,9 +93,9 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static VpcPeeringConnection create(
-      @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
-      @Nullable @JsonProperty(JSON_KEY_ACCEPTER_VPC_INFO) VpcInfo accepterVpcInfo,
-      @Nullable @JsonProperty(JSON_KEY_REQUESTER_VPC_INFO) VpcInfo requesterVpcInfo) {
+      @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) @Nullable String vpcPeeringConnectionId,
+      @JsonProperty(JSON_KEY_ACCEPTER_VPC_INFO) @Nullable VpcInfo accepterVpcInfo,
+      @JsonProperty(JSON_KEY_REQUESTER_VPC_INFO) @Nullable VpcInfo requesterVpcInfo) {
     checkArgument(vpcPeeringConnectionId != null, "VPC peering connection Id cannot be null");
     checkArgument(
         accepterVpcInfo != null, "Accepter VPC info cannot be null in VPC peering connection Id");

@@ -17,7 +17,7 @@ public class ExplicitPrefixSet extends PrefixSetExpr implements PrefixSpaceExpr 
 
   @JsonCreator
   private static ExplicitPrefixSet jsonCreator(
-      @Nullable @JsonProperty(PROP_PREFIX_SPACE) PrefixSpace prefixSpace) {
+      @JsonProperty(PROP_PREFIX_SPACE) @Nullable PrefixSpace prefixSpace) {
     return new ExplicitPrefixSet(firstNonNull(prefixSpace, new PrefixSpace()));
   }
 

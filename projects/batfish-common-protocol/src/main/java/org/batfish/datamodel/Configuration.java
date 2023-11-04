@@ -318,10 +318,10 @@ public final class Configuration implements Serializable {
 
   @JsonCreator
   private static Configuration makeConfiguration(
-      @Nullable @JsonProperty(PROP_NAME) String hostname,
-      @Nullable @JsonProperty(PROP_CONFIGURATION_FORMAT) ConfigurationFormat configurationFormat,
-      @Nullable @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB) Boolean exportBgpFromBgpRib,
-      @Nullable @JsonProperty(PROP_GENERATE_BGP_AGGREGATES_FROM_MAIN_RIB)
+      @JsonProperty(PROP_NAME) @Nullable String hostname,
+      @JsonProperty(PROP_CONFIGURATION_FORMAT) @Nullable ConfigurationFormat configurationFormat,
+      @JsonProperty(PROP_EXPORT_BGP_FROM_BGP_RIB) @Nullable Boolean exportBgpFromBgpRib,
+      @JsonProperty(PROP_GENERATE_BGP_AGGREGATES_FROM_MAIN_RIB) @Nullable
           Boolean generateBgpAggregatesFromMainRib) {
     checkNotNull(hostname, "%s cannot be null", PROP_NAME);
     checkNotNull(configurationFormat, "%s cannot be null", PROP_CONFIGURATION_FORMAT);

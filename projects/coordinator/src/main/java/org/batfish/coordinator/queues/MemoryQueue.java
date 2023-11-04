@@ -15,9 +15,8 @@ public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
     return remove(qWork);
   }
 
-  @Nullable
   @Override
-  public QueuedWork deque() {
+  public @Nullable QueuedWork deque() {
     if (size() == 0) {
       return null;
     }
@@ -35,9 +34,8 @@ public class MemoryQueue extends LinkedList<QueuedWork> implements WorkQueue {
     return size();
   }
 
-  @Nullable
   @Override
-  public QueuedWork getWork(UUID workItemId) {
+  public @Nullable QueuedWork getWork(UUID workItemId) {
     for (QueuedWork work : this) {
       if (work.getWorkItem().getId().equals(workItemId)) {
         return work;

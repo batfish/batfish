@@ -21,7 +21,7 @@ public final class OriginatingSessionScope implements SessionScope {
 
   @JsonCreator
   private static OriginatingSessionScope jsonCreator(
-      @Nullable @JsonProperty(PROP_ORIGINATING_VRF) String originatingVrf) {
+      @JsonProperty(PROP_ORIGINATING_VRF) @Nullable String originatingVrf) {
     checkNotNull(originatingVrf, "Missing %s", PROP_ORIGINATING_VRF);
     return new OriginatingSessionScope(originatingVrf);
   }

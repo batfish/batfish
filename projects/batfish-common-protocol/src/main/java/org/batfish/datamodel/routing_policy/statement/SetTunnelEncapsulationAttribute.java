@@ -24,7 +24,7 @@ public final class SetTunnelEncapsulationAttribute extends Statement {
 
   @JsonCreator
   private static SetTunnelEncapsulationAttribute jsonCreator(
-      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE_EXPR)
+      @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE_EXPR) @Nullable
           TunnelEncapsulationAttributeExpr expr) {
     checkArgument(expr != null, "Missing %s", PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE_EXPR);
     return new SetTunnelEncapsulationAttribute(expr);

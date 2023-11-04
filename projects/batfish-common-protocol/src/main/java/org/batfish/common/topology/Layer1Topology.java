@@ -27,7 +27,7 @@ public final class Layer1Topology {
 
   @JsonCreator
   private static @Nonnull Layer1Topology create(
-      @Nullable @JsonProperty(PROP_EDGES) Iterable<Layer1Edge> edges) {
+      @JsonProperty(PROP_EDGES) @Nullable Iterable<Layer1Edge> edges) {
     return new Layer1Topology(edges != null ? edges : ImmutableSortedSet.of());
   }
 

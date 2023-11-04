@@ -104,9 +104,8 @@ public final class BgpActivePeerConfig extends BgpPeerConfig {
   }
 
   /** The IPV4 address of the remote peer. */
-  @Nullable
   @JsonProperty(PROP_PEER_ADDRESS)
-  public Ip getPeerAddress() {
+  public @Nullable Ip getPeerAddress() {
     return _peerAddress;
   }
 

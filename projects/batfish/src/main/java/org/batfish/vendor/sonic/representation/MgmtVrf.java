@@ -26,8 +26,8 @@ public class MgmtVrf implements Serializable {
   @SuppressWarnings("unused") // "parse" and ignore PROP_IN_BAND_MGMT_ENABLED
   @JsonCreator
   private static @Nonnull MgmtVrf create(
-      @Nullable @JsonProperty(PROP_IN_BAND_MGMT_ENABLED) String inBandMgmtEnabled,
-      @Nullable @JsonProperty(PROP_MGMT_VRF_ENABLED) String mgmtVrfEnabled) {
+      @JsonProperty(PROP_IN_BAND_MGMT_ENABLED) @Nullable String inBandMgmtEnabled,
+      @JsonProperty(PROP_MGMT_VRF_ENABLED) @Nullable String mgmtVrfEnabled) {
     return MgmtVrf.builder()
         .setMgmtVrfEnabled(Optional.ofNullable(mgmtVrfEnabled).map("true"::equals).orElse(null))
         .build();

@@ -48,9 +48,8 @@ class ConversionWarningAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getRow(String nodeName, Warning warning) {
+  static @Nonnull Row getRow(String nodeName, Warning warning) {
     return Row.builder(TABLE_METADATA.toColumnMap())
         .put(COL_NODE, new Node(nodeName))
         .put(COL_TYPE, ImmutableList.of(warning.getTag()))

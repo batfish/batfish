@@ -18,7 +18,7 @@ public final class SetTag extends Statement {
   private final @Nonnull LongExpr _tag;
 
   @JsonCreator
-  private static SetTag jsonCreator(@Nullable @JsonProperty(PROP_TAG) LongExpr expr) {
+  private static SetTag jsonCreator(@JsonProperty(PROP_TAG) @Nullable LongExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_TAG);
     return new SetTag(expr);
   }

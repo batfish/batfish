@@ -79,11 +79,11 @@ public class Warnings implements Serializable {
 
   @JsonCreator
   private static Warnings create(
-      @Nullable @JsonProperty(PROP_PEDANTIC) SortedSet<Warning> pedanticWarnings,
-      @Nullable @JsonProperty(PROP_RED_FLAGS) SortedSet<Warning> redFlagWarnings,
-      @Nullable @JsonProperty(PROP_UNIMPLEMENTED) SortedSet<Warning> unimplementedWarnings,
-      @Nullable @JsonProperty(PROP_PARSE_WARNINGS) List<ParseWarning> parseWarnings,
-      @Nullable @JsonProperty(PROP_ERROR_DETAILS) ErrorDetails errorDetails) {
+      @JsonProperty(PROP_PEDANTIC) @Nullable SortedSet<Warning> pedanticWarnings,
+      @JsonProperty(PROP_RED_FLAGS) @Nullable SortedSet<Warning> redFlagWarnings,
+      @JsonProperty(PROP_UNIMPLEMENTED) @Nullable SortedSet<Warning> unimplementedWarnings,
+      @JsonProperty(PROP_PARSE_WARNINGS) @Nullable List<ParseWarning> parseWarnings,
+      @JsonProperty(PROP_ERROR_DETAILS) @Nullable ErrorDetails errorDetails) {
     return new Warnings(
         new Settings(false, false, false),
         firstNonNull(pedanticWarnings, new TreeSet<>()),
@@ -120,9 +120,8 @@ public class Warnings implements Serializable {
     _errorDetails = errorDetails;
   }
 
-  @Nonnull
   @JsonProperty(PROP_PARSE_WARNINGS)
-  public List<ParseWarning> getParseWarnings() {
+  public @Nonnull List<ParseWarning> getParseWarnings() {
     return _parseWarnings;
   }
 

@@ -50,23 +50,20 @@ public final class FibLookupOverrideLookupIp implements Action {
   }
 
   /** Return a list of IPs to use as the next hop, ordered by precedence */
-  @Nonnull
   @JsonProperty(PROP_IPS)
-  public List<Ip> getIps() {
+  public @Nonnull List<Ip> getIps() {
     return _ips;
   }
 
   /** The default action to be taken if all IPs cannot be resolved */
-  @Nonnull
   @JsonProperty(PROP_DEFAULT_ACTION)
-  public Action getDefaultAction() {
+  public @Nonnull Action getDefaultAction() {
     return _defaultAction;
   }
 
   /** {@link VrfExpr} which encodes in which VRF to do the lookup. */
-  @Nonnull
   @JsonProperty(PROP_VRF_EXPR)
-  public VrfExpr getVrfExpr() {
+  public @Nonnull VrfExpr getVrfExpr() {
     return _vrfExpr;
   }
 
@@ -119,10 +116,10 @@ public final class FibLookupOverrideLookupIp implements Action {
 
   @JsonCreator
   private static FibLookupOverrideLookupIp jsonCreator(
-      @Nullable @JsonProperty(PROP_IPS) List<Ip> ips,
-      @Nullable @JsonProperty(PROP_VRF_EXPR) VrfExpr vrfExpr,
-      @Nullable @JsonProperty(PROP_REQUIRE_CONNECTED) Boolean requireConnected,
-      @Nullable @JsonProperty(PROP_DEFAULT_ACTION) Action defaultAction) {
+      @JsonProperty(PROP_IPS) @Nullable List<Ip> ips,
+      @JsonProperty(PROP_VRF_EXPR) @Nullable VrfExpr vrfExpr,
+      @JsonProperty(PROP_REQUIRE_CONNECTED) @Nullable Boolean requireConnected,
+      @JsonProperty(PROP_DEFAULT_ACTION) @Nullable Action defaultAction) {
     checkArgument(ips != null, "Missing %s", PROP_IPS);
     checkArgument(vrfExpr != null, "Missing %s", PROP_VRF_EXPR);
     checkArgument(requireConnected != null, "Missing %s", PROP_REQUIRE_CONNECTED);

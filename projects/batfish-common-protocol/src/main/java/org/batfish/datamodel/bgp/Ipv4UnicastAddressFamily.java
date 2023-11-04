@@ -35,13 +35,13 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
   @JsonCreator
   private static Ipv4UnicastAddressFamily jsonCreator(
       // super fields
-      @Nullable @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES)
+      @JsonProperty(PROP_ADDRESS_FAMILY_CAPABILITIES) @Nullable
           AddressFamilyCapabilities addressFamilyCapabilities,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY_SOURCES) SortedSet<String> exportPolicySources,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY) String importPolicy,
-      @Nullable @JsonProperty(PROP_IMPORT_POLICY_SOURCES) SortedSet<String> importPolicySources,
-      @Nullable @JsonProperty(ROUTE_REFLECTOR_CLIENT) Boolean routeReflectorClient) {
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_EXPORT_POLICY_SOURCES) @Nullable SortedSet<String> exportPolicySources,
+      @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
+      @JsonProperty(PROP_IMPORT_POLICY_SOURCES) @Nullable SortedSet<String> importPolicySources,
+      @JsonProperty(ROUTE_REFLECTOR_CLIENT) @Nullable Boolean routeReflectorClient) {
     checkArgument(
         addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
     return new Ipv4UnicastAddressFamily(
@@ -97,15 +97,13 @@ public final class Ipv4UnicastAddressFamily extends AddressFamily {
       _addressFamilyCapabilities = AddressFamilyCapabilities.builder().build();
     }
 
-    @Nonnull
     @Override
-    public Builder getThis() {
+    public @Nonnull Builder getThis() {
       return this;
     }
 
-    @Nonnull
     @Override
-    public Ipv4UnicastAddressFamily build() {
+    public @Nonnull Ipv4UnicastAddressFamily build() {
       checkArgument(
           _addressFamilyCapabilities != null, "Missing %s", PROP_ADDRESS_FAMILY_CAPABILITIES);
       return new Ipv4UnicastAddressFamily(

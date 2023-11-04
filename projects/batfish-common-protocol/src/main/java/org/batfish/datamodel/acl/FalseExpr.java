@@ -58,7 +58,7 @@ public class FalseExpr extends AclLineMatchExpr {
 
   @JsonCreator
   private static @Nonnull FalseExpr jsonCreator(
-      @Nullable @JsonProperty(PROP_TRACE_ELEMENT) TraceElement traceElement) {
+      @JsonProperty(PROP_TRACE_ELEMENT) @Nullable TraceElement traceElement) {
     return new FalseExpr(traceElement);
   }
 }

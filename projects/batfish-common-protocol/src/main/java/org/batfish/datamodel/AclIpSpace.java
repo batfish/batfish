@@ -286,7 +286,7 @@ public class AclIpSpace extends IpSpace {
   private final @Nonnull List<AclIpSpaceLine> _lines;
 
   @JsonCreator
-  private AclIpSpace(@Nullable @JsonProperty(PROP_LINES) List<AclIpSpaceLine> lines) {
+  private AclIpSpace(@JsonProperty(PROP_LINES) @Nullable List<AclIpSpaceLine> lines) {
     checkArgument(lines != null, "Missing %s", PROP_LINES);
     _lines = lines;
   }
@@ -307,9 +307,8 @@ public class AclIpSpace extends IpSpace {
     return _lines.equals(((AclIpSpace) o)._lines);
   }
 
-  @Nonnull
   @JsonProperty(PROP_LINES)
-  public List<AclIpSpaceLine> getLines() {
+  public @Nonnull List<AclIpSpaceLine> getLines() {
     return _lines;
   }
 

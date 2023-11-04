@@ -67,9 +67,9 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
       _ipProtocolSets = ipProtocolSets;
     }
 
-    @Nonnull
     @Override
-    public IpProtocolSets visitIpProtocolIpProtocolAstNode(IpProtocolIpProtocolAstNode astNode) {
+    public @Nonnull IpProtocolSets visitIpProtocolIpProtocolAstNode(
+        IpProtocolIpProtocolAstNode astNode) {
       return _ipProtocolSets.addIncluding(astNode.getIpProtocol());
     }
 
@@ -78,9 +78,8 @@ public final class ParboiledIpProtocolSpecifier implements IpProtocolSpecifier {
       return _ipProtocolSets.addExcluding(astNode.getIpProtocol());
     }
 
-    @Nonnull
     @Override
-    public IpProtocolSets visitUnionIpProtocolAstNode(UnionIpProtocolAstNode astNode) {
+    public @Nonnull IpProtocolSets visitUnionIpProtocolAstNode(UnionIpProtocolAstNode astNode) {
       return IpProtocolSets.union(astNode.getLeft().accept(this), astNode.getRight().accept(this));
     }
   }

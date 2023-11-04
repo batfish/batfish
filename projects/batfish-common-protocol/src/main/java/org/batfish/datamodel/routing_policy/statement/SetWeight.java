@@ -19,7 +19,7 @@ public final class SetWeight extends Statement {
   private @Nonnull IntExpr _weight;
 
   @JsonCreator
-  private static SetWeight jsonCreator(@Nullable @JsonProperty(PROP_WEIGHT) IntExpr weight) {
+  private static SetWeight jsonCreator(@JsonProperty(PROP_WEIGHT) @Nullable IntExpr weight) {
     checkArgument(weight != null, "%s must be provided", PROP_WEIGHT);
     return new SetWeight(weight);
   }

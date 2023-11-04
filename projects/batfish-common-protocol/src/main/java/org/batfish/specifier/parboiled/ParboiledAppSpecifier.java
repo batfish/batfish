@@ -77,9 +77,8 @@ public final class ParboiledAppSpecifier implements ApplicationSpecifier {
               : new UdpApplication(udpAppAstNode.getPorts()));
     }
 
-    @Nonnull
     @Override
-    public Set<Application> visitUnionAppAstNode(UnionAppAstNode astNode) {
+    public @Nonnull Set<Application> visitUnionAppAstNode(UnionAppAstNode astNode) {
       return Sets.union(astNode.getLeft().accept(this), astNode.getRight().accept(this));
     }
   }

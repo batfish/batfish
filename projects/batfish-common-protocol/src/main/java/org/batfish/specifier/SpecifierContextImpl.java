@@ -24,9 +24,8 @@ public class SpecifierContextImpl implements SpecifierContext {
     _locationInfo = ImmutableMap.copyOf(_batfish.getLocationInfo(networkSnapshot));
   }
 
-  @Nonnull
   @Override
-  public Map<String, Configuration> getConfigs() {
+  public @Nonnull Map<String, Configuration> getConfigs() {
     return _configs;
   }
 
@@ -35,9 +34,8 @@ public class SpecifierContextImpl implements SpecifierContext {
     return _batfish.getReferenceLibraryData().getReferenceBook(bookName);
   }
 
-  @Nonnull
   @Override
-  public Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
+  public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(String dimension) {
     return _batfish.getNodeRoleDimension(dimension);
   }
 

@@ -30,6 +30,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.MultipathEquivalentAsPathMatchMode;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
@@ -128,7 +129,30 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
   private final @Nonnull ResolvabilityEnforcer _resolvabilityEnforcer;
   private final @Nonnull Map<OriginMechanism, SortedSetMultimap<Prefix, Bgpv4Route>> _localRoutes;
   private final @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> _localRouteComparators;
+  private final @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
+      _nextHopIpResolverRestriction;
 
+  /**
+   * Construct a Bgpv4Rib
+   *
+   * @param mainRib If non-null, the main RIB used to check resolvability of routes merged into this
+   *     RIB.
+   * @param tieBreaker The tie-breaker used to compare routes merged into this RIB.
+   * @param maxPaths The maximum number of paths to install in this RIB for the same prefix.
+   * @param multipathEquivalentAsPathMatchMode How to determine whether two routes merged into this
+   *     RIB are multipath-equivalent with respect to their AS paths.
+   * @param clusterListAsIgpCost Whether to use cluster list length as IGP cost when comparing IGP
+   *     cost to next hop for different routes for the same prefix merged into this RIB.
+   * @param localOriginationTypeTieBreaker How to tie-break two local routes merged into this RIB
+   *     based on their {@link OriginMechanism}.
+   * @param networkNextHopIpTieBreaker How to tie-break two local routes merged into this RIB
+   *     orignated via {@link OriginMechanism#NETWORK}.
+   * @param redistributeNextHopIpTieBreaker How to tie-break two local routes merged into this RIB
+   *     orignated via {@link OriginMechanism#REDISTRIBUTE}.
+   * @param nextHopIpResolverRestriction A predicate on a next-hop IP's direct LPM routes in the
+   *     main RIB. If no direct LPM routes for a next-hop IP are matched by this predicate, routes
+   *     with that next hop IP are considered unresolvable.
+   */
   public Bgpv4Rib(
       @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
@@ -137,7 +161,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       boolean clusterListAsIgpCost,
       LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
       NextHopIpTieBreaker networkNextHopIpTieBreaker,
-      NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
+      NextHopIpTieBreaker redistributeNextHopIpTieBreaker,
+      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> nextHopIpResolverRestriction) {
     super(
         mainRib,
         tieBreaker,
@@ -150,6 +175,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     _localRouteComparators =
         initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
     _localRoutes = new EnumMap<>(OriginMechanism.class);
+    _nextHopIpResolverRestriction = nextHopIpResolverRestriction;
   }
 
   private static @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> initLocalRouteComparators(
@@ -169,9 +195,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
         .thenComparing(Bgpv4Route::getSrcProtocol);
   }
 
-  @Nonnull
   @Override
-  public RibDelta<Bgpv4Route> mergeRouteGetDelta(Bgpv4Route route) {
+  public @Nonnull RibDelta<Bgpv4Route> mergeRouteGetDelta(Bgpv4Route route) {
     /*
       Do not merge routes for which next hop is not reachable.
       However, due to some complications with how we create routes, we must skip this check for:
@@ -234,9 +259,8 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     return delta.build();
   }
 
-  @Nonnull
   @Override
-  public RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
+  public @Nonnull RibDelta<Bgpv4Route> removeRouteGetDelta(Bgpv4Route route) {
     if (route.isTrackableLocalRoute()) {
       return removeLocalRoute(route);
     }
@@ -286,10 +310,18 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
             nhip -> {
               boolean resolvable = isResolvable(nhip);
               for (Bgpv4Route affectedRoute : _resolvabilityEnforcer.getRoutesWithNhip(nhip)) {
-                MultipathRibDelta<Bgpv4Route> delta =
-                    resolvable
-                        ? super.multipathMergeRouteGetDelta(affectedRoute)
-                        : super.multipathRemoveRouteGetDelta(affectedRoute);
+                MultipathRibDelta<Bgpv4Route> delta;
+                if (resolvable) {
+                  delta = super.multipathMergeRouteGetDelta(affectedRoute);
+                } else {
+                  // Note this step removes affectedRoute from resolvability enforcer due to super
+                  // class calling this class's removeRouteGetDelta
+                  delta = super.multipathRemoveRouteGetDelta(affectedRoute);
+                  // Re-add affected route to resolvability enforcer so it can potentially be
+                  // reactivated by a future main RIB update
+                  // TODO: fix call chain so we don't have to re-add
+                  _resolvabilityEnforcer.addBgpRoute(affectedRoute);
+                }
                 bestPathDelta.from(delta.getBestPathDelta());
                 multipathDelta.from(delta.getMultipathDelta());
               }
@@ -303,8 +335,12 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
    */
   private boolean isResolvable(Ip nhip) {
     assert _mainRib != null;
-    // TODO: implement resolution restriction
-    return !_mainRib.longestPrefixMatch(nhip, alwaysTrue()).isEmpty();
+    for (AnnotatedRoute<AbstractRoute> route : _mainRib.longestPrefixMatch(nhip, alwaysTrue())) {
+      if (_nextHopIpResolverRestriction.test(route)) {
+        return true;
+      }
+    }
+    return false;
   }
 
   /**

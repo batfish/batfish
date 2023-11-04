@@ -20,7 +20,7 @@ public final class BufferedStatement extends Statement {
 
   @JsonCreator
   private static BufferedStatement jsonCreator(
-      @Nullable @JsonProperty(PROP_STATEMENT) Statement statement) {
+      @JsonProperty(PROP_STATEMENT) @Nullable Statement statement) {
     checkArgument(statement != null, "%s is required", PROP_STATEMENT);
     return new BufferedStatement(statement);
   }

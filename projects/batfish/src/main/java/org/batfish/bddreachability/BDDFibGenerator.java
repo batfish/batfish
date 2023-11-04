@@ -123,8 +123,8 @@ public final class BDDFibGenerator {
         generateRules_PreOutVrf_BlackHole(includedNode, preOutVrf));
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PostInVrf_InterfaceAccept(
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _ifaceAcceptBDDs.entrySet().stream()
@@ -150,8 +150,8 @@ public final class BDDFibGenerator {
             });
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_InterfaceAccept_VrfAccept(Predicate<String> includedNode) {
     return _ifaceAcceptBDDs.entrySet().stream()
         .filter(byNodeEntry -> includedNode.test(byNodeEntry.getKey()))
@@ -170,8 +170,8 @@ public final class BDDFibGenerator {
             });
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PostInVrf_NodeDropNoRoute(
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _vrfAcceptBDDs.entrySet().stream()
@@ -193,8 +193,8 @@ public final class BDDFibGenerator {
   }
 
   /** Generate edges from vrf to nextVrf */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PostInVrf_PostInVrf(
       Predicate<String> includedNode, StateExprConstructor2 postInVrf) {
     return _nextVrfBDDs.entrySet().stream()
@@ -220,8 +220,8 @@ public final class BDDFibGenerator {
             });
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PostInVrf_PreOutVrf(
       Predicate<String> includedNode,
       StateExprConstructor2 postInVrf,
@@ -249,8 +249,8 @@ public final class BDDFibGenerator {
                         }));
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PreOutVrf_NodeDropNullRoute(
       Predicate<String> includedNode, StateExprConstructor2 preOutVrf) {
     return _nullRoutedBDDs.entrySet().stream()
@@ -277,8 +277,8 @@ public final class BDDFibGenerator {
    * <p>This function collects all those speculative flows up and blackholes all of them. Doing it
    * in one place avoids parallel edges in the graph.
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PreOutVrf_BlackHole(
       Predicate<String> includedNode, StateExprConstructor2 preOutVrf) {
     // Sources of Vrf->Iface edges:
@@ -341,8 +341,8 @@ public final class BDDFibGenerator {
                         }));
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PreOutVrf_PreOutEdge(
       Predicate<String> includedNode,
       StateExprConstructor2 preOutVrf,
@@ -376,8 +376,8 @@ public final class BDDFibGenerator {
                                     })));
   }
 
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition(
       Predicate<String> includedNode,
       StateExprConstructor2 preOutVrf,
@@ -412,9 +412,8 @@ public final class BDDFibGenerator {
             _interfaceOutConstraint));
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition(
+  static @Nonnull Stream<Edge> generateRules_PreOutVrf_PreOutInterfaceDisposition(
       Predicate<String> includedNode,
       Map<String, Map<String, Map<String, BDD>>> dispositionBddMap,
       StateExprConstructor2 preOutVrfConstructor,

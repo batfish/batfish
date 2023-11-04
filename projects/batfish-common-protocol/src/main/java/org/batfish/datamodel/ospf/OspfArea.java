@@ -288,9 +288,8 @@ public class OspfArea implements Serializable {
   }
 
   /** The interfaces assigned to this OSPF area */
-  @Nonnull
   @JsonProperty(PROP_INTERFACES)
-  public SortedSet<String> getInterfaces() {
+  public @Nonnull SortedSet<String> getInterfaces() {
     return _interfaces;
   }
 
@@ -300,33 +299,28 @@ public class OspfArea implements Serializable {
     return _metricOfDefaultRoute;
   }
 
-  @Nullable
   @JsonProperty(PROP_NSSA)
-  public NssaSettings getNssa() {
+  public @Nullable NssaSettings getNssa() {
     return _nssa;
   }
 
-  @Nullable
   @JsonProperty(PROP_STUB)
-  public StubSettings getStub() {
+  public @Nullable StubSettings getStub() {
     return _stub;
   }
 
-  @Nonnull
   @JsonProperty(PROP_STUB_TYPE)
-  public StubType getStubType() {
+  public @Nonnull StubType getStubType() {
     return _stubType;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SUMMARIES)
-  public SortedMap<Prefix, OspfAreaSummary> getSummaries() {
+  public @Nonnull SortedMap<Prefix, OspfAreaSummary> getSummaries() {
     return _summaries;
   }
 
-  @Nullable
   @JsonProperty(PROP_SUMMARY_FILTER)
-  public String getSummaryFilter() {
+  public @Nullable String getSummaryFilter() {
     return _summaryFilter;
   }
 

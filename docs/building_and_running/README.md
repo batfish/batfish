@@ -23,21 +23,19 @@ We provide OS-specific advice below.
 
 Do the following before doing anything
 
-1. Install [XCode from Apple Store](https://itunes.apple.com/us/app/xcode/id497799835)
-
-2. Install XCode command-line tools.
+1. Install XCode command-line tools.
     - `xcode-select --install`
 
-3. Install Homebrew. Follow [these steps](https://brew.sh/).
+1. Install Homebrew. Follow [these steps](https://brew.sh/).
 
-4. Open a fresh terminal to ensure the utilities are correctly picked up.
+1. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-5. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+1. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
    using the following commands.
     - `brew tap homebrew/cask-versions`
     - `brew install --cask temurin11`
 
-6. If you don't already have it, install Bazelisk.
+1. If you don't already have it, install Bazelisk.
     - `brew install bazelisk`
 
 ### Ubuntu
@@ -89,10 +87,18 @@ j11q
     - `git clone https://github.com/batfish/batfish.git`
     - `cd batfish`
 
-2. Compile Batfish
-    - `bazel build //projects/allinone:allinone_main`
+## Running (simple)
 
-3. Run the Batfish service
+1. To build any unbuilt changes and run the Batfish service:
+    - `tools/bazel_run.sh`
+
+## Running (advanced)
+1. (Optional, done automatically in next step) Compile Batfish
+    - ```
+      bazel build //projects/allinone:allinone_main
+      ```
+
+1. Run the Batfish service
     - ```
       bazel run //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
       ```
@@ -116,7 +122,7 @@ j11q
 
    For more info, see the Bazel documentation.
 
-4. Explore using Pybatfish
+1. Explore using Pybatfish
 
    Once the service is running, you can
    use [Pybatfish](https://github.com/batfish/pybatfish) to analyze

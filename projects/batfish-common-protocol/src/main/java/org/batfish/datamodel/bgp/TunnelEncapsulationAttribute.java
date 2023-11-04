@@ -23,7 +23,7 @@ public class TunnelEncapsulationAttribute implements Serializable {
 
   @JsonCreator
   private static TunnelEncapsulationAttribute create(
-      @Nullable @JsonProperty(PROP_REMOTE_ENDPOINT) Ip remoteEndpoint) {
+      @JsonProperty(PROP_REMOTE_ENDPOINT) @Nullable Ip remoteEndpoint) {
     checkNotNull(remoteEndpoint, "%s cannot be null", PROP_REMOTE_ENDPOINT);
     return new TunnelEncapsulationAttribute(remoteEndpoint);
   }

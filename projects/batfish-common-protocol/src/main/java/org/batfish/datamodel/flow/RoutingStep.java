@@ -161,8 +161,8 @@ public final class RoutingStep extends Step<RoutingStepDetail> {
 
   @JsonCreator
   private static RoutingStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) RoutingStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable RoutingStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     return new RoutingStep(detail, action);

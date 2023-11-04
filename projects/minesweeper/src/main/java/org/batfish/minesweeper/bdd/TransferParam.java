@@ -34,6 +34,8 @@ public class TransferParam {
 
   private SetDefaultPolicy _defaultPolicy;
 
+  private boolean _readIntermediateBgpAttributes;
+
   private final boolean _debug;
 
   public TransferParam(BDDRoute data, boolean debug) {
@@ -45,6 +47,7 @@ public class TransferParam {
     _defaultAccept = false;
     _defaultAcceptLocal = false;
     _defaultPolicy = null;
+    _readIntermediateBgpAttributes = false;
     _debug = debug;
   }
 
@@ -57,6 +60,7 @@ public class TransferParam {
     _defaultAccept = p._defaultAccept;
     _defaultAcceptLocal = p._defaultAcceptLocal;
     _defaultPolicy = p._defaultPolicy;
+    _readIntermediateBgpAttributes = p._readIntermediateBgpAttributes;
     _debug = p._debug;
   }
 
@@ -82,6 +86,10 @@ public class TransferParam {
 
   public SetDefaultPolicy getDefaultPolicy() {
     return _defaultPolicy;
+  }
+
+  public boolean getReadIntermediateBgpAtttributes() {
+    return _readIntermediateBgpAttributes;
   }
 
   public boolean getInitialCall() {
@@ -137,6 +145,12 @@ public class TransferParam {
   public TransferParam setDefaultActionsFrom(TransferParam updatedParam) {
     return setDefaultAccept(updatedParam._defaultAccept)
         .setDefaultAcceptLocal(updatedParam._defaultAcceptLocal);
+  }
+
+  public TransferParam setReadIntermediateBgpAttributes(boolean b) {
+    TransferParam ret = new TransferParam(this);
+    ret._readIntermediateBgpAttributes = b;
+    return ret;
   }
 
   public TransferParam enterScope(String name) {

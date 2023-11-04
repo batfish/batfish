@@ -18,8 +18,8 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
 
   @JsonCreator
   public EigrpEdge(
-      @Nonnull @JsonProperty(PROP_NODE1) EigrpNeighborConfigId node1,
-      @Nonnull @JsonProperty(PROP_NODE2) EigrpNeighborConfigId node2) {
+      @JsonProperty(PROP_NODE1) @Nonnull EigrpNeighborConfigId node1,
+      @JsonProperty(PROP_NODE2) @Nonnull EigrpNeighborConfigId node2) {
     _node1 = node1;
     _node2 = node2;
   }
@@ -43,15 +43,13 @@ public final class EigrpEdge implements Serializable, Comparable<EigrpEdge> {
     return _node1.equals(rhs._node1) && _node2.equals(rhs._node2);
   }
 
-  @Nonnull
   @JsonProperty(PROP_NODE1)
-  public EigrpNeighborConfigId getNode1() {
+  public @Nonnull EigrpNeighborConfigId getNode1() {
     return _node1;
   }
 
-  @Nonnull
   @JsonProperty(PROP_NODE2)
-  public EigrpNeighborConfigId getNode2() {
+  public @Nonnull EigrpNeighborConfigId getNode2() {
     return _node2;
   }
 

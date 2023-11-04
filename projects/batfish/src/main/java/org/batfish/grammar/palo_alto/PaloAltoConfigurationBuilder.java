@@ -461,9 +461,8 @@ import org.batfish.vendor.StructureUsage;
 public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     implements SilentSyntaxListener {
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -561,21 +560,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return defaultReturnValue;
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 

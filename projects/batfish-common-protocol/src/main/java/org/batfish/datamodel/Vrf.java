@@ -143,10 +143,10 @@ public class Vrf extends ComparableStructure<String> {
 
   @JsonCreator
   private static Vrf create(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_OSPF_PROCESSES) Map<String, OspfProcess> ospfProcesses,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_OSPF_PROCESSES) @Nullable Map<String, OspfProcess> ospfProcesses,
       // For backwards compatible deserialization
-      @Nullable @JsonProperty(PROP_OSPF_PROCESS) OspfProcess ospfProcess) {
+      @JsonProperty(PROP_OSPF_PROCESS) @Nullable OspfProcess ospfProcess) {
     checkArgument(name != null, "%s must be provided", PROP_NAME);
     Vrf v = new Vrf(name);
     if (ospfProcesses != null) {

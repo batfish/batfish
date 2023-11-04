@@ -1290,9 +1290,8 @@ public class FileBasedStorage implements StorageProvider {
         .readValue(getEigrpTopologyPath(networkSnapshot).toFile(), EigrpTopology.class);
   }
 
-  @Nonnull
   @Override
-  public Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
+  public @Nonnull Optional<Layer1Topology> loadSynthesizedLayer1Topology(NetworkSnapshot snapshot)
       throws IOException {
     Path sl1tPath = getSynthesizedLayer1TopologyPath(snapshot.getNetwork(), snapshot.getSnapshot());
     // this is here for backward compatibility when we load up an existing container
@@ -1309,9 +1308,9 @@ public class FileBasedStorage implements StorageProvider {
         .readValue(getLayer3TopologyPath(networkSnapshot).toFile(), Topology.class);
   }
 
-  @Nonnull
   @Override
-  public L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot) throws IOException {
+  public @Nonnull L3Adjacencies loadL3Adjacencies(NetworkSnapshot networkSnapshot)
+      throws IOException {
     return deserializeObject(getL3AdjacenciesPath(networkSnapshot), L3Adjacencies.class);
   }
 
@@ -1462,9 +1461,9 @@ public class FileBasedStorage implements StorageProvider {
         .collect(ImmutableSet.toImmutableSet());
   }
 
-  @Nonnull
   @Override
-  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+  public @Nonnull Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network)
+      throws IOException {
     Path path = getReferenceLibraryPath(network);
     if (!Files.exists(path)) {
       return Optional.empty();
@@ -1503,9 +1502,9 @@ public class FileBasedStorage implements StorageProvider {
   private static final int STREAMED_FILE_BUFFER_SIZE = 1024;
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+  public @Nonnull InputStream loadUploadSnapshotZip(String key, NetworkId network)
+      throws IOException {
     return new FileInputStream(getUploadSnapshotZipPath(key, network).toFile());
   }
 
@@ -1518,9 +1517,9 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot)
+      throws IOException {
     Path inputObjectsPath =
         getSnapshotInputObjectsDir(snapshot.getNetwork(), snapshot.getSnapshot());
     if (!isDirectory(inputObjectsPath)) {
@@ -1539,9 +1538,8 @@ public class FileBasedStorage implements StorageProvider {
         .map(Object::toString);
   }
 
-  @Nonnull
   @Override
-  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
     Map<Path, String> namesByPath = new TreeMap<>();
     Path dataplanePath = getDataPlanePath(snapshot);
     try (DirectoryStream<Path> hostDataPlanes = Files.newDirectoryStream(dataplanePath)) {
@@ -1590,17 +1588,15 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> key.startsWith(BfConsts.RELPATH_ENVIRONMENT_BGP_TABLES));
   }
 
-  @Nonnull
   @Override
-  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+  public @Nonnull ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
       NetworkSnapshot snapshot) throws IOException {
     return deserializeObject(
         getParseEnvironmentBgpTablesAnswerElementPath(snapshot),
@@ -1634,10 +1630,9 @@ public class FileBasedStorage implements StorageProvider {
         .resolve(RELPATH_ENVIRONMENT_BGP_TABLES_ANSWER);
   }
 
-  @Nonnull
   @Override
-  public Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
-      throws IOException {
+  public @Nonnull Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
+      NetworkSnapshot snapshot) throws IOException {
     _logger.info("\n*** DESERIALIZING ENVIRONMENT BGP TABLES ***\n");
     _logger.resetTimer();
     Map<Path, String> namesByPath = new HashMap<>();
@@ -1682,9 +1677,8 @@ public class FileBasedStorage implements StorageProvider {
     deleteDirectory(getEnvironmentBgpTablesPath(snapshot));
   }
 
-  @Nonnull
   @Override
-  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+  public @Nonnull Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
       throws IOException {
     Path path =
         getSnapshotInputObjectPath(
@@ -1842,9 +1836,8 @@ public class FileBasedStorage implements StorageProvider {
     return getSnapshotDir(networkId, snapshotId).resolve(RELPATH_OUTPUT);
   }
 
-  @Nonnull
   @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+  public @Nonnull ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
       NetworkSnapshot snapshot) throws IOException {
     return deserializeObject(
         getParseVendorConfigurationAnswerElementPath(snapshot),
@@ -1873,10 +1866,9 @@ public class FileBasedStorage implements StorageProvider {
     Files.deleteIfExists(getParseVendorConfigurationAnswerElementPath(snapshot));
   }
 
-  @Nonnull
   @Override
-  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
-      throws IOException {
+  public @Nonnull Map<String, VendorConfiguration> loadVendorConfigurations(
+      NetworkSnapshot snapshot) throws IOException {
     _logger.info("\n*** DESERIALIZING VENDOR CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     Map<Path, String> namesByPath = new TreeMap<>();
@@ -1924,52 +1916,49 @@ public class FileBasedStorage implements StorageProvider {
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_HOST_CONFIGS_DIR));
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_CONFIGURATIONS_DIR));
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot)
+      throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, RELPATH_AWS_ACCOUNTS_DIR));
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot)
+      throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_AWS_CONFIGS_DIR));
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_CHECKPOINT_MANAGEMENT_DIR));
   }
 
   @MustBeClosed
-  @Nonnull
   @Override
-  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot)
+      throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
         .filter(key -> keyInDir(key, BfConsts.RELPATH_SONIC_CONFIGS_DIR));
   }

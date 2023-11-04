@@ -24,8 +24,8 @@ public class FilterGroup implements Comparable<FilterGroup>, Serializable {
 
   @JsonCreator
   public FilterGroup(
-      @Nullable @JsonProperty(PROP_FILTERS) List<String> filters,
-      @Nullable @JsonProperty(PROP_NAME) String name) {
+      @JsonProperty(PROP_FILTERS) @Nullable List<String> filters,
+      @JsonProperty(PROP_NAME) @Nullable String name) {
     checkArgument(name != null, "Filter group name cannot not be null");
     Names.checkName(name, "filter group", Type.REFERENCE_OBJECT);
 

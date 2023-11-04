@@ -166,20 +166,20 @@ public final class OspfInterfaceSettings implements Serializable {
 
   @JsonCreator
   private static OspfInterfaceSettings create(
-      @Nullable @JsonProperty(PROP_OSPF_ADDRESSES) OspfAddresses addresses,
-      @Nullable @JsonProperty(PROP_AREA) Long area,
-      @Nullable @JsonProperty(PROP_COST) Integer cost,
-      @Nullable @JsonProperty(PROP_DEAD_INTERVAL) Integer deadInterval,
-      @Nullable @JsonProperty(PROP_ENABLED) Boolean enabled,
-      @Nullable @JsonProperty(PROP_HELLO_INTERVAL) Integer helloInterval,
-      @Nullable @JsonProperty(PROP_HELLO_MULTIPLIER) Integer helloMultiplier,
-      @Nullable @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY)
+      @JsonProperty(PROP_OSPF_ADDRESSES) @Nullable OspfAddresses addresses,
+      @JsonProperty(PROP_AREA) @Nullable Long area,
+      @JsonProperty(PROP_COST) @Nullable Integer cost,
+      @JsonProperty(PROP_DEAD_INTERVAL) @Nullable Integer deadInterval,
+      @JsonProperty(PROP_ENABLED) @Nullable Boolean enabled,
+      @JsonProperty(PROP_HELLO_INTERVAL) @Nullable Integer helloInterval,
+      @JsonProperty(PROP_HELLO_MULTIPLIER) @Nullable Integer helloMultiplier,
+      @JsonProperty(PROP_INBOUND_DISTRIBUTE_LIST_POLICY) @Nullable
           String inboundDistributeListPolicy,
-      @Nullable @JsonProperty(PROP_NBMA_NEIGHBORS) Set<Ip> nbmaNeighbors,
-      @Nullable @JsonProperty(PROP_NETWORK_TYPE) OspfNetworkType networkType,
-      @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @Nullable @JsonProperty(PROP_PROCESS) String process,
-      @Nullable @JsonProperty(PROP_TYPE_5_FILTER_POLICY) String type5FilterPolicy) {
+      @JsonProperty(PROP_NBMA_NEIGHBORS) @Nullable Set<Ip> nbmaNeighbors,
+      @JsonProperty(PROP_NETWORK_TYPE) @Nullable OspfNetworkType networkType,
+      @JsonProperty(PROP_PASSIVE) @Nullable Boolean passive,
+      @JsonProperty(PROP_PROCESS) @Nullable String process,
+      @JsonProperty(PROP_TYPE_5_FILTER_POLICY) @Nullable String type5FilterPolicy) {
     checkArgument(enabled != null, "OSPF enabled must be specified");
     checkArgument(passive != null, "OSPF passive must be specified");
     checkArgument(helloInterval != null, "OSPF hello interval must be specified");

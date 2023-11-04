@@ -22,8 +22,8 @@ public final class SubRangeExpr implements Serializable {
 
   @JsonCreator
   private static SubRangeExpr jsonCreator(
-      @Nullable @JsonProperty(PROP_FIRST) IntExpr first,
-      @Nullable @JsonProperty(PROP_LAST) IntExpr last) {
+      @JsonProperty(PROP_FIRST) @Nullable IntExpr first,
+      @JsonProperty(PROP_LAST) @Nullable IntExpr last) {
     checkArgument(first != null, "%s must be provided", PROP_FIRST);
     checkArgument(last != null, "%s must be provided", PROP_LAST);
     return new SubRangeExpr(first, last);

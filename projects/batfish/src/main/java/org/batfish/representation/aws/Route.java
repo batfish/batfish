@@ -54,17 +54,17 @@ abstract class Route implements Serializable {
 
   @JsonCreator
   private static Route create(
-      @Nullable @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) Prefix destinationCidrBlock,
-      @Nullable @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK)
+      @JsonProperty(JSON_KEY_DESTINATION_CIDR_BLOCK) @Nullable Prefix destinationCidrBlock,
+      @JsonProperty(JSON_KEY_DESTINATION_IPV6_CIDR_BLOCK) @Nullable
           Prefix6 destinationIpv6CidrBlock,
-      @Nullable @JsonProperty(JSON_KEY_DESTINATION_PREFIX_LIST_ID) String destinationPrefixListId,
-      @Nullable @JsonProperty(JSON_KEY_STATE) String stateStr,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String transitGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) String vpcPeeringConnectionId,
-      @Nullable @JsonProperty(JSON_KEY_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) String natGatewayId,
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
-      @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
+      @JsonProperty(JSON_KEY_DESTINATION_PREFIX_LIST_ID) @Nullable String destinationPrefixListId,
+      @JsonProperty(JSON_KEY_STATE) @Nullable String stateStr,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
+      @JsonProperty(JSON_KEY_VPC_PEERING_CONNECTION_ID) @Nullable String vpcPeeringConnectionId,
+      @JsonProperty(JSON_KEY_GATEWAY_ID) @Nullable String gatewayId,
+      @JsonProperty(JSON_KEY_NAT_GATEWAY_ID) @Nullable String natGatewayId,
+      @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) @Nullable String networkInterfaceId,
+      @JsonProperty(JSON_KEY_INSTANCE_ID) @Nullable String instanceId) {
 
     checkArgument(
         destinationCidrBlock != null

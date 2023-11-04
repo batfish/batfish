@@ -15,7 +15,7 @@ public final class ExplicitAs extends AsExpr {
   private long _as;
 
   @JsonCreator
-  private static ExplicitAs jsonCreator(@Nullable @JsonProperty(PROP_AS) Long as) {
+  private static ExplicitAs jsonCreator(@JsonProperty(PROP_AS) @Nullable Long as) {
     checkArgument(as != null, "%s must be provided", PROP_AS);
     return new ExplicitAs(as);
   }

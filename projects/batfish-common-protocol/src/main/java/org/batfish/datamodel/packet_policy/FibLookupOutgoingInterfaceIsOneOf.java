@@ -35,21 +35,18 @@ public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
   }
 
   /** VRF for which to do the FIB lookup in */
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public VrfExpr getVrf() {
+  public @Nonnull VrfExpr getVrf() {
     return _vrf;
   }
 
-  @Nonnull
   @JsonIgnore
-  public Set<String> getInterfaceNames() {
+  public @Nonnull Set<String> getInterfaceNames() {
     return _interfaceNames;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACES)
-  private SortedSet<String> getInterfaceNamesJson() {
+  private @Nonnull SortedSet<String> getInterfaceNamesJson() {
     return ImmutableSortedSet.copyOf(_interfaceNames);
   }
 
@@ -85,8 +82,8 @@ public class FibLookupOutgoingInterfaceIsOneOf implements BoolExpr {
 
   @JsonCreator
   private static FibLookupOutgoingInterfaceIsOneOf create(
-      @Nullable @JsonProperty(PROP_VRF) VrfExpr vrf,
-      @Nullable @JsonProperty(PROP_INTERFACES) Set<String> interfaces) {
+      @JsonProperty(PROP_VRF) @Nullable VrfExpr vrf,
+      @JsonProperty(PROP_INTERFACES) @Nullable Set<String> interfaces) {
     checkArgument(vrf != null, "Missing %s", PROP_VRF);
     return new FibLookupOutgoingInterfaceIsOneOf(vrf, firstNonNull(interfaces, ImmutableSet.of()));
   }

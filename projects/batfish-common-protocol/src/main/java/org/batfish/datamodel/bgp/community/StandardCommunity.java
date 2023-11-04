@@ -125,9 +125,8 @@ public final class StandardCommunity extends Community {
     return false;
   }
 
-  @Nonnull
   @Override
-  public String matchString() {
+  public @Nonnull String matchString() {
     return toString();
   }
 
@@ -136,10 +135,9 @@ public final class StandardCommunity extends Community {
     return _value;
   }
 
-  @Nonnull
   @Override
   @JsonValue
-  public String toString() {
+  public @Nonnull String toString() {
     if (_str == null) {
       _str = (_value >> 16) + ":" + (_value & 0xFFFF);
     }
@@ -164,9 +162,8 @@ public final class StandardCommunity extends Community {
     return (int) (_value ^ (_value >>> 32));
   }
 
-  @Nonnull
   @Override
-  protected BigInteger asBigIntImpl() {
+  protected @Nonnull BigInteger asBigIntImpl() {
     return BigInteger.valueOf(_value);
   }
 }

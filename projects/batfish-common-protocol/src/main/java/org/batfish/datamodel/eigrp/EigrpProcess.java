@@ -60,14 +60,14 @@ public final class EigrpProcess implements Serializable {
 
   @JsonCreator
   private static EigrpProcess jsonCreator(
-      @Nullable @JsonProperty(PROP_ASN) Long asn,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_METRIC_VERSION) EigrpMetricVersion metricVersion,
-      @Nullable @JsonProperty(PROP_MODE) EigrpProcessMode mode,
-      @Nullable @JsonProperty(PROP_NEIGHBORS) Map<String, EigrpNeighborConfig> neighbors,
-      @Nullable @JsonProperty(PROP_ROUTER_ID) Ip routerId,
-      @Nullable @JsonProperty(PROP_INTERNAL_ADMIN_COST) Integer internalAdminCost,
-      @Nullable @JsonProperty(PROP_EXTERNAL_ADMIN_COST) Integer externalAdminCost) {
+      @JsonProperty(PROP_ASN) @Nullable Long asn,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_METRIC_VERSION) @Nullable EigrpMetricVersion metricVersion,
+      @JsonProperty(PROP_MODE) @Nullable EigrpProcessMode mode,
+      @JsonProperty(PROP_NEIGHBORS) @Nullable Map<String, EigrpNeighborConfig> neighbors,
+      @JsonProperty(PROP_ROUTER_ID) @Nullable Ip routerId,
+      @JsonProperty(PROP_INTERNAL_ADMIN_COST) @Nullable Integer internalAdminCost,
+      @JsonProperty(PROP_EXTERNAL_ADMIN_COST) @Nullable Integer externalAdminCost) {
     checkArgument(asn != null, "Missing %s", PROP_ASN);
     checkArgument(metricVersion != null, "Missing %s", PROP_METRIC_VERSION);
     checkArgument(mode != null, "Missing %s", PROP_MODE);
@@ -101,45 +101,40 @@ public final class EigrpProcess implements Serializable {
    * @return The routing policy applied to routes in the main RIB to determine which ones are
    *     exported into EIGRP and how
    */
-  @Nullable
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getRedistributionPolicy() {
+  public @Nullable String getRedistributionPolicy() {
     return _redistributionPolicy;
   }
 
   /**
    * @return All EIGRP neighbors in this process
    */
-  @Nonnull
   @JsonProperty(PROP_NEIGHBORS)
-  public SortedMap<String, EigrpNeighborConfig> getNeighbors() {
+  public @Nonnull SortedMap<String, EigrpNeighborConfig> getNeighbors() {
     return _neighbors;
   }
 
   /**
    * @return The router-id of this EIGRP process
    */
-  @Nonnull
   @JsonProperty(PROP_ROUTER_ID)
-  public Ip getRouterId() {
+  public @Nonnull Ip getRouterId() {
     return _routerId;
   }
 
   /**
    * @return The {@link EigrpMetricVersion} used by this process
    */
-  @Nonnull
   @JsonProperty(PROP_METRIC_VERSION)
-  public EigrpMetricVersion getMetricVersion() {
+  public @Nonnull EigrpMetricVersion getMetricVersion() {
     return _metricVersion;
   }
 
   /**
    * @return The EIGRP mode for this process
    */
-  @Nonnull
   @JsonProperty(PROP_MODE)
-  public EigrpProcessMode getMode() {
+  public @Nonnull EigrpProcessMode getMode() {
     return _mode;
   }
 

@@ -20,7 +20,7 @@ public final class SetIsisLevel extends Statement {
   private @Nonnull IsisLevelExpr _level;
 
   @JsonCreator
-  private static SetIsisLevel jsonCreator(@Nullable @JsonProperty(PROP_LEVEL) IsisLevelExpr level) {
+  private static SetIsisLevel jsonCreator(@JsonProperty(PROP_LEVEL) @Nullable IsisLevelExpr level) {
     checkArgument(level != null, "%s must be provided", level);
     return new SetIsisLevel(level);
   }

@@ -248,9 +248,8 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   }
 
   /** Return an empty RIB delta */
-  @Nonnull
   @SuppressWarnings("unchecked") // Fully variant implementation, never stores any Ts
-  public static <T extends AbstractRouteDecorator> RibDelta<T> empty() {
+  public static @Nonnull <T extends AbstractRouteDecorator> RibDelta<T> empty() {
     return (RibDelta<T>) EMPTY;
   }
 

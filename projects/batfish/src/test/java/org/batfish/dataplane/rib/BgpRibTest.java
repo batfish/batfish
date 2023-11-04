@@ -24,6 +24,7 @@ import org.batfish.datamodel.ReceivedFrom;
 import org.batfish.datamodel.ReceivedFromInterface;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.ReceivedFromSelf;
+import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
 import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
@@ -48,7 +49,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.builder()
             .setNetwork(Prefix.strict("10.0.0.1/32"))
@@ -87,7 +89,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good =
@@ -160,7 +163,8 @@ public class BgpRibTest {
                 false,
                 LocalOriginationTypeTieBreaker.NO_PREFERENCE,
                 NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+                NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+                ResolutionRestriction.alwaysTrue());
 
     Bgpv4Route nh1 =
         rb.setNextHop(NextHopIp.of(Ip.parse("1.1.1.1")))
@@ -264,7 +268,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb = Bgpv4Route.testBuilder().setNetwork(Prefix.ZERO);
 
     Bgpv4Route good =
@@ -347,7 +352,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -430,7 +436,8 @@ public class BgpRibTest {
             true,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)
@@ -478,7 +485,8 @@ public class BgpRibTest {
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
-            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP);
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
     Bgpv4Route.Builder rb =
         Bgpv4Route.testBuilder()
             .setNetwork(Prefix.ZERO)

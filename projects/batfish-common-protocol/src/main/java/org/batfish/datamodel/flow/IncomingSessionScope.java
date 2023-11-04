@@ -23,7 +23,7 @@ public final class IncomingSessionScope implements SessionScope {
 
   @JsonCreator
   private static IncomingSessionScope jsonCreator(
-      @Nullable @JsonProperty(PROP_INCOMING_INTERFACES) Set<String> incomingInterfaces) {
+      @JsonProperty(PROP_INCOMING_INTERFACES) @Nullable Set<String> incomingInterfaces) {
     checkNotNull(incomingInterfaces, "Missing %s", PROP_INCOMING_INTERFACES);
     return new IncomingSessionScope(incomingInterfaces);
   }

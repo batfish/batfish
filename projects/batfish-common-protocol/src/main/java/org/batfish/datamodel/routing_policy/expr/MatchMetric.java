@@ -22,8 +22,8 @@ public final class MatchMetric extends BooleanExpr {
 
   @JsonCreator
   private static MatchMetric jsonCreator(
-      @Nullable @JsonProperty(PROP_COMPARATOR) IntComparator comparator,
-      @Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
+      @JsonProperty(PROP_COMPARATOR) @Nullable IntComparator comparator,
+      @JsonProperty(PROP_METRIC) @Nullable LongExpr metric) {
     checkArgument(comparator != null, "%s must be provided", PROP_COMPARATOR);
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new MatchMetric(comparator, metric);

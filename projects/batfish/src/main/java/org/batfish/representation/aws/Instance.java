@@ -91,7 +91,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static NetworkInterfaceId create(
-        @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String id) {
+        @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) @Nullable String id) {
       checkArgument(id != null, "Security group id is null");
       return new NetworkInterfaceId(id);
     }
@@ -112,7 +112,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
     private final @Nonnull String _id;
 
     @JsonCreator
-    private static SecurityGroupId create(@Nullable @JsonProperty(JSON_KEY_GROUP_ID) String id) {
+    private static SecurityGroupId create(@JsonProperty(JSON_KEY_GROUP_ID) @Nullable String id) {
       checkArgument(id != null, "Security group id is null");
       return new SecurityGroupId(id);
     }
@@ -133,7 +133,7 @@ public final class Instance implements AwsVpcEntity, Serializable {
     private final @Nonnull Status _name;
 
     @JsonCreator
-    private static State create(@Nullable @JsonProperty("Name") String name) {
+    private static State create(@JsonProperty("Name") @Nullable String name) {
       checkArgument(name != null, "Name of State is null");
       return new State(Status.fromString(name));
     }
@@ -166,15 +166,15 @@ public final class Instance implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static Instance create(
-      @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
-      @Nullable @JsonProperty(JSON_KEY_SECURITY_GROUPS) List<SecurityGroupId> securityGroups,
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACES)
+      @JsonProperty(JSON_KEY_INSTANCE_ID) @Nullable String instanceId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId,
+      @JsonProperty(JSON_KEY_SECURITY_GROUPS) @Nullable List<SecurityGroupId> securityGroups,
+      @JsonProperty(JSON_KEY_NETWORK_INTERFACES) @Nullable
           List<NetworkInterfaceId> networkInterfaces,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
-      @Nullable @JsonProperty(JSON_KEY_TAGS) List<Tag> tags,
-      @Nullable @JsonProperty(JSON_KEY_STATE) State state) {
+      @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESS) @Nullable Ip privateIpAddress,
+      @JsonProperty(JSON_KEY_TAGS) @Nullable List<Tag> tags,
+      @JsonProperty(JSON_KEY_STATE) @Nullable State state) {
 
     checkNonNull(instanceId, "InstanceId", "Instance");
     checkArgument(

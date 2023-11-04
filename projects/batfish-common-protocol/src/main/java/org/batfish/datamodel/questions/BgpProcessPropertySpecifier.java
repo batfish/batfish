@@ -157,9 +157,8 @@ public class BgpProcessPropertySpecifier extends PropertySpecifier {
     _properties = properties.stream().sorted().collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
   @Override
-  public List<String> getMatchingProperties() {
+  public @Nonnull List<String> getMatchingProperties() {
     return _properties;
   }
 

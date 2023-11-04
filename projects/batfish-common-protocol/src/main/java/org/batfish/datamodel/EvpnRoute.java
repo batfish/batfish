@@ -35,16 +35,14 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       throw new UnsupportedOperationException("Cannot set admin for an EvpnRoute");
     }
 
-    @Nonnull
     @Override
-    public final B setNonRouting(boolean nonRouting) {
+    public final @Nonnull B setNonRouting(boolean nonRouting) {
       // All EVPN routes have nonrouting set to true (they should never enter the main RIB)
       throw new UnsupportedOperationException("Cannot set nonRouting for an EvpnRoute");
     }
 
-    @Nonnull
     @Override
-    public final B setNonForwarding(boolean nonForwarding) {
+    public final @Nonnull B setNonForwarding(boolean nonForwarding) {
       // All EVPN routes have nonforwarding set to true (they should never enter the main RIB)
       throw new UnsupportedOperationException("Cannot set nonForwarding for an EvpnRoute");
     }
@@ -63,9 +61,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public abstract R build();
+    public @Nonnull abstract R build();
   }
 
   /**
@@ -94,9 +91,8 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     _vni = vni;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ROUTE_DISTINGUISHER)
-  public RouteDistinguisher getRouteDistinguisher() {
+  public @Nonnull RouteDistinguisher getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 

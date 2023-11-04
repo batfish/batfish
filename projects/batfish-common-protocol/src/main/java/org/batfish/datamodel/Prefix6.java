@@ -1,5 +1,7 @@
 package org.batfish.datamodel;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
@@ -9,7 +11,6 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
-
   public static final int MAX_PREFIX_LENGTH = 128;
 
   public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
@@ -36,7 +37,15 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   private int _prefixLength;
 
   public Prefix6(Ip6 network, int prefixLength) {
-    _address = network;
+    checkArgument(
+        prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
+        "Invalid prefix length %s",
+        prefixLength);
+    if (network.valid()) {
+      _address = network.getNetworkAddress(prefixLength);
+    } else {
+      _address = network;
+    }
     _prefixLength = prefixLength;
   }
 
@@ -138,6 +147,10 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     result = prime * result + _address.hashCode();
     result = prime * result + _prefixLength;
     return result;
+  }
+
+  public @Nonnull Ip6Space toIp6Space() {
+    return new PrefixIp6Space(this);
   }
 
   @Override

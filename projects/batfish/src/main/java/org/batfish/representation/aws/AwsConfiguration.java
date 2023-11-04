@@ -159,9 +159,9 @@ public class AwsConfiguration extends VendorConfiguration {
    *
    * <p>TODO: Populate all the structure names that appear in these configs
    */
-  @Nonnull
   @Override
-  public List<Configuration> toVendorIndependentConfigurations() throws VendorConversionException {
+  public @Nonnull List<Configuration> toVendorIndependentConfigurations()
+      throws VendorConversionException {
     if (_convertedConfiguration == null) {
       convertConfigurations();
     }

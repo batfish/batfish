@@ -38,7 +38,7 @@ public final class MatchProtocol extends BooleanExpr {
 
   @JsonCreator
   private static MatchProtocol create(
-      @Nullable @JsonProperty(PROP_PROTOCOLS) Set<RoutingProtocol> protocols) {
+      @JsonProperty(PROP_PROTOCOLS) @Nullable Set<RoutingProtocol> protocols) {
     checkArgument(protocols != null, "Missing %s", PROP_PROTOCOLS);
     return new MatchProtocol(protocols);
   }
@@ -53,9 +53,8 @@ public final class MatchProtocol extends BooleanExpr {
     return new Result(_protocols.contains(environment.getOriginalRoute().getProtocol()));
   }
 
-  @Nonnull
   @JsonProperty(PROP_PROTOCOLS)
-  public Set<RoutingProtocol> getProtocols() {
+  public @Nonnull Set<RoutingProtocol> getProtocols() {
     return _protocols;
   }
 

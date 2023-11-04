@@ -10878,9 +10878,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 

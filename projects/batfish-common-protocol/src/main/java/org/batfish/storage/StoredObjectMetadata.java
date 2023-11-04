@@ -21,7 +21,7 @@ public final class StoredObjectMetadata {
 
   @JsonCreator
   private static @Nonnull StoredObjectMetadata create(
-      @Nullable @JsonProperty(PROP_KEY) String key, @Nullable @JsonProperty(PROP_SIZE) Long size) {
+      @JsonProperty(PROP_KEY) @Nullable String key, @JsonProperty(PROP_SIZE) @Nullable Long size) {
     checkArgument(size != null, "Object size must not be null!");
     return new StoredObjectMetadata(firstNonNull(key, ""), size);
   }

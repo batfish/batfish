@@ -41,10 +41,10 @@ public class Aggregate extends BfObject {
 
   @JsonCreator
   private static Aggregate jsonCreator(
-      @Nullable @JsonProperty(PROP_ID) String id,
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_CONTENTS) Set<String> contents,
-      @Nullable @JsonProperty(PROP_TYPE) AggregateType type) {
+      @JsonProperty(PROP_ID) @Nullable String id,
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_CONTENTS) @Nullable Set<String> contents,
+      @JsonProperty(PROP_TYPE) @Nullable AggregateType type) {
     checkArgument(name != null, "Missing %s", PROP_NAME);
     checkArgument(id != null, "Missing %s", PROP_ID);
     checkArgument(type != null, "Missing %s", PROP_TYPE);

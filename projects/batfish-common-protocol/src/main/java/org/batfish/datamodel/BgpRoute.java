@@ -274,13 +274,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     abstract BgpRoute's builder. */
     public @Nonnull abstract B newBuilder();
 
-    @Nonnull
     @Override
-    public abstract R build();
+    public @Nonnull abstract R build();
 
-    @Nonnull
     @Override
-    public AsPath getAsPath() {
+    public @Nonnull AsPath getAsPath() {
       return _asPath;
     }
 
@@ -291,15 +289,13 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
           : Collections.unmodifiableSet(_clusterList);
     }
 
-    @Nonnull
     @Override
-    public CommunitySet getCommunities() {
+    public @Nonnull CommunitySet getCommunities() {
       return _communities;
     }
 
-    @Nonnull
     @Override
-    public Set<Community> getCommunitiesAsSet() {
+    public @Nonnull Set<Community> getCommunitiesAsSet() {
       return _communities.getCommunities();
     }
 
@@ -317,9 +313,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _originMechanism;
     }
 
-    @Nullable
     @Override
-    public OriginType getOriginType() {
+    public @Nullable OriginType getOriginType() {
       return _originType;
     }
 
@@ -339,9 +334,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return _weight;
     }
 
-    @Nonnull
     @Override
-    public B setAsPath(AsPath asPath) {
+    public @Nonnull B setAsPath(AsPath asPath) {
       _asPath = asPath;
       return getThis();
     }
@@ -372,9 +366,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Overwrite communities */
-    @Nonnull
     @Override
-    public B setCommunities(CommunitySet communities) {
+    public @Nonnull B setCommunities(CommunitySet communities) {
       _communities = communities;
       return getThis();
     }
@@ -408,9 +401,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public B setLocalPreference(long localPreference) {
+    public @Nonnull B setLocalPreference(long localPreference) {
       _localPreference = localPreference;
       return getThis();
     }
@@ -426,9 +418,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public B setOriginType(OriginType originType) {
+    public @Nonnull B setOriginType(OriginType originType) {
       _originType = originType;
       return getThis();
     }
@@ -464,9 +455,8 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       return getThis();
     }
 
-    @Nonnull
     @Override
-    public B setWeight(int weight) {
+    public @Nonnull B setWeight(int weight) {
       _weight = weight;
       return getThis();
     }
@@ -515,10 +505,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _receivedFrom = receivedFrom;
   }
 
-  @Nonnull
   @JsonProperty(PROP_AS_PATH)
   @Override
-  public AsPath getAsPath() {
+  public @Nonnull AsPath getAsPath() {
     return _attributes._asPath;
   }
 
@@ -528,30 +517,26 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   }
 
   /** Return the set of all community attributes */
-  @Nonnull
   @Override
-  public final CommunitySet getCommunities() {
+  public final @Nonnull CommunitySet getCommunities() {
     return _attributes._communities;
   }
 
   /** Return the set of all community attributes */
-  @Nonnull
   @Override
-  public final Set<Community> getCommunitiesAsSet() {
+  public final @Nonnull Set<Community> getCommunitiesAsSet() {
     return _attributes._communities.getCommunities();
   }
 
   /** Return only standard community attributes */
-  @Nonnull
   @JsonIgnore
-  public Set<StandardCommunity> getStandardCommunities() {
+  public @Nonnull Set<StandardCommunity> getStandardCommunities() {
     return _attributes._communities.getStandardCommunities();
   }
 
   /** Return only extended community attributes */
-  @Nonnull
   @JsonIgnore
-  public Set<ExtendedCommunity> getExtendedCommunities() {
+  public @Nonnull Set<ExtendedCommunity> getExtendedCommunities() {
     return _attributes._communities.getExtendedCommunities();
   }
 
@@ -574,16 +559,14 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     return _attributes._originatorIp;
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGIN_MECHANISM)
-  public OriginMechanism getOriginMechanism() {
+  public @Nonnull OriginMechanism getOriginMechanism() {
     return _attributes.getOriginMechanism();
   }
 
-  @Nonnull
   @JsonProperty(PROP_ORIGIN_TYPE)
   @Override
-  public OriginType getOriginType() {
+  public @Nonnull OriginType getOriginType() {
     return _attributes.getOriginType();
   }
 
@@ -591,17 +574,15 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
    * Path ID specified in the BGP advertisement that resulted in this route. Null if the
    * advertisement specified no path ID or if the route is local.
    */
-  @Nullable
   @JsonProperty(PROP_PATH_ID)
-  public Integer getPathId() {
+  public @Nullable Integer getPathId() {
     return _pathId;
   }
 
-  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_PROTOCOL)
   @Override
-  public RoutingProtocol getProtocol() {
+  public @Nonnull RoutingProtocol getProtocol() {
     return _attributes.getProtocol();
   }
 

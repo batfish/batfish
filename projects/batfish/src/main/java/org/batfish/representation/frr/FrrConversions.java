@@ -961,9 +961,8 @@ public final class FrrConversions {
             return updateSourceAddress.getAddress();
           }
 
-          @Nullable
           @Override
-          public Ip visitBgpNeighborSourceInterface(
+          public @Nullable Ip visitBgpNeighborSourceInterface(
               BgpNeighborSourceInterface updateSourceInterface) {
             org.batfish.datamodel.Interface iface =
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());

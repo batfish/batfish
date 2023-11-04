@@ -23,7 +23,7 @@ public final class MatchSourceVrf extends BooleanExpr {
   private final String _sourceVrf;
 
   @JsonCreator
-  private static MatchSourceVrf create(@Nullable @JsonProperty(PROP_SOURCE_VRF) String sourceVrf) {
+  private static MatchSourceVrf create(@JsonProperty(PROP_SOURCE_VRF) @Nullable String sourceVrf) {
     checkArgument(sourceVrf != null, "%s must be provided", PROP_SOURCE_VRF);
     return new MatchSourceVrf(sourceVrf);
   }

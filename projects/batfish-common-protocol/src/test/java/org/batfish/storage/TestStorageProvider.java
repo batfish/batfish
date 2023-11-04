@@ -52,9 +52,8 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nullable
   @Override
-  public ConversionContext loadConversionContext(NetworkSnapshot snapshot)
+  public @Nullable ConversionContext loadConversionContext(NetworkSnapshot snapshot)
       throws FileNotFoundException, IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
@@ -65,23 +64,20 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nullable
   @Override
-  public SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
+  public @Nullable SortedSet<NodeInterfacePair> loadInterfaceBlacklist(
       NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nullable
   @Override
-  public IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
+  public @Nullable IspConfiguration loadIspConfiguration(NetworkId network, SnapshotId snapshot)
       throws IspConfigurationException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nullable
   @Override
-  public SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
+  public @Nullable SortedSet<String> loadNodeBlacklist(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
@@ -90,22 +86,19 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nullable
   @Override
-  public SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
+  public @Nullable SnapshotRuntimeData loadRuntimeData(NetworkId network, SnapshotId snapshot) {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nonnull
   @Override
-  public String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
+  public @Nonnull String loadWorkLog(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
 
-  @Nonnull
   @Override
-  public String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
+  public @Nonnull String loadWorkJson(NetworkId network, SnapshotId snapshot, String workId)
       throws IOException {
     throw new UnsupportedOperationException("no implementation for generated method");
   }
@@ -418,9 +411,8 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Optional<String> readId(Class<? extends Id> type, String name, Id... ancestors)
+  public @Nonnull Optional<String> readId(Class<? extends Id> type, String name, Id... ancestors)
       throws IOException {
     throw new UnsupportedOperationException();
   }
@@ -441,16 +433,15 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
+  public @Nonnull Set<String> listResolvableNames(Class<? extends Id> type, Id... ancestors)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network) throws IOException {
+  public @Nonnull Optional<ReferenceLibrary> loadReferenceLibrary(NetworkId network)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -472,9 +463,9 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public InputStream loadUploadSnapshotZip(String key, NetworkId network) throws IOException {
+  public @Nonnull InputStream loadUploadSnapshotZip(String key, NetworkId network)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -484,15 +475,14 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listSnapshotInputObjectKeys(NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull DataPlane loadDataPlane(NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -506,16 +496,14 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputEnvironmentBgpTableKeys(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
+  public @Nonnull ParseEnvironmentBgpTablesAnswerElement loadParseEnvironmentBgpTablesAnswerElement(
       NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
@@ -540,10 +528,9 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(NetworkSnapshot snapshot)
-      throws IOException {
+  public @Nonnull Map<String, BgpAdvertisementsByVrf> loadEnvironmentBgpTables(
+      NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -559,16 +546,14 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
+  public @Nonnull Optional<String> loadExternalBgpAnnouncementsFile(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
+  public @Nonnull ParseVendorConfigurationAnswerElement loadParseVendorConfigurationAnswerElement(
       NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
@@ -593,10 +578,9 @@ public class TestStorageProvider implements StorageProvider {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Map<String, VendorConfiguration> loadVendorConfigurations(NetworkSnapshot snapshot)
-      throws IOException {
+  public @Nonnull Map<String, VendorConfiguration> loadVendorConfigurations(
+      NetworkSnapshot snapshot) throws IOException {
     throw new UnsupportedOperationException();
   }
 
@@ -610,42 +594,39 @@ public class TestStorageProvider implements StorageProvider {
   @Override
   public void deleteVendorConfigurations(NetworkSnapshot snapshot) throws IOException {}
 
-  @Nonnull
   @Override
-  public Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputHostConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputNetworkConfigurationsKeys(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot)
+  public @Nonnull Stream<String> listInputCheckpointManagementKeys(NetworkSnapshot snapshot)
       throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputSonicConfigsKeys(NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputAwsMultiAccountKeys(NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 
-  @Nonnull
   @Override
-  public Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException {
+  public @Nonnull Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot)
+      throws IOException {
     throw new UnsupportedOperationException();
   }
 

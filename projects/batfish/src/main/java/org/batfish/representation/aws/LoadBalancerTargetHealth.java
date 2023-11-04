@@ -42,9 +42,9 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
 
     @JsonCreator
     private static TargetHealth create(
-        @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
-        @Nullable @JsonProperty(JSON_KEY_REASON) String reason,
-        @Nullable @JsonProperty(JSON_KEY_STATE) String state) {
+        @JsonProperty(JSON_KEY_DESCRIPTION) @Nullable String description,
+        @JsonProperty(JSON_KEY_REASON) @Nullable String reason,
+        @JsonProperty(JSON_KEY_STATE) @Nullable String state) {
       checkNonNull(state, JSON_KEY_STATE, "Load balancer target health");
 
       return new TargetHealth(description, reason, HealthState.valueOf(state.toUpperCase()));
@@ -112,8 +112,8 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
 
     @JsonCreator
     private static TargetHealthDescription create(
-        @Nullable @JsonProperty(JSON_KEY_TARGET) LoadBalancerTarget target,
-        @Nullable @JsonProperty(JSON_KEY_TARGET_HEALTH) TargetHealth targetHealth) {
+        @JsonProperty(JSON_KEY_TARGET) @Nullable LoadBalancerTarget target,
+        @JsonProperty(JSON_KEY_TARGET_HEALTH) @Nullable TargetHealth targetHealth) {
       checkNonNull(target, JSON_KEY_TARGET, "Load balancer target health");
       checkNonNull(targetHealth, JSON_KEY_TARGET_HEALTH, "Load balancer target health");
 
@@ -165,8 +165,8 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
 
   @JsonCreator
   private static LoadBalancerTargetHealth create(
-      @Nullable @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) String targetGroupArn,
-      @Nullable @JsonProperty(JSON_KEY_TARGET_HEALTH_DESCRIPTIONS)
+      @JsonProperty(JSON_KEY_TARGET_GROUP_ARN) @Nullable String targetGroupArn,
+      @JsonProperty(JSON_KEY_TARGET_HEALTH_DESCRIPTIONS) @Nullable
           List<TargetHealthDescription> targetHealthDescriptions) {
     checkNonNull(targetGroupArn, JSON_KEY_TARGET_GROUP_ARN, "LoadBalancer target health");
     checkNonNull(

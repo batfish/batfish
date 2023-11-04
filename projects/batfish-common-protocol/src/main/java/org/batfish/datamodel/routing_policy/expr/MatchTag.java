@@ -25,8 +25,8 @@ public final class MatchTag extends BooleanExpr {
 
   @JsonCreator
   private static MatchTag jsonCreator(
-      @Nullable @JsonProperty(PROP_CMP) IntComparator cmp,
-      @Nullable @JsonProperty(PROP_TAG) LongExpr tag) {
+      @JsonProperty(PROP_CMP) @Nullable IntComparator cmp,
+      @JsonProperty(PROP_TAG) @Nullable LongExpr tag) {
     checkArgument(cmp != null, "%s must be provided", PROP_CMP);
     checkArgument(tag != null, "%s must be provided", PROP_TAG);
     return new MatchTag(cmp, tag);

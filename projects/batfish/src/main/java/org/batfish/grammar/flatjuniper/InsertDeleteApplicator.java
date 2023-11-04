@@ -74,21 +74,18 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
     _statementsByTree = HashMultimap.create();
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _parser.getInput();
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _warnings;
   }
 

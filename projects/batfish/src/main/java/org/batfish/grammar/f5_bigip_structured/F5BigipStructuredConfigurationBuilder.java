@@ -3158,21 +3158,18 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return _c;
   }
 
-  @Nonnull
   @Override
-  public String getInputText() {
+  public @Nonnull String getInputText() {
     return _text;
   }
 
-  @Nonnull
   @Override
-  public BatfishCombinedParser<?, ?> getParser() {
+  public @Nonnull BatfishCombinedParser<?, ?> getParser() {
     return _parser;
   }
 
-  @Nonnull
   @Override
-  public Warnings getWarnings() {
+  public @Nonnull Warnings getWarnings() {
     return _w;
   }
 
@@ -3198,9 +3195,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  @Nonnull
   @Override
-  public String getWarningText(ParserRuleContext ctx) {
+  public @Nonnull String getWarningText(ParserRuleContext ctx) {
     // Just print first line
     return getFullText(ctx).split("\n", -1)[0];
   }

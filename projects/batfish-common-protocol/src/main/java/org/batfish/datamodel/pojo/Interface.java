@@ -31,8 +31,8 @@ public class Interface extends BfObject {
   @JsonCreator
   public Interface(
       @JsonProperty(PROP_ID) String id,
-      @Nonnull @JsonProperty(PROP_NODE_ID) String nodeId,
-      @Nonnull @JsonProperty(PROP_NAME) String name,
+      @JsonProperty(PROP_NODE_ID) @Nonnull String nodeId,
+      @JsonProperty(PROP_NAME) @Nonnull String name,
       @JsonProperty(PROP_TYPE) InterfaceType type) {
     super(firstNonNull(id, getId(nodeId, name)));
     _nodeId = nodeId;

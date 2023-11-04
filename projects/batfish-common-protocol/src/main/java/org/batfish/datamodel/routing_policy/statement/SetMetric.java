@@ -19,7 +19,7 @@ public final class SetMetric extends Statement {
   private final @Nonnull LongExpr _metric;
 
   @JsonCreator
-  private static SetMetric jsonCreator(@Nullable @JsonProperty(PROP_METRIC) LongExpr metric) {
+  private static SetMetric jsonCreator(@JsonProperty(PROP_METRIC) @Nullable LongExpr metric) {
     checkArgument(metric != null, "%s must be provided", PROP_METRIC);
     return new SetMetric(metric);
   }
