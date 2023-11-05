@@ -111,9 +111,8 @@ public final class DifferentialReachabilityAnswererTest {
       SortedMap<String, Configuration> snapshotConfigs) {
     return new SpecifierContext() {
 
-      @Nonnull
       @Override
-      public Map<String, Configuration> getConfigs() {
+      public @Nonnull Map<String, Configuration> getConfigs() {
         return snapshotConfigs;
       }
 
@@ -122,9 +121,8 @@ public final class DifferentialReachabilityAnswererTest {
         return Optional.empty();
       }
 
-      @Nonnull
       @Override
-      public Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
+      public @Nonnull Optional<NodeRoleDimension> getNodeRoleDimension(@Nullable String dimension) {
         return Optional.empty();
       }
 

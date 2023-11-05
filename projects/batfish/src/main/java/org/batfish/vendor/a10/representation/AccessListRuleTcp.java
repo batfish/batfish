@@ -6,21 +6,18 @@ import org.batfish.datamodel.SubRange;
 
 /** An access-list rule matching tcp traffic. */
 public class AccessListRuleTcp implements AccessListRule {
-  @Nonnull
   @Override
-  public Action getAction() {
+  public @Nonnull Action getAction() {
     return _action;
   }
 
-  @Nonnull
   @Override
-  public AccessListAddress getSource() {
+  public @Nonnull AccessListAddress getSource() {
     return _source;
   }
 
-  @Nonnull
   @Override
-  public AccessListAddress getDestination() {
+  public @Nonnull AccessListAddress getDestination() {
     return _destination;
   }
 
@@ -34,9 +31,8 @@ public class AccessListRuleTcp implements AccessListRule {
     return _destinationRange;
   }
 
-  @Nonnull
   @Override
-  public String getLineText() {
+  public @Nonnull String getLineText() {
     return _lineText;
   }
 

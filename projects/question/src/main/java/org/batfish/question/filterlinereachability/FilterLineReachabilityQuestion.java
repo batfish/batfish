@@ -40,9 +40,9 @@ public class FilterLineReachabilityQuestion extends Question {
 
   @JsonCreator
   private static FilterLineReachabilityQuestion create(
-      @Nullable @JsonProperty(PROP_FILTERS) String filters,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_IGNORE_COMPOSITES) Boolean ignoreComposites) {
+      @JsonProperty(PROP_FILTERS) @Nullable String filters,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_IGNORE_COMPOSITES) @Nullable Boolean ignoreComposites) {
     return new FilterLineReachabilityQuestion(
         filters, nodes, firstNonNull(ignoreComposites, DEFAULT_IGNORE_COMPOSITES));
   }
@@ -90,14 +90,13 @@ public class FilterLineReachabilityQuestion extends Question {
     return false;
   }
 
-  @Nullable
   @JsonProperty(PROP_FILTERS)
-  public String getFilters() {
+  public @Nullable String getFilters() {
     return _filters;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   FilterSpecifier getFilterSpecifier() {
     return _filterSpecifier;
   }
@@ -112,14 +111,13 @@ public class FilterLineReachabilityQuestion extends Question {
     return "filterLineReachability";
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
+  @Nonnull
   NodeSpecifier nodeSpecifier() {
     return _nodeSpecifier;
   }

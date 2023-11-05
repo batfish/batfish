@@ -319,9 +319,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
         !routingPolicy.process(routeBuilder.build(), routeBuilder, Direction.IN));
   }
 
-  @Nonnull
   @Override
-  public RibDelta<OspfRoute> getUpdatesForMainRib() {
+  public @Nonnull RibDelta<OspfRoute> getUpdatesForMainRib() {
     RibDelta<OspfRoute> result = _changeset.build();
     // Clear state
     _changeset = RibDelta.builder();
@@ -389,8 +388,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *
    * @param area {@link OspfArea area configuration}
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   RibDelta<OspfIntraAreaRoute> initializeRoutesByArea(OspfArea area) {
     RibDelta.Builder<OspfIntraAreaRoute> deltaBuilder = RibDelta.builder();
 
@@ -592,8 +591,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return {@link Optional#empty()} if the route should be filtered out, otherwise a {@link
    *     RouteAdvertisement} containing the transformed route.
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Optional<OspfInterAreaRoute.Builder> transformInterAreaRouteOnImport(
       OspfInterAreaRoute route, String ifaceName, long incrementalCost) {
     // sanity check that this is a non-routing in-transit route
@@ -690,8 +689,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param incrementalCost incremental cost of the OSPF link to be added to the route.
    * @return A {@link RouteAdvertisement} containing the transformed route.
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   OspfIntraAreaRoute.Builder transformIntraAreaRouteOnImport(
       OspfIntraAreaRoute route, String ifaceName, long incrementalCost) {
     // sanity check that this is a non-routing in-transit route
@@ -1052,14 +1051,14 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param nextHopIp next hop ip to use when creating the route.
    * @param customMetric if provided (i.e., not {@code null}) it will be used instead of the routes
    */
-  @Nonnull
   @VisibleForTesting
-  static Stream<RouteAdvertisement<OspfInterAreaRoute>> filterInterAreaRoutesToPropagateAtABR(
-      RibDelta<OspfInterAreaRoute> delta,
-      OspfArea areaConfig,
-      Ip neighborIp,
-      Ip nextHopIp,
-      @Nullable Long customMetric) {
+  static @Nonnull Stream<RouteAdvertisement<OspfInterAreaRoute>>
+      filterInterAreaRoutesToPropagateAtABR(
+          RibDelta<OspfInterAreaRoute> delta,
+          OspfArea areaConfig,
+          Ip neighborIp,
+          Ip nextHopIp,
+          @Nullable Long customMetric) {
     if (areaConfig.getStubType() == StubType.STUB && areaConfig.getStub().getSuppressType3()
         || areaConfig.getStubType() == StubType.NSSA && areaConfig.getNssa().getSuppressType3()) {
       // Nothing to do for totally stubby areas, where summaries are suppressed
@@ -1118,10 +1117,9 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return an Optional containing the default route. May be empty if no route needs to be injected
    *     into the given area.
    */
-  @Nonnull
   @VisibleForTesting
-  static Optional<RouteAdvertisement<OspfInterAreaRoute>> computeDefaultInterAreaRouteToInject(
-      OspfArea areaConfig, Ip nextHopIp) {
+  static @Nonnull Optional<RouteAdvertisement<OspfInterAreaRoute>>
+      computeDefaultInterAreaRouteToInject(OspfArea areaConfig, Ip nextHopIp) {
 
     if (areaConfig.getStubType() != StubType.STUB
         && (areaConfig.getStubType() != StubType.NSSA
@@ -1212,8 +1210,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Transform type1 routes on import */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   OspfExternalType1Route.Builder transformType1RouteOnImport(
       OspfExternalType1Route route, String nextHopInterface, Ip nextHopIp, long incrementalCost) {
     return transformType1and2CommonOnImport(route, nextHopInterface, nextHopIp)
@@ -1253,8 +1251,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
   }
 
   /** Transform type2 routes on import */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   OspfExternalRoute.Builder transformType2RouteOnImport(
       OspfExternalType2Route route, String nextHopInterface, Ip nextHopIp, long incrementalCost) {
     return transformType1and2CommonOnImport(route, nextHopInterface, nextHopIp)
@@ -1359,8 +1357,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    *     OspfExternalType2Route}
    * @return collection of routes that should be advertised into a given area
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   <T extends OspfExternalRoute> Stream<RouteAdvertisement<T>> filterExternalRoutesOnExport(
       RibDelta<T> delta, OspfArea areaConfig, @Nullable RoutingPolicy type5filterRoutingPolicy) {
     // No external routes can propagate into a stub area
@@ -1391,8 +1389,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param routeAdvertisements routes that are being sent to a given area
    * @param areaConfig area to which we are sending the routes
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Collection<RouteAdvertisement<OspfExternalType1Route>> transformType1RoutesOnExport(
       Stream<RouteAdvertisement<OspfExternalType1Route>> routeAdvertisements,
       OspfArea areaConfig,
@@ -1449,12 +1447,12 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @param routeAdvertisements routes that are being sent to a given area
    * @param areaConfig area to which we are sending the routes
    */
-  @Nonnull
   @VisibleForTesting
-  static Collection<RouteAdvertisement<OspfExternalType2Route>> transformType2RoutesOnExport(
-      Stream<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
-      OspfArea areaConfig,
-      Ip nextHopIp) {
+  static @Nonnull Collection<RouteAdvertisement<OspfExternalType2Route>>
+      transformType2RoutesOnExport(
+          Stream<RouteAdvertisement<OspfExternalType2Route>> routeAdvertisements,
+          OspfArea areaConfig,
+          Ip nextHopIp) {
     return routeAdvertisements
         .map(
             r -> {
@@ -1485,8 +1483,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return an external route to be advertised or an {@link Optional#empty()} if the route should
    *     not be exported
    */
-  @Nonnull
   @VisibleForTesting
+  @Nonnull
   Optional<OspfExternalRoute> convertToExternalRoute(
       AbstractRouteDecorator potentialExportRoute, RoutingPolicy exportPolicy) {
     // Prepare the builder
@@ -1564,8 +1562,8 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
    * @return {@link GeneratedRoute} with any updated attributes, or {@code null} if shouldn't be
    *     activated
    */
-  @Nullable
   @VisibleForTesting
+  @Nullable
   GeneratedRoute activateGeneratedRoute(
       RibDelta<? extends AnnotatedRoute<AbstractRoute>> mainRibDelta, GeneratedRoute r) {
     String generationPolicyName = r.getGenerationPolicy();

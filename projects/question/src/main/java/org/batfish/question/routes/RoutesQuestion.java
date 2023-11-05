@@ -115,13 +115,13 @@ public class RoutesQuestion extends Question {
 
   @JsonCreator
   private static @Nonnull RoutesQuestion create(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix network,
-      @Nullable @JsonProperty(PROP_NODES) String nodes,
-      @Nullable @JsonProperty(PROP_VRFS) String vrfs,
-      @Nullable @JsonProperty(PROP_PROTOCOLS) String protocols,
-      @Nullable @JsonProperty(PROP_BGP_ROUTE_STATUS) String bgpRouteStatus,
-      @Nullable @JsonProperty(PROP_RIB) RibProtocol rib,
-      @Nullable @JsonProperty(PROP_PREFIX_MATCH_TYPE) PrefixMatchType prefixMatchType) {
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
+      @JsonProperty(PROP_NODES) @Nullable String nodes,
+      @JsonProperty(PROP_VRFS) @Nullable String vrfs,
+      @JsonProperty(PROP_PROTOCOLS) @Nullable String protocols,
+      @JsonProperty(PROP_BGP_ROUTE_STATUS) @Nullable String bgpRouteStatus,
+      @JsonProperty(PROP_RIB) @Nullable RibProtocol rib,
+      @JsonProperty(PROP_PREFIX_MATCH_TYPE) @Nullable PrefixMatchType prefixMatchType) {
     return new RoutesQuestion(
         network, nodes, vrfs, protocols, bgpRouteStatus, rib, prefixMatchType);
   }
@@ -161,9 +161,8 @@ public class RoutesQuestion extends Question {
     return _nodes;
   }
 
-  @Nonnull
   @JsonIgnore
-  public NodeSpecifier getNodeSpecifier() {
+  public @Nonnull NodeSpecifier getNodeSpecifier() {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 

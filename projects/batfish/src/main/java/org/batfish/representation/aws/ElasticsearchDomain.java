@@ -37,7 +37,7 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static ElasticSearchClusterConfig create(
-        @Nullable @JsonProperty(JSON_KEY_INSTANCE_COUNT) Integer instanceCount) {
+        @JsonProperty(JSON_KEY_INSTANCE_COUNT) @Nullable Integer instanceCount) {
       checkNonNull(instanceCount, JSON_KEY_INSTANCE_COUNT, "ElasticSearchClusterConfig");
 
       return new ElasticSearchClusterConfig(instanceCount);
@@ -64,9 +64,9 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static VpcOptions create(
-        @Nullable @JsonProperty(JSON_KEY_ES_VPC_ID) String vpcId,
-        @Nullable @JsonProperty(JSON_KEY_SECURITY_GROUP_IDS) List<String> securityGroupIds,
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds) {
+        @JsonProperty(JSON_KEY_ES_VPC_ID) @Nullable String vpcId,
+        @JsonProperty(JSON_KEY_SECURITY_GROUP_IDS) @Nullable List<String> securityGroupIds,
+        @JsonProperty(JSON_KEY_SUBNET_IDS) @Nullable List<String> subnetIds) {
       checkArgument(vpcId != null, "VPC Id cannot be null for VPC options");
       checkArgument(securityGroupIds != null, "Security group Ids cannot be null for VPC options");
       checkArgument(subnetIds != null, "Subnet Ids cannot be null for VPC options");
@@ -144,14 +144,14 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static ElasticsearchDomain create(
-      @Nullable @JsonProperty(JSON_KEY_ARN) String arn,
-      @Nullable @JsonProperty(JSON_KEY_DOMAIN_NAME) String domainName,
-      @Nullable @JsonProperty(JSON_KEY_VPC_OPTIONS) VpcOptions vpcOptions,
-      @Nullable @JsonProperty(JSON_KEY_ELASTIC_SEARCH_CLUSTER_CONFIG)
+      @JsonProperty(JSON_KEY_ARN) @Nullable String arn,
+      @JsonProperty(JSON_KEY_DOMAIN_NAME) @Nullable String domainName,
+      @JsonProperty(JSON_KEY_VPC_OPTIONS) @Nullable VpcOptions vpcOptions,
+      @JsonProperty(JSON_KEY_ELASTIC_SEARCH_CLUSTER_CONFIG) @Nullable
           ElasticSearchClusterConfig clusterConfig,
-      @Nullable @JsonProperty(JSON_KEY_CREATED) Boolean created,
-      @Nullable @JsonProperty(JSON_KEY_DELETED) Boolean deleted,
-      @Nullable @JsonProperty(JSON_KEY_ENDPOINTS) Map<String, String> endpoints) {
+      @JsonProperty(JSON_KEY_CREATED) @Nullable Boolean created,
+      @JsonProperty(JSON_KEY_DELETED) @Nullable Boolean deleted,
+      @JsonProperty(JSON_KEY_ENDPOINTS) @Nullable Map<String, String> endpoints) {
     checkNonNull(arn, JSON_KEY_ARN, "ELastic search domain");
     checkNonNull(domainName, JSON_KEY_DOMAIN_NAME, "Elastic search domain");
     checkNonNull(clusterConfig, JSON_KEY_ELASTIC_SEARCH_CLUSTER_CONFIG, "Elastic search domain");
@@ -203,8 +203,8 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nullable
   @VisibleForTesting
+  @Nullable
   Configuration toConfigurationNode(
       int instanceNumber,
       String subnetId,

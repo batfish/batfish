@@ -50,10 +50,9 @@ public abstract class OspfRoute extends AbstractRoute {
   }
 
   @Override
-  @Nonnull
   @JsonIgnore(false)
   @JsonProperty(PROP_METRIC)
-  public final long getMetric() {
+  public final @Nonnull long getMetric() {
     return _metric;
   }
 

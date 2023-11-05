@@ -34,8 +34,8 @@ public final class AsPathAccessList implements Serializable {
 
   @JsonCreator
   public AsPathAccessList(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_LINES) List<AsPathAccessListLine> lines) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_LINES) @Nullable List<AsPathAccessListLine> lines) {
     _lines = firstNonNull(lines, ImmutableList.of());
     _name = name;
   }

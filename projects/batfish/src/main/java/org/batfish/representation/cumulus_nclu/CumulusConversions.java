@@ -641,9 +641,8 @@ public final class CumulusConversions {
         .build();
   }
 
-  @Nullable
   @VisibleForTesting
-  static RoutingPolicy computeBgpNeighborImportRoutingPolicy(
+  static @Nullable RoutingPolicy computeBgpNeighborImportRoutingPolicy(
       Configuration c, BgpNeighbor neighbor, BgpVrf bgpVrf) {
     BooleanExpr peerImportConditions = getBgpNeighborImportPolicyCallExpr(neighbor);
     if (peerImportConditions == null) {
@@ -744,9 +743,8 @@ public final class CumulusConversions {
         : null;
   }
 
-  @Nullable
   @VisibleForTesting
-  static Ip resolveLocalIpFromUpdateSource(
+  static @Nullable Ip resolveLocalIpFromUpdateSource(
       @Nullable BgpNeighborSource source, Configuration c, Warnings warnings) {
     if (source == null) {
       return null;
@@ -760,9 +758,8 @@ public final class CumulusConversions {
             return updateSourceAddress.getAddress();
           }
 
-          @Nullable
           @Override
-          public Ip visitBgpNeighborSourceInterface(
+          public @Nullable Ip visitBgpNeighborSourceInterface(
               BgpNeighborSourceInterface updateSourceInterface) {
             org.batfish.datamodel.Interface iface =
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());
@@ -792,9 +789,8 @@ public final class CumulusConversions {
   }
 
   /** Scan all interfaces, find first that contains given remote IP */
-  @Nullable
   @VisibleForTesting
-  static Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
+  static @Nullable Ip computeLocalIpForBgpNeighbor(Ip remoteIp, Configuration c, String vrfName) {
     org.batfish.datamodel.Vrf vrf = c.getVrfs().get(vrfName);
     if (vrf == null) {
       return null;
@@ -1079,9 +1075,8 @@ public final class CumulusConversions {
    * href="https://docs.cumulusnetworks.com/display/DOCS/Ethernet+Virtual+Private+Network+-+EVPN#EthernetVirtualPrivateNetwork-EVPN-RD-auto-derivationAuto-derivationofRDsandRTs">
    * cumulus documentation</a> for detailed explanation.
    */
-  @Nonnull
   @VisibleForTesting
-  static ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
+  static @Nonnull ExtendedCommunity toRouteTarget(long asn, long vxlanId) {
     return ExtendedCommunity.target(asn & 0xFFFFL, vxlanId);
   }
 

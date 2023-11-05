@@ -18,15 +18,15 @@ public class OspfExternalType1Route extends OspfExternalRoute {
 
   @JsonCreator
   private static OspfExternalType1Route jsonCreator(
-      @Nullable @JsonProperty(PROP_NETWORK) Prefix prefix,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Ip nextHopIp,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_INTERFACE) String nextHopInterface,
-      @Nullable @JsonProperty(PROP_ADMINISTRATIVE_COST) Integer admin,
-      @Nullable @JsonProperty(PROP_METRIC) Long metric,
-      @Nullable @JsonProperty(PROP_LSA_METRIC) Long lsaMetric,
-      @Nullable @JsonProperty(PROP_AREA) Long area,
-      @Nullable @JsonProperty(PROP_COST_TO_ADVERTISER) Long costToAdvertiser,
-      @Nullable @JsonProperty(PROP_ADVERTISER) String advertiser,
+      @JsonProperty(PROP_NETWORK) @Nullable Prefix prefix,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
+      @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable Integer admin,
+      @JsonProperty(PROP_METRIC) @Nullable Long metric,
+      @JsonProperty(PROP_LSA_METRIC) @Nullable Long lsaMetric,
+      @JsonProperty(PROP_AREA) @Nullable Long area,
+      @JsonProperty(PROP_COST_TO_ADVERTISER) @Nullable Long costToAdvertiser,
+      @JsonProperty(PROP_ADVERTISER) @Nullable String advertiser,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(prefix != null, "Missing %s", PROP_NETWORK);
     checkArgument(nextHopIp != null, "Missing %s", PROP_NEXT_HOP_IP);
@@ -91,9 +91,8 @@ public class OspfExternalType1Route extends OspfExternalRoute {
         .setNextHop(NextHopDiscard.instance());
   }
 
-  @Nonnull
   @Override
-  public OspfMetricType getOspfMetricType() {
+  public @Nonnull OspfMetricType getOspfMetricType() {
     return OspfMetricType.E1;
   }
 

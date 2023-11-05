@@ -38,14 +38,14 @@ abstract class NetworkAclEntry implements Serializable {
 
   @JsonCreator
   private static NetworkAclEntry create(
-      @Nullable @JsonProperty(JSON_KEY_CIDR_BLOCK) Prefix prefix,
-      @Nullable @JsonProperty(JSON_KEY_IPV6_CIDR_BLOCK) Prefix6 prefix6,
-      @Nullable @JsonProperty(JSON_KEY_RULE_ACTION) String ruleAction,
-      @Nullable @JsonProperty(JSON_KEY_EGRESS) Boolean egress,
-      @Nullable @JsonProperty(JSON_KEY_PROTOCOL) String protocol,
-      @Nullable @JsonProperty(JSON_KEY_RULE_NUMBER) Integer ruleNumber,
-      @Nullable @JsonProperty(JSON_KEY_ICMP_TYPE_CODE) IcmpTypeCode icmpTypeCode,
-      @Nullable @JsonProperty(JSON_KEY_PORT_RANGE) PortRange portRange) {
+      @JsonProperty(JSON_KEY_CIDR_BLOCK) @Nullable Prefix prefix,
+      @JsonProperty(JSON_KEY_IPV6_CIDR_BLOCK) @Nullable Prefix6 prefix6,
+      @JsonProperty(JSON_KEY_RULE_ACTION) @Nullable String ruleAction,
+      @JsonProperty(JSON_KEY_EGRESS) @Nullable Boolean egress,
+      @JsonProperty(JSON_KEY_PROTOCOL) @Nullable String protocol,
+      @JsonProperty(JSON_KEY_RULE_NUMBER) @Nullable Integer ruleNumber,
+      @JsonProperty(JSON_KEY_ICMP_TYPE_CODE) @Nullable IcmpTypeCode icmpTypeCode,
+      @JsonProperty(JSON_KEY_PORT_RANGE) @Nullable PortRange portRange) {
     checkArgument(
         prefix != null || prefix6 != null,
         "At least one of v4 or v6 cidr block must be present for network acl entry");

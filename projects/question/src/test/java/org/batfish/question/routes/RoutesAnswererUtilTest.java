@@ -256,8 +256,16 @@ public class RoutesAnswererUtilTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("3.3.3.3")))
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
             .setWeight(7);
-    Bgpv4Route standardRoute = rb.setNextHopIp(ip).build();
-    Bgpv4Route unnumRoute = rb.setNextHopIp(bgpUnnumIp).setNextHopInterface("iface").build();
+    Bgpv4Route standardRoute =
+        rb.setNextHopIp(ip)
+            // ClusterList deliberately not sorted per ImmutableSet iteration order
+            .setClusterList(ImmutableSet.of(3L, 1L, 5L))
+            .build();
+    Bgpv4Route unnumRoute =
+        rb.setNextHopIp(bgpUnnumIp)
+            .setNextHopInterface("iface")
+            .setClusterList(ImmutableSet.of())
+            .build();
 
     Table<String, String, Set<Bgpv4Route>> bgpRouteTable = HashBasedTable.create();
     bgpRouteTable.put("node", "vrf", ImmutableSet.of(standardRoute, unnumRoute));
@@ -288,7 +296,6 @@ public class RoutesAnswererUtilTest {
             hasColumn(COL_ORIGINATOR_ID, Ip.parse("1.1.1.2"), Schema.IP),
             hasColumn(COL_RECEIVED_FROM_IP, Ip.parse("3.3.3.3"), Schema.IP),
             hasColumn(COL_PATH_ID, 1, Schema.INTEGER),
-            hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)),
             hasColumn(COL_TUNNEL_ENCAPSULATION_ATTRIBUTE, equalTo(null), Schema.STRING),
             hasColumn(COL_WEIGHT, 7, Schema.INTEGER));
 
@@ -299,12 +306,17 @@ public class RoutesAnswererUtilTest {
             allOf(
                 commonMatcher,
                 hasColumn(COL_NEXT_HOP_IP, ip, Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING)),
+                hasColumn(COL_NEXT_HOP_INTERFACE, "dynamic", Schema.STRING),
+                // order matters
+                hasColumn(
+                    COL_CLUSTER_LIST, ImmutableList.of(1L, 3L, 5L), Schema.list(Schema.LONG))),
+
             // Route from BGP unnumbered session
             allOf(
                 commonMatcher,
                 hasColumn(COL_NEXT_HOP_IP, nullValue(), Schema.IP),
-                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING))));
+                hasColumn(COL_NEXT_HOP_INTERFACE, "iface", Schema.STRING),
+                hasColumn(COL_CLUSTER_LIST, nullValue(), Schema.list(Schema.LONG)))));
   }
 
   @Test

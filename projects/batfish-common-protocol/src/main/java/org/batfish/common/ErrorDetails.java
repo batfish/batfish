@@ -24,8 +24,8 @@ public class ErrorDetails implements Serializable {
 
   @JsonCreator
   public ErrorDetails(
-      @Nullable @JsonProperty(PROP_MESSAGE) String message,
-      @Nullable @JsonProperty(PROP_PARSE_EXCEPTION_CONTEXT)
+      @JsonProperty(PROP_MESSAGE) @Nullable String message,
+      @JsonProperty(PROP_PARSE_EXCEPTION_CONTEXT) @Nullable
           ParseExceptionContext parseExceptionContext) {
     _message = message;
     _parseExceptionContext = parseExceptionContext;
@@ -78,9 +78,9 @@ public class ErrorDetails implements Serializable {
 
     @JsonCreator
     public ParseExceptionContext(
-        @Nullable @JsonProperty(PROP_LINE_CONTENT) String lineContent,
-        @Nullable @JsonProperty(PROP_LINE_NUMBER) Integer lineNumber,
-        @Nullable @JsonProperty(PROP_PARSER_CONTEXT) String parserContext) {
+        @JsonProperty(PROP_LINE_CONTENT) @Nullable String lineContent,
+        @JsonProperty(PROP_LINE_NUMBER) @Nullable Integer lineNumber,
+        @JsonProperty(PROP_PARSER_CONTEXT) @Nullable String parserContext) {
       _lineContent = lineContent;
       _lineNumber = lineNumber;
       _parserContext = parserContext;

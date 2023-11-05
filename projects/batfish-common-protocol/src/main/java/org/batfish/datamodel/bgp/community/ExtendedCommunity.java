@@ -329,9 +329,8 @@ public final class ExtendedCommunity extends Community {
     return Objects.hash(_type, _subType, _value);
   }
 
-  @Nonnull
   @Override
-  public String matchString() {
+  public @Nonnull String matchString() {
     if (!hasGlobalAndLocalAdministrator()) {
       return toString();
     } else {
@@ -344,9 +343,8 @@ public final class ExtendedCommunity extends Community {
   }
 
   @Override
-  @Nonnull
   @JsonValue
-  public String toString() {
+  public @Nonnull String toString() {
     if (_str == null) {
       if (!hasGlobalAndLocalAdministrator()) {
         _str = String.format("0x%x:0x%x:0x%x", _type, _subType, _value);
@@ -365,9 +363,8 @@ public final class ExtendedCommunity extends Community {
     return _str;
   }
 
-  @Nonnull
   @Override
-  protected BigInteger asBigIntImpl() {
+  protected @Nonnull BigInteger asBigIntImpl() {
     return BigInteger.valueOf(_type)
         .shiftLeft(56)
         .or(BigInteger.valueOf(_subType).shiftLeft(48))

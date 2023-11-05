@@ -169,9 +169,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getActivePeerRow(
+  static @Nonnull Row getActivePeerRow(
       BgpPeerConfigId activeId,
       BgpActivePeerConfig activePeer,
       Map<Ip, Map<String, Set<String>>> ipVrfOwners,
@@ -212,9 +211,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         .build();
   }
 
-  @Nonnull
   @VisibleForTesting
-  static List<Row> getPassivePeerRows(
+  static @Nonnull List<Row> getPassivePeerRows(
       BgpPeerConfigId passiveId,
       BgpPassivePeerConfig passivePeer,
       NetworkConfigurations nc,
@@ -278,9 +276,8 @@ public class BgpSessionCompatibilityAnswerer extends Answerer {
         : rows;
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getUnnumberedPeerRow(
+  static @Nonnull Row getUnnumberedPeerRow(
       BgpPeerConfigId unnumId,
       BgpUnnumberedPeerConfig unnumPeer,
       ValueGraph<BgpPeerConfigId, BgpSessionProperties> configuredTopology) {

@@ -30,14 +30,13 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
    * <p>Pre-processing consists of:
    *
    * <ol>
-   *   <li>Applying insertions (moves) and deletions
-   *   <li>Pruning lines deactivated by 'deactivate' lines
-   *   <li>Pruning 'deactivate' lines
+   *   <li>Applying insertions (moves) and deletions via {@link ActivationLinePruner}
+   *   <li>Pruning lines deactivated by 'deactivate' lines via {@link DeactivatedLinePruner}
+   *   <li>Pruning 'deactivate' lines via {@link DeactivatedLinePruner}
    *   <li>Generating lines corresponding to 'apply-groups' lines, while respecting
-   *       'apply-groups-except' lines;
-   *   <li>Pruning 'groups' lines; and 'apply-groups' and 'apply-groups-except' lines
-   *   <li>Pruning wildcard lines
-   *   <li>Generating lines corresponding to 'apply-path' lines
+   *       'apply-groups-except' lines via {@link GroupInheritor}
+   *   <li>Pruning 'groups' lines via {@link GroupPruner}
+   *   <li>Generating lines corresponding to 'apply-path' lines via {@link ApplyPathApplicator}
    *   <li>TODO: Pruning 'apply-path' lines
    * </ol>
    *
@@ -75,18 +74,15 @@ public final class PreprocessJuniperExtractor implements PreprocessExtractor {
     GroupTreeBuilder gb = new GroupTreeBuilder(hierarchy);
     walker.walk(gb, tree);
 
-    ApplyGroupsApplicator hb;
+    // Run until convergence: [set groups A apply-groups B] is valid
+    ApplyGroupsMarker agm = new ApplyGroupsMarker(hierarchy, w);
+    boolean changed;
     do {
-      // Run until convergence: [set groups A apply-groups B] is valid
-      hb = new ApplyGroupsApplicator(hierarchy, w);
-      walker.walk(hb, tree);
-    } while (hb.getChanged());
+      walker.walk(agm, tree);
+      changed = GroupInheritor.inheritGroups(hierarchy, tree);
+    } while (changed);
     GroupPruner.prune(tree);
 
-    WildcardApplicator wa = new WildcardApplicator(hierarchy);
-    walker.walk(wa, tree);
-    WildcardPruner wp = new WildcardPruner();
-    walker.walk(wp, tree);
     walker.walk(dlp, tree);
 
     ApplyPathApplicator ap = new ApplyPathApplicator(hierarchy, w);

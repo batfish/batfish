@@ -37,9 +37,8 @@ public final class Hop {
     return new Hop(node, firstNonNull(steps, ImmutableList.of()));
   }
 
-  @Nonnull
   @JsonProperty(PROP_NODE)
-  public Node getNode() {
+  public @Nonnull Node getNode() {
     return _node;
   }
 

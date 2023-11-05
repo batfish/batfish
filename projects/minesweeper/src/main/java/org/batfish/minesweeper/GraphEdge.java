@@ -43,9 +43,9 @@ public class GraphEdge {
   @JsonCreator
   public GraphEdge(
       @JsonProperty(START_VAR) Interface start,
-      @Nullable @JsonProperty(END_VAR) Interface end,
+      @JsonProperty(END_VAR) @Nullable Interface end,
       @JsonProperty(ROUTER_VAR) String router,
-      @Nullable @JsonProperty(PEER_VAR) String peer,
+      @JsonProperty(PEER_VAR) @Nullable String peer,
       @JsonProperty(ABSTRACT_VAR) boolean isAbstract,
       @JsonProperty(NULL_VAR) boolean isNullEdge) {
     _start = start;

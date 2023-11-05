@@ -41,7 +41,7 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static NetworkAclAssociation create(
-        @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId) {
+        @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId) {
       checkArgument(subnetId != null, "Subnet id cannot be null for network ACL association");
       return new NetworkAclAssociation(subnetId);
     }
@@ -85,11 +85,11 @@ public final class NetworkAcl implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static NetworkAcl create(
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_ACL_ID) String networkAclId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_ASSOCIATIONS) List<NetworkAclAssociation> associations,
-      @Nullable @JsonProperty(JSON_KEY_ENTRIES) List<NetworkAclEntry> entries,
-      @Nullable @JsonProperty(JSON_KEY_IS_DEFAULT) Boolean isDefault) {
+      @JsonProperty(JSON_KEY_NETWORK_ACL_ID) @Nullable String networkAclId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_ASSOCIATIONS) @Nullable List<NetworkAclAssociation> associations,
+      @JsonProperty(JSON_KEY_ENTRIES) @Nullable List<NetworkAclEntry> entries,
+      @JsonProperty(JSON_KEY_IS_DEFAULT) @Nullable Boolean isDefault) {
     checkArgument(networkAclId != null, "Network ACL id cannot be null");
     checkArgument(vpcId != null, "VPC id cannot be null for network ACL");
     checkArgument(associations != null, "Associations list cannot be null for network ACL");

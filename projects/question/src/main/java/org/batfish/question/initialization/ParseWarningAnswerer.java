@@ -64,9 +64,8 @@ class ParseWarningAnswerer extends Answerer {
     super(question, batfish);
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getAggregateRow(
+  static @Nonnull Row getAggregateRow(
       ParseWarningTriplet triplet,
       Multimap<String, Integer> fileLines,
       Map<String, ColumnMetadata> columnMetadataMap) {
@@ -89,9 +88,8 @@ class ParseWarningAnswerer extends Answerer {
         .build();
   }
 
-  @Nonnull
   @VisibleForTesting
-  static Row getRow(
+  static @Nonnull Row getRow(
       String filename, ParseWarning warning, Map<String, ColumnMetadata> columnMetadataMap) {
     return Row.builder(columnMetadataMap)
         .put(COL_FILENAME, filename)
@@ -109,9 +107,8 @@ class ParseWarningAnswerer extends Answerer {
   static final String COL_COMMENT = "Comment";
   static final String COL_PARSER_CONTEXT = "Parser_Context";
 
-  @Nonnull
   @VisibleForTesting
-  static TableMetadata createMetadata(ParseWarningQuestion question) {
+  static @Nonnull TableMetadata createMetadata(ParseWarningQuestion question) {
 
     ImmutableList.Builder<ColumnMetadata> columnMetadata = ImmutableList.builder();
 

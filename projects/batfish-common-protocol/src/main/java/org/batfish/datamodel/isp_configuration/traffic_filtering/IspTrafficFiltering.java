@@ -56,7 +56,7 @@ public final class IspTrafficFiltering {
 
   @JsonCreator
   private static @Nonnull IspTrafficFiltering jsonCreator(
-      @Nullable @JsonProperty(PROP_MODE) Mode mode) {
+      @JsonProperty(PROP_MODE) @Nullable Mode mode) {
     checkArgument(mode != null, "Missing %s", PROP_MODE);
     switch (mode) {
       case NONE:

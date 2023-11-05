@@ -23,7 +23,7 @@ public final class FibLookup implements Action {
   }
 
   @JsonCreator
-  private static FibLookup jsonCreator(@Nullable @JsonProperty(PROP_VRF_EXPR) VrfExpr vrfName) {
+  private static FibLookup jsonCreator(@JsonProperty(PROP_VRF_EXPR) @Nullable VrfExpr vrfName) {
     checkArgument(vrfName != null, "Missing %s", PROP_VRF_EXPR);
     return new FibLookup(vrfName);
   }

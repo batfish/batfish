@@ -56,13 +56,13 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
                   route, computeResolutionRestriction(resolutionRestriction)::test);
     }
 
-    /** Wrap resolution restriction with some whitelisting if needed. */
+    /** Wrap resolution restriction with some allow-listing if needed. */
     private @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>
         computeResolutionRestriction(
             ResolutionRestriction<AnnotatedRoute<AbstractRoute>> baseResolutionRestriction) {
       if (baseResolutionRestriction
           == ResolutionRestriction.<AnnotatedRoute<AbstractRoute>>alwaysTrue()) {
-        // no need to whitelist anything, so stop here.
+        // no need to allow-list anything, so stop here.
         return baseResolutionRestriction;
       }
       return route -> {
@@ -399,9 +399,8 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         : RibDelta.empty();
   }
 
-  @Nonnull
   @Override
-  public RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
+  public @Nonnull RibDelta<AnnotatedRoute<AbstractRoute>> removeRouteGetDelta(
       AnnotatedRoute<AbstractRoute> route) {
     return !route.getRoute().getNonRouting()
         ? _resolvabilityEnforcer != null

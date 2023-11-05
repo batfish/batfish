@@ -55,12 +55,12 @@ public final class SpecifiersReachabilityQuestion extends Question {
    */
   @JsonCreator
   public SpecifiersReachabilityQuestion(
-      @Nullable @JsonProperty(PROP_ACTIONS) DispositionSpecifier actions,
-      @Nullable @JsonProperty(PROP_HEADER_CONSTRAINT) PacketHeaderConstraints headerConstraints,
-      @Nullable @JsonProperty(PROP_IGNORE_FILTERS) Boolean ignoreFilters,
-      @Nullable @JsonProperty(PROP_INVERT_SEARCH) Boolean invertSearch,
-      @Nullable @JsonProperty(PROP_MAX_TRACES) Integer maxTraces,
-      @Nullable @JsonProperty(PROP_PATH_CONSTRAINT) PathConstraintsInput pathConstraints) {
+      @JsonProperty(PROP_ACTIONS) @Nullable DispositionSpecifier actions,
+      @JsonProperty(PROP_HEADER_CONSTRAINT) @Nullable PacketHeaderConstraints headerConstraints,
+      @JsonProperty(PROP_IGNORE_FILTERS) @Nullable Boolean ignoreFilters,
+      @JsonProperty(PROP_INVERT_SEARCH) @Nullable Boolean invertSearch,
+      @JsonProperty(PROP_MAX_TRACES) @Nullable Integer maxTraces,
+      @JsonProperty(PROP_PATH_CONSTRAINT) @Nullable PathConstraintsInput pathConstraints) {
     _actions = firstNonNull(actions, DispositionSpecifier.SUCCESS_SPECIFIER);
     _headerConstraints = firstNonNull(headerConstraints, PacketHeaderConstraints.unconstrained());
     _ignoreFilters = firstNonNull(ignoreFilters, false);
@@ -73,15 +73,13 @@ public final class SpecifiersReachabilityQuestion extends Question {
     this(null, null, null, null, null, null);
   }
 
-  @Nonnull
   @JsonProperty(PROP_ACTIONS)
-  public DispositionSpecifier getActions() {
+  public @Nonnull DispositionSpecifier getActions() {
     return _actions;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HEADER_CONSTRAINT)
-  public PacketHeaderConstraints getHeaderConstraints() {
+  public @Nonnull PacketHeaderConstraints getHeaderConstraints() {
     return _headerConstraints;
   }
 

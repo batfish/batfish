@@ -83,8 +83,8 @@ public final class BgpConfederation implements Serializable {
 
   @JsonCreator
   private static BgpConfederation create(
-      @Nullable @JsonProperty(PROP_ID) Long id,
-      @Nullable @JsonProperty(PROP_MEMBERS) LongSpace members) {
+      @JsonProperty(PROP_ID) @Nullable Long id,
+      @JsonProperty(PROP_MEMBERS) @Nullable LongSpace members) {
     checkArgument(id != null, "Missing %s", PROP_ID);
     checkArgument(members != null, "Missing %s", PROP_ID);
     return new BgpConfederation(id, members);

@@ -963,9 +963,8 @@ public final class AutoCompleteUtils {
         .build();
   }
 
-  @Nullable
   @VisibleForTesting
-  static String toDescription(List<IpCompletionRelevance> relevances) {
+  static @Nullable String toDescription(List<IpCompletionRelevance> relevances) {
     if (relevances.isEmpty()) {
       return null;
     }

@@ -48,9 +48,8 @@ public final class EigrpMetricValues implements Serializable {
   }
 
   /** Bandwidth value, in Kbps. Nonnull after snapshot postprocessing. */
-  @Nullable
   @JsonProperty(PROP_BANDWIDTH)
-  public Long getBandwidth() {
+  public @Nullable Long getBandwidth() {
     return _bandwidth;
   }
 
@@ -189,11 +188,11 @@ public final class EigrpMetricValues implements Serializable {
 
   @JsonCreator
   private static EigrpMetricValues jsonCreator(
-      @Nullable @JsonProperty(PROP_BANDWIDTH) Long bandwidth,
-      @Nullable @JsonProperty(PROP_DELAY) Long delay,
-      @Nullable @JsonProperty(PROP_EFFECTIVE_BANDWIDTH) Integer effectiveBandwidth,
-      @Nullable @JsonProperty(PROP_RELIABILITY) Integer reliability,
-      @Nullable @JsonProperty(PROP_MTU) Long mtu) {
+      @JsonProperty(PROP_BANDWIDTH) @Nullable Long bandwidth,
+      @JsonProperty(PROP_DELAY) @Nullable Long delay,
+      @JsonProperty(PROP_EFFECTIVE_BANDWIDTH) @Nullable Integer effectiveBandwidth,
+      @JsonProperty(PROP_RELIABILITY) @Nullable Integer reliability,
+      @JsonProperty(PROP_MTU) @Nullable Long mtu) {
     checkArgument(bandwidth != null, "Missing %s", PROP_BANDWIDTH);
     checkArgument(delay != null, "Missing %s", PROP_DELAY);
     checkArgument(effectiveBandwidth != null, "Missing %s", PROP_EFFECTIVE_BANDWIDTH);

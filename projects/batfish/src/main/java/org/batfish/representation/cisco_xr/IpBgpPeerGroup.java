@@ -27,9 +27,8 @@ public class IpBgpPeerGroup extends LeafBgpPeerGroup {
     return _ip.toPrefix();
   }
 
-  @Nullable
   @Override
-  public Prefix6 getNeighborPrefix6() {
+  public @Nullable Prefix6 getNeighborPrefix6() {
     return null;
   }
 }

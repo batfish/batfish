@@ -50,9 +50,9 @@ public class InterfaceKeyProperties implements Serializable {
 
   @JsonCreator
   private static InterfaceKeyProperties create(
-      @Nullable @JsonProperty(PROP_FORCED_MGMT_ROUTES) List<String> forcedMgmtRoutes,
-      @Nullable @JsonProperty(PROP_GWADDR) String gwaddr,
-      @Nullable @JsonProperty(PROP_SECONDARY) String secondary) {
+      @JsonProperty(PROP_FORCED_MGMT_ROUTES) @Nullable List<String> forcedMgmtRoutes,
+      @JsonProperty(PROP_GWADDR) @Nullable String gwaddr,
+      @JsonProperty(PROP_SECONDARY) @Nullable String secondary) {
     // we do not parse strings inside forcedMgmtRoutes and gwAddr (which are v4 or v6 address)
     // they are not convert these properties
     return InterfaceKeyProperties.builder()

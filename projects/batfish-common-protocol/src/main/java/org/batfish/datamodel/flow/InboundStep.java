@@ -59,8 +59,8 @@ public final class InboundStep extends Step<InboundStepDetail> {
 
   @JsonCreator
   private static InboundStep jsonCreator(
-      @Nullable @JsonProperty(PROP_DETAIL) InboundStepDetail detail,
-      @Nullable @JsonProperty(PROP_ACTION) StepAction action) {
+      @JsonProperty(PROP_DETAIL) @Nullable InboundStepDetail detail,
+      @JsonProperty(PROP_ACTION) @Nullable StepAction action) {
     checkArgument(detail != null, "Missing %s", PROP_DETAIL);
     checkArgument(action != null, "Missing %s", PROP_ACTION);
     return new InboundStep(detail, action);

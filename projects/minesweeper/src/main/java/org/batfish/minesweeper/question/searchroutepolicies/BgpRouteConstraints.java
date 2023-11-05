@@ -65,16 +65,16 @@ public class BgpRouteConstraints {
 
   @JsonCreator
   private BgpRouteConstraints(
-      @Nullable @JsonProperty(PROP_PREFIX) PrefixSpace prefix,
+      @JsonProperty(PROP_PREFIX) @Nullable PrefixSpace prefix,
       @JsonProperty(PROP_COMPLEMENT_PREFIX) boolean complementPrefix,
-      @Nullable @JsonProperty(PROP_LOCAL_PREFERENCE) LongSpace.Builder localPreference,
-      @Nullable @JsonProperty(PROP_MED) LongSpace.Builder med,
-      @Nullable @JsonProperty(PROP_TAG) LongSpace.Builder tag,
-      @Nullable @JsonProperty(PROP_COMMUNITIES) RegexConstraints communities,
-      @Nullable @JsonProperty(PROP_AS_PATH) RegexConstraints asPath,
-      @Nullable @JsonProperty(PROP_NEXT_HOP_IP) Prefix nextHopIp,
-      @Nullable @JsonProperty(PROP_ORIGIN_TYPE) Set<OriginType> originType,
-      @Nullable @JsonProperty(PROP_PROTOCOL) Set<RoutingProtocol> protocol) {
+      @JsonProperty(PROP_LOCAL_PREFERENCE) @Nullable LongSpace.Builder localPreference,
+      @JsonProperty(PROP_MED) @Nullable LongSpace.Builder med,
+      @JsonProperty(PROP_TAG) @Nullable LongSpace.Builder tag,
+      @JsonProperty(PROP_COMMUNITIES) @Nullable RegexConstraints communities,
+      @JsonProperty(PROP_AS_PATH) @Nullable RegexConstraints asPath,
+      @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Prefix nextHopIp,
+      @JsonProperty(PROP_ORIGIN_TYPE) @Nullable Set<OriginType> originType,
+      @JsonProperty(PROP_PROTOCOL) @Nullable Set<RoutingProtocol> protocol) {
     this(
         prefix,
         complementPrefix,

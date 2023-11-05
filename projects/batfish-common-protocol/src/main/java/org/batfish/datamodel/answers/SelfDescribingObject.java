@@ -63,21 +63,18 @@ public class SelfDescribingObject {
         && Objects.equals(_value, rhs._value);
   }
 
-  @Nullable
   @JsonProperty(PROP_NAME)
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SCHEMA)
-  public Schema getSchema() {
+  public @Nonnull Schema getSchema() {
     return _schema;
   }
 
-  @Nullable
   @JsonProperty(PROP_VALUE)
-  public Object getValue() {
+  public @Nullable Object getValue() {
     return _value;
   }
 

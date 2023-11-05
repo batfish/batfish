@@ -16,7 +16,7 @@ public class LiteralTunnelEncapsulationAttribute extends TunnelEncapsulationAttr
 
   @JsonCreator
   private static LiteralTunnelEncapsulationAttribute jsonCreator(
-      @Nullable @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE)
+      @JsonProperty(PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE) @Nullable
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute) {
     checkNotNull(tunnelEncapsulationAttribute, "Missing %s", PROP_TUNNEL_ENCAPSULATION_ATTRIBUTE);
     return new LiteralTunnelEncapsulationAttribute(tunnelEncapsulationAttribute);

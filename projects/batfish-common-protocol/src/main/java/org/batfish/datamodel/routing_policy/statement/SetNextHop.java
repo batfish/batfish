@@ -21,7 +21,7 @@ public final class SetNextHop extends Statement {
   private @Nonnull NextHopExpr _expr;
 
   @JsonCreator
-  private static SetNextHop jsonCreator(@Nullable @JsonProperty(PROP_EXPR) NextHopExpr expr) {
+  private static SetNextHop jsonCreator(@JsonProperty(PROP_EXPR) @Nullable NextHopExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new SetNextHop(expr);
   }

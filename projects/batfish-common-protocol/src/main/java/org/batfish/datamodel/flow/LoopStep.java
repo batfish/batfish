@@ -34,8 +34,8 @@ public final class LoopStep extends Step<LoopStepDetail> {
   @SuppressWarnings("PMD.UnusedFormalParameter")
   @JsonCreator
   private static LoopStep jsonCreator(
-      @Nullable @JsonProperty(Step.PROP_ACTION) String action,
-      @Nullable @JsonProperty(Step.PROP_DETAIL) String detail) {
+      @JsonProperty(Step.PROP_ACTION) @Nullable String action,
+      @JsonProperty(Step.PROP_DETAIL) @Nullable String detail) {
     return INSTANCE;
   }
 }

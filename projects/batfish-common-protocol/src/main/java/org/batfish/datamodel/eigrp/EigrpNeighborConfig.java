@@ -51,13 +51,13 @@ public final class EigrpNeighborConfig implements Serializable {
 
   @JsonCreator
   private static EigrpNeighborConfig create(
-      @Nullable @JsonProperty(PROP_ASN) Long asn,
-      @Nullable @JsonProperty(PROP_EXPORT_POLICY) String exportPolicy,
-      @Nullable @JsonProperty(PROP_HOSTNAME) String hostname,
-      @Nullable @JsonProperty(PROP_INTERFACE) String interfaceName,
-      @Nullable @JsonProperty(PROP_IP) Ip ip,
-      @Nullable @JsonProperty(PROP_PASSIVE) Boolean passive,
-      @Nullable @JsonProperty(PROP_VRF) String vrf) {
+      @JsonProperty(PROP_ASN) @Nullable Long asn,
+      @JsonProperty(PROP_EXPORT_POLICY) @Nullable String exportPolicy,
+      @JsonProperty(PROP_HOSTNAME) @Nullable String hostname,
+      @JsonProperty(PROP_INTERFACE) @Nullable String interfaceName,
+      @JsonProperty(PROP_IP) @Nullable Ip ip,
+      @JsonProperty(PROP_PASSIVE) @Nullable Boolean passive,
+      @JsonProperty(PROP_VRF) @Nullable String vrf) {
     checkArgument(asn != null, "EigrpNeighborConfig missing %s", PROP_ASN);
     checkArgument(exportPolicy != null, "EigrpNeighborConfig missing %s", PROP_EXPORT_POLICY);
     checkArgument(hostname != null, "EigrpNeighborConfig missing %s", PROP_HOSTNAME);
@@ -73,33 +73,28 @@ public final class EigrpNeighborConfig implements Serializable {
     return _asn;
   }
 
-  @Nonnull
   @JsonProperty(PROP_EXPORT_POLICY)
-  public String getExportPolicy() {
+  public @Nonnull String getExportPolicy() {
     return _exportPolicy;
   }
 
-  @Nonnull
   @JsonProperty(PROP_INTERFACE)
-  public String getInterfaceName() {
+  public @Nonnull String getInterfaceName() {
     return _interfaceName;
   }
 
-  @Nonnull
   @JsonProperty(PROP_IP)
-  public Ip getIp() {
+  public @Nonnull Ip getIp() {
     return _ip;
   }
 
-  @Nonnull
   @JsonProperty(PROP_HOSTNAME)
-  public String getHostname() {
+  public @Nonnull String getHostname() {
     return _hostname;
   }
 
-  @Nonnull
   @JsonProperty(PROP_VRF)
-  public String getVrfName() {
+  public @Nonnull String getVrfName() {
     return _vrfName;
   }
 

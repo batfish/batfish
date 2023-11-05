@@ -22,7 +22,7 @@ public final class Not extends BooleanExpr {
   private final BooleanExpr _expr;
 
   @JsonCreator
-  private static Not create(@Nullable @JsonProperty(PROP_EXPR) BooleanExpr expr) {
+  private static Not create(@JsonProperty(PROP_EXPR) @Nullable BooleanExpr expr) {
     checkArgument(expr != null, "%s must be provided", PROP_EXPR);
     return new Not(expr);
   }

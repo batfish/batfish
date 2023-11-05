@@ -37,7 +37,7 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
 
     @JsonCreator
     private static VIModelAnswerElement jsonCreator(
-        @Nullable @JsonProperty(PROP_NODES) SortedMap<String, Configuration> nodes) {
+        @JsonProperty(PROP_NODES) @Nullable SortedMap<String, Configuration> nodes) {
       return new VIModelAnswerElement(firstNonNull(nodes, ImmutableSortedMap.of()));
     }
 
@@ -86,7 +86,7 @@ public final class VIModelQuestionPlugin extends QuestionPlugin {
     }
 
     @JsonCreator
-    private static VIModelQuestion create(@Nullable @JsonProperty(PROP_NODES) String nodes) {
+    private static VIModelQuestion create(@JsonProperty(PROP_NODES) @Nullable String nodes) {
       return new VIModelQuestion(nodes);
     }
 

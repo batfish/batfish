@@ -111,9 +111,8 @@ public final class FibImpl implements Fib {
     return _root.getAllElements();
   }
 
-  @Nonnull
   @Override
-  public Set<FibEntry> allEntries() {
+  public @Nonnull Set<FibEntry> allEntries() {
     return _entries.get();
   }
 
@@ -294,15 +293,13 @@ public final class FibImpl implements Fib {
     }.visit(route.getNextHop());
   }
 
-  @Nonnull
   @Override
-  public Set<FibEntry> get(Ip ip) {
+  public @Nonnull Set<FibEntry> get(Ip ip) {
     return _root.longestPrefixMatch(ip);
   }
 
-  @Nonnull
   @Override
-  public Map<Prefix, IpSpace> getMatchingIps() {
+  public @Nonnull Map<Prefix, IpSpace> getMatchingIps() {
     ImmutableMap.Builder<Prefix, IpSpace> builder = ImmutableMap.builder();
 
     /* Do a fold over the trie. At each node, create the matching Ips for that prefix (adding it
@@ -312,9 +309,8 @@ public final class FibImpl implements Fib {
      */
     _root.fold(
         new FoldOperator<FibEntry, Set<IpWildcard>>() {
-          @Nonnull
           @Override
-          public Set<IpWildcard> fold(
+          public @Nonnull Set<IpWildcard> fold(
               Prefix prefix,
               Set<FibEntry> elems,
               @Nullable Set<IpWildcard> leftPrefixes,

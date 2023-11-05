@@ -31,10 +31,10 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static TransitGatewayVpcAttachment create(
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) String attachmentId,
-      @Nullable @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) String gatewayId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_IDS) List<String> subnetIds) {
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ATTACHMENT_ID) @Nullable String attachmentId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String gatewayId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_SUBNET_IDS) @Nullable List<String> subnetIds) {
     checkArgument(
         attachmentId != null, "Attachment id cannot be null for transit gateway VPC attachment");
     checkArgument(
@@ -66,9 +66,8 @@ final class TransitGatewayVpcAttachment implements AwsVpcEntity, Serializable {
         .collect(ImmutableList.toImmutableList());
   }
 
-  @Nonnull
   @Override
-  public String getId() {
+  public @Nonnull String getId() {
     return _attachmentId;
   }
 

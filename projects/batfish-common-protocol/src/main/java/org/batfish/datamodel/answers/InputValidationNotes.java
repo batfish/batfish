@@ -47,9 +47,9 @@ public final class InputValidationNotes {
   @JsonCreator
   private static @Nonnull InputValidationNotes create(
       @JsonProperty(PROP_VALIDITY) Validity validity,
-      @Nullable @JsonProperty(PROP_DESCRIPTION) String description,
-      @Nullable @JsonProperty(PROP_ERROR_INDEX) Integer errorIndex,
-      @Nullable @JsonProperty(PROP_EXPANSIONS) List<String> expansions) {
+      @JsonProperty(PROP_DESCRIPTION) @Nullable String description,
+      @JsonProperty(PROP_ERROR_INDEX) @Nullable Integer errorIndex,
+      @JsonProperty(PROP_EXPANSIONS) @Nullable List<String> expansions) {
     return new InputValidationNotes(validity, description, errorIndex, expansions);
   }
 

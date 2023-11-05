@@ -106,10 +106,10 @@ public final class NodeRoleDimension implements Comparable<NodeRoleDimension> {
    */
   @JsonCreator
   private static @Nonnull NodeRoleDimension create(
-      @Nullable @JsonProperty(PROP_NAME) String name,
-      @Nullable @JsonProperty(PROP_ROLES) List<NodeRole> roles,
-      @Nullable @JsonProperty(PROP_ROLE_REGEXES) List<String> roleRegexes,
-      @Nullable @JsonProperty(PROP_ROLE_DIMENSION_MAPPINGS) List<RoleDimensionMapping> mappings) {
+      @JsonProperty(PROP_NAME) @Nullable String name,
+      @JsonProperty(PROP_ROLES) @Nullable List<NodeRole> roles,
+      @JsonProperty(PROP_ROLE_REGEXES) @Nullable List<String> roleRegexes,
+      @JsonProperty(PROP_ROLE_DIMENSION_MAPPINGS) @Nullable List<RoleDimensionMapping> mappings) {
     checkArgument(name != null, "Name of node role cannot be null");
     List<RoleDimensionMapping> rdMaps =
         new LinkedList<>(firstNonNull(mappings, ImmutableList.of()));

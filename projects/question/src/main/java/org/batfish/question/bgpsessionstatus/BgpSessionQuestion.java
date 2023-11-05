@@ -68,9 +68,8 @@ public abstract class BgpSessionQuestion extends Question {
     return _expandedTypes.contains(sessionType);
   }
 
-  @Nullable
   @JsonProperty(PROP_NODES)
-  public String getNodes() {
+  public @Nullable String getNodes() {
     return _nodes;
   }
 
@@ -79,9 +78,8 @@ public abstract class BgpSessionQuestion extends Question {
     return SpecifierFactories.getNodeSpecifierOrDefault(_nodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
-  @Nullable
   @JsonProperty(PROP_REMOTE_NODES)
-  public String getRemoteNodes() {
+  public @Nullable String getRemoteNodes() {
     return _remoteNodes;
   }
 
@@ -91,15 +89,13 @@ public abstract class BgpSessionQuestion extends Question {
         _remoteNodes, AllNodesNodeSpecifier.INSTANCE);
   }
 
-  @Nullable
   @JsonProperty(PROP_STATUS)
-  protected String getStatus() {
+  protected @Nullable String getStatus() {
     return _status;
   }
 
-  @Nullable
   @JsonProperty(PROP_TYPE)
-  protected String getType() {
+  protected @Nullable String getType() {
     return _type;
   }
 }

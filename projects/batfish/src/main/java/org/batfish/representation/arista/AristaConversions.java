@@ -345,9 +345,8 @@ final class AristaConversions {
   }
 
   /** Compute the remote AS space for a dynamic BGP neighbor */
-  @Nonnull
   @VisibleForTesting
-  static LongSpace getAsnSpace(
+  static @Nonnull LongSpace getAsnSpace(
       AristaBgpV4DynamicNeighbor neighbor, Map<String, AristaBgpPeerFilter> peerFilters) {
     if (neighbor.getRemoteAs() != null) {
       return LongSpace.of(neighbor.getRemoteAs());

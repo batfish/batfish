@@ -32,10 +32,10 @@ final class VgwTelemetry implements Serializable {
 
   @JsonCreator
   private static VgwTelemetry create(
-      @Nullable @JsonProperty(JSON_KEY_ACCEPTED_ROUTE_COUNT) Integer acceptedRouteCount,
-      @Nullable @JsonProperty(JSON_KEY_OUTSIDE_IP_ADDRESS) Ip outsideIpAddress,
-      @Nullable @JsonProperty(JSON_KEY_STATUS) String status,
-      @Nullable @JsonProperty(JSON_KEY_STATUS_MESSAGE) String statusMessage) {
+      @JsonProperty(JSON_KEY_ACCEPTED_ROUTE_COUNT) @Nullable Integer acceptedRouteCount,
+      @JsonProperty(JSON_KEY_OUTSIDE_IP_ADDRESS) @Nullable Ip outsideIpAddress,
+      @JsonProperty(JSON_KEY_STATUS) @Nullable String status,
+      @JsonProperty(JSON_KEY_STATUS_MESSAGE) @Nullable String statusMessage) {
     checkArgument(
         acceptedRouteCount != null, "Accepted route count cannot be null in VgwTelemetry");
     checkArgument(outsideIpAddress != null, "Outside IP address cannot be null in VgwTelemetry");

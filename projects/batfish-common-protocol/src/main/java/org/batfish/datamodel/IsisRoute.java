@@ -25,9 +25,8 @@ public class IsisRoute extends AbstractRoute {
     private RoutingProtocol _protocol;
     private String _systemId;
 
-    @Nonnull
     @Override
-    public IsisRoute build() {
+    public @Nonnull IsisRoute build() {
       return new IsisRoute(
           getAdmin(),
           requireNonNull(_area),
@@ -45,9 +44,8 @@ public class IsisRoute extends AbstractRoute {
           getNonRouting());
     }
 
-    @Nonnull
     @Override
-    protected Builder getThis() {
+    protected @Nonnull Builder getThis() {
       return this;
     }
 
@@ -230,9 +228,8 @@ public class IsisRoute extends AbstractRoute {
     return _protocol;
   }
 
-  @Nonnull
   @JsonProperty(PROP_SYSTEM_ID)
-  public String getSystemId() {
+  public @Nonnull String getSystemId() {
     return _systemId;
   }
 

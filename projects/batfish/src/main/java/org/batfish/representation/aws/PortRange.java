@@ -21,8 +21,8 @@ final class PortRange implements Serializable {
 
   @JsonCreator
   private static PortRange create(
-      @Nullable @JsonProperty(JSON_KEY_FROM) Integer fromPort,
-      @Nullable @JsonProperty(JSON_KEY_TO) Integer toPort) {
+      @JsonProperty(JSON_KEY_FROM) @Nullable Integer fromPort,
+      @JsonProperty(JSON_KEY_TO) @Nullable Integer toPort) {
     checkArgument(fromPort != null, "From port cannot be null in port range");
     checkArgument(toPort != null, "To port cannot be null in port range");
     return new PortRange(fromPort, toPort);

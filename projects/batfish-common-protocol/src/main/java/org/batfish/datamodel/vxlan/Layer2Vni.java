@@ -181,9 +181,8 @@ public final class Layer2Vni implements Vni {
     return _vni;
   }
 
-  @Nonnull
   @Override
-  public String getSrcVrf() {
+  public @Nonnull String getSrcVrf() {
     return _srcVrf;
   }
 

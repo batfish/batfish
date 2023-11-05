@@ -34,8 +34,8 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
 
     @JsonCreator
     private static Attachment create(
-        @Nullable @JsonProperty(JSON_KEY_STATUS) String status,
-        @Nullable @JsonProperty(JSON_KEY_INSTANCE_ID) String instanceId) {
+        @JsonProperty(JSON_KEY_STATUS) @Nullable String status,
+        @JsonProperty(JSON_KEY_INSTANCE_ID) @Nullable String instanceId) {
       checkArgument(status != null, "Attachment status cannot be null for network interface");
 
       // pay attention to instance id only we are attached
@@ -59,7 +59,7 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
     private final @Nonnull String _id;
 
     @JsonCreator
-    private static Group create(@Nullable @JsonProperty(JSON_KEY_GROUP_ID) String id) {
+    private static Group create(@JsonProperty(JSON_KEY_GROUP_ID) @Nullable String id) {
       checkArgument(id != null, "Id cannot be null in network interface group");
       return new Group(id);
     }
@@ -92,15 +92,15 @@ public final class NetworkInterface implements AwsVpcEntity, Serializable {
 
   @JsonCreator
   private static NetworkInterface create(
-      @Nullable @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) String networkInterfaceId,
-      @Nullable @JsonProperty(JSON_KEY_SUBNET_ID) String subnetId,
-      @Nullable @JsonProperty(JSON_KEY_VPC_ID) String vpcId,
-      @Nullable @JsonProperty(JSON_KEY_GROUPS) List<Group> groups,
-      @Nullable @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES)
+      @JsonProperty(JSON_KEY_NETWORK_INTERFACE_ID) @Nullable String networkInterfaceId,
+      @JsonProperty(JSON_KEY_SUBNET_ID) @Nullable String subnetId,
+      @JsonProperty(JSON_KEY_VPC_ID) @Nullable String vpcId,
+      @JsonProperty(JSON_KEY_GROUPS) @Nullable List<Group> groups,
+      @JsonProperty(JSON_KEY_PRIVATE_IP_ADDRESSES) @Nullable
           List<PrivateIpAddress> privateIpAddresses,
-      @Nullable @JsonProperty(JSON_KEY_DESCRIPTION) String description,
-      @Nullable @JsonProperty(JSON_KEY_ATTACHMENT) Attachment attachment,
-      @Nullable @JsonProperty(JSON_KEY_TAGSET) List<Tag> tags) {
+      @JsonProperty(JSON_KEY_DESCRIPTION) @Nullable String description,
+      @JsonProperty(JSON_KEY_ATTACHMENT) @Nullable Attachment attachment,
+      @JsonProperty(JSON_KEY_TAGSET) @Nullable List<Tag> tags) {
     /*
      We do not parse the top-level privateIpAddress field -- that address shows up in privateIpAddresses list.
      We do not parse the top-level association field -- that object shows up as a sub-field of privateIpAddresses.

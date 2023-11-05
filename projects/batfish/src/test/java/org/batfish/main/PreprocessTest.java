@@ -60,6 +60,20 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testApplyGroupsListVsNonList() throws IOException {
+    assertValidPair(
+        "preprocess-apply-groups-list-vs-non-list-before",
+        "preprocess-apply-groups-list-vs-non-list-after");
+  }
+
+  @Test
+  public void testApplyGroupsExceptAndPriority() throws IOException {
+    assertValidPair(
+        "preprocess-apply-groups-except-and-priority-before",
+        "preprocess-apply-groups-except-and-priority-after");
+  }
+
+  @Test
   public void testFlatPaloAlto() throws IOException {
     assertValidPair("preprocess-flat-pa-before", "preprocess-flat-pa-after");
   }

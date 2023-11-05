@@ -27,9 +27,9 @@ public final class MatchPrefixSet extends BooleanExpr {
 
   @JsonCreator
   private static MatchPrefixSet jsonCreator(
-      @Nullable @JsonProperty(PROP_PREFIX) PrefixExpr prefix,
-      @Nullable @JsonProperty(PROP_PREFIX_SET) PrefixSetExpr prefixSet,
-      @Nullable @JsonProperty(PROP_COMMENT) String comment) {
+      @JsonProperty(PROP_PREFIX) @Nullable PrefixExpr prefix,
+      @JsonProperty(PROP_PREFIX_SET) @Nullable PrefixSetExpr prefixSet,
+      @JsonProperty(PROP_COMMENT) @Nullable String comment) {
     checkArgument(prefix != null, "%s must be provided", PROP_PREFIX);
     checkArgument(prefixSet != null, "%s must be provided", PROP_PREFIX_SET);
     MatchPrefixSet ret = new MatchPrefixSet(prefix, prefixSet);

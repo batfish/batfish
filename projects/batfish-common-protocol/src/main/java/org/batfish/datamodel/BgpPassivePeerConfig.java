@@ -111,9 +111,8 @@ public final class BgpPassivePeerConfig extends BgpPeerConfig {
   }
 
   /** The IPV4 prefix of the remote peer. */
-  @Nullable
   @JsonProperty(PROP_PEER_PREFIX)
-  public Prefix getPeerPrefix() {
+  public @Nullable Prefix getPeerPrefix() {
     return _peerPrefix;
   }
 

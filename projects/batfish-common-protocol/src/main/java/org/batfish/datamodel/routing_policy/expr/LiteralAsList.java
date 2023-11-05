@@ -18,7 +18,7 @@ public final class LiteralAsList extends AsPathListExpr {
   private @Nonnull List<AsExpr> _list;
 
   @JsonCreator
-  private static LiteralAsList jsonCreator(@Nullable @JsonProperty(PROP_LIST) List<AsExpr> list) {
+  private static LiteralAsList jsonCreator(@JsonProperty(PROP_LIST) @Nullable List<AsExpr> list) {
     return new LiteralAsList(firstNonNull(list, ImmutableList.of()));
   }
 

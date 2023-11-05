@@ -39,7 +39,7 @@ public final class MatchSourceProtocol extends BooleanExpr {
 
   @JsonCreator
   private static MatchSourceProtocol create(
-      @Nullable @JsonProperty(PROP_PROTOCOLS) Set<RoutingProtocol> protocols) {
+      @JsonProperty(PROP_PROTOCOLS) @Nullable Set<RoutingProtocol> protocols) {
     checkArgument(protocols != null, "Missing %s", PROP_PROTOCOLS);
     return new MatchSourceProtocol(protocols);
   }

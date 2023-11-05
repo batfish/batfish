@@ -72,9 +72,8 @@ public final class OspfAreaSummary implements Serializable {
    * Returns the OSPF metric for the summary route if overridden in the configuration. If {@code
    * null}, the summary metric will be computed on demand.
    */
-  @Nullable
   @JsonProperty(PROP_METRIC)
-  public Long getMetric() {
+  public @Nullable Long getMetric() {
     return _metric;
   }
 

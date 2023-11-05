@@ -1111,8 +1111,7 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
       Interface_ipv6_addressContext ctx) {
     // TODO: support exotic address types
     // TODO: implement and use datamodel Ipv6InterfaceAddress instead of Prefix6
-    Prefix6 prefix6 = toPrefix6(ctx.address6_with_length);
-    return new InterfaceIpv6AddressWithAttributes(prefix6.getAddress(), prefix6.getPrefixLength());
+    return InterfaceIpv6AddressWithAttributes.parse(ctx.address6_with_length.getText());
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
@@ -1418,9 +1417,8 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
     getPreferredName(MANAGEMENT_VRF_NAME, VRF);
   }
 
-  @Nonnull
   @Override
-  public SilentSyntaxCollection getSilentSyntax() {
+  public @Nonnull SilentSyntaxCollection getSilentSyntax() {
     return _silentSyntax;
   }
 
@@ -3947,12 +3945,14 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitRb_afip_nexthop_route_map(Rb_afip_nexthop_route_mapContext ctx) {
-    todo(ctx);
-    toString(ctx, ctx.mapname)
-        .ifPresent(
-            name ->
-                _c.referenceStructure(
-                    ROUTE_MAP, name, BGP_NEXTHOP_ROUTE_MAP, ctx.getStart().getLine()));
+    Optional<String> maybeRouteMapName = toString(ctx, ctx.mapname);
+    if (!maybeRouteMapName.isPresent()) {
+      // already warned
+      return;
+    }
+    String routeMapName = maybeRouteMapName.get();
+    _c.referenceStructure(ROUTE_MAP, routeMapName, BGP_NEXTHOP_ROUTE_MAP, ctx.getStart().getLine());
+    _currentBgpVrfIpAddressFamily.setNexthopRouteMap(routeMapName);
   }
 
   @Override

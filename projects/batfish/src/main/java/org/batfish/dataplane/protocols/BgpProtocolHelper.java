@@ -317,9 +317,8 @@ public final class BgpProtocolHelper {
    * @param routerId Router ID to set as the originatorIp for the resulting BGP route.
    * @param nonRouting Whether to mark the Bgpv4Route as non-routing
    */
-  @Nonnull
   @VisibleForTesting
-  static Builder convertGeneratedRouteToBgp(
+  static @Nonnull Builder convertGeneratedRouteToBgp(
       GeneratedRoute generatedRoute, Ip routerId, NextHop nextHop, boolean nonRouting) {
     return Bgpv4Route.builder()
         .setAdmin(generatedRoute.getAdministrativeCost())
