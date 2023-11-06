@@ -7,7 +7,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 
 /** Global identifier of a routing policy (node name, policy name). */
 @ParametersAreNonnullByDefault
-final class RoutingPolicyId implements Comparable<RoutingPolicyId> {
+public final class RoutingPolicyId implements Comparable<RoutingPolicyId> {
   private static final Comparator<RoutingPolicyId> COMPARATOR =
       Comparator.comparing(RoutingPolicyId::getNode).thenComparing(RoutingPolicyId::getPolicy);
 
