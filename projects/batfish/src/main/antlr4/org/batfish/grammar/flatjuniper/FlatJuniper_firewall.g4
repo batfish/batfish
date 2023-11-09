@@ -63,7 +63,7 @@ ff_term
    (
       fft_from
       | fft_then
-   )
+   )?
 ;
 
 fft_from

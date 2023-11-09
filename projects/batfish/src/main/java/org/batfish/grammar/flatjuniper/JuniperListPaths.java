@@ -12,6 +12,7 @@ public final class JuniperListPaths {
     return JUNIPER_LIST_PATHS;
   }
 
+  // These should be tested, in "FlatJuniperGrammarTest#testApplyGroupsLists"
   private static final String[] JUNIPER_LIST_PATHS =
       new String[] {
         // The last space-separated word of each item corresponds to a Juniper list node, i.e.
