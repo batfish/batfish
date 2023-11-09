@@ -1,0 +1,17 @@
+set system host-name apply-groups-lists
+#
+set groups G firewall family inet filter F term T then accept
+set groups G firewall filter F2 term T2 then accept
+set groups G interfaces xe-0/0/0 unit 0 family inet filter input-list F
+set groups G interfaces xe-0/0/0 unit 0 family inet filter output-list F
+set groups G policy-options policy-statement PS term T then accept
+set groups G protocols bgp group G export P
+set groups G protocols bgp group G import P
+set groups G security nat destination rule-set RS rule R then destination-nat off
+set groups G security nat destination rule-set RS rule R match source-address-name A
+set groups G security nat source rule-set RS rule R then source-nat off
+set groups G security nat source rule-set RS rule R match source-address-name A
+set groups G security policies from-zone Z to-zone Z policy P then permit
+set groups G system domain-search foo.net
+set apply-groups G
+#
