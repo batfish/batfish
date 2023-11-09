@@ -253,7 +253,7 @@ rs_rule
       rsr_description
       | rsr_match
       | rsr_then
-   )
+   )?
 ;
 
 rs_zone

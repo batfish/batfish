@@ -7994,6 +7994,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   /**
+   * Tests of {@link JuniperListPaths}.
+   *
+   * <p>The code underlying this is somewhat complicated, and in an early version we found that it
+   * crashed when the entire structure is defined in a group (because of generated code lines
+   * created to ensure the relevant node in the syntax tree is present). This test is dedicated to
+   * exercising this case for all paths in there.
+   */
+  @Test
+  public void testApplyGroupsLists() {
+    // Simply tests that all the lines parse without errors
+    parseConfig("apply-groups-lists");
+  }
+
+  /**
    * TODO: Fix and un-xfail. To fix, should backtrack and try alternate (shallow, wildcard) paths
    * when inheriting groups lines and no match is found. See {@link GroupInheritor}.
    */
