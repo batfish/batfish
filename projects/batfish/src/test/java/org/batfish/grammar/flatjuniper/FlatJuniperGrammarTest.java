@@ -7993,6 +7993,13 @@ public final class FlatJuniperGrammarTest {
         c, hasInterface("xe-0/0/0", hasDescription("\"foo bar\" unit 0 ip address 1.2.3.4/31")));
   }
 
+  /** Tests of {@link JuniperListPaths}. */
+  @Test
+  public void testApplyGroupsLists() {
+    // Simply tests that all the lines parse without errors
+    parseConfig("apply-groups-lists");
+  }
+
   /**
    * TODO: Fix and un-xfail. To fix, should backtrack and try alternate (shallow, wildcard) paths
    * when inheriting groups lines and no match is found. See {@link GroupInheritor}.
