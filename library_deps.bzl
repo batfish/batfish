@@ -27,8 +27,8 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.re2j:re2j:1.7",
     "com.ibm.icu:icu4j:69.1",
     "commons-beanutils:commons-beanutils:1.9.4",
-    "commons-cli:commons-cli:1.5.0",
-    "commons-io:commons-io:2.14.0",
+    "commons-cli:commons-cli:1.6.0",
+    "commons-io:commons-io:2.15.0",
     "dk.brics:automaton:1.12-4",
     "jakarta.activation:jakarta.activation-api:1.2.2",
     "jakarta.annotation:jakarta.annotation-api:1.3.5",
@@ -40,7 +40,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.commons:commons-collections4:4.4",
     "org.apache.commons:commons-configuration2:2.9.0",
     "org.apache.commons:commons-lang3:3.13.0",
-    "org.apache.commons:commons-text:1.10.0",
+    "org.apache.commons:commons-text:1.11.0",
     "org.apache.httpcomponents:httpclient:4.5.14",  # managed up 2021-06-04 for CVE-2020-13956
     "org.apache.httpcomponents:httpcore:4.4.16",  # managed up 2021-06-04 for fixes
     "org.apache.logging.log4j:log4j-api:2.21.0",
