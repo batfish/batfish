@@ -1,0 +1,30 @@
+Configuration:
+  status: warn
+  name: YAMLConfig
+  appenders:
+    Console:
+      name: STDOUT
+      target: SYSTEM_OUT
+      PatternLayout:
+        Pattern: "%d{DEFAULT} %p %c{2} %m%n"
+        # Use below pattern for debugging (slow because gets caller location)
+        # Pattern: "%d{DEFAULT} %p %c{2} %l %m%n"
+  Loggers:
+    logger:
+      - name: org.batfish.common.BatfishLogger
+        level: warn
+        additivity: true
+      - name: org.batfish
+        level: info
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+      - name: net.sf.javabdd
+        level: info
+        additivity: false
+        AppenderRef:
+          ref: STDOUT
+    Root:
+      level: error
+      AppenderRef:
+        ref: STDOUT
