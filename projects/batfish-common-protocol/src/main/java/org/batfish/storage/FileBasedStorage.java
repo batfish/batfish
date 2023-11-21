@@ -288,9 +288,8 @@ public class FileBasedStorage implements StorageProvider {
           "Unexpected exception caught while loading interface blacklist for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while loading interface blacklist for snapshot %s",
-              snapshot),
+          "Unexpected exception caught while loading interface blacklist for snapshot {}",
+          snapshot,
           e);
       return null;
     }
@@ -347,9 +346,7 @@ public class FileBasedStorage implements StorageProvider {
           "Unexpected exception caught while loading node blacklist for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while loading node blacklist for snapshot %s", snapshot),
-          e);
+          "Unexpected exception caught while loading node blacklist for snapshot {}", snapshot, e);
       return null;
     }
   }
@@ -379,9 +376,8 @@ public class FileBasedStorage implements StorageProvider {
           "Unexpected exception caught while loading layer-1 topology for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while loading layer-1 topology for snapshot %s",
-              snapshot),
+          "Unexpected exception caught while loading layer-1 topology for snapshot {}",
+          snapshot,
           e);
       return null;
     } finally {
@@ -432,9 +428,7 @@ public class FileBasedStorage implements StorageProvider {
           "Unexpected exception caught while loading runtime data for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while loading runtime data for snapshot %s", snapshot),
-          e);
+          "Unexpected exception caught while loading runtime data for snapshot {}", snapshot, e);
       return null;
     } finally {
       counter.incrementAndGet();
@@ -659,9 +653,7 @@ public class FileBasedStorage implements StorageProvider {
           "Unexpected exception caught while deserializing configs for snapshot %s: %s",
           snapshot, Throwables.getStackTraceAsString(e));
       LOGGER.warn(
-          String.format(
-              "Unexpected exception caught while deserializing configs for snapshot %s", snapshot),
-          e);
+          "Unexpected exception caught while deserializing configs for snapshot {}", snapshot, e);
       return false;
     }
   }
@@ -1982,7 +1974,7 @@ public class FileBasedStorage implements StorageProvider {
         _logger.errorf(
             "Failed to expunge snapshot directory '%s': %s",
             dir, Throwables.getStackTraceAsString(e));
-        LOGGER.error(String.format("Failed to expunge snapshot directory %s", dir), e);
+        LOGGER.error("Failed to expunge snapshot directory {}", dir, e);
       }
     }
     Optional<Instant> maybeOldestExtantSnapshotFileModifiedDate =
@@ -2012,14 +2004,14 @@ public class FileBasedStorage implements StorageProvider {
               }
             } catch (IOException e) {
               LOGGER.error(
-                  String.format(
-                      "Failed to expunge blob '%s' of networkId '%s'",
-                      path.getFileName(), networkId),
+                  "Failed to expunge blob '{}' of networkId '{}'",
+                  path.getFileName(),
+                  networkId,
                   e);
             }
           });
     } catch (IOException e) {
-      LOGGER.error(String.format("Failed to expunge blobs from networkId '%s'", networkId), e);
+      LOGGER.error("Failed to expunge blobs from networkId '{}'", networkId, e);
     }
   }
 
@@ -2038,9 +2030,9 @@ public class FileBasedStorage implements StorageProvider {
                               loadSnapshotMetadata(networkId, snapshotId), SnapshotMetadata.class));
                 } catch (IOException e) {
                   LOGGER.error(
-                      String.format(
-                          "Error loading snapshot metadata for networkId '%s' snapshotId '%s'",
-                          networkId, snapshotId),
+                      "Error loading snapshot metadata for networkId '{}' snapshotId '{}'",
+                      networkId,
+                      snapshotId,
                       e);
                   // Just skip this snapshot
                   return Optional.<SnapshotMetadata>empty();
@@ -2069,10 +2061,8 @@ public class FileBasedStorage implements StorageProvider {
                 try {
                   return Optional.of(getLastModifiedTime(p));
                 } catch (IOException e) {
-                  LOGGER.error(
-                      String.format(
-                          "Failed to get last modified time of '%s': %s",
-                          p, Throwables.getStackTraceAsString(e)));
+                  LOGGER.error("Failed to get last modified time of '{}'", p, e);
+
                   return Optional.<Instant>empty();
                 }
               })
@@ -2080,10 +2070,8 @@ public class FileBasedStorage implements StorageProvider {
           .map(Optional::get)
           .min(Comparator.naturalOrder());
     } catch (IOException e) {
-      LOGGER.error(
-          String.format(
-              "Failed to get oldest recursive entry of path rooted at '%s': %s",
-              path, Throwables.getStackTraceAsString(e)));
+      LOGGER.error("Failed to get oldest recursive entry of path rooted at '{}'", path, e);
+
       return Optional.empty();
     }
   }
@@ -2129,7 +2117,7 @@ public class FileBasedStorage implements StorageProvider {
         _logger.errorf(
             "Failed to expunge network directory '%s': %s",
             dir, Throwables.getStackTraceAsString(e));
-        LOGGER.error(String.format("Failed to expunge network directory %s", dir), e);
+        LOGGER.error("Failed to expunge network directory {}", dir, e);
       }
     }
   }
