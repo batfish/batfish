@@ -126,7 +126,9 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     }
   }
 
+  @SuppressWarnings("PMD.NonSerializableClass") // this class is never serialized in practice
   private final @Nonnull ResolvabilityEnforcer _resolvabilityEnforcer;
+
   private final @Nonnull Map<OriginMechanism, SortedSetMultimap<Prefix, Bgpv4Route>> _localRoutes;
   private final @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> _localRouteComparators;
   private final @Nonnull ResolutionRestriction<AnnotatedRoute<AbstractRoute>>

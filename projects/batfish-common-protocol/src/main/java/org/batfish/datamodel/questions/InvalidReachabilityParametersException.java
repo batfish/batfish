@@ -4,14 +4,14 @@ import org.batfish.datamodel.answers.StringAnswerElement;
 
 public class InvalidReachabilityParametersException extends Exception {
 
-  private StringAnswerElement _invalidParametersAnswer;
+  private final String _invalidParametersMessage;
 
   public InvalidReachabilityParametersException(String msg) {
     super(msg);
-    _invalidParametersAnswer = new StringAnswerElement(msg);
+    _invalidParametersMessage = msg;
   }
 
   public StringAnswerElement getInvalidParametersAnswer() {
-    return _invalidParametersAnswer;
+    return new StringAnswerElement(_invalidParametersMessage);
   }
 }
