@@ -716,7 +716,7 @@ public final class ConvertConfigurationJobTest {
     @Override
     public List<Configuration> toVendorIndependentConfigurations()
         throws VendorConversionException {
-      return null;
+      return ImmutableList.of();
     }
   }
 

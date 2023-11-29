@@ -6,6 +6,7 @@ import static org.batfish.datamodel.IntegerSpace.builder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -44,8 +45,8 @@ public final class IntegerSpaceTest {
     for (int i = 1; i <= 10; i++) {
       assertTrue("Closed ranges are inclusive", space.contains(i));
     }
-    assertTrue("No members outside of subrange", !space.contains(11));
-    assertTrue("No members outside of subrange", !space.contains(0));
+    assertFalse("No members outside of subrange", space.contains(11));
+    assertFalse("No members outside of subrange", space.contains(0));
   }
 
   @Test
@@ -93,21 +94,21 @@ public final class IntegerSpaceTest {
             .excluding(new SubRange(5, 6))
             .build();
 
-    assertTrue("Space not empty", !space.isEmpty());
-    assertTrue("Space not contiguous", !space.isContiguous());
-    assertTrue("Space does not contain excluded values", !space.contains(1));
-    assertTrue("Space does not contain excluded values", !space.contains(2));
-    assertTrue("Space does not contain excluded values", !space.contains(5));
-    assertTrue("Space does not contain excluded values", !space.contains(6));
-    assertTrue(
+    assertFalse("Space not empty", space.isEmpty());
+    assertFalse("Space not contiguous", space.isContiguous());
+    assertFalse("Space does not contain excluded values", space.contains(1));
+    assertFalse("Space does not contain excluded values", space.contains(2));
+    assertFalse("Space does not contain excluded values", space.contains(5));
+    assertFalse("Space does not contain excluded values", space.contains(6));
+    assertFalse(
         "Space does not contain excluded values",
-        !space.contains(IntegerSpace.builder().including(new SubRange(1, 2)).build()));
+        space.contains(builder().including(new SubRange(1, 2)).build()));
     assertTrue(
         "Space contains child space",
         space.contains(IntegerSpace.builder().including(Range.closed(7, 10)).build()));
-    assertTrue(
+    assertFalse(
         "Space does not contain partially overlapping spaces",
-        !space.contains(IntegerSpace.builder().including(Range.closed(0, 1)).build()));
+        space.contains(builder().including(Range.closed(0, 1)).build()));
   }
 
   @Test
@@ -209,7 +210,7 @@ public final class IntegerSpaceTest {
     newBuilder.excluding(Range.closed(53, 53));
     IntegerSpace newSpace = newBuilder.build();
     assertTrue("Has newly added value", newSpace.contains(-7));
-    assertTrue("Does not have newly excluded value", !newSpace.contains(53));
+    assertFalse("Does not have newly excluded value", newSpace.contains(53));
   }
 
   @Test
@@ -380,7 +381,7 @@ public final class IntegerSpaceTest {
     IntegerSpace twoValues = IntegerSpace.builder().including(Range.closed(1, 2)).build();
     assertTrue("Must be singleton", s1.isSingleton());
     assertTrue("Must be singleton", s2.isSingleton());
-    assertTrue("Must not be singleton", !twoValues.isSingleton());
+    assertFalse("Must not be singleton", twoValues.isSingleton());
   }
 
   @Test

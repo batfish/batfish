@@ -614,6 +614,7 @@ public class WorkMgr extends AbstractCoordinator {
    * @throws IOException If the contents of the topology file cannot be mapped to the topology
    *     object
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable Set<String> getNodes(String network, String snapshot) throws IOException {
     Topology topology = getPojoTopology(network, snapshot);
     if (topology == null) {
@@ -1239,6 +1240,7 @@ public class WorkMgr extends AbstractCoordinator {
    * List questions for the given network. If {@code verbose} is {@code true}, include hidden
    * questions. Returns list of questions if successful, or {@code null} if network does not exist.
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable SortedSet<String> listQuestions(String network, boolean verbose) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -1256,6 +1258,7 @@ public class WorkMgr extends AbstractCoordinator {
   }
 
   /** Returns list of snapshots for given network, or {@code null} if network does not exist. */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<String> listSnapshots(@Nonnull String network) {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
     if (!networkIdOpt.isPresent()) {
@@ -1293,6 +1296,7 @@ public class WorkMgr extends AbstractCoordinator {
    *
    * @throws IOException if there is an error reading metadata for any snapshot
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<SnapshotMetadataEntry> listSnapshotsWithMetadata(@Nonnull String network)
       throws IOException {
     if (!_idManager.hasNetworkId(network)) {
@@ -2022,6 +2026,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<StoredObjectMetadata> getSnapshotInputObjectsMetadata(
       String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
@@ -2043,6 +2048,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
   }
 
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public @Nullable List<StoredObjectMetadata> getSnapshotExtendedObjectsMetadata(
       String network, String snapshot) throws IOException {
     Optional<NetworkId> networkIdOpt = _idManager.getNetworkId(network);
