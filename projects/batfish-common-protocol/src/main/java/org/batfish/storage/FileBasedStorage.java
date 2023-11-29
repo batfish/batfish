@@ -109,6 +109,7 @@ import org.batfish.vendor.VendorConfiguration;
 
 /** A utility class that abstracts the underlying file system storage used by Batfish. */
 @ParametersAreNonnullByDefault
+@SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
 public class FileBasedStorage implements StorageProvider {
   private static final Logger LOGGER = LogManager.getLogger(FileBasedStorage.class);
 

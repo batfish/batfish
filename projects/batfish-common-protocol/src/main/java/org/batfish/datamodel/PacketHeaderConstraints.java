@@ -166,6 +166,7 @@ public class PacketHeaderConstraints {
    * and "icmp/1/1" defines ICMP type 1 and code 1.
    */
   @VisibleForTesting
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   static Set<Application> parseApplications(@Nullable String input) {
     if (input == null) {
       return null;
@@ -200,6 +201,7 @@ public class PacketHeaderConstraints {
    * strings like ["tcp", "udp"]. Negation (e.g., "!tcp" is allowed too.
    */
   @VisibleForTesting
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   static Set<IpProtocol> parseIpProtocols(JsonNode ipProtocols) {
     String input = "";
     if (ipProtocols == null || ipProtocols.isNull()) {
@@ -493,6 +495,7 @@ public class PacketHeaderConstraints {
    * @throws IllegalArgumentException if the set of IP protocols resolves to an empty set.
    */
   @VisibleForTesting
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   static @Nullable Set<IpProtocol> resolveIpProtocols(
       @Nullable Set<IpProtocol> ipProtocols,
       @Nullable IntegerSpace srcPorts,

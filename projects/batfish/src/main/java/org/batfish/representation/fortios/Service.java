@@ -6,7 +6,6 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.IpRange;
 
 /** FortiOS datamodel component containing firewall service configuration */
 public final class Service extends ServiceGroupMember implements Serializable {
@@ -56,10 +55,6 @@ public final class Service extends ServiceGroupMember implements Serializable {
 
   public @Nullable Integer getIcmpType() {
     return _icmpType;
-  }
-
-  public @Nullable IpRange getIpRange() {
-    return _ipRange;
   }
 
   @VisibleForTesting
@@ -138,10 +133,6 @@ public final class Service extends ServiceGroupMember implements Serializable {
     _icmpType = icmpType;
   }
 
-  public void setIpRange(IpRange ipRange) {
-    _ipRange = ipRange;
-  }
-
   public void setTcpPortRangeDst(@Nullable IntegerSpace tcpPortRange) {
     _tcpPortRangeDst = tcpPortRange;
   }
@@ -177,7 +168,6 @@ public final class Service extends ServiceGroupMember implements Serializable {
   private @Nullable Integer _protocolNumber;
   private @Nullable Integer _icmpCode;
   private @Nullable Integer _icmpType;
-  private @Nullable IpRange _ipRange;
   private @Nullable IntegerSpace _tcpPortRangeDst;
   private @Nullable IntegerSpace _tcpPortRangeSrc;
   private @Nullable IntegerSpace _udpPortRangeDst;

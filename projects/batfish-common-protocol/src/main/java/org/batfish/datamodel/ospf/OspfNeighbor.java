@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Objects;
 import javax.annotation.Nullable;
@@ -17,7 +16,7 @@ import org.batfish.datamodel.IpLink;
 
 /** Configuration for one end of an OSPF adjacency */
 @ParametersAreNonnullByDefault
-public final class OspfNeighbor implements Serializable, Comparable<OspfNeighbor> {
+public final class OspfNeighbor implements Comparable<OspfNeighbor> {
   private static final String PROP_AREA = "area";
   private static final String PROP_IFACE = "iface";
   private static final String PROP_NAME = "name";

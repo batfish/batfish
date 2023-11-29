@@ -1481,8 +1481,8 @@ public final class CiscoGrammarTest {
     EigrpRedistributionPolicy eigrpRedist0 = eigrpRedists.get(0);
     EigrpRedistributionPolicy eigrpRedist1 = eigrpRedists.get(1);
 
-    assertTrue(eigrpRedist0.getRouteMap().equals("RM20"));
-    assertTrue(eigrpRedist1.getRouteMap().equals("RM30"));
+    assertEquals("RM20", eigrpRedist0.getRouteMap());
+    assertEquals("RM30", eigrpRedist1.getRouteMap());
     assertThat(eigrpRedist0.getInstance(), equalTo(instance2));
     assertThat(eigrpRedist1.getInstance(), equalTo(instance3));
 
@@ -1493,8 +1493,8 @@ public final class CiscoGrammarTest {
         eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
     EigrpRedistributionPolicy eigrpRedist3 =
         eigrpProc.get(30L).getRedistributionPolicies().get(instance1);
-    assertTrue(eigrpRedist2.getRouteMap().equals("RM10"));
-    assertTrue(eigrpRedist3.getRouteMap().equals("RM10"));
+    assertEquals("RM10", eigrpRedist2.getRouteMap());
+    assertEquals("RM10", eigrpRedist3.getRouteMap());
     assertThat(eigrpRedist2.getInstance(), equalTo(instance1));
     assertThat(eigrpRedist3.getInstance(), equalTo(instance1));
   }

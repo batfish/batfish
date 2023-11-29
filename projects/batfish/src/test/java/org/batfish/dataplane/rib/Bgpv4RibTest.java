@@ -242,7 +242,7 @@ public class Bgpv4RibTest {
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
             ResolutionRestriction.alwaysTrue());
-    assertTrue("MaxPaths=1, not multipath", !rib.isMultipath());
+    assertFalse("MaxPaths=1, not multipath", rib.isMultipath());
     rib =
         new Bgpv4Rib(
             null,
@@ -536,7 +536,7 @@ public class Bgpv4RibTest {
 
     rib.mergeRoute(base);
     assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
-    assertTrue("Not an exact AS path match, don't merge", !rib.mergeRoute(candidate2));
+    assertFalse("Not an exact AS path match, don't merge", rib.mergeRoute(candidate2));
     assertThat(rib.getRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }

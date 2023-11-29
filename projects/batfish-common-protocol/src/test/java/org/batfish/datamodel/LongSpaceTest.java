@@ -5,6 +5,7 @@ import static org.batfish.datamodel.LongSpace.builder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -52,8 +53,8 @@ public final class LongSpaceTest {
     for (long i = 1L; i <= 10L; i++) {
       assertTrue("Closed ranges are inclusive", space.contains(i));
     }
-    assertTrue("No members outside of range", !space.contains(11L));
-    assertTrue("No members outside of range", !space.contains(0L));
+    assertFalse("No members outside of range", space.contains(11L));
+    assertFalse("No members outside of range", space.contains(0L));
   }
 
   @Test
@@ -93,7 +94,7 @@ public final class LongSpaceTest {
     newBuilder.excluding(Range.closed(53L, 53L));
     LongSpace newSpace = newBuilder.build();
     assertTrue("Has newly added value", newSpace.contains(-7L));
-    assertTrue("Does not have newly excluded value", !newSpace.contains(53L));
+    assertFalse("Does not have newly excluded value", newSpace.contains(53L));
   }
 
   @Test
@@ -257,21 +258,21 @@ public final class LongSpaceTest {
             .excluding(Range.closed(5L, 6L))
             .build();
 
-    assertTrue("Space not empty", !space.isEmpty());
-    assertTrue("Space not contiguous", !space.isContiguous());
-    assertTrue("Space does not contain excluded values", !space.contains(1L));
-    assertTrue("Space does not contain excluded values", !space.contains(2L));
-    assertTrue("Space does not contain excluded values", !space.contains(5L));
-    assertTrue("Space does not contain excluded values", !space.contains(6L));
-    assertTrue(
+    assertFalse("Space not empty", space.isEmpty());
+    assertFalse("Space not contiguous", space.isContiguous());
+    assertFalse("Space does not contain excluded values", space.contains(1L));
+    assertFalse("Space does not contain excluded values", space.contains(2L));
+    assertFalse("Space does not contain excluded values", space.contains(5L));
+    assertFalse("Space does not contain excluded values", space.contains(6L));
+    assertFalse(
         "Space does not contain excluded values",
-        !space.contains(LongSpace.builder().including(Range.closed(1L, 2L)).build()));
+        space.contains(builder().including(Range.closed(1L, 2L)).build()));
     assertTrue(
         "Space contains child space",
         space.contains(LongSpace.builder().including(Range.closed(7L, 10L)).build()));
-    assertTrue(
+    assertFalse(
         "Space does not contain partially overlapping spaces",
-        !space.contains(LongSpace.builder().including(Range.closed(0L, 1L)).build()));
+        space.contains(builder().including(Range.closed(0L, 1L)).build()));
   }
 
   @Test
@@ -312,7 +313,7 @@ public final class LongSpaceTest {
     LongSpace twoValues = LongSpace.builder().including(Range.closed(1L, 2L)).build();
     assertTrue("Must be singleton", s1.isSingleton());
     assertTrue("Must be singleton", s2.isSingleton());
-    assertTrue("Must not be singleton", !twoValues.isSingleton());
+    assertFalse("Must not be singleton", twoValues.isSingleton());
   }
 
   @Test
