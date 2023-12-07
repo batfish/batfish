@@ -385,7 +385,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
-                    Schema.list(Schema.LONG),
+                    Schema.set(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
                     Boolean.TRUE))
@@ -473,7 +473,7 @@ public class RoutesAnswerer extends Answerer {
             .add(
                 new ColumnMetadata(
                     COL_CLUSTER_LIST,
-                    Schema.list(Schema.LONG),
+                    Schema.set(Schema.LONG),
                     "Route's Cluster List",
                     Boolean.FALSE,
                     Boolean.TRUE))
@@ -733,14 +733,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
@@ -937,14 +937,14 @@ public class RoutesAnswerer extends Answerer {
         columnBuilder.add(
             new ColumnMetadata(
                 COL_BASE_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
         columnBuilder.add(
             new ColumnMetadata(
                 COL_DELTA_PREFIX + COL_CLUSTER_LIST,
-                Schema.list(Schema.LONG),
+                Schema.set(Schema.LONG),
                 "Route's Cluster List",
                 Boolean.FALSE,
                 Boolean.TRUE));
