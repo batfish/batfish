@@ -230,6 +230,9 @@ public final class BgpTopologyUtils {
       vrf.put(peer.getVrfName(), peer);
     }
     SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
+
+    // In parallel, test which sessions can be established, and collect the new edges into a list.
+    // Have to materialize so that adding the edges to the graph is done sequentially.
     List<BgpEdge> newEdges =
         graph.nodes().parallelStream()
             .flatMap(
