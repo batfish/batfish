@@ -4968,6 +4968,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfe_filter(Ife_filterContext ctx) {
     FilterContext filter = ctx.filter();
+    if (filter.direction() == null) {
+      return;
+    }
     String name = toString(filter.name);
     int line = getLine(filter.name.getStart());
     _configuration.referenceStructure(FIREWALL_FILTER, name, INTERFACE_FILTER, line);
@@ -5028,6 +5031,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfi_filter(Ifi_filterContext ctx) {
     FilterContext filter = ctx.filter();
+    if (filter.direction() == null) {
+      return;
+    }
     String name = toString(filter.name);
     JuniperStructureUsage usage = INTERFACE_FILTER;
     if (filter.direction() != null) {
