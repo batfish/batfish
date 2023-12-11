@@ -4530,6 +4530,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceFilter() {
+    parseConfig("juniper-set-interface-filter-crash");
+    // don't crash.
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermFromEvaluation() {
     // Configuration has policy statements
     Configuration c = parseConfig("juniper-policy-statement-term");
