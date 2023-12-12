@@ -2850,6 +2850,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       long areaId,
       String processName,
       OspfInterface vsOspfIface) {
+    if (vsOspfIface.getEnable() == null) {
+      // Apparently the below assertions don't hold on at least some versions of Palo Alto
+      // See: https://github.com/batfish/batfish/issues/8876
+      return;
+    }
     // (enable = yes or no)  and (passive = yes or no should be explicitly configured
     assert vsOspfIface.getEnable() != null;
     assert vsOspfIface.getPassive() != null;
