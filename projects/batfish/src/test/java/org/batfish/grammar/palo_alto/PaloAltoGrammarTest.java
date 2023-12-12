@@ -1281,6 +1281,13 @@ public final class PaloAltoGrammarTest {
     assertThat(c.getLoggingServers(), contains("2.2.2.2"));
   }
 
+  /** See: https://github.com/batfish/batfish/issues/8876 */
+  @Test
+  public void testGh8876() throws IOException {
+    parseConfig("gh-8876");
+    // Don't crash
+  }
+
   @Test
   public void testGlobalProtectAppCryptoProfiles() {
     PaloAltoConfiguration c = parsePaloAltoConfig("global-protect-app-crypto-profiles");
