@@ -85,7 +85,7 @@ o_null
 
 o_prefix_export_limit
 :
-    PREFIX_EXPORT_LIMIT null_filler
+    PREFIX_EXPORT_LIMIT limit = uint32
 ;
 
 o_reference_bandwidth
