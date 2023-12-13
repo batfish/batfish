@@ -430,6 +430,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_exportContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_prefix_export_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.O_reference_bandwidthContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Oa_nssaContext;
@@ -5413,6 +5414,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentRoutingInstance
         .getOspfExportPolicies()
         .add(toComplexPolicyStatement(ctx.expr, OSPF_EXPORT_POLICY));
+  }
+
+  @Override
+  public void exitO_prefix_export_limit(O_prefix_export_limitContext ctx) {
+    warn(ctx, "Batfish does not limit prefix-export-limit");
   }
 
   @Override
