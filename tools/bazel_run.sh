@@ -2,11 +2,8 @@
 
 set -euo pipefail
 
-CMD="bazelisk"
-if ! type "${CMD}" &> /dev/null; then
-  echo "This script works better with bazelisk. Use 'go get github.com/bazelbuild/bazelisk' to get it.'"
-  echo
-  CMD="bazel"
+if [[ $(bazel version) != *azelisk* ]]; then
+  echo "The recommended way to use bazel is to install bazelisk as the bazel command."
 fi
 
 if [ "${1-}" = "-d" ]
@@ -17,9 +14,10 @@ else
 fi
 
 
-${CMD} build //projects/allinone:allinone_main
+bazel build //projects/allinone:allinone_main
 ./bazel-bin/projects/allinone/allinone_main \
     --jvm_flag=-Xmx12g \
+    --jvm_flag=-Dlog4j2.configurationFile=tools/log4j2.yaml \
     ${DEBUG} \
     -runclient false \
     -coordinatorargs "-templatedirs ./questions"

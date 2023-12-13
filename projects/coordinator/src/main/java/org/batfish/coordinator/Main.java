@@ -73,6 +73,7 @@ public class Main {
    * Returns content of question templates, keyed by name. If {@code verbose} is {@code true},
    * includes hidden templates. Returns {@code null} if question templates not configured.
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   public static @Nullable Map<String, String> getQuestionTemplates(boolean verbose) {
     List<Path> questionTemplateDir = _settings.getQuestionTemplateDirs();
     if (questionTemplateDir == null || questionTemplateDir.isEmpty()) {

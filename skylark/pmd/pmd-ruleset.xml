@@ -51,15 +51,14 @@
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="AvoidFieldNameMatchingTypeName"/>
         <exclude name="AvoidLiteralsInIfCondition"/>
-        <exclude name="BeanMembersShouldSerialize"/>
         <exclude name="CompareObjectsWithEquals"/>
         <exclude name="ConstructorCallsOverridableMethod"/>
         <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="DoNotTerminateVM"/>
         <exclude name="EmptyCatchBlock"/>
         <exclude name="EmptyIfStmt"/>
+        <exclude name="ImplicitSwitchFallThrough"/>
         <exclude name="JUnitSpelling"/>
-        <exclude name="MissingBreakInSwitch"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
         <exclude name="LoggerIsNotStaticFinal"/>
@@ -68,6 +67,12 @@
         <exclude name="OverrideBothEqualsAndHashcode"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
         <exclude name="UseLocaleWithCaseConversions"/>
+    </rule>
+
+    <rule ref="category/java/errorprone.xml/TestClassWithoutTestCases">
+        <properties>
+            <property name="testClassPattern" value="^(?:.*\.)?Test$"/>
+        </properties>
     </rule>
 
     <rule ref="category/java/bestpractices.xml/UnusedFormalParameter">

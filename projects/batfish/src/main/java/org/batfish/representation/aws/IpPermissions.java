@@ -300,6 +300,7 @@ public final class IpPermissions implements Serializable {
    * in this IpPermission instance (or ICMP type and code, if protocol is ICMP). Returns null if IP
    * Protocol and ports are not consistent
    */
+  @SuppressWarnings("PMD.ReturnEmptyCollectionRatherThanNull")
   private @Nullable List<AclLineMatchExpr> getMatchExprsForProtocolAndPorts(
       String aclLineName, Warnings warnings) {
     ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();

@@ -1,10 +1,9 @@
 package org.batfish.datamodel;
 
-import java.io.Serializable;
 import java.util.Set;
 import javax.annotation.Nonnull;
 
-public interface GenericRibReadOnly<R extends AbstractRouteDecorator> extends Serializable {
+public interface GenericRibReadOnly<R extends AbstractRouteDecorator> {
 
   /** Check whether a given route is present in the RIB */
   boolean containsRoute(AbstractRouteDecorator route);

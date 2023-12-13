@@ -19,6 +19,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.plugin.TracerouteEngine;
@@ -228,36 +230,43 @@ public final class BgpTopologyUtils {
       vrf.put(peer.getVrfName(), peer);
     }
     SetMultimap<BgpPeerConfigId, Ip> localIps = localIpsBuilder.build();
-    for (BgpPeerConfigId neighborId : graph.nodes()) {
-      switch (neighborId.getType()) {
-        case DYNAMIC:
-          // Passive end of the peering cannot initiate a connection
-          continue;
-        case ACTIVE:
-          addActivePeerEdges(
-              neighborId,
-              graph,
-              networkConfigurations,
-              ipVrfOwners,
-              receivers,
-              localIps.get(neighborId),
-              checkReachability,
-              tracerouteEngine);
-          break;
-        case UNNUMBERED:
-          addUnnumberedPeerEdges(neighborId, graph, networkConfigurations, l3Adjacencies);
-          break;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Unrecognized peer type: %s", neighborId));
-      }
+
+    // In parallel, test which sessions can be established, and collect the new edges into a list.
+    // Have to materialize so that adding the edges to the graph is done sequentially.
+    List<BgpEdge> newEdges =
+        graph.nodes().parallelStream()
+            .flatMap(
+                neighborId -> {
+                  switch (neighborId.getType()) {
+                    case DYNAMIC:
+                      // Passive end of the peering cannot initiate a connection
+                      return Stream.of();
+                    case ACTIVE:
+                      return addActivePeerEdges(
+                          neighborId,
+                          networkConfigurations,
+                          ipVrfOwners,
+                          receivers,
+                          localIps.get(neighborId),
+                          checkReachability,
+                          tracerouteEngine);
+                    case UNNUMBERED:
+                      return addUnnumberedPeerEdges(
+                          neighborId, graph.nodes(), networkConfigurations, l3Adjacencies);
+                    default:
+                      throw new IllegalArgumentException(
+                          String.format("Unrecognized peer type: %s", neighborId));
+                  }
+                })
+            .collect(Collectors.toList());
+    for (BgpEdge newEdge : newEdges) {
+      graph.putEdgeValue(newEdge._source, newEdge._target, newEdge._sessionProps);
     }
     return new BgpTopology(graph);
   }
 
-  private static void addActivePeerEdges(
+  private static Stream<BgpEdge> addActivePeerEdges(
       BgpPeerConfigId neighborId,
-      MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations nc,
       Map<Ip, Map<String, Set<String>>> ipOwners,
       Map<String, Multimap<String, BgpPeerConfigId>> receivers,
@@ -270,102 +279,122 @@ public final class BgpTopologyUtils {
         || neighbor.getLocalAs() == null
         || neighbor.getPeerAddress() == null
         || neighbor.getRemoteAsns().isEmpty()) {
-      return;
+      return Stream.of();
     }
     // Find nodes that own the neighbor's peer address
     Map<String, Set<String>> possibleVrfs = ipOwners.get(neighbor.getPeerAddress());
     if (possibleVrfs == null) {
-      return;
+      return Stream.of();
     }
 
-    Set<BgpPeerConfigId> alreadyEstablished = graph.adjacentNodes(neighborId);
-    for (Entry<String, Set<String>> entry : possibleVrfs.entrySet()) {
-      String node = entry.getKey();
-      Set<String> vrfs = entry.getValue();
-      Multimap<String, BgpPeerConfigId> receiversByVrf = receivers.get(node);
-      if (receiversByVrf == null) {
-        continue;
-      }
-      for (String vrf : vrfs) {
-        receiversByVrf.get(vrf).stream()
-            // If edge is already established (i.e., we already found that candidate can
-            // initiate the session), don't bother checking in this direction
-            .filter(candidateId -> !alreadyEstablished.contains(candidateId))
-            .forEach(
-                candidateId -> {
-                  // Ensure candidate has compatible local/remote AS, isn't in same vrf as initiator
-                  BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
-                  if (!bgpCandidatePassesSanityChecks(
-                      neighborId, neighbor, candidateId, candidate)) {
-                    return;
-                  }
-                  assert candidate != null; // guaranteed by bgpCandidatePassesSanityChecks
-                  // Check if neighbor has any feasible local IPs compatible with this candidate
-                  Set<Ip> feasibleLocalIpsForPeeringWithCandidate =
-                      getFeasibleLocalIps(potentialLocalIps, candidate);
-                  if (feasibleLocalIpsForPeeringWithCandidate.isEmpty()) {
-                    return;
-                  }
-                  if (!checkReachability) {
-                    feasibleLocalIpsForPeeringWithCandidate.forEach(
-                        ip -> addEdges(neighbor, neighborId, ip, candidateId, graph, nc));
-                  } else {
-                    feasibleLocalIpsForPeeringWithCandidate.stream()
-                        .filter(
-                            initiatorLocalIp ->
-                                canEstablishBgpSession(
-                                    neighborId,
-                                    candidateId,
-                                    neighbor,
-                                    candidate,
-                                    initiatorLocalIp,
-                                    tracerouteEngine))
-                        .forEach(
-                            srcIp -> addEdges(neighbor, neighborId, srcIp, candidateId, graph, nc));
-                  }
-                });
-      }
-    }
+    return possibleVrfs.entrySet().stream()
+        .flatMap(
+            entry -> {
+              String node = entry.getKey();
+              Set<String> vrfs = entry.getValue();
+              Multimap<String, BgpPeerConfigId> receiversByVrf = receivers.get(node);
+              if (receiversByVrf == null) {
+                return Stream.of();
+              }
+              return vrfs.stream()
+                  .flatMap(
+                      vrf ->
+                          receiversByVrf.get(vrf).stream()
+                              .flatMap(
+                                  candidateId -> {
+                                    // Ensure candidate has compatible local/remote AS, isn't in
+                                    // same vrf as initiator
+                                    BgpPeerConfig candidate = nc.getBgpPeerConfig(candidateId);
+                                    if (!bgpCandidatePassesSanityChecks(
+                                        neighborId, neighbor, candidateId, candidate)) {
+                                      return Stream.of();
+                                    }
+                                    assert candidate
+                                        != null; // guaranteed by bgpCandidatePassesSanityChecks
+                                    // Check if neighbor has any feasible local IPs compatible with
+                                    // this candidate
+                                    Set<Ip> feasibleLocalIpsForPeeringWithCandidate =
+                                        getFeasibleLocalIps(potentialLocalIps, candidate);
+                                    if (feasibleLocalIpsForPeeringWithCandidate.isEmpty()) {
+                                      return Stream.of();
+                                    }
+                                    if (!checkReachability) {
+                                      return feasibleLocalIpsForPeeringWithCandidate.stream()
+                                          .flatMap(
+                                              ip ->
+                                                  addEdges(
+                                                      neighbor, neighborId, ip, candidateId, nc));
+                                    } else {
+                                      return feasibleLocalIpsForPeeringWithCandidate.stream()
+                                          .filter(
+                                              initiatorLocalIp ->
+                                                  canEstablishBgpSession(
+                                                      neighborId,
+                                                      candidateId,
+                                                      neighbor,
+                                                      candidate,
+                                                      initiatorLocalIp,
+                                                      tracerouteEngine))
+                                          .flatMap(
+                                              srcIp ->
+                                                  addEdges(
+                                                      neighbor,
+                                                      neighborId,
+                                                      srcIp,
+                                                      candidateId,
+                                                      nc));
+                                    }
+                                  }));
+            });
   }
 
-  private static void addUnnumberedPeerEdges(
+  private static Stream<BgpEdge> addUnnumberedPeerEdges(
       BgpPeerConfigId neighborId,
-      MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
+      Set<BgpPeerConfigId> nodes,
       NetworkConfigurations nc,
       L3Adjacencies l3Adjacencies) {
     // neighbor will be null if neighborId has no peer interface defined
     BgpUnnumberedPeerConfig neighbor = nc.getBgpUnnumberedPeerConfig(neighborId);
     if (neighbor == null || neighbor.getLocalAs() == null || neighbor.getRemoteAsns().isEmpty()) {
-      return;
+      return Stream.of();
     }
 
-    Set<BgpPeerConfigId> alreadyEstablished = graph.adjacentNodes(neighborId);
     String hostname = neighborId.getHostname();
     NodeInterfacePair peerNip = NodeInterfacePair.of(hostname, neighborId.getPeerInterface());
-    graph.nodes().stream()
+    return nodes.stream()
         .filter(
             candidateId ->
-                // If edge is already established (i.e., we already found that candidate can
-                // initiate the session), don't bother checking in this direction
-                !alreadyEstablished.contains(candidateId)
-                    //  Ensure candidate is unnumbered and has compatible local/remote AS
-                    && bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
+                //  Ensure candidate is unnumbered and has compatible local/remote AS
+                bgpCandidatePassesSanityChecks(neighborId, neighbor, candidateId, nc)
                     // Check layer 2 connectivity
                     && l3Adjacencies.inSamePointToPointDomain(
                         peerNip,
                         NodeInterfacePair.of(
                             candidateId.getHostname(), candidateId.getPeerInterface())))
-        .forEach(
-            remoteId -> addEdges(neighbor, neighborId, neighbor.getLocalIp(), remoteId, graph, nc));
+        .flatMap(remoteId -> addEdges(neighbor, neighborId, neighbor.getLocalIp(), remoteId, nc));
+  }
+
+  private static final class BgpEdge {
+    private final @Nonnull BgpPeerConfigId _source;
+    private final @Nonnull BgpPeerConfigId _target;
+    private final @Nonnull BgpSessionProperties _sessionProps;
+
+    private BgpEdge(
+        @Nonnull BgpPeerConfigId source,
+        @Nonnull BgpPeerConfigId target,
+        @Nonnull BgpSessionProperties sessionProps) {
+      _source = source;
+      _target = target;
+      _sessionProps = sessionProps;
+    }
   }
 
   /** Adds edges in {@code graph} between the given {@link BgpPeerConfigId}s in both directions. */
-  private static void addEdges(
+  private static Stream<BgpEdge> addEdges(
       BgpPeerConfig p1,
       BgpPeerConfigId id1,
       Ip p1LocalIp,
       BgpPeerConfigId id2,
-      MutableValueGraph<BgpPeerConfigId, BgpSessionProperties> graph,
       NetworkConfigurations networkConfigurations) {
     BgpPeerConfig remotePeer = Objects.requireNonNull(networkConfigurations.getBgpPeerConfig(id2));
     AsPair asPair =
@@ -377,28 +406,29 @@ public final class BgpTopologyUtils {
             remotePeer.getConfederationAsn(),
             remotePeer.getRemoteAsns());
     assert asPair != null;
-    graph.putEdgeValue(
-        id1,
-        id2,
-        BgpSessionProperties.from(
-            p1,
-            p1LocalIp,
-            remotePeer,
-            false,
-            asPair.getLocalAs(),
-            asPair.getRemoteAs(),
-            asPair.getConfedSessionType()));
-    graph.putEdgeValue(
-        id2,
-        id1,
-        BgpSessionProperties.from(
-            p1,
-            p1LocalIp,
-            remotePeer,
-            true,
-            asPair.getLocalAs(),
-            asPair.getRemoteAs(),
-            asPair.getConfedSessionType()));
+    return Stream.of(
+        new BgpEdge(
+            id1,
+            id2,
+            BgpSessionProperties.from(
+                p1,
+                p1LocalIp,
+                remotePeer,
+                false,
+                asPair.getLocalAs(),
+                asPair.getRemoteAs(),
+                asPair.getConfedSessionType())),
+        new BgpEdge(
+            id2,
+            id1,
+            BgpSessionProperties.from(
+                p1,
+                p1LocalIp,
+                remotePeer,
+                true,
+                asPair.getLocalAs(),
+                asPair.getRemoteAs(),
+                asPair.getConfedSessionType())));
   }
 
   /**

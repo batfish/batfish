@@ -102,7 +102,7 @@ public class PrefixTrieMultiMapTest {
   public void testRemove() {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.put(Prefix.ZERO, 1);
-    assertTrue("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
+    assertFalse("Nothing to remove", ptm1.remove(Prefix.ZERO, 2));
     assertTrue("Element removed", ptm1.remove(Prefix.ZERO, 1));
     assertThat(ptm1.getAllElements(), empty());
   }
@@ -113,7 +113,7 @@ public class PrefixTrieMultiMapTest {
     Prefix p = Prefix.parse("1.1.1.0/24");
     ptm1.put(p, 1);
     ptm1.put(p, 2);
-    assertTrue("Nothing to remove", !ptm1.remove(Prefix.ZERO, 2));
+    assertFalse("Nothing to remove", ptm1.remove(Prefix.ZERO, 2));
     assertTrue("Element removed", ptm1.remove(p, 2));
     assertThat(ptm1.get(Prefix.ZERO), empty());
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
