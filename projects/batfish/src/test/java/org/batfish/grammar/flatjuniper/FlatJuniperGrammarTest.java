@@ -8035,5 +8035,17 @@ public final class FlatJuniperGrammarTest {
     assertThat(assignedAddresses, hasItem(ConcreteInterfaceAddress.parse("2.0.0.1/31")));
   }
 
+  @Test
+  public void testPrefixExportLimit() throws IOException {
+    String hostname = "prefix-export-limit";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname, equalTo("Batfish does not limit prefix-export-limit")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

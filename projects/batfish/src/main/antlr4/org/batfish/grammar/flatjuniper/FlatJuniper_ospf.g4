@@ -36,6 +36,7 @@ o_common
    | o_import
    | o_no_active_backbone
    | o_null
+   | o_prefix_export_limit
    | o_reference_bandwidth
    | o_rib_group
    | o_traffic_engineering
@@ -80,6 +81,11 @@ o_null
       | SPF_OPTIONS
       | TRACEOPTIONS
    ) null_filler
+;
+
+o_prefix_export_limit
+:
+    PREFIX_EXPORT_LIMIT limit = uint32
 ;
 
 o_reference_bandwidth
