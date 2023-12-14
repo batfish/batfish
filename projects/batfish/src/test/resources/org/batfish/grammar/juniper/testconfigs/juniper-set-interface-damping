@@ -1,0 +1,5 @@
+#
+set system host-name juniper-set-interface-damping
+#
+set interfaces ge-2/0/0 damping suppress 1000
+#
