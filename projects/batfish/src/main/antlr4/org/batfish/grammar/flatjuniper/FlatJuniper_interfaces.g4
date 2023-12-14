@@ -111,6 +111,7 @@ i_common
 i_common_physical
 :
     apply
+    | i_damping
     | i_description
     | i_disable
     | i_ether_options
@@ -122,6 +123,7 @@ i_common_physical
     | i_redundant_ether_options
     | i_speed
 ;
+
 i_damping
 :
    DAMPING
@@ -635,7 +637,6 @@ int_named
    )
    (
       i_common
-      | i_damping
       | i_flexible_vlan_tagging
       | i_link_mode
       | i_native_vlan_id
