@@ -128,8 +128,35 @@ i_damping
 :
    DAMPING
    (
-      id_suppress_null
+      id_enable_null
+      | id_half_life_null
+      | id_max_suppress_null
+      | id_reuse_null
+      | id_suppress_null
    )
+;
+
+id_enable_null
+:
+   ENABLE
+;
+
+id_half_life_null
+:
+  // range 1 through 30
+   HALF_LIFE uint8
+;
+
+id_max_suppress_null
+:
+  // range 1 through 20,000
+   MAX_SUPPRESS uint16
+;
+
+id_reuse_null
+:
+  // range 1 through 20,000
+   REUSE uint16
 ;
 
 id_suppress_null
