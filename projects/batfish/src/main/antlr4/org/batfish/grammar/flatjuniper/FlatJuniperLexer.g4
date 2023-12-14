@@ -2382,6 +2382,8 @@ ROUTER_ID: 'router-id';
 
 ROUTER_SOLICIT: 'router-solicit';
 
+ROUTING: 'routing';
+
 ROUTING_HEADER: 'routing-header';
 
 ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
