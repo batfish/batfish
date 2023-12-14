@@ -4536,7 +4536,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testInterfaceDampingSuppress() {
+  public void testInterfaceDamping() {
     parseConfig("juniper-set-interface-damping");
     // don't crash.
   }
