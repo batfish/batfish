@@ -2634,6 +2634,8 @@ SUN_RPC: 'sun-rpc';
 
 SUNRPC: 'sunrpc';
 
+SUPPRESS: 'suppress';
+
 SWITCH_OPTIONS: 'switch-options';
 
 SWITCHOVER_ON_ROUTING_CRASH: 'switchover-on-routing-crash';

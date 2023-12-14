@@ -111,6 +111,7 @@ i_common
 i_common_physical
 :
     apply
+    | i_damping
     | i_description
     | i_disable
     | i_ether_options
@@ -121,6 +122,20 @@ i_common_physical
     | i_null
     | i_redundant_ether_options
     | i_speed
+;
+
+i_damping
+:
+   DAMPING
+   (
+      id_suppress_null
+   )
+;
+
+id_suppress_null
+:
+  // range 1 through 20,000
+   SUPPRESS uint16
 ;
 
 i_description
