@@ -1,0 +1,10 @@
+#
+set system host-name firewall-next-header-ipv6
+#
+set firewall family inet6 filter IPF-IPV6-CONTROLPLANE-IN term DENY-FRAGMENTS from next-header dstopts
+#
+set firewall family inet6 filter IPF-IPV6-CONTROLPLANE-IN term DENY-FRAGMENTS from next-header fragment
+#
+set firewall family inet6 filter IPF-IPV6-CONTROLPLANE-IN term ICMP-OTHER from next-header icmpv6
+#
+set firewall family inet6 filter IPF-IPV6-CONTROLPLANE-IN term DENY-FRAGMENTS from next-header routing

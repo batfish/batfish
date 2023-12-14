@@ -8053,5 +8053,11 @@ public final class FlatJuniperGrammarTest {
             "configs/" + hostname, equalTo("Batfish does not limit prefix-export-limit")));
   }
 
+  @Test
+  public void testFirewallInet6NextHeader() {
+    // Should not crash.
+    parseConfig("firewall-next-header-ipv6");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

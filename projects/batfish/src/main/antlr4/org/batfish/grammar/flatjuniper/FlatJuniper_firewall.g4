@@ -279,7 +279,7 @@ fftf_learn_vlan_1p_priority
 
 fftf_next_header
 :
-   NEXT_HEADER ip_protocol
+   NEXT_HEADER (ip_protocol | DSTOPTS | FRAGMENT | ICMPV6 | ROUTING)
 ;
 
 fftf_null
