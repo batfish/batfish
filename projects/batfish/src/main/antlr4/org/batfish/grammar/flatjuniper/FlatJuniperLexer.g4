@@ -819,6 +819,8 @@ GROUP5: 'group5';
 
 GROUPS: 'groups' -> pushMode(M_Name);
 
+HALF_LIFE: 'half-life';
+
 HASH_KEY: 'hash-key';
 
 HELLO_AUTHENTICATION_KEY: 'hello-authentication-key' -> pushMode(M_SecretString);
@@ -1716,6 +1718,8 @@ MAX_SESSION_NUMBER: 'max-session-number';
 
 MAX_SESSIONS_PER_CONNECTION: 'max-sessions-per-connection';
 
+MAX_SUPPRESS: 'max-suppress';
+
 MAXIMUM: 'maximum';
 
 MAXIMUM_LABELS: 'maximum-labels';
@@ -2304,6 +2308,8 @@ RESTRICT: 'restrict';
 RESTRICTED_QUEUES: 'restricted-queues';
 
 RETAIN: 'retain';
+
+REUSE: 'reuse';
 
 REVERSE: 'reverse';
 
