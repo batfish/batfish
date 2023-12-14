@@ -635,8 +635,8 @@ int_named
    )
    (
       i_common
-      | i_flexible_vlan_tagging
       | i_damping
+      | i_flexible_vlan_tagging
       | i_link_mode
       | i_native_vlan_id
       | i_per_unit_scheduler
