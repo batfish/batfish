@@ -126,7 +126,7 @@ i_damping
 :
    DAMPING
    (
-      i_suppress_null
+      id_suppress_null
    )
 ;
 
@@ -242,7 +242,7 @@ i_speed
    SPEED dec speed_abbreviation
 ;
 
-i_suppress_null
+id_suppress_null
 :
   // range 1 through 20,000
    SUPPRESS uint16
@@ -636,11 +636,11 @@ int_named
    (
       i_common
       | i_flexible_vlan_tagging
+      | i_damping
       | i_link_mode
       | i_native_vlan_id
       | i_per_unit_scheduler
       | i_unit
-      | i_damping
    )
 ;
 
