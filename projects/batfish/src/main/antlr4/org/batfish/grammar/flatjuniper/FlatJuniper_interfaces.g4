@@ -132,6 +132,12 @@ i_damping
    )
 ;
 
+id_suppress_null
+:
+  // range 1 through 20,000
+   SUPPRESS uint16
+;
+
 i_description
 :
    description
@@ -242,12 +248,6 @@ i_redundant_ether_options
 i_speed
 :
    SPEED dec speed_abbreviation
-;
-
-id_suppress_null
-:
-  // range 1 through 20,000
-   SUPPRESS uint16
 ;
 
 i_unit
