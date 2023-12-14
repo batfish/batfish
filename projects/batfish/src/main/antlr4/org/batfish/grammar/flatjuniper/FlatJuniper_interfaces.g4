@@ -122,6 +122,13 @@ i_common_physical
     | i_redundant_ether_options
     | i_speed
 ;
+i_damping
+:
+   DAMPING
+   (
+      i_suppress_null
+   )
+;
 
 i_description
 :
@@ -233,6 +240,12 @@ i_redundant_ether_options
 i_speed
 :
    SPEED dec speed_abbreviation
+;
+
+i_suppress_null
+:
+  // range 1 through 20,000
+   SUPPRESS uint16
 ;
 
 i_unit
@@ -627,6 +640,7 @@ int_named
       | i_native_vlan_id
       | i_per_unit_scheduler
       | i_unit
+      | i_damping
    )
 ;
 

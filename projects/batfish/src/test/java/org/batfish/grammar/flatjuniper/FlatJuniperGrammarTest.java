@@ -4536,6 +4536,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceDampingSuppress() {
+    parseConfig("juniper-set-interface-damping");
+    // don't crash.
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermFromEvaluation() {
     // Configuration has policy statements
     Configuration c = parseConfig("juniper-policy-statement-term");
