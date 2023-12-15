@@ -8059,5 +8059,11 @@ public final class FlatJuniperGrammarTest {
     parseConfig("firewall-next-header-ipv6");
   }
 
+  @Test
+  public void testSetPartial() {
+    // Should not crash.
+    parseConfig("set-partial");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
