@@ -11,7 +11,8 @@ s_protocols
 :
    PROTOCOLS
    (
-      p_bgp
+      // empty protocol is valid
+      | p_bgp
       | p_connections
       | p_evpn
       | p_isis
