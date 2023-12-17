@@ -215,6 +215,11 @@ i_gigether_options
    GIGETHER_OPTIONS ether_options
 ;
 
+i_input_vlan_map
+:
+   INPUT_VLAN_MAP PUSH
+;
+
 i_link_mode
 :
    LINK_MODE FULL_DUPLEX
@@ -256,6 +261,11 @@ i_null
    ) null_filler
 ;
 
+i_output_vlan_map
+:
+   OUTPUT_VLAN_MAP POP
+;
+
 i_peer_unit
 :
    PEER_UNIT unit = dec
@@ -287,6 +297,8 @@ i_unit
    (
       i_common
       | i_bandwidth
+      | i_input_vlan_map
+      | i_output_vlan_map
       | i_peer_unit
    )
 ;

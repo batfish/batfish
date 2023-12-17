@@ -2111,6 +2111,8 @@ POOL_DEFAULT_PORT_RANGE: 'pool-default-port-range';
 
 POOL_UTILIZATION_ALARM: 'pool-utilization-alarm';
 
+POP: 'pop';
+
 POP3: 'pop3';
 
 PORT: 'port' -> pushMode(M_Port);
@@ -2212,6 +2214,8 @@ PROXY_IDENTITY: 'proxy-identity';
 PROXY_MACIP_ADVERTISEMENT: 'proxy-macip-advertisement';
 
 PSH: 'psh';
+
+PUSH: 'push';
 
 Q931: 'q931';
 
