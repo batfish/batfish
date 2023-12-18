@@ -1619,6 +1619,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testFtiInterfaceTypeSupport() {
+    parseConfig("juniper_fti_interface_type");
+    // don't crash.
+  }
+
+  @Test
   public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 
