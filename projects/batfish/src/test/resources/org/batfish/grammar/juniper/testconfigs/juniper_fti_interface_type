@@ -1,0 +1,7 @@
+#
+set system host-name juniper_fti_interface_type
+#
+set interfaces fti0.10 unit 0 tunnel encapsulation vxlan-gpe
+set interfaces fti0.10 unit 0 tunnel encapsulation vxlan-gpe source address 1.2.3.4
+delete protocols mpls interface fti0.10
+delete protocols rsvp interface fti0.10

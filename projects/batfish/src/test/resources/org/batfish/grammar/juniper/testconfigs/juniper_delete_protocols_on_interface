@@ -1,6 +1,0 @@
-#
-set system host-name juniper_delete_protocols_on_interface
-#
-delete protocols mpls interface fti0.10
-delete protocols rsvp interface fti0.11
-delete protocols isis interface fti0.12

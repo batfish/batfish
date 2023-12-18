@@ -1619,8 +1619,8 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testDeleteUnsupportedProtocolsOnInterface() throws IOException {
-    parseConfig("juniper_delete_protocols_on_interface");
+  public void testFtiInterfaceTypeSupport() {
+    parseConfig("juniper_fti_interface_type");
     // don't crash.
   }
 
