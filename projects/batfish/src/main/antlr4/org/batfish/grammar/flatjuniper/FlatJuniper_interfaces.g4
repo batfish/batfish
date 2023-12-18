@@ -217,7 +217,7 @@ i_gigether_options
 
 i_input_vlan_map
 :
-   INPUT_VLAN_MAP (POP | PUSH)
+   INPUT_VLAN_MAP i_vlan_action
 ;
 
 i_link_mode
@@ -263,7 +263,7 @@ i_null
 
 i_output_vlan_map
 :
-   OUTPUT_VLAN_MAP (POP | PUSH)
+   OUTPUT_VLAN_MAP i_vlan_action
 ;
 
 i_peer_unit
@@ -301,6 +301,11 @@ i_unit
       | i_output_vlan_map
       | i_peer_unit
    )
+;
+
+i_vlan_action
+:
+   POP | POP_POP | POP_SWAP | PUSH | PUSH_PUSH | SWAP | SWAP_PUSH | SWAP_SWAP
 ;
 
 i_vlan_id

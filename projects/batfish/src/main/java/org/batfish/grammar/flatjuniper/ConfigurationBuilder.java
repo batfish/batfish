@@ -4932,12 +4932,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_input_vlan_map(I_input_vlan_mapContext ctx) {
-    warn(ctx, "Batfish does not support input-vlan-map");
+    todo(ctx);
   }
 
   @Override
   public void exitI_output_vlan_map(I_output_vlan_mapContext ctx) {
-    warn(ctx, "Batfish does not support output-vlan-map");
+    todo(ctx);
   }
 
   @Override

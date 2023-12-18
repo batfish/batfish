@@ -2113,6 +2113,10 @@ POOL_UTILIZATION_ALARM: 'pool-utilization-alarm';
 
 POP: 'pop';
 
+POP_POP: 'pop-pop';
+
+POP_SWAP: 'pop-swap';
+
 POP3: 'pop3';
 
 PORT: 'port' -> pushMode(M_Port);
@@ -2216,6 +2220,8 @@ PROXY_MACIP_ADVERTISEMENT: 'proxy-macip-advertisement';
 PSH: 'psh';
 
 PUSH: 'push';
+
+PUSH_PUSH: 'push-push';
 
 Q931: 'q931';
 
@@ -2647,6 +2653,12 @@ SUN_RPC: 'sun-rpc';
 SUNRPC: 'sunrpc';
 
 SUPPRESS: 'suppress';
+
+SWAP: 'swap';
+
+SWAP_PUSH: 'swap-push';
+
+SWAP_SWAP: 'swap-swap';
 
 SWITCH_OPTIONS: 'switch-options';
 
