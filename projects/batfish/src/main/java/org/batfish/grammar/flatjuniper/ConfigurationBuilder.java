@@ -27,6 +27,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_I
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
+import static org.batfish.representation.juniper.JuniperStructureType.IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
@@ -390,6 +391,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_ignore_attached_bitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_no_ipv4_routingContext;
@@ -490,6 +492,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_exactContext;
@@ -2770,6 +2773,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitSepctxptp_application_services(Sepctxptp_application_servicesContext ctx) {
     todo(ctx);
+  }
+
+  public void enterIs_import(Is_importContext ctx) {
+    _configuration.defineStructure(IMPORT, ctx.name.getText(), ctx);
   }
 
   @Override
@@ -5200,6 +5207,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitIs_import(Is_importContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitIs_interface(Is_interfaceContext ctx) {
     _currentIsisInterfaceSettings = null;
   }
@@ -5767,6 +5779,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsf_tag(Popsf_tagContext ctx) {
     long tag = toLong(ctx.uint32());
     _currentPsTerm.getFroms().addFromTag(new PsFromTag(tag));
+  }
+
+  @Override
+  public void exitPopsf_tag2(Popsf_tag2Context ctx) {
+    todo(ctx);
   }
 
   @Override

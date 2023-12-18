@@ -8097,5 +8097,11 @@ public final class FlatJuniperGrammarTest {
     parseConfig("interfaces-vlan-map");
   }
 
+  @Test
+  public void testIsisImport() {
+    // Should not crash.
+    parseConfig("isis-import");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

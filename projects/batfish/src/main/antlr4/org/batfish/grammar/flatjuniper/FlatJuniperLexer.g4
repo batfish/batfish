@@ -2692,6 +2692,8 @@ TACPLUS_SERVER: 'tacplus-server';
 
 TAG: 'tag';
 
+TAG2: 'tag2';
+
 TALK: 'talk';
 
 TARGET: 'target';
