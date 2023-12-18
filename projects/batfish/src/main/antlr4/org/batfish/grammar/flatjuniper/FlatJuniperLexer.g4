@@ -3341,6 +3341,7 @@ F_InterfaceMediaType
    'et' |
    'fab' |
    'fe' |
+   'fti' |
    'fxp' |
    'ge' |
    'gr' |
