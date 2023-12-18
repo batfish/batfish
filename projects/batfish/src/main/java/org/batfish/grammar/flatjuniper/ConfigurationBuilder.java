@@ -342,8 +342,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_flexible_vlan_taggingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_input_vlan_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_mtuContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_native_vlan_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_output_vlan_mapContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_unitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.I_vlan_taggingContext;
@@ -4926,6 +4928,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return;
     }
     _currentInterfaceOrRange.setVlanTagging(VlanTaggingMode.FLEXIBLE_VLAN_TAGGING);
+  }
+
+  @Override
+  public void exitI_input_vlan_map(I_input_vlan_mapContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitI_output_vlan_map(I_output_vlan_mapContext ctx) {
+    todo(ctx);
   }
 
   @Override

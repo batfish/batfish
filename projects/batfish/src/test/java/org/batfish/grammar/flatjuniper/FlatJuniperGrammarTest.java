@@ -8065,5 +8065,11 @@ public final class FlatJuniperGrammarTest {
     parseConfig("set-partial");
   }
 
+  @Test
+  public void testInterfacesVlanMap() {
+    // Should not crash.
+    parseConfig("interfaces-vlan-map");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
