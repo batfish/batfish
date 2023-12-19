@@ -7254,9 +7254,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBf_route_target(Bf_route_targetContext ctx) {
-    warn(
-        ctx,
-        "family route-target statement used for filtering VPN routes is currently not supported");
+    todo(ctx);
   }
 
   @Override
