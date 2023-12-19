@@ -4562,6 +4562,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpFamilyRouteTarget() {
+    parseConfig("juniper-bgp-family-route-target");
+    // don't crash.
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermFromEvaluation() {
     // Configuration has policy statements
     Configuration c = parseConfig("juniper-policy-statement-term");
