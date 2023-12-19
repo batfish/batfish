@@ -80,13 +80,13 @@ is_overload
 :
   OVERLOAD
   (
-    advertise_high_metrics
-    | apply
+    apply
+    | iso_advertise_high_metrics
     | iso_timeout
   )
 ;
 
-advertise_high_metrics
+iso_advertise_high_metrics
 :
   ADVERTISE_HIGH_METRICS
 ;
