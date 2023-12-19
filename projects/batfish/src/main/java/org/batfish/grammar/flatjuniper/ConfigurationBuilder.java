@@ -92,7 +92,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
-import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_TO_INTERFACE;
@@ -6451,7 +6451,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     JuniperStructureUsage usage;
     switch (_currentNat.getType()) {
       case DESTINATION:
-        usage = NAT_DESTINATINATION_RULE_SET_RULE_THEN;
+        usage = NAT_DESTINATION_RULE_SET_RULE_THEN;
         break;
       case SOURCE:
         usage = NAT_SOURCE_RULE_SET_RULE_THEN;
