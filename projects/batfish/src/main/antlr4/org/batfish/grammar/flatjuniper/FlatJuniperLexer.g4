@@ -100,6 +100,8 @@ ADDRESS_SET: 'address-set' -> pushMode(M_Name);
 
 ADVERTISE_EXTERNAL: 'advertise-external';
 
+ADVERTISE_HIGH_METRICS: 'advertise-high-metrics';
+
 ADVERTISE_INACTIVE: 'advertise-inactive';
 
 ADVERTISE_INTERVAL: 'advertise-interval';
