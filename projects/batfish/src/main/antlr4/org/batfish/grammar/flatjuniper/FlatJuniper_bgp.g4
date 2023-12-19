@@ -143,6 +143,7 @@ b_family
       | bf_inet
       | bf_inet6
       | bf_null
+      | bf_route_target
    ) bf_accepted_prefix_limit?
 ;
 
@@ -332,6 +333,12 @@ bf_null
       | L2VPN
    ) null_filler
 ;
+
+bf_route_target
+:
+   ROUTE_TARGET
+;
+
 
 bfi_any
 :
