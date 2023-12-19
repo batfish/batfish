@@ -5205,7 +5205,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIs_import(Is_importContext ctx) {
     _configuration.referenceStructure(
-        POLICY_STATEMENT, ctx.name.getText(), ISIS_IMPORT_POLICY, getLine(ctx.name.getStart()));
+        POLICY_STATEMENT, toString(ctx.name), ISIS_IMPORT_POLICY, getLine(ctx.name.getStart()));
     todo(ctx);
   }
 
