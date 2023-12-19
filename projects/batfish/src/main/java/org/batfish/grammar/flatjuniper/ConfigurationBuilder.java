@@ -412,6 +412,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isil_te_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metricsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
@@ -5839,6 +5840,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_color(Popst_colorContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIso_advertise_high_metrics(Iso_advertise_high_metricsContext ctx) {
     todo(ctx);
   }
 

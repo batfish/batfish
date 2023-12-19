@@ -1,0 +1,5 @@
+#
+set system host-name juniper-set-protocols-isis
+#
+set protocols isis overload advertise-high-metrics
+#
