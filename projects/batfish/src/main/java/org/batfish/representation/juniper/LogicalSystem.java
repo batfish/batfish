@@ -108,6 +108,8 @@ public class LogicalSystem implements Serializable {
 
   private @Nullable SwitchOptions _switchOptions;
 
+  private Map<Integer, VniOptions> _vniOptions;
+
   private final Map<String, Zone> _zones;
 
   public LogicalSystem(String name) {
@@ -153,6 +155,7 @@ public class LogicalSystem implements Serializable {
     _tunnelAttributes = new TreeMap<>();
     _namedVlans = new TreeMap<>();
     _switchOptions = new SwitchOptions();
+    _vniOptions = new TreeMap<>();
     _zones = new TreeMap<>();
   }
 
@@ -401,6 +404,10 @@ public class LogicalSystem implements Serializable {
 
   public SwitchOptions getSwitchOptions() {
     return _switchOptions;
+  }
+
+  public Map<Integer, VniOptions> getVniOptions() {
+    return _vniOptions;
   }
 
   public Map<String, Zone> getZones() {

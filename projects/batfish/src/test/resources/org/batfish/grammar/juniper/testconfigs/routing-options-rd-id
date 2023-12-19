@@ -1,0 +1,5 @@
+#
+set system host-name routing-options-rd-id
+#
+set routing-options route-distinguisher-id 10.1.1.1
+#

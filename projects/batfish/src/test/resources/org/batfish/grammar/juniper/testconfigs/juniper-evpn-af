@@ -1,0 +1,15 @@
+#
+set system host-name juniper-evpn-af
+#
+set routing-options autonomous-system 1
+set protocols bgp group _vrfA type internal
+set protocols bgp group _vrfA local-address 10.84.249.24
+set protocols bgp group _vrfA neighbor 1.1.1.1
+set protocols bgp group _vrfA family inet-vpn unicast
+set protocols bgp group _vrfA family inet6-vpn unicast
+set protocols bgp group _vrfA family evpn signaling
+set protocols bgp group _vrfB type internal
+set protocols bgp group _vrfB local-address 10.84.249.25
+set protocols bgp group _vrfB neighbor 1.1.1.2
+set protocols bgp group _vrfB family inet-vpn unicast
+set protocols bgp group _vrfB family inet6-vpn unicast

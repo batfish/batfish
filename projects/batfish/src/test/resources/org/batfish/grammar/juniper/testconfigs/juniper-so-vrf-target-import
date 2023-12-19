@@ -1,0 +1,5 @@
+#
+set system host-name juniper-so-vrf-target-import
+#
+set switch-options vrf-target import target:65320:7999999
+#

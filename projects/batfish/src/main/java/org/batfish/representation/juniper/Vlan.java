@@ -54,7 +54,7 @@ public class Vlan implements Serializable {
     return _vniId;
   }
 
-  public void setVlanId(int vlanId) {
+  public void setVlanId(Integer vlanId) {
     _vlanId = vlanId;
     _vlanIdList = null;
   }
@@ -68,7 +68,7 @@ public class Vlan implements Serializable {
     _vlanIdList.add(vlanIdListSubrange);
   }
 
-  public void setVniId(int vniId) {
+  public void setVniId(Integer vniId) {
     _vniId = vniId;
   }
 

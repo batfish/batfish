@@ -10,12 +10,20 @@ s_switch_options
 :
   SWITCH_OPTIONS
     (
-      so_vtep_source_interface
-      | so_route_distinguisher
+      so_route_distinguisher
       | so_vrf_target
-      | so_vrf_export
-      | so_vrf_import
-    )
+      | so_vtep_source_interface
+   )
+;
+
+so_vrf_target:
+   VRF_TARGET
+        (
+          sovt_auto
+          | sovt_community
+          | sovt_export
+          | sovt_import
+        )
 ;
 
 so_vtep_source_interface
@@ -28,17 +36,22 @@ so_route_distinguisher
   ROUTE_DISTINGUISHER route_distinguisher
 ;
 
-so_vrf_target
+sovt_auto
 :
-  VRF_TARGET null_filler
+  AUTO
 ;
 
-so_vrf_export
+sovt_community
 :
-  VRF_EXPORT null_filler
+   extended_community
 ;
 
-so_vrf_import
+sovt_export
 :
-  VRF_IMPORT null_filler
+   EXPORT extended_community
+;
+
+sovt_import
+:
+   IMPORT extended_community
 ;

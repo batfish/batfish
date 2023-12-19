@@ -1,6 +1,7 @@
 #
 set system host-name juniper-vxlan-l2vni
 #
+set interfaces lo0 unit 0 family inet address 10.84.249.26/32 primary
 set interfaces xe-0/0/0 description to_host-1
 set interfaces xe-0/0/0 unit 0 family ethernet-switching interface-mode access
 set interfaces xe-0/0/0 unit 0 family ethernet-switching vlan members v10
