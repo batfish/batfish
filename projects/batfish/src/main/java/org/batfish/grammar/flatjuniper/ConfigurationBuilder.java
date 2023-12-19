@@ -227,7 +227,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Aat_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifierContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Address_specifier_nameContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Advertise_high_metricsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metricsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_expand_countContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_path_exprContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.As_unitContext;
@@ -5844,7 +5844,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitAdvertise_high_metrics(Advertise_high_metricsContext ctx) {
+  public void exitIso_advertise_high_metrics(Iso_advertise_high_metricsContext ctx) {
     todo(ctx);
   }
 
