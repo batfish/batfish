@@ -47,6 +47,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   IPSEC_VPN_IKE_GATEWAY("ipsec vpn ike gateway"),
   IPSEC_VPN_IPSEC_POLICY("ipsec vpn ipsec policy"),
   ISIS_EXPORT_POLICY("isis export"),
+  ISIS_IMPORT_POLICY("isis import"),
   ISIS_INTERFACE("isis interface"),
   NAT_DESTINATINATION_RULE_SET_RULE_THEN("nat destination rule-set rule then pool"),
   NAT_RULE_SET_FROM_INTERFACE("nat rule-set rule from interface"),

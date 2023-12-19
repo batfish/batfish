@@ -24,7 +24,6 @@ public enum JuniperStructureType implements StructureType {
   IKE_GATEWAY("ike gateway"),
   IKE_POLICY("ike policy"),
   IKE_PROPOSAL("ike proposal"),
-  IMPORT("import"),
   INTERFACE("interface"),
   IPSEC_POLICY("ipsec policy"),
   IPSEC_PROPOSAL("ipsec proposal"),

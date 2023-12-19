@@ -27,7 +27,6 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_I
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
-import static org.batfish.representation.juniper.JuniperStructureType.IMPORT;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
@@ -91,6 +90,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN_IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
@@ -2775,10 +2775,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     todo(ctx);
   }
 
-  public void enterIs_import(Is_importContext ctx) {
-    _configuration.defineStructure(IMPORT, ctx.name.getText(), ctx);
-  }
-
   @Override
   public void enterIs_interface(Is_interfaceContext ctx) {
     if (ctx.ALL() != null) {
@@ -5208,6 +5204,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitIs_import(Is_importContext ctx) {
+    _configuration.referenceStructure(
+        POLICY_STATEMENT, ctx.name.getText(), ISIS_IMPORT_POLICY, getLine(ctx.name.getStart()));
     todo(ctx);
   }
 
