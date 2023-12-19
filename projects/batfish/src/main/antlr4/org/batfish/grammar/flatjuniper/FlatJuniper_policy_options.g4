@@ -168,6 +168,7 @@ pops_from
       | popsf_route_type
       | popsf_source_address_filter
       | popsf_tag
+      | popsf_tag2
    )
 ;
 
@@ -364,6 +365,11 @@ popsf_source_address_filter
 popsf_tag
 :
    TAG uint32
+;
+
+popsf_tag2
+:
+   TAG2 uint32
 ;
 
 popsfpl_exact
