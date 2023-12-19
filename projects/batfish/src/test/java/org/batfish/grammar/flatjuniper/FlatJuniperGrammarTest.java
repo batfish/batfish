@@ -1625,6 +1625,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSetProtocolsIsis() throws IOException {
+    // don't crash.
+    String hostname = "juniper-set-protocols-isis";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertEquals(pvcae.getWarnings().size(), 1);
+    assertThat(
+        pvcae,
+        hasParseWarning(
+            "configs/" + hostname, containsString("This feature is not currently supported")));
+  }
+
+  @Test
   public void testPsFromCommunity() {
     Configuration c = parseConfig("community");
 

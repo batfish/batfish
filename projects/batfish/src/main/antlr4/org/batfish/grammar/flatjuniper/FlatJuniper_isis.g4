@@ -80,9 +80,15 @@ is_overload
 :
   OVERLOAD
   (
-    apply
+    advertise_high_metrics
+    | apply
     | iso_timeout
   )
+;
+
+advertise_high_metrics
+:
+  ADVERTISE_HIGH_METRICS
 ;
 
 is_reference_bandwidth
