@@ -9,6 +9,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_NE
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_REDISTRIBUTE;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -409,16 +410,17 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (!isMultipath()) {
       return getBestPathRoutes();
     }
-    Map<NextHop, Map<Prefix, SortedSet<R>>> routesByNhAndPrefix = new HashMap<>();
+    Map<NextHop, Map<Prefix, R>> routesByNhAndPrefix = new HashMap<>();
     for (R route : super.computeTypedRoutes()) {
       routesByNhAndPrefix
           .computeIfAbsent(route.getNextHop(), n -> new HashMap<>())
-          .computeIfAbsent(route.getNetwork(), p -> new TreeSet<>(this::bestPathComparator))
-          .add(route);
+          .compute(
+              route.getNetwork(),
+              (p, other) ->
+                  other == null ? route : Comparators.max(other, route, this::bestPathComparator));
     }
     return routesByNhAndPrefix.values().stream()
         .flatMap(m -> m.values().stream())
-        .map(SortedSet::last)
         .collect(ImmutableSet.toImmutableSet());
   }
 
