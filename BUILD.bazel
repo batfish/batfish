@@ -1,5 +1,5 @@
-load("@rules_java//java:defs.bzl", "java_plugin")
 load("@buildifier_prebuilt//:rules.bzl", "buildifier")
+load("@rules_java//java:defs.bzl", "java_plugin")
 
 package(default_visibility = ["//visibility:public"])
 
