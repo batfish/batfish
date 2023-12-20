@@ -28,3 +28,22 @@ insert policy-options policy-statement p1 term t4 after term t3
 set policy-options policy-statement p1 term t5 then accept
 
 {master:0}
+
+set policy-options policy-statement p1 term t6 then accept
+
+# set policy-options policy-statement p1 term t7 then accept
+policy-options {
+  policy-statement p1 {
+    term t7 {
+      then accept }
+  }
+}
+
+# set policy-options policy-statement p1 term t8 then accept
+# set policy-options policy-statement p1 term t9 then accept
+policy-options {
+  policy-statement p1 {
+    term t8 { then accept }
+    term t9 then accept
+  }
+}
