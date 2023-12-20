@@ -3899,17 +3899,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     markConcreteStructure(JuniperStructureType.FIREWALL_FILTER_TERM);
     markConcreteStructure(JuniperStructureType.FIREWALL_INTERFACE_SET);
     markConcreteStructure(JuniperStructureType.INTERFACE);
-    markConcreteStructure(
-        JuniperStructureType.POLICY_STATEMENT,
-        JuniperStructureUsage.BGP_EXPORT_POLICY,
-        JuniperStructureUsage.BGP_IMPORT_POLICY,
-        JuniperStructureUsage.FORWARDING_TABLE_EXPORT_POLICY,
-        JuniperStructureUsage.GENERATED_ROUTE_POLICY,
-        JuniperStructureUsage.OSPF_EXPORT_POLICY,
-        JuniperStructureUsage.POLICY_STATEMENT_POLICY,
-        JuniperStructureUsage.ROUTING_INSTANCE_VRF_EXPORT,
-        JuniperStructureUsage.ROUTING_INSTANCE_VRF_IMPORT,
-        JuniperStructureUsage.ROUTING_OPTIONS_INSTANCE_IMPORT);
+    markConcreteStructure(JuniperStructureType.POLICY_STATEMENT);
     markConcreteStructure(JuniperStructureType.POLICY_STATEMENT_TERM);
     markConcreteStructure(
         JuniperStructureType.PREFIX_LIST,
