@@ -1,5 +1,10 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import java.util.Set;
 import org.batfish.vendor.StructureType;
 
 public enum JuniperStructureType implements StructureType {
@@ -58,6 +63,16 @@ public enum JuniperStructureType implements StructureType {
   JuniperStructureType(String description) {
     _description = description;
   }
+
+  public static final Multimap<JuniperStructureType, JuniperStructureType> ABSTRACT_STRUCTURES =
+      ImmutableListMultimap.<JuniperStructureType, JuniperStructureType>builder()
+          .putAll(APPLICATION_OR_APPLICATION_SET, APPLICATION, APPLICATION_SET)
+          .putAll(SNMP_CLIENT_LIST_OR_PREFIX_LIST, SNMP_CLIENT_LIST, PREFIX_LIST)
+          .build();
+
+  public static final Set<JuniperStructureType> CONCRETE_STRUCTURES =
+      ImmutableSet.copyOf(
+          Sets.difference(ImmutableSet.copyOf(values()), ABSTRACT_STRUCTURES.keySet()));
 
   @Override
   public String getDescription() {
