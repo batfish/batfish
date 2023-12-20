@@ -3,7 +3,6 @@ package org.batfish.datamodel.matchers;
 import static org.hamcrest.Matchers.equalTo;
 
 import java.util.Map;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -40,7 +39,7 @@ public class BgpProcessMatchers {
    * provided {@code subMatcher}.
    */
   public static Matcher<BgpProcess> hasInterfaceNeighbors(
-      @Nonnull Matcher<? super SortedMap<String, BgpUnnumberedPeerConfig>> subMatcher) {
+      @Nonnull Matcher<? super Map<String, BgpUnnumberedPeerConfig>> subMatcher) {
     return new HasInterfaceNeighbors(subMatcher);
   }
 

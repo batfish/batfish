@@ -1,7 +1,6 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.Map;
-import java.util.SortedMap;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
@@ -36,14 +35,14 @@ final class BgpProcessMatchersImpl {
   }
 
   static final class HasInterfaceNeighbors
-      extends FeatureMatcher<BgpProcess, SortedMap<String, BgpUnnumberedPeerConfig>> {
+      extends FeatureMatcher<BgpProcess, Map<String, BgpUnnumberedPeerConfig>> {
     HasInterfaceNeighbors(
-        @Nonnull Matcher<? super SortedMap<String, BgpUnnumberedPeerConfig>> subMatcher) {
+        @Nonnull Matcher<? super Map<String, BgpUnnumberedPeerConfig>> subMatcher) {
       super(subMatcher, "A BGP process with interfaceNeighbors:", "interfaceNeighbors:");
     }
 
     @Override
-    protected SortedMap<String, BgpUnnumberedPeerConfig> featureValueOf(BgpProcess actual) {
+    protected Map<String, BgpUnnumberedPeerConfig> featureValueOf(BgpProcess actual) {
       return actual.getInterfaceNeighbors();
     }
   }

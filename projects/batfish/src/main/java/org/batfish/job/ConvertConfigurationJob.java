@@ -527,6 +527,16 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setTrackingGroups(toImmutableMap(c.getTrackingGroups()));
     c.setVrfs(verifyAndToImmutableMap(c.getVrfs(), Vrf::getName, w));
     c.setZones(toImmutableMap(c.getZones()));
+    for (Vrf v : c.getVrfs().values()) {
+      BgpProcess p = v.getBgpProcess();
+      if (p == null) {
+        continue;
+      }
+      p.setNeighbors(ImmutableMap.copyOf(p.getActiveNeighbors()));
+      p.setInterfaceNeighbors(ImmutableMap.copyOf(p.getInterfaceNeighbors()));
+      p.setPassiveNeighbors(ImmutableMap.copyOf(p.getPassiveNeighbors()));
+    }
+
     verifyAclInvariants(c, w);
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
