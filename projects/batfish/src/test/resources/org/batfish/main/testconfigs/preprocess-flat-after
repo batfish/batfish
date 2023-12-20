@@ -13,3 +13,7 @@ set policy-options policy-statement p1 term t3 then accept
 set policy-options policy-statement p1 term t4 then accept
 set policy-options policy-statement p1 term t2 then accept
 set policy-options policy-statement p1 term t5 then accept
+set policy-options policy-statement p1 term t6 then accept
+set policy-options policy-statement p1 term t7 then accept
+set policy-options policy-statement p1 term t8 then accept
+set policy-options policy-statement p1 term t9 then accept

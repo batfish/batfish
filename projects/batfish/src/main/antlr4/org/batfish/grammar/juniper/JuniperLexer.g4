@@ -41,6 +41,7 @@ MULTILINE_COMMENT
   }
 ;
 
+PROMPT: '{master:0}' -> channel(HIDDEN);
 
 SEMICOLON
 :
