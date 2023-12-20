@@ -1,5 +1,5 @@
-load(":jmh.bzl", "jmh_java_benchmarks")
 load("@rules_java//java:defs.bzl", "java_plugin")
+load(":jmh.bzl", "jmh_java_benchmarks")
 
 package(default_visibility = ["//tools/benchmarks:__subpackages__"])
 
