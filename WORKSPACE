@@ -22,9 +22,9 @@ bazel_skylib_workspace()
 # External Java dependencies (from Maven)                #
 ##########################################################
 
-RULES_JVM_EXTERNAL_TAG = "5.1"
+RULES_JVM_EXTERNAL_TAG = "5.3"
 
-RULES_JVM_EXTERNAL_SHA = "8c3b207722e5f97f1c83311582a6c11df99226e65e2471086e296561e57cc954"
+RULES_JVM_EXTERNAL_SHA = "d31e369b854322ca5098ea12c69d7175ded971435e55c18dd9dd5f29cc5249ac"
 
 http_archive(
     name = "rules_jvm_external",
