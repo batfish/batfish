@@ -422,6 +422,10 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         .collect(ImmutableSet.toImmutableSet());
   }
 
+  public int getNumBestPathRoutes() {
+    return _bestPaths.size();
+  }
+
   public Set<R> getBestPathRoutes() {
     return ImmutableSet.copyOf(_bestPaths.values());
   }

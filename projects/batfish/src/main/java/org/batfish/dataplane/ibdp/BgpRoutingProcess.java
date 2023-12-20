@@ -2637,9 +2637,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .build();
   }
 
-  /** Return a set of all bgpv4 bestpath routes */
-  public Set<Bgpv4Route> getBestPathRoutes() {
-    return _bgpv4Rib.getBestPathRoutes();
+  /** Return the number of bgpv4 bestpath routes. */
+  public int getNumBgpv4BestPaths() {
+    return _bgpv4Rib.getNumBestPathRoutes();
   }
 
   @VisibleForTesting
