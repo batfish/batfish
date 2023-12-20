@@ -86697,9 +86697,30 @@
           }
         },
         "configs/juniper_reth_interfaces" : { },
-        "configs/juniper_rib_groups" : { },
+        "configs/juniper_rib_groups" : {
+          "policy-statement" : {
+            "RIB_IN" : {
+              "routing-options rib-groups import-policy" : [
+                7
+              ]
+            },
+            "RIB_IN2" : {
+              "routing-options rib-groups import-policy" : [
+                8
+              ]
+            }
+          }
+        },
         "configs/juniper_route_filter" : { },
-        "configs/juniper_routing_options" : { },
+        "configs/juniper_routing_options" : {
+          "policy-statement" : {
+            "AGGREGATE_ROUTE_POLICY" : {
+              "aggregate route policy" : [
+                9
+              ]
+            }
+          }
+        },
         "configs/juniper_routing_policy" : {
           "interface" : {
             "ge-0/0/0.99" : {
