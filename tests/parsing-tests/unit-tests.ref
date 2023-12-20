@@ -75228,7 +75228,7 @@
           "as-path-group" : {
             "AS_PATH_GROUP" : {
               "definitionLines" : "46-47",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "as-path-group as-path" : {
@@ -75338,11 +75338,11 @@
           "rib-group" : {
             "bgp-rib-group" : {
               "definitionLines" : "11-12",
-              "numReferrers" : 0
+              "numReferrers" : 12
             },
             "interface-routes-rib" : {
               "definitionLines" : "5-9",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "routing-instance" : {

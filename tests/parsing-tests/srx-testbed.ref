@@ -6318,7 +6318,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "policy-statement" : {
@@ -6534,7 +6534,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 2
             }
           },
           "policy-statement" : {
@@ -6702,7 +6702,7 @@
           "ipsec policy" : {
             "test-ipsec-policy" : {
               "definitionLines" : "31-32",
-              "numReferrers" : 0
+              "numReferrers" : 1
             }
           },
           "policy-statement" : {
