@@ -1410,7 +1410,7 @@ public final class VirtualRouter {
 
   /** Get the number of best-path BGP routes. To be used during dataplane computation only */
   int getNumBgpBestPaths() {
-    return _bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.getBestPathRoutes().size();
+    return _bgpRoutingProcess == null ? 0 : _bgpRoutingProcess.getNumBgpv4BestPaths();
   }
 
   /**
