@@ -1160,7 +1160,7 @@ public final class CiscoGrammarTest {
     // Confirm that BGP peer on r1 is missing its local IP, as expected
     Ip r1NeighborPeerAddress = Ip.parse("2.2.2.2");
     Configuration r1 = batfish.loadConfigurations(batfish.getSnapshot()).get("r1");
-    SortedMap<Ip, BgpActivePeerConfig> r1Peers =
+    Map<Ip, BgpActivePeerConfig> r1Peers =
         r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
     assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
     assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());

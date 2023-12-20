@@ -19,12 +19,11 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Streams;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
-import java.util.SortedMap;
-import java.util.TreeMap;
 import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -229,7 +228,7 @@ public class BgpProcess implements Serializable {
   private final int _ibgpAdminCost;
   private final int _localAdminCost;
   private final @Nonnull Supplier<Set<Long>> _clusterIds;
-  private @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
+  private @Nonnull Map<String, BgpUnnumberedPeerConfig> _interfaceNeighbors;
   private boolean _multipathEbgp;
   private MultipathEquivalentAsPathMatchMode _multipathEquivalentAsPathMatchMode;
   private boolean _multipathIbgp;
@@ -241,13 +240,13 @@ public class BgpProcess implements Serializable {
    * A map of all non-dynamic bgp neighbors with which the router owning this process is configured
    * to peer, keyed by unique ID.
    */
-  private @Nonnull SortedMap<Ip, BgpActivePeerConfig> _activeNeighbors;
+  private @Nonnull Map<Ip, BgpActivePeerConfig> _activeNeighbors;
 
   /**
    * A map of all dynamic bgp neighbors with which the router owning this process is configured to
    * peer, keyed by unique ID.
    */
-  private @Nonnull SortedMap<Prefix, BgpPassivePeerConfig> _passiveNeighbors;
+  private @Nonnull Map<Prefix, BgpPassivePeerConfig> _passiveNeighbors;
 
   /** Space of prefixes to be advertised using explicit network statements */
   private PrefixSpace _originationSpace;
@@ -288,18 +287,18 @@ public class BgpProcess implements Serializable {
       @Nonnull LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
       @Nonnull NextHopIpTieBreaker networkNextHopIpTieBreaker,
       @Nonnull NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
-    _activeNeighbors = new TreeMap<>();
+    _activeNeighbors = new HashMap<>();
     _aggregates = ImmutableMap.of();
     _clientToClientReflection = firstNonNull(clientToClientReflection, true);
     _confederation = confederation;
     _ebgpAdminCost = ebgpAdminCost;
     _ibgpAdminCost = ibgpAdminCost;
     _localAdminCost = localAdminCost;
-    _interfaceNeighbors = new TreeMap<>();
+    _interfaceNeighbors = new HashMap<>();
     _tieBreaker = BgpTieBreaker.ARRIVAL_ORDER;
     _clusterIds = Suppliers.memoize(new ClusterIdsSupplier());
     _originationSpace = new PrefixSpace();
-    _passiveNeighbors = new TreeMap<>();
+    _passiveNeighbors = new HashMap<>();
     _routerId = routerId;
     _clusterListAsIbgpCost = false;
     _independentNetworkPolicy = independentNetworkPolicy;
@@ -434,9 +433,14 @@ public class BgpProcess implements Serializable {
   }
 
   /** Neighbor relationships configured for this BGP process. */
-  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  public @Nonnull SortedMap<Ip, BgpActivePeerConfig> getActiveNeighbors() {
+  @JsonIgnore
+  public @Nonnull Map<Ip, BgpActivePeerConfig> getActiveNeighbors() {
     return _activeNeighbors;
+  }
+
+  @JsonProperty(PROP_ACTIVE_NEIGHBORS)
+  private @Nonnull Map<Ip, BgpActivePeerConfig> getActiveNeighborsJson() {
+    return ImmutableSortedMap.copyOf(_activeNeighbors);
   }
 
   /** Returns the admin cost of the given BGP protocol */
@@ -491,9 +495,14 @@ public class BgpProcess implements Serializable {
   }
 
   /** Returns BGP unnumbered peer configurations keyed by peer-interface */
-  @JsonProperty(PROP_INTERFACE_NEIGHBORS)
-  public @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
+  @JsonIgnore
+  public @Nonnull Map<String, BgpUnnumberedPeerConfig> getInterfaceNeighbors() {
     return _interfaceNeighbors;
+  }
+
+  @JsonProperty(PROP_INTERFACE_NEIGHBORS)
+  private @Nonnull Map<String, BgpUnnumberedPeerConfig> getInterfaceNeighborsJson() {
+    return ImmutableSortedMap.copyOf(_interfaceNeighbors);
   }
 
   @JsonProperty(PROP_MULTIPATH_EBGP)
@@ -512,9 +521,14 @@ public class BgpProcess implements Serializable {
   }
 
   /** Neighbor relationships configured for this BGP process. */
-  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  public @Nonnull SortedMap<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
+  @JsonIgnore
+  public @Nonnull Map<Prefix, BgpPassivePeerConfig> getPassiveNeighbors() {
     return _passiveNeighbors;
+  }
+
+  @JsonProperty(PROP_PASSIVE_NEIGHBORS)
+  private @Nonnull Map<Prefix, BgpPassivePeerConfig> getPassiveNeighborsJson() {
+    return ImmutableSortedMap.copyOf(_passiveNeighbors);
   }
 
   @JsonIgnore
@@ -570,7 +584,7 @@ public class BgpProcess implements Serializable {
 
   @JsonProperty(PROP_INTERFACE_NEIGHBORS)
   public void setInterfaceNeighbors(
-      @Nonnull SortedMap<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
+      @Nonnull Map<String, BgpUnnumberedPeerConfig> interfaceNeighbors) {
     _interfaceNeighbors = interfaceNeighbors;
   }
 
@@ -591,8 +605,8 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_ACTIVE_NEIGHBORS)
-  public void setNeighbors(SortedMap<Ip, BgpActivePeerConfig> neighbors) {
-    _activeNeighbors = firstNonNull(neighbors, new TreeMap<>());
+  public void setNeighbors(Map<Ip, BgpActivePeerConfig> neighbors) {
+    _activeNeighbors = firstNonNull(neighbors, new HashMap<>());
   }
 
   public void setOriginationSpace(PrefixSpace originationSpace) {
@@ -600,8 +614,8 @@ public class BgpProcess implements Serializable {
   }
 
   @JsonProperty(PROP_PASSIVE_NEIGHBORS)
-  public void setPassiveNeighbors(@Nullable SortedMap<Prefix, BgpPassivePeerConfig> neighbors) {
-    _passiveNeighbors = firstNonNull(neighbors, new TreeMap<>());
+  public void setPassiveNeighbors(@Nullable Map<Prefix, BgpPassivePeerConfig> neighbors) {
+    _passiveNeighbors = firstNonNull(neighbors, new HashMap<>());
   }
 
   @JsonProperty(PROP_TIE_BREAKER)
