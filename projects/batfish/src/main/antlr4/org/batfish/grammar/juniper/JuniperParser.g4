@@ -47,6 +47,7 @@ hierarchical_statement
 terminator
 :
   SEMICOLON
+  | {_input.LA(1) == CLOSE_BRACKET || _input.LA(1) == CLOSE_BRACE}?
 ;
 
 word
