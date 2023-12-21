@@ -8103,5 +8103,11 @@ public final class FlatJuniperGrammarTest {
     parseConfig("isis-import");
   }
 
+  @Test
+  public void testBmpStation() {
+    // Should not crash.
+    parseConfig("bmp-station");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
