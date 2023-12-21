@@ -112,10 +112,6 @@ extended_community
   | ec_named
 ;
 
-flap_number:
-  FLAP_NUMBER
-;
-
 icmp_code
 :
   uint8

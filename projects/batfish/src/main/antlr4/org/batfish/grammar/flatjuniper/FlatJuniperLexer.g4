@@ -3077,11 +3077,6 @@ DOUBLE_QUOTED_STRING
    '"' ~'"'* '"'
 ;
 
-FLAP_NUMBER
-:
-   [2-9] | '10'
-;
-
 /*
 FLOAT
 :

@@ -557,8 +557,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roaa_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roas_loopsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rob_stationContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Robs_hold_downContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rof_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_communityContext;
@@ -6209,16 +6207,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentRoutingInstance.setLoops(toInt(ctx.dec()));
       todo(ctx);
     }
-  }
-
-  @Override
-  public void exitRob_station(Rob_stationContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
-  public void exitRobs_hold_down(Robs_hold_downContext ctx) {
-    warn(ctx, "Batfish does not support a combination of options in a single statement");
   }
 
   @Override
