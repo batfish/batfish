@@ -160,6 +160,7 @@ ro_bmp
    BMP
    (
       rob_station_address
+      | rob_station
       | rob_station_port
    )
 ;
@@ -409,9 +410,85 @@ rob_station_address
    STATION_ADDRESS IP_ADDRESS
 ;
 
+rob_station
+:
+   STATION name = junos_name
+   (
+     apply_groups
+     | robs_connection_mode
+     | robs_hold_down
+     | robs_local_address
+     | robs_local_port
+     | robs_priority
+     | robs_route_monitoring
+     | robs_station_address
+     | robs_statistics_timeout
+   )
+;
+
 rob_station_port
 :
    STATION_PORT dec
+;
+
+robs_connection_mode
+:
+   CONNECTION_MODE
+   (
+     ACTIVE
+     | PASSIVE
+   )
+;
+
+robs_hold_down
+:
+   HOLD_DOWN
+   (
+     | timer = uint16
+     | FLAPS flaps = flap_number
+     | FLAP_PERIOD period = uint16
+   )
+;
+
+robs_local_address
+:
+   LOCAL_ADDRESS address = IP_ADDRESS
+;
+
+robs_local_port
+:
+   LOCAL_PORT number = dec
+;
+
+robs_priority
+:
+   PRIORITY
+   (
+     HIGH
+     | LOW
+     | MEDIUM
+   )
+;
+
+robs_route_monitoring
+:
+   ROUTE_MONITORING
+   (
+     LOC_RIB
+     | POST_POLICY EXCLUDE_NON_ELIGIBLE?
+     | PRE_POLICY EXCLUDE_NON_FEASIBLE?
+     | RIB_OUT (POST_POLICY | PRE_POLICY)
+   )
+;
+
+robs_station_address
+:
+   STATION_ADDRESS address = IP_ADDRESS
+;
+
+robs_statistics_timeout
+:
+   STATISTICS_TIMEOUT seconds = uint16
 ;
 
 rof_export
