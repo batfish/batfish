@@ -159,9 +159,9 @@ ro_bmp
 :
    BMP
    (
-      rob_station_address
+      rob_station_address_null
       | rob_station_null
-      | rob_station_port
+      | rob_station_port_null
    )
 ;
 
@@ -405,7 +405,7 @@ roas_loops
    LOOPS dec
 ;
 
-rob_station_address
+rob_station_address_null
 :
    STATION_ADDRESS IP_ADDRESS
 ;
@@ -426,7 +426,7 @@ rob_station_null
    )
 ;
 
-rob_station_port
+rob_station_port_null
 :
    STATION_PORT dec
 ;
