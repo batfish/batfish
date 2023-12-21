@@ -423,6 +423,9 @@ CONNECTIONS: 'connections';
 CONNECTION_LIMIT: 'connection-limit';
 
 CONNECTIONS_LIMIT: 'connections-limit';
+
+CONNECTION_MODE: 'connection-mode';
+
 CONNECTIVITY_FAULT_MANAGEMENT: 'connectivity-fault-management';
 CONSOLE: 'console';
 
@@ -643,6 +646,10 @@ EXACT: 'exact';
 
 EXCEPT: 'except';
 
+EXCLUDE_NON_ELIGIBLE: 'exclude-non-eligible';
+
+EXCLUDE_NON_FEASIBLE: 'exclude-non-feasible';
+
 EXEC: 'exec';
 
 EXP: 'exp';
@@ -716,6 +723,10 @@ FINGERPRINT_HASH: 'fingerprint-hash';
 FIREWALL: 'firewall';
 
 FIRST_FRAGMENT: 'first-fragment';
+
+FLAP_PERIOD: 'period';
+
+FLAPS: 'flaps';
 
 FLEXIBLE_VLAN_TAGGING: 'flexible-vlan-tagging';
 
@@ -852,6 +863,8 @@ HMAC_SHA1: 'hmac-sha-1';
 HMAC_SHA1_96: 'hmac-sha1-96';
 
 HMAC_SHA_1_96: 'hmac-sha-1-96';
+
+HOLD_DOWN: 'hold-down';
 
 HOLD_TIME: 'hold-time';
 
@@ -1625,6 +1638,8 @@ LLDP_MED: 'lldp-med';
 
 LOAD_BALANCE: 'load-balance';
 
+LOC_RIB: 'loc-rib';
+
 LOCAL
 :
   'local'
@@ -1640,6 +1655,8 @@ LOCAL_ADDRESS: 'local-address';
 LOCAL_AS: 'local-as' -> pushMode(M_BgpAsn);
 
 LOCAL_IDENTITY: 'local-identity';
+
+LOCAL_PORT: 'local-port';
 
 LOCAL_PREFERENCE: 'local-preference';
 
@@ -1729,6 +1746,8 @@ MAXIMUM_LABELS: 'maximum-labels';
 MAXIMUM_PREFIXES: 'maximum-prefixes';
 
 MD5: 'md5';
+
+MEDIUM: 'medium';
 
 MEDIUM_HIGH: 'medium-high';
 
@@ -2145,9 +2164,13 @@ PORT_UNREACHABLE: 'port-unreachable';
 
 PORTS: 'ports';
 
+POST_POLICY: 'post-policy';
+
 PPM: 'ppm';
 
 PPTP: 'pptp';
+
+PRE_POLICY: 'pre-policy';
 
 PRE_SHARED_KEY: 'pre-shared-key';
 
@@ -2353,6 +2376,8 @@ RIB_GROUP
 
 RIB_GROUPS: 'rib-groups' -> pushMode(M_Name);
 
+RIB_OUT: 'rib-out';
+
 RIP: 'rip';
 
 RIPNG: 'ripng';
@@ -2375,6 +2400,8 @@ ROUTE_DISTINGUISHER
 ROUTE_DISTINGUISHER_ID: 'route-distinguisher-id';
 
 ROUTE_FILTER: 'route-filter';
+
+ROUTE_MONITORING: 'route-monitoring';
 
 ROUTE_RECORD: 'route-record';
 
@@ -2622,9 +2649,13 @@ STATIC_HOST_MAPPING: 'static-host-mapping' -> pushMode(M_RestOfLine);
 
 STATIC_NAT: 'static-nat';
 
+STATION: 'station' -> pushMode(M_Name);
+
 STATION_ADDRESS: 'station-address';
 
 STATION_PORT: 'station-port';
+
+STATISTICS_TIMEOUT: 'statistics-timeout';
 
 STATS_CACHE_LIFETIME: 'stats-cache-lifetime';
 
