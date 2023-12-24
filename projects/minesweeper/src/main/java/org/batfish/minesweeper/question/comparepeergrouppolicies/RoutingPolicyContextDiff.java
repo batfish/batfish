@@ -131,4 +131,32 @@ public final class RoutingPolicyContextDiff {
   public Set<String> getRouteFilterListsDiff() {
     return _routeFilterListsDiff;
   }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    RoutingPolicyContextDiff that = (RoutingPolicyContextDiff) o;
+
+    if (!_communityListsDiff.equals(that._communityListsDiff)) {
+      return false;
+    }
+    if (!_asPathAccessListsDiff.equals(that._asPathAccessListsDiff)) {
+      return false;
+    }
+    return _routeFilterListsDiff.equals(that._routeFilterListsDiff);
+  }
+
+  @Override
+  public int hashCode() {
+    int result = _communityListsDiff.hashCode();
+    result = 31 * result + _asPathAccessListsDiff.hashCode();
+    result = 31 * result + _routeFilterListsDiff.hashCode();
+    return result;
+  }
 }
