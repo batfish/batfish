@@ -11,10 +11,12 @@ import static org.batfish.datamodel.tracking.TrackMethods.bgpRoute;
 import static org.batfish.datamodel.tracking.TrackMethods.negated;
 import static org.batfish.datamodel.tracking.TrackMethods.reachability;
 import static org.batfish.datamodel.tracking.TrackMethods.route;
+import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.compareTracks;
 import static org.batfish.dataplane.ibdp.IncrementalBdpEngine.evaluateTrackRoute;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -23,6 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Table;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -63,6 +67,31 @@ import org.junit.Test;
 /** Test of {@link IncrementalBdpEngine}. */
 @ParametersAreNonnullByDefault
 public final class IncrementalBdpEngineTest {
+  @Test
+  public void testCompareTracksAndLogDifference() {
+    Table<String, Integer, Boolean> hasA =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, true)
+            .put("B", 1, false)
+            .build();
+    Table<String, Integer, Boolean> hasB =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, false)
+            .put("B", 1, true)
+            .build();
+    Table<String, Integer, Boolean> hasAB =
+        ImmutableTable.<String, Integer, Boolean>builder()
+            .put("A", 1, true)
+            .put("B", 1, true)
+            .build();
+    assertThat(compareTracks(hasA, hasA).orElse("equal"), equalTo("equal"));
+    assertThat(compareTracks(hasAB, hasA).orElse("equal"), equalTo("lost 1 including [B > 1]"));
+    assertThat(compareTracks(hasAB, hasB).orElse("equal"), equalTo("lost 1 including [A > 1]"));
+    assertThat(compareTracks(hasA, hasAB).orElse("equal"), equalTo("gained 1 including [B > 1]"));
+    assertThat(
+        compareTracks(hasA, hasB).orElse("equal"),
+        equalTo("gained 1 including [B > 1], lost 1 including [A > 1]"));
+  }
 
   @Test
   public void testEvaluateTrackRoute() {
