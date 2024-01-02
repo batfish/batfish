@@ -854,6 +854,8 @@ HOME_ADDRESS_OPTION: 'home-address-option';
 
 HOP_BY_HOP_HEADER: 'hop-by-hop-header';
 
+HOP_LIMIT: 'hop-limit';
+
 HOST_OUTBOUND_TRAFFIC: 'host-outbound-traffic';
 
 HMAC_MD5_96: 'hmac-md5-96';
@@ -1779,6 +1781,10 @@ MEMBERS
     }
   }
 ;
+
+MEMBERSHIP_REPORT: 'membership-report';
+
+MEMBERSHIP_QUERY: 'membership-query';
 
 METRIC: 'metric';
 
