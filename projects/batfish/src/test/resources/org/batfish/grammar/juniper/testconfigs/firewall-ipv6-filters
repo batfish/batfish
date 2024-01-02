@@ -1,5 +1,5 @@
 #
-set system host-name firewall-next-header-ipv6
+set system host-name firewall-ipv6-filters
 #
 set firewall family inet6 filter FILTER term DSTOPTS from next-header dstopts
 #
