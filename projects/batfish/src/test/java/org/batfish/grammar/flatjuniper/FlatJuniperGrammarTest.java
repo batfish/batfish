@@ -495,7 +495,9 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Flow createFlow(Ip src, Ip dst) {
--    return Flow.builder().setIngressNode("node").setSrcIp(src).setDstIp(dst).build()
+    return Flow.builder().setIngressNode("node").setSrcIp(src).setDstIp(dst).build();
+  }
+
   private static Flow createFlow(IpProtocol protocol, int port) {
     Flow.Builder fb =
         builder().setIngressNode("node").setIpProtocol(protocol).setDstPort(port).setSrcPort(port);
