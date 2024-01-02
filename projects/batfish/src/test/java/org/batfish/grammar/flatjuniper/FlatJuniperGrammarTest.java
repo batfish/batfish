@@ -8080,9 +8080,9 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallInet6NextHeader() {
+  public void testFirewallInet6Filters() {
     // Should not crash.
-    parseConfig("firewall-next-header-ipv6");
+    parseConfig("firewall-ipv6-filters");
   }
 
   @Test
