@@ -326,7 +326,6 @@ fftf_protocol
    PROTOCOL
    (
      ip_protocol
-     | IPV6
    )
 ;
 

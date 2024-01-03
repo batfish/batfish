@@ -320,6 +320,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_initialContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftfa_address_mask_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_decapsulateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_termContext;
@@ -1992,6 +1993,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.UDP;
     } else if (ctx.VRRP() != null) {
       return IpProtocol.VRRP;
+    } else if (ctx.IPV6() != null) {
+      return IpProtocol.IPV6;
     } else {
       throw new BatfishException(
           "missing protocol-enum mapping for protocol: \"" + ctx.getText() + "\"");
@@ -2588,6 +2591,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitFftt_decapsulate(Fftt_decapsulateContext ctx) {
     todo(ctx);
   }
 
@@ -4692,8 +4700,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftf_ip_protocol(Fftf_ip_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-    FwFrom from = new FwFromProtocol(protocol);
-    _currentFwTerm.getFroms().add(from);
+    if (protocol == IpProtocol.IPV6) {
+      todo(ctx);
+    } else {
+      FwFrom from = new FwFromProtocol(protocol);
+      _currentFwTerm.getFroms().add(from);
+    }
   }
 
   @Override
@@ -4749,10 +4761,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_protocol(Fftf_protocolContext ctx) {
-    if (ctx.IPV6() != null) {
-      todo(ctx);
-      return;
-    }
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     FwFrom from = new FwFromProtocol(protocol);
     _currentFwTerm.getFroms().add(from);
