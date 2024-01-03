@@ -320,6 +320,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_initialContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftfa_address_mask_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_decapsulateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_termContext;
@@ -1978,6 +1979,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.IGMP;
     } else if (ctx.IPIP() != null) {
       return IpProtocol.IPINIP;
+    } else if (ctx.IPV6() != null) {
+      return IpProtocol.IPV6;
     } else if (ctx.OSPF() != null) {
       return IpProtocol.OSPF;
     } else if (ctx.PIM() != null) {
@@ -2588,6 +2591,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFo_vxlan_routing(Fo_vxlan_routingContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitFftt_decapsulate(Fftt_decapsulateContext ctx) {
     todo(ctx);
   }
 
