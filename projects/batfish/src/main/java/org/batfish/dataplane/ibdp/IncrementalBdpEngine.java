@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static java.util.stream.Collectors.toSet;
 import static org.batfish.common.topology.TopologyUtil.computeLayer2Topology;
 import static org.batfish.common.topology.TopologyUtil.computeLayer3Topology;
 import static org.batfish.common.topology.TopologyUtil.computeRawLayer3Topology;
@@ -16,10 +17,13 @@ import static org.batfish.dataplane.ibdp.TrackReachabilityUtils.evaluateTrackRea
 import static org.batfish.dataplane.rib.AbstractRib.importRib;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Table;
+import com.google.common.collect.Table.Cell;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
@@ -253,6 +257,44 @@ final class IncrementalBdpEngine {
         .build();
   }
 
+  /** Helper method used to sample the change in tracks across iterations. */
+  @VisibleForTesting
+  static <T> @Nonnull Optional<String> compareTracks(
+      Table<String, T, Boolean> current, Table<String, T, Boolean> next) {
+    if (current.equals(next)) {
+      return Optional.empty();
+    }
+    Set<String> currentTrue =
+        current.cellSet().stream()
+            .filter(Cell::getValue)
+            .map(c -> String.format("%s > %s", c.getRowKey(), c.getColumnKey()))
+            .collect(toSet());
+    Set<String> nextTrue =
+        next.cellSet().stream()
+            .filter(Cell::getValue)
+            .map(c -> String.format("%s > %s", c.getRowKey(), c.getColumnKey()))
+            .collect(toSet());
+    List<String> gained = ImmutableList.copyOf(Sets.difference(nextTrue, currentTrue));
+    List<String> lost = ImmutableList.copyOf(Sets.difference(currentTrue, nextTrue));
+    if (gained.isEmpty()) {
+      return Optional.ofNullable(
+          String.format(
+              "lost %d including %s", lost.size(), lost.size() > 3 ? lost.subList(0, 3) : lost));
+    } else if (lost.isEmpty()) {
+      return Optional.ofNullable(
+          String.format(
+              "gained %d including %s",
+              gained.size(), gained.size() > 3 ? gained.subList(0, 3) : gained));
+    }
+    return Optional.ofNullable(
+        String.format(
+            "gained %d including %s, lost %d including %s",
+            gained.size(),
+            gained.size() > 3 ? gained.subList(0, 3) : gained,
+            lost.size(),
+            lost.size() > 3 ? lost.subList(0, 3) : lost));
+  }
+
   ComputeDataPlaneResult computeDataPlane(
       Map<String, Configuration> configurations,
       TopologyContext initialTopologyContext,
@@ -375,11 +417,24 @@ final class IncrementalBdpEngine {
               configurations,
               nextTopologyContext.getL3Adjacencies(),
               currentTrackMethodEvaluatorProvider);
-      converged =
-          currentTopologyContext.equals(nextTopologyContext)
-              && currentTrackReachabilityResults.equals(nextTrackReachabilityResults)
-              && currentTrackRouteResults.equals(nextTrackRouteResults)
-              && currentIpOwners.equals(nextIpOwners);
+      converged = true;
+      if (!currentTopologyContext.equals(nextTopologyContext)) {
+        converged = false;
+        LOGGER.info("Topologies changed in this iteration");
+      }
+      Optional<String> reachabilityDiff =
+          compareTracks(currentTrackReachabilityResults, nextTrackReachabilityResults);
+      Optional<String> routesDiff = compareTracks(currentTrackRouteResults, nextTrackRouteResults);
+      if (reachabilityDiff.isPresent() || routesDiff.isPresent()) {
+        converged = false;
+        LOGGER.info("Tracks changed in this iteration");
+        reachabilityDiff.ifPresent(s -> LOGGER.info("Reachability tracks: {}", s));
+        routesDiff.ifPresent(s -> LOGGER.info("Route tracks: {}", s));
+      }
+      if (!currentIpOwners.equals(nextIpOwners)) {
+        converged = false;
+        LOGGER.info("IP ownership changed in this iteration");
+      }
       currentTopologyContext = nextTopologyContext;
       currentTrackReachabilityResults = nextTrackReachabilityResults;
       currentTrackRouteResults = nextTrackRouteResults;
