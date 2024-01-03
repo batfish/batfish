@@ -4749,6 +4749,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitFftf_protocol(Fftf_protocolContext ctx) {
+    if (ctx.IPV6() != null) {
+      todo(ctx);
+      return;
+    }
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
     FwFrom from = new FwFromProtocol(protocol);
     _currentFwTerm.getFroms().add(from);

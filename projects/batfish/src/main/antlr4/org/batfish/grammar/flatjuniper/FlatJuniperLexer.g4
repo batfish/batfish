@@ -461,6 +461,8 @@ DEAD_INTERVAL: 'dead-interval';
 
 DEAD_PEER_DETECTION: 'dead-peer-detection';
 
+DECAPSULATE: 'decapsulate';
+
 DEFAULT_ACTION: 'default-action';
 
 DEFAULT_ADDRESS_SELECTION: 'default-address-selection';

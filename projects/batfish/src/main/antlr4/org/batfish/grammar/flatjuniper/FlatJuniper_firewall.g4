@@ -119,6 +119,7 @@ fft_then
    THEN
    (
       fftt_accept
+      | fftt_decapsulate
       | fftt_discard
       | fftt_loss_priority
       | fftt_next_ip
@@ -322,7 +323,11 @@ fftf_prefix_list
 
 fftf_protocol
 :
-   PROTOCOL ip_protocol
+   PROTOCOL
+   (
+     ip_protocol
+     | IPV6
+   )
 ;
 
 fftf_source_address
@@ -372,6 +377,11 @@ fftf_vlan
 fftt_accept
 :
    ACCEPT
+;
+
+fftt_decapsulate
+:
+   DECAPSULATE GRE
 ;
 
 fftt_discard
