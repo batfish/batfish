@@ -223,6 +223,7 @@ ip_protocol
   | ICMP
   | IGMP
   | IPIP
+  | IPV6
   | OSPF
   | PIM
   | RSVP
