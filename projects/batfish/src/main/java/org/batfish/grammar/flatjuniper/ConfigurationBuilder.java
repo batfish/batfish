@@ -1979,6 +1979,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.IGMP;
     } else if (ctx.IPIP() != null) {
       return IpProtocol.IPINIP;
+    } else if (ctx.IPV6() != null) {
+      return IpProtocol.IPV6;
     } else if (ctx.OSPF() != null) {
       return IpProtocol.OSPF;
     } else if (ctx.PIM() != null) {
@@ -1993,8 +1995,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.UDP;
     } else if (ctx.VRRP() != null) {
       return IpProtocol.VRRP;
-    } else if (ctx.IPV6() != null) {
-      return IpProtocol.IPV6;
     } else {
       throw new BatfishException(
           "missing protocol-enum mapping for protocol: \"" + ctx.getText() + "\"");
@@ -4700,12 +4700,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftf_ip_protocol(Fftf_ip_protocolContext ctx) {
     IpProtocol protocol = toIpProtocol(ctx.ip_protocol());
-    if (protocol == IpProtocol.IPV6) {
-      todo(ctx);
-    } else {
-      FwFrom from = new FwFromProtocol(protocol);
-      _currentFwTerm.getFroms().add(from);
-    }
+    FwFrom from = new FwFromProtocol(protocol);
+    _currentFwTerm.getFroms().add(from);
   }
 
   @Override
