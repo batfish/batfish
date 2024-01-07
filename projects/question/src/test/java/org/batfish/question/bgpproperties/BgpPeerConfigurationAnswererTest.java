@@ -21,12 +21,12 @@ import static org.batfish.question.bgpproperties.BgpPeerConfigurationAnswerer.ge
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertThat;
 
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Multiset;
+import java.util.LinkedList;
+import java.util.List;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -131,7 +131,7 @@ public final class BgpPeerConfigurationAnswererTest {
   public void testAnswer() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", _c)).build();
-    Multiset<Row> rows =
+    List<Row> rows =
         BgpPeerConfigurationAnswerer.getAnswerRows(
             ctxt,
             new NameNodeSpecifier("c"),
@@ -141,7 +141,7 @@ public final class BgpPeerConfigurationAnswererTest {
             BgpPeerPropertySpecifier.ALL);
 
     Node node = new Node("c");
-    Multiset<Row> expected = HashMultiset.create();
+    List<Row> expected = new LinkedList<>();
     expected.add(
         Row.builder()
             .put(COL_NODE, node)
@@ -209,7 +209,7 @@ public final class BgpPeerConfigurationAnswererTest {
   public void testFilteredAnswer() {
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", _c)).build();
-    Multiset<Row> rows =
+    List<Row> rows =
         BgpPeerConfigurationAnswerer.getAnswerRows(
             ctxt,
             new NameNodeSpecifier("c"),
@@ -220,7 +220,7 @@ public final class BgpPeerConfigurationAnswererTest {
             new BgpPeerPropertySpecifier(ImmutableSet.of("Local_IP")));
 
     Node node = new Node("c");
-    Multiset<Row> expected = HashMultiset.create();
+    List<Row> expected = new LinkedList<>();
     expected.add(
         Row.builder()
             .put(COL_NODE, node)
