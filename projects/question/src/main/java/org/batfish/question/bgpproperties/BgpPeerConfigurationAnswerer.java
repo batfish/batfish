@@ -14,9 +14,7 @@ import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.ROUTE_REF
 import static org.batfish.datamodel.questions.BgpPeerPropertySpecifier.SEND_COMMUNITY;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Multiset;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -142,7 +140,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
     TableMetadata tableMetadata = createTableMetadata(question);
     TableAnswerElement answer = new TableAnswerElement(tableMetadata);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         getAnswerRows(
             _batfish.specifierContext(snapshot),
             question.getNodeSpecifier(),
@@ -154,14 +152,12 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  public static Multiset<Row> getAnswerRows(
+  public static List<Row> getAnswerRows(
       SpecifierContext ctxt,
       NodeSpecifier nodeSpecifier,
       Map<String, ColumnMetadata> columnMetadata,
       BgpPeerPropertySpecifier propertySpecifier) {
-
-    Multiset<Row> rows = HashMultiset.create();
-
+    ImmutableList.Builder<Row> rows = ImmutableList.builder();
     for (String nodeName : nodeSpecifier.resolve(ctxt)) {
       for (Vrf vrf : ctxt.getConfigs().get(nodeName).getVrfs().values()) {
         BgpProcess bgpProcess = vrf.getBgpProcess();
@@ -180,7 +176,7 @@ public class BgpPeerConfigurationAnswerer extends Answerer {
         }
       }
     }
-    return rows;
+    return rows.build();
   }
 
   private static Row getRow(

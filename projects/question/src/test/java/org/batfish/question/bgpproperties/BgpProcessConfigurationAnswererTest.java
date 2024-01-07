@@ -2,14 +2,13 @@ package org.batfish.question.bgpproperties;
 
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_ID;
 import static org.batfish.datamodel.questions.BgpProcessPropertySpecifier.CONFEDERATION_MEMBERS;
-import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultiset;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multiset;
 import com.google.common.collect.Range;
+import java.util.List;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpProcess;
@@ -76,7 +75,7 @@ public class BgpProcessConfigurationAnswererTest {
             AllNodesNodeSpecifier.INSTANCE, BgpProcessPropertySpecifier.ALL);
     MockSpecifierContext ctxt =
         MockSpecifierContext.builder().setConfigs(ImmutableMap.of("c", conf)).build();
-    Multiset<Row> rows =
+    List<Row> rows =
         BgpProcessConfigurationAnswerer.getProperties(
             BgpProcessPropertySpecifier.ALL,
             ctxt,
@@ -100,7 +99,7 @@ public class BgpProcessConfigurationAnswererTest {
             .put(BgpProcessPropertySpecifier.ROUTE_REFLECTOR, false)
             .put(BgpProcessPropertySpecifier.TIE_BREAKER, BgpTieBreaker.ARRIVAL_ORDER.toString())
             .build();
-    assertThat(rows, equalTo(ImmutableMultiset.of(expectedRow)));
+    assertThat(rows, contains(expectedRow));
   }
 
   @Test
@@ -126,7 +125,7 @@ public class BgpProcessConfigurationAnswererTest {
 
     TableMetadata metadata = BgpProcessConfigurationAnswerer.createTableMetadata(question);
 
-    Multiset<Row> propertyRows =
+    List<Row> propertyRows =
         BgpProcessConfigurationAnswerer.getProperties(
             question.getPropertySpecifier(),
             MockSpecifierContext.builder().setConfigs(ImmutableMap.of("node1", conf1)).build(),
@@ -143,6 +142,6 @@ public class BgpProcessConfigurationAnswererTest {
             .put(property1, true)
             .build();
 
-    assertThat(propertyRows, equalTo(ImmutableMultiset.of(expectedRow)));
+    assertThat(propertyRows, contains(expectedRow));
   }
 }
