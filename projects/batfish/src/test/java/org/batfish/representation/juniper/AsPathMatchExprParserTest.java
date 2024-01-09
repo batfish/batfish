@@ -4,6 +4,7 @@ import static org.batfish.representation.juniper.AsPathMatchExprParser.convertTo
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToBooleanExpr;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -14,7 +15,6 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.junit.Test;
 
@@ -151,10 +151,7 @@ public class AsPathMatchExprParserTest {
    */
   @Test
   public void testAsPathMatchNone() {
-    BooleanExpr res1 = convertToBooleanExpr("!.*");
-    assertTrue(res1 == BooleanExprs.FALSE);
-
-    BooleanExpr res2 = convertToBooleanExpr(".* 1234 .*");
-    assertThat(res2, instanceOf(MatchAsPath.class));
+    assertSame(convertToBooleanExpr("!.*"), BooleanExprs.FALSE);
+    assertThat(convertToBooleanExpr(".* 1234 .*"), instanceOf(MatchAsPath.class));
   }
 }

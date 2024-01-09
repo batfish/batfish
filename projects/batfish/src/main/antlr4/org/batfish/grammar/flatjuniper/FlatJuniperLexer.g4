@@ -3785,14 +3785,14 @@ F_UnquotedAsPathRegexChar
 fragment
 F_QuotedAsPathRegex
 :
-  '"' '!'? F_QuotedAsPathRegexChar+ '"'
+  '"' F_QuotedAsPathRegexChar+ '"'
 ;
 
 fragment
 F_QuotedAsPathRegexChar
 :
   F_UnquotedAsPathRegexChar
-  | [|()? ]
+  | [|()?! ]
 ;
 
 mode M_AsPathDefinitionName;

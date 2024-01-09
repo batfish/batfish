@@ -52,9 +52,6 @@ public final class AsPathMatchExprParser {
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2 =
       Pattern.compile("(\\d+)-(\\d+)");
 
-  // "!.*" : "AS Path matches the complement of everything - ie nothing
-  private static final Pattern AS_PATH_MATCH_NONE = Pattern.compile("^!\\.\\*$");
-
   /**
    * Converts the given Juniper AS Path regular expression to an instance of {@link
    * AsPathMatchExpr}. First match the AS path input regex against predefined AS path regexes and
@@ -134,8 +131,8 @@ public final class AsPathMatchExprParser {
    * MatchAsPath}.
    */
   public static BooleanExpr convertToBooleanExpr(String asPathRegex) {
-    Matcher asPathMatchNone = AS_PATH_MATCH_NONE.matcher(asPathRegex);
-    if (asPathMatchNone.matches()) {
+    // "!.*" matches the complement of everything - ie nothing
+    if (asPathRegex.equals("!.*")) {
       return BooleanExprs.FALSE;
     } else if (asPathRegex.startsWith("!")) {
       // TODO: match the complement of what follows the "!" with something like this:
