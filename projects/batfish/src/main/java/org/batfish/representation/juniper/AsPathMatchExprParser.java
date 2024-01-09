@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
 /**
@@ -47,6 +51,9 @@ public final class AsPathMatchExprParser {
   // "start-end" : "AS Path matches single ASN number in range between start and end included
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2 =
       Pattern.compile("(\\d+)-(\\d+)");
+
+  // "!.*" : "AS Path matches the complement of everything - ie nothing
+  private static final Pattern AS_PATH_MATCH_NONE = Pattern.compile("^!\\.\\*$");
 
   /**
    * Converts the given Juniper AS Path regular expression to an instance of {@link
@@ -118,6 +125,26 @@ public final class AsPathMatchExprParser {
 
     String javaRegex = AsPathRegex.convertToJavaRegex(asPathRegex);
     return AsPathMatchRegex.of(javaRegex);
+  }
+
+  /**
+   * Converts the given Juniper AS Path regular expression to an instance of {@link BooleanExpr}.
+   * Wraps around {@link AsPathMatchExprParser#convertToAsPathMatchExpr(String)} to handle special
+   * case of "!.*" by returning {@link BooleanExprs#FALSE}. Supported regexes convert to {@link
+   * MatchAsPath}.
+   */
+  public static BooleanExpr convertToBooleanExpr(String asPathRegex) {
+    Matcher asPathMatchNone = AS_PATH_MATCH_NONE.matcher(asPathRegex);
+    if (asPathMatchNone.matches()) {
+      return BooleanExprs.FALSE;
+    } else if (asPathRegex.startsWith("!")) {
+      // TODO: match the complement of what follows the "!" with something like this:
+      // return Not(MatchAsPath.of(InputAsPath.instance(),
+      // convertToAsPathMatchExpr(asPathRegex.substring(1))));
+      throw new IllegalArgumentException();
+    } else {
+      return MatchAsPath.of(InputAsPath.instance(), convertToAsPathMatchExpr(asPathRegex));
+    }
   }
 
   private static AsSetsMatchingRanges getAsSetsMatchingRanges(
