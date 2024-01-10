@@ -9,6 +9,10 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
+import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
 /**
@@ -118,6 +122,21 @@ public final class AsPathMatchExprParser {
 
     String javaRegex = AsPathRegex.convertToJavaRegex(asPathRegex);
     return AsPathMatchRegex.of(javaRegex);
+  }
+
+  /**
+   * Converts the given Juniper AS Path regular expression to an instance of {@link BooleanExpr}.
+   * Wraps around {@link AsPathMatchExprParser#convertToAsPathMatchExpr(String)} to handle special
+   * case of "!.*" by returning {@link BooleanExprs#FALSE}. Supported regexes convert to {@link
+   * MatchAsPath}.
+   */
+  public static BooleanExpr convertToBooleanExpr(String asPathRegex) {
+    // "!.*" matches the complement of everything - ie nothing
+    if (asPathRegex.equals("!.*")) {
+      return BooleanExprs.FALSE;
+    } else {
+      return MatchAsPath.of(InputAsPath.instance(), convertToAsPathMatchExpr(asPathRegex));
+    }
   }
 
   private static AsSetsMatchingRanges getAsSetsMatchingRanges(

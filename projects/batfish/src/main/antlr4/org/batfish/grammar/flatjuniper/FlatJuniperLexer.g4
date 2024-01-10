@@ -3792,7 +3792,7 @@ fragment
 F_QuotedAsPathRegexChar
 :
   F_UnquotedAsPathRegexChar
-  | [|()? ]
+  | [|()?! ]
 ;
 
 mode M_AsPathDefinitionName;
