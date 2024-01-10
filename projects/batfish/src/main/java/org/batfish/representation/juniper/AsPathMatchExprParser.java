@@ -13,6 +13,7 @@ import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
 /**
@@ -134,6 +135,11 @@ public final class AsPathMatchExprParser {
     // "!.*" matches the complement of everything - ie nothing
     if (asPathRegex.equals("!.*")) {
       return BooleanExprs.FALSE;
+    } else if (asPathRegex.startsWith("!")) {
+      // match the complement of what follows the "!"
+      return new Not(
+          MatchAsPath.of(
+              InputAsPath.instance(), convertToAsPathMatchExpr(asPathRegex.substring(1))));
     } else {
       return MatchAsPath.of(InputAsPath.instance(), convertToAsPathMatchExpr(asPathRegex));
     }
