@@ -134,11 +134,6 @@ public final class AsPathMatchExprParser {
     // "!.*" matches the complement of everything - ie nothing
     if (asPathRegex.equals("!.*")) {
       return BooleanExprs.FALSE;
-    } else if (asPathRegex.startsWith("!")) {
-      // TODO: match the complement of what follows the "!" with something like this:
-      // return Not(MatchAsPath.of(InputAsPath.instance(),
-      // convertToAsPathMatchExpr(asPathRegex.substring(1))));
-      throw new IllegalArgumentException();
     } else {
       return MatchAsPath.of(InputAsPath.instance(), convertToAsPathMatchExpr(asPathRegex));
     }
