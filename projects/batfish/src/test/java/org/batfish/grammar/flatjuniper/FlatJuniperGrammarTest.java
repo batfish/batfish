@@ -8109,5 +8109,22 @@ public final class FlatJuniperGrammarTest {
     parseConfig("bmp-station");
   }
 
+  @Test
+  public void testJuniperAsPathExclamationRegex() {
+    Configuration c = parseConfig("juniper-as-path-exclamation-regex");
+    RoutingPolicy asPathGroupPolicy = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY");
+    Bgpv4Route.Builder test =
+        Bgpv4Route.testBuilder()
+            .setAdmin(100)
+            .setNetwork(Prefix.parse("1.1.1.1/28"))
+            .setOriginatorIp(Ip.parse("2.2.2.2"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+    Result result =
+        asPathGroupPolicy.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

@@ -1,0 +1,9 @@
+#
+set system host-name juniper-as-path-exclamation-regex
+#
+set policy-options as-path-group AS_PATH_GROUP as-path ASN1 "!.*"
+#
+set policy-options as-path AS1 1
+#
+set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 from as-path-group AS_PATH_GROUP
+set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 then accept
