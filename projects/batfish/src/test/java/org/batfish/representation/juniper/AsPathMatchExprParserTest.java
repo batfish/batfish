@@ -16,6 +16,7 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.Not;
 import org.junit.Test;
 
 /**
@@ -152,6 +153,7 @@ public class AsPathMatchExprParserTest {
   @Test
   public void testAsPathMatchNone() {
     assertSame(convertToBooleanExpr("!.*"), BooleanExprs.FALSE);
+    assertThat(convertToBooleanExpr("!1"), instanceOf(Not.class));
     assertThat(convertToBooleanExpr(".* 1234 .*"), instanceOf(MatchAsPath.class));
   }
 }
