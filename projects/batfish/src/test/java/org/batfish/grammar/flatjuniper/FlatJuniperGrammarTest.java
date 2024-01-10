@@ -8112,7 +8112,7 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testJuniperAsPathExclamationRegex() {
     Configuration c = parseConfig("juniper-as-path-exclamation-regex");
-    RoutingPolicy asPathGroupPolicy = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY");
+    RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
     Bgpv4Route.Builder test =
         Bgpv4Route.testBuilder()
             .setAdmin(100)
@@ -8121,9 +8121,25 @@ public final class FlatJuniperGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP);
     Result result =
-        asPathGroupPolicy.call(
+        asPathGroupPolicy1.call(
             envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
     assertThat(result.getBooleanValue(), equalTo(false));
+
+    result =
+        asPathGroupPolicy1.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    RoutingPolicy asPathGroupPolicy2 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY2");
+    result =
+        asPathGroupPolicy2.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(1L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(false));
+
+    result =
+        asPathGroupPolicy2.call(
+            envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
+    assertThat(result.getBooleanValue(), equalTo(true));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
