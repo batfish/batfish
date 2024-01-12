@@ -228,14 +228,15 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.AristaDestinationStaticNat;
 import org.batfish.representation.arista.AristaStaticSourceNat;
-import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.batfish.representation.arista.AristaStructureType;
 import org.batfish.representation.arista.ExpandedCommunityList;
 import org.batfish.representation.arista.ExpandedCommunityListLine;
 import org.batfish.representation.arista.IpAsPathAccessList;
 import org.batfish.representation.arista.IpAsPathAccessListLine;
 import org.batfish.representation.arista.MlagConfiguration;
+import org.batfish.representation.arista.NatProtocol;
 import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.PrefixList;
 import org.batfish.representation.arista.PrefixListLine;
@@ -3715,6 +3716,53 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpNatDestinationStatic() {
+    AristaConfiguration c = parseVendorConfig("ip-nat-destination");
+    assertThat(c.getInterfaces(), hasKeys("Ethernet1"));
+    List<AristaDestinationStaticNat> nats =
+        c.getInterfaces().get("Ethernet1").getDestinationStaticNats();
+    assertThat(nats, hasSize(5));
+    // only test first (minimal constraints) and last (maximal constraints)
+    {
+      AristaDestinationStaticNat nat = nats.get(0);
+      assertThat(nat.getAclName(), nullValue());
+      assertThat(nat.getProtocol(), equalTo(NatProtocol.ANY));
+      assertThat(nat.getOriginalIp(), equalTo(Ip.parse("1.1.1.1")));
+      assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("172.16.52.9")));
+      assertThat(nat.getOriginalPort(), nullValue());
+      assertThat(nat.getTranslatedPort(), nullValue());
+    }
+    {
+      AristaDestinationStaticNat nat = nats.get(4);
+      assertThat(nat.getAclName(), equalTo("ACL"));
+      assertThat(nat.getProtocol(), equalTo(NatProtocol.TCP));
+      assertThat(nat.getOriginalIp(), equalTo(Ip.parse("1.1.1.5")));
+      assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("172.16.52.9")));
+      assertThat(nat.getOriginalPort(), equalTo(5001));
+      assertThat(nat.getTranslatedPort(), equalTo(5002));
+    }
+  }
+
+  @Test
+  public void testIpNatDestinationStaticConversion() {
+    Configuration c = parseConfig("ip-nat-destination");
+    assertThat(c, hasInterface("Ethernet1"));
+    Interface e1 = c.getAllInterfaces().get("Ethernet1");
+    // Incoming transformation for destination NAT should transform from original to translated.
+    Transformation in = e1.getIncomingTransformation();
+    assertThat(in.getGuard(), equalTo(matchDst(Ip.parse("1.1.1.1"))));
+    assertThat(in.getTransformationSteps(), contains(assignDestinationIp(Ip.parse("172.16.52.9"))));
+    assertThat(in.getAndThen(), nullValue());
+    assertThat(in.getOrElse(), notNullValue());
+    // Outgoing transformation for destination NAT should transform from translated to original.
+    Transformation out = e1.getOutgoingTransformation();
+    assertThat(out.getGuard(), equalTo(matchSrc(Ip.parse("172.16.52.9"))));
+    assertThat(out.getTransformationSteps(), contains(assignSourceIp(Ip.parse("1.1.1.1"))));
+    assertThat(out.getAndThen(), nullValue());
+    assertThat(out.getOrElse(), notNullValue());
+  }
+
+  @Test
   public void testIpNatSourceStaticExtraction() {
     AristaConfiguration c = parseVendorConfig("ip-nat-source-static");
     assertThat(c.getExtendedAcls(), hasKeys("ACL", "INVALID_ACL"));
@@ -3730,7 +3778,7 @@ public class AristaGrammarTest {
         assertThat(nat.getExtendedAclName(), nullValue());
         assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("2.2.2.2")));
         assertThat(nat.getTranslatedPort(), nullValue());
-        assertThat(nat.getProtocol(), equalTo(Protocol.ANY));
+        assertThat(nat.getProtocol(), equalTo(NatProtocol.ANY));
       }
       {
         AristaStaticSourceNat nat = nats.next();
@@ -3739,7 +3787,7 @@ public class AristaGrammarTest {
         assertThat(nat.getExtendedAclName(), nullValue());
         assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("4.4.4.4")));
         assertThat(nat.getTranslatedPort(), equalTo(44));
-        assertThat(nat.getProtocol(), equalTo(Protocol.ANY));
+        assertThat(nat.getProtocol(), equalTo(NatProtocol.ANY));
       }
       {
         AristaStaticSourceNat nat = nats.next();
@@ -3748,7 +3796,7 @@ public class AristaGrammarTest {
         assertThat(nat.getExtendedAclName(), equalTo("ACL"));
         assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("6.6.6.6")));
         assertThat(nat.getTranslatedPort(), equalTo(66));
-        assertThat(nat.getProtocol(), equalTo(Protocol.TCP));
+        assertThat(nat.getProtocol(), equalTo(NatProtocol.TCP));
       }
       {
         AristaStaticSourceNat nat = nats.next();
@@ -3757,7 +3805,7 @@ public class AristaGrammarTest {
         assertThat(nat.getExtendedAclName(), equalTo("ACL"));
         assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("8.8.8.8")));
         assertThat(nat.getTranslatedPort(), equalTo(88));
-        assertThat(nat.getProtocol(), equalTo(Protocol.UDP));
+        assertThat(nat.getProtocol(), equalTo(NatProtocol.UDP));
       }
     }
     {
