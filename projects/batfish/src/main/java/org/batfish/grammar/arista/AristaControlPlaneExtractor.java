@@ -641,7 +641,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
-import org.batfish.grammar.arista.AristaParser.Ifipn_destinationContext;
+import org.batfish.grammar.arista.AristaParser.Ifipnd_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_dynamicContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
@@ -5175,10 +5175,14 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIfipn_destination(Ifipn_destinationContext ctx) {
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
+  public void exitIfipnd_static(Ifipnd_staticContext ctx) {
+    if (ctx.acl != null) {
+      String acl = ctx.acl.getText();
+      int line = ctx.acl.getStart().getLine();
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
+    }
+    todo(ctx);
   }
 
   @Override

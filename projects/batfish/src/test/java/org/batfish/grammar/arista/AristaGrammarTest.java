@@ -3715,6 +3715,12 @@ public class AristaGrammarTest {
   }
 
   @Test
+  public void testIpNatDestinationStatic() {
+    // Parse with no warnings.
+    parseVendorConfig("ip-nat-destination");
+  }
+
+  @Test
   public void testIpNatSourceStaticExtraction() {
     AristaConfiguration c = parseVendorConfig("ip-nat-source-static");
     assertThat(c.getExtendedAcls(), hasKeys("ACL", "INVALID_ACL"));
