@@ -420,9 +420,16 @@ if_ip_nat
   )
 ;
 
-ifipn_destination
-:
-   DESTINATION STATIC IP_ADDRESS ACCESS_LIST acl = variable IP_ADDRESS
+
+
+ifipn_destination: DESTINATION ifipnd_static;
+
+ifipnd_static:
+   STATIC
+   original_ip = IP_ADDRESS (original_port = port_number)?
+   (ACCESS_LIST acl = variable)?
+   tx_ip = IP_ADDRESS (tx_port = port_number)?
+   (PROTOCOL (TCP | UDP))?
    NEWLINE
 ;
 

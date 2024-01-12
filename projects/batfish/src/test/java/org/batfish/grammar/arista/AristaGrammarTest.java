@@ -228,6 +228,7 @@ import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.AristaDestinationStaticNat;
 import org.batfish.representation.arista.AristaStaticSourceNat;
 import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.batfish.representation.arista.AristaStructureType;
@@ -3712,6 +3713,34 @@ public class AristaGrammarTest {
         policy.processBgpRoute(acceptRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
     assertFalse(
         policy.processBgpRoute(denyRoute, Bgpv4Route.testBuilder(), null, Direction.IN, null));
+  }
+
+  @Test
+  public void testIpNatDestinationStatic() {
+    AristaConfiguration c = parseVendorConfig("ip-nat-destination");
+    assertThat(c.getInterfaces(), hasKeys("Ethernet1"));
+    List<AristaDestinationStaticNat> nats =
+        c.getInterfaces().get("Ethernet1").getDestinationStaticNats();
+    assertThat(nats, hasSize(5));
+    // only test first (minimal constraints) and last (maximal constraints)
+    {
+      AristaDestinationStaticNat nat = nats.get(0);
+      assertThat(nat.getExtendedAclName(), nullValue());
+      assertThat(nat.getProtocol(), equalTo(AristaDestinationStaticNat.Protocol.ANY));
+      assertThat(nat.getOriginalIp(), equalTo(Ip.parse("1.1.1.1")));
+      assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("172.16.52.9")));
+      assertThat(nat.getOriginalPort(), nullValue());
+      assertThat(nat.getTranslatedPort(), nullValue());
+    }
+    {
+      AristaDestinationStaticNat nat = nats.get(4);
+      assertThat(nat.getExtendedAclName(), equalTo("ACL"));
+      assertThat(nat.getProtocol(), equalTo(AristaDestinationStaticNat.Protocol.TCP));
+      assertThat(nat.getOriginalIp(), equalTo(Ip.parse("1.1.1.5")));
+      assertThat(nat.getTranslatedIp(), equalTo(Ip.parse("172.16.52.9")));
+      assertThat(nat.getOriginalPort(), equalTo(5001));
+      assertThat(nat.getTranslatedPort(), equalTo(5002));
+    }
   }
 
   @Test

@@ -641,7 +641,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
-import org.batfish.grammar.arista.AristaParser.Ifipn_destinationContext;
+import org.batfish.grammar.arista.AristaParser.Ifipnd_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_dynamicContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
@@ -876,6 +876,7 @@ import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AnyAddressSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.AristaDestinationStaticNat;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
 import org.batfish.representation.arista.AristaStaticSourceNat;
 import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
@@ -5175,10 +5176,49 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIfipn_destination(Ifipn_destinationContext ctx) {
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
+  public void exitIfipnd_static(Ifipnd_staticContext ctx) {
+    if ((ctx.original_port == null) != (ctx.tx_port == null)) {
+      warn(ctx, "For port translation, must specify both original and translated ports.");
+      return;
+    }
+    Optional<Integer> originalPort =
+        Optional.ofNullable(ctx.original_port).flatMap(p -> toPort(ctx, p));
+    Optional<Integer> translatedPort =
+        Optional.ofNullable(ctx.tx_port).flatMap(p -> toPort(ctx, p));
+    if (ctx.original_port != null && (!originalPort.isPresent() || !translatedPort.isPresent())) {
+      // already warned.
+      return;
+    }
+    AristaDestinationStaticNat.Protocol protocol;
+    protocol =
+        ctx.UDP() != null
+            ? AristaDestinationStaticNat.Protocol.UDP
+            : ctx.TCP() != null
+                ? AristaDestinationStaticNat.Protocol.TCP
+                : AristaDestinationStaticNat.Protocol.ANY;
+    String aclName;
+    if (ctx.acl != null) {
+      aclName = ctx.acl.getText();
+      // Standard ACLs cannot be used to express filtering on destination IPs.
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST_EXTENDED,
+          aclName,
+          IP_NAT_DESTINATION_ACCESS_LIST,
+          ctx.acl.getStart().getLine());
+    } else {
+      aclName = null;
+    }
+    AristaDestinationStaticNat nat =
+        new AristaDestinationStaticNat(
+            toIp(ctx.original_ip),
+            originalPort.orElse(null),
+            toIp(ctx.tx_ip),
+            translatedPort.orElse(null),
+            aclName,
+            protocol);
+    for (Interface iface : _currentInterfaces) {
+      iface.addDestinationStaticNat(nat);
+    }
   }
 
   @Override

@@ -2,6 +2,7 @@ package org.batfish.representation.arista;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Sets;
@@ -79,6 +80,7 @@ public class Interface implements Serializable {
 
   private @Nullable IntegerSpace _allowedVlans;
 
+  private List<AristaDestinationStaticNat> _destinationStaticNats;
   private List<AristaDynamicSourceNat> _dynamicSourceNats;
 
   private List<AristaStaticSourceNat> _staticSourceNats;
@@ -179,6 +181,7 @@ public class Interface implements Serializable {
     _shutdown = false;
     _autoState = true;
     _declaredNames = ImmutableSortedSet.of();
+    _destinationStaticNats = ImmutableList.of();
     _dhcpRelayAddresses = new TreeSet<>();
     _isisInterfaceMode = IsisInterfaceMode.UNSET;
     _memberInterfaces = new HashSet<>();
@@ -383,6 +386,18 @@ public class Interface implements Serializable {
 
   public @Nullable Double getSpeed() {
     return _speed;
+  }
+
+  public List<AristaDestinationStaticNat> getDestinationStaticNats() {
+    return _destinationStaticNats;
+  }
+
+  public void addDestinationStaticNat(@Nonnull AristaDestinationStaticNat nat) {
+    _destinationStaticNats =
+        ImmutableList.<AristaDestinationStaticNat>builder()
+            .addAll(_destinationStaticNats)
+            .add(nat)
+            .build();
   }
 
   public List<AristaStaticSourceNat> getStaticSourceNats() {

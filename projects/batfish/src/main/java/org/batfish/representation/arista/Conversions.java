@@ -1055,6 +1055,10 @@ public class Conversions {
     }
   }
 
+  public static @Nonnull String nameOfDestNatIpSpaceFromAcl(@Nonnull String aclName) {
+    return aclName + "~ip~nat~destination~ips";
+  }
+
   public static @Nonnull String nameOfSourceNatIpSpaceFromAcl(@Nonnull String aclName) {
     return aclName + "~ip~nat~source~ips";
   }
