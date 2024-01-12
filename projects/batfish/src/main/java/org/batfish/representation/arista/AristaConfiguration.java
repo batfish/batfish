@@ -1311,6 +1311,11 @@ public final class AristaConfiguration extends VendorConfiguration {
      */
     generateDynamicSourceNats(newIface, iface.getDynamicSourceNats());
     generateStaticSourceNats(newIface, iface.getStaticSourceNats(), c);
+    /*
+     * Destination static NATs match the above description, but translate when receiving rather than
+     * sending.
+     */
+    generateDestinationStaticNats(newIface, iface.getDestinationStaticNats(), c);
 
     String routingPolicyName = iface.getRoutingPolicy();
     if (routingPolicyName != null) {
@@ -1318,6 +1323,26 @@ public final class AristaConfiguration extends VendorConfiguration {
     }
 
     return newIface;
+  }
+
+  private void generateDestinationStaticNats(
+      org.batfish.datamodel.Interface newIface,
+      List<AristaDestinationStaticNat> nats,
+      Configuration c) {
+    if (nats.isEmpty()) {
+      // Nothing to do
+      return;
+    }
+
+    Transformation nextIn = newIface.getIncomingTransformation();
+    Transformation nextOut = newIface.getOutgoingTransformation();
+    for (AristaDestinationStaticNat nat : Lists.reverse(nats)) {
+      // TODO: ACL support
+      nextIn = nat.toIncomingTransformation(nextIn);
+      nextOut = nat.toOutgoingTransformation(nextOut);
+    }
+    newIface.setIncomingTransformation(nextIn);
+    newIface.setOutgoingTransformation(nextOut);
   }
 
   private void generateStaticSourceNats(
