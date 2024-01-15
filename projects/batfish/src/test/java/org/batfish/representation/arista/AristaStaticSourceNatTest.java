@@ -27,13 +27,12 @@ import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.junit.Test;
 
 public class AristaStaticSourceNatTest {
   private final AristaStaticSourceNat _nat =
       new AristaStaticSourceNat(
-          Ip.parse("1.1.1.1"), 11, Ip.parse("2.2.2.2"), 22, "someAcl", Protocol.ANY);
+          Ip.parse("1.1.1.1"), 11, Ip.parse("2.2.2.2"), 22, "someAcl", NatProtocol.ANY);
   private final Transformation _orElse = when(TRUE).apply(assignDestinationPort(74, 1000)).build();
 
   /** All fields, in direction. */
@@ -89,7 +88,7 @@ public class AristaStaticSourceNatTest {
   public void testProtocolGuard() {
     AristaStaticSourceNat anyNoPorts =
         new AristaStaticSourceNat(
-            Ip.parse("1.1.1.1"), null, Ip.parse("2.2.2.2"), null, null, Protocol.ANY);
+            Ip.parse("1.1.1.1"), null, Ip.parse("2.2.2.2"), null, null, NatProtocol.ANY);
     assertThat(
         anyNoPorts.toOutgoingTransformation(_orElse).getGuard(),
         equalTo(matchSrc(Ip.parse("1.1.1.1"))));
@@ -99,14 +98,14 @@ public class AristaStaticSourceNatTest {
 
     AristaStaticSourceNat tcpNoPorts =
         new AristaStaticSourceNat(
-            Ip.parse("1.1.1.1"), null, Ip.parse("2.2.2.2"), null, null, Protocol.TCP);
+            Ip.parse("1.1.1.1"), null, Ip.parse("2.2.2.2"), null, null, NatProtocol.TCP);
     assertThat(
         tcpNoPorts.toOutgoingTransformation(_orElse).getGuard(),
         equalTo(and(matchSrc(Ip.parse("1.1.1.1")), matchIpProtocol(IpProtocol.TCP))));
 
     AristaStaticSourceNat tcpPorts =
         new AristaStaticSourceNat(
-            Ip.parse("1.1.1.1"), 11, Ip.parse("2.2.2.2"), 22, null, Protocol.TCP);
+            Ip.parse("1.1.1.1"), 11, Ip.parse("2.2.2.2"), 22, null, NatProtocol.TCP);
     assertThat(
         tcpPorts.toOutgoingTransformation(_orElse).getGuard(),
         equalTo(

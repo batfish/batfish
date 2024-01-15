@@ -1,0 +1,13 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname ip-nat-destination
+!
+! See: https://github.com/batfish/batfish/issues/8923
+! ip nat destination static ORIGINAL [FILTER] TRANSLATED [PROT_TYPE][group group_number]
+interface Ethernet1
+   ip nat destination static 1.1.1.1 172.16.52.9
+   ip nat destination static 1.1.1.2 5001 172.16.52.9 5002
+   ip nat destination static 1.1.1.3 access-list ACL 172.16.52.9
+   ip nat destination static 1.1.1.4 5001 access-list ACL 172.16.52.9 5002
+   ip nat destination static 1.1.1.5 5001 access-list ACL 172.16.52.9 5002 protocol tcp
+!

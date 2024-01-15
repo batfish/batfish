@@ -641,7 +641,7 @@ import org.batfish.grammar.arista.AristaParser.Ifip_address_address_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_address_virtual_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifip_proxy_arp_eosContext;
 import org.batfish.grammar.arista.AristaParser.Ifipm_boundary_eosContext;
-import org.batfish.grammar.arista.AristaParser.Ifipn_destinationContext;
+import org.batfish.grammar.arista.AristaParser.Ifipnd_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_dynamicContext;
 import org.batfish.grammar.arista.AristaParser.Ifipns_staticContext;
 import org.batfish.grammar.arista.AristaParser.Ifipo_area_eosContext;
@@ -876,9 +876,9 @@ import org.batfish.representation.arista.AccessListAddressSpecifier;
 import org.batfish.representation.arista.AccessListServiceSpecifier;
 import org.batfish.representation.arista.AnyAddressSpecifier;
 import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.representation.arista.AristaDestinationStaticNat;
 import org.batfish.representation.arista.AristaDynamicSourceNat;
 import org.batfish.representation.arista.AristaStaticSourceNat;
-import org.batfish.representation.arista.AristaStaticSourceNat.Protocol;
 import org.batfish.representation.arista.AristaStructureType;
 import org.batfish.representation.arista.AristaStructureUsage;
 import org.batfish.representation.arista.CryptoMapEntry;
@@ -907,6 +907,7 @@ import org.batfish.representation.arista.MatchSemantics;
 import org.batfish.representation.arista.MlagConfiguration;
 import org.batfish.representation.arista.NamedRsaPubKey;
 import org.batfish.representation.arista.NatPool;
+import org.batfish.representation.arista.NatProtocol;
 import org.batfish.representation.arista.NssaSettings;
 import org.batfish.representation.arista.OspfNetwork;
 import org.batfish.representation.arista.OspfNetworkType;
@@ -5175,10 +5176,41 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
   }
 
   @Override
-  public void exitIfipn_destination(Ifipn_destinationContext ctx) {
-    String acl = ctx.acl.getText();
-    int line = ctx.acl.getStart().getLine();
-    _configuration.referenceStructure(IPV4_ACCESS_LIST, acl, IP_NAT_DESTINATION_ACCESS_LIST, line);
+  public void exitIfipnd_static(Ifipnd_staticContext ctx) {
+    if ((ctx.original_port == null) != (ctx.tx_port == null)) {
+      warn(ctx, "For port translation, must specify both original and translated ports.");
+      return;
+    }
+    Optional<Integer> originalPort =
+        Optional.ofNullable(ctx.original_port).flatMap(p -> toPort(ctx, p));
+    Optional<Integer> translatedPort =
+        Optional.ofNullable(ctx.tx_port).flatMap(p -> toPort(ctx, p));
+    if (ctx.original_port != null && (!originalPort.isPresent() || !translatedPort.isPresent())) {
+      // already warned.
+      return;
+    }
+    NatProtocol protocol =
+        ctx.UDP() != null ? NatProtocol.UDP : ctx.TCP() != null ? NatProtocol.TCP : NatProtocol.ANY;
+    String aclName;
+    if (ctx.acl != null) {
+      aclName = ctx.acl.getText();
+      _configuration.referenceStructure(
+          IPV4_ACCESS_LIST, aclName, IP_NAT_DESTINATION_ACCESS_LIST, ctx.acl.getStart().getLine());
+      warn(ctx, "NAT based on access-list is not supported, all packets will be translated.");
+    } else {
+      aclName = null;
+    }
+    AristaDestinationStaticNat nat =
+        new AristaDestinationStaticNat(
+            toIp(ctx.original_ip),
+            originalPort.orElse(null),
+            toIp(ctx.tx_ip),
+            translatedPort.orElse(null),
+            aclName,
+            protocol);
+    for (Interface iface : _currentInterfaces) {
+      iface.addDestinationStaticNat(nat);
+    }
   }
 
   @Override
@@ -5232,8 +5264,8 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
       // already warned.
       return;
     }
-    Protocol protocol =
-        ctx.UDP() != null ? Protocol.UDP : ctx.TCP() != null ? Protocol.TCP : Protocol.ANY;
+    NatProtocol protocol =
+        ctx.UDP() != null ? NatProtocol.UDP : ctx.TCP() != null ? NatProtocol.TCP : NatProtocol.ANY;
     String aclName;
     if (ctx.acl != null) {
       aclName = ctx.acl.getText();
