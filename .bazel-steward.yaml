@@ -1,0 +1,3 @@
+update-rules:
+  - bumping: minor-patch
+
