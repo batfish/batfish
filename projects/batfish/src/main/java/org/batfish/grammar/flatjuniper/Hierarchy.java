@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -30,6 +31,7 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
 import org.batfish.common.BatfishException;
+import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
@@ -446,7 +448,7 @@ final class Hierarchy {
 
       @Override
       protected boolean isMatchedBy(HierarchyWildcardNode node) {
-        return matchWithJuniperRegex(_unquotedText, node._wildcard);
+        return node.matches(_unquotedText);
       }
 
       @Override
@@ -624,6 +626,7 @@ final class Hierarchy {
     private static final class HierarchyWildcardNode extends HierarchyChildNode {
 
       private final String _wildcard;
+      private final Pattern _wildcardPattern;
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
@@ -632,6 +635,7 @@ final class Hierarchy {
           throw new BatfishException("Improperly-formatted wildcard: " + text);
         }
         _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
+        _wildcardPattern = PatternProvider.fromString(GroupWildcard.toJavaRegex(_wildcard));
       }
 
       @Override
@@ -658,6 +662,10 @@ final class Hierarchy {
       @Override
       protected boolean matches(HierarchyChildNode node) {
         return node.isMatchedBy(this);
+      }
+
+      public boolean matches(String text) {
+        return _wildcardPattern.matcher(text).matches();
       }
 
       @Override
@@ -1023,11 +1031,6 @@ final class Hierarchy {
   /** Mark a group as being excluded from inheritance at a given path in the main tree. */
   void markApplyGroupsExcept(HierarchyPath path, String groupName) {
     _masterTree.markApplyGroupsExcept(path, groupName);
-  }
-
-  static boolean matchWithJuniperRegex(String candidate, String juniperRegex) {
-    String regex = GroupWildcard.toJavaRegex(juniperRegex);
-    return candidate.matches(regex);
   }
 
   @Nonnull
