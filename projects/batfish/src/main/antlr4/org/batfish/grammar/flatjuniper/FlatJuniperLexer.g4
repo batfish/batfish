@@ -1842,6 +1842,8 @@ MULTIHOP: 'multihop';
 
 MULTIPATH: 'multipath';
 
+MULTIPATH_RESOLVE: 'multipath-resolve';
+
 MULTIPLE_AS: 'multiple-as';
 
 MULTIPLIER: 'multiplier';

@@ -517,6 +517,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metric_addContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_multipath_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
@@ -5948,6 +5949,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_metric_add(Popst_metric_addContext ctx) {
     int metric = toInt(ctx.metric);
     _currentPsThens.add(new PsThenMetricAdd(metric));
+  }
+
+  @Override
+  public void exitPopst_multipath_resolve(Popst_multipath_resolveContext ctx) {
+    todo(ctx);
   }
 
   @Override
