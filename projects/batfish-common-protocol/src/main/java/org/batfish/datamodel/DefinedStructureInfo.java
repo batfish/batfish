@@ -8,7 +8,6 @@ import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
 import java.io.Serializable;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 
 public class DefinedStructureInfo implements Serializable {
@@ -43,10 +42,6 @@ public class DefinedStructureInfo implements Serializable {
 
   public void addDefinitionLines(int line) {
     _definitionLines.add(Range.singleton(line));
-  }
-
-  public void addDefinitionLines(IntStream lines) {
-    lines.forEach(l -> _definitionLines.add(Range.singleton(l)));
   }
 
   public void addDefinitionLines(Range<Integer> lines) {
