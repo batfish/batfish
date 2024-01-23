@@ -512,6 +512,7 @@ popst_common
    | popst_metric_igp
    | popst_metric2
    | popst_metric2_expression
+   | popst_multipath_resolve
    | popst_next_hop
    | popst_next_policy
    | popst_next_term
@@ -610,6 +611,11 @@ popst_metric_igp
 popst_metric2_expression
 :
    METRIC2 EXPRESSION metric_expression
+;
+
+popst_multipath_resolve
+:
+   MULTIPATH_RESOLVE
 ;
 
 popst_next_hop
