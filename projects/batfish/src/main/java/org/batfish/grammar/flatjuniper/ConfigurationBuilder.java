@@ -2600,6 +2600,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPops_term(Pops_termContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void enterFo_dhcp_relay(Fo_dhcp_relayContext ctx) {
     _currentDhcpRelayGroup =
         _currentRoutingInstance

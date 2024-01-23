@@ -175,6 +175,9 @@ pops_from
 pops_term
 :
    TERM name = junos_name pops_common
+   (
+     THEN MULTIPATH_RESOLVE
+   )
 ;
 
 pops_then
