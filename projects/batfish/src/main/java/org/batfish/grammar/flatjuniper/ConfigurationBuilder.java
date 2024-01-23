@@ -2601,11 +2601,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPopst_multipath_resolve(Popst_multipath_resolveContext ctx) {
-    todo(ctx);
-  }
-
-  @Override
   public void enterFo_dhcp_relay(Fo_dhcp_relayContext ctx) {
     _currentDhcpRelayGroup =
         _currentRoutingInstance
@@ -5954,6 +5949,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_metric_add(Popst_metric_addContext ctx) {
     int metric = toInt(ctx.metric);
     _currentPsThens.add(new PsThenMetricAdd(metric));
+  }
+
+  @Override
+  public void exitPopst_multipath_resolve(Popst_multipath_resolveContext ctx) {
+    todo(ctx);
   }
 
   @Override
