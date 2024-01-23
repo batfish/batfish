@@ -9,9 +9,8 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.IntStream;
+import java.util.function.IntConsumer;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -221,26 +220,23 @@ public abstract class VendorConfiguration implements Serializable {
   }
 
   /* Recursively process children to find all relevant definition lines for the specified context */
-  private static IntStream collectLines(
-      RuleContext ctx, BatfishCombinedParser<?, ?> parser, Map<Integer, Set<Integer>> extraLines) {
-    return IntStream.range(0, ctx.getChildCount())
-        .flatMap(
-            i -> {
-              ParseTree child = ctx.getChild(i);
-              if (child instanceof TerminalNode) {
-                int originalLine = parser.getLine(((TerminalNode) child).getSymbol());
-                return IntStream.concat(
-                    IntStream.of(originalLine),
-                    Optional.ofNullable(extraLines)
-                        .map(el -> el.get(originalLine))
-                        .map(set -> set.stream().mapToInt(Integer::intValue))
-                        .orElse(IntStream.of()));
-              } else if (child instanceof RuleContext) {
-                return collectLines((RuleContext) child, parser, extraLines);
-              }
-              return IntStream.empty();
-            })
-        .distinct();
+  private static void collectLines(
+      RuleContext ctx,
+      BatfishCombinedParser<?, ?> parser,
+      Map<Integer, Set<Integer>> extraLines,
+      IntConsumer collect) {
+    for (int i = 0; i < ctx.getChildCount(); ++i) {
+      ParseTree child = ctx.getChild(i);
+      if (child instanceof TerminalNode) {
+        int originalLine = parser.getLine(((TerminalNode) child).getSymbol());
+        collect.accept(originalLine);
+        if (extraLines != null) {
+          extraLines.get(originalLine).forEach(collect::accept);
+        }
+      } else if (child instanceof RuleContext) {
+        collectLines((RuleContext) child, parser, extraLines, collect);
+      }
+    }
   }
 
   /**
@@ -262,9 +258,8 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    _structureManager
-        .getOrDefine(type, name)
-        .addDefinitionLines(collectLines(ctx, parser, _extraLines));
+    collectLines(
+        ctx, parser, _extraLines, _structureManager.getOrDefine(type, name)::addDefinitionLines);
   }
 
   /**
