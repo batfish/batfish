@@ -372,14 +372,9 @@ public class BDDPacket implements Serializable {
    * @return A Flow.Builder for a representative of the set, if it's non-empty
    */
   public Optional<Flow.Builder> getFlow(BDD bdd, FlowPreference preference) {
-    BDD representativeBDD = getFlowBDD(saneBDD, preference);
+    BDD representativeBDD = getFlowBDD(bdd, preference);
     if (representativeBDD.isZero()) {
       return Optional.empty();
-    }
-
-    if (representativeBDD.isZero()) {
-      // Should not be possible if the preference is well-formed.
-      return Optional.of(getRepresentativeFlow(saneBDD));
     }
 
     return Optional.of(getRepresentativeFlow(representativeBDD));
