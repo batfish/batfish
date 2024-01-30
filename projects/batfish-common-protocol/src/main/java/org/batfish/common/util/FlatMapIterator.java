@@ -5,12 +5,12 @@ import java.util.NoSuchElementException;
 import java.util.function.Function;
 
 /** An implementation of {@code flatMap} for {@link Iterator}. */
-public final class FlatMapIterator<Outer, Inner> implements Iterator<Inner> {
-  Iterator<Outer> _outer;
-  Iterator<Inner> _inner;
-  Function<Outer, Iterator<Inner>> _nextInner;
+public final class FlatMapIterator<OuterT, InnerT> implements Iterator<InnerT> {
+  Iterator<OuterT> _outer;
+  Iterator<InnerT> _inner;
+  Function<OuterT, Iterator<InnerT>> _nextInner;
 
-  public FlatMapIterator(Iterator<Outer> outer, Function<Outer, Iterator<Inner>> nextInner) {
+  public FlatMapIterator(Iterator<OuterT> outer, Function<OuterT, Iterator<InnerT>> nextInner) {
     _outer = outer;
     _nextInner = nextInner;
     _inner = null;
@@ -34,15 +34,15 @@ public final class FlatMapIterator<Outer, Inner> implements Iterator<Inner> {
   }
 
   @Override
-  public Inner next() {
+  public InnerT next() {
     if (!hasNext()) {
       throw new NoSuchElementException();
     }
     return _inner.next();
   }
 
-  public static <Outer, Inner> Iterator<Inner> flatMapIterator(
-      Iterator<Outer> outer, Function<Outer, Iterator<Inner>> nextInner) {
+  public static <OuterT, InnerT> Iterator<InnerT> flatMapIterator(
+      Iterator<OuterT> outer, Function<OuterT, Iterator<InnerT>> nextInner) {
     return new FlatMapIterator<>(outer, nextInner);
   }
 }
