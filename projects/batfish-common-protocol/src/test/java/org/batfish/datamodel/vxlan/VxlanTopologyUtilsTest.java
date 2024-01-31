@@ -137,7 +137,7 @@ public final class VxlanTopologyUtilsTest {
                       }
 
                       @Override
-                      public Stream<TraceAndReverseFlow> getTraces() {
+                      public Stream<TraceAndReverseFlow> getAllTraces() {
                         return result.stream();
                       }
                     };

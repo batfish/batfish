@@ -169,7 +169,7 @@ public final class TraceDagImpl implements TraceDag {
   }
 
   @Override
-  public Stream<TraceAndReverseFlow> getTraces() {
+  public Stream<TraceAndReverseFlow> getAllTraces() {
     Iterable<TraceAndReverseFlow> iterable =
         () -> flatMapIterator(_rootIds.iterator(), this::getTraces);
     return StreamSupport.stream(iterable.spliterator(), false);
