@@ -2,13 +2,17 @@ package org.batfish.common.traceroute;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.batfish.common.util.FlatMapIterator.flatMapIterator;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Stack;
 import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.common.util.FlatMapIterator;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
@@ -115,7 +119,7 @@ public final class TraceDagImpl implements TraceDag {
     }
   }
 
-  private Stream<TraceAndReverseFlow> getTraces(
+  private Iterator<TraceAndReverseFlow> getTraces(
       List<Hop> hopsInput, List<FirewallSessionTraceInfo> sessionsInput, int rootId) {
     Node node = _nodes.get(rootId);
 
@@ -142,9 +146,11 @@ public final class TraceDagImpl implements TraceDag {
       FlowDisposition disposition =
           checkNotNull(node._flowDisposition, "failed to determine disposition from hop");
       Trace trace = new Trace(disposition, hops);
-      return Stream.of(new TraceAndReverseFlow(trace, node._returnFlow, sessions));
+      return ImmutableList.of(new TraceAndReverseFlow(trace, node._returnFlow, sessions))
+          .iterator();
     } else {
-      return successors.stream().flatMap(successorId -> getTraces(hops, sessions, successorId));
+      return new FlatMapIterator<>(
+          successors.iterator(), successorId -> getTraces(hops, sessions, successorId));
     }
   }
 
@@ -158,12 +164,14 @@ public final class TraceDagImpl implements TraceDag {
     return _nodes.size();
   }
 
-  private Stream<TraceAndReverseFlow> getTraces(int rootId) {
+  private Iterator<TraceAndReverseFlow> getTraces(int rootId) {
     return getTraces(ImmutableList.of(), new Stack<>(), rootId);
   }
 
   @Override
-  public Stream<TraceAndReverseFlow> getTraces() {
-    return _rootIds.stream().flatMap(this::getTraces);
+  public Stream<TraceAndReverseFlow> getAllTraces() {
+    Iterable<TraceAndReverseFlow> iterable =
+        () -> flatMapIterator(_rootIds.iterator(), this::getTraces);
+    return StreamSupport.stream(iterable.spliterator(), false);
   }
 }

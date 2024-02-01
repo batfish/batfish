@@ -10,6 +10,9 @@ import org.batfish.datamodel.flow.TraceAndReverseFlow;
  */
 public interface TraceDag {
 
+  /** Maximum number of traces returned by {@link getTraces}. */
+  static final int TRACE_LIMIT = 10000;
+
   /** Returns the number of edges in the DAG. */
   int countEdges();
 
@@ -19,6 +22,16 @@ public interface TraceDag {
   /** Returns the number of traces, aka the number of paths through the DAG. */
   int size();
 
-  /** Returns a stream of the {@link TraceAndReverseFlow} corresponding to the traces in this DAG */
-  Stream<TraceAndReverseFlow> getTraces();
+  /**
+   * Returns a stream of the {@link TraceAndReverseFlow} corresponding to the traces in this DAG,
+   * with at most {@link TraceDag#TRACE_LIMIT} traces.
+   */
+  default Stream<TraceAndReverseFlow> getTraces() {
+    return getAllTraces().limit(TRACE_LIMIT);
+  }
+
+  /**
+   * Returns a stream of the {@link TraceAndReverseFlow} corresponding to the traces in this DAG.
+   */
+  Stream<TraceAndReverseFlow> getAllTraces();
 }
