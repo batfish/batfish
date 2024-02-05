@@ -2228,7 +2228,7 @@ public class Client extends AbstractClient implements IClient {
     Path uploadTarget = initialUploadTarget;
     boolean createZip = Files.isDirectory(initialUploadTarget);
     if (createZip) {
-      uploadTarget = CommonUtil.createTempFile("testrig", "zip");
+      uploadTarget = createTempFile("testrig", "zip");
       zipFiles(initialUploadTarget.toAbsolutePath(), uploadTarget.toAbsolutePath());
     }
     try {
