@@ -34,6 +34,7 @@ import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.FileAttribute;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
@@ -162,6 +163,16 @@ public class WorkMgr extends AbstractCoordinator {
       throw new BatfishException("Error listing directory '" + directory + "'", e);
     }
     return entries;
+  }
+
+  private static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {
+    try {
+      Path tempDir = Files.createTempDirectory(prefix, attrs);
+      tempDir.toFile().deleteOnExit();
+      return tempDir;
+    } catch (IOException e) {
+      throw new BatfishException("Failed to create temporary directory", e);
+    }
   }
 
   static final class AssignWorkTask implements Runnable {
@@ -998,7 +1009,7 @@ public class WorkMgr extends AbstractCoordinator {
 
     // Copy baseSnapshot so initSnapshot will see a properly formatted upload
     Path newSnapshotInputsDir =
-        CommonUtil.createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
+        createTempDirectory("files_to_add").resolve(Paths.get(BfConsts.RELPATH_INPUT));
     if (!newSnapshotInputsDir.toFile().mkdirs()) {
       throw new BatfishException("Failed to create directory: '" + newSnapshotInputsDir + "'");
     }
@@ -1021,7 +1032,7 @@ public class WorkMgr extends AbstractCoordinator {
     }
     // Write user-specified files to the forked snapshot input dir, overwriting existing ones
     if (forkSnapshotBean.zipFile != null) {
-      Path unzipDir = CommonUtil.createTempDirectory("upload");
+      Path unzipDir = createTempDirectory("upload");
       UnzipUtility.unzip(new ByteArrayInputStream(forkSnapshotBean.zipFile), unzipDir);
 
       // Preserve proper snapshot dir formatting (single top-level dir), so copy new files directly
@@ -1441,7 +1452,7 @@ public class WorkMgr extends AbstractCoordinator {
       throw new UncheckedIOException(e);
     }
 
-    Path unzipDir = CommonUtil.createTempDirectory("tr");
+    Path unzipDir = createTempDirectory("tr");
     try (InputStream zipStream = _storage.loadUploadSnapshotZip(uploadZipKey, networkId)) {
       UnzipUtility.unzip(zipStream, unzipDir);
     } catch (IOException e) {

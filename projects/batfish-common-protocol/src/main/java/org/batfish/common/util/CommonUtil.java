@@ -14,7 +14,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
-import java.nio.file.attribute.FileAttribute;
 import java.util.Collections;
 import java.util.IdentityHashMap;
 import java.util.Set;
@@ -96,16 +95,6 @@ public class CommonUtil {
    */
   public static ClientBuilder createHttpClientBuilder() {
     return ClientBuilder.newBuilder();
-  }
-
-  public static Path createTempDirectory(String prefix, FileAttribute<?>... attrs) {
-    try {
-      Path tempDir = Files.createTempDirectory(prefix, attrs);
-      tempDir.toFile().deleteOnExit();
-      return tempDir;
-    } catch (IOException e) {
-      throw new BatfishException("Failed to create temporary directory", e);
-    }
   }
 
   public static void delete(Path path) {
