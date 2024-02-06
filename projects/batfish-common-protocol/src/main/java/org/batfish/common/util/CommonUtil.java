@@ -108,16 +108,6 @@ public class CommonUtil {
     }
   }
 
-  public static Path createTempFile(String prefix, String suffix, FileAttribute<?>... attributes) {
-    try {
-      Path tempFile = Files.createTempFile(prefix, suffix, attributes);
-      tempFile.toFile().deleteOnExit();
-      return tempFile;
-    } catch (IOException e) {
-      throw new BatfishException("Failed to create temporary file", e);
-    }
-  }
-
   public static void delete(Path path) {
     try {
       Files.delete(path);

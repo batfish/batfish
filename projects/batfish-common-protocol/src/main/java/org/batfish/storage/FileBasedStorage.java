@@ -598,6 +598,10 @@ public class FileBasedStorage implements StorageProvider {
                     })));
   }
 
+  private static @Nonnull Path tempOutputFilePath(@Nonnull Path outputFile) {
+    return outputFile.resolveSibling("." + outputFile.getFileName() + ".tmp");
+  }
+
   /**
    * Writes a single object of the given class to the given file. Uses the {@link FileBasedStorage}
    * default file encoding including serialization format and compression.
@@ -606,8 +610,9 @@ public class FileBasedStorage implements StorageProvider {
   void serializeObject(Serializable object, Path outputFile) {
     Path sanitizedOutputFile = validatePath(outputFile);
     try {
-      Path tmpFile = Files.createTempFile(null, null);
+      Path tmpFile = tempOutputFilePath(outputFile);
       try {
+        mkdirs(sanitizedOutputFile.getParent());
         try (OutputStream out = Files.newOutputStream(tmpFile);
             LZ4FrameOutputStream gos = new LZ4FrameOutputStream(out);
             ObjectOutputStream oos = new ObjectOutputStream(gos)) {
@@ -616,7 +621,6 @@ public class FileBasedStorage implements StorageProvider {
           throw new BatfishException(
               "Failed to serialize object to output file: " + sanitizedOutputFile, e);
         }
-        mkdirs(sanitizedOutputFile.getParent());
         Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
       } finally {
         Files.deleteIfExists(tmpFile);
@@ -1232,10 +1236,10 @@ public class FileBasedStorage implements StorageProvider {
   @VisibleForTesting
   void writeStringToFile(Path file, CharSequence data, Charset charset) throws IOException {
     Path sanitizedFile = validatePath(file);
-    Path tmpFile = Files.createTempFile(null, null);
+    Path tmpFile = tempOutputFilePath(file);
     try {
-      MoreFiles.asCharSink(tmpFile, charset).write(data);
       mkdirs(sanitizedFile.getParent());
+      MoreFiles.asCharSink(tmpFile, charset).write(data);
       Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
       Files.deleteIfExists(tmpFile);
@@ -1244,10 +1248,10 @@ public class FileBasedStorage implements StorageProvider {
 
   private void writeJsonFile(Path file, @Nullable Object json) throws IOException {
     Path sanitizedFile = validatePath(file);
-    Path tmpFile = Files.createTempFile(null, null);
+    Path tmpFile = tempOutputFilePath(file);
     try {
-      BatfishObjectMapper.writer().writeValue(tmpFile.toFile(), json);
       mkdirs(sanitizedFile.getParent());
+      BatfishObjectMapper.writer().writeValue(tmpFile.toFile(), json);
       Files.move(tmpFile, sanitizedFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
       Files.deleteIfExists(tmpFile);
@@ -1256,14 +1260,14 @@ public class FileBasedStorage implements StorageProvider {
 
   private void writeStreamToFile(InputStream inputStream, Path outputFile) throws IOException {
     Path sanitizedOutputFile = validatePath(outputFile);
-    Path tmpFile = Files.createTempFile(null, null);
+    Path tmpFile = tempOutputFilePath(outputFile);
+    mkdirs(sanitizedOutputFile.getParent());
     try (OutputStream fileOutputStream = Files.newOutputStream(tmpFile)) {
       int read = 0;
       byte[] bytes = new byte[STREAMED_FILE_BUFFER_SIZE];
       while ((read = inputStream.read(bytes)) != -1) {
         fileOutputStream.write(bytes, 0, read);
       }
-      mkdirs(sanitizedOutputFile.getParent());
       Files.move(tmpFile, sanitizedOutputFile, StandardCopyOption.REPLACE_EXISTING);
     } finally {
       Files.deleteIfExists(tmpFile);
