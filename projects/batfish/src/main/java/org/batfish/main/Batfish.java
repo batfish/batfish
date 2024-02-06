@@ -2120,6 +2120,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
       throw new UncheckedIOException(e);
     }
 
+    if (!found) {
+      // nothing to serialize.
+      return found;
+    }
+
     _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
     _logger.resetTimer();
     _logger.debugf("Serializing AWS");
