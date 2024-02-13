@@ -6,9 +6,11 @@ import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnviron
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -282,7 +284,7 @@ public final class CompareRoutePoliciesUtils {
 
   /**
    * @param factory the BDD factory used for this analysis
-   * @param diffs A list of differences found between two output routes.
+   * @param diff A difference found between two output routes.
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @return A BDD that denotes at least one of the differences in the given diffs list. Only
@@ -293,44 +295,56 @@ public final class CompareRoutePoliciesUtils {
    *     so we might have to account for this case too.
    */
   private BDD counterExampleOutputConstraints(
-      BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
-    BDD acc = factory.zero();
-    for (BDDRouteDiff.DifferenceType d : diffs) {
+      BDDFactory factory,
+      List<BDDRouteDiff.DifferenceType> diff,
+      BDDRoute r1,
+      BDDRoute r2,
+      BDD intersection) {
+    BDD result;
+    for (BDDRouteDiff.DifferenceType d : diff) {
       switch (d) {
-        case AS_PATH:
-        case OSPF_METRIC:
         case LOCAL_PREF:
-        case MED:
-        case NEXTHOP:
-        case NEXTHOP_TYPE:
-        case NEXTHOP_SET:
-        case TAG:
-        case ADMIN_DIST:
-        case WEIGHT:
-        case UNSUPPORTED:
+          result = r1.getLocalPref().xor(r2.getLocalPref());
           break;
         case COMMUNITIES:
           BDD[] communityAtomicPredicates = r1.getCommunityAtomicPredicates();
           BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
-          for (int i = 0; i < communityAtomicPredicates.length; i++) {
-            BDD outConstraint = communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]);
-            // If there is a scenario where the two outputs differ at this community then ensure
-            // this scenario
-            // manifests during model generation.
-            acc = acc.or(outConstraint);
-          }
+          result =
+              factory.orAll(
+                  IntStream.range(0, communityAtomicPredicates.length)
+                      .mapToObj(
+                          i -> communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]))
+                      .collect(ImmutableList.toImmutableList()));
+          break;
+        case MED:
+          result = r1.getMed().xor(r2.getMed());
+          break;
+        case NEXTHOP:
+          result = r1.getNextHop().xor(r2.getNextHop());
+          break;
+        case TAG:
+          result = r1.getTag().xor(r2.getTag());
+          break;
+        case ADMIN_DIST:
+          result = r1.getAdminDist().xor(r2.getAdminDist());
+          break;
+        case WEIGHT:
+          result = r1.getWeight().xor(r2.getWeight());
+          break;
+        case AS_PATH:
+        case NEXTHOP_TYPE:
+        case NEXTHOP_SET:
+        case UNSUPPORTED:
+          result = factory.one();
           break;
         default:
           throw new UnsupportedOperationException(d.name());
       }
+      if (intersection.andSat(result)) {
+        return result;
+      }
     }
-    if (!acc.isZero()) {
-      // If we have accumulated some constraints from the output routes then return these
-      return acc;
-    } else {
-      // otherwise return true.
-      return factory.one();
-    }
+    return factory.zero();
   }
 
   /**
@@ -413,20 +427,47 @@ public final class CompareRoutePoliciesUtils {
     BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).bgpWellFormednessConstraints();
 
     // The set of paths for the current policy
-    List<TransferReturn> paths = computePaths(tBDD);
+    List<TransferReturn> paths = new LinkedList<>(computePaths(tBDD));
     // The set of paths for the proposed policy
-    List<TransferReturn> otherPaths = computePaths(otherTBDD);
+    List<TransferReturn> otherPaths = new LinkedList<>(computePaths(otherTBDD));
+
+    /*
+    Map<TransferReturn, Integer> pathsIndex = new HashMap<>();
+    for (int i = 0; i < paths.size(); i++) {
+      pathsIndex.put(paths.get(i), i);
+    }
+    Map<TransferReturn, Integer> otherPathsIndex = new HashMap<>();
+    for (int i = 0; i < otherPaths.size(); i++) {
+      otherPathsIndex.put(otherPaths.get(i), i);
+    }
+
+    Map<BDD, TransferReturn> pathConditions = new HashMap<>();
+    for (TransferReturn path : paths) {
+      pathConditions.put(path.getSecond(), path);
+    }
+    Map<TransferReturn, TransferReturn> sameInputs = new HashMap<>();
+    for (TransferReturn otherPath : otherPaths) {
+      TransferReturn path = pathConditions.get(otherPath.getSecond());
+      if (path != null) {
+        sameInputs.put(path, otherPath);
+      }
+    }
+     */
 
     // Potential optimization: if a set of input routes between the two paths is the same then we
     // only need to validate
     // the outputs between this pair; the intersection with all others is going to be empty.
     // This will probably be more efficient when we expect the two route-maps to be (almost)
     // equivalent.
-    for (TransferReturn path : paths) {
-      for (TransferReturn otherPath : otherPaths) {
+    for (TransferReturn otherPath : otherPaths) {
+      for (TransferReturn path : paths) {
         BDD inputRoutes = path.getSecond();
         BDD inputRoutesOther = otherPath.getSecond();
-        BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
+        BDD intersection = inputRoutesOther.and(inputRoutes);
+
+        boolean otherImpliesRef = intersection.equals(inputRoutesOther);
+
+        intersection = intersection.and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
         // some common input routes and their behavior should match.
@@ -444,16 +485,21 @@ public final class CompareRoutePoliciesUtils {
             // intersection of the input routes and then comparing them.
             // We only need to compare the outputs if the routes were permitted.
             if (path.getAccepted()) {
-              BDDRoute outputRoutes = new BDDRoute(intersection, path.getFirst());
-              BDDRoute outputRoutesOther = new BDDRoute(intersection, otherPath.getFirst());
-              List<BDDRouteDiff.DifferenceType> diff =
+              BDDRoute outputRoutes = path.getFirst();
+              BDDRoute outputRoutesOther = otherPath.getFirst();
+              // this is all differences; later let's be happy with output constraints as long as
+              // they work with the intersection
+              List<BDDRouteDiff.DifferenceType> diffs =
                   computeDifferences(outputRoutes, outputRoutesOther);
-              // Compute any constraints on the output routes.
-              BDD outputConstraints =
-                  counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
-              if (!diff.isEmpty()) {
-                behaviorDiff = true;
+              if (!diffs.isEmpty()) {
+                // Compute any constraints on the output routes.
+                BDD outputConstraints =
+                    counterExampleOutputConstraints(
+                        factory, diffs, outputRoutes, outputRoutesOther, intersection);
                 finalConstraints = intersection.and(outputConstraints);
+                if (!finalConstraints.isZero()) {
+                  behaviorDiff = true;
+                }
               }
             }
           }
@@ -474,6 +520,12 @@ public final class CompareRoutePoliciesUtils {
             // analysis predicts will happen.
             assert validateDifference(
                 finalConstraints, configAPs, path, otherPath, refResult, otherResult);
+          }
+
+          if (otherImpliesRef) {
+            // inputRoutesOther implies inputRoutes, so it must be disjoint from all other paths in
+            // paths
+            break;
           }
         }
       }
