@@ -440,11 +440,19 @@ public final class CompareRoutePoliciesUtils {
       for (TransferReturn otherPath : otherPaths) {
         BDD inputRoutes = path.getSecond();
         BDD inputRoutesOther = otherPath.getSecond();
-        BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
         // some common input routes and their behavior should match.
-        if (!intersection.isZero()) {
+        // It's cheaper to just test for satisfiability of the conjunction and only compute the full
+        // intersection if necessary.
+        if (inputRoutesOther.andSat(inputRoutes)) {
+          BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
+          // it's possible that the well-formedness constraints make the intersection unsatisfiable,
+          // so check for that
+          if (intersection.isZero()) {
+            continue;
+          }
+
           // a flag that is set if we find a behavioral difference between the two paths
           boolean behaviorDiff = false;
           BDD finalConstraints = null;
