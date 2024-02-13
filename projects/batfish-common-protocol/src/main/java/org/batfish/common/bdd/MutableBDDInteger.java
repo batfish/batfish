@@ -222,7 +222,14 @@ public final class MutableBDDInteger extends BDDInteger {
     return val;
   }
 
-  public BDD xor(BDDInteger other) {
+  /**
+   * Produces a BDD whose models represent all possible differences between the two BDDIntegers --
+   * valuations of the BDD variables that cause the two BDDIntegers to have different values.
+   *
+   * @param other the second BDDInteger
+   * @return a predicate represented as a BDD
+   */
+  public BDD allDifferences(BDDInteger other) {
     return _factory.orAll(
         IntStream.range(0, _bitvec.length)
             .mapToObj(i -> _bitvec[i].xor(other._bitvec[i]))
