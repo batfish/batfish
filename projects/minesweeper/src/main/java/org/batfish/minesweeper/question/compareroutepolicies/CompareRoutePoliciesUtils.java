@@ -344,6 +344,7 @@ public final class CompareRoutePoliciesUtils {
         return result;
       }
     }
+    // none of the differences are compatible with the input constraints
     return factory.zero();
   }
 
@@ -443,7 +444,7 @@ public final class CompareRoutePoliciesUtils {
 
         // If the sets of input routes between the two paths intersect, then these paths describe
         // some common input routes and their behavior should match.
-        // It's cheaper to just test for satisfiability of the conjunction and only compute the full
+        // It's cheaper to test for satisfiability of the conjunction and only compute the full
         // intersection if necessary.
         if (inputRoutesOther.andSat(inputRoutes)) {
           BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
