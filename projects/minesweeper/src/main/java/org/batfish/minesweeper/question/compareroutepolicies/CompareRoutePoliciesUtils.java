@@ -287,11 +287,11 @@ public final class CompareRoutePoliciesUtils {
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @param inputConstraints the input constraints within which we want to identify differences
-   * @return A BDD that denotes at least one of the differences in the given diffs list and is
-   *     compatible with the given input constraints. It's possible that there are no such
-   *     compatible differences, in which case the method returns ZERO.
+   * @return A BDD that represents at least one of the differences in the given diffs list and also
+   *     includes the given input constraints. If there are no differences that are compatible with
+   *     the input constraints then the method returns ZERO.
    */
-  private BDD counterExampleOutputConstraints(
+  private BDD incorporateOutputConstraints(
       BDDFactory factory,
       List<BDDRouteDiff.DifferenceType> diffs,
       BDDRoute r1,
@@ -340,8 +340,9 @@ public final class CompareRoutePoliciesUtils {
           throw new UnsupportedOperationException(d.name());
       }
       // if the produced constraints are compatible with the input constraints then we are done
-      if (inputConstraints.andSat(result)) {
-        return result;
+      BDD intersection = inputConstraints.and(result);
+      if (!intersection.isZero()) {
+        return intersection;
       }
     }
     // none of the differences are compatible with the input constraints
@@ -441,19 +442,11 @@ public final class CompareRoutePoliciesUtils {
       for (TransferReturn otherPath : otherPaths) {
         BDD inputRoutes = path.getSecond();
         BDD inputRoutesOther = otherPath.getSecond();
+        BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
 
         // If the sets of input routes between the two paths intersect, then these paths describe
         // some common input routes and their behavior should match.
-        // It's cheaper to test for satisfiability of the conjunction and only compute the full
-        // intersection if necessary.
-        if (inputRoutesOther.andSat(inputRoutes)) {
-          BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
-          // it's possible that the well-formedness constraints make the intersection unsatisfiable,
-          // so check for that
-          if (intersection.isZero()) {
-            continue;
-          }
-
+        if (!intersection.isZero()) {
           // a flag that is set if we find a behavioral difference between the two paths
           boolean behaviorDiff = false;
           BDD finalConstraints = null;
@@ -472,12 +465,12 @@ public final class CompareRoutePoliciesUtils {
                   computeDifferences(outputRoutes, outputRoutesOther);
               if (!diffs.isEmpty()) {
                 // Now try to find a difference that is compatible with the input constraints
-                BDD outputConstraints =
-                    counterExampleOutputConstraints(
+                BDD allConstraints =
+                    incorporateOutputConstraints(
                         factory, diffs, outputRoutes, outputRoutesOther, intersection);
-                if (!outputConstraints.isZero()) {
+                if (!allConstraints.isZero()) {
                   behaviorDiff = true;
-                  finalConstraints = intersection.and(outputConstraints);
+                  finalConstraints = allConstraints;
                 }
               }
             }
