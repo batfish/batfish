@@ -43,6 +43,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.getRoutesDiff;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupBgpRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.groupRoutes;
 import static org.batfish.question.routes.RoutesAnswererUtil.longestMatchingPrefix;
+import static org.batfish.question.routes.RoutesAnswererUtil.populateBgpRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.prefixMatches;
 import static org.hamcrest.Matchers.allOf;
@@ -1500,5 +1501,21 @@ public class RoutesAnswererUtilTest {
     assertThat(longestMatchingPrefix(Prefix.parse("1.1.1.0/8"), routes), equalTo(Optional.empty()));
     assertThat(
         longestMatchingPrefix(Prefix.parse("2.1.1.0/32"), routes), equalTo(Optional.empty()));
+  }
+
+  @Test
+  public void testPopulateBgpRouteAttributes() {
+    // deliberately not sorted
+    RouteRowAttribute attr =
+        RouteRowAttribute.builder().setClusterList(ImmutableSet.of(5L, 1L, 3L, 2L)).build();
+    Row.RowBuilder rb = Row.builder();
+    populateBgpRouteAttributes(rb, attr, true);
+    Row row = rb.build();
+    assertThat(
+        row,
+        hasColumn(
+            "Snapshot_" + COL_CLUSTER_LIST,
+            ImmutableList.of(1L, 2L, 3L, 5L),
+            Schema.list(Schema.LONG)));
   }
 }

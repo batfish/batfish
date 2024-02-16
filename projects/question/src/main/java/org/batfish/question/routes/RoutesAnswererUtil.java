@@ -728,7 +728,8 @@ public class RoutesAnswererUtil {
     return routeEntryPresenceStatus;
   }
 
-  private static void populateBgpRouteAttributes(
+  @VisibleForTesting
+  static void populateBgpRouteAttributes(
       RowBuilder rowBuilder, @Nullable RouteRowAttribute routeRowAttribute, boolean base) {
     String prefix = base ? COL_BASE_PREFIX : COL_DELTA_PREFIX;
     rowBuilder
@@ -743,7 +744,11 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
         .put(
             prefix + COL_CLUSTER_LIST,
-            routeRowAttribute != null ? routeRowAttribute.getClusterList() : null)
+            routeRowAttribute == null || routeRowAttribute.getClusterList().isEmpty()
+                ? null
+                : routeRowAttribute.getClusterList().stream()
+                    .sorted()
+                    .collect(ImmutableList.toImmutableList()))
         .put(
             prefix + COL_COMMUNITIES,
             routeRowAttribute != null ? routeRowAttribute.getCommunities() : null)
