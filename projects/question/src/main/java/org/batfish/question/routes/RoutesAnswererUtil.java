@@ -744,7 +744,7 @@ public class RoutesAnswererUtil {
             routeRowAttribute != null ? routeRowAttribute.getLocalPreference() : null)
         .put(
             prefix + COL_CLUSTER_LIST,
-            routeRowAttribute == null || routeRowAttribute.getClusterList().isEmpty()
+            routeRowAttribute == null
                 ? null
                 : routeRowAttribute.getClusterList().stream()
                     .sorted()
