@@ -13,3 +13,5 @@ jobs:
         with:
           fetch-depth: 0
       - uses: VirtusLab/bazel-steward@latest
+        with:
+          configuration-path: "./.bazel-steward.yaml"
