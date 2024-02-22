@@ -34,7 +34,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "jakarta.annotation:jakarta.annotation-api:1.3.5",
     "jakarta.ws.rs:jakarta.ws.rs-api:2.1.6",
     "jakarta.xml.bind:jakarta.xml.bind-api:2.3.3",
-    "junit:junit:4.12",
+    "junit:junit:4.13.2",
     "net.sourceforge.pmd:pmd-java:6.55.0",
     "org.antlr:antlr4-runtime:4.7.2",
     "org.apache.commons:commons-collections4:4.4",
