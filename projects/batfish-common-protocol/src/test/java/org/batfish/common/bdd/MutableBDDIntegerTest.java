@@ -110,4 +110,18 @@ public class MutableBDDIntegerTest {
     assertEquals(x.geq(30), xPlus1.value(31)); // x >= 31 ==> x+1 == 31
     assertEquals(x.geq(15), xPlus16.value(31)); // x >= 15 ==> x+16 == 31
   }
+
+  @Test
+  public void testAllDifferences() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger xPlus1 = x.add(constant1);
+
+    BDD allDiffs1 = x.allDifferences(constant1);
+    BDD allDiffs2 = x.allDifferences(xPlus1);
+
+    assertEquals(allDiffs1, x.value(0).or(x.geq(2)));
+    assertEquals(allDiffs2, factory.one());
+  }
 }

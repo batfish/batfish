@@ -6,6 +6,7 @@ import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnviron
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -285,52 +286,67 @@ public final class CompareRoutePoliciesUtils {
    * @param diffs A list of differences found between two output routes.
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
-   * @return A BDD that denotes at least one of the differences in the given diffs list. Only
-   *     capturing differences in communities for now; the rest are not necessary because they do
-   *     not have additive semantics, like "set community additive". Note that AS-path prepends are
-   *     recorded concretely rather than symbolically in {@link BDDRoute}s, so their differences are
-   *     also ignored here. I think you might be able to plus on the local-pref value (TODO: check)
-   *     so we might have to account for this case too.
+   * @param inputConstraints the input constraints within which we want to identify differences
+   * @return A BDD that represents at least one of the differences in the given diffs list and also
+   *     includes the given input constraints. If there are no differences that are compatible with
+   *     the input constraints then the method returns ZERO.
    */
-  private BDD counterExampleOutputConstraints(
-      BDDFactory factory, List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2) {
-    BDD acc = factory.zero();
+  private BDD incorporateOutputConstraints(
+      BDDFactory factory,
+      List<BDDRouteDiff.DifferenceType> diffs,
+      BDDRoute r1,
+      BDDRoute r2,
+      BDD inputConstraints) {
+    BDD result;
     for (BDDRouteDiff.DifferenceType d : diffs) {
       switch (d) {
-        case AS_PATH:
-        case OSPF_METRIC:
         case LOCAL_PREF:
-        case MED:
-        case NEXTHOP:
-        case NEXTHOP_TYPE:
-        case NEXTHOP_SET:
-        case TAG:
-        case ADMIN_DIST:
-        case WEIGHT:
-        case UNSUPPORTED:
+          result = r1.getLocalPref().allDifferences(r2.getLocalPref());
           break;
         case COMMUNITIES:
           BDD[] communityAtomicPredicates = r1.getCommunityAtomicPredicates();
           BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
-          for (int i = 0; i < communityAtomicPredicates.length; i++) {
-            BDD outConstraint = communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]);
-            // If there is a scenario where the two outputs differ at this community then ensure
-            // this scenario
-            // manifests during model generation.
-            acc = acc.or(outConstraint);
-          }
+          result =
+              factory.orAll(
+                  IntStream.range(0, communityAtomicPredicates.length)
+                      .mapToObj(
+                          i -> communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]))
+                      .collect(ImmutableList.toImmutableList()));
+          break;
+        case MED:
+          result = r1.getMed().allDifferences(r2.getMed());
+          break;
+        case NEXTHOP:
+          result = r1.getNextHop().allDifferences(r2.getNextHop());
+          break;
+        case TAG:
+          result = r1.getTag().allDifferences(r2.getTag());
+          break;
+        case ADMIN_DIST:
+          result = r1.getAdminDist().allDifferences(r2.getAdminDist());
+          break;
+        case WEIGHT:
+          result = r1.getWeight().allDifferences(r2.getWeight());
+          break;
+        case AS_PATH:
+        case NEXTHOP_TYPE:
+        case NEXTHOP_SET:
+        case UNSUPPORTED:
+          // these kinds of differences are independent of the input route, so we don't need
+          // additional constraints to expose them
+          result = factory.one();
           break;
         default:
           throw new UnsupportedOperationException(d.name());
       }
+      // if the produced constraints are compatible with the input constraints then we are done
+      BDD intersection = inputConstraints.and(result);
+      if (!intersection.isZero()) {
+        return intersection;
+      }
     }
-    if (!acc.isZero()) {
-      // If we have accumulated some constraints from the output routes then return these
-      return acc;
-    } else {
-      // otherwise return true.
-      return factory.one();
-    }
+    // none of the differences are compatible with the input constraints
+    return factory.zero();
   }
 
   /**
@@ -440,20 +456,22 @@ public final class CompareRoutePoliciesUtils {
             finalConstraints = intersection;
           } else {
             // If both policies perform the same action, then check that their outputs match.
-            // We compute the outputs of interest, by restricting the sets of output routes to the
-            // intersection of the input routes and then comparing them.
             // We only need to compare the outputs if the routes were permitted.
             if (path.getAccepted()) {
-              BDDRoute outputRoutes = new BDDRoute(intersection, path.getFirst());
-              BDDRoute outputRoutesOther = new BDDRoute(intersection, otherPath.getFirst());
-              List<BDDRouteDiff.DifferenceType> diff =
+              BDDRoute outputRoutes = path.getFirst();
+              BDDRoute outputRoutesOther = otherPath.getFirst();
+              // Identify all differences in the two routes, ignoring the input constraints
+              List<BDDRouteDiff.DifferenceType> diffs =
                   computeDifferences(outputRoutes, outputRoutesOther);
-              // Compute any constraints on the output routes.
-              BDD outputConstraints =
-                  counterExampleOutputConstraints(factory, diff, outputRoutes, outputRoutesOther);
-              if (!diff.isEmpty()) {
-                behaviorDiff = true;
-                finalConstraints = intersection.and(outputConstraints);
+              if (!diffs.isEmpty()) {
+                // Now try to find a difference that is compatible with the input constraints
+                BDD allConstraints =
+                    incorporateOutputConstraints(
+                        factory, diffs, outputRoutes, outputRoutesOther, intersection);
+                if (!allConstraints.isZero()) {
+                  behaviorDiff = true;
+                  finalConstraints = allConstraints;
+                }
               }
             }
           }
