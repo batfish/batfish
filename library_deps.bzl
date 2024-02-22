@@ -45,7 +45,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.httpcomponents:httpcore:4.4.16",  # managed up 2021-06-04 for fixes
     "org.apache.logging.log4j:log4j-api:2.22.1",
     "org.apache.logging.log4j:log4j-core:2.22.1",
-    "org.apache.logging.log4j:log4j-slf4j-impl:2.22.1",
+    "org.apache.logging.log4j:log4j-slf4j-impl:2.23.0",
     "org.codehaus.jettison:jettison:1.5.4",
     "io.github.java-diff-utils:java-diff-utils:4.12",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
