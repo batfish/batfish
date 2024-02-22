@@ -3,12 +3,14 @@ package org.batfish.common.bdd;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
+import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
@@ -218,6 +220,22 @@ public final class MutableBDDInteger extends BDDInteger {
       val._bitvec[i] = pred.and(_bitvec[i]);
     }
     return val;
+  }
+
+  /**
+   * Produces a BDD whose models represent all possible differences between the two BDDIntegers --
+   * valuations of the BDD variables that cause the two BDDIntegers to have different values. The
+   * two BDDIntegers are assumed to have the same length.
+   *
+   * @param other the second BDDInteger
+   * @return a predicate represented as a BDD
+   */
+  public BDD allDifferences(BDDInteger other) {
+    assert _bitvec.length == other._bitvec.length;
+    return _factory.orAll(
+        IntStream.range(0, _bitvec.length)
+            .mapToObj(i -> _bitvec[i].xor(other._bitvec[i]))
+            .collect(ImmutableList.toImmutableList()));
   }
 
   /*
