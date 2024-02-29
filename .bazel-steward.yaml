@@ -1,3 +1,34 @@
 update-rules:
   - bumping: minor-patch
 
+pull-requests:
+  - dependencies: "com.fasterxml.jackson*:*"
+    group-id: jackson
+  - dependencies: "com.google.auto.service:*"
+    group-id: google-auto-service
+  - dependencies: "org.apache.logging.log4j:*"
+    group-id: log4j
+  - dependencies: "org.glassfish.jersey*:*"
+    group-id: jersey
+  - dependencies: "org.glassfish.grizzly:*"
+    group-id: grizzly
+  - dependencies: "org.mockito:*"
+    group-id: mockito
+  - dependencies: "org.parboiled:*"
+    group-id: parboiled
+  - limits:
+      max-open: 5
+
+post-update-hooks:
+  - kinds: maven
+    commands:
+      - "REPIN=1 bazel run @unpinned_maven//:pin"
+    files-to-commit:
+      - "maven_install.json"
+    run-for: commit
+  - dependencies: rules_jvm_external
+    commands:
+      - "REPIN=1 bazel run @unpinned_maven//:pin"
+    files-to-commit:
+      - "maven_install.json"
+    run-for: commit
