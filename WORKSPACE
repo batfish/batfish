@@ -118,8 +118,8 @@ install_deps()
 # ANTLR4 tool
 http_jar(
     name = "antlr4_tool",
-    sha256 = "6852386d7975eff29171dae002cc223251510d35f291ae277948f381a7b380b4",
-    url = "https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.7.2/antlr4-4.7.2-complete.jar",
+    sha256 = "bc13a9c57a8dd7d5196888211e5ede657cb64a3ce968608697e4f668251a8487",
+    url = "https://search.maven.org/remotecontent?filepath=org/antlr/antlr4/4.13.1/antlr4-4.13.1-complete.jar",
 )
 
 # Buildifier
