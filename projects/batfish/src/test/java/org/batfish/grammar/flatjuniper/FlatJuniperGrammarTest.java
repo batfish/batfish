@@ -8148,5 +8148,11 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(true));
   }
 
+  @Test
+  public void testInterfacesDescription() {
+    // Should not crash.
+    parseConfig("interfaces-description");
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

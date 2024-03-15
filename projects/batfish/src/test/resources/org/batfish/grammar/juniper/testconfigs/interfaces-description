@@ -1,0 +1,6 @@
+#
+set system host-name interfaces-description
+#
+set interfaces ae1 description unit 0
+#
+set interfaces ae2 unit 0 description

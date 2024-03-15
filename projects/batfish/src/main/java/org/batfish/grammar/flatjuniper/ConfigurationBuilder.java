@@ -4921,8 +4921,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_description(I_descriptionContext ctx) {
-    String text = toString(ctx.description());
-    _currentInterfaceOrRange.setDescription(text);
+    try {
+      String text = toString(ctx.description());
+      _currentInterfaceOrRange.setDescription(text);
+    } catch (NullPointerException e) {
+      warn(ctx, "Batfish does not support an empty description");
+    }
   }
 
   @Override
