@@ -76,11 +76,11 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
   /**
    * Compares two sorted sets in lexicographic order.
    *
+   * @param <T> the type of the sets' elements
    * @param o1 the first sorted set
    * @param o2 the second sorted set
    * @return an integer indicating whether the first set is less than, equal to, or greater than the
    *     second set
-   * @param <T> the type of the sets' elements
    */
   static <T extends Comparable<T>> int sortedSetCompareTo(SortedSet<T> o1, SortedSet<T> o2) {
     Iterator<T> o1Iter = o1.iterator();
