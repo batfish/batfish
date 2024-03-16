@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.Optional;
 import java.util.SortedSet;
@@ -105,20 +106,17 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
    */
   @Override
   public int compareTo(@Nonnull StructuredBgpRouteDiffs other) {
-    boolean thisPresent = this._communityDiff.isPresent();
-    boolean otherPresent = other._communityDiff.isPresent();
-    if (thisPresent && otherPresent) {
-      int commComp = this._communityDiff.get().compareTo(other._communityDiff.get());
-      if (commComp != 0) {
-        return commComp;
-      }
-    }
-    if (thisPresent == otherPresent) {
-      return sortedSetCompareTo(this._diffs, other._diffs);
-    } else if (thisPresent) {
-      return 1;
+
+    // treat an empty community diff as "less than" a non-empty one
+    Comparator<BgpRouteCommunityDiff> nullsFirstComp =
+        Comparator.nullsFirst(BgpRouteCommunityDiff::compareTo);
+    int commComp =
+        nullsFirstComp.compare(this._communityDiff.orElse(null), other._communityDiff.orElse(null));
+
+    if (commComp != 0) {
+      return commComp;
     } else {
-      return -1;
+      return sortedSetCompareTo(this._diffs, other._diffs);
     }
   }
 
