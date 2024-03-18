@@ -79,7 +79,7 @@ dec
 
 description
 :
-  DESCRIPTION text = M_Description_DESCRIPTION?
+  DESCRIPTION text = M_Description_DESCRIPTION
 ;
 
 ec_administrator
