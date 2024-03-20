@@ -76,8 +76,9 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
   }
 
   private static final Comparator<StructuredBgpRouteDiffs> COMPARATOR =
-      Comparator.<StructuredBgpRouteDiffs, BgpRouteCommunityDiff>comparing(
-              d -> d.getCommunityDiff().orElse(null), Comparator.nullsFirst(Ordering.natural()))
+      Comparator.comparing(
+              StructuredBgpRouteDiffs::getCommunityDiff,
+              Comparators.emptiesFirst(Ordering.natural()))
           .thenComparing(
               StructuredBgpRouteDiffs::getDiffs, Comparators.lexicographical(Ordering.natural()));
 
