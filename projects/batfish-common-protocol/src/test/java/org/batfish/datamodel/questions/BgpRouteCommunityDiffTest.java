@@ -65,4 +65,40 @@ public class BgpRouteCommunityDiffTest {
     // but not equal according to BgpRouteDiff
     assertNotEquals(comms1.toRouteDiff(), comms2.toRouteDiff());
   }
+
+  @Test
+  public void testDeltaCompareTo() {
+    // [0:0, 1:1] -> [1:1, 2:2]
+    SortedSet<Community> oldComms1 = new TreeSet<>();
+    SortedSet<Community> newComms1 = new TreeSet<>();
+    oldComms1.add(StandardCommunity.of(0, 0));
+    oldComms1.add(StandardCommunity.of(1, 1));
+    newComms1.add(StandardCommunity.of(1, 1));
+    newComms1.add(StandardCommunity.of(2, 2));
+    BgpRouteCommunityDiff comms1 = new BgpRouteCommunityDiff(oldComms1, newComms1);
+
+    // [0:0] -> [2:2]
+    SortedSet<Community> oldComms2 = new TreeSet<>();
+    SortedSet<Community> newComms2 = new TreeSet<>();
+    oldComms2.add(StandardCommunity.of(0, 0));
+    newComms2.add(StandardCommunity.of(2, 2));
+    BgpRouteCommunityDiff comms2 = new BgpRouteCommunityDiff(oldComms2, newComms2);
+
+    // [0:0] -> [3:1]
+    SortedSet<Community> oldComms3 = new TreeSet<>();
+    SortedSet<Community> newComms3 = new TreeSet<>();
+    oldComms3.add(StandardCommunity.of(0, 0));
+    newComms3.add(StandardCommunity.of(3, 1));
+    BgpRouteCommunityDiff comms3 = new BgpRouteCommunityDiff(oldComms3, newComms3);
+
+    // [0:0] -> []
+    SortedSet<Community> oldComms4 = new TreeSet<>();
+    SortedSet<Community> newComms4 = new TreeSet<>();
+    oldComms4.add(StandardCommunity.of(0, 0));
+    BgpRouteCommunityDiff comms4 = new BgpRouteCommunityDiff(oldComms4, newComms4);
+
+    assert comms1.compareTo(comms2) == 0;
+    assert comms1.compareTo(comms3) < 0;
+    assert comms1.compareTo(comms4) > 0;
+  }
 }

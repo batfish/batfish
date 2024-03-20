@@ -46,6 +46,39 @@ public class StructuredBgpRouteDiffsTest {
   }
 
   @Test
+  public void testCompareTo() {
+    // [0:0, 1:1] -> []
+    SortedSet<Community> oldComms1 = new TreeSet<>();
+    SortedSet<Community> newComms1 = new TreeSet<>();
+    oldComms1.add(StandardCommunity.of(0, 0));
+    oldComms1.add(StandardCommunity.of(1, 1));
+    BgpRouteCommunityDiff comms1 = new BgpRouteCommunityDiff(oldComms1, newComms1);
+
+    StructuredBgpRouteDiffs d1 =
+        new StructuredBgpRouteDiffs(
+            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")),
+            Optional.of(comms1));
+    StructuredBgpRouteDiffs d2 =
+        new StructuredBgpRouteDiffs(ImmutableSortedSet.of(), Optional.of(comms1));
+    StructuredBgpRouteDiffs d3 =
+        new StructuredBgpRouteDiffs(ImmutableSortedSet.of(), Optional.empty());
+    StructuredBgpRouteDiffs d4 =
+        new StructuredBgpRouteDiffs(
+            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_METRIC, "B", "C")),
+            Optional.of(comms1));
+    StructuredBgpRouteDiffs d5 =
+        new StructuredBgpRouteDiffs(
+            ImmutableSortedSet.of(new BgpRouteDiff(BgpRoute.PROP_AS_PATH, "B", "C")),
+            Optional.of(comms1));
+
+    assert d1.compareTo(d2) > 0;
+    assert d3.compareTo(d2) < 0;
+    assert d4.compareTo(d2) > 0;
+    assert d1.compareTo(d4) < 0;
+    assert d1.compareTo(d5) == 0;
+  }
+
+  @Test
   public void testHasDifferences() {
 
     StructuredBgpRouteDiffs d1 = new StructuredBgpRouteDiffs();

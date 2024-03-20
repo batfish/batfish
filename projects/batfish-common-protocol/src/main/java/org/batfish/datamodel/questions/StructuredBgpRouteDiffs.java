@@ -4,16 +4,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
 
 import com.google.common.collect.ImmutableSortedSet;
+import java.util.Comparator;
+import java.util.Iterator;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Stream;
+import javax.annotation.Nonnull;
 
 /**
  * A class for structured BGP Route differences. This class might keep more information than just
  * the old/new value for a field. Currently, only community sets have a richer representation that
  * includes a delta between old/new value but in the future we might do the same for as-paths.
  */
-public class StructuredBgpRouteDiffs {
+public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDiffs> {
 
   private final SortedSet<BgpRouteDiff> _diffs;
   private final Optional<BgpRouteCommunityDiff> _communityDiff;
@@ -69,6 +72,52 @@ public class StructuredBgpRouteDiffs {
       return false;
     }
     return _communityDiff.equals(that._communityDiff);
+  }
+
+  /**
+   * Compares two sorted sets in lexicographic order.
+   *
+   * @param <T> the type of the sets' elements
+   * @param o1 the first sorted set
+   * @param o2 the second sorted set
+   * @return an integer indicating whether the first set is less than, equal to, or greater than the
+   *     second set
+   */
+  static <T extends Comparable<T>> int sortedSetCompareTo(SortedSet<T> o1, SortedSet<T> o2) {
+    Iterator<T> o1Iter = o1.iterator();
+    Iterator<T> o2Iter = o2.iterator();
+    while (o1Iter.hasNext() && o2Iter.hasNext()) {
+      int comp = o1Iter.next().compareTo(o2Iter.next());
+      if (comp != 0) {
+        return comp;
+      }
+    }
+    return o1Iter.hasNext() ? 1 : o2Iter.hasNext() ? -1 : 0;
+  }
+
+  /**
+   * Compares a {@link StructuredBgpRouteDiffs} object against another one. The comparison is in
+   * lexicographic order, with community differences compared first, followed by all other
+   * differences.
+   *
+   * @param other the other object to compare against
+   * @return an integer indicating whether the first object is less than, equal to, or greater than
+   *     the second one
+   */
+  @Override
+  public int compareTo(@Nonnull StructuredBgpRouteDiffs other) {
+
+    // treat an empty community diff as "less than" a non-empty one
+    Comparator<BgpRouteCommunityDiff> nullsFirstComp =
+        Comparator.nullsFirst(BgpRouteCommunityDiff::compareTo);
+    int commComp =
+        nullsFirstComp.compare(this._communityDiff.orElse(null), other._communityDiff.orElse(null));
+
+    if (commComp != 0) {
+      return commComp;
+    } else {
+      return sortedSetCompareTo(this._diffs, other._diffs);
+    }
   }
 
   @Override
