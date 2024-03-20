@@ -31,11 +31,11 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
         "Unexpected use of unstructured community differences");
   }
 
-  public SortedSet<BgpRouteDiff> get_diffs() {
+  public SortedSet<BgpRouteDiff> getDiffs() {
     return _diffs;
   }
 
-  public Optional<BgpRouteCommunityDiff> get_communityDiff() {
+  public Optional<BgpRouteCommunityDiff> getCommunityDiff() {
     return _communityDiff;
   }
 
@@ -77,9 +77,9 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
 
   private static final Comparator<StructuredBgpRouteDiffs> COMPARATOR =
       Comparator.<StructuredBgpRouteDiffs, BgpRouteCommunityDiff>comparing(
-              d -> d.get_communityDiff().orElse(null), Comparator.nullsFirst(Ordering.natural()))
+              d -> d.getCommunityDiff().orElse(null), Comparator.nullsFirst(Ordering.natural()))
           .thenComparing(
-              StructuredBgpRouteDiffs::get_diffs, Comparators.lexicographical(Ordering.natural()));
+              StructuredBgpRouteDiffs::getDiffs, Comparators.lexicographical(Ordering.natural()));
 
   /**
    * Compares a {@link StructuredBgpRouteDiffs} object against another one. The comparison is in
