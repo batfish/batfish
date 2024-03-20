@@ -3,9 +3,10 @@ package org.batfish.datamodel.questions;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.collect.Ordering.natural;
 
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
 import java.util.Comparator;
-import java.util.Iterator;
 import java.util.Optional;
 import java.util.SortedSet;
 import java.util.stream.Stream;
@@ -30,11 +31,11 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
         "Unexpected use of unstructured community differences");
   }
 
-  public SortedSet<BgpRouteDiff> get_diffs() {
+  public SortedSet<BgpRouteDiff> getDiffs() {
     return _diffs;
   }
 
-  public Optional<BgpRouteCommunityDiff> get_communityDiff() {
+  public Optional<BgpRouteCommunityDiff> getCommunityDiff() {
     return _communityDiff;
   }
 
@@ -74,26 +75,12 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
     return _communityDiff.equals(that._communityDiff);
   }
 
-  /**
-   * Compares two sorted sets in lexicographic order.
-   *
-   * @param <T> the type of the sets' elements
-   * @param o1 the first sorted set
-   * @param o2 the second sorted set
-   * @return an integer indicating whether the first set is less than, equal to, or greater than the
-   *     second set
-   */
-  static <T extends Comparable<T>> int sortedSetCompareTo(SortedSet<T> o1, SortedSet<T> o2) {
-    Iterator<T> o1Iter = o1.iterator();
-    Iterator<T> o2Iter = o2.iterator();
-    while (o1Iter.hasNext() && o2Iter.hasNext()) {
-      int comp = o1Iter.next().compareTo(o2Iter.next());
-      if (comp != 0) {
-        return comp;
-      }
-    }
-    return o1Iter.hasNext() ? 1 : o2Iter.hasNext() ? -1 : 0;
-  }
+  private static final Comparator<StructuredBgpRouteDiffs> COMPARATOR =
+      Comparator.comparing(
+              StructuredBgpRouteDiffs::getCommunityDiff,
+              Comparators.emptiesFirst(Ordering.natural()))
+          .thenComparing(
+              StructuredBgpRouteDiffs::getDiffs, Comparators.lexicographical(Ordering.natural()));
 
   /**
    * Compares a {@link StructuredBgpRouteDiffs} object against another one. The comparison is in
@@ -106,18 +93,7 @@ public class StructuredBgpRouteDiffs implements Comparable<StructuredBgpRouteDif
    */
   @Override
   public int compareTo(@Nonnull StructuredBgpRouteDiffs other) {
-
-    // treat an empty community diff as "less than" a non-empty one
-    Comparator<BgpRouteCommunityDiff> nullsFirstComp =
-        Comparator.nullsFirst(BgpRouteCommunityDiff::compareTo);
-    int commComp =
-        nullsFirstComp.compare(this._communityDiff.orElse(null), other._communityDiff.orElse(null));
-
-    if (commComp != 0) {
-      return commComp;
-    } else {
-      return sortedSetCompareTo(this._diffs, other._diffs);
-    }
+    return COMPARATOR.compare(this, other);
   }
 
   @Override

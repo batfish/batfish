@@ -2,7 +2,10 @@ package org.batfish.datamodel.questions;
 
 import static com.google.common.collect.Ordering.natural;
 
+import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Ordering;
+import java.util.Comparator;
 import java.util.SortedSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
@@ -85,13 +88,14 @@ public class BgpRouteCommunityDiff implements Comparable<BgpRouteCommunityDiff> 
     return _removed.equals(that._removed);
   }
 
+  private static final Comparator<BgpRouteCommunityDiff> COMPARATOR =
+      Comparator.comparing(
+              BgpRouteCommunityDiff::getAdded, Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              BgpRouteCommunityDiff::getRemoved, Comparators.lexicographical(Ordering.natural()));
+
   @Override
   public int compareTo(@Nonnull BgpRouteCommunityDiff that) {
-    int addedComp = StructuredBgpRouteDiffs.sortedSetCompareTo(this._added, that._added);
-    if (addedComp != 0) {
-      return addedComp;
-    } else {
-      return StructuredBgpRouteDiffs.sortedSetCompareTo(this._removed, that._removed);
-    }
+    return COMPARATOR.compare(this, that);
   }
 }
