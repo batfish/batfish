@@ -4,9 +4,10 @@ import static com.google.common.collect.Ordering.natural;
 
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 
-public class BgpRouteCommunityDiff {
+public class BgpRouteCommunityDiff implements Comparable<BgpRouteCommunityDiff> {
 
   private final SortedSet<Community> _added;
   private final SortedSet<Community> _removed;
@@ -82,5 +83,15 @@ public class BgpRouteCommunityDiff {
       return false;
     }
     return _removed.equals(that._removed);
+  }
+
+  @Override
+  public int compareTo(@Nonnull BgpRouteCommunityDiff that) {
+    int addedComp = StructuredBgpRouteDiffs.sortedSetCompareTo(this._added, that._added);
+    if (addedComp != 0) {
+      return addedComp;
+    } else {
+      return StructuredBgpRouteDiffs.sortedSetCompareTo(this._removed, that._removed);
+    }
   }
 }
