@@ -31,6 +31,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.BgpAggregate;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -237,6 +238,8 @@ public final class Configuration implements Serializable {
 
   private String _domainName;
 
+  private Map<String, EigrpInterfaceSettings> _generatedEigrpInterfaceSettings;
+
   /**
    * Whether the BGP export pipeline should start with main RIB routes (Juniper-like behavior) or
    * BGP RIB routes (Cisco-like behavior).
@@ -345,6 +348,7 @@ public final class Configuration implements Serializable {
     _disconnectAdminDownInterfaces = true;
     _dnsServers = new TreeSet<>();
     _domainName = null;
+    _generatedEigrpInterfaceSettings = new TreeMap<>();
     _generatedReferenceBooks = new TreeMap<>();
     _ikePhase1keys = ImmutableSortedMap.of();
     _ikePhase1Policies = new TreeMap<>();
@@ -574,6 +578,11 @@ public final class Configuration implements Serializable {
   @JsonIgnore
   public void setGenerateBgpAggregatesFromMainRib(boolean generateBgpAggregatesFromMainRib) {
     _generateBgpAggregatesFromMainRib = generateBgpAggregatesFromMainRib;
+  }
+
+  @JsonIgnore
+  public Map<String, EigrpInterfaceSettings> getGeneratedEigrpInterfaceSettings() {
+    return _generatedEigrpInterfaceSettings;
   }
 
   /** Dictionary of Reference Books generated from device configurations (e.g., F5 Pools). */

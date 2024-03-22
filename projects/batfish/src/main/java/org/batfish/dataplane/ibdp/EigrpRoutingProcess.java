@@ -32,6 +32,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConnectedRoute;
 import org.batfish.datamodel.EigrpExternalRoute;
 import org.batfish.datamodel.EigrpInternalRoute;
 import org.batfish.datamodel.EigrpRoute;
@@ -570,6 +571,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
     // Set the metric to match the route metric by default for EIGRP into EIGRP
     if (unannotatedPotentialRoute instanceof EigrpRoute) {
       outputRouteBuilder.setEigrpMetric(((EigrpRoute) unannotatedPotentialRoute).getEigrpMetric());
+    } else if (unannotatedPotentialRoute instanceof ConnectedRoute) {
+      Configuration c = exportPolicy.getOwner();
+      String nextHopInterface = unannotatedPotentialRoute.getNextHopInterface();
+      if (c.getGeneratedEigrpInterfaceSettings().containsKey(nextHopInterface)) {
+        outputRouteBuilder.setEigrpMetric(
+            c.getGeneratedEigrpInterfaceSettings().get(nextHopInterface).getMetric());
+      }
     }
 
     if (!exportPolicy.process(potentialExportRoute, outputRouteBuilder, _process, Direction.OUT)) {
