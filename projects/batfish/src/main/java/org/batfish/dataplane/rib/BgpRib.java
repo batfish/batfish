@@ -83,9 +83,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
    */
   protected long _logicalClock;
 
-  /** Map to keep track when routes were merged in. */
-  protected Map<R, Long> _logicalArrivalTime;
-
   /** For FRR, Cluster List Length is used as an IGP metric. */
   protected boolean _clusterListAsIgpCost;
 
@@ -122,7 +119,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _bestPaths = new HashMap<>(0);
-    _logicalArrivalTime = new HashMap<>(0);
     _logicalClock = 0;
     _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
   }
@@ -201,7 +197,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
     RibDelta<R> delta = actionRouteGetDelta(route, super::mergeRouteGetDelta);
     if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
-      _logicalArrivalTime.put(route, _logicalClock);
+      route.setLogicalArrivalTime(_logicalClock);
       _logicalClock++;
     }
     if (!delta.isEmpty()) {
@@ -333,7 +329,7 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
         for (RouteAdvertisement<R> a : delta.getActions()) {
           if (a.isWithdrawn()) {
-            _logicalArrivalTime.remove(a.getRoute());
+            a.getRoute().setLogicalArrivalTime(null);
           }
         }
       }
@@ -481,7 +477,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
         && rhs.getProtocol() == RoutingProtocol.BGP) {
       int result =
           Comparator.<R, Long>comparing(
-                  r -> _logicalArrivalTime.getOrDefault(r, _logicalClock),
+                  r ->
+                      r.getLogicalArrivalTime() == null ? _logicalClock : r.getLogicalArrivalTime(),
                   Comparator.reverseOrder())
               .compare(lhs, rhs);
       if (result != 0) {

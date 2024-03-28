@@ -476,6 +476,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   static final String PROP_ORIGIN_TYPE = "originType";
   static final String PROP_ORIGINATOR_IP = "originatorIp";
   static final String PROP_PATH_ID = "pathId";
+  static final String PROP_LOGICAL_ARRIVAL_TIME = "logicalArrivalTime";
   static final String PROP_RECEIVED_FROM = "receivedFrom";
   static final String PROP_RECEIVED_FROM_ROUTE_REFLECTOR_CLIENT =
       "receivedFromRouteReflectorClient";
@@ -487,6 +488,9 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   protected final @Nullable Integer _pathId;
 
   protected final @Nonnull ReceivedFrom _receivedFrom;
+
+  /** keep track when this route was merged in. */
+  protected @Nullable Long _logicalArrivalTime;
 
   protected BgpRoute(
       @Nullable Prefix network,
@@ -503,6 +507,10 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     _nextHop = nextHop;
     _pathId = pathId;
     _receivedFrom = receivedFrom;
+  }
+
+  public void setLogicalArrivalTime(@Nullable Long logicalArrivalTime) {
+    this._logicalArrivalTime = logicalArrivalTime;
   }
 
   @JsonProperty(PROP_AS_PATH)
@@ -577,6 +585,11 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
   @JsonProperty(PROP_PATH_ID)
   public @Nullable Integer getPathId() {
     return _pathId;
+  }
+
+  @JsonProperty(PROP_LOGICAL_ARRIVAL_TIME)
+  public @Nullable Long getLogicalArrivalTime() {
+    return _logicalArrivalTime;
   }
 
   @JsonIgnore(false)
