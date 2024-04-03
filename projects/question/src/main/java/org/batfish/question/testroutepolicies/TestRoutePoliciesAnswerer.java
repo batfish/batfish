@@ -73,6 +73,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   private final @Nonnull NodeSpecifier _nodeSpecifier;
   private final @Nonnull RoutingPolicySpecifier _policySpecifier;
 
+  private final @Nullable BgpSessionProperties _bgpSessionProperties;
+
   public TestRoutePoliciesAnswerer(TestRoutePoliciesQuestion question, IBatfish batfish) {
     super(question, batfish);
     _direction = question.getDirection();
@@ -86,6 +88,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     _policySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
             question.getPolicies(), ALL_ROUTING_POLICIES);
+    _bgpSessionProperties = question.getBgpSessionProperties();
   }
 
   private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {
@@ -113,9 +116,9 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return the results of the simulation
    */
-  private static Result<Bgpv4Route> simulatePolicy(
+  private Result<Bgpv4Route> simulatePolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return simulatePolicy(policy, inputRoute, null, direction, null, null);
+    return simulatePolicy(policy, inputRoute, _bgpSessionProperties, direction, null, null);
   }
 
   /**
