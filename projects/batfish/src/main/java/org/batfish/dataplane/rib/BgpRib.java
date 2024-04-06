@@ -1,6 +1,7 @@
 package org.batfish.dataplane.rib;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.ResolutionRestriction.alwaysTrue;
@@ -67,6 +68,8 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   /** Maximum number of paths to install. Unconstrained (infinite) if {@code null} */
   protected final @Nullable Integer _maxPaths;
+  protected final @Nullable Integer _maxPathsIbgp;
+  protected final @Nullable Integer _maxPathsEbgp;
 
   /**
    * For multipath: how strict should the comparison of AS Path be for paths to be considered equal
@@ -114,11 +117,48 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
        * analysis up the stack (e.g., reachability, multipath consistency, etc.)
        */
       _maxPaths = null;
+      _maxPathsIbgp = null;
+      _maxPathsEbgp = null;
     } else {
       _maxPaths = maxPaths;
+      _maxPathsIbgp = maxPaths;
+      _maxPathsEbgp = maxPaths;
     }
     checkArgument(
         Integer.valueOf(1).equals(maxPaths) || multipathEquivalentAsPathMatchMode != null,
+        "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
+    _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
+    _bestPaths = new HashMap<>(0);
+    _logicalArrivalTime = new HashMap<>(0);
+    _logicalClock = 0;
+    _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
+  }
+
+  protected BgpRib(
+      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
+      BgpTieBreaker tieBreaker,
+      @Nullable Integer maxPathsIbgp,
+      @Nullable Integer maxPathsEbgp,
+      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
+      boolean withBackups,
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
+    super(withBackups);
+    _mainRib = mainRib;
+    _tieBreaker = tieBreaker;
+    _clusterListAsIgpCost = clusterListAsIgpCost;
+    checkArgument(
+        maxPathsIbgp == null || maxPathsIbgp > 0, "Invalid ibgp-max-paths value %s", maxPathsIbgp);
+    checkArgument(
+        maxPathsEbgp == null || maxPathsEbgp > 0, "Invalid ebgp-max-paths value %s", maxPathsEbgp);
+    boolean multipathIbgp = maxPathsIbgp == null || maxPathsIbgp > 1;
+    boolean multipathEbgp = maxPathsEbgp == null || maxPathsEbgp > 1;
+    _maxPaths = (multipathIbgp || multipathEbgp) ? null : 1;
+    _maxPathsIbgp = multipathIbgp ? null : 1;
+    _maxPathsEbgp = multipathEbgp ? null : 1;
+
+    checkArgument(
+        Integer.valueOf(1).equals(_maxPaths) || multipathEquivalentAsPathMatchMode != null,
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _bestPaths = new HashMap<>(0);
@@ -184,10 +224,20 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
             // Evaluate AS path compatibility for multipath
             .thenComparing(this::compareRouteAsPath)
             .compare(lhs, rhs);
-    if (multipathCompare != 0 || isMultipath()) {
+    if (multipathCompare != 0 || isMultipath(lhs, rhs)) {
       return multipathCompare;
     } else {
       return this.bestPathComparator(lhs, rhs);
+    }
+  }
+
+  private boolean isMultipath(R lhs, R rhs) {
+    if (lhs.getProtocol() == rhs.getProtocol()
+        && lhs.getOriginMechanism() == LEARNED
+        && rhs.getOriginMechanism() == LEARNED) {
+      return lhs.getProtocol() == RoutingProtocol.IBGP ? isMultipathIbgp() : isMultipathEbgp();
+    } else {
+      return isMultipath();
     }
   }
 
@@ -543,6 +593,14 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   /** Returns {@code true} iff this RIB is configured to be a BGP multipath RIB. */
   public boolean isMultipath() {
     return _maxPaths == null || _maxPaths > 1;
+  }
+
+  public boolean isMultipathIbgp() {
+    return _maxPathsIbgp == null || _maxPathsIbgp > 1;
+  }
+
+  public boolean isMultipathEbgp() {
+    return _maxPathsEbgp == null || _maxPathsEbgp > 1;
   }
 
   /** Establish total ordering: Prefer BGP aggregate routes */

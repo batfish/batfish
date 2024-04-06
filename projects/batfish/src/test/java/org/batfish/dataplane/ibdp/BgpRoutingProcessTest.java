@@ -1,5 +1,6 @@
 package org.batfish.dataplane.ibdp;
 
+import static junit.framework.TestCase.assertEquals;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.BumTransportMethod.UNICAST_FLOOD_GROUP;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
@@ -982,5 +983,64 @@ public class BgpRoutingProcessTest {
             .setNextHop(NextHopDiscard.instance())
             .build();
     assertThat(evpnRouteToBgpv4Route(inputRoute, 1).build(), hasTag(5L));
+  }
+
+  @Test
+  public void testBgpv4RibConsistency() {
+    // set up
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    bgpProcess.setMultipathIbgp(true);
+    bgpProcess.setMultipathEbgp(false);
+    vrf.setBgpProcess(bgpProcess);
+    Rib mainRib = new Rib();
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+
+    BgpRoutingProcess routingProcess =
+        new BgpRoutingProcess(
+            bgpProcess, c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    // init bgpv4 routes
+    Prefix pfx = Prefix.parse("10.0.1.0/24");
+    Bgpv4Route r1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setPathId(1)
+            .build();
+    Bgpv4Route r2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("70.0.0.2"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setPathId(2)
+            .build();
+    Bgpv4Route r3 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setOriginMechanism(OriginMechanism.NETWORK)
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .build();
+
+    routingProcess._bgpv4Rib.mergeRouteGetDelta(r1);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(r1);
+    assertEquals(routingProcess._bgpv4Rib.getRoutes(pfx), routingProcess._ebgpv4Rib.getRoutes(pfx));
+
+    routingProcess._bgpv4Rib.mergeRouteGetDelta(r2);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(r2);
+    assertEquals(routingProcess._bgpv4Rib.getRoutes(pfx), routingProcess._ebgpv4Rib.getRoutes(pfx));
+
+    routingProcess._bgpv4Rib.mergeRouteGetDelta(r3);
+    assertEquals(routingProcess._bgpv4Rib.getRoutes(pfx), ImmutableSet.of(r1, r3));
   }
 }

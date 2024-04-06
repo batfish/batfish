@@ -179,6 +179,33 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     _nextHopIpResolverRestriction = nextHopIpResolverRestriction;
   }
 
+  public Bgpv4Rib(
+      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
+      BgpTieBreaker tieBreaker,
+      @Nullable Integer maxPathsIbgp,
+      @Nullable Integer maxPathsEbgp,
+      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
+      boolean clusterListAsIgpCost,
+      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
+      NextHopIpTieBreaker networkNextHopIpTieBreaker,
+      NextHopIpTieBreaker redistributeNextHopIpTieBreaker,
+      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> nextHopIpResolverRestriction) {
+    super(
+        mainRib,
+        tieBreaker,
+        maxPathsIbgp,
+        maxPathsEbgp,
+        multipathEquivalentAsPathMatchMode,
+        true,
+        clusterListAsIgpCost,
+        localOriginationTypeTieBreaker);
+    _resolvabilityEnforcer = new ResolvabilityEnforcer();
+    _localRouteComparators =
+        initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
+    _localRoutes = new EnumMap<>(OriginMechanism.class);
+    _nextHopIpResolverRestriction = nextHopIpResolverRestriction;
+  }
+
   private static @Nonnull Map<OriginMechanism, Comparator<Bgpv4Route>> initLocalRouteComparators(
       NextHopIpTieBreaker networkNextHopIpTieBreaker,
       NextHopIpTieBreaker redistributeNextHopIpTieBreaker) {
