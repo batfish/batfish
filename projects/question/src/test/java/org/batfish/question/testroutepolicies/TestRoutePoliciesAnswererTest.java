@@ -33,7 +33,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.util.List;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -54,6 +53,7 @@ import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.questions.BgpSessionProperties;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -86,12 +86,7 @@ public class TestRoutePoliciesAnswererTest {
   private static final String POLICY_NAME = "policy";
 
   private static final BgpSessionProperties BGP_SESSION_PROPERTIES =
-      BgpSessionProperties.builder()
-          .setLocalAs(22)
-          .setLocalIp(Ip.parse("2.2.2.2"))
-          .setRemoteAs(33)
-          .setRemoteIp(Ip.parse("3.3.3.3"))
-          .build();
+      new BgpSessionProperties(22, 33, Ip.parse("2.2.2.2"), Ip.parse("3.3.3.3"));
   private RoutingPolicy.Builder _policyBuilder;
   private RoutingPolicy.Builder _deltaPolicyBuilder;
   private IBatfish _batfish;

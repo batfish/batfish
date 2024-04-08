@@ -88,7 +88,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     _policySpecifier =
         SpecifierFactories.getRoutingPolicySpecifierOrDefault(
             question.getPolicies(), ALL_ROUTING_POLICIES);
-    _bgpSessionProperties = question.getBgpSessionProperties();
+    org.batfish.datamodel.questions.BgpSessionProperties properties =
+        question.getBgpSessionProperties();
+    _bgpSessionProperties =
+        properties == null
+            ? null
+            : BgpSessionProperties.builder()
+                .setLocalAs(properties.getLocalAs())
+                .setRemoteAs(properties.getRemoteAs())
+                .setLocalIp(properties.getLocalIp())
+                .setRemoteIp(properties.getRemoteIp())
+                .build();
   }
 
   private SortedSet<RoutingPolicyId> resolvePolicies(SpecifierContext context) {

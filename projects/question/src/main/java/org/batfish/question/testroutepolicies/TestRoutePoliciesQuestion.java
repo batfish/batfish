@@ -10,8 +10,8 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.questions.BgpRoute;
+import org.batfish.datamodel.questions.BgpSessionProperties;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
