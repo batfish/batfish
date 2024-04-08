@@ -1,5 +1,11 @@
 {
   "class" : "org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion",
+  "bgpSessionProperties" : {
+    "localAs" : 2,
+    "localIp" : "2.2.2.2",
+    "remoteAs" : 3,
+    "remoteIp" : "3.3.3.3"
+  },
   "direction" : "IN",
   "inputRoutes" : [
     {
@@ -33,12 +39,25 @@
       "nodes",
       "policies",
       "inputRoutes",
-      "direction"
+      "direction",
+      "bgpSessionProperties"
     ],
     "tags" : [
       "routing"
     ],
     "variables" : {
+      "bgpSessionProperties" : {
+        "description" : "The BGP session properties to use when testing routes",
+        "displayName" : "BGP Session Properties",
+        "optional" : true,
+        "type" : "bgpSessionProperties",
+        "value" : {
+          "localAs" : "2",
+          "remoteAs" : "3",
+          "localIp" : "2.2.2.2",
+          "remoteIp" : "3.3.3.3"
+        }
+      },
       "direction" : {
         "allowedValues" : [
           "in",
