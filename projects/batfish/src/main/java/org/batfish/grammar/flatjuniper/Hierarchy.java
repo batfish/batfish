@@ -577,7 +577,20 @@ final class Hierarchy {
        * child matches.
        */
       private @Nullable HierarchyChildNode getFirstMatchingChildNode(HierarchyChildNode node) {
-        for (HierarchyChildNode child : _children.values()) {
+        if (node instanceof HierarchyWildcardNode) {
+          // A wildcard node can't be matched by a literal, and can only be matched by a wildcard of
+          // identical text. See: {@link HierarchyWildcardNode#isMatchedBy}
+          return _wildcardChildren.get(node._unquotedText);
+        }
+        assert node instanceof HierarchyLiteralNode;
+        HierarchyLiteralNode literal = _literalChildren.get(node._unquotedText);
+        if (literal != null) {
+          // We found the literal that matches it.
+          return literal;
+        }
+
+        // See if there's a wildcard that matches it.
+        for (HierarchyWildcardNode child : _wildcardChildren.values()) {
           if (child.matches(node)) {
             return child;
           }
