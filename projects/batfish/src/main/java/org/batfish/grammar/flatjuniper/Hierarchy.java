@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
@@ -144,7 +145,7 @@ final class Hierarchy {
     }
 
     // clear children and inherit from groups
-    inheritorNode._children = new LinkedHashMap<>();
+    inheritorNode.resetChildren();
     for (String group : Lists.reverse(prioritizedGroups)) {
       HierarchyNode groupNode = findApplicableGroupNode(inheritorNodePath, group, exceptGroups);
       if (groupNode == null) {
@@ -174,11 +175,8 @@ final class Hierarchy {
 
   private static void reapplyMainTreeNonListValues(
       HierarchyNode inheritorNode, Map<String, HierarchyChildNode> preInheritanceChildren) {
-    for (Entry<String, HierarchyChildNode> entry : preInheritanceChildren.entrySet()) {
-      String key = entry.getKey();
-      HierarchyChildNode childToReapply = entry.getValue();
-      HierarchyChildNode removed = inheritorNode._children.remove(key);
-      inheritorNode._children.put(key, childToReapply);
+    for (HierarchyChildNode childToReapply : preInheritanceChildren.values()) {
+      HierarchyChildNode removed = inheritorNode.putLast(childToReapply);
       if (removed != null && removed._line != null && childToReapply._line == null) {
         childToReapply._line = removed._line;
       }
@@ -206,9 +204,8 @@ final class Hierarchy {
     if (groupChild.isWildcard()) {
       return;
     }
-    HierarchyChildNode removed = inheritorNode._children.remove(key);
     HierarchyChildNode groupNodeToAdd = groupChild.copy();
-    inheritorNode._children.put(key, groupNodeToAdd);
+    HierarchyChildNode removed = inheritorNode.putLast(groupNodeToAdd);
     HierarchyChildNode oldChild = oldChildren.get(key);
     // prefer old line, then previous line from this loop, then new line
     if (oldChild != null && oldChild._line != null) {
@@ -240,10 +237,9 @@ final class Hierarchy {
       if (groupNode == null) {
         continue;
       }
-      for (Entry<String, HierarchyChildNode> groupNodeChildEntry : groupNode._children.entrySet()) {
+      for (HierarchyChildNode groupNodeChild : groupNode._children.values()) {
         modified =
-            inheritGroupNodeChildIntoListNode(
-                    ctx, inheritorNode, globalPath, group, groupNodeChildEntry)
+            inheritGroupNodeChildIntoListNode(ctx, inheritorNode, globalPath, group, groupNodeChild)
                 || modified;
       }
     }
@@ -259,13 +255,11 @@ final class Hierarchy {
       HierarchyNode inheritorNode,
       HierarchyPath inheritorNodePath,
       String group,
-      Entry<String, HierarchyChildNode> groupNodeChildEntry) {
-    String key = groupNodeChildEntry.getKey();
-    HierarchyChildNode groupChild = groupNodeChildEntry.getValue();
+      HierarchyChildNode groupChild) {
     if (groupChild.isWildcard()) {
       return false;
     }
-    HierarchyChildNode existing = inheritorNode._children.get(key);
+    HierarchyChildNode existing = inheritorNode._children.get(groupChild._unquotedText);
     if (existing != null && (existing._line != null || groupChild._line == null)) {
       // nothing to change
       return false;
@@ -276,7 +270,7 @@ final class Hierarchy {
     if (isClusterGroup(group) && IsHostnameStatement.isHostnameStatement(newSetLine)) {
       return false;
     }
-    inheritorNode._children.put(key, groupNodeToAdd);
+    inheritorNode.putLast(groupNodeToAdd);
     groupNodeToAdd._line = newSetLine;
     return true;
   }
@@ -465,7 +459,16 @@ final class Hierarchy {
     abstract static class HierarchyNode {
       private final @Nonnull Set<String> _exceptGroups;
       private final @Nonnull Set<String> _appliedGroups;
-      private @Nonnull Map<String, HierarchyChildNode> _children;
+
+      // Invariant: children == literal + wildcard, keys are disjoint in the latter two.
+      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
+      private @Nonnull LinkedHashMap<String, HierarchyChildNode> _children;
+
+      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
+      private @Nonnull LinkedHashMap<String, HierarchyLiteralNode> _literalChildren;
+
+      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
+      private @Nonnull LinkedHashMap<String, HierarchyWildcardNode> _wildcardChildren;
 
       @Nonnull List<ErrorNode> _errorNodes;
 
@@ -530,9 +533,17 @@ final class Hierarchy {
 
       private HierarchyNode() {
         _children = new LinkedHashMap<>();
+        _literalChildren = new LinkedHashMap<>();
+        _wildcardChildren = new LinkedHashMap<>();
         _appliedGroups = new LinkedHashSet<>();
         _exceptGroups = new HashSet<>();
         _errorNodes = ImmutableList.of();
+      }
+
+      void resetChildren() {
+        _children = new LinkedHashMap<>();
+        _literalChildren = new LinkedHashMap<>();
+        _wildcardChildren = new LinkedHashMap<>();
       }
 
       void addGroup(String groupName) {
@@ -544,7 +555,13 @@ final class Hierarchy {
       }
 
       private void addChildNode(HierarchyChildNode node) {
-        _children.put(node._unquotedText, node);
+        HierarchyChildNode replaced = _children.put(node._unquotedText, node);
+        addConsistently(node);
+        if (replaced != null && replaced.getClass() != node.getClass()) {
+          // weird case where the removed node was of a different type than the added node.
+          // let's remove it from the wrong list.
+          removeConsistently(replaced);
+        }
       }
 
       private HierarchyChildNode getChildNode(String text) {
@@ -552,7 +569,7 @@ final class Hierarchy {
       }
 
       private Map<String, HierarchyChildNode> getChildren() {
-        return _children;
+        return Collections.unmodifiableMap(_children);
       }
 
       /**
@@ -570,6 +587,41 @@ final class Hierarchy {
 
       boolean isWildcard() {
         return false;
+      }
+
+      @Nullable
+      HierarchyChildNode putLast(@Nonnull HierarchyChildNode node) {
+        HierarchyChildNode replaced = _children.remove(node._unquotedText);
+        removeConsistently(replaced);
+        _children.put(node._unquotedText, node);
+        addConsistently(node);
+        return replaced;
+      }
+
+      /**
+       * When a node is added to the {@link #_children} array, also update {@link #_literalChildren}
+       * and {@link #_wildcardChildren}.
+       */
+      private void addConsistently(@Nullable HierarchyChildNode addedChild) {
+        if (addedChild instanceof HierarchyLiteralNode) {
+          _literalChildren.put(addedChild._unquotedText, (HierarchyLiteralNode) addedChild);
+        } else if (addedChild instanceof HierarchyWildcardNode) {
+          _wildcardChildren.put(addedChild._unquotedText, (HierarchyWildcardNode) addedChild);
+        }
+      }
+
+      /**
+       * When a node is removed from the {@link #_children} array, also update {@link
+       * #_literalChildren} and {@link #_wildcardChildren}.
+       */
+      private void removeConsistently(@Nullable HierarchyChildNode removedChild) {
+        if (removedChild instanceof HierarchyLiteralNode) {
+          HierarchyLiteralNode alsoRemoved = _literalChildren.remove(removedChild._unquotedText);
+          assert alsoRemoved != null;
+        } else if (removedChild instanceof HierarchyWildcardNode) {
+          HierarchyWildcardNode alsoRemoved = _wildcardChildren.remove(removedChild._unquotedText);
+          assert alsoRemoved != null;
+        }
       }
     }
 
