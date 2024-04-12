@@ -3,6 +3,7 @@ package org.batfish.vendor;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
@@ -258,8 +259,9 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    collectLines(
-        ctx, parser, _extraLines, _structureManager.getOrDefine(type, name)::addDefinitionLines);
+    ImmutableRangeSet.Builder<Integer> lines = ImmutableRangeSet.builder();
+    collectLines(ctx, parser, _extraLines, l -> lines.add(Range.singleton(l)));
+    _structureManager.getOrDefine(type, name).addDefinitionLines(lines.build());
   }
 
   /**
