@@ -1,8 +1,11 @@
 package org.batfish.vendor;
 
+import com.carrotsearch.hppc.IntHashSet;
+import com.carrotsearch.hppc.IntSet;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableRangeSet;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import java.io.Serializable;
@@ -258,8 +261,11 @@ public abstract class VendorConfiguration implements Serializable {
    */
   public void defineFlattenedStructure(
       StructureType type, String name, RuleContext ctx, BatfishCombinedParser<?, ?> parser) {
-    collectLines(
-        ctx, parser, _extraLines, _structureManager.getOrDefine(type, name)::addDefinitionLines);
+    IntSet lines = new IntHashSet();
+    collectLines(ctx, parser, _extraLines, lines::add);
+    ImmutableRangeSet.Builder<Integer> ranges = ImmutableRangeSet.builder();
+    lines.iterator().forEachRemaining(c -> ranges.add(Range.singleton(c.value)));
+    _structureManager.getOrDefine(type, name).addDefinitionLines(ranges.build());
   }
 
   /**

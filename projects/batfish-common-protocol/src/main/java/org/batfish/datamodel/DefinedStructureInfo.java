@@ -44,6 +44,10 @@ public class DefinedStructureInfo implements Serializable {
     _definitionLines.add(Range.singleton(line));
   }
 
+  public void addDefinitionLines(RangeSet<Integer> lines) {
+    _definitionLines.addAll(lines);
+  }
+
   public void addDefinitionLines(Range<Integer> lines) {
     _definitionLines.add(lines);
   }
