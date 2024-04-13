@@ -158,6 +158,7 @@ java_library(
     deps = [
         ":parser_common",
         "//projects/bdd",
+        "@maven//:com_carrotsearch_hppc",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
