@@ -68,7 +68,17 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   /** Maximum number of paths to install. Unconstrained (infinite) if {@code null} */
   protected final @Nullable Integer _maxPaths;
+
+  /**
+   * Maximum number of iBGP paths learned from peers to install. Unconstrained (infinite) if {@code
+   * null}
+   */
   protected final @Nullable Integer _maxPathsIbgp;
+
+  /**
+   * Maximum number of eBGP paths learned from peers to install. Unconstrained (infinite) if {@code
+   * null}
+   */
   protected final @Nullable Integer _maxPathsEbgp;
 
   /**
@@ -102,41 +112,6 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
-      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean withBackups,
-      boolean clusterListAsIgpCost,
-      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker) {
-    super(withBackups);
-    _mainRib = mainRib;
-    _tieBreaker = tieBreaker;
-    _clusterListAsIgpCost = clusterListAsIgpCost;
-    checkArgument(maxPaths == null || maxPaths > 0, "Invalid max-paths value %s", maxPaths);
-    if (maxPaths != null && maxPaths > 1) {
-      /*
-       * Essentially make this infinite. This is a design choice to enable more comprehensive path
-       * analysis up the stack (e.g., reachability, multipath consistency, etc.)
-       */
-      _maxPaths = null;
-      _maxPathsIbgp = null;
-      _maxPathsEbgp = null;
-    } else {
-      _maxPaths = maxPaths;
-      _maxPathsIbgp = maxPaths;
-      _maxPathsEbgp = maxPaths;
-    }
-    checkArgument(
-        Integer.valueOf(1).equals(maxPaths) || multipathEquivalentAsPathMatchMode != null,
-        "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
-    _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
-    _bestPaths = new HashMap<>(0);
-    _logicalArrivalTime = new HashMap<>(0);
-    _logicalClock = 0;
-    _localOriginationTypeTieBreaker = localOriginationTypeTieBreaker;
-  }
-
-  protected BgpRib(
-      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
-      BgpTieBreaker tieBreaker,
       @Nullable Integer maxPathsIbgp,
       @Nullable Integer maxPathsEbgp,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
@@ -147,18 +122,32 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     _mainRib = mainRib;
     _tieBreaker = tieBreaker;
     _clusterListAsIgpCost = clusterListAsIgpCost;
+    checkArgument(maxPaths == null || maxPaths > 0, "Invalid max-paths value %s", maxPaths);
     checkArgument(
         maxPathsIbgp == null || maxPathsIbgp > 0, "Invalid ibgp-max-paths value %s", maxPathsIbgp);
     checkArgument(
         maxPathsEbgp == null || maxPathsEbgp > 0, "Invalid ebgp-max-paths value %s", maxPathsEbgp);
-    boolean multipathIbgp = maxPathsIbgp == null || maxPathsIbgp > 1;
-    boolean multipathEbgp = maxPathsEbgp == null || maxPathsEbgp > 1;
-    _maxPaths = (multipathIbgp || multipathEbgp) ? null : 1;
-    _maxPathsIbgp = multipathIbgp ? null : 1;
-    _maxPathsEbgp = multipathEbgp ? null : 1;
-
+    if (maxPaths != null && maxPaths > 1) {
+      /*
+       * Essentially make this infinite. This is a design choice to enable more comprehensive path
+       * analysis up the stack (e.g., reachability, multipath consistency, etc.)
+       */
+      _maxPaths = null;
+    } else {
+      _maxPaths = maxPaths;
+    }
+    if (maxPathsIbgp != null && maxPathsIbgp > 1) {
+      _maxPathsIbgp = null;
+    } else {
+      _maxPathsIbgp = maxPathsIbgp;
+    }
+    if (maxPathsEbgp != null && maxPathsEbgp > 1) {
+      _maxPathsEbgp = null;
+    } else {
+      _maxPathsEbgp = maxPathsEbgp;
+    }
     checkArgument(
-        Integer.valueOf(1).equals(_maxPaths) || multipathEquivalentAsPathMatchMode != null,
+        Integer.valueOf(1).equals(maxPaths) || multipathEquivalentAsPathMatchMode != null,
         "Multipath AS-Path-Match-mode must be specified for a multipath BGP RIB");
     _multipathEquivalentAsPathMatchMode = multipathEquivalentAsPathMatchMode;
     _bestPaths = new HashMap<>(0);
@@ -235,8 +224,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
     if (lhs.getProtocol() == rhs.getProtocol()
         && lhs.getOriginMechanism() == LEARNED
         && rhs.getOriginMechanism() == LEARNED) {
+      // when lhs and rhs are both iBGP/eBGP routes and learned from peers, we check whether this
+      // bgp rib is multipathIbgp/multipathEbgp
       return lhs.getProtocol() == RoutingProtocol.IBGP ? isMultipathIbgp() : isMultipathEbgp();
     } else {
+      // when lhs and rhs have different protocols, we check whether this bgp rib is multipath.
       return isMultipath();
     }
   }

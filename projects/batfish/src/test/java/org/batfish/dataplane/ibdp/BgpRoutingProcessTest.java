@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -985,6 +986,13 @@ public class BgpRoutingProcessTest {
     assertThat(evpnRouteToBgpv4Route(inputRoute, 1).build(), hasTag(5L));
   }
 
+  /**
+   * Testing when a {@link BgpRoutingProcess} is multipathIbgp enabled and multipathEbgp disabled,
+   * whether merging two equal-cost eBGP routes into its {@link BgpRoutingProcess#_ebgpv4Rib} and
+   * {@link BgpRoutingProcess#_bgpv4Rib} get the same result when there's no other route in the
+   * RIBs. <br>
+   * This is a test for <a href="https://github.com/batfish/batfish/issues/8990">issues#8990</a>.
+   */
   @Test
   public void testBgpv4RibConsistency() {
     // set up
@@ -1004,6 +1012,10 @@ public class BgpRoutingProcessTest {
         new AnnotatedRoute<>(
             StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
             DEFAULT_VRF_NAME));
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("60.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
 
     BgpRoutingProcess routingProcess =
         new BgpRoutingProcess(
@@ -1016,20 +1028,14 @@ public class BgpRoutingProcessTest {
             .setNetwork(pfx)
             .setNextHopIp(Ip.parse("70.0.0.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setPathId(1)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
             .build();
     Bgpv4Route r2 =
         Bgpv4Route.testBuilder()
             .setNetwork(pfx)
-            .setNextHopIp(Ip.parse("70.0.0.2"))
+            .setNextHopIp(Ip.parse("60.0.0.1"))
             .setOriginMechanism(OriginMechanism.LEARNED)
-            .setPathId(2)
-            .build();
-    Bgpv4Route r3 =
-        Bgpv4Route.testBuilder()
-            .setNetwork(pfx)
-            .setOriginMechanism(OriginMechanism.NETWORK)
-            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
             .build();
 
     routingProcess._bgpv4Rib.mergeRouteGetDelta(r1);
@@ -1039,8 +1045,5 @@ public class BgpRoutingProcessTest {
     routingProcess._bgpv4Rib.mergeRouteGetDelta(r2);
     routingProcess._ebgpv4Rib.mergeRouteGetDelta(r2);
     assertEquals(routingProcess._bgpv4Rib.getRoutes(pfx), routingProcess._ebgpv4Rib.getRoutes(pfx));
-
-    routingProcess._bgpv4Rib.mergeRouteGetDelta(r3);
-    assertEquals(routingProcess._bgpv4Rib.getRoutes(pfx), ImmutableSet.of(r1, r3));
   }
 }

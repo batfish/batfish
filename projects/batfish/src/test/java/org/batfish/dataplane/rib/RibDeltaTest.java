@@ -171,6 +171,8 @@ public class RibDeltaTest {
             null,
             BgpTieBreaker.CLUSTER_LIST_LENGTH,
             null,
+            null,
+            null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,
@@ -229,6 +231,8 @@ public class RibDeltaTest {
         new Bgpv4Rib(
             null,
             BgpTieBreaker.ROUTER_ID,
+            null,
+            null,
             null,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,

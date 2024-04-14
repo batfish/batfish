@@ -140,6 +140,10 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
    *     RIB.
    * @param tieBreaker The tie-breaker used to compare routes merged into this RIB.
    * @param maxPaths The maximum number of paths to install in this RIB for the same prefix.
+   * @param maxPathsIbgp The maximum number of iBGP paths to install in this RIB for the same
+   *     prefix.
+   * @param maxPathsEbgp The maximum number of eBGP paths to install in this RIB for the same
+   *     prefix.
    * @param multipathEquivalentAsPathMatchMode How to determine whether two routes merged into this
    *     RIB are multipath-equivalent with respect to their AS paths.
    * @param clusterListAsIgpCost Whether to use cluster list length as IGP cost when comparing IGP
@@ -158,30 +162,6 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
       @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
       BgpTieBreaker tieBreaker,
       @Nullable Integer maxPaths,
-      @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
-      boolean clusterListAsIgpCost,
-      LocalOriginationTypeTieBreaker localOriginationTypeTieBreaker,
-      NextHopIpTieBreaker networkNextHopIpTieBreaker,
-      NextHopIpTieBreaker redistributeNextHopIpTieBreaker,
-      ResolutionRestriction<AnnotatedRoute<AbstractRoute>> nextHopIpResolverRestriction) {
-    super(
-        mainRib,
-        tieBreaker,
-        maxPaths,
-        multipathEquivalentAsPathMatchMode,
-        true,
-        clusterListAsIgpCost,
-        localOriginationTypeTieBreaker);
-    _resolvabilityEnforcer = new ResolvabilityEnforcer();
-    _localRouteComparators =
-        initLocalRouteComparators(networkNextHopIpTieBreaker, redistributeNextHopIpTieBreaker);
-    _localRoutes = new EnumMap<>(OriginMechanism.class);
-    _nextHopIpResolverRestriction = nextHopIpResolverRestriction;
-  }
-
-  public Bgpv4Rib(
-      @Nullable GenericRibReadOnly<AnnotatedRoute<AbstractRoute>> mainRib,
-      BgpTieBreaker tieBreaker,
       @Nullable Integer maxPathsIbgp,
       @Nullable Integer maxPathsEbgp,
       @Nullable MultipathEquivalentAsPathMatchMode multipathEquivalentAsPathMatchMode,
@@ -193,6 +173,7 @@ public final class Bgpv4Rib extends BgpRib<Bgpv4Route> {
     super(
         mainRib,
         tieBreaker,
+        maxPaths,
         maxPathsIbgp,
         maxPathsEbgp,
         multipathEquivalentAsPathMatchMode,

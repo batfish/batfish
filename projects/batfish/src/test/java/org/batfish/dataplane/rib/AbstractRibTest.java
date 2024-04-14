@@ -472,6 +472,8 @@ public class AbstractRibTest {
             null,
             BgpTieBreaker.ROUTER_ID,
             1,
+            1,
+            1,
             MultipathEquivalentAsPathMatchMode.EXACT_PATH,
             false,
             LocalOriginationTypeTieBreaker.NO_PREFERENCE,

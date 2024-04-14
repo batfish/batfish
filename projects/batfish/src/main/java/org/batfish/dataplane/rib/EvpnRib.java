@@ -20,6 +20,8 @@ final class EvpnRib<R extends EvpnRoute<?, ?>> extends BgpRib<R> {
         null,
         tieBreaker,
         1,
+        1,
+        1,
         multipathEquivalentAsPathMatchMode,
         true,
         clusterListAsIgpCost,
