@@ -11,6 +11,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.BgpRoute;
+import org.batfish.datamodel.questions.BgpSessionProperties;
 import org.batfish.datamodel.questions.Question;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 
@@ -22,6 +23,8 @@ public final class TestRoutePoliciesQuestion extends Question {
   private static final String PROP_NODES = "nodes";
   private static final String PROP_POLICIES = "policies";
 
+  private static final String PROP_BGP_SESSION_PROPERTIES = "bgpSessionProperties";
+
   // Defaults are dummy values for now.
   private static final Direction DEFAULT_DIRECTION = Direction.IN;
   private static final List<BgpRoute> DEFAULT_INPUT_ROUTES = ImmutableList.of();
@@ -31,19 +34,23 @@ public final class TestRoutePoliciesQuestion extends Question {
   private final @Nullable String _policies;
   private final @Nonnull List<BgpRoute> _inputRoutes;
 
+  private final @Nullable BgpSessionProperties _bgpSessionProperties;
+
   public TestRoutePoliciesQuestion() {
-    this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, null, null);
+    this(DEFAULT_DIRECTION, DEFAULT_INPUT_ROUTES, null, null, null);
   }
 
   public TestRoutePoliciesQuestion(
       Direction direction,
       List<BgpRoute> inputRoutes,
       @Nullable String nodes,
-      @Nullable String policies) {
+      @Nullable String policies,
+      @Nullable BgpSessionProperties bgpSessionProperties) {
     _direction = direction;
     _nodes = nodes;
     _policies = policies;
     _inputRoutes = inputRoutes;
+    _bgpSessionProperties = bgpSessionProperties;
   }
 
   @JsonCreator
@@ -51,10 +58,13 @@ public final class TestRoutePoliciesQuestion extends Question {
       @JsonProperty(PROP_DIRECTION) @Nullable Direction direction,
       @JsonProperty(PROP_INPUT_ROUTES) @Nullable List<BgpRoute> inputRoute,
       @JsonProperty(PROP_NODES) @Nullable String nodes,
-      @JsonProperty(PROP_POLICIES) @Nullable String policies) {
+      @JsonProperty(PROP_POLICIES) @Nullable String policies,
+      @JsonProperty(PROP_BGP_SESSION_PROPERTIES) @Nullable
+          BgpSessionProperties bgpSessionProperties) {
     checkNotNull(direction, "%s must not be null", PROP_DIRECTION);
     checkNotNull(inputRoute, "%s must not be null", PROP_INPUT_ROUTES);
-    return new TestRoutePoliciesQuestion(direction, inputRoute, nodes, policies);
+    return new TestRoutePoliciesQuestion(
+        direction, inputRoute, nodes, policies, bgpSessionProperties);
   }
 
   @JsonIgnore
@@ -87,5 +97,10 @@ public final class TestRoutePoliciesQuestion extends Question {
   @JsonProperty(PROP_POLICIES)
   public @Nullable String getPolicies() {
     return _policies;
+  }
+
+  @JsonProperty(PROP_BGP_SESSION_PROPERTIES)
+  public @Nullable BgpSessionProperties getBgpSessionProperties() {
+    return _bgpSessionProperties;
   }
 }
