@@ -8,7 +8,6 @@ import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Optional;
 import javax.annotation.Nonnull;
-import org.batfish.common.BatfishException;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
   public static final int MAX_PREFIX_LENGTH = 128;
@@ -49,13 +48,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
     _prefixLength = prefixLength;
   }
 
-  public Prefix6(Ip6 address, Ip6 mask) {
-    if (address == null) {
-      throw new BatfishException("Cannot create prefix6 with null network");
-    }
-    if (mask == null) {
-      throw new BatfishException("Cannot create prefix6 with null mask");
-    }
+  public Prefix6(@Nonnull Ip6 address, @Nonnull Ip6 mask) {
     _address = address;
     _prefixLength = mask.numSubnetBits();
   }
@@ -63,16 +56,10 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   @JsonCreator
   public static @Nonnull Prefix6 parse(String text) {
     String[] parts = text.split("/");
-    if (parts.length != 2) {
-      throw new BatfishException("Invalid Prefix6 string: \"" + text + "\"");
-    }
+    checkArgument(parts.length == 2, "Invalid IPv6 prefix: '%s'", text);
     Ip6 address6 = Ip6.parse(parts[0]);
-    try {
-      int prefixLength = Integer.parseInt(parts[1]);
-      return new Prefix6(address6, prefixLength);
-    } catch (NumberFormatException e) {
-      throw new BatfishException("Invalid Prefix6 length: \"" + parts[1] + "\"", e);
-    }
+    int prefixLength = Integer.parseInt(parts[1]);
+    return new Prefix6(address6, prefixLength);
   }
 
   /**
@@ -82,7 +69,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   public static @Nonnull Optional<Prefix6> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
-    } catch (BatfishException e) {
+    } catch (IllegalArgumentException e) {
       return Optional.empty();
     }
   }
