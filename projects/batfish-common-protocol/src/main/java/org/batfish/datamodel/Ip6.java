@@ -16,7 +16,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.batfish.common.BatfishException;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
@@ -61,7 +60,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   public static @Nonnull Optional<Ip6> tryParse(@Nonnull String text) {
     try {
       return Optional.of(parse(text));
-    } catch (IllegalArgumentException | BatfishException e) {
+    } catch (IllegalArgumentException e) {
       return Optional.empty();
     }
   }
