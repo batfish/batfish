@@ -2141,8 +2141,9 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   private void serializeConversionContext(
       NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    ConversionContext conversionContext = new ConversionContext();
+
     // Serialize Checkpoint management servers if present
-    LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
     CheckpointManagementConfiguration cpMgmtConfig = null;
     try {
       Map<String, String> cpServerData;
@@ -2151,16 +2152,16 @@ public class Batfish extends PluginConsumer implements IBatfish {
         cpServerData = readAllInputObjects(keys, snapshot);
       }
       if (!cpServerData.isEmpty()) {
+        LOGGER.info("\n*** READING CHECKPOINT MANAGEMENT CONFIGS ***\n");
         cpMgmtConfig = parseCheckpointManagementData(cpServerData, pvcae);
+        conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
       }
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
 
-    LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
-    ConversionContext conversionContext = new ConversionContext();
-    conversionContext.setCheckpointManagementConfiguration(cpMgmtConfig);
     if (!conversionContext.isEmpty()) {
+      LOGGER.info("\n*** SERIALIZING CONVERSION CONTEXT ***\n");
       try {
         _storage.storeConversionContext(conversionContext, snapshot);
       } catch (IOException e) {
