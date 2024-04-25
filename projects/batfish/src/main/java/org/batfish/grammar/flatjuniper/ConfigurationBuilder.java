@@ -999,13 +999,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace ADD_PATH_SEND_PATH_COUNT_RANGE =
       IntegerSpace.of(new SubRange(2, 64));
 
-  private String convErrorMessage(Class<?> type, ParserRuleContext ctx) {
-    return String.format("Could not convert to %s: %s", type.getSimpleName(), getFullText(ctx));
-  }
-
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
-    _w.redFlag(convErrorMessage(returnType, ctx));
+    _w.redFlagf("Could not convert to %s: %s", returnType.getSimpleName(), getFullText(ctx));
     return defaultReturnValue;
   }
 
@@ -1162,10 +1158,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Hello_authentication_typeContext ctx) {
     if (ctx.MD5() != null) {
       return IsisHelloAuthenticationType.MD5;
-    } else if (ctx.SIMPLE() != null) {
-      return IsisHelloAuthenticationType.SIMPLE;
     } else {
-      throw convError(IsisHelloAuthenticationType.class, ctx);
+      assert ctx.SIMPLE() != null;
+      return IsisHelloAuthenticationType.SIMPLE;
     }
   }
 
@@ -1522,10 +1517,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplication.JUNOS_XNM_CLEAR_TEXT;
     } else if (ctx.JUNOS_XNM_SSL() != null) {
       return JunosApplication.JUNOS_XNM_SSL;
-    } else if (ctx.JUNOS_YMSG() != null) {
-      return JunosApplication.JUNOS_YMSG;
     } else {
-      throw convError(JunosApplication.class, ctx);
+      assert ctx.JUNOS_YMSG() != null;
+      return JunosApplication.JUNOS_YMSG;
     }
   }
 
@@ -1576,10 +1570,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return JunosApplicationSet.JUNOS_SUN_RPC_WALLD;
     } else if (ctx.JUNOS_SUN_RPC_YPBIND() != null) {
       return JunosApplicationSet.JUNOS_SUN_RPC_YPBIND;
-    } else if (ctx.JUNOS_SUN_RPC_YPSERV() != null) {
-      return JunosApplicationSet.JUNOS_SUN_RPC_YPSERV;
     } else {
-      throw convError(JunosApplicationSet.class, ctx);
+      assert ctx.JUNOS_SUN_RPC_YPSERV() != null;
+      return JunosApplicationSet.JUNOS_SUN_RPC_YPSERV;
     }
   }
 
@@ -2350,12 +2343,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private void setLogicalSystem(LogicalSystem logicalSystem) {
     _currentLogicalSystem = logicalSystem;
     _currentRoutingInstance = _currentLogicalSystem.getDefaultRoutingInstance();
-  }
-
-  private BatfishException convError(Class<?> type, ParserRuleContext ctx) {
-    String typeName = type.getSimpleName();
-    String txt = getFullText(ctx);
-    return new BatfishException("Could not convert to " + typeName + ": " + txt);
   }
 
   @Override
@@ -3609,10 +3596,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       }
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
-    } else if (ctx.DESCRIPTION() != null) {
-      /* TODO - data model doesn't have a place to put this yet. */
     } else {
-      throw convError(IpWildcard.class, ctx);
+      assert ctx.DESCRIPTION() != null;
+      /* TODO - data model doesn't have a place to put this yet. */
     }
   }
 
@@ -6929,10 +6915,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       ipWildcard = toIpWildcard(ctx.ip_and_mask);
     } else if (ctx.address != null) {
       ipWildcard = toIpWildcard(ctx.address);
-    } else if (ctx.prefix != null) {
-      ipWildcard = toIpWildcard(ctx.prefix);
     } else {
-      throw convError(IpWildcard.class, ctx);
+      assert ctx.prefix != null;
+      ipWildcard = toIpWildcard(ctx.prefix);
     }
     AddressBookEntry addressEntry = new AddressAddressBookEntry(name, ipWildcard);
     _currentZone.getAddressBook().getEntries().put(name, addressEntry);
@@ -7808,10 +7793,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return Family.INET;
     } else if (ctx.INET6() != null) {
       return Family.INET6;
-    } else if (ctx.MPLS() != null) {
-      return Family.MPLS;
     } else {
-      throw convError(Family.class, ctx);
+      assert ctx.MPLS() != null;
+      return Family.MPLS;
     }
   }
 
