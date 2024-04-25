@@ -588,8 +588,7 @@ sead_address
 :
    ADDRESS name = junos_name
    (
-      apply
-      | DESCRIPTION null_filler
+      DESCRIPTION null_filler
       | address = ip_address
       | prefix = ip_prefix
       | RANGE_ADDRESS lower_limit = ip_address TO upper_limit = ip_address
@@ -1722,8 +1721,7 @@ sezsa_address
 :
    ADDRESS name = junos_name
    (
-      apply
-      | address = ip_address
+      address = ip_address
       | prefix = ip_prefix
       | WILDCARD_ADDRESS ip_and_mask = ip_address_and_mask
    )
