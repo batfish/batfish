@@ -71,5 +71,6 @@
       "org.openjdk.jol:jol-core:jar:sources"
     ]
   },
+  "services": {},
   "version": "2"
 }
