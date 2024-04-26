@@ -142,5 +142,17 @@
       "org.openjdk.jmh:jmh-generator-annprocess:jar:sources"
     ]
   },
+  "services": {
+    "org.openjdk.jmh:jmh-generator-annprocess": {
+      "javax.annotation.processing.Processor": [
+        "org.openjdk.jmh.generators.BenchmarkProcessor"
+      ]
+    },
+    "org.openjdk.jmh:jmh-generator-annprocess:jar:sources": {
+      "javax.annotation.processing.Processor": [
+        "org.openjdk.jmh.generators.BenchmarkProcessor"
+      ]
+    }
+  },
   "version": "2"
 }

@@ -1035,9 +1035,6 @@
       "com.vaadin.external.google:android-json"
     ]
   },
-  "skipped": [
-    "com.google.guava:listenablefuture:jar:sources"
-  ],
   "packages": {
     "com.beust:jcommander": [
       "com.beust.jcommander",
@@ -2561,5 +2558,337 @@
       "org.yaml:snakeyaml:jar:sources"
     ]
   },
+  "services": {
+    "com.fasterxml.jackson.core:jackson-core": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.core.JsonFactory"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-core:jar:sources": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.core.JsonFactory"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-databind": {
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.databind.ObjectMapper"
+      ]
+    },
+    "com.fasterxml.jackson.core:jackson-databind:jar:sources": {
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.databind.ObjectMapper"
+      ]
+    },
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.dataformat.yaml.YAMLFactory"
+      ],
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.dataformat.yaml.YAMLMapper"
+      ]
+    },
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.dataformat.yaml.YAMLFactory"
+      ],
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.dataformat.yaml.YAMLMapper"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.guava.GuavaModule"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava:jar:sources": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.guava.GuavaModule"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.jdk8.Jdk8Module"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:jar:sources": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.jdk8.Jdk8Module"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule"
+      ]
+    },
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:jar:sources": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.datatype.jsr310.JavaTimeModule"
+      ]
+    },
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule"
+      ]
+    },
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": {
+      "com.fasterxml.jackson.databind.Module": [
+        "com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule"
+      ]
+    },
+    "com.google.auto.service:auto-service": {
+      "javax.annotation.processing.Processor": [
+        "com.google.auto.service.processor.AutoServiceProcessor"
+      ]
+    },
+    "com.google.auto.service:auto-service:jar:sources": {
+      "javax.annotation.processing.Processor": [
+        "com.google.auto.service.processor.AutoServiceProcessor"
+      ]
+    },
+    "net.sourceforge.pmd:pmd-core": {
+      "net.sourceforge.pmd.cpd.Language": [],
+      "net.sourceforge.pmd.lang.Language": []
+    },
+    "net.sourceforge.pmd:pmd-core:jar:sources": {
+      "net.sourceforge.pmd.cpd.Language": [],
+      "net.sourceforge.pmd.lang.Language": []
+    },
+    "net.sourceforge.pmd:pmd-java": {
+      "net.sourceforge.pmd.cpd.Language": [
+        "net.sourceforge.pmd.cpd.JavaLanguage"
+      ],
+      "net.sourceforge.pmd.lang.Language": [
+        "net.sourceforge.pmd.lang.java.JavaLanguageModule"
+      ]
+    },
+    "net.sourceforge.pmd:pmd-java:jar:sources": {
+      "net.sourceforge.pmd.cpd.Language": [
+        "net.sourceforge.pmd.cpd.JavaLanguage"
+      ],
+      "net.sourceforge.pmd.lang.Language": [
+        "net.sourceforge.pmd.lang.java.JavaLanguageModule"
+      ]
+    },
+    "net.sourceforge.saxon:saxon": {
+      "javax.xml.transform.TransformerFactory": [
+        "net.sf.saxon.TransformerFactoryImpl"
+      ]
+    },
+    "org.apache.logging.log4j:log4j-api": {
+      "org.apache.logging.log4j.util.PropertySource": [
+        "org.apache.logging.log4j.util.EnvironmentPropertySource",
+        "org.apache.logging.log4j.util.SystemPropertiesPropertySource"
+      ]
+    },
+    "org.apache.logging.log4j:log4j-core": {
+      "javax.annotation.processing.Processor": [
+        "org.apache.logging.log4j.core.config.plugins.processor.PluginProcessor"
+      ],
+      "org.apache.logging.log4j.core.util.ContextDataProvider": [
+        "org.apache.logging.log4j.core.impl.ThreadContextDataProvider"
+      ],
+      "org.apache.logging.log4j.message.ThreadDumpMessage$ThreadInfoFactory": [
+        "org.apache.logging.log4j.core.message.ExtendedThreadInfoFactory"
+      ],
+      "org.apache.logging.log4j.spi.Provider": [
+        "org.apache.logging.log4j.core.impl.Log4jProvider"
+      ]
+    },
+    "org.apfloat:apfloat": {
+      "org.apfloat.spi.BuilderFactory": [
+        "org.apfloat.internal.DoubleBuilderFactory",
+        "org.apfloat.internal.FloatBuilderFactory",
+        "org.apfloat.internal.IntBuilderFactory",
+        "org.apfloat.internal.LongBuilderFactory"
+      ]
+    },
+    "org.apfloat:apfloat:jar:sources": {
+      "org.apfloat.spi.BuilderFactory": [
+        "org.apfloat.internal.DoubleBuilderFactory",
+        "org.apfloat.internal.FloatBuilderFactory",
+        "org.apfloat.internal.IntBuilderFactory",
+        "org.apfloat.internal.LongBuilderFactory"
+      ]
+    },
+    "org.glassfish.hk2:hk2-locator": {
+      "org.glassfish.hk2.extension.ServiceLocatorGenerator": [
+        "org.jvnet.hk2.external.generator.ServiceLocatorGeneratorImpl"
+      ]
+    },
+    "org.glassfish.hk2:hk2-locator:jar:sources": {
+      "org.glassfish.hk2.extension.ServiceLocatorGenerator": [
+        "org.jvnet.hk2.external.generator.ServiceLocatorGeneratorImpl"
+      ]
+    },
+    "org.glassfish.jersey.containers:jersey-container-grizzly2-http": {
+      "org.glassfish.jersey.server.spi.ContainerProvider": [
+        "org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider"
+      ]
+    },
+    "org.glassfish.jersey.containers:jersey-container-grizzly2-http:jar:sources": {
+      "org.glassfish.jersey.server.spi.ContainerProvider": [
+        "org.glassfish.jersey.grizzly2.httpserver.GrizzlyHttpContainerProvider"
+      ]
+    },
+    "org.glassfish.jersey.containers:jersey-container-servlet": {
+      "javax.servlet.ServletContainerInitializer": [
+        "org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer"
+      ],
+      "org.glassfish.jersey.servlet.spi.AsyncContextDelegateProvider": [
+        "org.glassfish.jersey.servlet.async.AsyncContextDelegateProviderImpl"
+      ],
+      "org.glassfish.jersey.servlet.spi.FilterUrlMappingsProvider": [
+        "org.glassfish.jersey.servlet.init.FilterUrlMappingsProviderImpl"
+      ]
+    },
+    "org.glassfish.jersey.containers:jersey-container-servlet:jar:sources": {
+      "javax.servlet.ServletContainerInitializer": [
+        "org.glassfish.jersey.servlet.init.JerseyServletContainerInitializer"
+      ],
+      "org.glassfish.jersey.servlet.spi.AsyncContextDelegateProvider": [
+        "org.glassfish.jersey.servlet.async.AsyncContextDelegateProviderImpl"
+      ],
+      "org.glassfish.jersey.servlet.spi.FilterUrlMappingsProvider": [
+        "org.glassfish.jersey.servlet.init.FilterUrlMappingsProviderImpl"
+      ]
+    },
+    "org.glassfish.jersey.core:jersey-common": {
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.logging.LoggingFeatureAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.core:jersey-common:jar:sources": {
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.logging.LoggingFeatureAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.core:jersey-server": {
+      "javax.ws.rs.ext.RuntimeDelegate": [
+        "org.glassfish.jersey.server.internal.RuntimeDelegateImpl"
+      ],
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.server.filter.internal.ServerFiltersAutoDiscoverable"
+      ],
+      "org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable": [
+        "org.glassfish.jersey.server.internal.monitoring.MonitoringAutodiscoverable",
+        "org.glassfish.jersey.server.wadl.internal.WadlAutoDiscoverable"
+      ],
+      "org.glassfish.jersey.model.internal.spi.ParameterServiceProvider": [
+        "org.glassfish.jersey.server.model.Parameter$ServerParameterService"
+      ]
+    },
+    "org.glassfish.jersey.core:jersey-server:jar:sources": {
+      "javax.ws.rs.ext.RuntimeDelegate": [
+        "org.glassfish.jersey.server.internal.RuntimeDelegateImpl"
+      ],
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.server.filter.internal.ServerFiltersAutoDiscoverable"
+      ],
+      "org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable": [
+        "org.glassfish.jersey.server.internal.monitoring.MonitoringAutodiscoverable",
+        "org.glassfish.jersey.server.wadl.internal.WadlAutoDiscoverable"
+      ],
+      "org.glassfish.jersey.model.internal.spi.ParameterServiceProvider": [
+        "org.glassfish.jersey.server.model.Parameter$ServerParameterService"
+      ]
+    },
+    "org.glassfish.jersey.inject:jersey-hk2": {
+      "org.glassfish.jersey.internal.inject.InjectionManagerFactory": [
+        "org.glassfish.jersey.inject.hk2.Hk2InjectionManagerFactory"
+      ]
+    },
+    "org.glassfish.jersey.inject:jersey-hk2:jar:sources": {
+      "org.glassfish.jersey.internal.inject.InjectionManagerFactory": [
+        "org.glassfish.jersey.inject.hk2.Hk2InjectionManagerFactory"
+      ]
+    },
+    "org.glassfish.jersey.media:jersey-media-jaxb": {
+      "org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable": [
+        "org.glassfish.jersey.jaxb.internal.JaxbAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.media:jersey-media-jaxb:jar:sources": {
+      "org.glassfish.jersey.internal.spi.ForcedAutoDiscoverable": [
+        "org.glassfish.jersey.jaxb.internal.JaxbAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.media:jersey-media-json-jackson": {
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.jackson.internal.JacksonAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.media:jersey-media-json-jackson:jar:sources": {
+      "org.glassfish.jersey.internal.spi.AutoDiscoverable": [
+        "org.glassfish.jersey.jackson.internal.JacksonAutoDiscoverable"
+      ]
+    },
+    "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2": {
+      "org.glassfish.jersey.test.spi.TestContainerFactory": [
+        "org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory",
+        "org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory"
+      ]
+    },
+    "org.glassfish.jersey.test-framework.providers:jersey-test-framework-provider-grizzly2:jar:sources": {
+      "org.glassfish.jersey.test.spi.TestContainerFactory": [
+        "org.glassfish.jersey.test.grizzly.GrizzlyTestContainerFactory",
+        "org.glassfish.jersey.test.grizzly.GrizzlyWebTestContainerFactory"
+      ]
+    },
+    "org.jline:jline": {
+      "org/": [],
+      "org/jline/": [],
+      "org/jline/terminal/": [],
+      "org/jline/terminal/provider/": [],
+      "org/jline/terminal/provider/exec": [
+        "class=org.jline.terminal.impl.exec.ExecTerminalProvider"
+      ],
+      "org/jline/terminal/provider/ffm": [
+        "class=org.jline.terminal.impl.ffm.FfmTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jansi": [
+        "class=org.jline.terminal.impl.jansi.JansiTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jna": [
+        "class=org.jline.terminal.impl.jna.JnaTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jni": [
+        "class=org.jline.terminal.impl.jni.JniTerminalProvider"
+      ]
+    },
+    "org.jline:jline:jar:sources": {
+      "org/": [],
+      "org/jline/": [],
+      "org/jline/terminal/": [],
+      "org/jline/terminal/provider/": [],
+      "org/jline/terminal/provider/exec": [
+        "class=org.jline.terminal.impl.exec.ExecTerminalProvider"
+      ],
+      "org/jline/terminal/provider/ffm": [
+        "class=org.jline.terminal.impl.ffm.FfmTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jansi": [
+        "class=org.jline.terminal.impl.jansi.JansiTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jna": [
+        "class=org.jline.terminal.impl.jna.JnaTerminalProvider"
+      ],
+      "org/jline/terminal/provider/jni": [
+        "class=org.jline.terminal.impl.jni.JniTerminalProvider"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter-engine": {
+      "org.junit.platform.engine.TestEngine": [
+        "org.junit.jupiter.engine.JupiterTestEngine"
+      ]
+    },
+    "org.junit.jupiter:junit-jupiter-engine:jar:sources": {
+      "org.junit.platform.engine.TestEngine": [
+        "org.junit.jupiter.engine.JupiterTestEngine"
+      ]
+    }
+  },
+  "skipped": [
+    "com.google.guava:listenablefuture:jar:sources"
+  ],
   "version": "2"
 }
