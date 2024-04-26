@@ -34,5 +34,5 @@ post-update-hooks:
     files-to-commit:
       - "maven_install.json"
       - "tools/jol/jol_maven_install.json"
-      - "tools/jmh/jmh_maven_install.json"
+      - "tools/benchmarks/jmh_maven_install.json"
     run-for: commit
