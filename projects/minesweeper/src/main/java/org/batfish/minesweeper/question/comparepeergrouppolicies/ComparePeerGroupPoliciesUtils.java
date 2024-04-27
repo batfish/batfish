@@ -80,8 +80,7 @@ public final class ComparePeerGroupPoliciesUtils {
       SyntacticDifference d =
           new SyntacticDifference(
               syntacticCompare.getCurrentConfig().getRoutingPolicies().get(currentPolicy),
-              syntacticCompare.getReferenceConfig().getRoutingPolicies().get(referencePolicy),
-              syntacticCompare.getContextDiff());
+              syntacticCompare.getReferenceConfig().getRoutingPolicies().get(referencePolicy));
       SortedSet<String> routers = differences.computeIfAbsent(d, k -> new TreeSet<>());
       routers.add(router);
     }

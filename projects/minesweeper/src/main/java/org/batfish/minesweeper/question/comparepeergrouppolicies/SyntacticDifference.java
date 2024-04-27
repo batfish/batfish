@@ -3,14 +3,9 @@ package projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comp
 import static org.batfish.question.TracingHintsStripper.TRACING_HINTS_STRIPPER;
 
 import com.google.common.collect.ImmutableList;
-import java.util.Comparator;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.minesweeper.collectors.RoutePolicyStatementCallCollector;
-import org.batfish.minesweeper.utils.Tuple;
 
 /**
  * Captures pairs of current/reference routing policies that *may* differ, based on syntactic
@@ -24,16 +19,9 @@ public class SyntacticDifference implements Comparable<SyntacticDifference> {
   /** The policy for the reference snapshot */
   private final RoutingPolicy _referencePolicy;
 
-  /** The (potential) context-diff under which the two policies differ */
-  private final RoutingPolicyContextDiff _context;
-
-  public SyntacticDifference(
-      RoutingPolicy currentPolicy,
-      RoutingPolicy referencePolicy,
-      RoutingPolicyContextDiff context) {
+  public SyntacticDifference(RoutingPolicy currentPolicy, RoutingPolicy referencePolicy) {
     this._currentPolicy = currentPolicy;
     this._referencePolicy = referencePolicy;
-    this._context = context;
   }
 
   public RoutingPolicy getCurrentPolicy() {
@@ -42,10 +30,6 @@ public class SyntacticDifference implements Comparable<SyntacticDifference> {
 
   public RoutingPolicy getReferencePolicy() {
     return _referencePolicy;
-  }
-
-  public RoutingPolicyContextDiff getContext() {
-    return _context;
   }
 
   /**
@@ -64,54 +48,51 @@ public class SyntacticDifference implements Comparable<SyntacticDifference> {
   /**
    * @param p1 the first policy
    * @param p2 the second policy
-   * @return true if the two policies are syntactically equal, including any sub-policies they call.
+   * @return the result of comparing the strings of the statements of two routing policies. Note
+   *     that this does not recursively look into called statements; it assumes that if the
+   *     top-level statements are equal (e.g., the route-map names), any call statement is also
+   *     equal. This allows for more aggressive deduplication, especially in cases where there might
+   *     be small differences in prefix-lists or community-lists.
    */
-  private boolean routingPolicySyntaxEq(RoutingPolicy p1, RoutingPolicy p2) {
+  private int routingPolicySyntaxComparison(RoutingPolicy p1, RoutingPolicy p2) {
+
     List<Statement> p1Stripped = stripStatements(p1.getStatements());
-    if (p1Stripped.equals(stripStatements(p2.getStatements()))) {
-      Set<String> callees =
-          new RoutePolicyStatementCallCollector()
-              .visitAll(p1Stripped, new Tuple<>(new HashSet<>(), p1.getOwner()));
-      for (String callee : callees) {
-        if (!routingPolicySyntaxEq(
-            p1.getOwner().getRoutingPolicies().get(callee),
-            p2.getOwner().getRoutingPolicies().get(callee))) {
-          return false;
-        }
-      }
-      return true;
-    } else {
-      return false;
-    }
+    List<Statement> p2Stripped = stripStatements(p2.getStatements());
+    return p1Stripped.toString().compareTo(p2Stripped.toString());
   }
 
   /**
    * @param o the object to be compared.
-   * @return This comparison is a bit strange, because Statements are not comparable. To determine
-   *     the ordering of two potential differences we first do a syntactic comparison between the
-   *     policy in the current snapshot, the policy in the reference snapshot, the routing contexts
-   *     and the names of the route-maps. If all of these are equal, the two differences are equal.
-   *     We require the names to be equal too, otherwise it would be difficult for a user to track
-   *     down all the route-maps with the same content but different names. Otherwise if these are
-   *     not equal, we simply order the differences by name and hostname. Note that we consider the
-   *     full routing context of the device, even if some definitions are not used in this routing
-   *     policy. This might lead to two seemingly equal policies being considered different, but
-   *     this can only cause a performance issue by running CRP more than necessary. The results are
-   *     anyway deduplicated.
+   * @return Compares the statements of the current routing policies, and if they are equal of the
+   *     reference routing policies.
    */
   @Override
   public int compareTo(SyntacticDifference o) {
-
-    if (this.getCurrentPolicy().getName().equals(o.getCurrentPolicy().getName())
-        && this.getReferencePolicy().getName().equals(o.getReferencePolicy().getName())
-        && routingPolicySyntaxEq(this.getCurrentPolicy(), o.getCurrentPolicy())
-        && routingPolicySyntaxEq(this.getReferencePolicy(), o.getReferencePolicy())
-        && this.getContext().equals(o.getContext())) {
-      return 0;
+    int current = routingPolicySyntaxComparison(this.getCurrentPolicy(), o.getCurrentPolicy());
+    if (current != 0) {
+      return current;
     } else {
-      Comparator<RoutingPolicy> policyName = Comparator.comparing(RoutingPolicy::getName);
-      Comparator<RoutingPolicy> ownerName = Comparator.comparing(r -> r.getOwner().getHostname());
-      return policyName.thenComparing(ownerName).compare(this._currentPolicy, o._currentPolicy);
+      return routingPolicySyntaxComparison(this.getReferencePolicy(), o.getReferencePolicy());
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+
+    SyntacticDifference that = (SyntacticDifference) o;
+    return this.compareTo(that) == 0;
+  }
+
+  @Override
+  public int hashCode() {
+    int result = stripStatements(_currentPolicy.getStatements()).hashCode();
+    result = 31 * result + stripStatements(_referencePolicy.getStatements()).hashCode();
+    return result;
   }
 }

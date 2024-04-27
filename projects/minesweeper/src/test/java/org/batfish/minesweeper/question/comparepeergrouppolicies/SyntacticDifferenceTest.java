@@ -26,7 +26,6 @@ import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.RoutingPolicyContextDiff;
 import projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies.SyntacticDifference;
 
 public class SyntacticDifferenceTest {
@@ -125,14 +124,8 @@ public class SyntacticDifferenceTest {
             .addStatement(new Statements.StaticStatement(Statements.ExitReject))
             .build();
 
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
     assertEquals(0, d1.compareTo(d2));
   }
 
@@ -156,15 +149,9 @@ public class SyntacticDifferenceTest {
             .addStatement(new Statements.StaticStatement(Statements.ExitReject))
             .build();
 
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
-    assertNotEquals(0, d1.compareTo(d2));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
+    assertEquals(0, d1.compareTo(d2));
   }
 
   @Test
@@ -187,14 +174,8 @@ public class SyntacticDifferenceTest {
             .addStatement(new Statements.StaticStatement(Statements.ExitReject))
             .build();
 
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
     assertNotEquals(0, d1.compareTo(d2));
   }
 
@@ -218,14 +199,8 @@ public class SyntacticDifferenceTest {
             .addStatement(new Statements.StaticStatement(Statements.ExitReject))
             .build();
 
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
     assertNotEquals(0, d1.compareTo(d2));
   }
 
@@ -251,17 +226,12 @@ public class SyntacticDifferenceTest {
 
     base.getOwner().setRouteFilterLists(ImmutableMap.of());
 
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
-    assertNotEquals(0, d1.compareTo(d2));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
+    assertEquals(0, d1.compareTo(d2));
   }
 
+  /* Differences in nested calls do not matter. */
   @Test
   public void testDifference_recursive() {
     RoutingPolicy calledPolicyBase =
@@ -305,23 +275,17 @@ public class SyntacticDifferenceTest {
     deltaOther.getOwner().getRoutingPolicies().put("RM2", calledPolicyDeltaOther);
 
     // Compare the differences between the two callers.
-    SyntacticDifference d1 =
-        new SyntacticDifference(
-            base, delta, new RoutingPolicyContextDiff(base.getOwner(), delta.getOwner()));
-    SyntacticDifference d2 =
-        new SyntacticDifference(
-            baseOther,
-            deltaOther,
-            new RoutingPolicyContextDiff(baseOther.getOwner(), deltaOther.getOwner()));
+    SyntacticDifference d1 = new SyntacticDifference(base, delta);
+    SyntacticDifference d2 = new SyntacticDifference(baseOther, deltaOther);
     assertEquals(0, d1.compareTo(d2));
 
     // If we change the called reference policy on one of the two devices, then the two differences
-    // will be different.
+    // remain unchanged.
     calledPolicyDeltaOther.setStatements(
         ImmutableList.of(
             new Statements.StaticStatement(Statements.ExitAccept),
             new Statements.StaticStatement(Statements.ExitAccept)));
-    assertNotEquals(0, d1.compareTo(d2));
+    assertEquals(0, d1.compareTo(d2));
 
     // Likewise, if we change the called base policy. (first restore the delta policy)
     calledPolicyDeltaOther.setStatements(
@@ -331,6 +295,6 @@ public class SyntacticDifferenceTest {
             new Statements.StaticStatement(Statements.ExitAccept),
             new Statements.StaticStatement(Statements.ExitAccept)));
 
-    assertNotEquals(0, d1.compareTo(d2));
+    assertEquals(0, d1.compareTo(d2));
   }
 }
