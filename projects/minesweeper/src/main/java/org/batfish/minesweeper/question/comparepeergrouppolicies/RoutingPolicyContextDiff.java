@@ -1,11 +1,17 @@
 package projects.minesweeper.src.main.java.org.batfish.minesweeper.question.comparepeergrouppolicies;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.Comparators;
+import com.google.common.collect.Ordering;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
@@ -27,17 +33,17 @@ import org.batfish.minesweeper.utils.Tuple;
  * exploration of policy calls. If you want a full syntactic difference, including the context and
  * statements of a routing policy, you should use {@link SyntacticCompare}.
  */
-public final class RoutingPolicyContextDiff {
+public final class RoutingPolicyContextDiff implements Comparable<RoutingPolicyContextDiff> {
   private final Configuration _currentConfig;
 
   /** The set of community lists that differ between the two configurations. */
-  private final Set<String> _communityListsDiff;
+  private final SortedSet<String> _communityListsDiff;
 
   /** The set of as-path access lists that differ between the two configurations. */
-  private final Set<String> _asPathAccessListsDiff;
+  private final SortedSet<String> _asPathAccessListsDiff;
 
   /** The set of prefix lists that differ between the two configurations. */
-  private final Set<String> _routeFilterListsDiff;
+  private final SortedSet<String> _routeFilterListsDiff;
 
   public RoutingPolicyContextDiff(Configuration currentConfig, Configuration referenceConfig) {
     this._currentConfig = currentConfig;
@@ -61,9 +67,9 @@ public final class RoutingPolicyContextDiff {
    * @return the set of keys for which the value V differs between the two maps (including keys
    *     missing from one map).
    */
-  private <K, V> Set<K> mapDiffKeys(Map<K, V> first, Map<K, V> second) {
-    Set<K> diff = new HashSet<>();
-    Set<K> keys = new HashSet<>(first.keySet());
+  private <K extends Comparable<K>, V> SortedSet<K> mapDiffKeys(Map<K, V> first, Map<K, V> second) {
+    SortedSet<K> diff = new TreeSet<>();
+    SortedSet<K> keys = new TreeSet<>(first.keySet());
     keys.addAll(second.keySet());
     for (K key : keys) {
       V fv = first.get(key);
@@ -118,17 +124,17 @@ public final class RoutingPolicyContextDiff {
   }
 
   @VisibleForTesting
-  public Set<String> getCommunityListsDiff() {
+  public SortedSet<String> getCommunityListsDiff() {
     return _communityListsDiff;
   }
 
   @VisibleForTesting
-  public Set<String> getAsPathAccessListsDiff() {
+  public SortedSet<String> getAsPathAccessListsDiff() {
     return _asPathAccessListsDiff;
   }
 
   @VisibleForTesting
-  public Set<String> getRouteFilterListsDiff() {
+  public SortedSet<String> getRouteFilterListsDiff() {
     return _routeFilterListsDiff;
   }
 
@@ -158,5 +164,21 @@ public final class RoutingPolicyContextDiff {
     result = 31 * result + _asPathAccessListsDiff.hashCode();
     result = 31 * result + _routeFilterListsDiff.hashCode();
     return result;
+  }
+
+  private static final Comparator<RoutingPolicyContextDiff> COMPARATOR =
+      Comparator.comparing(
+              RoutingPolicyContextDiff::getCommunityListsDiff,
+              Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              RoutingPolicyContextDiff::getRouteFilterListsDiff,
+              Comparators.lexicographical(Ordering.natural()))
+          .thenComparing(
+              RoutingPolicyContextDiff::getAsPathAccessListsDiff,
+              Comparators.lexicographical(Ordering.natural()));
+
+  @Override
+  public int compareTo(@Nonnull RoutingPolicyContextDiff that) {
+    return COMPARATOR.compare(this, that);
   }
 }
