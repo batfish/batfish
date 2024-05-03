@@ -3201,16 +3201,6 @@ UNRECOGNIZED_WORD: F_NonWhitespaceChar+;
 // Fragments
 
 fragment
-F_DecByte
-:
-  F_Digit
-  | F_PositiveDigit F_Digit
-  | '1' F_Digit F_Digit
-  | '2' [0-4] F_Digit
-  | '25' [0-5]
-;
-
-fragment
 F_Digit
 :
   [0-9]
@@ -3439,7 +3429,7 @@ F_InterfaceMediaType
 fragment
 F_IpAddress
 :
-  F_DecByte '.' F_DecByte '.' F_DecByte '.' F_DecByte
+  F_Uint8 '.' F_Uint8 '.' F_Uint8 '.' F_Uint8
 ;
 
 fragment
