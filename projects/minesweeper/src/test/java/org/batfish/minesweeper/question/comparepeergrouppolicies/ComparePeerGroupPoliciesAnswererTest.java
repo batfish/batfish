@@ -679,8 +679,8 @@ public class ComparePeerGroupPoliciesAnswererTest {
         Matchers.contains(
             allOf(
                 hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
-                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
-                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
+                hasColumn(COL_POLICY_NAME, equalTo("RM2"), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo("RM2"), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
@@ -688,8 +688,8 @@ public class ComparePeerGroupPoliciesAnswererTest {
                 hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
             allOf(
                 hasColumn(COL_NODE, equalTo(new Node(HOSTNAME)), Schema.NODE),
-                hasColumn(COL_POLICY_NAME, equalTo("RM2"), Schema.STRING),
-                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo("RM2"), Schema.STRING),
+                hasColumn(COL_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
+                hasColumn(COL_REFERENCE_POLICY_NAME, equalTo(POLICY_NAME), Schema.STRING),
                 hasColumn(COL_INPUT_ROUTE, equalTo(inputRoute), Schema.BGP_ROUTE),
                 hasColumn(baseColumnName(COL_ACTION), equalTo(DENY.toString()), Schema.STRING),
                 hasColumn(deltaColumnName(COL_ACTION), equalTo(PERMIT.toString()), Schema.STRING),
