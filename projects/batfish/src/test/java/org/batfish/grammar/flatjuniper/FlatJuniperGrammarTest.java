@@ -3434,6 +3434,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIpAddressParsing() throws IOException {
+    // Doesn't throw.
+    parseConfig("ip_address");
+  }
+
+  @Test
   public void testJuniperOspfIntervals() {
     JuniperConfiguration config = parseJuniperConfig("ospf-intervals");
     Map<String, org.batfish.representation.juniper.Interface> ifaces =
