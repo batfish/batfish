@@ -94,6 +94,8 @@ ADDRESS_BOOK
   }
 ;
 
+ADDRESS_FAMILY: 'address-family';
+
 ADDRESS_MASK: 'address-mask';
 
 ADDRESS_SET: 'address-set' -> pushMode(M_Name);
