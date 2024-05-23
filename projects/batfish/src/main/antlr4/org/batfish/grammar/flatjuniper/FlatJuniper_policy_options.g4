@@ -49,14 +49,23 @@ pocond_if_route_exists
 :
   IF_ROUTE_EXISTS
   (
-    pocondi_prefix
-    | pocondi_table
+    pocondi_address_family
+    | pocondiafi_prefix
+    | pocondiafi_table
   )
 ;
 
-pocondi_prefix: prefix = ip_prefix;
+pocondiafi_prefix: prefix = ip_prefix;
 
-pocondi_table: TABLE name = junos_name;
+pocondiafi_table: TABLE name = junos_name;
+
+pocondi_address_family: ADDRESS_FAMILY (
+    pocondiaf_inet | pocondiaf_ccc
+);
+
+pocondiaf_inet: INET (pocondiafi_prefix | pocondiafi_table);
+
+pocondiaf_ccc: CCC null_filler;
 
 po_policy_statement
 :

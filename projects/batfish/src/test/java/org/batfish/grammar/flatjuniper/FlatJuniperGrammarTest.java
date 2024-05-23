@@ -7440,7 +7440,7 @@ public final class FlatJuniperGrammarTest {
             .getFroms()
             .getFromConditions(),
         contains(new PsFromCondition("c1")));
-    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2"));
+    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2", "c3", "c4"));
     {
       Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
       assertThat(c.getIfRouteExists(), notNullValue());
@@ -7453,6 +7453,12 @@ public final class FlatJuniperGrammarTest {
       assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("2.0.0.0/24")));
       assertThat(c.getIfRouteExists().getTable(), equalTo("ri2.inet.0"));
     }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c3");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.strict("3.0.0.0/24")));
+      assertThat(c.getIfRouteExists().getTable(), equalTo("ri3.inet.0"));
+    }
   }
 
   @Test
@@ -7460,10 +7466,12 @@ public final class FlatJuniperGrammarTest {
     String hostname = "juniper-condition";
     String c1TrackName = computeConditionTrackName("c1");
     String c2TrackName = computeConditionTrackName("c2");
+    String c3TrackName = computeConditionTrackName("c3");
+    String c4TrackName = computeConditionTrackName("c4");
     Configuration c = parseConfig(hostname);
 
     // Conditions should be converted to tracks
-    assertThat(c.getTrackingGroups(), hasKeys(c1TrackName, c2TrackName));
+    assertThat(c.getTrackingGroups(), hasKeys(c1TrackName, c2TrackName, c3TrackName, c4TrackName));
     assertThat(
         c.getTrackingGroups().get(c1TrackName),
         equalTo(
@@ -7471,11 +7479,15 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         c.getTrackingGroups().get(c2TrackName),
         equalTo(TrackMethods.route(Prefix.strict("2.0.0.0/24"), ImmutableSet.of(), "ri2")));
+    assertThat(
+        c.getTrackingGroups().get(c3TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("3.0.0.0/24"), ImmutableSet.of(), "ri3")));
+    assertThat(c.getTrackingGroups().get(c4TrackName), equalTo(TrackMethods.alwaysTrue()));
 
     // BGP process should watch tracks for conditions
     assertThat(
         c.getDefaultVrf().getBgpProcess().getTracks(),
-        containsInAnyOrder(c1TrackName, c2TrackName));
+        containsInAnyOrder(c1TrackName, c2TrackName, c3TrackName, c4TrackName));
   }
 
   @Test

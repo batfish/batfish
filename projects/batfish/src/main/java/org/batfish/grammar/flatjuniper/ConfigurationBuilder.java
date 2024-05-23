@@ -469,8 +469,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_members_memberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocond_if_route_existsContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_prefixContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondi_tableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiaf_cccContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiafi_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pocondiafi_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Policy_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
@@ -7200,13 +7201,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPocondi_prefix(Pocondi_prefixContext ctx) {
+  public void exitPocondiafi_prefix(Pocondiafi_prefixContext ctx) {
     _currentCondition.getIfRouteExists().setPrefix(toPrefix(ctx.prefix));
   }
 
   @Override
-  public void exitPocondi_table(Pocondi_tableContext ctx) {
+  public void exitPocondiafi_table(Pocondiafi_tableContext ctx) {
     _currentCondition.getIfRouteExists().setTable(toString(ctx.name));
+  }
+
+  @Override
+  public void exitPocondiaf_ccc(Pocondiaf_cccContext ctx) {
+    todo(ctx);
   }
 
   private static @Nonnull Prefix toPrefix(Ip_prefixContext ctx) {
