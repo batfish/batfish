@@ -223,6 +223,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private @Nonnull RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
+  // note that we only populate the full Prev (not PrevBestPath) versions when
+  // some session has additional paths and we need to be able to send them.
+  private boolean _anySessionHasAdditionalPaths = true;
   private @Nonnull Set<Bgpv4Route> _ebgpv4Prev;
   private @Nonnull Set<Bgpv4Route> _ebgpv4PrevBestPath;
   private @Nonnull Set<Bgpv4Route> _bgpv4Prev;
@@ -1166,6 +1169,9 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     Set<Bgpv4Route> ebgpv4Prev;
     RibDelta<Bgpv4Route> ebgpv4DeltaPrev;
     if (ourSession.getAdditionalPaths()) {
+      // Two assertions to catch asynchrony bugs.
+      assert _anySessionHasAdditionalPaths;
+      assert _anySessionHasAdditionalPaths == computeAnySessionHasAdditionalPaths();
       bgpv4Prev = _bgpv4Prev;
       bgpv4DeltaPrev = _bgpv4DeltaPrev;
       ebgpv4Prev = _ebgpv4Prev;
@@ -2445,11 +2451,31 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _successfulWatchedTracksChanged = false;
   }
 
+  /**
+   * Returns true iff any active session requires sending all routes, not just best-paths. When
+   * false, this enables a compute and storage savings as we do not need to materialize all routes.
+   */
+  private boolean computeAnySessionHasAdditionalPaths() {
+    for (EdgeId edge : _bgpv4Edges) {
+      // Edges are receiver-oriented, so need to reverse for the sender-side configuration.
+      if (getBgpSessionProperties(_topology, edge.reverse()).getAdditionalPaths()) {
+        return true;
+      }
+    }
+    return false;
+  }
+
   /** Record state at beginning of round prior to pulling from neighbors. */
   public void startOfInnerRound() {
     // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
-    _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
-    _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+    _anySessionHasAdditionalPaths = computeAnySessionHasAdditionalPaths();
+    if (_anySessionHasAdditionalPaths) {
+      _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
+      _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+    } else {
+      _bgpv4Prev = ImmutableSet.of();
+      _ebgpv4Prev = ImmutableSet.of();
+    }
     // Take a snapshot of best-paths from current RIBs so we know what to send to new non-add-path
     // sessions, and also so we can tell what ADDs can be sent to neighbors: those that correspond
     // to current valid best paths.
