@@ -1111,7 +1111,7 @@ public class FileBasedStorage implements StorageProvider {
       throws IOException {
     Path path = getPojoTopologyPath(networkId, snapshotId);
     path.getParent().toFile().mkdirs();
-    writeStringToFile(path, BatfishObjectMapper.writeString(topology), UTF_8);
+    writeJsonFile(path, topology);
   }
 
   @Override
