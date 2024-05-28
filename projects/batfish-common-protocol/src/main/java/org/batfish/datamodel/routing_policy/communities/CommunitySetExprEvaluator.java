@@ -1,6 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import com.google.common.collect.ImmutableSet;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.bgp.community.Community;
 
@@ -31,14 +33,20 @@ public final class CommunitySetExprEvaluator
   public @Nonnull CommunitySet visitCommunitySetDifference(
       CommunitySetDifference communitySetDifference, CommunityContext arg) {
     CommunitySet initial = communitySetDifference.getInitial().accept(this, arg);
+    if (initial.getCommunities().isEmpty()) {
+      return initial;
+    }
     CommunityMatchExpr removalCriterion = communitySetDifference.getRemovalCriterion();
-    ImmutableSet.Builder<Community> ret = ImmutableSet.builder();
+    boolean changed = false;
+    List<Community> ret = new ArrayList<>(initial.getCommunities().size());
     for (Community c : initial.getCommunities()) {
       if (!removalCriterion.accept(arg.getCommunityMatchExprEvaluator(), c)) {
         ret.add(c);
+      } else {
+        changed = true;
       }
     }
-    return CommunitySet.of(ret.build());
+    return changed ? CommunitySet.of(ret) : initial;
   }
 
   @Override
