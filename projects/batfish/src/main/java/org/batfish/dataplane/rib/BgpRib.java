@@ -11,6 +11,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.PREFER_RE
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableSet;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Map;
@@ -460,13 +461,14 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
 
   private void selectBestPath(Prefix prefix) {
     // optimization - avoid extra computation from override of getRoutes(prefix) in this class
-    Optional<R> s = super.getRoutes(prefix).stream().max(this::bestPathComparator);
-    if (!s.isPresent()) {
+    Set<R> remainingBestPaths = super.getRoutes(prefix);
+    if (remainingBestPaths.isEmpty()) {
       // Remove best path and return
       _bestPaths.remove(prefix);
       return;
     }
-    _bestPaths.put(prefix, s.get());
+    R best = Collections.max(remainingBestPaths, this::bestPathComparator);
+    _bestPaths.put(prefix, best);
   }
 
   /**
