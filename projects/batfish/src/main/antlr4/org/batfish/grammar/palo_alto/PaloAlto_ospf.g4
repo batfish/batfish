@@ -38,8 +38,10 @@ ospf_interface_transit_delay
 
 ospf_metric
 :
-// 0-255
-    uint8
+// 0-65535
+// from https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-networking-admin/ospf/configure-ospf
+//     Metric—Enter an OSPF metric for this interface (range is 0-65,535; default is 10).
+    uint16
 ;
 
 

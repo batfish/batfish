@@ -181,6 +181,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_router_idContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfa_interfaceContext;
@@ -1310,7 +1311,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfai_metric(Ospfai_metricContext ctx) {
-    _currentOspfInterface.setMetric(toInteger(ctx.metric.uint8()));
+    _currentOspfInterface.setMetric(toInteger(ctx.metric));
   }
 
   @Override
@@ -1375,7 +1376,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfatsdr_advertise_metric(Ospfatsdr_advertise_metricContext ctx) {
-    _currentOspfStubAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+    _currentOspfStubAreaType.setDefaultRouteMetric(toInteger(ctx.metric));
   }
 
   @Override
@@ -1410,7 +1411,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfatndra_metric(Ospfatndra_metricContext ctx) {
-    _currentOspfNssaAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+    _currentOspfNssaAreaType.setDefaultRouteMetric(toInteger(ctx.metric));
   }
 
   @Override
@@ -3391,6 +3392,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   /////////////////////////////////////////
   ///// Range-aware type conversions. /////
   /////////////////////////////////////////
+
+  private int toInteger(Ospf_metricContext ctx) {
+    return toInteger(ctx.uint16());
+  }
 
   private int toInteger(Port_numberContext ctx) {
     return toInteger(ctx.uint16());

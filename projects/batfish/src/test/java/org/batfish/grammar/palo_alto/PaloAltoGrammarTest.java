@@ -1134,7 +1134,7 @@ public final class PaloAltoGrammarTest {
     OspfInterface ospfIface = ospfArea.getInterfaces().get(ifaceName);
     assertThat(ospfIface.getEnable(), equalTo(Boolean.FALSE));
     assertThat(ospfIface.getPassive(), equalTo(Boolean.FALSE));
-    assertThat(ospfIface.getMetric(), equalTo(10));
+    assertThat(ospfIface.getMetric(), nullValue());
     assertThat(ospfIface.getPriority(), equalTo(1));
     assertThat(ospfIface.getHelloInterval(), equalTo(10));
     assertThat(ospfIface.getDeadCounts(), equalTo(4));
@@ -1185,7 +1185,7 @@ public final class PaloAltoGrammarTest {
         equalTo(
             OspfInterfaceSettings.builder()
                 .setAreaName(1L)
-                .setCost(14)
+                .setCost(5001)
                 .setDeadInterval(8 * 15)
                 .setEnabled(true)
                 .setHelloInterval(15)
