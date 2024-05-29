@@ -179,8 +179,10 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefixContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_prefix_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ip_rangeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_areaContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_area_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_enableContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_graceful_restartContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_interface_metricContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_reject_default_routeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospf_router_idContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Ospfa_interfaceContext;
@@ -1310,7 +1312,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfai_metric(Ospfai_metricContext ctx) {
-    _currentOspfInterface.setMetric(toInteger(ctx.metric.uint8()));
+    _currentOspfInterface.setMetric(toInteger(ctx.metric));
   }
 
   @Override
@@ -1375,7 +1377,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfatsdr_advertise_metric(Ospfatsdr_advertise_metricContext ctx) {
-    _currentOspfStubAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+    toInteger(ctx, ctx.metric).ifPresent(_currentOspfStubAreaType::setDefaultRouteMetric);
   }
 
   @Override
@@ -1410,7 +1412,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspfatndra_metric(Ospfatndra_metricContext ctx) {
-    _currentOspfNssaAreaType.setDefaultRouteMetric(toInteger(ctx.metric.uint8()));
+    toInteger(ctx, ctx.metric).ifPresent(_currentOspfNssaAreaType::setDefaultRouteMetric);
   }
 
   @Override
@@ -3392,6 +3394,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   ///// Range-aware type conversions. /////
   /////////////////////////////////////////
 
+  private int toInteger(Ospf_interface_metricContext ctx) {
+    return toInteger(ctx.uint16());
+  }
+
   private int toInteger(Port_numberContext ctx) {
     return toInteger(ctx.uint16());
   }
@@ -3404,10 +3410,21 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return Integer.parseInt(getText(t));
   }
 
+  private static final IntegerSpace OSPF_AREA_DEFAULT_ROUTE_ADVERTISE_METRIC =
+      IntegerSpace.of(Range.closed(1, 255));
+
   private static final IntegerSpace PORT_NUMBER_SPACE = IntegerSpace.of(Range.closed(0, 65535));
 
   private static final IntegerSpace PROTOCOL_ADMIN_DISTANCE_SPACE =
       IntegerSpace.of(Range.closed(10, 240));
+
+  private Optional<Integer> toInteger(ParserRuleContext ctx, Ospf_area_metricContext metric) {
+    return toIntegerInSpace(
+        ctx,
+        metric,
+        OSPF_AREA_DEFAULT_ROUTE_ADVERTISE_METRIC,
+        "ospf area advertise default metric");
+  }
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, Port_numberContext pn) {
     return toIntegerInSpace(ctx, pn, PORT_NUMBER_SPACE, "admin-dist");
