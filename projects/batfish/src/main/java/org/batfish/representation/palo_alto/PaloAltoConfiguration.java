@@ -197,6 +197,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public static final String SHARED_VSYS_NAME = "~SHARED_VSYS~";
 
+  // https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-networking-admin/ospf/configure-ospf.
+  private static final int DEFAULT_OSPF_METRIC = 10;
+
   private Configuration _c;
 
   private List<CryptoProfile> _cryptoProfiles;
@@ -2859,7 +2862,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     assert vsOspfIface.getEnable() != null;
     assert vsOspfIface.getPassive() != null;
     OspfInterfaceSettings.Builder ospfSettings = OspfInterfaceSettings.builder();
-    ospfSettings.setCost(vsOspfIface.getMetric());
+    ospfSettings.setCost(firstNonNull(vsOspfIface.getMetric(), DEFAULT_OSPF_METRIC));
     ospfSettings.setPassive(vsOspfIface.getPassive());
     ospfSettings.setEnabled(vsOspfIface.getEnable());
     ospfSettings.setAreaName(areaId);

@@ -6,6 +6,14 @@ options {
     tokenVocab = PaloAltoLexer;
 }
 
+ospf_area_metric
+:
+// 1-255
+// from https://docs.paloaltonetworks.com/pan-os/9-1/pan-os-web-interface-help/network/network-virtual-routers/ospf/ospf-areas-tab
+//     Also, specify whether to include a default route LSA in advertisements to the stub area along with the associated metric value (range is 1-255).
+    uint8
+;
+
 ospf_interface_dead_counts
 :
 // 3-20
@@ -15,6 +23,14 @@ ospf_interface_dead_counts
 ospf_interface_hello_interval
 :
 // 0-3600
+    uint16
+;
+
+ospf_interface_metric
+:
+// 0-65535
+// from https://docs.paloaltonetworks.com/pan-os/10-1/pan-os-networking-admin/ospf/configure-ospf
+//     Metric—Enter an OSPF metric for this interface (range is 0-65,535; default is 10).
     uint16
 ;
 
@@ -35,13 +51,6 @@ ospf_interface_transit_delay
 // 0-3600
     uint16
 ;
-
-ospf_metric
-:
-// 0-255
-    uint8
-;
-
 
 
 vrp_ospf
@@ -155,7 +164,7 @@ ospfai_link_type
 
 ospfai_metric
 :
-    METRIC metric = ospf_metric
+    METRIC metric = ospf_interface_metric
 ;
 
 ospfai_null
@@ -241,7 +250,7 @@ ospfatndr_disable
 
 ospfatndra_metric
 :
-    METRIC metric = ospf_metric
+    METRIC metric = ospf_area_metric
 ;
 
 ospfatndra_type
@@ -265,7 +274,7 @@ ospfats_default_route
 
 ospfatsdr_advertise_metric
 :
-    ADVERTISE METRIC metric = ospf_metric
+    ADVERTISE METRIC metric = ospf_area_metric
 ;
 
 ospfatsdr_disable
