@@ -127,6 +127,11 @@ final class RibTree<R extends AbstractRouteDecorator> implements Serializable {
     return ImmutableSet.of();
   }
 
+  /** Equivalent to {@link #getRoutes()}.{@link Set#size}. */
+  public int getNumRoutes() {
+    return _root.getNumElements();
+  }
+
   /**
    * Return a set of all routes contained in this RIB
    *
