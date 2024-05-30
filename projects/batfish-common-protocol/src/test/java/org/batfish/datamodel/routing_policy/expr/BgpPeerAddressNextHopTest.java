@@ -2,7 +2,10 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
@@ -47,5 +50,12 @@ public class BgpPeerAddressNextHopTest {
   public void testEvaluate_noBgpSessionProperties() {
     _thrown.expectMessage("Expected BGP session properties");
     INSTANCE.evaluate(Environment.builder(C).build());
+  }
+
+  @Test
+  public void testSerialization() {
+    NextHopExpr first = BgpPeerAddressNextHop.getInstance();
+    assertThat(SerializationUtils.clone(first), sameInstance(first));
+    assertThat(BatfishObjectMapper.clone(first, NextHopExpr.class), sameInstance(first));
   }
 }
