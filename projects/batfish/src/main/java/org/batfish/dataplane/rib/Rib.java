@@ -380,13 +380,15 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
         resolutionRestriction != null ? new ResolvabilityEnforcer(resolutionRestriction) : null;
   }
 
+  private static final Comparator<AbstractRoute> COMPARE_PREFERENCE =
+      Comparator.comparing(AbstractRoute::getAdministrativeCost)
+          .thenComparing(AbstractRoute::getMetric);
+
   @Override
   public int comparePreference(
       @Nonnull AnnotatedRoute<AbstractRoute> lhs, @Nonnull AnnotatedRoute<AbstractRoute> rhs) {
     // Flipped rhs & lhs because lower values are preferable.
-    return Comparator.comparing(AbstractRoute::getAdministrativeCost)
-        .thenComparing(AbstractRoute::getMetric)
-        .compare(rhs.getRoute(), lhs.getRoute());
+    return COMPARE_PREFERENCE.compare(rhs.getRoute(), lhs.getRoute());
   }
 
   @Override
