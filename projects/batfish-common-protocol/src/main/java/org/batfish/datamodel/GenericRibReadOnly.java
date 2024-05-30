@@ -9,16 +9,16 @@ public interface GenericRibReadOnly<R extends AbstractRouteDecorator> {
   boolean containsRoute(AbstractRouteDecorator route);
 
   /** Return set of {@link AbstractRoute abstract routes} this RIB contains. */
-  Set<AbstractRoute> getRoutes();
+  Set<AbstractRoute> getUnannotatedRoutes();
 
   /** Return set of routes stored for this exact prefix, if any. */
   Set<R> getRoutes(Prefix prefix);
 
   /** Return set of {@link R typed routes} this RIB contains. */
-  Set<R> getTypedRoutes();
+  Set<R> getRoutes();
 
   /** Return set of backup {@link R typed routes} this RIB contains. */
-  Set<R> getTypedBackupRoutes();
+  Set<R> getBackupRoutes();
 
   /**
    * Execute the longest prefix match for a given IP address.

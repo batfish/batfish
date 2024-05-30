@@ -6678,8 +6678,7 @@ public final class FlatJuniperGrammarTest {
     IncrementalDataPlane dp = (IncrementalDataPlane) batfish.loadDataPlane(batfish.getSnapshot());
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
 
     assertThat(
         routes.get(DEFAULT_VRF_NAME),
@@ -6699,8 +6698,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
@@ -6742,8 +6740,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> vrf2ExpectedRoutes =
@@ -6804,8 +6801,7 @@ public final class FlatJuniperGrammarTest {
 
     ImmutableMap<String, Set<AnnotatedRoute<AbstractRoute>>> routes =
         dp.getRibsForTesting().get(hostname).entrySet().stream()
-            .collect(
-                ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getTypedRoutes()));
+            .collect(ImmutableMap.toImmutableMap(Entry::getKey, e -> e.getValue().getRoutes()));
     String vrf2Name = "VRF2";
 
     Set<AnnotatedRoute<AbstractRoute>> defaultExpectedRoutes =
