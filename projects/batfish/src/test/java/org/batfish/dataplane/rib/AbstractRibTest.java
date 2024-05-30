@@ -59,15 +59,15 @@ public class AbstractRibTest {
   @Test
   public void testRibConstructor() {
     // Assertions: Ensure that a new rib is empty upon construction
-    assertThat(_rib.getTypedRoutes(), empty());
-    assertThat(_rib.getTypedRoutes(), not(hasItem(_mostGeneralRoute)));
+    assertThat(_rib.getRoutes(), empty());
+    assertThat(_rib.getRoutes(), not(hasItem(_mostGeneralRoute)));
   }
 
   @Test
   public void testSingleRouteAdd() {
     // Test: Adding one route
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-    assertThat(_rib.getTypedRoutes(), contains(_mostGeneralRoute));
+    assertThat(_rib.getRoutes(), contains(_mostGeneralRoute));
   }
 
   /** Inserts overlapping routes into the RIB and returns a (manually) ordered list of them */
@@ -99,7 +99,7 @@ public class AbstractRibTest {
     for (int i = 0; i < 5; i++) {
       _rib.mergeRouteGetDelta(route);
     }
-    assertThat(_rib.getTypedRoutes(), contains(route));
+    assertThat(_rib.getRoutes(), contains(route));
   }
 
   /**
@@ -115,7 +115,7 @@ public class AbstractRibTest {
     _rib.mergeRouteGetDelta(r2);
 
     // Check that both routes exist
-    assertThat(_rib.getTypedRoutes(), containsInAnyOrder(r1, r2));
+    assertThat(_rib.getRoutes(), containsInAnyOrder(r1, r2));
   }
 
   /**
@@ -126,7 +126,7 @@ public class AbstractRibTest {
   public void testMultiOverlappingRouteAdd() {
     // Setup/Test: Add multiple routes with overlapping prefixes
     List<StaticRoute> routes = setupOverlappingRoutes();
-    assertThat(_rib.getTypedRoutes(), containsInAnyOrder(routes.toArray()));
+    assertThat(_rib.getRoutes(), containsInAnyOrder(routes.toArray()));
   }
 
   /** Ensure that empty RIB doesn't have any prefix matches */
@@ -239,23 +239,23 @@ public class AbstractRibTest {
             .build();
 
     rib.mergeRouteGetDelta(ospfRoute);
-    assertThat(rib.getRoutes(), hasSize(1));
+    assertThat(rib.getUnannotatedRoutes(), hasSize(1));
 
     // This new route replaces old route
     OspfIntraAreaRoute newRoute = ospfRoute.toBuilder().setMetric(10).build();
     rib.mergeRouteGetDelta(newRoute);
-    assertThat(rib.getRoutes(), contains(newRoute));
+    assertThat(rib.getUnannotatedRoutes(), contains(newRoute));
 
     // Add completely new route and check that the size increases
     rib.mergeRouteGetDelta(ospfRoute.toBuilder().setNetwork(Prefix.parse("2.2.2.2/32")).build());
-    assertThat(rib.getRoutes(), hasSize(2));
+    assertThat(rib.getUnannotatedRoutes(), hasSize(2));
   }
 
   /** Test that routes obtained from getTypedRoutes() cannot be modified */
   @Test
-  public void testGetRoutesCannotBeModified() {
+  public void testGetUnannotatedRoutesCannotBeModified() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-    Set<StaticRoute> routes = _rib.getTypedRoutes();
+    Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -272,9 +272,9 @@ public class AbstractRibTest {
    * Test that routes obtained from getTypedRoutes() do NOT reflect subsequent changes to the RIB
    */
   @Test
-  public void testGetRoutesIsNotAView() {
+  public void testGetUnannotatedRoutesIsNotAView() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
-    Set<StaticRoute> routes = _rib.getTypedRoutes();
+    Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
         StaticRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.1/32"))
@@ -292,11 +292,11 @@ public class AbstractRibTest {
    * modified
    */
   @Test
-  public void testGetRoutesSameObject() {
+  public void testGetUnannotatedRoutesSameObject() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
-    Set<StaticRoute> routes = _rib.getTypedRoutes();
-    assertThat(_rib.getTypedRoutes(), sameInstance(routes));
+    Set<StaticRoute> routes = _rib.getRoutes();
+    assertThat(_rib.getRoutes(), sameInstance(routes));
   }
 
   /** Test that correct delta is returned when adding a new route. */
@@ -360,13 +360,13 @@ public class AbstractRibTest {
     List<RouteAdvertisement<StaticRoute>> actions = d.stream().collect(Collectors.toList());
 
     // Check only route r remains
-    assertThat(_rib.getTypedRoutes(), contains(r));
+    assertThat(_rib.getRoutes(), contains(r));
     assertThat(actions, contains(new RouteAdvertisement<>(_mostGeneralRoute, Reason.WITHDRAW)));
 
     // Remove route r
     d = _rib.removeRouteGetDelta(r);
     actions = d.stream().collect(Collectors.toList());
-    assertThat(_rib.getTypedRoutes(), empty());
+    assertThat(_rib.getRoutes(), empty());
     assertThat(actions, contains(new RouteAdvertisement<>(r, Reason.WITHDRAW)));
   }
 
@@ -396,11 +396,11 @@ public class AbstractRibTest {
     _rib.mergeRoute(r1);
     _rib.mergeRoute(r2);
     // sanity check here
-    assertThat(_rib.getRoutes(), hasSize(2));
+    assertThat(_rib.getUnannotatedRoutes(), hasSize(2));
 
     // Remove only r1, check that r2 remains
     _rib.removeRoute(r1);
-    assertThat(_rib.getTypedRoutes(), contains(r2));
+    assertThat(_rib.getRoutes(), contains(r2));
   }
 
   @Test
@@ -460,8 +460,8 @@ public class AbstractRibTest {
 
     // Test:
     _rib.clear();
+    assertThat(_rib.getUnannotatedRoutes(), empty());
     assertThat(_rib.getRoutes(), empty());
-    assertThat(_rib.getTypedRoutes(), empty());
   }
 
   @Test
@@ -506,10 +506,10 @@ public class AbstractRibTest {
     bestPathRib.mergeRoute(route2);
     bestPathRib.mergeRoute(route3);
     // Route 2 is preferred so it replaces route 1
-    assertThat(bestPathRib.getTypedRoutes(), contains(route2));
+    assertThat(bestPathRib.getRoutes(), contains(route2));
     RibDelta<Bgpv4Route> delta = bestPathRib.removeRouteGetDelta(route2);
     // Route 2 is removed but route 1 fills the gap as the next-best route
-    assertThat(bestPathRib.getTypedRoutes(), contains(route1));
+    assertThat(bestPathRib.getRoutes(), contains(route1));
     assertThat(
         delta.stream().collect(Collectors.toList()),
         contains(RouteAdvertisement.withdrawing(route2), new RouteAdvertisement<>(route1)));

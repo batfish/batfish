@@ -635,7 +635,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       assert _ebgpv4DeltaBestPathBuilder.isEmpty();
 
       if (!_exportFromBgpRib) {
-        _mainRibPrev = _mainRib.getTypedRoutes();
+        _mainRibPrev = _mainRib.getRoutes();
       }
     } else {
       assert _mainRibPrev.isEmpty();
@@ -1317,7 +1317,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // This kind of generation policy should not need access to the main rib
     GeneratedRoute.Builder builder =
         GeneratedRouteHelper.activateGeneratedRoute(
-            generatedRoute, policy, _mainRib.getTypedRoutes(), _successfulWatchedTracks::contains);
+            generatedRoute, policy, _mainRib.getRoutes(), _successfulWatchedTracks::contains);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
             builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
@@ -1400,10 +1400,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return RibDelta.empty();
     }
     Set<? extends AbstractRoute> currentRoutes =
-        _generateAggregatesFromMainRib ? _mainRib.getRoutes() : _bgpv4Rib.getTypedRoutes();
+        _generateAggregatesFromMainRib ? _mainRib.getUnannotatedRoutes() : _bgpv4Rib.getRoutes();
     RibDelta.Builder<Bgpv4Route> aggDeltaBuilder = RibDelta.builder();
     // Withdraw old aggregates. Withdrawals may be canceled out by activated aggregates below.
-    _bgpv4Rib.getTypedRoutes().stream()
+    _bgpv4Rib.getRoutes().stream()
         .filter(r -> r.getProtocol() == RoutingProtocol.AGGREGATE)
         .forEach(prevAggregate -> aggDeltaBuilder.remove(prevAggregate, Reason.WITHDRAW));
     Multimap<Prefix, AbstractRoute> potentialContributorsByAggregatePrefix =
@@ -2214,7 +2214,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     return Streams.concat(
             Stream.of(
                 // RIBs
-                _bgpv4Rib.getTypedRoutes(),
+                _bgpv4Rib.getRoutes(),
                 _evpnType3Rib.getTypedRoutes(),
                 _evpnType5Rib.getTypedRoutes(),
                 // Outgoing RIB deltas
@@ -2470,8 +2470,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
     _anySessionHasAdditionalPaths = computeAnySessionHasAdditionalPaths();
     if (_anySessionHasAdditionalPaths) {
-      _bgpv4Prev = _bgpv4Rib.getTypedRoutes();
-      _ebgpv4Prev = _ebgpv4Rib.getTypedRoutes();
+      _bgpv4Prev = _bgpv4Rib.getRoutes();
+      _ebgpv4Prev = _ebgpv4Rib.getRoutes();
     } else {
       _bgpv4Prev = ImmutableSet.of();
       _ebgpv4Prev = ImmutableSet.of();
@@ -2506,7 +2506,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       assert _ebgpv4DeltaBestPathBuilder.isEmpty();
       if (_mainRibPrev.isEmpty()) {
         // Save previous main RIB routes if they were not already saved during topology update.
-        _mainRibPrev = _mainRib.getTypedRoutes();
+        _mainRibPrev = _mainRib.getRoutes();
       }
     }
   }
@@ -2639,12 +2639,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * Return a set of all bgpv4 routes. Excludes locally-generated (redistributed) routes for now.
    */
   public @Nonnull Set<Bgpv4Route> getV4Routes() {
-    return _bgpv4Rib.getTypedRoutes();
+    return _bgpv4Rib.getRoutes();
   }
 
   /** Return a set of all bgpv4 backup routes */
   public @Nonnull Set<Bgpv4Route> getV4BackupRoutes() {
-    return _bgpv4Rib.getTypedBackupRoutes();
+    return _bgpv4Rib.getBackupRoutes();
   }
 
   /** Return a set of all multipath-best evpn routes. */

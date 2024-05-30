@@ -260,6 +260,6 @@ public class RibDeltaTest {
     // Test
     RibDelta.importRibDelta(rib, delta);
     // r1 remains due to different protocol
-    assertThat(rib.getRoutes(), contains(r2));
+    assertThat(rib.getUnannotatedRoutes(), contains(r2));
   }
 }

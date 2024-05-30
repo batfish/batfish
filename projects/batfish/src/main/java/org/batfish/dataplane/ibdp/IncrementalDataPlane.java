@@ -45,7 +45,7 @@ public final class IncrementalDataPlane implements Serializable, DataPlane {
                 VirtualRouter::getName,
                 vr ->
                     FinalMainRib.of(
-                        vr.getMainRib().getTypedRoutes().stream()
+                        vr.getMainRib().getRoutes().stream()
                             .map(AnnotatedRoute::getAbstractRoute))));
   }
 

@@ -248,7 +248,7 @@ public class VirtualRouterTest {
     vr.activateStaticRoutes(new PreDataPlaneTrackMethodEvaluator(vr.getConfiguration()));
 
     // Assert dependent route is not there
-    assertThat(vr.getMainRib().getRoutes(), not(hasItem(dependentRoute)));
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), not(hasItem(dependentRoute)));
   }
 
   /** Check that initialization of Connected RIB is as expected */
@@ -264,7 +264,7 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr.getConnectedRib().getTypedRoutes(),
+        vr.getConnectedRib().getRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .map(
@@ -312,7 +312,7 @@ public class VirtualRouterTest {
     // The kernel routes not requiring owned IPs should be present in the independent RIB.
     // All others should be present in _kernelConditionalRoutes.
     assertThat(
-        vr._independentRib.getTypedRoutes(),
+        vr._independentRib.getRoutes(),
         containsInAnyOrder(vr.annotateRoute(noRequiredOwnedIpRoute)));
     assertThat(
         vr._kernelConditionalRoutes,
@@ -362,7 +362,7 @@ public class VirtualRouterTest {
 
     // Assert that all interface prefixes have been processed
     assertThat(
-        vr._localRib.getTypedRoutes(),
+        vr._localRib.getRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .filter(e -> e.getValue().getPrefix().getPrefixLength() < Prefix.MAX_PREFIX_LENGTH)
@@ -417,9 +417,9 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticUnconditionalRib.getTypedRoutes(), containsInAnyOrder(routes.get(3)));
+    assertThat(vr._staticUnconditionalRib.getRoutes(), containsInAnyOrder(routes.get(3)));
     assertThat(
-        vr._staticConditionalRib.getTypedRoutes(),
+        vr._staticConditionalRib.getRoutes(),
         containsInAnyOrder(routes.get(0), routes.get(1), routes.get(2)));
   }
 
@@ -431,18 +431,18 @@ public class VirtualRouterTest {
     vr.initRibs();
 
     // Simple RIBs
-    assertThat(vr.getConnectedRib().getRoutes(), empty());
-    assertThat(vr._staticConditionalRib.getRoutes(), empty());
-    assertThat(vr._staticUnconditionalRib.getRoutes(), empty());
-    assertThat(vr._independentRib.getRoutes(), empty());
+    assertThat(vr.getConnectedRib().getUnannotatedRoutes(), empty());
+    assertThat(vr._staticConditionalRib.getUnannotatedRoutes(), empty());
+    assertThat(vr._staticUnconditionalRib.getUnannotatedRoutes(), empty());
+    assertThat(vr._independentRib.getUnannotatedRoutes(), empty());
 
     // RIP RIBs
-    assertThat(vr._ripInternalRib.getRoutes(), empty());
-    assertThat(vr._ripInternalStagingRib.getRoutes(), empty());
-    assertThat(vr._ripRib.getRoutes(), empty());
+    assertThat(vr._ripInternalRib.getUnannotatedRoutes(), empty());
+    assertThat(vr._ripInternalStagingRib.getUnannotatedRoutes(), empty());
+    assertThat(vr._ripRib.getUnannotatedRoutes(), empty());
 
     // Main RIB
-    assertThat(vr.getMainRib().getRoutes(), empty());
+    assertThat(vr.getMainRib().getUnannotatedRoutes(), empty());
   }
 
   /** Check that initialization of RIP internal routes happens correctly */
@@ -455,7 +455,7 @@ public class VirtualRouterTest {
     vr.initBaseRipRoutes();
 
     // Check that nothing happens
-    assertThat(vr._ripInternalRib.getRoutes(), empty());
+    assertThat(vr._ripInternalRib.getUnannotatedRoutes(), empty());
 
     // Complete setup by adding a process
     RipProcess ripProcess = new RipProcess();
@@ -465,7 +465,7 @@ public class VirtualRouterTest {
     vr.initBaseRipRoutes();
 
     assertThat(
-        vr._ripInternalRib.getTypedRoutes(),
+        vr._ripInternalRib.getRoutes(),
         equalTo(
             exampleInterfaceAddresses.entrySet().stream()
                 .map(
@@ -500,7 +500,7 @@ public class VirtualRouterTest {
     // Test
     vr.initStaticRibs();
 
-    assertThat(vr._staticConditionalRib.getTypedRoutes(), equalTo(routeSet));
+    assertThat(vr._staticConditionalRib.getRoutes(), equalTo(routeSet));
   }
 
   /** Test basic message queuing operations */
@@ -843,7 +843,7 @@ public class VirtualRouterTest {
     emptyVr.initCrossVrfQueues();
     emptyVr.initCrossVrfImports();
     emptyVr.processCrossVrfRoutes();
-    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
+    assertThat(emptyVr.getMainRib().getRoutes(), equalTo(annotatedRoutes));
 
     // Clear emptyVr's RIB and queues and run intermediate leaking (i.e. what would happen in one
     // computeDependentRoutesIteration()); all routes should leak from vrWithRoutes' main RIB delta
@@ -851,7 +851,7 @@ public class VirtualRouterTest {
     emptyVr.initCrossVrfQueues();
     emptyVr.queueCrossVrfImports();
     emptyVr.processCrossVrfRoutes();
-    assertThat(emptyVr.getMainRib().getTypedRoutes(), equalTo(annotatedRoutes));
+    assertThat(emptyVr.getMainRib().getRoutes(), equalTo(annotatedRoutes));
   }
 
   @Test

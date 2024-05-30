@@ -391,7 +391,7 @@ public final class VirtualRouter {
   private void applyRibGroup(@Nonnull RibGroup ribGroup, @Nonnull AnnotatedRib<?> sourceRib) {
     RoutingPolicy policy = _c.getRoutingPolicies().get(ribGroup.getImportPolicy());
     checkState(policy != null, "RIB group %s is missing import policy", ribGroup.getName());
-    sourceRib.getTypedRoutes().stream()
+    sourceRib.getRoutes().stream()
         .map(
             route -> {
               AbstractRouteBuilder<?, ?> builder = route.getRoute().toBuilder();
@@ -451,7 +451,7 @@ public final class VirtualRouter {
     This effectively makes the entire IGP computation a "previous round".
     */
     _mainRibDeltaPrevRound =
-        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getTypedRoutes()).build();
+        RibDelta.<AnnotatedRoute<AbstractRoute>>builder().add(_mainRib.getRoutes()).build();
     _mainRibRouteDeltaBuilder = RibDelta.builder();
 
     if (_bgpRoutingProcess != null && !_bgpRoutingProcess.isInitialized()) {
@@ -493,7 +493,7 @@ public final class VirtualRouter {
       enqueueCrossVrfRoutes(
           otherVrfToOurRib,
           // TODO Will need to update once support is added for cross-VRF export policies
-          exportingVR._mainRib.getTypedRoutes().stream().map(RouteAdvertisement::new),
+          exportingVR._mainRib.getRoutes().stream().map(RouteAdvertisement::new),
           leakConfig.getImportPolicy());
     }
   }
@@ -532,7 +532,7 @@ public final class VirtualRouter {
           policyName != null ? _c.getRoutingPolicies().get(policyName) : null;
       GeneratedRoute.Builder grb =
           GeneratedRouteHelper.activateGeneratedRoute(
-              gr, generationPolicy, _mainRib.getTypedRoutes(), null);
+              gr, generationPolicy, _mainRib.getRoutes(), null);
 
       if (grb != null) {
         // Routes have been changed
@@ -580,7 +580,7 @@ public final class VirtualRouter {
    * <p>Removes static route from the main RIB for which next-hop-ip has become unreachable.
    */
   void activateStaticRoutes(TrackMethodEvaluator trackMethodEvaluator) {
-    for (StaticRoute sr : _staticConditionalRib.getTypedRoutes()) {
+    for (StaticRoute sr : _staticConditionalRib.getRoutes()) {
       if (shouldActivateConditionalStaticRoute(trackMethodEvaluator, sr)) {
         _mainRibRouteDeltaBuilder.from(_mainRib.mergeRouteGetDelta(annotateRoute(sr)));
       } else {
@@ -706,7 +706,7 @@ public final class VirtualRouter {
     if (_bgpRoutingProcess == null) {
       return;
     }
-    _bgpRoutingProcess.initBgpAggregateRoutesLegacy(_generatedRib.getRoutes());
+    _bgpRoutingProcess.initBgpAggregateRoutesLegacy(_generatedRib.getUnannotatedRoutes());
   }
 
   /** Initialize RIP routes from the interface prefixes */
@@ -964,7 +964,7 @@ public final class VirtualRouter {
 
     if (numIterations == 1) {
       // Add initial routes from main rib
-      _routesForIsisRedistribution.add(_mainRib.getTypedRoutes());
+      _routesForIsisRedistribution.add(_mainRib.getRoutes());
     }
     addRedistributedRoutesToDeltas(d1, d2, proc);
     _routesForIsisRedistribution = RibDelta.builder();
@@ -1222,8 +1222,7 @@ public final class VirtualRouter {
          * from this neighbor into our RIP internal staging rib, adding the incremental cost
          * (?), and using the neighborInterface's address as the next hop ip
          */
-        for (RipInternalRoute neighborRoute :
-            neighborVirtualRouter._ripInternalRib.getTypedRoutes()) {
+        for (RipInternalRoute neighborRoute : neighborVirtualRouter._ripInternalRib.getRoutes()) {
           long newCost = neighborRoute.getMetric() + RipProcess.DEFAULT_RIP_COST;
           Ip nextHopIp = neighborInterface.getConcreteAddress().getIp();
           RipInternalRoute newRoute =
@@ -1441,7 +1440,7 @@ public final class VirtualRouter {
   int computeIterationHashCode() {
     return Streams.concat(
             // RIB State
-            Stream.of(_mainRib.getTypedRoutes()),
+            Stream.of(_mainRib.getRoutes()),
             // Message queues
             messageQueueStream(_isisIncomingRoutes),
             messageQueueStream(_crossVrfIncomingRoutes),
@@ -1732,7 +1731,7 @@ public final class VirtualRouter {
       return;
     }
     SetMultimap<Integer, Ip> vtepsByVni = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-    _mainRib.getRoutes().stream()
+    _mainRib.getUnannotatedRoutes().stream()
         .map(AbstractRoute::getNextHop)
         .filter(NextHopVtep.class::isInstance)
         .map(NextHopVtep.class::cast)

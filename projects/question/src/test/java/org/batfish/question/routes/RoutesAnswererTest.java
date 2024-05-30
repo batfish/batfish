@@ -1038,7 +1038,7 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<AbstractRoute> getRoutes() {
+    public Set<AbstractRoute> getUnannotatedRoutes() {
       return _routes.stream()
           .map(AbstractRouteDecorator::getAbstractRoute)
           .collect(ImmutableSet.toImmutableSet());
@@ -1052,12 +1052,12 @@ public class RoutesAnswererTest {
     }
 
     @Override
-    public Set<R> getTypedRoutes() {
+    public Set<R> getRoutes() {
       return _routes;
     }
 
     @Override
-    public Set<R> getTypedBackupRoutes() {
+    public Set<R> getBackupRoutes() {
       throw new UnsupportedOperationException();
     }
 

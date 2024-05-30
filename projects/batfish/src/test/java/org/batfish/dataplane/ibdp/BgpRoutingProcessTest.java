@@ -133,11 +133,11 @@ public class BgpRoutingProcessTest {
   @Test
   public void testInitRibsEmpty() {
     // iBGP
-    assertThat(_routingProcess._ibgpv4Rib.getRoutes(), empty());
+    assertThat(_routingProcess._ibgpv4Rib.getUnannotatedRoutes(), empty());
     // eBGP
-    assertThat(_routingProcess._ebgpv4Rib.getRoutes(), empty());
+    assertThat(_routingProcess._ebgpv4Rib.getUnannotatedRoutes(), empty());
     // Combined bgp
-    assertThat(_routingProcess._bgpv4Rib.getRoutes(), empty());
+    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
   }
 
   @Test
@@ -658,7 +658,7 @@ public class BgpRoutingProcessTest {
     _routingProcess.initialize(node);
     _routingProcess.executeIteration(ImmutableMap.of());
     assertThat(
-        _routingProcess._bgpv4Rib.getRoutes(),
+        _routingProcess._bgpv4Rib.getUnannotatedRoutes(),
         contains(
             isBgpv4RouteThat(
                 allOf(hasPrefix(prefix1), hasProtocol(RoutingProtocol.BGP), isNonRouting(true)))));

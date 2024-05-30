@@ -64,7 +64,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   public static @Nonnull <U extends AbstractRoute, T extends U> RibDelta<U> importRib(
       AbstractRib<U> importingRib, AbstractRib<T> exportingRib) {
     RibDelta.Builder<U> builder = RibDelta.builder();
-    exportingRib.getTypedRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
+    exportingRib.getRoutes().forEach(r -> builder.from(importingRib.mergeRouteGetDelta(r)));
     return builder.build();
   }
 
@@ -82,7 +82,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
           AnnotatedRib<U> importingRib, AbstractRib<T> exportingRib, String vrfName) {
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
-        .getTypedRoutes()
+        .getRoutes()
         .forEach(
             r -> builder.from(importingRib.mergeRouteGetDelta(new AnnotatedRoute<>(r, vrfName))));
     return builder.build();
@@ -102,7 +102,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
           AnnotatedRib<U> importingRib, AnnotatedRib<T> exportingRib) {
     RibDelta.Builder<AnnotatedRoute<U>> builder = RibDelta.builder();
     exportingRib
-        .getTypedRoutes()
+        .getRoutes()
         .forEach(
             r ->
                 builder.from(
@@ -140,8 +140,8 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public @Nonnull Set<AbstractRoute> getRoutes() {
-    return getTypedRoutes().stream()
+  public @Nonnull Set<AbstractRoute> getUnannotatedRoutes() {
+    return getRoutes().stream()
         .map(AbstractRouteDecorator::getAbstractRoute)
         .collect(ImmutableSet.toImmutableSet());
   }
@@ -157,7 +157,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public final @Nonnull Set<R> getTypedRoutes() {
+  public final @Nonnull Set<R> getRoutes() {
     if (_allRoutes == null) {
       _allRoutes = computeTypedRoutes();
     }
@@ -169,7 +169,7 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   }
 
   @Override
-  public @Nonnull Set<R> getTypedBackupRoutes() {
+  public @Nonnull Set<R> getBackupRoutes() {
     return Optional.ofNullable(_backupRoutes)
         .map(Multimap::values)
         .map(ImmutableSet::copyOf)
@@ -269,8 +269,8 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   /**
    * Check if two RIBs have exactly same sets of routes.
    *
-   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getTypedRoutes}
-   * and then testing the sets for equality.
+   * <p>Designed to be faster (in an average case) than doing two calls to {@link #getRoutes} and
+   * then testing the sets for equality.
    *
    * @param other the other RIB
    * @return True if both ribs contain identical routes

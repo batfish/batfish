@@ -513,14 +513,13 @@ final class EigrpRoutingProcess implements RoutingProcess<EigrpTopology, EigrpRo
       Collection<EigrpEdge> edgesWentUp, Map<String, Node> allNodes, NetworkConfigurations nc) {
     for (EigrpEdge edge : edgesWentUp) {
       sendOutInternalRoutesPerNeighbor(
-          RibDelta.<EigrpInternalRoute>builder().add(_internalRib.getTypedRoutes()).build(),
+          RibDelta.<EigrpInternalRoute>builder().add(_internalRib.getRoutes()).build(),
           allNodes,
           edge,
           nc);
       sendOutExternalRoutesPerNeighbor(
           filterExternalRoutes(
-              RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getTypedRoutes()).build(),
-              edge),
+              RibDelta.<EigrpExternalRoute>builder().add(_externalRib.getRoutes()).build(), edge),
           allNodes,
           edge,
           nc);
