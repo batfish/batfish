@@ -9,7 +9,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import java.math.BigInteger;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
@@ -326,7 +325,8 @@ public final class ExtendedCommunity extends Community {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_type, _subType, _value);
+    int valueHash = (int) (_value ^ (_value >>> 32));
+    return 31 * 31 * valueHash + 31 * _type + _subType;
   }
 
   @Override
