@@ -1,5 +1,6 @@
 package org.batfish.datamodel.routing_policy.expr;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -12,10 +13,10 @@ import org.batfish.datamodel.routing_policy.Environment;
 /** Implements BGP next-hop unchanged semantics */
 public class UnchangedNextHop extends NextHopExpr {
 
-  private static final UnchangedNextHop _instance = new UnchangedNextHop();
+  private static final UnchangedNextHop INSTANCE = new UnchangedNextHop();
 
   public static UnchangedNextHop getInstance() {
-    return _instance;
+    return INSTANCE;
   }
 
   private UnchangedNextHop() {}
@@ -48,5 +49,14 @@ public class UnchangedNextHop extends NextHopExpr {
   @Override
   public int hashCode() {
     return 0x4b4bebc0; // randomly generated
+  }
+
+  @JsonCreator
+  private static UnchangedNextHop jsonCreator() {
+    return INSTANCE;
+  }
+
+  private Object readResolve() {
+    return INSTANCE;
   }
 }
