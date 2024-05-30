@@ -44,6 +44,7 @@ import org.batfish.datamodel.bgp.BgpTopologyUtils.ConfedSessionType;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
 import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
@@ -562,7 +563,7 @@ public class BgpProtocolHelperTest {
                         Statements.ReturnTrue.toStaticStatement()))
                 .build(),
             Ip.parse("1.1.1.1"),
-            Ip.parse("1.1.1.1"),
+            NextHopIp.of(Ip.parse("1.1.1.1")),
             true);
 
     assertThat(result.getCommunities().getCommunities(), equalTo(ImmutableSet.of(community)));
