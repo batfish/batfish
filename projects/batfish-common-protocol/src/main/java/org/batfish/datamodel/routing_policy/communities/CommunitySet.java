@@ -100,18 +100,12 @@ public final class CommunitySet implements Serializable {
       return false;
     }
     CommunitySet other = (CommunitySet) obj;
-    return (_hashCode == other._hashCode || _hashCode == 0 || other._hashCode == 0)
-        && _communities.equals(other._communities);
+    return _communities.equals(other._communities);
   }
 
   @Override
   public int hashCode() {
-    int h = _hashCode;
-    if (h == 0) {
-      h = _communities.hashCode();
-      _hashCode = h;
-    }
-    return h;
+    return _communities.hashCode();
   }
 
   @Override
@@ -156,8 +150,6 @@ public final class CommunitySet implements Serializable {
     return of(_communities);
   }
 
-  /* Cache the hashcode */
-  private transient int _hashCode = 0;
   /* Cache conversions to _extendedCommunities and _standardCommunities. */
   private transient @Nullable Set<ExtendedCommunity> _extendedCommunities;
   private transient @Nullable Set<StandardCommunity> _standardCommunities;
