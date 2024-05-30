@@ -78,6 +78,7 @@ public class PrefixTrieMultiMapTest {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     assertTrue("Element was added", ptm1.put(Prefix.ZERO, 1));
     assertThat(ptm1.getAllElements(), contains(1));
+    assertThat(ptm1.getNumElements(), equalTo(1));
     assertThat(ptm1.get(Prefix.ZERO), equalTo(ImmutableSet.of(1)));
   }
 
@@ -95,6 +96,7 @@ public class PrefixTrieMultiMapTest {
     PrefixTrieMultiMap<Integer> ptm1 = new PrefixTrieMultiMap<>();
     ptm1.putAll(Prefix.ZERO, ImmutableSet.of(1, 2, 3));
     assertThat(ptm1.getAllElements(), containsInAnyOrder(1, 2, 3));
+    assertThat(ptm1.getNumElements(), equalTo(3));
     assertThat(ptm1.get(Prefix.ZERO), containsInAnyOrder(1, 2, 3));
   }
 
@@ -105,6 +107,7 @@ public class PrefixTrieMultiMapTest {
     assertFalse("Nothing to remove", ptm1.remove(Prefix.ZERO, 2));
     assertTrue("Element removed", ptm1.remove(Prefix.ZERO, 1));
     assertThat(ptm1.getAllElements(), empty());
+    assertThat(ptm1.getNumElements(), equalTo(0));
   }
 
   @Test
@@ -118,6 +121,7 @@ public class PrefixTrieMultiMapTest {
     assertThat(ptm1.get(Prefix.ZERO), empty());
     assertThat(ptm1.get(p), equalTo(ImmutableSet.of(1)));
     assertThat(ptm1.getAllElements(), equalTo(ImmutableSet.of(1)));
+    assertThat(ptm1.getNumElements(), equalTo(1));
   }
 
   @Test
@@ -392,6 +396,7 @@ public class PrefixTrieMultiMapTest {
     map.clear();
 
     assertThat(map.getAllElements(), hasSize(0));
+    assertThat(map.getNumElements(), equalTo(0));
   }
 
   @Test
