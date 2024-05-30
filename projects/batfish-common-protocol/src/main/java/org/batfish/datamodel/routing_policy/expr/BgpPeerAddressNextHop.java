@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.expr;
 
 import static com.google.common.base.Preconditions.checkState;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
@@ -10,12 +11,12 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** NextHopExpr that gets the peer address of the BGP peer where the policy is being evaluated. */
-public class BgpPeerAddressNextHop extends NextHopExpr {
+public final class BgpPeerAddressNextHop extends NextHopExpr {
 
-  private static BgpPeerAddressNextHop _instance = new BgpPeerAddressNextHop();
+  private static final BgpPeerAddressNextHop INSTANCE = new BgpPeerAddressNextHop();
 
   public static BgpPeerAddressNextHop getInstance() {
-    return _instance;
+    return INSTANCE;
   }
 
   private BgpPeerAddressNextHop() {}
@@ -38,5 +39,14 @@ public class BgpPeerAddressNextHop extends NextHopExpr {
     int result = 1;
     result = prime * result + 0x12345678;
     return result;
+  }
+
+  @JsonCreator
+  private static BgpPeerAddressNextHop jsonCreator() {
+    return INSTANCE;
+  }
+
+  private Object readResolve() {
+    return INSTANCE;
   }
 }
