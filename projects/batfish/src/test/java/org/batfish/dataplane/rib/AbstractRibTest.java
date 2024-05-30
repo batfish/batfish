@@ -251,9 +251,9 @@ public class AbstractRibTest {
     assertThat(rib.getUnannotatedRoutes(), hasSize(2));
   }
 
-  /** Test that routes obtained from getTypedRoutes() cannot be modified */
+  /** Test that routes obtained from getRoutes() cannot be modified */
   @Test
-  public void testGetUnannotatedRoutesCannotBeModified() {
+  public void testGetRoutesCannotBeModified() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
@@ -268,11 +268,9 @@ public class AbstractRibTest {
     routes.add(r1);
   }
 
-  /**
-   * Test that routes obtained from getTypedRoutes() do NOT reflect subsequent changes to the RIB
-   */
+  /** Test that routes obtained from getRoutes() do NOT reflect subsequent changes to the RIB */
   @Test
-  public void testGetUnannotatedRoutesIsNotAView() {
+  public void testGetRoutesIsNotAView() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
     Set<StaticRoute> routes = _rib.getRoutes();
     StaticRoute r1 =
@@ -288,11 +286,11 @@ public class AbstractRibTest {
   }
 
   /**
-   * Test that multiple calls to getTypedRoutes() return the same object, if the RIB has not been
+   * Test that multiple calls to getRoutes() return the same object, if the RIB has not been
    * modified
    */
   @Test
-  public void testGetUnannotatedRoutesSameObject() {
+  public void testGetRoutesCaches() {
     _rib.mergeRouteGetDelta(_mostGeneralRoute);
 
     Set<StaticRoute> routes = _rib.getRoutes();
