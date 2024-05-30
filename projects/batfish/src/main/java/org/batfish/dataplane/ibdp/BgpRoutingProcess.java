@@ -98,6 +98,7 @@ import org.batfish.datamodel.bgp.RouteDistinguisher;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -1320,7 +1321,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             generatedRoute, policy, _mainRib.getRoutes(), _successfulWatchedTracks::contains);
     return builder != null
         ? BgpProtocolHelper.convertGeneratedRouteToBgp(
-            builder.build(), attrPolicy, _process.getRouterId(), nextHopIp, false)
+            builder.build(), attrPolicy, _process.getRouterId(), NextHopIp.of(nextHopIp), false)
         : null;
   }
 
@@ -1357,7 +1358,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
               gr,
               Optional.ofNullable(gr.getAttributePolicy()).flatMap(_policies::get).orElse(null),
               _process.getRouterId(),
-              Ip.AUTO,
+              NextHopDiscard.instance(),
               // Prevent route from being merged into the main RIB by marking it non-routing
               true);
       /* TODO: tests for this */
@@ -1868,7 +1869,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                     .flatMap(_policies::get)
                     .orElse(null),
                 _process.getRouterId(),
-                ourSessionProperties.getLocalIp(),
+                NextHopIp.of(ourSessionProperties.getLocalIp()),
                 false)
                 .toBuilder()
             : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
