@@ -403,6 +403,13 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     return b.build();
   }
 
+  /** Equivalent to {@link #getAllElements()}.{@link Set#size}. */
+  public int getNumElements() {
+    int[] ret = new int[] {0};
+    traverseNodes(node -> ret[0] += node._elements.size());
+    return ret[0];
+  }
+
   @Override
   public int hashCode() {
     return Objects.hashCode(_root);
