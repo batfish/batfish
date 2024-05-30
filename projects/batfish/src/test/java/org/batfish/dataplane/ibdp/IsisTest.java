@@ -194,13 +194,13 @@ public class IsisTest {
     Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
 
     Set<IsisRoute> r1L1RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
+        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
     Set<IsisRoute> r2L1RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
+        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
     Set<IsisRoute> r1L2RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
+        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
     Set<IsisRoute> r2L2RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
+        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
 
     // L1 RIBs lack the other's loopback, but have default route (see VirtualRouter.initIsisImports)
     assertThat(
@@ -253,13 +253,13 @@ public class IsisTest {
     Prefix r2LoopbackPrefix = R2_LOOPBACK_IP.toPrefix();
 
     Set<IsisRoute> r1L1RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
+        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
     Set<IsisRoute> r2L1RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getTypedRoutes();
+        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes();
     Set<IsisRoute> r1L2RibRoutes =
-        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
+        dp.getNodes().get(R1).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
     Set<IsisRoute> r2L2RibRoutes =
-        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getTypedRoutes();
+        dp.getNodes().get(R2).getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL2Rib.getRoutes();
 
     // L1 RIBs have the other's loopback and default route (see VirtualRouter.initIsisImports)
     assertThat(
@@ -523,16 +523,26 @@ public class IsisTest {
 
     // Assert r1/r2 have empty l1 rib
     assertThat(
-        dp.getNodes().get("r1").getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes(),
+        dp.getNodes()
+            .get("r1")
+            .getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
+            ._isisL1Rib
+            .getUnannotatedRoutes(),
         empty());
     assertThat(
-        dp.getNodes().get("r2").getVirtualRouterOrThrow(DEFAULT_VRF_NAME)._isisL1Rib.getRoutes(),
+        dp.getNodes()
+            .get("r2")
+            .getVirtualRouterOrThrow(DEFAULT_VRF_NAME)
+            ._isisL1Rib
+            .getUnannotatedRoutes(),
         empty());
 
     // Assert r3 has disjoint l1/l2 ribs
     VirtualRouter r3Vr = dp.getNodes().get("r3").getVirtualRouterOrThrow(DEFAULT_VRF_NAME);
     assertThat(
-        Sets.intersection(r3Vr._isisL1Rib.getRoutes(), r3Vr._isisL2Rib.getRoutes()), empty());
+        Sets.intersection(
+            r3Vr._isisL1Rib.getUnannotatedRoutes(), r3Vr._isisL2Rib.getUnannotatedRoutes()),
+        empty());
   }
 
   /* Sets up a 4-node network. See details in testIsisOverload() */

@@ -789,7 +789,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
      Both are only applicable to fully incremental computation
      */
     Stream<Long> contributingMetrics =
-        _intraAreaRib.getTypedRoutes().stream()
+        _intraAreaRib.getRoutes().stream()
             .filter(
                 /*
                  * Only routes in the same area and within the summary prefix can
@@ -844,7 +844,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
 
      Both are only applicable to fully incremental computation
      */
-    if (!_intraAreaRib.getTypedRoutes().stream()
+    if (!_intraAreaRib.getRoutes().stream()
         .anyMatch(
             /*
              * Only routes in the same area and within the summary prefix can
@@ -1702,7 +1702,7 @@ final class OspfRoutingProcess implements RoutingProcess<OspfTopology, OspfRoute
             _activatedGeneratedRoutes.stream(),
             // RIB state
             Stream.of(_intraAreaRib, _interAreaRib, _internalSummaryRib, _type1Rib, _type2Rib)
-                .map(AbstractRib::getTypedRoutes))
+                .map(AbstractRib::getRoutes))
         .collect(toOrderedHashCode());
   }
 

@@ -28,7 +28,7 @@ import org.junit.Test;
 public class RibTest {
   @Test
   public void testCreatedEmpty() {
-    assertThat(new Rib().getRoutes(), empty());
+    assertThat(new Rib().getUnannotatedRoutes(), empty());
   }
 
   @Test

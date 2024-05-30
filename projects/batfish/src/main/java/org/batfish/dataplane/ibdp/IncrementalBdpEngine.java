@@ -978,7 +978,7 @@ final class IncrementalBdpEngine {
     ae.getBgpMultipathRibRoutesByIteration()
         .put(dependentRoutesIterations, numBgpMultipathRibRoutes);
     int numMainRibRoutes =
-        vrs.parallelStream().mapToInt(vr -> vr.getMainRib().getTypedRoutes().size()).sum();
+        vrs.parallelStream().mapToInt(vr -> vr.getMainRib().getRoutes().size()).sum();
     ae.getMainRibRoutesByIteration().put(dependentRoutesIterations, numMainRibRoutes);
   }
 
@@ -997,7 +997,7 @@ final class IncrementalBdpEngine {
             toImmutableSortedMap(
                 nodeEntry.getValue(),
                 Entry::getKey,
-                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getRoutes())));
+                vrfEntry -> ImmutableSet.copyOf(vrfEntry.getValue().getUnannotatedRoutes())));
   }
 
   private static final int MAX_OSPF_INTERNAL_ITERATIONS = 100000;

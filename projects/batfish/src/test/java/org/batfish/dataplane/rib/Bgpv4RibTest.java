@@ -178,7 +178,7 @@ public class Bgpv4RibTest {
     // update resolvability in BGP RIB.
     bestPathRib.updateActiveRoutes(rb1ResolverDelta);
     // rb1 should not be activated now, since it should have been erased when rb2 was added.
-    assertThat(bestPathRib.getRoutes(), not(hasItem(rb1)));
+    assertThat(bestPathRib.getUnannotatedRoutes(), not(hasItem(rb1)));
   }
 
   @Test
@@ -277,7 +277,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -289,7 +289,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -300,7 +300,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -312,7 +312,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -325,11 +325,11 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worst);
     _multiPathRib.mergeRoute(medium);
 
-    assertThat(_multiPathRib.getRoutes(), contains(medium));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(medium));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(medium));
 
     _multiPathRib.mergeRoute(best);
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -341,7 +341,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -353,7 +353,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(worse);
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), contains(best));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(best));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(best));
   }
 
@@ -385,7 +385,7 @@ public class Bgpv4RibTest {
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);
-    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getUnannotatedRoutes(), contains(best));
     assertThat(rib.getBestPathRoutes(), contains(best));
   }
 
@@ -424,7 +424,7 @@ public class Bgpv4RibTest {
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);
-    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getUnannotatedRoutes(), contains(best));
     assertThat(rib.getBestPathRoutes(), contains(best));
   }
 
@@ -471,7 +471,7 @@ public class Bgpv4RibTest {
 
     rib.mergeRoute(worse);
     rib.mergeRoute(best);
-    assertThat(rib.getRoutes(), contains(best));
+    assertThat(rib.getUnannotatedRoutes(), contains(best));
     assertThat(rib.getBestPathRoutes(), contains(best));
   }
 
@@ -504,7 +504,7 @@ public class Bgpv4RibTest {
     rib.mergeRoute(base);
     assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
     assertFalse("Not an exact AS path match, don't merge", rib.mergeRoute(candidate2));
-    assertThat(rib.getRoutes(), hasSize(2));
+    assertThat(rib.getUnannotatedRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }
 
@@ -537,7 +537,7 @@ public class Bgpv4RibTest {
     rib.mergeRoute(base);
     assertTrue("Exact AS path match, allow merge", rib.mergeRoute(candidate1));
     assertFalse("Not an exact AS path match, don't merge", rib.mergeRoute(candidate2));
-    assertThat(rib.getRoutes(), hasSize(2));
+    assertThat(rib.getUnannotatedRoutes(), hasSize(2));
     assertThat(rib.getBestPathRoutes(), hasSize(1));
   }
 
@@ -555,7 +555,7 @@ public class Bgpv4RibTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3")))
             .build());
     _multiPathRib.mergeRoute(bestPath);
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -586,7 +586,7 @@ public class Bgpv4RibTest {
             .build());
     _multiPathRib.mergeRoute(best);
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(earliest));
   }
 
@@ -606,7 +606,7 @@ public class Bgpv4RibTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.4")))
             .build());
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -623,7 +623,7 @@ public class Bgpv4RibTest {
             .build());
     _multiPathRib.mergeRoute(bestPath);
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -634,7 +634,7 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(bestPath);
     _multiPathRib.mergeRoute(bestPath);
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(1));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(1));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -653,12 +653,12 @@ public class Bgpv4RibTest {
             .setNextHop(NextHopIp.of(Ip.parse("2.2.2.3")))
             .build());
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(1));
     Bgpv4Route bestPath = _rb.setLocalPreference(1000).build();
     _multiPathRib.mergeRoute(bestPath);
 
-    assertThat(_multiPathRib.getRoutes(), contains(bestPath));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), contains(bestPath));
     assertThat(_multiPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -680,7 +680,7 @@ public class Bgpv4RibTest {
     bestPathRib.mergeRoute(_rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("2.2.2.3"))).build());
     bestPathRib.mergeRoute(bestPath);
 
-    assertThat(bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(bestPathRib.getUnannotatedRoutes(), contains(bestPath));
     assertThat(bestPathRib.getBestPathRoutes(), contains(bestPath));
   }
 
@@ -690,8 +690,8 @@ public class Bgpv4RibTest {
     _multiPathRib.mergeRoute(_rb.setNetwork(Prefix.parse("10.1.0.0/16")).build());
     _multiPathRib.mergeRoute(_rb.setNetwork(Prefix.parse("10.1.1.0/24")).build());
 
-    assertThat(_multiPathRib.getRoutes(), hasSize(3));
-    assertThat(_multiPathRib.getRoutes(), equalTo(_multiPathRib.getBestPathRoutes()));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(3));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), equalTo(_multiPathRib.getBestPathRoutes()));
 
     _multiPathRib.mergeRoute(
         _rb.setNetwork(Prefix.parse("10.1.1.0/24"))
@@ -699,7 +699,7 @@ public class Bgpv4RibTest {
             .setNextHop(NextHopIp.of(Ip.parse("22.22.22.22")))
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("22.22.22.22")))
             .build());
-    assertThat(_multiPathRib.getRoutes(), hasSize(4));
+    assertThat(_multiPathRib.getUnannotatedRoutes(), hasSize(4));
     assertThat(_multiPathRib.getBestPathRoutes(), hasSize(3));
   }
 
@@ -709,7 +709,7 @@ public class Bgpv4RibTest {
     Bgpv4Route bestPath = _rb.setLocalPreference(200).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -719,7 +719,7 @@ public class Bgpv4RibTest {
     Bgpv4Route bestPath = _rb.setOriginatorIp(Ip.parse("1.1.0.1")).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -729,7 +729,7 @@ public class Bgpv4RibTest {
     Bgpv4Route bestPath = _rb.setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.0.1"))).build();
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -754,7 +754,7 @@ public class Bgpv4RibTest {
             .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.0.1")))
             .build());
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -778,7 +778,7 @@ public class Bgpv4RibTest {
     _bestPathRib.mergeRoute(earliestPath);
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -807,7 +807,7 @@ public class Bgpv4RibTest {
     _bestPathRib.mergeRoute(earliestPath);
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   @Test
@@ -836,7 +836,7 @@ public class Bgpv4RibTest {
     _bestPathRib.mergeRoute(earliestPath);
     _bestPathRib.mergeRoute(bestPath);
 
-    assertThat(_bestPathRib.getRoutes(), contains(bestPath));
+    assertThat(_bestPathRib.getUnannotatedRoutes(), contains(bestPath));
   }
 
   /** We should not merge routes for which next hop is unreachable */
@@ -1006,7 +1006,7 @@ public class Bgpv4RibTest {
     /*
      * Initialize the matchers with respect to the output route set
      */
-    Set<Bgpv4Route> postMergeRoutes = bmr.getTypedRoutes();
+    Set<Bgpv4Route> postMergeRoutes = bmr.getRoutes();
     Matcher<Bgpv4Route> present = in(postMergeRoutes);
     Matcher<Bgpv4Route> absent = not(present);
 
@@ -1333,7 +1333,7 @@ public class Bgpv4RibTest {
 
       // Add dependent route. It should not be activated since it isn't resolvable in the main RIB
       assertThat(bgpRib.mergeRouteGetDelta(dependentRoute), equalTo(RibDelta.empty()));
-      assertThat(bgpRib.getTypedRoutes(), empty());
+      assertThat(bgpRib.getRoutes(), empty());
 
       // Add resolving route to main RIB and update BGP. Dependent route should be activated
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
@@ -1341,7 +1341,7 @@ public class Bgpv4RibTest {
       assertThat(
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.adding(dependentRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+      assertThat(bgpRib.getRoutes(), contains(dependentRoute));
     }
     {
       // Main RIB initially does contain resolving route
@@ -1362,7 +1362,7 @@ public class Bgpv4RibTest {
       // Add dependent route. It should be activated because it is resolvable in the main RIB
       assertThat(
           bgpRib.mergeRouteGetDelta(dependentRoute), equalTo(RibDelta.adding(dependentRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+      assertThat(bgpRib.getRoutes(), contains(dependentRoute));
 
       // Remove resolving route from main RIB and update BGP. Dependent route should be deactivated
       RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta =
@@ -1370,14 +1370,14 @@ public class Bgpv4RibTest {
       assertThat(
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.of(RouteAdvertisement.withdrawing(dependentRoute))));
-      assertThat(bgpRib.getTypedRoutes(), empty());
+      assertThat(bgpRib.getRoutes(), empty());
 
       // Re-add resolving route from main RIB and update BGP. Dependent route should be reactivated
       mainRibDelta = mainRib.mergeRouteGetDelta(resolvingRoute);
       assertThat(
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.of(RouteAdvertisement.adding(dependentRoute))));
-      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+      assertThat(bgpRib.getRoutes(), contains(dependentRoute));
     }
     {
       // Test of next hop IP LPM resolver restriction
@@ -1401,7 +1401,7 @@ public class Bgpv4RibTest {
 
       // Add dependent route. It should be inactive because there is no resolver in the main RIB
       assertThat(bgpRib.mergeRouteGetDelta(dependentRoute), equalTo(RibDelta.empty()));
-      assertThat(bgpRib.getTypedRoutes(), empty());
+      assertThat(bgpRib.getRoutes(), empty());
 
       // Add resolving route that DOES NOT pass restriction to main RIB and update BGP. No change
       // should occur to BGP RIB.
@@ -1409,7 +1409,7 @@ public class Bgpv4RibTest {
           mainRib.mergeRouteGetDelta(resolvingRoute1);
       assertThat(
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(), equalTo(RibDelta.empty()));
-      assertThat(bgpRib.getTypedRoutes(), empty());
+      assertThat(bgpRib.getRoutes(), empty());
 
       // Add resolving route that DOES pass restriction to main RIB and update BGP. BGP RIB should
       // gain dependent route.
@@ -1417,7 +1417,7 @@ public class Bgpv4RibTest {
       assertThat(
           bgpRib.updateActiveRoutes(mainRibDelta).getMultipathDelta(),
           equalTo(RibDelta.of(RouteAdvertisement.adding(dependentRoute))));
-      assertThat(bgpRib.getTypedRoutes(), contains(dependentRoute));
+      assertThat(bgpRib.getRoutes(), contains(dependentRoute));
     }
   }
 
@@ -1458,7 +1458,7 @@ public class Bgpv4RibTest {
       // Add less preferred NHIP route
       assertThat(
           bgpRib.mergeRouteGetDelta(highestNhipRoute), equalTo(RibDelta.adding(highestNhipRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(highestNhipRoute));
+      assertThat(bgpRib.getRoutes(), contains(highestNhipRoute));
 
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
@@ -1468,7 +1468,7 @@ public class Bgpv4RibTest {
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),
               RouteAdvertisement.withdrawing(highestNhipRoute)));
-      assertThat(bgpRib.getTypedBackupRoutes(), not(hasItem(highestNhipRoute)));
+      assertThat(bgpRib.getBackupRoutes(), not(hasItem(highestNhipRoute)));
 
       // Remove less preferred NHIP route. There should be no delta.
       assertThat(bgpRib.removeRouteGetDelta(highestNhipRoute), equalTo(RibDelta.empty()));
@@ -1516,7 +1516,7 @@ public class Bgpv4RibTest {
       // Add less preferred NHIP route
       assertThat(
           bgpRib.mergeRouteGetDelta(lowestNhipRoute), equalTo(RibDelta.adding(lowestNhipRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(lowestNhipRoute));
+      assertThat(bgpRib.getRoutes(), contains(lowestNhipRoute));
 
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
@@ -1526,7 +1526,7 @@ public class Bgpv4RibTest {
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
               RouteAdvertisement.withdrawing(lowestNhipRoute)));
-      assertThat(bgpRib.getTypedBackupRoutes(), not(hasItem(lowestNhipRoute)));
+      assertThat(bgpRib.getBackupRoutes(), not(hasItem(lowestNhipRoute)));
 
       // Remove less preferred NHIP route. There should be no delta.
       assertThat(bgpRib.removeRouteGetDelta(lowestNhipRoute), equalTo(RibDelta.empty()));
@@ -1574,7 +1574,7 @@ public class Bgpv4RibTest {
       // Add less preferred NHIP route
       assertThat(
           bgpRib.mergeRouteGetDelta(highestNhipRoute), equalTo(RibDelta.adding(highestNhipRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(highestNhipRoute));
+      assertThat(bgpRib.getRoutes(), contains(highestNhipRoute));
 
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
@@ -1584,7 +1584,7 @@ public class Bgpv4RibTest {
           containsInAnyOrder(
               RouteAdvertisement.adding(lowestNhipRoute),
               RouteAdvertisement.withdrawing(highestNhipRoute)));
-      assertThat(bgpRib.getTypedBackupRoutes(), not(hasItem(highestNhipRoute)));
+      assertThat(bgpRib.getBackupRoutes(), not(hasItem(highestNhipRoute)));
 
       // Remove less preferred NHIP route. There should be no delta.
       assertThat(bgpRib.removeRouteGetDelta(highestNhipRoute), equalTo(RibDelta.empty()));
@@ -1632,7 +1632,7 @@ public class Bgpv4RibTest {
       // Add less preferred NHIP route
       assertThat(
           bgpRib.mergeRouteGetDelta(lowestNhipRoute), equalTo(RibDelta.adding(lowestNhipRoute)));
-      assertThat(bgpRib.getTypedRoutes(), contains(lowestNhipRoute));
+      assertThat(bgpRib.getRoutes(), contains(lowestNhipRoute));
 
       // Add more preferred NHIP route. Less preferred route should be removed, and should not
       // appear in backup.
@@ -1642,7 +1642,7 @@ public class Bgpv4RibTest {
           containsInAnyOrder(
               RouteAdvertisement.adding(highestNhipRoute),
               RouteAdvertisement.withdrawing(lowestNhipRoute)));
-      assertThat(bgpRib.getTypedBackupRoutes(), not(hasItem(lowestNhipRoute)));
+      assertThat(bgpRib.getBackupRoutes(), not(hasItem(lowestNhipRoute)));
 
       // Remove less preferred NHIP route. There should be no delta.
       assertThat(bgpRib.removeRouteGetDelta(lowestNhipRoute), equalTo(RibDelta.empty()));
@@ -1691,7 +1691,7 @@ public class Bgpv4RibTest {
       bgpRib.mergeRouteGetDelta(redistributeRoute);
 
       // both routes should be present and equally preferred
-      assertThat(bgpRib.getTypedRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
+      assertThat(bgpRib.getRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
     }
     {
       // Test origination type tie-breaker: prefer network
@@ -1726,10 +1726,9 @@ public class Bgpv4RibTest {
       bgpRib.mergeRouteGetDelta(redistributeRoute);
 
       // Only network route should be present.
-      assertThat(bgpRib.getTypedRoutes(), contains(networkRoute));
+      assertThat(bgpRib.getRoutes(), contains(networkRoute));
       // Backup should contain redistribute route.
-      assertThat(
-          bgpRib.getTypedBackupRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
+      assertThat(bgpRib.getBackupRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
     }
     {
       // Test origination type tie-breaker: prefer redistribute
@@ -1764,10 +1763,9 @@ public class Bgpv4RibTest {
       bgpRib.mergeRouteGetDelta(redistributeRoute);
 
       // Only redistribute route should be present.
-      assertThat(bgpRib.getTypedRoutes(), contains(redistributeRoute));
+      assertThat(bgpRib.getRoutes(), contains(redistributeRoute));
       // Backup should contain network route.
-      assertThat(
-          bgpRib.getTypedBackupRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
+      assertThat(bgpRib.getBackupRoutes(), containsInAnyOrder(networkRoute, redistributeRoute));
     }
   }
 }

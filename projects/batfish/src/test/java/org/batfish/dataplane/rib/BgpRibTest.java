@@ -195,64 +195,64 @@ public class BgpRibTest {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh1);
-      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(), contains(nh1));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
 
       rib.mergeRoute(nh2better);
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2worse).getMultipathDelta(), equalTo(RibDelta.empty()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
     }
     {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh1);
-      assertThat(rib.getTypedRoutes(), contains(nh1));
+      assertThat(rib.getRoutes(), contains(nh1));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh1));
 
       rib.mergeRoute(nh2worse);
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2better));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2better));
 
       assertThat(
           rib.multipathRemoveRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2better, Reason.WITHDRAW).add(nh2worse).build()));
-      assertThat(rib.getTypedRoutes(), containsInAnyOrder(nh1, nh2worse));
+      assertThat(rib.getRoutes(), containsInAnyOrder(nh1, nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), containsInAnyOrder(nh1, nh2worse));
     }
     {
       Bgpv4Rib rib = makeRib.get();
 
       rib.mergeRoute(nh2worse);
-      assertThat(rib.getTypedRoutes(), contains(nh2worse));
+      assertThat(rib.getRoutes(), contains(nh2worse));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2worse));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh2better).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2worse, Reason.REPLACE).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(), contains(nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
 
       assertThat(
           rib.multipathMergeRouteGetDelta(nh3best).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh2better, Reason.REPLACE).add(nh3best).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh3best));
+      assertThat(rib.getRoutes(), contains(nh3best));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh3best));
 
       assertThat(
           rib.multipathRemoveRouteGetDelta(nh3best).getMultipathDelta(),
           equalTo(RibDelta.builder().remove(nh3best, Reason.WITHDRAW).add(nh2better).build()));
-      assertThat(rib.getTypedRoutes(), contains(nh2better));
+      assertThat(rib.getRoutes(), contains(nh2better));
       assertThat(rib.getRoutes(Prefix.ZERO), contains(nh2better));
     }
   }

@@ -273,7 +273,7 @@ public class BgpRibGroupsTest {
 
     // Only 2.2.2.0/24 in VRF2
     Set<AnnotatedRoute<AbstractRoute>> vrf2Routes =
-        dp.getRibsForTesting().get("r1").get(VRF_2).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(VRF_2).getRoutes();
     assertThat(vrf2Routes, hasSize(1));
     assertThat(
         vrf2Routes,
@@ -296,7 +296,7 @@ public class BgpRibGroupsTest {
 
     // 3.3.3.0/24 as expected in default VRF
     Set<AnnotatedRoute<AbstractRoute>> defaultVrfRoutes =
-        dp.getRibsForTesting().get("r1").get(Configuration.DEFAULT_VRF_NAME).getTypedRoutes();
+        dp.getRibsForTesting().get("r1").get(Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(
         defaultVrfRoutes,
         hasItem(
