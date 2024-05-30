@@ -407,12 +407,12 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   }
 
   @Override
-  protected @Nonnull Set<R> computeTypedRoutes() {
+  protected @Nonnull Set<R> computeRoutes() {
     if (!isMultipath()) {
       return getBestPathRoutes();
     }
     Map<NextHop, Map<Prefix, R>> routesByNhAndPrefix = new HashMap<>();
-    for (R route : super.computeTypedRoutes()) {
+    for (R route : super.computeRoutes()) {
       routesByNhAndPrefix
           .computeIfAbsent(route.getNextHop(), n -> new HashMap<>())
           .compute(

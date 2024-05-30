@@ -36,7 +36,7 @@ public final class EvpnMasterRib<R extends EvpnRoute<?, ?>> {
     return getOrCreateRib(route.getRouteDistinguisher()).mergeRouteGetDelta(route);
   }
 
-  public @Nonnull Set<R> getTypedRoutes() {
+  public @Nonnull Set<R> getRoutes() {
     return _ribsByRd.values().stream()
         .flatMap(rib -> rib.getRoutes().stream())
         .collect(ImmutableSet.toImmutableSet());
