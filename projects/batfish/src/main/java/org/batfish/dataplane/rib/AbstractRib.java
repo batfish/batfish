@@ -159,12 +159,12 @@ public abstract class AbstractRib<R extends AbstractRouteDecorator> implements G
   @Override
   public final @Nonnull Set<R> getRoutes() {
     if (_allRoutes == null) {
-      _allRoutes = computeTypedRoutes();
+      _allRoutes = computeRoutes();
     }
     return _allRoutes;
   }
 
-  protected @Nonnull Set<R> computeTypedRoutes() {
+  protected @Nonnull Set<R> computeRoutes() {
     return ImmutableSet.copyOf(_tree.getRoutes());
   }
 

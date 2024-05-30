@@ -2216,8 +2216,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             Stream.of(
                 // RIBs
                 _bgpv4Rib.getRoutes(),
-                _evpnType3Rib.getTypedRoutes(),
-                _evpnType5Rib.getTypedRoutes(),
+                _evpnType3Rib.getRoutes(),
+                _evpnType5Rib.getRoutes(),
                 // Outgoing RIB deltas
                 _ebgpv4DeltaPrev,
                 _ebgpv4DeltaPrevBestPath,
@@ -2568,7 +2568,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Return all type 3 EVPN routes */
   public Set<EvpnType3Route> getEvpnType3Routes() {
-    return _evpnType3Rib.getTypedRoutes();
+    return _evpnType3Rib.getRoutes();
   }
 
   /**
@@ -2651,8 +2651,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   /** Return a set of all multipath-best evpn routes. */
   public @Nonnull Set<EvpnRoute<?, ?>> getEvpnRoutes() {
     return ImmutableSet.<EvpnRoute<?, ?>>builder()
-        .addAll(_evpnType3Rib.getTypedRoutes())
-        .addAll(_evpnType5Rib.getTypedRoutes())
+        .addAll(_evpnType3Rib.getRoutes())
+        .addAll(_evpnType5Rib.getRoutes())
         .build();
   }
 

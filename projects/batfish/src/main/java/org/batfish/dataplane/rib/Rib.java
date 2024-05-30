@@ -372,7 +372,7 @@ public class Rib extends AnnotatedRib<AbstractRoute> implements Serializable {
    * Create a new empty RIB. If {@code resolutionRestriction} is not {@code null}, then merged
    * recursive routes that are not resolvable under the provided {@code resolutionRestriction} will
    * remain inactive until they become resolvable again. Inactive routes will not be returned by
-   * {@link #getRoutes()}, {@link #getRoutes()}, nor {@link #getBackupRoutes()}.
+   * {@link #getRoutes()}, {@link #getRoutes(Prefix)}, nor {@link #getBackupRoutes()}.
    */
   public Rib(@Nullable ResolutionRestriction<AnnotatedRoute<AbstractRoute>> resolutionRestriction) {
     super(true);
