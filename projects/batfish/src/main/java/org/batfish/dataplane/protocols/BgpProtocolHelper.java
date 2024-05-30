@@ -48,7 +48,6 @@ import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
-import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -296,10 +295,8 @@ public final class BgpProtocolHelper {
       GeneratedRoute generatedRoute,
       @Nullable RoutingPolicy attributePolicy,
       Ip routerId,
-      Ip nextHopIp,
+      NextHop nextHop,
       boolean nonRouting) {
-    NextHop nextHop =
-        nextHopIp.equals(Ip.AUTO) ? NextHopDiscard.instance() : NextHopIp.of(nextHopIp);
     Builder builder = convertGeneratedRouteToBgp(generatedRoute, routerId, nextHop, nonRouting);
     if (attributePolicy == null) {
       return builder.build();
