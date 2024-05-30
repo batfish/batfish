@@ -1731,8 +1731,8 @@ public final class VirtualRouter {
       return;
     }
     SetMultimap<Integer, Ip> vtepsByVni = Multimaps.newSetMultimap(new HashMap<>(), HashSet::new);
-    _mainRib.getUnannotatedRoutes().stream()
-        .map(AbstractRoute::getNextHop)
+    _mainRib.getRoutes().stream()
+        .map(r -> r.getAbstractRoute().getNextHop())
         .filter(NextHopVtep.class::isInstance)
         .map(NextHopVtep.class::cast)
         .forEach(nextHopVtep -> vtepsByVni.put(nextHopVtep.getVni(), nextHopVtep.getVtepIp()));
