@@ -133,11 +133,11 @@ public final class CommunitySet implements Serializable {
   }
 
   // Soft values: let it be garbage collected in times of pressure.
-  // Maximum size 2^16: Just some upper bound on cache size, well less than GiB.
+  // Maximum size 2^24: Just some upper bound on cache size, well less than GiB.
   private static final LoadingCache<Set<Community>, CommunitySet> CACHE =
       CacheBuilder.newBuilder()
           .softValues()
-          .maximumSize(1 << 16)
+          .maximumSize(1 << 24)
           .build(
               CacheLoader.from(
                   set -> {
