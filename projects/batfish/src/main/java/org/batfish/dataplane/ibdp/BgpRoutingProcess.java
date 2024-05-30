@@ -1333,7 +1333,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    * over to initialize BGP aggregates with contributors from the BGP RIB. Once all Cisco-style
    * vendors have been ported, this function should be removed.
    */
-  void initBgpAggregateRoutesLegacy(Collection<AbstractRoute> generatedRoutes) {
+  void initBgpAggregateRoutesLegacy(Collection<? extends AbstractRouteDecorator> generatedRoutes) {
     if (_exportFromBgpRib) {
       // Vendors for which this is true should not be using this legacy aggregates implementation.
       return;
@@ -1349,8 +1349,8 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       default:
         break;
     }
-    for (AbstractRoute grAbstract : generatedRoutes) {
-      GeneratedRoute gr = (GeneratedRoute) grAbstract;
+    for (AbstractRouteDecorator grAbstract : generatedRoutes) {
+      GeneratedRoute gr = (GeneratedRoute) grAbstract.getAbstractRoute();
 
       Bgpv4Route br =
           BgpProtocolHelper.convertGeneratedRouteToBgp(
