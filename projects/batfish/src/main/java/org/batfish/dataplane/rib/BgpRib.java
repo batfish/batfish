@@ -329,6 +329,9 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
   @Override
   public @Nonnull RibDelta<R> removeRouteGetDelta(R route) {
     RibDelta<R> delta = actionRouteGetDelta(route, super::removeRouteGetDelta);
+    if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
+      _logicalArrivalTime.remove(route);
+    }
     if (!delta.isEmpty()) {
       delta.getPrefixes().forEach(this::selectBestPath);
       if (_tieBreaker == BgpTieBreaker.ARRIVAL_ORDER) {
@@ -643,5 +646,11 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       return 0;
     }
     return route.getClusterList().size();
+  }
+
+  @VisibleForTesting
+  @Nonnull
+  Map<R, Long> getArrivalTimeForTesting() {
+    return Collections.unmodifiableMap(_logicalArrivalTime);
   }
 }

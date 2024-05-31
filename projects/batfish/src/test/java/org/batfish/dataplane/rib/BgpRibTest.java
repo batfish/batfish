@@ -1,9 +1,11 @@
 package org.batfish.dataplane.rib;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -522,5 +524,51 @@ public class BgpRibTest {
             equalTo(Integer.signum(i - j)));
       }
     }
+  }
+
+  @Test
+  public void testArrivalOrderRemovesBackupRoutesToo() {
+    Bgpv4Rib bestPathRib =
+        new Bgpv4Rib(
+            null,
+            BgpTieBreaker.ARRIVAL_ORDER,
+            999,
+            MultipathEquivalentAsPathMatchMode.PATH_LENGTH,
+            false,
+            LocalOriginationTypeTieBreaker.NO_PREFERENCE,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP,
+            ResolutionRestriction.alwaysTrue());
+
+    Bgpv4Route best =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHop(NextHopDiscard.instance())
+            .setLocalPreference(1000L)
+            .setOriginType(OriginType.IGP)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+    Bgpv4Route worse =
+        best.toBuilder()
+            .setLocalPreference(best.getLocalPreference() - 5)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("1.1.1.2")))
+            .build();
+
+    // SETUP, tested for setup correctly.
+    // 1. Insert best and make sure it's best.
+    bestPathRib.mergeRoute(best);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
+    // 2. Insert worse and make sure it's not best.
+    bestPathRib.mergeRoute(worse);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(2));
+
+    // TEST
+    bestPathRib.removeRoute(worse);
+    assertThat(bestPathRib.getRoutes(), contains(best));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), aMapWithSize(1));
+    assertThat(bestPathRib.getArrivalTimeForTesting(), hasKey(best));
   }
 }
