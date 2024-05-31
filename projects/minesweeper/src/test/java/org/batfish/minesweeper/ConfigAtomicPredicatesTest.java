@@ -1,5 +1,6 @@
 package org.batfish.minesweeper;
 
+import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
@@ -88,8 +89,7 @@ public class ConfigAtomicPredicatesTest {
 
   @Test
   public void testConstructor1() {
-    ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
@@ -109,8 +109,7 @@ public class ConfigAtomicPredicatesTest {
 
   @Test
   public void testConstructor2Null() {
-    ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME, null, null);
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     RegexAtomicPredicates<CommunityVar> commAPs = cap.getStandardCommunityAtomicPredicates();
     RegexAtomicPredicates<SymbolicAsPathRegex> asAPs = cap.getAsPathRegexAtomicPredicates();
@@ -131,7 +130,7 @@ public class ConfigAtomicPredicatesTest {
   @Test
   public void testConstructor2() {
     ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(
+        forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -157,7 +156,7 @@ public class ConfigAtomicPredicatesTest {
   @Test
   public void testConstructor3() {
     ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(
+        forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -186,7 +185,7 @@ public class ConfigAtomicPredicatesTest {
   @Test
   public void testCopyConstructor() {
     ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(
+        forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,
@@ -236,8 +235,7 @@ public class ConfigAtomicPredicatesTest {
 
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of("firstPolicy", firstPolicy, "secondPolicy", secondPolicy));
-    ConfigAtomicPredicates cap =
-        new ConfigAtomicPredicates(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    ConfigAtomicPredicates cap = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     assertEquals(3, cap.getStandardCommunityAtomicPredicates().getNumAtomicPredicates());
   }

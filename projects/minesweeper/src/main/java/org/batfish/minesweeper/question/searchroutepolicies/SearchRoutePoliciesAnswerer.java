@@ -12,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Range;
 import dk.brics.automaton.Automaton;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -578,14 +579,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param policies all route policies in that node
    * @return all results from analyzing those route policies
    */
-  private Stream<Row> searchPoliciesForNode(
-      Configuration config, Set<RoutingPolicy> policies, NetworkSnapshot snapshot) {
-    String node = config.getHostname();
+  private Stream<Row> searchPoliciesForNode(Configuration config, Set<RoutingPolicy> policies) {
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
-            _batfish,
-            snapshot,
-            node,
+            ImmutableList.of(new SimpleImmutableEntry<>(config, policies)),
             _communityRegexes.stream()
                 .flatMap(
                     rc -> {
@@ -607,8 +604,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes.stream()
                 .map(RegexConstraint::getRegex)
-                .collect(ImmutableSet.toImmutableSet()),
-            policies);
+                .collect(ImmutableSet.toImmutableSet()));
 
     return policies.stream().flatMap(policy -> searchPolicy(policy, configAPs).stream());
   }
@@ -650,9 +646,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             .flatMap(
                 node ->
                     searchPoliciesForNode(
-                        context.getConfigs().get(node),
-                        _policySpecifier.resolve(node, context),
-                        snapshot))
+                        context.getConfigs().get(node), _policySpecifier.resolve(node, context)))
             .collect(ImmutableList.toImmutableList());
 
     TableAnswerElement answerElement = new TableAnswerElement(TestRoutePoliciesAnswerer.metadata());

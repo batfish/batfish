@@ -8,6 +8,7 @@ import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -25,6 +26,7 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
@@ -199,18 +201,18 @@ public final class CompareRoutePoliciesUtils {
       currentPoliciesList.removeIf(p -> !intersection.contains(p.getName()));
     }
 
+    Configuration snapshotConfig = _batfish.loadConfigurations(snapshot).get(node);
+    Configuration refConfig = _batfish.loadConfigurations(reference).get(node);
+
     ConfigAtomicPredicates configAPs =
         new ConfigAtomicPredicates(
-            _batfish,
-            snapshot,
-            reference,
-            node,
+            ImmutableList.of(
+                new SimpleImmutableEntry<>(snapshotConfig, currentPoliciesList),
+                new SimpleImmutableEntry<>(refConfig, referencePoliciesList)),
             _communityRegexes.stream()
                 .map(CommunityVar::from)
                 .collect(ImmutableSet.toImmutableSet()),
-            _asPathRegexes,
-            currentPoliciesList,
-            referencePoliciesList);
+            _asPathRegexes);
 
     if (crossPolicies) {
       // In this case we cross-compare all routing policies in the two sets regardless of their
