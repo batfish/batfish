@@ -1,8 +1,7 @@
 package org.batfish.minesweeper;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.Collection;
 import java.util.Collections;
@@ -10,12 +9,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
-import java.util.function.Predicate;
-import javax.annotation.Nonnull;
+import java.util.TreeSet;
 import javax.annotation.Nullable;
-import org.batfish.common.NetworkSnapshot;
-import org.batfish.common.plugin.IBatfish;
+import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -38,6 +36,7 @@ import org.batfish.minesweeper.utils.Tuple;
  * and source VRFs, because they are all independent of one another, so each gets a corresponding
  * BDD variable.)
  */
+@ParametersAreNonnullByDefault
 public final class ConfigAtomicPredicates {
 
   /**
@@ -64,154 +63,71 @@ public final class ConfigAtomicPredicates {
   /** The list of source VRFs that appear in the given configuration. */
   private final List<String> _sourceVrfs;
 
-  /**
-   * Compute atomic predicates for the given router's configuration.
-   *
-   * @param batfish the batfish object
-   * @param snapshot the current snapshot
-   * @param router the name of the router whose configuration is being analyzed
-   */
-  public ConfigAtomicPredicates(IBatfish batfish, NetworkSnapshot snapshot, String router) {
-    this(batfish, snapshot, router, null, null);
-  }
-
-  /**
-   * Compute atomic predicates for the given router's configuration.
-   *
-   * @param batfish the batfish object
-   * @param snapshot the current snapshot
-   * @param router the name of the router whose configuration is being analyzed
-   * @param communities additional community regexes to track, from user-defined constraints
-   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
-   */
-  public ConfigAtomicPredicates(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      String router,
-      @Nullable Set<CommunityVar> communities,
-      @Nullable Set<String> asPathRegexes) {
-    this(batfish, snapshot, router, communities, asPathRegexes, null);
-  }
-
-  /**
-   * Compute atomic predicates for the given router's configuration.
-   *
-   * @param batfish the batfish object
-   * @param snapshot the current snapshot
-   * @param router the name of the router whose configuration is being analyzed
-   * @param communities additional community regexes to track, from user-defined constraints
-   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
-   * @param policies the set of policies to create AtomicPredicates for
-   */
-  public ConfigAtomicPredicates(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      String router,
-      @Nullable Set<CommunityVar> communities,
-      @Nullable Set<String> asPathRegexes,
-      @Nullable Collection<RoutingPolicy> policies) {
-    this(
-        batfish,
-        snapshot,
-        null,
-        router,
-        communities,
-        asPathRegexes,
-        policies == null
-            ? batfish.loadConfigurations(snapshot).get(router).getRoutingPolicies().values()
-            : policies,
-        null);
-  }
-
-  /**
-   * Compute atomic predicates for the given router's configuration.
-   *
-   * @param batfish the batfish object
-   * @param snapshot the current snapshot
-   * @param reference the reference snapshot - can be null if this is not called from a differential
-   *     question, such as SRP.
-   * @param router the name of the router whose configuration is being analyzed
-   * @param communities additional community regexes to track, from user-defined constraints
-   * @param asPathRegexes additional as-path regexes to track, from user-defined constraints
-   * @param policies the set of policies to create AtomicPredicates for
-   * @param referencePolicies the set of policies in the reference snapshot to create
-   *     AtomicPredicates for
-   */
-  public ConfigAtomicPredicates(
-      IBatfish batfish,
-      NetworkSnapshot snapshot,
-      @Nullable NetworkSnapshot reference,
-      String router,
-      @Nullable Set<CommunityVar> communities,
-      @Nullable Set<String> asPathRegexes,
-      @Nonnull Collection<RoutingPolicy> policies,
-      @Nullable Collection<RoutingPolicy> referencePolicies) {
-    Configuration configuration = batfish.loadConfigurations(snapshot).get(router);
-    Configuration referenceConfiguration = null;
-    if (reference != null) {
-      referenceConfiguration = batfish.loadConfigurations(reference).get(router);
+  private static boolean isStandardCommunity(CommunityVar var) {
+    if (var.getType() == CommunityVar.Type.REGEX) {
+      // assume all regexes are on standard communities
+      return true;
     }
+    assert var.getType() == CommunityVar.Type.EXACT;
+    return var.getLiteralValue() instanceof StandardCommunity;
+  }
 
-    // Gather the communities from both (if differential) configs + any user provided communities.
-    Set<CommunityVar> allCommunities = findAllCommunities(communities, policies, configuration);
+  /**
+   * Creates a {@link ConfigAtomicPredicates} that supports all relevant constructs referenced in
+   * the given policies, also incorporating the given extra communities or AS-path regexes.
+   *
+   * @param extraCommunities additional community regexes to track, from user-defined constraints
+   * @param extraAsPathRegexes additional as-path regexes to track, from user-defined constraints
+   */
+  public ConfigAtomicPredicates(
+      List<Map.Entry<Configuration, Collection<RoutingPolicy>>> configAndPolicies,
+      Set<CommunityVar> extraCommunities,
+      Set<String> extraAsPathRegexes) {
+    ImmutableSet.Builder<CommunityVar> allCommunitiesB = ImmutableSet.builder();
+    ImmutableSet.Builder<SymbolicAsPathRegex> allAsPathRegexesB = ImmutableSet.builder();
+    Set<String> allTrackNames = new TreeSet<>();
+    Set<String> allNextHopInterfaceNames = new TreeSet<>();
+    Set<String> allSourceVrfNames = new TreeSet<>();
+    allCommunitiesB.addAll(extraCommunities);
+    extraAsPathRegexes.forEach(s -> allAsPathRegexesB.add(new SymbolicAsPathRegex(s)));
 
-    if (reference != null) {
-      allCommunities.addAll(
-          findAllCommunities(Collections.emptySet(), referencePolicies, referenceConfiguration));
+    for (Entry<Configuration, Collection<RoutingPolicy>> pair : configAndPolicies) {
+      Configuration config = pair.getKey();
+      Collection<RoutingPolicy> policies = pair.getValue();
+      allCommunitiesB.addAll(findAllCommunities(ImmutableSet.of(), policies, config));
+      allAsPathRegexesB.addAll(findAllAsPathRegexes(ImmutableSet.of(), policies, config));
+      allTrackNames.addAll(findAllTracks(policies, config));
+      allNextHopInterfaceNames.addAll(findAllNextHopInterfaces(policies, config));
+      allSourceVrfNames.addAll(findAllSourceVrfs(policies, config));
     }
-
-    // currently we only support regex matching for standard communities
-    Predicate<CommunityVar> isStandardCommunity =
-        cvar ->
-            cvar.getType() == CommunityVar.Type.REGEX
-                || cvar.getLiteralValue() instanceof StandardCommunity;
+    Set<CommunityVar> allCommunities = allCommunitiesB.build();
 
     // compute atomic predicates for all regexes and standard community literals
     _standardCommunityAtomicPredicates =
         new RegexAtomicPredicates<>(
             allCommunities.stream()
-                .filter(isStandardCommunity)
+                .filter(ConfigAtomicPredicates::isStandardCommunity)
                 .collect(ImmutableSet.toImmutableSet()),
             CommunityVar.ALL_STANDARD_COMMUNITIES);
 
     // assign an atomic predicate to each extended/large community literal
-    CommunityVar[] nonStandardCommunityVars =
-        allCommunities.stream().filter(isStandardCommunity.negate()).toArray(CommunityVar[]::new);
     int numAPs = _standardCommunityAtomicPredicates.getNumAtomicPredicates();
-    _nonStandardCommunityLiterals = new HashMap<>();
-    for (int i = 0; i < nonStandardCommunityVars.length; i++) {
-      _nonStandardCommunityLiterals.put(i + numAPs, nonStandardCommunityVars[i]);
+    Map<Integer, CommunityVar> nonStandardCommunityLiterals = new HashMap<>();
+    for (CommunityVar var : allCommunities) {
+      if (isStandardCommunity(var)) {
+        continue;
+      }
+      assert var.getType() == CommunityVar.Type.EXACT;
+      nonStandardCommunityLiterals.put(nonStandardCommunityLiterals.size() + numAPs, var);
     }
+    _nonStandardCommunityLiterals = ImmutableMap.copyOf(nonStandardCommunityLiterals);
 
-    // Collect as path regexes from both (if differential) configs
-    Set<String> asPaths = firstNonNull(asPathRegexes, ImmutableSet.of());
-    Set<SymbolicAsPathRegex> asPathAps =
-        new HashSet<>(
-            findAllAsPathRegexes(
-                asPaths.stream()
-                    .map(SymbolicAsPathRegex::new)
-                    .collect(ImmutableSet.toImmutableSet()),
-                policies,
-                configuration));
-    if (reference != null) {
-      asPathAps.addAll(
-          findAllAsPathRegexes(Collections.emptySet(), referencePolicies, referenceConfiguration));
-    }
-    _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(ImmutableSet.copyOf(asPathAps));
+    _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(allAsPathRegexesB.build());
 
     // Collect several other items from both (if differential) configs
-    Set<String> nextHopInterfaces =
-        new HashSet<>(findAllNextHopInterfaces(policies, configuration));
-    Set<String> tracks = new HashSet<>(findAllTracks(policies, configuration));
-    Set<String> sourceVRFs = new HashSet<>(findAllSourceVrfs(policies, configuration));
-    if (reference != null) {
-      nextHopInterfaces.addAll(findAllNextHopInterfaces(referencePolicies, referenceConfiguration));
-      tracks.addAll(findAllTracks(referencePolicies, referenceConfiguration));
-      sourceVRFs.addAll(findAllSourceVrfs(referencePolicies, referenceConfiguration));
-    }
-    _nextHopInterfaces = ImmutableList.copyOf(nextHopInterfaces);
-    _tracks = ImmutableList.copyOf(tracks);
-    _sourceVrfs = ImmutableList.copyOf(sourceVRFs);
+    _nextHopInterfaces = ImmutableList.copyOf(allNextHopInterfaceNames);
+    _tracks = ImmutableList.copyOf(allTrackNames);
+    _sourceVrfs = ImmutableList.copyOf(allSourceVrfNames);
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
