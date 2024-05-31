@@ -86,8 +86,8 @@ public final class CompareRoutePoliciesUtils {
     // into a single regex representing their disjunction, and similarly for all output
     // community regexes, in order to minimize the number of atomic predicates that are
     // created and tracked by the analysis
-    _communityRegexes = ImmutableSet.<String>builder().build();
-    _asPathRegexes = ImmutableSet.<String>builder().build();
+    _communityRegexes = ImmutableSet.of();
+    _asPathRegexes = ImmutableSet.of();
     this._batfish = batfish;
   }
 
