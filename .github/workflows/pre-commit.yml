@@ -131,6 +131,8 @@ jobs:
             --instrument_test_targets=false
       - name: Generate report
         uses: codecov/codecov-action@v3
+        env:
+            CODECOV_TOKEN: ${{ secrets.BATFISH_CODECOV_TOKEN }}
         with:
           files: bazel-out/_coverage/_coverage_report.dat
           fail_ci_if_error: true
