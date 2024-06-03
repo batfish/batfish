@@ -28,6 +28,7 @@ import org.batfish.datamodel.routing_policy.communities.StandardCommunityHighLow
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -58,7 +59,7 @@ public class CommunitySetExprToBDDTest {
     _batfish = new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     _configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             _batfish,
             _batfish.getSnapshot(),
             HOSTNAME,

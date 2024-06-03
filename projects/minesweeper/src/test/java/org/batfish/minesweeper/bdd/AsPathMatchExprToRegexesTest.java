@@ -22,6 +22,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.junit.Before;
 import org.junit.Rule;
@@ -57,7 +58,7 @@ public class AsPathMatchExprToRegexesTest {
         new TransferBDDTest.MockBatfish(ImmutableSortedMap.of(HOSTNAME, _baseConfig));
 
     ConfigAtomicPredicates configAPs =
-        new ConfigAtomicPredicates(
+        ConfigAtomicPredicatesTestUtils.forDevice(
             batfish, batfish.getSnapshot(), HOSTNAME, null, ImmutableSet.of(ASPATH1, ASPATH2));
     TransferBDD transferBDD =
         new TransferBDD(
