@@ -53,6 +53,22 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
   public static final String EXPORT_POLICY = "Export_Policy";
   public static final String SEND_COMMUNITY = "Send_Community";
 
+  /**
+   * Some properties are reported by address family, and some peers don't have all address families
+   * present.
+   *
+   * <p>Prefer reporting properties for IPv4 Unicast address family, but fall back if that is not
+   * present.
+   */
+  private static @Nonnull Optional<AddressFamily> getReportingAddressFamily(BgpPeerConfig c) {
+    if (c.getIpv4UnicastAddressFamily() != null) {
+      return Optional.of(c.getIpv4UnicastAddressFamily());
+    } else if (c.getEvpnAddressFamily() != null) {
+      return Optional.of(c.getEvpnAddressFamily());
+    }
+    return Optional.empty();
+  }
+
   private static final Map<String, PropertyDescriptor<BgpPeerConfig>> JAVA_MAP =
       new ImmutableMap.Builder<String, PropertyDescriptor<BgpPeerConfig>>()
           .put(
@@ -80,7 +96,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               ROUTE_REFLECTOR_CLIENT,
               new PropertyDescriptor<>(
                   c ->
-                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                      getReportingAddressFamily(c)
                           .map(AddressFamily::getRouteReflectorClient)
                           .orElse(false),
                   Schema.BOOLEAN,
@@ -101,7 +117,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               IMPORT_POLICY,
               new PropertyDescriptor<>(
                   c ->
-                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                      getReportingAddressFamily(c)
                           .map(AddressFamily::getImportPolicySources)
                           .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
@@ -110,7 +126,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               EXPORT_POLICY,
               new PropertyDescriptor<>(
                   c ->
-                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                      getReportingAddressFamily(c)
                           .map(AddressFamily::getExportPolicySources)
                           .orElse(ImmutableSortedSet.of()),
                   Schema.set(Schema.STRING),
@@ -119,7 +135,7 @@ public class BgpPeerPropertySpecifier extends PropertySpecifier {
               SEND_COMMUNITY,
               new PropertyDescriptor<>(
                   c ->
-                      Optional.ofNullable(c.getIpv4UnicastAddressFamily())
+                      getReportingAddressFamily(c)
                           .map(AddressFamily::getAddressFamilyCapabilities)
                           .map(AddressFamilyCapabilities::getSendCommunity)
                           .orElse(false),
