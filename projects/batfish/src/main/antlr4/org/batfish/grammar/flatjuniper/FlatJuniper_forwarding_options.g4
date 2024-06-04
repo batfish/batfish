@@ -79,7 +79,12 @@ fod_null
 
 fod_server_group
 :
-   SERVER_GROUP name = junos_name (address = ip_address)?
+   SERVER_GROUP name = junos_name fods_address?
+;
+
+fods_address
+:
+   address = ip_address
 ;
 
 fodg_interface

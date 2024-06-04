@@ -336,6 +336,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_active_server_group
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fods_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offset_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hello_authentication_typeContext;
@@ -2187,6 +2188,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private NamedCommunity _currentCommunityList;
 
   private DhcpRelayGroup _currentDhcpRelayGroup;
+  private DhcpRelayServerGroup _currentDhcpRelayServerGroup;
 
   // TODO: separate firewall filter and security-policy
   private ConcreteFirewallFilter _currentFilter;
@@ -2609,14 +2611,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterFod_server_group(Fod_server_groupContext ctx) {
     String name = toString(ctx.name);
-    DhcpRelayServerGroup serverGroup =
+    _currentDhcpRelayServerGroup =
         _currentRoutingInstance
             .getDhcpRelayServerGroups()
             .computeIfAbsent(name, n -> new DhcpRelayServerGroup());
-    if (ctx.address != null) {
-      serverGroup.getServers().add(toIp(ctx.address));
-    }
     _configuration.defineFlattenedStructure(DHCP_RELAY_SERVER_GROUP, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitFod_server_group(Fod_server_groupContext ctx) {
+    _currentDhcpRelayServerGroup = null;
+  }
+
+  @Override
+  public void exitFods_address(Fods_addressContext ctx) {
+    _currentDhcpRelayServerGroup.getServers().add(toIp(ctx.address));
   }
 
   @Override
