@@ -465,6 +465,8 @@ DEAD_PEER_DETECTION: 'dead-peer-detection';
 
 DECAPSULATE: 'decapsulate';
 
+DEFAULT: 'default';
+
 DEFAULT_ACTION: 'default-action';
 
 DEFAULT_ADDRESS_SELECTION: 'default-address-selection';
@@ -4335,6 +4337,8 @@ M_Version_WS
 mode M_VlanMembers;
 
 M_VlanMembers_ALL: 'all' -> type(ALL), popMode;
+
+M_VlanMembers_DEFAULT: 'default' -> type(DEFAULT), popMode;
 
 M_VlanMembers_WS: F_WhitespaceChar+ -> skip;
 

@@ -3559,6 +3559,12 @@ public final class FlatJuniperGrammarTest {
                     .including(new SubRange("300-400"))
                     .including(500)
                     .build())));
+
+    // Vlan "default" resets the vlan config
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/10/0.0", allOf(hasAccessVlan(nullValue()), hasAllowedVlans(IntegerSpace.EMPTY))));
   }
 
   @Test
