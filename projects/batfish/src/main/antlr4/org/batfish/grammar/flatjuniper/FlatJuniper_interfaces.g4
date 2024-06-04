@@ -453,6 +453,7 @@ ife_vlan
    VLAN MEMBERS
    (
       ALL
+      | DEFAULT
       | range
       | name = junos_name
    )
