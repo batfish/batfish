@@ -54033,7 +54033,7 @@
             "            (fo_null*",
             "              STORM_CONTROL_PROFILES:'storm-control-profiles'",
             "              (null_filler*",
-            "                UNRECOGNIZED_WORD:'default'",
+            "                DEFAULT:'default'",
             "                ALL:'all'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",

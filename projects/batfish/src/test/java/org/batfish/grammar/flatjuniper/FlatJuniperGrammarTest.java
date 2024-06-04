@@ -3559,6 +3559,9 @@ public final class FlatJuniperGrammarTest {
                     .including(new SubRange("300-400"))
                     .including(500)
                     .build())));
+
+    // Vlan "default" is ignored
+    assertThat(c, hasInterface("ge-0/10/0.0", hasAllowedVlans(IntegerSpace.EMPTY)));
   }
 
   @Test
