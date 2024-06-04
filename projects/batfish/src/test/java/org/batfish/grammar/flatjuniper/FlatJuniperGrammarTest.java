@@ -3560,7 +3560,7 @@ public final class FlatJuniperGrammarTest {
                     .including(500)
                     .build())));
 
-    // Vlan "default" is ignored
+    // Vlan "default" resets the vlan config
     assertThat(
         c,
         hasInterface(
