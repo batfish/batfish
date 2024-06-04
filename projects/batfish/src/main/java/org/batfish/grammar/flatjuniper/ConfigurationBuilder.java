@@ -5032,6 +5032,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(new VlanReference(name));
     } else if (ctx.ALL() != null) {
       _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().add(AllVlans.instance());
+    } else if (ctx.DEFAULT() != null) {
+      _currentInterfaceOrRange.getEthernetSwitching().getVlanMembers().clear();
     } else {
       todo(ctx);
     }

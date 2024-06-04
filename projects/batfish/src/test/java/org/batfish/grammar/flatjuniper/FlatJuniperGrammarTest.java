@@ -3561,7 +3561,10 @@ public final class FlatJuniperGrammarTest {
                     .build())));
 
     // Vlan "default" is ignored
-    assertThat(c, hasInterface("ge-0/10/0.0", hasAllowedVlans(IntegerSpace.EMPTY)));
+    assertThat(
+        c,
+        hasInterface(
+            "ge-0/10/0.0", allOf(hasAccessVlan(nullValue()), hasAllowedVlans(IntegerSpace.EMPTY))));
   }
 
   @Test
