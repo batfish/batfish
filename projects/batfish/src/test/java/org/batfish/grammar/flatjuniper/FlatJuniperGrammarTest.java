@@ -395,6 +395,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
+import org.batfish.representation.juniper.DhcpRelayServerGroup;
 import org.batfish.representation.juniper.DscpUtil;
 import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.FirewallFilter;
@@ -3565,6 +3566,17 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "ge-0/10/0.0", allOf(hasAccessVlan(nullValue()), hasAllowedVlans(IntegerSpace.EMPTY))));
+  }
+
+  @Test
+  public void testDhcpRelayServerGroup() throws IOException {
+    JuniperConfiguration c = parseJuniperConfig("dhcp-relay-server-group");
+
+    SortedMap<String, DhcpRelayServerGroup> serverGroups =
+        c.getMasterLogicalSystem().getRoutingInstances().get("RI").getDhcpRelayServerGroups();
+
+    assertTrue(serverGroups.get("EMPTY").getServers().isEmpty());
+    assertThat(serverGroups.get("SG1").getServers(), contains(Ip.parse("1.1.1.1")));
   }
 
   @Test

@@ -1,0 +1,5 @@
+#
+set system host-name dhcp-relay-server-group
+#
+set routing-instances RI forwarding-options dhcp-relay server-group EMPTY
+set routing-instances RI forwarding-options dhcp-relay server-group SG1 1.1.1.1
