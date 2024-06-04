@@ -2613,8 +2613,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentRoutingInstance
             .getDhcpRelayServerGroups()
             .computeIfAbsent(name, n -> new DhcpRelayServerGroup());
-    Ip ip = toIp(ctx.address);
-    serverGroup.getServers().add(ip);
+    if (ctx.address != null) {
+      serverGroup.getServers().add(toIp(ctx.address));
+    }
     _configuration.defineFlattenedStructure(DHCP_RELAY_SERVER_GROUP, name, ctx, _parser);
   }
 
