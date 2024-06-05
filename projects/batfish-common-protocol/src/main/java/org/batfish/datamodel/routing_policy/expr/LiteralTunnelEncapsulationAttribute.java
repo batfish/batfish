@@ -52,4 +52,9 @@ public class LiteralTunnelEncapsulationAttribute extends TunnelEncapsulationAttr
   public int hashCode() {
     return Objects.hashCode(_tunnelEncapsulationAttribute);
   }
+
+  @Override
+  public String toString() {
+    return _tunnelEncapsulationAttribute.toString();
+  }
 }

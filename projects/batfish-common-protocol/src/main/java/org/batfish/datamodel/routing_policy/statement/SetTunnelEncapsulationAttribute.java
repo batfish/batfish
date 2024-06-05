@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -54,6 +55,11 @@ public final class SetTunnelEncapsulationAttribute extends Statement {
   @Override
   public int hashCode() {
     return Objects.hashCode(_expr);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("expr", _expr).toString();
   }
 
   @Override
