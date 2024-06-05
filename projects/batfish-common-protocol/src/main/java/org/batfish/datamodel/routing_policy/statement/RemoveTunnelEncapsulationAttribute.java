@@ -52,4 +52,9 @@ public final class RemoveTunnelEncapsulationAttribute extends Statement {
   }
 
   private RemoveTunnelEncapsulationAttribute() {}
+
+  @Override
+  public String toString() {
+    return RemoveTunnelEncapsulationAttribute.class.getSimpleName();
+  }
 }
