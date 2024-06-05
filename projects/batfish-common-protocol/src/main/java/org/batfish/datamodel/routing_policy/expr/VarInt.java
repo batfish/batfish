@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.google.common.base.MoreObjects;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /** An {@link IntExpr} composed of a named local variable reference to an int. */
@@ -57,6 +58,11 @@ public final class VarInt extends IntExpr {
     int result = 1;
     result = prime * result + ((_var == null) ? 0 : _var.hashCode());
     return result;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("var", _var).toString();
   }
 
   public void setVar(String var) {
