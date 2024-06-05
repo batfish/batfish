@@ -61,6 +61,11 @@
     </module>
 
     <module name="RegexpSinglelineJava">
+      <property name="format" value="import static org\.junit\.Assert\.assertThat;"/>
+      <property name="message" value="Use Hamcrest assertThat, as JUnit deprecated theirs."/>
+    </module>
+
+    <module name="RegexpSinglelineJava">
       <property name="format" value="import com\.google\.common\.base\.Preconditions;"/>
       <property name="message" value="Static import from Guava utility classes"/>
     </module>
