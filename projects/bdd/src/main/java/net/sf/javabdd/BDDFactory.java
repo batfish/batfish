@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.math.BigInteger;
-import java.security.AccessControlException;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
@@ -55,27 +54,6 @@ import org.apache.logging.log4j.Logger;
  */
 public abstract class BDDFactory {
   private static final Logger LOGGER = LogManager.getLogger(BDDFactory.class);
-
-  public static final String getProperty(String key, String def) {
-    try {
-      return System.getProperty(key, def);
-    } catch (AccessControlException ignored) {
-      return def;
-    }
-  }
-
-  /**
-   * Initializes a BDD factory with the given initial node table size and operation cache size.
-   * Tries to use the "buddy" native library; if it fails, it falls back to the "java" library.
-   *
-   * @param nodenum initial node table size
-   * @param cachesize operation cache size
-   * @return BDD factory object
-   */
-  public static BDDFactory init(int nodenum, int cachesize) {
-    String bddpackage = getProperty("bdd", "buddy");
-    return init(bddpackage, nodenum, cachesize);
-  }
 
   /**
    * Initializes a BDD factory of the given type with the given initial node table size and
@@ -797,7 +775,7 @@ public abstract class BDDFactory {
     @Override
     public String toString() {
       StringBuilder sb = new StringBuilder();
-      String newLine = getProperty("line.separator", "\n");
+      String newLine = System.lineSeparator();
       sb.append(newLine);
       sb.append("Cache statistics");
       sb.append(newLine);
