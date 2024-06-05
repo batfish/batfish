@@ -58,6 +58,11 @@ public final class LiteralInt extends IntExpr {
     return result;
   }
 
+  @Override
+  public String toString() {
+    return Integer.toString(_value);
+  }
+
   public void setValue(int value) {
     _value = value;
   }
