@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -14,6 +15,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
+import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
@@ -142,6 +144,8 @@ public class TransferBDD {
 
   private final BDDFactory _factory;
 
+  private final Set<String> _unsupportedAlreadyWarned;
+
   public TransferBDD(ConfigAtomicPredicates aps, RoutingPolicy policy) {
     this(JFactory.init(100000, 10000), aps, policy);
   }
@@ -152,6 +156,7 @@ public class TransferBDD {
     _conf = policy.getOwner();
     _statements = policy.getStatements();
     _useOutputAttributes = Environment.useOutputAttributesFor(_conf);
+    _unsupportedAlreadyWarned = new HashSet<>();
 
     _factory = factory;
     _factory.setCacheRatio(64);
@@ -1304,13 +1309,13 @@ public class TransferBDD {
   // it and keep going, but we also log a warning and mark the output BDDRoute as having reached an
   // unsupported feature.
   private void unsupported(UnsupportedOperationException e, BDDRoute route) {
-    LOGGER.warn(
-        "Unsupported statement in routing policy "
-            + _policy.getName()
-            + " of node "
-            + _conf.getHostname()
-            + ": "
-            + e.getMessage());
+    Level level = _unsupportedAlreadyWarned.add(e.getMessage()) ? Level.WARN : Level.DEBUG;
+    LOGGER.log(
+        level,
+        "Unsupported statement in routing policy {} of node {}: {}",
+        _policy.getName(),
+        _conf.getHostname(),
+        e.getMessage());
     route.setUnsupported(true);
   }
 
