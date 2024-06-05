@@ -3,10 +3,10 @@ package org.batfish.question.interfaceproperties;
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
 import static org.batfish.datamodel.InterfaceType.LOGICAL;
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultiset;

@@ -1,7 +1,7 @@
 package org.batfish.datamodel.routing_policy;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
 import org.batfish.datamodel.BgpSessionProperties;

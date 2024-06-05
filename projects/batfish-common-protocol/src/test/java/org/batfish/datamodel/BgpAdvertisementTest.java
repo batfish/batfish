@@ -7,8 +7,8 @@ import static org.batfish.datamodel.BgpAdvertisement.UNSET_ORIGINATOR_IP;
 import static org.batfish.datamodel.BgpAdvertisement.UNSET_WEIGHT;
 import static org.batfish.datamodel.BgpAdvertisement.nullSafeCompareTo;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableSortedSet;

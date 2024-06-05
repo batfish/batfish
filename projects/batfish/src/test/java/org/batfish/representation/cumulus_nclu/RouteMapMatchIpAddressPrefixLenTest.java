@@ -1,7 +1,7 @@
 package org.batfish.representation.cumulus_nclu;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;

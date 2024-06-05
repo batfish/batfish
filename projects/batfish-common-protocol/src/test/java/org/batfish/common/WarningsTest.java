@@ -5,9 +5,9 @@ import static org.batfish.common.Warnings.TAG_UNIMPLEMENTED;
 import static org.batfish.common.matchers.WarningsMatchers.hasPedanticWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarnings;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Test;
 

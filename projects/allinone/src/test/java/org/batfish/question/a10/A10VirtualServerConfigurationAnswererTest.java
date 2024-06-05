@@ -15,11 +15,11 @@ import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_ENABLED;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_PORT_TYPE_NAME;
 import static org.batfish.question.a10.A10VirtualServerConfigurationAnswerer.COL_VIRTUAL_SERVER_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

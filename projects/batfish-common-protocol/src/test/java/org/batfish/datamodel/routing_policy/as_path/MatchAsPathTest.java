@@ -2,9 +2,9 @@ package org.batfish.datamodel.routing_policy.as_path;
 
 import static org.batfish.datamodel.Bgpv4Route.testBuilder;
 import static org.batfish.datamodel.routing_policy.expr.IntComparator.EQ;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

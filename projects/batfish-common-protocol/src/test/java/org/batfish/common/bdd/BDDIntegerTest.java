@@ -1,10 +1,10 @@
 package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
-import static org.junit.Assert.assertThat;
 
 import java.util.Optional;
 import net.sf.javabdd.BDD;

@@ -6,8 +6,8 @@ import static org.batfish.representation.aws.AwsConfigurationTestUtils.getAnyFlo
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.getTraces;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testSetup;
 import static org.batfish.representation.aws.AwsConfigurationTestUtils.testTrace;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;

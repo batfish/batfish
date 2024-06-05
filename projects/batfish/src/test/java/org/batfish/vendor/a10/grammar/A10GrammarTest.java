@@ -67,6 +67,7 @@ import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_FAIL
 import static org.batfish.vendor.a10.representation.A10StructureType.VRRP_A_VRID;
 import static org.batfish.vendor.a10.representation.A10StructureUsage.VIRTUAL_SERVER_SOURCE_NAT_POOL;
 import static org.batfish.vendor.a10.representation.Interface.DEFAULT_MTU;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.anything;
@@ -86,7 +87,6 @@ import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

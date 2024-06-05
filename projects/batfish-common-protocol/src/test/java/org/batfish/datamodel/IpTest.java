@@ -2,11 +2,11 @@ package org.batfish.datamodel;
 
 import static org.batfish.datamodel.Ip.getBitAtPosition;
 import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Rule;

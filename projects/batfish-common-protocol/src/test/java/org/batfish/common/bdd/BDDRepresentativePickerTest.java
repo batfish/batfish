@@ -2,8 +2,8 @@ package org.batfish.common.bdd;
 
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.RefineFirst.refineFirst;
 import static org.batfish.common.bdd.BDDFlowConstraintGenerator.refine;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import net.sf.javabdd.BDD;
 import org.batfish.datamodel.IpProtocol;

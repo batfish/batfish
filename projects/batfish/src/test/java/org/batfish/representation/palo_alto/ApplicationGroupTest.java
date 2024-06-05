@@ -2,8 +2,8 @@ package org.batfish.representation.palo_alto;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.batfish.representation.palo_alto.PaloAltoConfiguration.getBuiltInApps;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

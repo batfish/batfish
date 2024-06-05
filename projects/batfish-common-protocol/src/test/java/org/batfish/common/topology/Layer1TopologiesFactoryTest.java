@@ -3,8 +3,8 @@ package org.batfish.common.topology;
 import static org.batfish.common.topology.Layer1Topologies.INVALID_INTERFACE;
 import static org.batfish.datamodel.InterfaceType.AGGREGATED;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.Configuration;

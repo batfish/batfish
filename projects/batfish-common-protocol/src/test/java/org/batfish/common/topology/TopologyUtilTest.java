@@ -20,6 +20,7 @@ import static org.batfish.datamodel.matchers.EdgeMatchers.hasNode2;
 import static org.batfish.datamodel.matchers.EdgeMatchers.hasTail;
 import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -27,7 +28,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

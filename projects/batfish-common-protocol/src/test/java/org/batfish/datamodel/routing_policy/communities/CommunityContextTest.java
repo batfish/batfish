@@ -1,8 +1,8 @@
 package org.batfish.datamodel.routing_policy.communities;
 
 import static org.batfish.datamodel.routing_policy.communities.CommunityContext.fromEnvironment;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;

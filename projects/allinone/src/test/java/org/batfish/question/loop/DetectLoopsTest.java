@@ -1,7 +1,7 @@
 package org.batfish.question.loop;
 
 import static org.batfish.datamodel.matchers.RowsMatchers.hasSize;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.io.IOException;
 import java.util.Set;

@@ -1,10 +1,10 @@
 package org.batfish.minesweeper;
 
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotSame;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

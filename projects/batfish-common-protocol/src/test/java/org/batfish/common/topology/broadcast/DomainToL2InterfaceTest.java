@@ -1,7 +1,7 @@
 package org.batfish.common.topology.broadcast;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.Range;
 import java.util.Optional;

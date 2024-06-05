@@ -7,11 +7,11 @@ import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasLocalPreference
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasWeight;
 import static org.batfish.dataplane.ibdp.TestUtils.annotateRoute;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

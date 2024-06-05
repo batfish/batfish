@@ -2,10 +2,10 @@ package org.batfish.representation.juniper;
 
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToAsPathMatchExpr;
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToBooleanExpr;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import org.batfish.datamodel.AsPath;

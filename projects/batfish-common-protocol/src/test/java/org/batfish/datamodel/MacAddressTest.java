@@ -3,8 +3,8 @@ package org.batfish.datamodel;
 import static org.batfish.datamodel.MacAddress.asMacAddressString;
 import static org.batfish.datamodel.MacAddress.of;
 import static org.batfish.datamodel.MacAddress.parse;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import javax.annotation.ParametersAreNonnullByDefault;
