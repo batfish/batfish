@@ -1,5 +1,7 @@
 package org.batfish.common.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -10,6 +12,7 @@ import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
@@ -109,6 +112,45 @@ public class MutableBDDIntegerTest {
     assertEquals(x.value(1), xPlus1.value(2)); // x == 1 <==> x+1 == 2
     assertEquals(x.geq(30), xPlus1.value(31)); // x >= 31 ==> x+1 == 31
     assertEquals(x.geq(15), xPlus16.value(31)); // x >= 15 ==> x+16 == 31
+  }
+
+  @Test
+  public void testSub() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger xMinus1 = x.sub(constant1);
+
+    assertEquals(x.value(1), xMinus1.value(0)); // x == 1 <==> x-1 == 0
+    assertEquals(x.value(2), xMinus1.value(1)); // x == 2 <==> x-1 == 1
+    assertEquals(x.value(0), xMinus1.value(31)); // x == 32 <==> x-1 == 31
+
+    // Check that each variable's bitvec is properly used with satisfying assignment.
+    assertThat(x.getValuesSatisfying(x.value(3L), 100), contains(3L));
+    assertThat(xMinus1.getValuesSatisfying(xMinus1.value(2L), 100), contains(2L));
+    assertThat(xMinus1.getValuesSatisfying(x.value(3L), 100), contains(2L));
+    assertThat(x.getValuesSatisfying(xMinus1.value(2L), 100), contains(3L));
+
+    // Check that partial satisfying assignments also work properly
+    MutableBDDInteger constant16 = MutableBDDInteger.makeFromValue(factory, 5, 16);
+    BDDInteger xMinus16 = x.sub(constant16);
+    MutableBDDInteger constant31 = MutableBDDInteger.makeFromValue(factory, 5, 31);
+    BDDInteger xMinus32 = xMinus1.sub(constant31);
+    BDDInteger xMinusx = x.sub(x);
+    assertThat(x.satAssignmentToLong(factory.one()), equalTo(0L));
+    assertThat(x.satAssignmentToLong(x._bitvec[4]), equalTo(1L));
+    assertThat(xMinus1.satAssignmentToLong(factory.one()), equalTo(31L));
+    assertThat(xMinus16.satAssignmentToLong(factory.one()), equalTo(16L));
+    assertThat(xMinus32.satAssignmentToLong(factory.one()), equalTo(0L));
+    assertThat(xMinusx.satAssignmentToLong(x._bitvec[4]), equalTo(0L));
+  }
+
+  @Test
+  public void testToBDDIpWildcard() {
+    BDDFactory factory = BDDUtils.bddFactory(32);
+    MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 32, 1);
+    assertThat(constant1.toBDD(IpWildcard.ANY), isOne());
+    assertThat(constant1.toBDD(IpWildcard.create(Ip.ZERO)), isZero());
   }
 
   @Test
