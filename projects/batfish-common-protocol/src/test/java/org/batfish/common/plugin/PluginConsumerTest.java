@@ -1,7 +1,7 @@
 package org.batfish.common.plugin;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import java.nio.file.Path;
 import org.junit.Rule;

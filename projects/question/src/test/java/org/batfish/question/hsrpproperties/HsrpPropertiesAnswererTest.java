@@ -9,9 +9,9 @@ import static org.batfish.question.hsrpproperties.HsrpPropertiesAnswerer.COL_PRI
 import static org.batfish.question.hsrpproperties.HsrpPropertiesAnswerer.COL_SOURCE_ADDRESS;
 import static org.batfish.question.hsrpproperties.HsrpPropertiesAnswerer.COL_VIRTUAL_ADDRESSES;
 import static org.batfish.question.hsrpproperties.HsrpPropertiesAnswerer.populateRow;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;

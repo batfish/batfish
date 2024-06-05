@@ -10,6 +10,7 @@ import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalNullRouteFor
 import static org.batfish.dataplane.ibdp.VirtualRouter.generateLocalRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateConnectedRoute;
 import static org.batfish.dataplane.ibdp.VirtualRouter.shouldGenerateLocalRoute;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
@@ -22,7 +23,6 @@ import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotEquals;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

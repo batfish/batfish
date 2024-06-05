@@ -5,10 +5,10 @@ import static org.batfish.coordinator.BatfishWorkerServiceWorkExecutor.processLa
 import static org.batfish.coordinator.SubmissionResult.Type.BUSY;
 import static org.batfish.coordinator.SubmissionResult.Type.ERROR;
 import static org.batfish.coordinator.SubmissionResult.Type.SUCCESS;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

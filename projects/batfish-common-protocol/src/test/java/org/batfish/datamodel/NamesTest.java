@@ -5,11 +5,11 @@ import static org.batfish.datamodel.Names.Type.TABLE_COLUMN;
 import static org.batfish.datamodel.Names.VALID_PATTERNS;
 import static org.batfish.datamodel.Names.nameNeedsEscaping;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.matchesPattern;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

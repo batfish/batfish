@@ -2,10 +2,10 @@ package org.batfish.common;
 
 import static org.batfish.common.Version.PROPERTIES_PATH;
 import static org.batfish.common.Version.UNKNOWN_VERSION;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import org.junit.Rule;
 import org.junit.Test;

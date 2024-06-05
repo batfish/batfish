@@ -1,8 +1,8 @@
 package org.batfish.dataplane.rib;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import java.util.List;

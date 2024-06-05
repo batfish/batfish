@@ -15,11 +15,11 @@ import static org.batfish.vendor.check_point_management.parsing.CheckpointManage
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.mergeNatRulebasePages;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readGatewaysAndServers;
 import static org.batfish.vendor.check_point_management.parsing.CheckpointManagementParser.readNatRulebase;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

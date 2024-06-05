@@ -1,9 +1,9 @@
 package org.batfish.common.util;
 
 import static org.batfish.common.util.NextHopComparator.instance;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.lessThan;
-import static org.junit.Assert.assertThat;
 
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.route.nh.NextHopDiscard;

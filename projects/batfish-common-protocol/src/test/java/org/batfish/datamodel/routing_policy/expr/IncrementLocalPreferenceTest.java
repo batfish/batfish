@@ -1,8 +1,8 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import static org.batfish.datamodel.BgpRoute.MAX_LOCAL_PREFERENCE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.testing.EqualsTester;
 import org.batfish.datamodel.Bgpv4Route;

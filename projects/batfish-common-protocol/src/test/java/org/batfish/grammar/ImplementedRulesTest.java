@@ -1,8 +1,8 @@
 package org.batfish.grammar;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 import org.junit.Test;

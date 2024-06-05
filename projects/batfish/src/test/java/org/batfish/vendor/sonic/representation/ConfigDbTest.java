@@ -3,9 +3,9 @@ package org.batfish.vendor.sonic.representation;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.vendor.sonic.representation.ConfigDb.createInterfaces;
 import static org.batfish.vendor.sonic.representation.ConfigDb.deserialize;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;

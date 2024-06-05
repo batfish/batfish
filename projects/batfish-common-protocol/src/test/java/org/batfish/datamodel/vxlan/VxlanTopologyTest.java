@@ -3,9 +3,9 @@ package org.batfish.datamodel.vxlan;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_3;
 import static org.batfish.datamodel.vxlan.VxlanTopology.EMPTY;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.graph.EndpointPair;

@@ -1,8 +1,8 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.IpRange.range;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;

@@ -46,6 +46,7 @@ import static org.batfish.question.routes.RoutesAnswererUtil.longestMatchingPref
 import static org.batfish.question.routes.RoutesAnswererUtil.populateBgpRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.populateRouteAttributes;
 import static org.batfish.question.routes.RoutesAnswererUtil.prefixMatches;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
@@ -55,7 +56,6 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.HashBasedTable;

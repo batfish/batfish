@@ -33,6 +33,7 @@ import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_INTE
 import static org.batfish.representation.frr.FrrStructureUsage.BGP_NEIGHBOR_SELF_REF;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_AS_PATH;
 import static org.batfish.representation.frr.FrrStructureUsage.ROUTE_MAP_MATCH_COMMUNITY_LIST;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -53,7 +54,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

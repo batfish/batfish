@@ -1,7 +1,7 @@
 package org.batfish.common.topology.broadcast;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
-import static org.junit.Assert.assertThat;
 
 import java.util.HashSet;
 import java.util.Set;
