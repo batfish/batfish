@@ -102,9 +102,9 @@ jobs:
           bazel build //projects/allinone:allinone_main_deploy.jar
           cp bazel-bin/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar
       - name: Save JAR
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
-          name: allinone_jar
+          name: allinone_jar_${{ matrix.java_version }}
           path: workspace/allinone.jar
     strategy:
       matrix:
