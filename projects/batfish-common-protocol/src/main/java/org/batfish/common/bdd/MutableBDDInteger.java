@@ -1,6 +1,7 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkState;
 import static org.batfish.common.bdd.BDDUtils.bitvector;
 
 import com.google.common.collect.ImmutableList;
@@ -122,8 +123,9 @@ public final class MutableBDDInteger extends BDDInteger {
   @Override
   protected BDD firstBitsEqual(long value, int length) {
     checkArgument(length <= _bitvec.length, "Not enough bits");
-    _trues.clear();
-    _falses.clear();
+    long startBDDCount = _factory.numOutstandingBDDs();
+    checkState(_trues.isEmpty(), "Unexpected array state");
+    checkState(_falses.isEmpty(), "Unexpected array state");
     long val = value >> (_bitvec.length - length);
     for (int i = length - 1; i >= 0; i--) {
       boolean bitValue = (val & 1) == 1;
@@ -134,16 +136,21 @@ public final class MutableBDDInteger extends BDDInteger {
       }
       val >>= 1;
     }
-    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+    BDD result = _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+    _trues.clear();
+    _falses.clear();
+    assertNoLeaks(startBDDCount, 1);
+    return result;
   }
 
   @Override
   public BDD toBDD(IpWildcard ipWildcard) {
     checkArgument(_bitvec.length >= Prefix.MAX_PREFIX_LENGTH);
+    long startBDDCount = _factory.numOutstandingBDDs() + _bitvec.length;
     long ip = ipWildcard.getIp().asLong();
     long wildcard = ipWildcard.getWildcardMask();
-    _trues.clear();
-    _falses.clear();
+    checkState(_trues.isEmpty(), "Unexpected array state");
+    checkState(_falses.isEmpty(), "Unexpected array state");
     for (int i = Prefix.MAX_PREFIX_LENGTH - 1; i >= 0; i--) {
       boolean significant = !Ip.getBitAtPosition(wildcard, i);
       if (significant) {
@@ -155,7 +162,11 @@ public final class MutableBDDInteger extends BDDInteger {
         }
       }
     }
-    return _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+    BDD result = _factory.andAll(_trues).diffWith(_factory.orAll(_falses));
+    _trues.clear();
+    _falses.clear();
+    assertNoLeaks(startBDDCount, 1);
+    return result;
   }
 
   /*
@@ -168,14 +179,16 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
     checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
 
-    BDD carry = _factory.zero();
+    long startBDDCount = _factory.numOutstandingBDDs();
     MutableBDDInteger sum = new MutableBDDInteger(_factory, as.length);
+    BDD carry = _factory.zero();
     BDD[] cs = sum._bitvec;
     for (int i = cs.length - 1; i > 0; --i) {
-      cs[i] = as[i].xor(bs[i]).xor(carry);
-      carry = as[i].and(bs[i]).or(carry.and(as[i].or(bs[i])));
+      cs[i] = as[i].xor(bs[i]).xorEq(carry);
+      carry = as[i].and(bs[i]).orWith(as[i].or(bs[i]).andWith(carry));
     }
-    cs[0] = as[0].xor(bs[0]).xor(carry);
+    cs[0] = carry.xorEq(as[0]).xorEq(bs[0]);
+    assertNoLeaks(startBDDCount, _bitvec.length);
     return sum;
   }
 
@@ -189,24 +202,51 @@ public final class MutableBDDInteger extends BDDInteger {
     checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
     checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
 
-    BDD carry = _factory.zero();
+    long startBDDCount = _factory.numOutstandingBDDs();
     MutableBDDInteger sum = new MutableBDDInteger(_factory, as.length);
     BDD[] cs = sum._bitvec;
+    BDD carry = _factory.zero();
     for (int i = cs.length - 1; i >= 0; --i) {
-      cs[i] = as[i].xor(bs[i]).xor(carry);
-      carry = as[i].and(bs[i]).or(carry.and(as[i].or(bs[i])));
+      cs[i] = as[i].xor(bs[i]).xorEq(carry);
+      carry = as[i].and(bs[i]).orWith(carry.andWith(as[i].or(bs[i])));
     }
-    return sum.ite(carry.not(), makeMaxValue(_factory, _bitvec.length));
+    MutableBDDInteger maxValue = makeMaxValue(_factory, _bitvec.length);
+    MutableBDDInteger result = sum.ite(carry.notEq(), maxValue);
+    maxValue.free();
+    sum.free();
+    carry.free();
+    assertNoLeaks(startBDDCount, _bitvec.length);
+    return result;
+  }
+
+  private void assertNoLeaks(long startBDDs, long incremental) {
+    assert _factory.numOutstandingBDDs() == startBDDs + incremental
+        : String.format(
+            "Expected to create %d new BDDs, actually created %d",
+            incremental, _factory.numOutstandingBDDs() - startBDDs);
+  }
+
+  /**
+   * Free all the component {@link BDD BDDs} in this {@link BDDInteger}. This instance is no longer
+   * safe to use unless re-initialized via, e.g., {@link #setValue(long)}.
+   */
+  public void free() {
+    for (int i = 0; i < _bitvec.length; i++) {
+      _bitvec[i].free();
+      _bitvec[i] = null;
+    }
   }
 
   /*
    * Map an if-then-else over each bit in the bitvector
    */
   public MutableBDDInteger ite(BDD b, MutableBDDInteger other) {
-    MutableBDDInteger val = new MutableBDDInteger(this);
+    long startBDDCount = _factory.numOutstandingBDDs();
+    MutableBDDInteger val = new MutableBDDInteger(_factory, _bitvec.length);
     for (int i = 0; i < _bitvec.length; i++) {
       val._bitvec[i] = b.ite(_bitvec[i], other._bitvec[i]);
     }
+    assertNoLeaks(startBDDCount, _bitvec.length);
     return val;
   }
 
@@ -215,10 +255,12 @@ public final class MutableBDDInteger extends BDDInteger {
    * @return the same bitvector but restricted by pred.
    */
   public MutableBDDInteger and(BDD pred) {
-    MutableBDDInteger val = new MutableBDDInteger(this);
+    long startBDDCount = _factory.numOutstandingBDDs() + _bitvec.length;
+    MutableBDDInteger val = new MutableBDDInteger(_factory, _bitvec.length);
     for (int i = 0; i < _bitvec.length; i++) {
       val._bitvec[i] = pred.and(_bitvec[i]);
     }
+    assertNoLeaks(startBDDCount, _bitvec.length);
     return val;
   }
 
@@ -231,11 +273,15 @@ public final class MutableBDDInteger extends BDDInteger {
    * @return a predicate represented as a BDD
    */
   public BDD allDifferences(BDDInteger other) {
+    long startBDDCount = _factory.numOutstandingBDDs();
     assert _bitvec.length == other._bitvec.length;
-    return _factory.orAll(
-        IntStream.range(0, _bitvec.length)
-            .mapToObj(i -> _bitvec[i].xor(other._bitvec[i]))
-            .collect(ImmutableList.toImmutableList()));
+    BDD result =
+        _factory.orAllAndFree(
+            IntStream.range(0, _bitvec.length)
+                .mapToObj(i -> _bitvec[i].xor(other._bitvec[i]))
+                .collect(ImmutableList.toImmutableList()));
+    assertNoLeaks(startBDDCount, 1);
+    return result;
   }
 
   /*
@@ -250,24 +296,25 @@ public final class MutableBDDInteger extends BDDInteger {
   /*
    * Subtract one BDD from another bitwise to create a new BDD
    */
-  public MutableBDDInteger sub(MutableBDDInteger var1) {
+  public MutableBDDInteger sub(MutableBDDInteger other) {
     checkArgument(
-        _bitvec.length == var1._bitvec.length, "Input variable must have equal bitvector length");
-    BDD var3 = _factory.zero();
-    MutableBDDInteger var4 = new MutableBDDInteger(_factory, _bitvec.length);
-    for (int var5 = var4._bitvec.length - 1; var5 >= 0; --var5) {
-      var4._bitvec[var5] = _bitvec[var5].xor(var1._bitvec[var5]);
-      var4._bitvec[var5] = var4._bitvec[var5].xor(var3.id());
-      BDD var6 = var1._bitvec[var5].or(var3);
-      BDD var7 = _bitvec[var5].less(var6);
-      var6.free();
-      var6 = _bitvec[var5].and(var1._bitvec[var5]);
-      var6 = var6.and(var3);
-      var6 = var6.or(var7);
-      var3 = var6;
+        _bitvec.length == other._bitvec.length, "Input variable must have equal bitvector length");
+
+    int length = _bitvec.length;
+    long startBDDCount = _factory.numOutstandingBDDs();
+    BDD[] a = _bitvec;
+    BDD[] b = other._bitvec;
+    MutableBDDInteger result = new MutableBDDInteger(_factory, length);
+    BDD[] c = result._bitvec; // We will compute c = a - b.
+    BDD borrow = _factory.zero(); // the opposite of carry
+    for (int i = length - 1; i >= 0; --i) {
+      c[i] = a[i].xor(b[i]).xorEq(borrow);
+      BDD var7 = b[i].or(borrow).diffEq(a[i]);
+      borrow = a[i].and(b[i]).andWith(borrow).orWith(var7);
     }
-    var3.free();
-    return var4;
+    borrow.free();
+    assertNoLeaks(startBDDCount, _bitvec.length);
+    return result;
   }
 
   @Override
