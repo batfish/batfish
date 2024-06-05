@@ -10,6 +10,7 @@ import static org.batfish.job.ConvertConfigurationJob.assertVendorStructureIdsVa
 import static org.batfish.job.ConvertConfigurationJob.finalizeConfiguration;
 import static org.batfish.job.ConvertConfigurationJob.removeInvalidVendorStructureIds;
 import static org.batfish.job.ConvertConfigurationJob.saveStructureInfo;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
@@ -18,7 +19,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.iterableWithSize;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

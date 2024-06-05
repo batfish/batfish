@@ -3,10 +3,10 @@ package org.batfish.grammar.palo_alto;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.FAILURE_DISPOSITIONS;
 import static org.batfish.datamodel.FlowDisposition.NO_ROUTE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.io.IOException;

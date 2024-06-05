@@ -1,9 +1,9 @@
 package org.batfish.config;
 
 import static org.batfish.storage.FileBasedStorage.getWorkLogPath;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.nio.file.Paths;

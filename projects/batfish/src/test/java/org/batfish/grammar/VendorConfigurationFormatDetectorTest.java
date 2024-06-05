@@ -19,9 +19,9 @@ import static org.batfish.datamodel.ConfigurationFormat.RUCKUS_ICX;
 import static org.batfish.datamodel.ConfigurationFormat.UNKNOWN;
 import static org.batfish.datamodel.ConfigurationFormat.UNSUPPORTED;
 import static org.batfish.grammar.VendorConfigurationFormatDetector.identifyConfigurationFormat;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;

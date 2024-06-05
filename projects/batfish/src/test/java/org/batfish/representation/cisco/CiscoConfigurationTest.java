@@ -3,12 +3,12 @@ package org.batfish.representation.cisco;
 import static org.batfish.representation.cisco.CiscoConfiguration.getRouteMapClausePolicyName;
 import static org.batfish.representation.cisco.CiscoConfiguration.makeClauseTraceable;
 import static org.batfish.representation.cisco.CiscoConfiguration.toTacacsServers;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

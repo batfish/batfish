@@ -3,9 +3,9 @@ package org.batfish.common.bdd;
 import static org.batfish.datamodel.ExprAclLine.ACCEPT_ALL;
 import static org.batfish.datamodel.ExprAclLine.rejecting;
 import static org.batfish.datamodel.ExprAclLine.rejectingHeaderSpace;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Arrays;

@@ -5,12 +5,12 @@ import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.datamodel.Names.generatedOspfInboundDistributeListName;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.getOspfInboundDistributeListPolicy;
 import static org.batfish.representation.cisco_xr.CiscoXrConversions.toRouteFilterList;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

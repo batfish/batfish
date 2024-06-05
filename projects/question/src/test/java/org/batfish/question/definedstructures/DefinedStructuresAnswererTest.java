@@ -5,11 +5,11 @@ import static org.batfish.datamodel.matchers.TableAnswerElementMatchers.hasRows;
 import static org.batfish.question.definedstructures.DefinedStructuresAnswerer.COL_SOURCE_LINES;
 import static org.batfish.question.definedstructures.DefinedStructuresAnswerer.COL_STRUCTURE_NAME;
 import static org.batfish.question.definedstructures.DefinedStructuresAnswerer.COL_STRUCT_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.emptyIterable;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableRangeSet;

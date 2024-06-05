@@ -2,9 +2,9 @@ package org.batfish.grammar.recovery;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.junit.Assert.assertThat;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;

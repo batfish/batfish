@@ -1,8 +1,8 @@
 package org.batfish.datamodel.questions;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Iterator;

@@ -2,9 +2,9 @@ package org.batfish.common.topology;
 
 import static org.batfish.common.topology.InterfaceUtil.matchingInterface;
 import static org.batfish.common.topology.InterfaceUtil.matchingInterfaceName;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableSet;
 import java.util.Optional;

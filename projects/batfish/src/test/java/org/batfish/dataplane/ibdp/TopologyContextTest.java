@@ -1,8 +1,8 @@
 package org.batfish.dataplane.ibdp;
 
 import static org.batfish.datamodel.vxlan.VniLayer.LAYER_2;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;

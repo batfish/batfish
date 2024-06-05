@@ -9,12 +9,12 @@ import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLin
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_LINE_INDEX;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.COL_NODE;
 import static org.batfish.question.findmatchingfilterlines.FindMatchingFilterLinesAnswerer.getBehaviorToReport;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

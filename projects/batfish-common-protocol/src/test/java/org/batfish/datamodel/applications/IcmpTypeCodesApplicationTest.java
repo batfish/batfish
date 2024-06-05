@@ -1,9 +1,9 @@
 package org.batfish.datamodel.applications;
 
 import static org.batfish.datamodel.applications.IcmpTypeCodesApplication.ALL_CODES;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;

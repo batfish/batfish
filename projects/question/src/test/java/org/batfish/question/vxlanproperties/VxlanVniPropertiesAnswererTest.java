@@ -10,8 +10,8 @@ import static org.batfish.datamodel.vxlan.Layer2Vni.testBuilder;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_NODE;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VNI;
 import static org.batfish.question.vxlanproperties.VxlanVniPropertiesAnswerer.COL_VRF;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;

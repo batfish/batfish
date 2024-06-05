@@ -5,9 +5,9 @@ import static org.batfish.datamodel.answers.InputValidationUtils.validateIp;
 import static org.batfish.datamodel.answers.InputValidationUtils.validatePrefix;
 import static org.batfish.datamodel.answers.InputValidationUtils.validateSourceLocation;
 import static org.batfish.specifier.parboiled.InternetLocationAstNode.INTERNET_LOCATION;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;

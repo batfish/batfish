@@ -4,11 +4,11 @@ import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.CALL_EXPR_C
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.CALL_STATEMENT_CONTEXT;
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.FALSE;
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.TRUE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;

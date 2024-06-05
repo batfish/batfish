@@ -45,6 +45,7 @@ import static org.batfish.representation.frr.FrrConversions.toOspfProcess;
 import static org.batfish.representation.frr.FrrConversions.toRouteFilterLine;
 import static org.batfish.representation.frr.FrrConversions.toRouteFilterList;
 import static org.batfish.representation.frr.FrrConversions.toRouteTarget;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
@@ -52,7 +53,6 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;

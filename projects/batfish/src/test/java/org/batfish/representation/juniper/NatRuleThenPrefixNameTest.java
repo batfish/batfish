@@ -4,8 +4,8 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.representation.juniper.Nat.Type.STATIC;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.testing.EqualsTester;

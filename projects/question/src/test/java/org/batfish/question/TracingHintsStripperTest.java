@@ -3,8 +3,8 @@ package org.batfish.question;
 import static org.batfish.datamodel.routing_policy.expr.BooleanExprs.TRUE;
 import static org.batfish.question.TracingHintsStripper.STRIP_TOKEN;
 import static org.batfish.question.TracingHintsStripper.TRACING_HINTS_STRIPPER;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
-import static org.junit.Assert.assertThat;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;

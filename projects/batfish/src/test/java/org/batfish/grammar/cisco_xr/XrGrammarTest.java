@@ -138,6 +138,7 @@ import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPO
 import static org.batfish.representation.cisco_xr.CiscoXrStructureUsage.VRF_IMPORT_ROUTE_POLICY;
 import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC;
 import static org.batfish.representation.cisco_xr.OspfDefaultInformationOriginate.DEFAULT_METRIC_TYPE;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.anEmptyMap;
@@ -160,7 +161,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
