@@ -17,6 +17,8 @@ import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
@@ -45,6 +47,8 @@ import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
 public class ModelGeneration {
+  private static final Logger LOGGER = LogManager.getLogger(ModelGeneration.class);
+
   private static Optional<Community> stringToCommunity(String str) {
     Optional<StandardCommunity> scomm = StandardCommunity.tryParse(str);
     if (scomm.isPresent()) {
@@ -231,12 +235,26 @@ public class ModelGeneration {
       Environment.Direction direction,
       Result<BgpRoute> expectedResult) {
     if (!expectedResult.getAction().equals(action)) {
+      LOGGER.warn(
+          "Mismatched action for input {}: simulation {} model {}",
+          expectedResult.getInputRoute(),
+          expectedResult.getAction(),
+          action);
       return false;
     }
     if (action == PERMIT) {
+      assert expectedResult.getOutputRoute() != null;
       BgpRoute outputRouteFromModel =
           satAssignmentToOutputRoute(model, bddRoute, configAPs, direction);
-      return expectedResult.getOutputRoute().equals(outputRouteFromModel);
+      boolean result = expectedResult.getOutputRoute().equals(outputRouteFromModel);
+      if (!result) {
+        LOGGER.warn(
+            "Mismatched output route for input {}: simulation {} model {}",
+            expectedResult.getInputRoute(),
+            expectedResult.getOutputRoute(),
+            outputRouteFromModel);
+      }
+      return result;
     }
     return true;
   }
