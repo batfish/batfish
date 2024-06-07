@@ -338,6 +338,7 @@ public final class CompareRoutePoliciesUtils {
           // additional constraints to expose them
           result = factory.one();
           break;
+        case TUNNEL_ENCAPSULATION_ATTRIBUTE: /* TODO */
         default:
           throw new UnsupportedOperationException(d.name());
       }
