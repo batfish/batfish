@@ -15,11 +15,13 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.minesweeper.aspath.AsPathRegexCollector;
 import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
+import org.batfish.minesweeper.aspath.TunnelEncapsulationAttributeCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 import org.batfish.minesweeper.env.SourceVrfCollector;
 import org.batfish.minesweeper.env.TrackCollector;
@@ -62,6 +64,8 @@ public final class ConfigAtomicPredicates {
   /** The list of source VRFs that appear in the given configuration. */
   private final List<String> _sourceVrfs;
 
+  private final List<TunnelEncapsulationAttribute> _tunnelEncapsulationAttributes;
+
   private static boolean isStandardCommunity(CommunityVar var) {
     if (var.getType() == CommunityVar.Type.REGEX) {
       // assume all regexes are on standard communities
@@ -87,6 +91,8 @@ public final class ConfigAtomicPredicates {
     Set<String> allTrackNames = new TreeSet<>();
     Set<String> allNextHopInterfaceNames = new TreeSet<>();
     Set<String> allSourceVrfNames = new TreeSet<>();
+    ImmutableSet.Builder<TunnelEncapsulationAttribute> allTunnelEncapsulationAttributes =
+        ImmutableSet.builder();
     allCommunitiesB.addAll(extraCommunities);
     extraAsPathRegexes.forEach(s -> allAsPathRegexesB.add(new SymbolicAsPathRegex(s)));
 
@@ -98,6 +104,7 @@ public final class ConfigAtomicPredicates {
       allTrackNames.addAll(findAllTracks(policies, config));
       allNextHopInterfaceNames.addAll(findAllNextHopInterfaces(policies, config));
       allSourceVrfNames.addAll(findAllSourceVrfs(policies, config));
+      allTunnelEncapsulationAttributes.addAll(findAllTunnelAttributes(policies, config));
     }
     Set<CommunityVar> allCommunities = allCommunitiesB.build();
 
@@ -125,6 +132,7 @@ public final class ConfigAtomicPredicates {
     _nextHopInterfaces = ImmutableList.copyOf(allNextHopInterfaceNames);
     _tracks = ImmutableList.copyOf(allTrackNames);
     _sourceVrfs = ImmutableList.copyOf(allSourceVrfNames);
+    _tunnelEncapsulationAttributes = ImmutableList.copyOf(allTunnelEncapsulationAttributes.build());
   }
 
   public ConfigAtomicPredicates(ConfigAtomicPredicates other) {
@@ -136,6 +144,7 @@ public final class ConfigAtomicPredicates {
     _nextHopInterfaces = other._nextHopInterfaces;
     _tracks = other._tracks;
     _sourceVrfs = other._sourceVrfs;
+    _tunnelEncapsulationAttributes = other._tunnelEncapsulationAttributes;
   }
 
   /**
@@ -268,6 +277,18 @@ public final class ConfigAtomicPredicates {
     return findAllMatchItems(ImmutableSet.of(), policies, configuration, new SourceVrfCollector());
   }
 
+  private static Set<TunnelEncapsulationAttribute> findAllTunnelAttributes(
+      Collection<RoutingPolicy> policies, Configuration configuration) {
+    TunnelEncapsulationAttributeCollector collector =
+        TunnelEncapsulationAttributeCollector.instance();
+    ImmutableSet.Builder<TunnelEncapsulationAttribute> attributes = ImmutableSet.builder();
+    for (RoutingPolicy p : policies) {
+      attributes.addAll(
+          collector.visitAll(p.getStatements(), new Tuple<>(new HashSet<>(), configuration)));
+    }
+    return attributes.build();
+  }
+
   public RegexAtomicPredicates<CommunityVar> getStandardCommunityAtomicPredicates() {
     return _standardCommunityAtomicPredicates;
   }
@@ -286,6 +307,10 @@ public final class ConfigAtomicPredicates {
 
   public List<String> getTracks() {
     return _tracks;
+  }
+
+  public List<TunnelEncapsulationAttribute> getTunnelEncapsulationAttributes() {
+    return _tunnelEncapsulationAttributes;
   }
 
   public List<String> getSourceVrfs() {

@@ -65,6 +65,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.LongExpr;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
@@ -89,6 +90,7 @@ import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
@@ -97,6 +99,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement;
@@ -107,6 +110,7 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
+import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
@@ -866,6 +870,24 @@ public class TransferBDD {
       MutableBDDInteger currTag = curP.getData().getTag();
       MutableBDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
       curP.getData().setTag(newValue);
+      return ImmutableList.of(toTransferBDDState(curP, result));
+
+    } else if (stmt instanceof RemoveTunnelEncapsulationAttribute
+        || stmt instanceof SetTunnelEncapsulationAttribute) {
+      curP.debug("%s", stmt.getClass().getSimpleName());
+      BDDTunnelEncapsulationAttribute current =
+          result.getReturnValue().getFirst().getTunnelEncapsulationAttribute();
+      BDDTunnelEncapsulationAttribute newValue = BDDTunnelEncapsulationAttribute.copyOf(current);
+      if (stmt instanceof SetTunnelEncapsulationAttribute) {
+        SetTunnelEncapsulationAttribute st = (SetTunnelEncapsulationAttribute) stmt;
+        LiteralTunnelEncapsulationAttribute expr =
+            (LiteralTunnelEncapsulationAttribute) st.getTunnelEncapsulationAttributeExpr();
+        newValue.setValue(Value.literal(expr.getTunnelEncapsulationAttribute()));
+      } else {
+        assert stmt instanceof RemoveTunnelEncapsulationAttribute;
+        newValue.setValue(Value.absent());
+      }
+      curP.getData().setTunnelEncapsulationAttribute(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetWeight) {
