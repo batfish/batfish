@@ -19,8 +19,8 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.statement.Statement;
-import org.batfish.minesweeper.aspath.BooleanExprAsPathCollector;
-import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
+import org.batfish.minesweeper.aspath.AsPathRegexCollector;
+import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
 import org.batfish.minesweeper.env.BooleanExprSourceVrfCollector;
 import org.batfish.minesweeper.env.BooleanExprTrackCollector;
@@ -201,12 +201,10 @@ public final class ConfigAtomicPredicates {
       Set<T> items,
       Collection<RoutingPolicy> policies,
       Configuration configuration,
-      BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> booleanExprVisitor) {
+      RoutingPolicyCollector<T> collector) {
     ImmutableSet.Builder<T> builder = ImmutableSet.builder();
-
-    policies.forEach(
-        pol -> builder.addAll(findAllMatchItems(pol, configuration, booleanExprVisitor)));
-    builder.addAll(items.stream().collect(ImmutableSet.toImmutableSet()));
+    policies.forEach(pol -> builder.addAll(findAllMatchItems(pol, configuration, collector)));
+    builder.addAll(items);
     return builder.build();
   }
 
@@ -217,19 +215,9 @@ public final class ConfigAtomicPredicates {
    * user-specified constraints for symbolic analysis.
    */
   private static <T> Set<T> findAllMatchItems(
-      RoutingPolicy policy,
-      Configuration configuration,
-      BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> booleanExprVisitor) {
-    Set<T> items = new HashSet<>();
-    List<Statement> stmts = policy.getStatements();
-    stmts.forEach(
-        stmt ->
-            items.addAll(
-                stmt.accept(
-                    new RoutePolicyStatementMatchCollector<>(booleanExprVisitor),
-                    new Tuple<>(
-                        new HashSet<>(Collections.singleton(policy.getName())), configuration))));
-    return items;
+      RoutingPolicy policy, Configuration configuration, RoutingPolicyCollector<T> collector) {
+    Set<String> visited = new HashSet<>(Collections.singleton(policy.getName()));
+    return collector.visitAll(policy.getStatements(), new Tuple<>(visited, configuration));
   }
 
   /**
@@ -241,8 +229,7 @@ public final class ConfigAtomicPredicates {
       Set<SymbolicAsPathRegex> asPathRegexes,
       Collection<RoutingPolicy> policies,
       Configuration configuration) {
-    return findAllMatchItems(
-        asPathRegexes, policies, configuration, new BooleanExprAsPathCollector());
+    return findAllMatchItems(asPathRegexes, policies, configuration, new AsPathRegexCollector());
   }
 
   /**

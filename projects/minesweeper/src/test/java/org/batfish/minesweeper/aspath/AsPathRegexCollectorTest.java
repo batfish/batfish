@@ -32,12 +32,12 @@ import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link BooleanExprAsPathCollector}. */
-public class BooleanExprAsPathCollectorTest {
+/** Tests for {@link AsPathRegexCollector}. */
+public class AsPathRegexCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
-  private BooleanExprAsPathCollector _collector;
+  private AsPathRegexCollector _collector;
 
   private static final String ASPATH1 = " 40$";
   private static final String ASPATH2 = "^$";
@@ -52,7 +52,7 @@ public class BooleanExprAsPathCollectorTest {
     _baseConfig = cb.build();
     nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
-    _collector = new BooleanExprAsPathCollector();
+    _collector = new AsPathRegexCollector();
   }
 
   @Test

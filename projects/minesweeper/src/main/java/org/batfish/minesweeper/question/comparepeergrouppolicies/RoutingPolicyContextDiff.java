@@ -14,9 +14,8 @@ import java.util.TreeSet;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.minesweeper.aspath.RoutePolicyStatementMatchCollector;
 import org.batfish.minesweeper.collectors.AsPathNameBooleanExprCollector;
-import org.batfish.minesweeper.collectors.RoutingPolicyStatementCommunityCollector;
+import org.batfish.minesweeper.collectors.CommunityNameCollector;
 import org.batfish.minesweeper.collectors.RoutingPolicyStatementRouteFilterCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
@@ -96,7 +95,7 @@ public final class RoutingPolicyContextDiff implements Comparable<RoutingPolicyC
   public boolean differ(RoutingPolicy currentPolicy) {
     // Find all the references/names used by the routing policy
     Set<String> communityNames =
-        new RoutingPolicyStatementCommunityCollector()
+        new CommunityNameCollector()
             .visitAll(
                 currentPolicy.getStatements(),
                 new Tuple<>(
@@ -110,7 +109,7 @@ public final class RoutingPolicyContextDiff implements Comparable<RoutingPolicyC
                     new HashSet<>(Collections.singleton(currentPolicy.getName())),
                     this._currentConfig));
     Set<String> asPathNames =
-        new RoutePolicyStatementMatchCollector<>(new AsPathNameBooleanExprCollector())
+        new AsPathNameBooleanExprCollector()
             .visitAll(
                 currentPolicy.getStatements(),
                 new Tuple<>(

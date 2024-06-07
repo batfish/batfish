@@ -18,7 +18,7 @@ import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all AS-path regexes in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
-public class BooleanExprAsPathCollector extends BooleanExprMatchCollector<SymbolicAsPathRegex> {
+public class AsPathRegexCollector extends RoutingPolicyCollector<SymbolicAsPathRegex> {
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchAsPath(
