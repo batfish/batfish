@@ -10,6 +10,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
@@ -23,6 +24,8 @@ import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchRegex;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetNot;
 import org.batfish.datamodel.routing_policy.communities.HasCommunity;
 import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 
 /**
@@ -127,7 +130,38 @@ public class CommunitySetMatchExprToBDD
 
   @Override
   public BDD visitHasSize(HasSize hasSize, Arg arg) {
-    throw new UnsupportedOperationException(hasSize.toString());
+    if (!(hasSize.getExpr() instanceof IntComparison)) {
+      throw new UnsupportedOperationException(hasSize.toString());
+    }
+    IntComparison cmp = (IntComparison) hasSize.getExpr();
+    if (!(cmp.getExpr() instanceof LiteralInt)) {
+      throw new UnsupportedOperationException(hasSize.toString());
+    }
+    BDDFactory factory = arg.getTransferBDD().getFactory();
+    int val = ((LiteralInt) cmp.getExpr()).getValue();
+    switch (cmp.getComparator()) {
+      case EQ:
+        // Too hard to predict what this clause is for.
+        throw new UnsupportedOperationException(hasSize.toString());
+      case GE:
+        // This is likely protecting against too-large community sets.
+        // Only return true if the value allows any set.
+        return val <= 0 ? factory.one() : factory.zero();
+      case GT:
+        // This is likely protecting against too-large community sets.
+        // Only return true if the value allows any set.
+        return val < 0 ? factory.one() : factory.zero();
+      case LE:
+        // This is likely protecting against too-large community sets. Return true if the value
+        // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+        return val >= 64 ? factory.one() : factory.zero();
+      case LT:
+        // This is likely protecting against too-large community sets. Return true if the value
+        // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+        return val > 64 ? factory.one() : factory.zero();
+      default:
+        throw new IllegalStateException("Should be unreachable");
+    }
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {

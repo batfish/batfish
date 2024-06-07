@@ -1,11 +1,16 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.common.bdd.BDDMatchers.isOne;
+import static org.batfish.common.bdd.BDDMatchers.isZero;
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -107,6 +112,39 @@ public class CommunitySetMatchExprToBDDTest {
     CommunityVar cvar2 = CommunityVar.from("^20:");
 
     assertEquals(cvarToBDD(cvar1).not().and(cvarToBDD(cvar2)), result);
+  }
+
+  @Test
+  public void testVisitCommunitySetHasSize() {
+    List<HasSize> treatFalse =
+        ImmutableList.of(
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(64))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(63))),
+            new HasSize(new IntComparison(IntComparator.GT, new LiteralInt(5))),
+            new HasSize(new IntComparison(IntComparator.GE, new LiteralInt(5))));
+    List<HasSize> treatTrue =
+        ImmutableList.of(
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(100))),
+            new HasSize(new IntComparison(IntComparator.LT, new LiteralInt(65))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(64))),
+            new HasSize(new IntComparison(IntComparator.LE, new LiteralInt(500))),
+            new HasSize(new IntComparison(IntComparator.GT, new LiteralInt(-5))),
+            new HasSize(new IntComparison(IntComparator.GE, new LiteralInt(0))));
+
+    for (HasSize hs : treatFalse) {
+      assertThat(_communitySetMatchExprToBDD.visitHasSize(hs, _arg), isZero());
+    }
+    for (HasSize hs : treatTrue) {
+      assertThat(_communitySetMatchExprToBDD.visitHasSize(hs, _arg), isOne());
+    }
+
+    assertThrows(
+        UnsupportedOperationException.class,
+        () ->
+            _communitySetMatchExprToBDD.visitHasSize(
+                new HasSize(new IntComparison(IntComparator.EQ, new LiteralInt(5))), _arg));
   }
 
   @Test
