@@ -50,6 +50,7 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -97,6 +98,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
+import org.batfish.datamodel.routing_policy.expr.LiteralTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
@@ -121,6 +123,7 @@ import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
+import org.batfish.datamodel.routing_policy.statement.RemoveTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultTag;
@@ -130,6 +133,7 @@ import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.SetOspfMetricType;
 import org.batfish.datamodel.routing_policy.statement.SetTag;
+import org.batfish.datamodel.routing_policy.statement.SetTunnelEncapsulationAttribute;
 import org.batfish.datamodel.routing_policy.statement.SetWeight;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -140,6 +144,7 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.Location;
@@ -212,7 +217,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1, 0, 0, 0);
+    return new BDDRoute(factory, 1, 1, 0, 0, 0, ImmutableList.of());
   }
 
   // test whether two lists contain pairwise semantically equal TransferReturns
@@ -1084,6 +1089,49 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testSetTunnelEncapsulationAttribute() {
+    TunnelEncapsulationAttribute attr =
+        new TunnelEncapsulationAttribute(Ip.FIRST_CLASS_A_PRIVATE_IP);
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new SetTunnelEncapsulationAttribute(new LiteralTunnelEncapsulationAttribute(attr)))
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTunnelEncapsulationAttribute().setValue(Value.literal(attr));
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testRemoveTunnelEncapsulationAttribute() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(RemoveTunnelEncapsulationAttribute.instance())
+            .addStatement(new StaticStatement(Statements.ExitAccept))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
+    BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
+    expected.getTunnelEncapsulationAttribute().setValue(Value.absent());
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+
+    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
     assertTrue(equalsForTesting(expectedPaths, paths));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }

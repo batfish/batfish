@@ -30,6 +30,7 @@ import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopSelf;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -42,6 +43,8 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
+import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value.Type;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
@@ -198,6 +201,24 @@ public class ModelGeneration {
   }
 
   /**
+   * Given a single satisfying assignment to the constraints from symbolic route analysis, produce
+   * an optional {@link TunnelEncapsulationAttribute} for a given symbolic route that is consistent
+   * with the assignment.
+   */
+  static @Nullable TunnelEncapsulationAttribute satAssignmentToTunnelEncapsulationAttribute(
+      BDD model, BDDRoute r) {
+    Value value = r.getTunnelEncapsulationAttribute().satAssignmentToValue(model);
+    if (value.type() == Type.ABSENT) {
+      return null;
+    } else if (value.type() == Type.LITERAL) {
+      return value.value();
+    }
+    // BgpRoute requires a concrete value, so make one up.
+    assert value.type() == Type.OTHER;
+    return new TunnelEncapsulationAttribute(Ip.create(1));
+  }
+
+  /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
    *
@@ -350,6 +371,9 @@ public class ModelGeneration {
     NextHop nextHop = satAssignmentToNextHop(model, bddRoute, configAPs);
     builder.setNextHop(nextHop);
 
+    builder.setTunnelEncapsulationAttribute(
+        satAssignmentToTunnelEncapsulationAttribute(model, bddRoute));
+
     return builder.build();
   }
 
@@ -393,8 +417,8 @@ public class ModelGeneration {
    * @param model the variable assignment
    * @return the unique item consistent with the model, or null if there is none
    */
-  private static @Nullable String optionalSatisfyingItem(
-      List<String> items, BDDDomain<Integer> itemsBDD, BDD model) {
+  private static <T> @Nullable T optionalSatisfyingItem(
+      List<T> items, BDDDomain<Integer> itemsBDD, BDD model) {
     // we subtract 1 to get the list index, since the 0th value in the BDDDomain is used to
     // represent that there is no value chosen
     int index = itemsBDD.satAssignmentToValue(model) - 1;
