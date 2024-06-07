@@ -19,6 +19,8 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.github.ben-manes.caffeine:caffeine:3.1.8",
     "com.google.auto.service:auto-service:1.1.1",
     "com.google.auto.service:auto-service-annotations:1.1.1",
+    "com.google.auto.value:auto-value:1.11.0",
+    "com.google.auto.value:auto-value-annotations:1.11.0",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.11.0",  # managed up for CVE-2022-25647
     "com.google.errorprone:error_prone_annotations:2.28.0",
