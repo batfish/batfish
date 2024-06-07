@@ -327,6 +327,11 @@ public final class CompareRoutePoliciesUtils {
         case ADMIN_DIST:
           result = r1.getAdminDist().allDifferences(r2.getAdminDist());
           break;
+        case TUNNEL_ENCAPSULATION_ATTRIBUTE:
+          result =
+              r1.getTunnelEncapsulationAttribute()
+                  .allDifferences(r2.getTunnelEncapsulationAttribute());
+          break;
         case WEIGHT:
           result = r1.getWeight().allDifferences(r2.getWeight());
           break;

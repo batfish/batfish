@@ -26,6 +26,7 @@ import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.IDeepCopy;
 import org.batfish.minesweeper.OspfType;
@@ -143,6 +144,12 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   private final BDDDomain<Integer> _sourceVrfs;
 
+  /**
+   * Represents the optional {@link org.batfish.datamodel.bgp.TunnelEncapsulationAttribute} on the
+   * route.
+   */
+  private @Nonnull BDDTunnelEncapsulationAttribute _tunnelEncapsulationAttribute;
+
   private MutableBDDInteger _tag;
 
   /**
@@ -176,7 +183,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
         aps.getNextHopInterfaces().size(),
         aps.getSourceVrfs().size(),
-        aps.getTracks().size());
+        aps.getTracks().size(),
+        aps.getTunnelEncapsulationAttributes());
   }
 
   /**
@@ -192,7 +200,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       int numAsPathRegexAtomicPredicates,
       int numNextHopInterfaces,
       int numSourceVrfs,
-      int numTracks) {
+      int numTracks,
+      List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
     _factory = factory;
 
     int bitsToRepresentAdmin = IntMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
@@ -211,6 +220,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
             + numBits(numNextHopInterfaces + 1)
             + numBits(numSourceVrfs + 1)
             + numTracks
+            + BDDTunnelEncapsulationAttribute.numBitsFor(tunnelEncapsulationAttributes)
             + numBits(OriginType.values().length)
             + numBits(RoutingProtocol.values().length)
             + numBits(allMetricTypes.size());
@@ -304,13 +314,26 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
       _bitNames.put(idx, "track " + i);
       idx++;
     }
+
+    // Tunnel encapsulation attribute is an optional singleton
+    _tunnelEncapsulationAttribute =
+        BDDTunnelEncapsulationAttribute.create(factory, idx, tunnelEncapsulationAttributes);
+    len = _tunnelEncapsulationAttribute.getNumBits();
+    addBitNames("tunnel encapsulation attributes", len, idx, false);
+    idx += len;
+
     // Initialize OSPF type
     _ospfMetric = new BDDDomain<>(factory, allMetricTypes, idx);
     len = _ospfMetric.getInteger().size();
     addBitNames("ospfMetric", len, idx, false);
+    idx += len;
+
     _prependedASes = new ArrayList<>();
+
     // Initially there are no unsupported statements encountered
     _unsupported = false;
+
+    assert idx != 0; // unnecessary, but needed to avoid unused comment
   }
 
   /*
@@ -341,6 +364,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopInterfaces = new BDDDomain<>(other._nextHopInterfaces);
     _sourceVrfs = new BDDDomain<>(other._sourceVrfs);
     _tracks = other._tracks.clone();
+    _tunnelEncapsulationAttribute =
+        BDDTunnelEncapsulationAttribute.copyOf(other._tunnelEncapsulationAttribute);
     _unsupported = other._unsupported;
   }
 
@@ -382,6 +407,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _nextHopInterfaces = new BDDDomain<>(pred, route._nextHopInterfaces);
     _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
+    _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
   }
 
   /*
@@ -450,6 +476,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     // Protocol domain constraint is stronger: only one of the ones allowed in a BgpRoute.
     BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
+    BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
     return _factory.andAllAndFree(
         prefLenConstraint,
         nextHopConstraint,
@@ -458,7 +485,8 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         originTypeValid,
         ospfMetricValid,
         protocolConstraint,
-        sourceVrfValid);
+        sourceVrfValid,
+        tunnelEncapValid);
   }
 
   /*
@@ -628,6 +656,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _tag = tag;
   }
 
+  public void setTunnelEncapsulationAttribute(@Nonnull BDDTunnelEncapsulationAttribute value) {
+    _tunnelEncapsulationAttribute = value;
+  }
+
   public BDDDomain<Integer> getNextHopInterfaces() {
     return _nextHopInterfaces;
   }
@@ -642,6 +674,10 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
 
   public void setTracks(BDD[] tracks) {
     _tracks = tracks;
+  }
+
+  public @Nonnull BDDTunnelEncapsulationAttribute getTunnelEncapsulationAttribute() {
+    return _tunnelEncapsulationAttribute;
   }
 
   public MutableBDDInteger getWeight() {
@@ -684,6 +720,7 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_nextHopInterfaces, other._nextHopInterfaces)
         && Objects.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
+        && _tunnelEncapsulationAttribute.equals(other._tunnelEncapsulationAttribute)
         && Objects.equals(_unsupported, other._unsupported);
   }
 }
