@@ -21,12 +21,12 @@ import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link BooleanExprTrackCollector}. */
-public class BooleanExprTrackCollectorTest {
+/** Tests for {@link TrackCollector}. */
+public class TrackCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
-  private BooleanExprTrackCollector _trackCollector;
+  private TrackCollector _trackCollector;
 
   private static final TrackSucceeded TRACK1 = new TrackSucceeded("first");
   private static final TrackSucceeded TRACK2 = new TrackSucceeded("second");
@@ -41,7 +41,7 @@ public class BooleanExprTrackCollectorTest {
     _baseConfig = cb.build();
     nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
-    _trackCollector = new BooleanExprTrackCollector();
+    _trackCollector = new TrackCollector();
   }
 
   @Test
