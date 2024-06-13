@@ -5880,7 +5880,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_community_add(Popst_community_addContext ctx) {
     String name = toString(ctx.name);
-    PsThenCommunityAdd then = new PsThenCommunityAdd(name, _configuration);
+    PsThenCommunityAdd then = new PsThenCommunityAdd(name);
     _currentPsThens.add(then);
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_THEN_ADD_COMMUNITY, getLine(ctx.name.getStart()));
@@ -5898,7 +5898,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_community_set(Popst_community_setContext ctx) {
     String name = toString(ctx.name);
-    PsThenCommunitySet then = new PsThenCommunitySet(name, _configuration);
+    PsThenCommunitySet then = new PsThenCommunitySet(name);
     _currentPsThens.add(then);
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_THEN_SET_COMMUNITY, getLine(ctx.name.getStart()));
