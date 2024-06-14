@@ -108,7 +108,6 @@ import org.batfish.minesweeper.RegexAtomicPredicates;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
-import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion;
 import org.batfish.minesweeper.utils.PrefixUtils;
 
 /**
@@ -116,7 +115,7 @@ import org.batfish.minesweeper.utils.PrefixUtils;
  */
 public class TransferBDD {
 
-  private static final Logger LOGGER = LogManager.getLogger(SearchRoutePoliciesQuestion.class);
+  private static final Logger LOGGER = LogManager.getLogger(TransferBDD.class);
 
   /**
    * We track community and AS-path regexes by computing a set of atomic predicates for them. See
