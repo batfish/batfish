@@ -8,6 +8,7 @@ import static java.util.Objects.requireNonNull;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -320,5 +321,10 @@ public class RoutingPolicy implements Serializable {
     RoutingPolicy simple = new RoutingPolicy(_name, _owner);
     simple.setStatements(simpleStatements.build());
     return simple;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("name", _name).toString();
   }
 }
