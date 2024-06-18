@@ -30,6 +30,8 @@ junit_tests(
         "//projects/batfish-common-protocol:common",
         "//projects/batfish-common-protocol/src/test:common_testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/plugin:IBatfishTestAdapter",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel:testlib",
         "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/bdd",
         "//projects/minesweeper",
