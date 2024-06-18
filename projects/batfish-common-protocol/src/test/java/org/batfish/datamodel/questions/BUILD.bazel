@@ -21,9 +21,7 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-    resources = [
-        "//projects/batfish-common-protocol/src/test/resources",
-    ],
+    resources = ["//projects/batfish-common-protocol/src/test/resources/org/batfish/datamodel/questions"],
     deps = [
         "//projects/batfish-common-protocol:common",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
