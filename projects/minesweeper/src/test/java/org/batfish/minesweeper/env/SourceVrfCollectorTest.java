@@ -21,12 +21,12 @@ import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link BooleanExprSourceVrfCollector}. */
-public class BooleanExprSourceVrfCollectorTest {
+/** Tests for {@link SourceVrfCollector}. */
+public class SourceVrfCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private Configuration _baseConfig;
-  private BooleanExprSourceVrfCollector _collector;
+  private SourceVrfCollector _collector;
 
   private static final MatchSourceVrf VRF1 = new MatchSourceVrf("first");
   private static final MatchSourceVrf VRF2 = new MatchSourceVrf("second");
@@ -41,7 +41,7 @@ public class BooleanExprSourceVrfCollectorTest {
     _baseConfig = cb.build();
     nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
-    _collector = new BooleanExprSourceVrfCollector();
+    _collector = new SourceVrfCollector();
   }
 
   @Test

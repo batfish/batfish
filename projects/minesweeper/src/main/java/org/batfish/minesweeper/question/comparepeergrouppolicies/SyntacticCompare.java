@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.minesweeper.collectors.RoutePolicyStatementCallCollector;
+import org.batfish.minesweeper.collectors.CalledPolicyCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /**
@@ -96,7 +96,7 @@ public final class SyntacticCompare {
     if (callees == null) {
       RoutingPolicy pol = config.getRoutingPolicies().get(policy);
       callees =
-          new RoutePolicyStatementCallCollector()
+          new CalledPolicyCollector()
               .visitAll(pol.getStatements(), new Tuple<>(new HashSet<>(), config));
       cache.put(policy, callees);
     }

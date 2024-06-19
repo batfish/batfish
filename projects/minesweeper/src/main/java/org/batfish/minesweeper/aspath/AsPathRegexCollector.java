@@ -9,16 +9,15 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.utils.Tuple;
 
-/** Collect all AS-path regexes in a {@link BooleanExpr}. */
+/** Collect all AS-path regexes in a {@link org.batfish.datamodel.routing_policy.RoutingPolicy}. */
 @ParametersAreNonnullByDefault
-public class BooleanExprAsPathCollector extends BooleanExprMatchCollector<SymbolicAsPathRegex> {
+public class AsPathRegexCollector extends RoutingPolicyCollector<SymbolicAsPathRegex> {
 
   @Override
   public Set<SymbolicAsPathRegex> visitMatchAsPath(

@@ -4,14 +4,16 @@ import com.google.common.collect.ImmutableSet;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
-import org.batfish.minesweeper.aspath.BooleanExprMatchCollector;
+import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
-/** Collect all tracks (see {@link TrackSucceeded}) in a {@link BooleanExpr}. */
+/**
+ * Collect all tracks (see {@link TrackSucceeded}) in a {@link
+ * org.batfish.datamodel.routing_policy.RoutingPolicy}.
+ */
 @ParametersAreNonnullByDefault
-public class BooleanExprTrackCollector extends BooleanExprMatchCollector<String> {
+public class TrackCollector extends RoutingPolicyCollector<String> {
   @Override
   public Set<String> visitTrackSucceeded(
       TrackSucceeded trackSucceeded, Tuple<Set<String>, Configuration> arg) {
