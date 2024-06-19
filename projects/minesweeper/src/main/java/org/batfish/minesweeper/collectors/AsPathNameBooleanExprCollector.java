@@ -10,12 +10,12 @@ import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
-import org.batfish.minesweeper.aspath.BooleanExprMatchCollector;
+import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
 import org.batfish.minesweeper.utils.Tuple;
 
 /** Collect all AS-path list names in a {@link BooleanExpr}. */
 @ParametersAreNonnullByDefault
-public class AsPathNameBooleanExprCollector extends BooleanExprMatchCollector<String> {
+public class AsPathNameBooleanExprCollector extends RoutingPolicyCollector<String> {
 
   @Override
   public Set<String> visitMatchAsPath(

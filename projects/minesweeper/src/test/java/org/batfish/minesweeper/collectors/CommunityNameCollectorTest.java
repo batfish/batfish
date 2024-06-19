@@ -40,8 +40,8 @@ import org.batfish.minesweeper.utils.Tuple;
 import org.junit.Before;
 import org.junit.Test;
 
-/** Tests for {@link CommunityBooleanExprCollector}. */
-public class CommunityBooleanExprCollectorTest {
+/** Tests for {@link CommunityNameCollector}. */
+public class CommunityNameCollectorTest {
 
   private static final String HOSTNAME = "hostname";
   private static final String COMM_LST_1 = "comm1";
@@ -49,7 +49,7 @@ public class CommunityBooleanExprCollectorTest {
   private static final String COMM_LST_3 = "comm3";
   private static final String COMM_LST_4 = "comm4";
 
-  private CommunityBooleanExprCollector _collector;
+  private CommunityNameCollector _collector;
 
   private Configuration _config;
 
@@ -90,7 +90,7 @@ public class CommunityBooleanExprCollectorTest {
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("30:30"))),
             COMM_LST_4,
             new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("40:30")))));
-    _collector = new CommunityBooleanExprCollector();
+    _collector = new CommunityNameCollector();
   }
 
   @Test
