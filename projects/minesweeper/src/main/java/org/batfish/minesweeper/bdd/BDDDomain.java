@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.math.IntMath;
 import java.math.RoundingMode;
 import java.util.List;
@@ -13,11 +15,11 @@ import org.batfish.common.bdd.MutableBDDInteger;
  * dealing directly with the values. This class is similar to {@link
  * org.batfish.common.bdd.BDDFiniteDomain} but wraps a mutable BDDInteger and so supports updates.
  */
-public class BDDDomain<T> {
+public final class BDDDomain<T> {
 
-  private BDDFactory _factory;
+  private final BDDFactory _factory;
 
-  private List<T> _values;
+  private final List<T> _values;
 
   private MutableBDDInteger _integer;
 
@@ -44,6 +46,11 @@ public class BDDDomain<T> {
     _integer = other.getInteger().and(pred);
   }
 
+  /** Returns the constraint that represents any value within the domain. */
+  public BDD getIsValidConstraint() {
+    return _values.isEmpty() ? _factory.one() : _integer.leq(_values.size() - 1);
+  }
+
   /**
    * Returns the number of bits used to represent a domain of the given size.
    *
@@ -64,11 +71,20 @@ public class BDDDomain<T> {
 
   public T satAssignmentToValue(BDD satAssignment) {
     int idx = _integer.satAssignmentToInt(satAssignment);
+    checkArgument(
+        idx < _values.size(),
+        "The given assignment is not valid in this domain. Was it restricted to value values?",
+        idx);
     return _values.get(idx);
   }
 
   public void setValue(T value) {
     int idx = _values.indexOf(value);
+    checkArgument(
+        idx != -1,
+        "Cannot set value that is not defined in the domain: %s is not in %s",
+        value,
+        _values);
     _integer.setValue(idx);
   }
 

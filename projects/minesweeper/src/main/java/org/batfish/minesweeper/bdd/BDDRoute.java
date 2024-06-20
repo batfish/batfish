@@ -436,14 +436,29 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
    */
   public BDD bgpWellFormednessConstraints() {
 
-    // the protocol should be one of the ones allowed in a BgpRoute
-    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
     // the next hop should be neither the min nor the max possible IP
     // this constraint is enforced by NextHopIp's constructor
     BDD nextHopConstraint = _nextHop.range(Ip.ZERO.asLong() + 1, Ip.MAX.asLong() - 1);
-    return protocolConstraint.andWith(prefLenConstraint).andWith(nextHopConstraint);
+    // The various BDD Domains should all lie in the domain (needed if the domain is not power-of-2
+    // in size).
+    BDD asPathRegexValid = _asPathRegexAtomicPredicates.getIsValidConstraint();
+    BDD nextHopInterfacesValid = _nextHopInterfaces.getIsValidConstraint();
+    BDD originTypeValid = _originType.getIsValidConstraint();
+    BDD ospfMetricValid = _ospfMetric.getIsValidConstraint();
+    // Protocol domain constraint is stronger: only one of the ones allowed in a BgpRoute.
+    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
+    BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
+    return _factory.andAllAndFree(
+        protocolConstraint,
+        prefLenConstraint,
+        nextHopConstraint,
+        asPathRegexValid,
+        nextHopInterfacesValid,
+        originTypeValid,
+        ospfMetricValid,
+        sourceVrfValid);
   }
 
   /*
