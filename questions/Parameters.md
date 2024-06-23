@@ -2,7 +2,7 @@
 
 Batfish questions support parameters with rich specifications for nodes, interfaces etc. The grammar for parameter types is described below. Before reading those grammars, we recommend reading the general notes.
 
-For many parameters types, there is a "resolver" question that may be used to learn what a given specification expands to. For instance, `resolveNodeSpecifier` is the resolver for `nodeSpec`, and `bfq.resolveNodeSpecifier(nodes="/bor/")` (Pybatfish syntax) will return the set of nodes that match `/bor/`.
+For many parameters types, there is a "resolver" question that may be used to learn what a given specification expands to. For instance, `resolveNodeSpecifier` is the resolver for `nodeSpec`, and `bf.q.resolveNodeSpecifier(nodes="/bor/")` (Pybatfish syntax) will return the set of nodes that match `/bor/`.
 
 * [`applicationSpec`](#application-specifier)
 
@@ -199,7 +199,7 @@ A BGP session type specifier follows the [enum set grammar](#set-of-enums-or-nam
 
 ### Disposition Specifier
 
-Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/questions.html#pybatfish.question.bfq.reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
+Flow dispositions are used in questions like [reachability](https://pybatfish.readthedocs.io/en/latest/notebooks/forwarding.html#Reachability) to identify flow outcomes. The disposition specifier takes as input a comma-separated list of disposition values, which are interpreted using logical OR.
 
 There are two coarse-grained flow dispositions:
   * `Success`: a flow has been successfully delivered
