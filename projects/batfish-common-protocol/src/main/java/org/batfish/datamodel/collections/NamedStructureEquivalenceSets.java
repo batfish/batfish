@@ -25,21 +25,14 @@ import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.common.util.CollectionUtil;
-import org.skyscreamer.jsonassert.JSONAssert;
 
 public class NamedStructureEquivalenceSets<T> {
 
   public static class Builder<T> {
 
     private static boolean checkJsonStringEquals(String lhs, String rhs) {
-      try {
-        JSONAssert.assertEquals(lhs, rhs, false);
-        return true;
-      } catch (Exception e) {
-        throw new BatfishException("JSON equality check failed", e);
-      } catch (AssertionError err) {
-        return false;
-      }
+      // TODO: when is this not good enough?
+      return lhs.equals(rhs);
     }
 
     private Map<String, Map<Integer, Set<NamedStructureEquivalenceSet<T>>>>
