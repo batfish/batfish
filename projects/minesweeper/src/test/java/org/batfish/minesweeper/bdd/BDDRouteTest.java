@@ -7,6 +7,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
+import com.google.common.collect.ImmutableList;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -21,7 +22,7 @@ public class BDDRouteTest {
   @Test
   public void testCopyConstructorAndEquality() {
     BDDFactory factory = JFactory.init(100, 100);
-    BDDRoute r1 = new BDDRoute(factory, 3, 4, 5, 6, 2);
+    BDDRoute r1 = new BDDRoute(factory, 3, 4, 5, 6, 2, ImmutableList.of());
     BDDRoute r2 = new BDDRoute(r1);
     boolean b = r1.equalsForTesting(r2);
     assertTrue(b);
@@ -48,7 +49,7 @@ public class BDDRouteTest {
   @Test
   public void testWellFormedOriginType() {
     BDDFactory factory = JFactory.init(100, 100);
-    BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0);
+    BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, ImmutableList.of());
 
     BDD anyOriginType =
         factory.orAll(
