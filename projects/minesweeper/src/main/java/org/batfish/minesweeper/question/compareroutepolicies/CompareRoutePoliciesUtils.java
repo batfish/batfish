@@ -284,7 +284,6 @@ public final class CompareRoutePoliciesUtils {
   }
 
   /**
-   * @param factory the BDD factory used for this analysis
    * @param diffs A list of differences found between two output routes.
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
@@ -294,66 +293,59 @@ public final class CompareRoutePoliciesUtils {
    *     the input constraints then the method returns ZERO.
    */
   private BDD incorporateOutputConstraints(
-      BDDFactory factory,
-      List<BDDRouteDiff.DifferenceType> diffs,
-      BDDRoute r1,
-      BDDRoute r2,
-      BDD inputConstraints) {
-    BDD result;
+      List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2, BDD inputConstraints) {
     for (BDDRouteDiff.DifferenceType d : diffs) {
-      switch (d) {
-        case LOCAL_PREF:
-          result = r1.getLocalPref().allDifferences(r2.getLocalPref());
-          break;
-        case COMMUNITIES:
-          BDD[] communityAtomicPredicates = r1.getCommunityAtomicPredicates();
-          BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
-          result =
-              factory.orAll(
-                  IntStream.range(0, communityAtomicPredicates.length)
-                      .mapToObj(
-                          i -> communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]))
-                      .collect(ImmutableList.toImmutableList()));
-          break;
-        case MED:
-          result = r1.getMed().allDifferences(r2.getMed());
-          break;
-        case NEXTHOP:
-          result = r1.getNextHop().allDifferences(r2.getNextHop());
-          break;
-        case TAG:
-          result = r1.getTag().allDifferences(r2.getTag());
-          break;
-        case ADMIN_DIST:
-          result = r1.getAdminDist().allDifferences(r2.getAdminDist());
-          break;
-        case TUNNEL_ENCAPSULATION_ATTRIBUTE:
-          result =
-              r1.getTunnelEncapsulationAttribute()
-                  .allDifferences(r2.getTunnelEncapsulationAttribute());
-          break;
-        case WEIGHT:
-          result = r1.getWeight().allDifferences(r2.getWeight());
-          break;
-        case AS_PATH:
-        case NEXTHOP_TYPE:
-        case NEXTHOP_SET:
-        case UNSUPPORTED:
-          // these kinds of differences are independent of the input route, so we don't need
-          // additional constraints to expose them
-          result = factory.one();
-          break;
-        default:
-          throw new UnsupportedOperationException(d.name());
+      // If the diff in this attribute is compatible with the input constraints then we are done
+      BDD inputDiff = allDifferencesForType(d, r1, r2).andEq(inputConstraints);
+      if (!inputDiff.isZero()) {
+        return inputDiff;
       }
-      // if the produced constraints are compatible with the input constraints then we are done
-      BDD intersection = inputConstraints.and(result);
-      if (!intersection.isZero()) {
-        return intersection;
-      }
+      inputDiff.free();
     }
     // none of the differences are compatible with the input constraints
-    return factory.zero();
+    return r1.getFactory().zero();
+  }
+
+  /**
+   * Return all differences in the two routes for the given attribute. See {@link
+   * #incorporateOutputConstraints(List, BDDRoute, BDDRoute, BDD)}.
+   */
+  private BDD allDifferencesForType(BDDRouteDiff.DifferenceType d, BDDRoute r1, BDDRoute r2) {
+    switch (d) {
+      case LOCAL_PREF:
+        return r1.getLocalPref().allDifferences(r2.getLocalPref());
+      case COMMUNITIES:
+        BDD[] communityAtomicPredicates = r1.getCommunityAtomicPredicates();
+        BDD[] otherCommunityAtomicPredicates = r2.getCommunityAtomicPredicates();
+        return r1.getFactory()
+            .orAllAndFree(
+                IntStream.range(0, communityAtomicPredicates.length)
+                    .mapToObj(
+                        i -> communityAtomicPredicates[i].xor(otherCommunityAtomicPredicates[i]))
+                    .collect(ImmutableList.toImmutableList()));
+      case MED:
+        return r1.getMed().allDifferences(r2.getMed());
+      case NEXTHOP:
+        return r1.getNextHop().allDifferences(r2.getNextHop());
+      case TAG:
+        return r1.getTag().allDifferences(r2.getTag());
+      case ADMIN_DIST:
+        return r1.getAdminDist().allDifferences(r2.getAdminDist());
+      case TUNNEL_ENCAPSULATION_ATTRIBUTE:
+        return r1.getTunnelEncapsulationAttribute()
+            .allDifferences(r2.getTunnelEncapsulationAttribute());
+      case WEIGHT:
+        return r1.getWeight().allDifferences(r2.getWeight());
+      case AS_PATH:
+      case NEXTHOP_TYPE:
+      case NEXTHOP_SET:
+      case UNSUPPORTED:
+        // these kinds of differences are independent of the input route, so we don't need
+        // additional constraints to expose them
+        return r1.getFactory().one();
+      default:
+        throw new UnsupportedOperationException(d.name());
+    }
   }
 
   /**
@@ -474,7 +466,7 @@ public final class CompareRoutePoliciesUtils {
                 // Now try to find a difference that is compatible with the input constraints
                 BDD allConstraints =
                     incorporateOutputConstraints(
-                        factory, diffs, outputRoutes, outputRoutesOther, intersection);
+                        diffs, outputRoutes, outputRoutesOther, intersection);
                 if (!allConstraints.isZero()) {
                   behaviorDiff = true;
                   finalConstraints = allConstraints;
