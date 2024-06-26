@@ -7,11 +7,13 @@ import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRo
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import java.util.AbstractMap.SimpleImmutableEntry;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -429,69 +431,73 @@ public final class CompareRoutePoliciesUtils {
 
     // The set of paths for the current policy
     List<TransferReturn> paths = computePaths(tBDD);
-    // The set of paths for the proposed policy
+    // The set of paths for the proposed policy, also indexed by input routes.
     List<TransferReturn> otherPaths = computePaths(otherTBDD);
+    Map<BDD, TransferReturn> otherPathIndex =
+        otherPaths.stream().collect(ImmutableMap.toImmutableMap(t -> t.getSecond(), t -> t));
 
-    // Potential optimization: if a set of input routes between the two paths is the same then we
-    // only need to validate
-    // the outputs between this pair; the intersection with all others is going to be empty.
-    // This will probably be more efficient when we expect the two route-maps to be (almost)
-    // equivalent.
     for (TransferReturn path : paths) {
-      for (TransferReturn otherPath : otherPaths) {
-        BDD inputRoutes = path.getSecond();
-        BDD inputRoutesOther = otherPath.getSecond();
-        BDD intersection = inputRoutesOther.and(inputRoutes).and(wf);
+      BDD inputRoutes = path.getSecond();
+      // Optimization: since the inputRoutes for a given List are mutually disjoint, we can
+      // avoid linear comparison when the same set is in the other group. This likely applies
+      // when the input policies are very similar.
+      TransferReturn sameInputs = otherPathIndex.get(inputRoutes);
+      List<TransferReturn> iterationPaths =
+          (sameInputs != null) ? ImmutableList.of(sameInputs) : otherPaths;
 
-        // If the sets of input routes between the two paths intersect, then these paths describe
-        // some common input routes and their behavior should match.
-        if (!intersection.isZero()) {
-          // a flag that is set if we find a behavioral difference between the two paths
-          boolean behaviorDiff = false;
-          BDD finalConstraints = null;
-          // Naive check to see if both policies accepted/rejected the route(s).
-          if (path.getAccepted() != otherPath.getAccepted()) {
-            behaviorDiff = true;
-            finalConstraints = intersection;
-          } else {
-            // If both policies perform the same action, then check that their outputs match.
-            // We only need to compare the outputs if the routes were permitted.
-            if (path.getAccepted()) {
-              BDDRoute outputRoutes = path.getFirst();
-              BDDRoute outputRoutesOther = otherPath.getFirst();
-              // Identify all differences in the two routes, ignoring the input constraints
-              List<BDDRouteDiff.DifferenceType> diffs =
-                  computeDifferences(outputRoutes, outputRoutesOther);
-              if (!diffs.isEmpty()) {
-                // Now try to find a difference that is compatible with the input constraints
-                BDD allConstraints =
-                    incorporateOutputConstraints(
-                        diffs, outputRoutes, outputRoutesOther, intersection);
-                if (!allConstraints.isZero()) {
-                  behaviorDiff = true;
-                  finalConstraints = allConstraints;
-                }
+      for (TransferReturn otherPath : iterationPaths) {
+        BDD inputRoutesOther = otherPath.getSecond();
+        BDD intersection = inputRoutesOther.and(inputRoutes).andEq(wf);
+        if (intersection.isZero()) {
+          // No common input routes to check equivalence.
+          continue;
+        }
+
+        // a flag that is set if we find a behavioral difference between the two paths
+        boolean behaviorDiff = false;
+        BDD finalConstraints = null;
+        // Naive check to see if both policies accepted/rejected the route(s).
+        if (path.getAccepted() != otherPath.getAccepted()) {
+          behaviorDiff = true;
+          finalConstraints = intersection;
+        } else {
+          // If both policies perform the same action, then check that their outputs match.
+          // We only need to compare the outputs if the routes were permitted.
+          if (path.getAccepted()) {
+            BDDRoute outputRoutes = path.getFirst();
+            BDDRoute outputRoutesOther = otherPath.getFirst();
+            // Identify all differences in the two routes, ignoring the input constraints
+            List<BDDRouteDiff.DifferenceType> diffs =
+                computeDifferences(outputRoutes, outputRoutesOther);
+            if (!diffs.isEmpty()) {
+              // Now try to find a difference that is compatible with the input constraints
+              BDD allConstraints =
+                  incorporateOutputConstraints(
+                      diffs, outputRoutes, outputRoutesOther, intersection);
+              if (!allConstraints.isZero()) {
+                behaviorDiff = true;
+                finalConstraints = allConstraints;
               }
             }
           }
+        }
 
-          // we have found a difference, so let's get a concrete example of the difference
-          if (behaviorDiff) {
-            Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
-                constraintsToInputs(finalConstraints, configAPs);
-            Result<BgpRoute> otherResult =
-                SearchRoutePoliciesAnswerer.simulatePolicy(
-                    policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
-            Result<BgpRoute> refResult =
-                SearchRoutePoliciesAnswerer.simulatePolicy(
-                    referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
-            differences.add(new Tuple<>(otherResult, refResult));
+        // we have found a difference, so let's get a concrete example of the difference
+        if (behaviorDiff) {
+          Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
+              constraintsToInputs(finalConstraints, configAPs);
+          Result<BgpRoute> otherResult =
+              SearchRoutePoliciesAnswerer.simulatePolicy(
+                  policy, t.getFirst(), _direction, t.getSecond(), otherPath.getFirst());
+          Result<BgpRoute> refResult =
+              SearchRoutePoliciesAnswerer.simulatePolicy(
+                  referencePolicy, t.getFirst(), _direction, t.getSecond(), path.getFirst());
+          differences.add(new Tuple<>(otherResult, refResult));
 
-            // As a sanity check, compare the simulated results above with what the symbolic route
-            // analysis predicts will happen.
-            assert validateDifference(
-                finalConstraints, configAPs, path, otherPath, refResult, otherResult);
-          }
+          // As a sanity check, compare the simulated results above with what the symbolic route
+          // analysis predicts will happen.
+          assert validateDifference(
+              finalConstraints, configAPs, path, otherPath, refResult, otherResult);
         }
       }
     }
