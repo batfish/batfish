@@ -64,6 +64,9 @@ public final class CompareRoutePoliciesUtils {
 
   private final @Nonnull IBatfish _batfish;
 
+  private static Comparator<RoutingPolicy> RP_BY_NAME =
+      Comparator.comparing(RoutingPolicy::getName);
+
   public CompareRoutePoliciesUtils(
       @Nonnull Environment.Direction direction,
       @Nonnull String policySpecifierString,
@@ -130,8 +133,8 @@ public final class CompareRoutePoliciesUtils {
               if (_referencePolicySpecifier == null) {
                 return comparePoliciesForNode(
                     node,
-                    _policySpecifier.resolve(node, currentContext).stream().sorted(),
-                    _policySpecifier.resolve(node, referenceContext).stream().sorted(),
+                    _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
+                    _policySpecifier.resolve(node, referenceContext).stream().sorted(RP_BY_NAME),
                     false,
                     snapshot,
                     reference);
@@ -140,8 +143,9 @@ public final class CompareRoutePoliciesUtils {
                 // referencePolicySpecifier)
                 return comparePoliciesForNode(
                     node,
-                    _policySpecifier.resolve(node, currentContext).stream().sorted(),
-                    _referencePolicySpecifier.resolve(node, referenceContext).stream().sorted(),
+                    _policySpecifier.resolve(node, currentContext).stream().sorted(RP_BY_NAME),
+                    _referencePolicySpecifier.resolve(node, referenceContext).stream()
+                        .sorted(RP_BY_NAME),
                     true,
                     snapshot,
                     reference);
@@ -230,8 +234,8 @@ public final class CompareRoutePoliciesUtils {
       // In this case we only compare policies with the same name.
       // Create a stream of policy tuples (referencePolicy, currentPolicy) for policies with the
       // same name.
-      currentPoliciesList.sort(Comparator.comparing(RoutingPolicy::getName));
-      referencePoliciesList.sort(Comparator.comparing(RoutingPolicy::getName));
+      currentPoliciesList.sort(RP_BY_NAME);
+      referencePoliciesList.sort(RP_BY_NAME);
 
       // Since the two lists have been filtered to include only elements in their intersection they
       // should have the same
