@@ -230,6 +230,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _bitNames = new HashMap<>();
 
     int idx = 0;
+    // Initialize one BDD per community atomic predicate, each of which has a corresponding
+    // BDD variable
+    _communityAtomicPredicates = new BDD[numCommAtomicPredicates];
+    for (int i = 0; i < numCommAtomicPredicates; i++) {
+      _communityAtomicPredicates[i] = factory.ithVar(idx);
+      _bitNames.put(idx, "community atomic predicate " + i);
+      idx++;
+    }
     _protocolHistory =
         new BDDDomain<>(factory, ImmutableList.copyOf(RoutingProtocol.values()), idx);
     int len = _protocolHistory.getInteger().size();
@@ -270,14 +278,6 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _prefix = MutableBDDInteger.makeFromIndex(factory, 32, idx, true);
     addBitNames("pfx", 32, idx, true);
     idx += 32;
-    // Initialize one BDD per community atomic predicate, each of which has a corresponding
-    // BDD variable
-    _communityAtomicPredicates = new BDD[numCommAtomicPredicates];
-    for (int i = 0; i < numCommAtomicPredicates; i++) {
-      _communityAtomicPredicates[i] = factory.ithVar(idx);
-      _bitNames.put(idx, "community atomic predicate " + i);
-      idx++;
-    }
 
     _asPathRegexAtomicPredicates =
         new BDDDomain<>(
