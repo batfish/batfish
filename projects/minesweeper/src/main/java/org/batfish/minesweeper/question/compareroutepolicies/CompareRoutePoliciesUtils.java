@@ -461,6 +461,7 @@ public final class CompareRoutePoliciesUtils {
         }
       }
     }
+    wf.free();
     return differences.stream()
         .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()));
   }
@@ -478,6 +479,7 @@ public final class CompareRoutePoliciesUtils {
     BDD intersection = inputRoutesOther.and(inputRoutes).andEq(wellFormedConstraints);
     if (intersection.isZero()) {
       // No common input routes to check equivalence.
+      intersection.free();
       return null;
     }
 
@@ -501,9 +503,12 @@ public final class CompareRoutePoliciesUtils {
               incorporateOutputConstraints(diffs, outputRoutes, outputRoutesOther, intersection);
           if (!allConstraints.isZero()) {
             finalConstraints = allConstraints;
+          } else {
+            allConstraints.free();
           }
         }
       }
+      intersection.free();
     }
 
     if (finalConstraints == null) {
