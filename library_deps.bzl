@@ -68,6 +68,6 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.jline:jline:3.26.2",
     "org.parboiled:parboiled-core:1.4.1",
     "org.parboiled:parboiled-java:1.4.1",
-    "org.skyscreamer:jsonassert:1.5.1",
+    "org.skyscreamer:jsonassert:1.5.3",
     "org.yaml:snakeyaml:2.2",
 ]
