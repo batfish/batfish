@@ -278,7 +278,7 @@ public final class CompareRoutePoliciesUtils {
    */
   private List<TransferReturn> computePaths(TransferBDD tbdd) {
     try {
-      return tbdd.computePaths(ImmutableSet.of());
+      return tbdd.computePaths();
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "
