@@ -63,7 +63,6 @@ import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -216,21 +215,6 @@ public final class AsPathStructuresVerifierTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     v.verifyRoutingPolicies();
-  }
-
-  @Test
-  public void testVisitBufferedStatement() {
-    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new BufferedStatement(
-            new If(
-                MatchAsPath.of(
-                    AsPathExprReference.of("undefined"), AsPathMatchAny.of(ImmutableList.of())),
-                ImmutableList.of(),
-                ImmutableList.of()))
-        .accept(STATEMENT_VERIFIER, ctx);
   }
 
   @Test
