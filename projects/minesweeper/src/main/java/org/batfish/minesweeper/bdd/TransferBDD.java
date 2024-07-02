@@ -85,7 +85,6 @@ import org.batfish.datamodel.routing_policy.expr.PrefixSetExpr;
 import org.batfish.datamodel.routing_policy.expr.SelfNextHop;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.PrependAsPath;
@@ -950,16 +949,6 @@ public class TransferBDD {
                   toTransferBDDState(
                       finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
           .collect(ImmutableList.toImmutableList());
-
-    } else if (stmt instanceof BufferedStatement) {
-      curP.debug("BufferedStatement");
-      BufferedStatement bufStmt = (BufferedStatement) stmt;
-      /*
-       * The {@link Environment} class for simulating route policies keeps track of whether a
-       * statement is buffered, but it currently does not seem to ever use that information. So we
-       * ignore it.
-       */
-      return compute(bufStmt.getStatement(), state);
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
