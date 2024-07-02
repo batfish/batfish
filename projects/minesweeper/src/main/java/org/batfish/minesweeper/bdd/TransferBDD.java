@@ -630,6 +630,9 @@ public class TransferBDD {
       throw new UnsupportedOperationException(expr.toString());
     }
 
+    // Clear any paths that are not reachable from the inputs.
+    finalResults.removeIf(tr -> tr.getReturnValue().getInputConstraints().isZero());
+
     // in most cases above we have only provided the path corresponding to the predicate being true
     // so lastly, we add the path corresponding to the predicate being false
 
