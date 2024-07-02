@@ -510,7 +510,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     TransferBDD tbdd;
     try {
       tbdd = new TransferBDD(configAPs, policy);
-      paths = tbdd.computePaths(ImmutableSet.of());
+      paths = tbdd.computePaths();
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "

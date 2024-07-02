@@ -11,7 +11,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.stream.Collectors;
-import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -112,7 +111,6 @@ import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
-import org.batfish.minesweeper.utils.PrefixUtils;
 
 /**
  * @author Ryan Beckett
@@ -136,8 +134,6 @@ public class TransferBDD {
   private final RoutingPolicy _policy;
 
   private final ConfigAtomicPredicates _configAtomicPredicates;
-
-  private Set<Prefix> _ignoredNetworks;
 
   private final List<Statement> _statements;
 
@@ -1149,15 +1145,13 @@ public class TransferBDD {
         throw new UnsupportedOperationException(line.getIpWildcard().toString());
       }
       Prefix pfx = line.getIpWildcard().toPrefix();
-      if (!PrefixUtils.isContainedBy(pfx, _ignoredNetworks)) {
-        SubRange r = line.getLengthRange();
-        PrefixRange range = new PrefixRange(pfx, r);
-        p.debug("Prefix Range: %s", range);
-        p.debug("Action: %s", line.getAction());
-        BDD matches = symbolicMatcher.apply(other, range);
-        BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
-        acc = ite(matches, action, acc);
-      }
+      SubRange r = line.getLengthRange();
+      PrefixRange range = new PrefixRange(pfx, r);
+      p.debug("Prefix Range: %s", range);
+      p.debug("Action: %s", line.getAction());
+      BDD matches = symbolicMatcher.apply(other, range);
+      BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
+      acc = ite(matches, action, acc);
     }
     return acc;
   }
@@ -1194,9 +1188,7 @@ public class TransferBDD {
       BDD acc = _factory.zero();
       for (PrefixRange range : ranges) {
         p.debug("Prefix Range: %s", range);
-        if (!PrefixUtils.isContainedBy(range.getPrefix(), _ignoredNetworks)) {
-          acc = acc.or(symbolicMatcher.apply(other, range));
-        }
+        acc = acc.or(symbolicMatcher.apply(other, range));
       }
       return acc;
 
@@ -1380,8 +1372,7 @@ public class TransferBDD {
    * simulating one route that takes this path using {@link
    * org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
    */
-  public List<TransferReturn> computePaths(@Nullable Set<Prefix> ignoredNetworks) {
-    _ignoredNetworks = ignoredNetworks;
+  public List<TransferReturn> computePaths() {
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
     return computePaths(_statements, p).stream()
