@@ -1232,7 +1232,9 @@ public class CiscoConversions {
     Conjunction eigrpExportConditions = new Conjunction();
     BooleanExpr matchExpr;
     if (protocol == RoutingProtocol.EIGRP) {
-      matchExpr = new MatchProtocol(RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX);
+      matchExpr =
+          new MatchProtocol(
+              RoutingProtocol.EIGRP, RoutingProtocol.EIGRP_EX, RoutingProtocol.CONNECTED);
 
       Long otherAsn = Long.parseLong(policy.getInstance().getTag());
       if (otherAsn == null) {
