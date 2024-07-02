@@ -525,7 +525,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             // consider only the subset of paths that have the desired action (permit or deny)
             .filter(p -> p.getAccepted() == (_action == PERMIT))
             // separate the paths that encountered an unsupported statement from the others
-            .collect(Collectors.partitioningBy(tr -> tr.getFirst().getUnsupported()));
+            .collect(Collectors.partitioningBy(tr -> tr.getOutputRoute().getUnsupported()));
     // consider the paths that do not encounter an unsupported feature first, to avoid the potential
     // for false positives as much as possible
     List<TransferReturn> relevantPaths = pathMap.get(false);
@@ -536,8 +536,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, tbdd);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
-      BDD pathAnnouncements = path.getSecond();
-      BDDRoute outputRoute = path.getFirst();
+      BDD pathAnnouncements = path.getInputBDD();
+      BDDRoute outputRoute = path.getOutputRoute();
       BDD intersection = pathAnnouncements.and(inConstraints);
       for (PrefixSpace blockedPrefix : blockedPrefixes) {
         intersection = intersection.andWith(prefixSpaceToBDD(blockedPrefix, outputRoute, true));
