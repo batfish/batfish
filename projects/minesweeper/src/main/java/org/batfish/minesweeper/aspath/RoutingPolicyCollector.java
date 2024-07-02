@@ -37,7 +37,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -76,12 +75,6 @@ import org.batfish.minesweeper.utils.Tuple;
 public class RoutingPolicyCollector<T>
     implements StatementVisitor<Set<T>, Tuple<Set<String>, Configuration>>,
         BooleanExprVisitor<Set<T>, Tuple<Set<String>, Configuration>> {
-
-  @Override
-  public Set<T> visitBufferedStatement(
-      BufferedStatement bufferedStatement, Tuple<Set<String>, Configuration> arg) {
-    return bufferedStatement.getStatement().accept(this, arg);
-  }
 
   @Override
   public Set<T> visitCallStatement(

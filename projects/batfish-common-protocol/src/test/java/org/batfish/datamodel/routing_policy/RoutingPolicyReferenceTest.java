@@ -17,7 +17,6 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statement;
@@ -90,10 +89,8 @@ public class RoutingPolicyReferenceTest {
 
     CallStatement callStatement = new CallStatement(parentPolicyName);
 
-    BufferedStatement bs = new BufferedStatement(callStatement);
-
     WithEnvironmentExpr we1 = new WithEnvironmentExpr();
-    we1.setPostStatements(ImmutableList.of(bs));
+    we1.setPostStatements(ImmutableList.of(callStatement));
 
     If if1 = new If();
     if1.setGuard(we1);

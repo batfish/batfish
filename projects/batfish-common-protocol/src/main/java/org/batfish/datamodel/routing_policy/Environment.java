@@ -79,7 +79,6 @@ public class Environment {
    */
   private final @Nullable BgpSessionProperties _bgpSessionProperties;
 
-  private boolean _buffered;
   private boolean _callExprContext;
   private boolean _callStatementContext;
   private final Map<String, CommunityMatchExpr> _communityMatchExprs;
@@ -114,7 +113,6 @@ public class Environment {
       @Nonnull Map<String, AsPathExpr> asPathExprs,
       @Nonnull Map<String, AsPathMatchExpr> asPathMatchExprs,
       @Nullable BgpSessionProperties bgpSessionProperties,
-      boolean buffered,
       boolean callExprContext,
       boolean callStatementContext,
       Map<String, CommunityMatchExpr> communityMatchExprs,
@@ -142,7 +140,6 @@ public class Environment {
     _asPathExprs = asPathExprs;
     _asPathMatchExprs = asPathMatchExprs;
     _bgpSessionProperties = bgpSessionProperties;
-    _buffered = buffered;
     _callExprContext = callExprContext;
     _callStatementContext = callStatementContext;
     _communityMatchExprs = communityMatchExprs;
@@ -190,10 +187,6 @@ public class Environment {
 
   public @Nonnull Map<String, AsPathMatchExpr> getAsPathMatchExprs() {
     return _asPathMatchExprs;
-  }
-
-  public boolean getBuffered() {
-    return _buffered;
   }
 
   public boolean getCallExprContext() {
@@ -333,10 +326,6 @@ public class Environment {
     return _tracer;
   }
 
-  public void setBuffered(boolean buffered) {
-    _buffered = buffered;
-  }
-
   public void setCallExprContext(boolean callExprContext) {
     _callExprContext = callExprContext;
   }
@@ -382,7 +371,6 @@ public class Environment {
     private Map<String, AsPathExpr> _asPathExprs;
     private Map<String, AsPathMatchExpr> _asPathMatchExprs;
     private @Nullable BgpSessionProperties _bgpSessionProperties;
-    private boolean _buffered;
     private boolean _callExprContext;
     private boolean _callStatementContext;
     private Map<String, CommunityMatchExpr> _communityMatchExprs;
@@ -430,11 +418,6 @@ public class Environment {
      */
     public Builder setBgpSessionProperties(@Nullable BgpSessionProperties bgpSessionProperties) {
       _bgpSessionProperties = bgpSessionProperties;
-      return this;
-    }
-
-    public Builder setBuffered(boolean buffered) {
-      _buffered = buffered;
       return this;
     }
 
@@ -555,7 +538,6 @@ public class Environment {
           firstNonNull(_asPathExprs, ImmutableMap.of()),
           firstNonNull(_asPathMatchExprs, ImmutableMap.of()),
           _bgpSessionProperties,
-          _buffered,
           _callExprContext,
           _callStatementContext,
           firstNonNull(_communityMatchExprs, ImmutableMap.of()),

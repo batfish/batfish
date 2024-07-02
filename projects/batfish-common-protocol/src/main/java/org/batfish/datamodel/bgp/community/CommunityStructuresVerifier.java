@@ -85,7 +85,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -650,11 +649,6 @@ public final class CommunityStructuresVerifier {
 
   private static final class CommunityStructuresStatementVerifier
       implements StatementVisitor<Void, CommunityStructuresVerifierContext> {
-    @Override
-    public Void visitBufferedStatement(
-        BufferedStatement bufferedStatement, CommunityStructuresVerifierContext arg) {
-      return bufferedStatement.getStatement().accept(this, arg);
-    }
 
     @Override
     public Void visitCallStatement(

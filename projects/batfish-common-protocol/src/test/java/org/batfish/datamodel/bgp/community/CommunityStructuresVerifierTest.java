@@ -77,7 +77,6 @@ import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.VarRouteType;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -234,16 +233,6 @@ public final class CommunityStructuresVerifierTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     v.verifyRoutingPolicies();
-  }
-
-  @Test
-  public void testVisitBufferedStatement() {
-    CommunityStructuresVerifierContext ctx = CommunityStructuresVerifierContext.builder().build();
-
-    _thrown.expect(VendorConversionException.class);
-    _thrown.expectMessage(containsString("Undefined reference"));
-    new BufferedStatement(new SetCommunities(new CommunitySetExprReference("undefined")))
-        .accept(STATEMENT_VERIFIER, ctx);
   }
 
   @Test

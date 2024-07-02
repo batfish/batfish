@@ -3,7 +3,6 @@ package org.batfish.question;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -40,11 +39,6 @@ public final class TracingHintsStripper implements StatementVisitor<Statement, V
   static final String STRIP_TOKEN = "__stripped__tracing__";
 
   private TracingHintsStripper() {}
-
-  @Override
-  public Statement visitBufferedStatement(BufferedStatement bufferedStatement, Void arg) {
-    return new BufferedStatement(bufferedStatement.getStatement().accept(this, arg));
-  }
 
   @Override
   public Statement visitCallStatement(CallStatement callStatement, Void arg) {

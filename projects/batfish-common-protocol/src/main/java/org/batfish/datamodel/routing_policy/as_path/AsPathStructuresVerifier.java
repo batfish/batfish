@@ -39,7 +39,6 @@ import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -369,11 +368,6 @@ public final class AsPathStructuresVerifier {
 
   private static final class AsPathStructuresStatementVerifier
       implements StatementVisitor<Void, AsPathStructuresVerifierContext> {
-    @Override
-    public Void visitBufferedStatement(
-        BufferedStatement bufferedStatement, AsPathStructuresVerifierContext arg) {
-      return bufferedStatement.getStatement().accept(this, arg);
-    }
 
     @Override
     public Void visitCallStatement(

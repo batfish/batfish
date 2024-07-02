@@ -6,7 +6,6 @@ import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
@@ -41,11 +40,6 @@ import org.batfish.minesweeper.utils.Tuple;
 @ParametersAreNonnullByDefault
 public class RoutePolicyStatementVarCollector
     implements StatementVisitor<Set<CommunityVar>, Tuple<Set<String>, Configuration>> {
-  @Override
-  public Set<CommunityVar> visitBufferedStatement(
-      BufferedStatement bufferedStatement, Tuple<Set<String>, Configuration> arg) {
-    return bufferedStatement.getStatement().accept(this, arg);
-  }
 
   @Override
   public Set<CommunityVar> visitCallStatement(
