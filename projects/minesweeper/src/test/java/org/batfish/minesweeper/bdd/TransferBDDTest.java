@@ -247,7 +247,7 @@ public class TransferBDDTest {
     for (TransferReturn path : paths) {
       // solve for an input route and environment that causes execution to go down this path
       BDD fullConstraints =
-          path.getSecond().and(new BDDRoute(factory, _configAPs).bgpWellFormednessConstraints());
+          path.getInputBDD().and(new BDDRoute(factory, _configAPs).bgpWellFormednessConstraints());
       BDD fullModel = ModelGeneration.constraintsToModel(fullConstraints, _configAPs);
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, _configAPs);
       Tuple<Predicate<String>, String> env =
@@ -257,21 +257,21 @@ public class TransferBDDTest {
       // for good measure we simulate twice, with the policy respectively considered an import and
       // export policy
       Result<BgpRoute> inResult =
-          simulatePolicy(policy, inRoute, Environment.Direction.IN, env, path.getFirst());
+          simulatePolicy(policy, inRoute, Environment.Direction.IN, env, path.getOutputRoute());
       Result<BgpRoute> outResult =
-          simulatePolicy(policy, inRoute, Environment.Direction.OUT, env, path.getFirst());
+          simulatePolicy(policy, inRoute, Environment.Direction.OUT, env, path.getOutputRoute());
 
       // update the atomic predicates to include any prepended ASes on this path
       ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(_configAPs);
       AsPathRegexAtomicPredicates aps = configAPsCopy.getAsPathRegexAtomicPredicates();
-      aps.prependAPs(path.getFirst().getPrependedASes());
+      aps.prependAPs(path.getOutputRoute().getPrependedASes());
 
       // compare the simulated results to that produced by the symbolic analysis
       LineAction action = path.getAccepted() ? LineAction.PERMIT : LineAction.DENY;
       boolean inValidate =
           ModelGeneration.validateModel(
               fullModel,
-              path.getFirst(),
+              path.getOutputRoute(),
               configAPsCopy,
               action,
               Environment.Direction.IN,
@@ -279,7 +279,7 @@ public class TransferBDDTest {
       boolean outValidate =
           ModelGeneration.validateModel(
               fullModel,
-              path.getFirst(),
+              path.getOutputRoute(),
               configAPsCopy,
               action,
               Environment.Direction.OUT,

@@ -377,11 +377,11 @@ public final class CompareRoutePoliciesUtils {
     ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
     org.batfish.minesweeper.AsPathRegexAtomicPredicates aps =
         configAPsCopy.getAsPathRegexAtomicPredicates();
-    aps.prependAPs(path.getFirst().getPrependedASes());
+    aps.prependAPs(path.getOutputRoute().getPrependedASes());
 
     return org.batfish.minesweeper.bdd.ModelGeneration.validateModel(
         fullModel,
-        path.getFirst(),
+        path.getOutputRoute(),
         configAPsCopy,
         path.getAccepted() ? LineAction.PERMIT : LineAction.DENY,
         direction,
@@ -438,13 +438,13 @@ public final class CompareRoutePoliciesUtils {
     // The set of paths for the proposed policy, also indexed by input routes.
     List<TransferReturn> otherPaths = computePaths(otherTBDD);
     Map<BDD, TransferReturn> otherPathIndex =
-        otherPaths.stream().collect(ImmutableMap.toImmutableMap(t -> t.getSecond(), t -> t));
+        otherPaths.stream().collect(ImmutableMap.toImmutableMap(t -> t.getInputBDD(), t -> t));
 
     // The set of differences if any.
     List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
 
     for (TransferReturn path : paths) {
-      BDD inputRoutes = path.getSecond();
+      BDD inputRoutes = path.getInputBDD();
       // Optimization: since the inputRoutes for a given List are mutually disjoint, we can
       // avoid linear comparison when the same set is in the other group. This likely applies
       // when the input policies are very similar.
@@ -474,8 +474,8 @@ public final class CompareRoutePoliciesUtils {
       RoutingPolicy policy,
       RoutingPolicy otherPolicy,
       Environment.Direction direction) {
-    BDD inputRoutes = path.getSecond();
-    BDD inputRoutesOther = otherPath.getSecond();
+    BDD inputRoutes = path.getInputBDD();
+    BDD inputRoutesOther = otherPath.getInputBDD();
     BDD intersection = inputRoutesOther.and(inputRoutes).andEq(wellFormedConstraints);
     if (intersection.isZero()) {
       // No common input routes to check equivalence.
@@ -492,8 +492,8 @@ public final class CompareRoutePoliciesUtils {
       // If both policies perform the same action, then check that their outputs match.
       // We only need to compare the outputs if the routes were permitted.
       if (path.getAccepted()) {
-        BDDRoute outputRoutes = path.getFirst();
-        BDDRoute outputRoutesOther = otherPath.getFirst();
+        BDDRoute outputRoutes = path.getOutputRoute();
+        BDDRoute outputRoutesOther = otherPath.getOutputRoute();
         // Identify all differences in the two routes, ignoring the input constraints
         List<BDDRouteDiff.DifferenceType> diffs =
             computeDifferences(outputRoutes, outputRoutesOther);
@@ -520,9 +520,9 @@ public final class CompareRoutePoliciesUtils {
     Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
         constraintsToInputs(finalConstraints, configAPs);
     Result<BgpRoute> otherResult =
-        simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), otherPath.getFirst());
+        simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), otherPath.getOutputRoute());
     Result<BgpRoute> refResult =
-        simulatePolicy(otherPolicy, t.getFirst(), direction, t.getSecond(), path.getFirst());
+        simulatePolicy(otherPolicy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
 
     // As a sanity check, compare the simulated results above with what the symbolic route analysis
     // predicts will happen.

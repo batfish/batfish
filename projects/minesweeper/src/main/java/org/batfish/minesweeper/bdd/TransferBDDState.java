@@ -21,7 +21,7 @@ public class TransferBDDState {
     // the TransferParam and the TransferResult, but it would require non-trivial updates
     // to the analysis.
     checkArgument(
-        param.getData() == result.getReturnValue().getFirst(),
+        param.getData() == result.getReturnValue().getOutputRoute(),
         "TransferParam and TransferReturn should contain the same BDDRoute object");
     _param = param;
     _result = result;

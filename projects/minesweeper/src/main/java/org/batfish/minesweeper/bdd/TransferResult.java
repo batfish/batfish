@@ -48,14 +48,15 @@ public class TransferResult {
 
   /**
    * Construct a TransferResult from a BDDRoute. By default we use TRUE as the initial path
-   * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement. *
+   * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement.
    */
   public TransferResult(BDDRoute bddRoute) {
-    this(new TransferReturn(bddRoute, bddRoute.getFactory().one()), false);
-  }
-
-  public TransferResult(TransferReturn ret, boolean defaultVal) {
-    this(ret, defaultVal, defaultVal, defaultVal, defaultVal);
+    this(
+        new TransferReturn(bddRoute, bddRoute.getFactory().one(), false),
+        false,
+        false,
+        false,
+        false);
   }
 
   public TransferResult(
@@ -75,19 +76,19 @@ public class TransferResult {
     return _returnValue;
   }
 
-  public @Nonnull boolean getSuppressedValue() {
+  public boolean getSuppressedValue() {
     return _suppressedValue;
   }
 
-  public @Nonnull boolean getFallthroughValue() {
+  public boolean getFallthroughValue() {
     return _fallthroughValue;
   }
 
-  public @Nonnull boolean getExitAssignedValue() {
+  public boolean getExitAssignedValue() {
     return _exitAssignedValue;
   }
 
-  public @Nonnull boolean getReturnAssignedValue() {
+  public boolean getReturnAssignedValue() {
     return _returnAssignedValue;
   }
 
@@ -102,12 +103,12 @@ public class TransferResult {
 
   public @Nonnull TransferResult setReturnValueBDD(BDD newBDD) {
     return setReturnValue(
-        new TransferReturn(_returnValue.getFirst(), newBDD, _returnValue.getAccepted()));
+        new TransferReturn(_returnValue.getOutputRoute(), newBDD, _returnValue.getAccepted()));
   }
 
   public @Nonnull TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
     return setReturnValue(
-        new TransferReturn(newBDDRoute, _returnValue.getSecond(), _returnValue.getAccepted()));
+        new TransferReturn(newBDDRoute, _returnValue.getInputBDD(), _returnValue.getAccepted()));
   }
 
   public @Nonnull TransferResult setSuppressedValue(boolean suppressedValue) {
