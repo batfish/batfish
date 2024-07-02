@@ -36,7 +36,7 @@ import org.batfish.minesweeper.OspfType;
  *
  * @author Ryan Beckett
  */
-public class BDDRoute implements IDeepCopy<BDDRoute> {
+public final class BDDRoute implements IDeepCopy<BDDRoute> {
 
   /*
    * For each bit i of a route announcement we have both a BDD variable vi, which
@@ -696,10 +696,14 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = unsupported;
   }
 
-  // BDDRoutes are mutable so in general the default pointer equality is the right thing to use;
-  // This method is used only to test the results of our symbolic route analysis.
-  @VisibleForTesting
-  boolean equalsForTesting(BDDRoute other) {
+  @Override
+  public boolean equals(Object o) {
+    if (o == this) {
+      return true;
+    } else if (o == null || !(o instanceof BDDRoute)) {
+      return false;
+    }
+    BDDRoute other = (BDDRoute) o;
     return Objects.equals(_adminDist, other._adminDist)
         && Objects.equals(_ospfMetric, other._ospfMetric)
         && Objects.equals(_originType, other._originType)
@@ -722,5 +726,24 @@ public class BDDRoute implements IDeepCopy<BDDRoute> {
         && Arrays.equals(_tracks, other._tracks)
         && _tunnelEncapsulationAttribute.equals(other._tunnelEncapsulationAttribute)
         && Objects.equals(_unsupported, other._unsupported);
+  }
+
+  @Override
+  public int hashCode() {
+    // does not include all fields, but that's okay as hash code doesn't need to be perfect.
+    return Objects.hash(
+        _adminDist,
+        _originType,
+        _med,
+        _localPref,
+        _clusterListLength,
+        _tag,
+        _weight,
+        _nextHop,
+        _prefix,
+        _prefixLength,
+        Arrays.hashCode(_communityAtomicPredicates),
+        _asPathRegexAtomicPredicates,
+        _prependedASes);
   }
 }

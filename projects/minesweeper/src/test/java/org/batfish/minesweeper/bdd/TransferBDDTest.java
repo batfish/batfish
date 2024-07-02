@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -220,12 +219,6 @@ public class TransferBDDTest {
     return new BDDRoute(factory, 1, 1, 0, 0, 0, ImmutableList.of());
   }
 
-  // test whether two lists contain pairwise semantically equal TransferReturns
-  private static boolean equalsForTesting(List<TransferReturn> l1, List<TransferReturn> l2) {
-    return l1.size() == l2.size()
-        && IntStream.range(0, l1.size()).allMatch(i -> l1.get(i).equalsForTesting(l2.get(i)));
-  }
-
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
     return new MatchPrefixSet(
         DestinationNetwork.instance(), new ExplicitPrefixSet(new PrefixSpace(prList)));
@@ -303,7 +296,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -319,7 +312,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -333,7 +326,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(_policyBuilder.build(), paths, tbdd.getFactory()));
   }
 
@@ -356,12 +349,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
-                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, true),
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -387,7 +379,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -413,7 +405,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -431,7 +423,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -456,12 +448,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, false),
-                new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD, false),
+            new TransferReturn(anyRoute(tbdd.getFactory()), expectedBDD.not(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -494,14 +485,13 @@ public class TransferBDDTest {
         isRelevantForDestination(
             anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute, suppressed.and(unsuppressed), true),
-                new TransferReturn(anyRoute, suppressed.and(unsuppressed.not()), false),
-                new TransferReturn(anyRoute, suppressed.not().and(unsuppressed), true),
-                new TransferReturn(anyRoute, suppressed.not().and(unsuppressed.not()), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute, suppressed.and(unsuppressed), true),
+            new TransferReturn(anyRoute, suppressed.and(unsuppressed.not()), false),
+            new TransferReturn(anyRoute, suppressed.not().and(unsuppressed), true),
+            new TransferReturn(anyRoute, suppressed.not().and(unsuppressed.not()), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -520,7 +510,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -539,7 +529,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -577,13 +567,12 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
-                new TransferReturn(localPref3, if1.not().and(if2), true),
-                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+            new TransferReturn(localPref3, if1.not().and(if2), true),
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -621,13 +610,12 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
-                new TransferReturn(localPref3, if1.not().and(if2), false),
-                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1, true),
+            new TransferReturn(localPref3, if1.not().and(if2), false),
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -670,13 +658,12 @@ public class TransferBDDTest {
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(localPref2, if1, true),
-                new TransferReturn(localPref3, if1.not().and(if2), false),
-                new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(localPref2, if1, true),
+            new TransferReturn(localPref3, if1.not().and(if2), false),
+            new TransferReturn(anyRoute(tbdd.getFactory()), if1.not().and(if2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -708,13 +695,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, if1.and(if2), true),
-                new TransferReturn(any, if1.and(if2.not()), false),
-                new TransferReturn(any, if1.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, if1.and(if2), true),
+            new TransferReturn(any, if1.and(if2.not()), false),
+            new TransferReturn(any, if1.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -734,7 +720,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -755,7 +741,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -782,11 +768,10 @@ public class TransferBDDTest {
                 any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
             .not();
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, if1.not(), false), new TransferReturn(any, if1, true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, if1.not(), false), new TransferReturn(any, if1, true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -814,12 +799,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD1.or(expectedBDD2), true),
-                new TransferReturn(any, expectedBDD1.or(expectedBDD2).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD1.or(expectedBDD2), true),
+            new TransferReturn(any, expectedBDD1.or(expectedBDD2).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -851,13 +835,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD1.not(), false),
-                new TransferReturn(any, expectedBDD1.and(expectedBDD2.not()), false),
-                new TransferReturn(any, expectedBDD1.and(expectedBDD2), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD1.not(), false),
+            new TransferReturn(any, expectedBDD1.and(expectedBDD2.not()), false),
+            new TransferReturn(any, expectedBDD1.and(expectedBDD2), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -875,7 +858,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -907,12 +890,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD, true),
-                new TransferReturn(any, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD, true),
+            new TransferReturn(any, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -934,7 +916,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -957,7 +939,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -976,10 +958,8 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOriginType().setValue(OriginType.INCOMPLETE);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -998,10 +978,8 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
   }
 
   @Test
@@ -1019,10 +997,8 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E1);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1041,10 +1017,8 @@ public class TransferBDDTest {
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E2);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expectedRoute, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1066,7 +1040,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1089,7 +1063,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1112,7 +1086,7 @@ public class TransferBDDTest {
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
 
     List<TransferReturn> paths = tbdd.computePaths();
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1132,7 +1106,7 @@ public class TransferBDDTest {
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
 
     List<TransferReturn> paths = tbdd.computePaths();
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1154,7 +1128,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1175,7 +1149,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -1196,7 +1170,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1217,7 +1191,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -1236,12 +1210,11 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, any.getTag().value(42), true),
-                new TransferReturn(any, any.getTag().value(42).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, any.getTag().value(42), true),
+            new TransferReturn(any, any.getTag().value(42).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1265,12 +1238,11 @@ public class TransferBDDTest {
     MutableBDDInteger tag = expected.getTag();
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, any.getTag().value(42), true),
-                new TransferReturn(expected, any.getTag().value(42).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, any.getTag().value(42), true),
+            new TransferReturn(expected, any.getTag().value(42).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again but use the output attributes for matching
@@ -1279,9 +1251,8 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // do the analysis once more, but after a directive to read from intermediate attributes
@@ -1298,9 +1269,8 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1322,12 +1292,10 @@ public class TransferBDDTest {
 
     BDD tag01 = any.getTag().value(0).or(any.getTag().value(1));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, tag01, true),
-                new TransferReturn(any, tag01.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, tag01, true), new TransferReturn(any, tag01.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1347,12 +1315,11 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, any.getMed().value(42), true),
-                new TransferReturn(any, any.getMed().value(42).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, any.getMed().value(42), true),
+            new TransferReturn(any, any.getMed().value(42).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1374,12 +1341,11 @@ public class TransferBDDTest {
 
     BDD metricGETwo = any.getMed().value(0).or(any.getMed().value(1)).not();
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, metricGETwo, true),
-                new TransferReturn(any, metricGETwo.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, metricGETwo, true),
+            new TransferReturn(any, metricGETwo.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1403,12 +1369,11 @@ public class TransferBDDTest {
     MutableBDDInteger metric = expected.getMed();
     expected.setMed(MutableBDDInteger.makeFromValue(metric.getFactory(), 32, 42));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, any.getMed().value(42), true),
-                new TransferReturn(expected, any.getMed().value(42).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, any.getMed().value(42), true),
+            new TransferReturn(expected, any.getMed().value(42).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again but use the output attributes for matching
@@ -1417,9 +1382,8 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1440,9 +1404,7 @@ public class TransferBDDTest {
     BDDRoute any = anyRoute(tbdd.getFactory());
     any.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
   }
 
   @Test
@@ -1461,12 +1423,11 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, any.getClusterListLength().value(42), true),
-                new TransferReturn(any, any.getClusterListLength().value(42).not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, any.getClusterListLength().value(42), true),
+            new TransferReturn(any, any.getClusterListLength().value(42).not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1492,12 +1453,11 @@ public class TransferBDDTest {
             .or(any.getClusterListLength().value(1))
             .or(any.getClusterListLength().value(2));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, clusterListLengthLETwo, true),
-                new TransferReturn(any, clusterListLengthLETwo.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, clusterListLengthLETwo, true),
+            new TransferReturn(any, clusterListLengthLETwo.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1518,9 +1478,7 @@ public class TransferBDDTest {
     BDDRoute any = anyRoute(tbdd.getFactory());
     any.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
   }
 
   @Test
@@ -1540,12 +1498,11 @@ public class TransferBDDTest {
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD trackPred = any.getTracks()[0];
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, trackPred, true),
-                new TransferReturn(any, trackPred.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, trackPred, true),
+            new TransferReturn(any, trackPred.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1566,12 +1523,11 @@ public class TransferBDDTest {
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD sourcePred = any.getSourceVrfs().value(1);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, sourcePred, true),
-                new TransferReturn(any, sourcePred.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, sourcePred, true),
+            new TransferReturn(any, sourcePred.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1592,12 +1548,10 @@ public class TransferBDDTest {
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD intPred = any.getNextHopInterfaces().value(1).or(any.getNextHopInterfaces().value(2));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, intPred, true),
-                new TransferReturn(any, intPred.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, intPred, true), new TransferReturn(any, intPred.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1622,12 +1576,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = any.getNextHop().toBDD(Prefix.parse("1.0.0.0/32"));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD, true),
-                new TransferReturn(any, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD, true),
+            new TransferReturn(any, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1650,9 +1603,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1679,7 +1630,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -1699,7 +1650,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1720,7 +1671,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1741,7 +1692,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1763,7 +1714,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1786,7 +1737,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1805,7 +1756,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
   }
 
   @Test
@@ -1828,12 +1779,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = protocol.value(RoutingProtocol.BGP).or(protocol.value(RoutingProtocol.OSPF));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD, true),
-                new TransferReturn(any, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD, true),
+            new TransferReturn(any, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1854,9 +1804,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1882,12 +1830,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD, true),
-                new TransferReturn(any, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD, true),
+            new TransferReturn(any, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1915,12 +1862,11 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, expectedBDD, false),
-                new TransferReturn(any, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, expectedBDD, false),
+            new TransferReturn(any, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1941,9 +1887,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -1965,7 +1909,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2005,12 +1949,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps.value(ap);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
 
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
@@ -2043,12 +1986,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps.value(ap1).or(aps.value(ap2));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again for a platform that matches on the output route;
@@ -2057,12 +1999,11 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2095,13 +2036,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, conj1.not(), false),
-                new TransferReturn(any, conj1.and(conj2.not()), false),
-                new TransferReturn(any, conj1.and(conj2), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, conj1.not(), false),
+            new TransferReturn(any, conj1.and(conj2.not()), false),
+            new TransferReturn(any, conj1.and(conj2), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2138,13 +2078,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, conj1.not(), false),
-                new TransferReturn(unsupported, conj1.and(conj2.not()), false),
-                new TransferReturn(unsupported, conj1.and(conj2), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, conj1.not(), false),
+            new TransferReturn(unsupported, conj1.and(conj2.not()), false),
+            new TransferReturn(unsupported, conj1.and(conj2), true)));
   }
 
   @Test
@@ -2181,10 +2120,8 @@ public class TransferBDDTest {
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(new TransferReturn(expectedOut, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expectedOut, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2221,9 +2158,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2272,12 +2207,11 @@ public class TransferBDDTest {
     MutableBDDInteger localPref = localPref300.getLocalPref();
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 300));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, conj1.not(), true),
-                new TransferReturn(localPref300, conj1, true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, conj1.not(), true),
+            new TransferReturn(localPref300, conj1, true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2294,9 +2228,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2329,13 +2261,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, disj1, true),
-                new TransferReturn(any, disj1.not().and(disj2), true),
-                new TransferReturn(any, disj1.not().and(disj2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, disj1, true),
+            new TransferReturn(any, disj1.not().and(disj2), true),
+            new TransferReturn(any, disj1.not().and(disj2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2372,13 +2303,12 @@ public class TransferBDDTest {
         isRelevantForDestination(
             any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, disj1, true),
-                new TransferReturn(unsupported, disj1.not().and(disj2), true),
-                new TransferReturn(unsupported, disj1.not().and(disj2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, disj1, true),
+            new TransferReturn(unsupported, disj1.not().and(disj2), true),
+            new TransferReturn(unsupported, disj1.not().and(disj2.not()), false)));
   }
 
   @Test
@@ -2423,12 +2353,11 @@ public class TransferBDDTest {
     BDDRoute localPref32 = new BDDRoute(any);
     localPref32.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, firstDisjunctBDD, true),
-                new TransferReturn(localPref32, firstDisjunctBDD.not(), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, firstDisjunctBDD, true),
+            new TransferReturn(localPref32, firstDisjunctBDD.not(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2445,9 +2374,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2484,12 +2411,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps.value(ap);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2519,12 +2445,11 @@ public class TransferBDDTest {
 
     BDD expectedBDD = aps.value(ap);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRouteWithAPs, expectedBDD, true),
-                new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRouteWithAPs, expectedBDD, true),
+            new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2561,9 +2486,8 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().zero();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2599,9 +2523,8 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2643,9 +2566,8 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().zero();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2684,9 +2606,8 @@ public class TransferBDDTest {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // do the analysis once more, but after a directive to read from intermediate attributes
@@ -2709,9 +2630,8 @@ public class TransferBDDTest {
             .get(CommunityVar.from(StandardCommunity.parse("4:44")))) {
       expected.getCommunityAtomicPredicates()[ap] = tbdd.getFactory().one();
     }
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2752,9 +2672,8 @@ public class TransferBDDTest {
       }
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2791,9 +2710,8 @@ public class TransferBDDTest {
       }
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2829,9 +2747,8 @@ public class TransferBDDTest {
       }
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2864,9 +2781,8 @@ public class TransferBDDTest {
       }
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2907,9 +2823,8 @@ public class TransferBDDTest {
       }
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2943,12 +2858,11 @@ public class TransferBDDTest {
     BDD expectedBDD =
         tbdd.getFactory().orAll(ap30.stream().map(i -> aps[i]).collect(Collectors.toList()));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute, expectedBDD, true),
-                new TransferReturn(anyRoute, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute, expectedBDD, true),
+            new TransferReturn(anyRoute, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -2997,12 +2911,11 @@ public class TransferBDDTest {
         tbdd.getFactory()
             .orAll(intersection.stream().map(i -> aps[i]).collect(Collectors.toList()));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(anyRoute, expectedBDD, true),
-                new TransferReturn(anyRoute, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(anyRoute, expectedBDD, true),
+            new TransferReturn(anyRoute, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3043,12 +2956,11 @@ public class TransferBDDTest {
       aps[i] = tbdd.getFactory().one();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, expectedBDD, true),
-                new TransferReturn(expected, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, expectedBDD, true),
+            new TransferReturn(expected, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again but use the output attributes for matching
@@ -3058,9 +2970,8 @@ public class TransferBDDTest {
     paths = tbdd.computePaths();
 
     // all input routes satisfy the if statement now, so there is only one path
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3106,12 +3017,11 @@ public class TransferBDDTest {
       aps[i] = tbdd.getFactory().one();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, expectedBDD, true),
-                new TransferReturn(expected, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, expectedBDD, true),
+            new TransferReturn(expected, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again but use the output attributes for matching
@@ -3120,12 +3030,11 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, expectedBDD, true),
-                new TransferReturn(expected, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, expectedBDD, true),
+            new TransferReturn(expected, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3164,12 +3073,11 @@ public class TransferBDDTest {
       aps[i] = tbdd.getFactory().zero();
     }
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expected, expectedBDD, true),
-                new TransferReturn(expected, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, expectedBDD, true),
+            new TransferReturn(expected, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again but use the output attributes for matching
@@ -3178,9 +3086,8 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3217,7 +3124,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3258,7 +3165,7 @@ public class TransferBDDTest {
 
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(localPref300, tbdd.getFactory().one(), true));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3308,12 +3215,11 @@ public class TransferBDDTest {
     BDDRoute expectedOut = new BDDRoute(anyRoute);
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expectedOut, expectedBDD, true),
-                new TransferReturn(anyRoute, expectedBDD.not(), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expectedOut, expectedBDD, true),
+            new TransferReturn(anyRoute, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3343,7 +3249,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
-    assertTrue(equalsForTesting(expectedPaths, paths));
+    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3372,9 +3278,8 @@ public class TransferBDDTest {
     MutableBDDInteger localPref = expected.getLocalPref();
     expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 44));
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3391,9 +3296,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
   }
 
   @Test
@@ -3414,9 +3318,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
   }
 
   @Test
@@ -3433,9 +3336,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
   }
 
   @Test
@@ -3452,9 +3354,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(42L));
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
     // now do the analysis again for a platform that reads from output attributes;
@@ -3463,9 +3364,8 @@ public class TransferBDDTest {
     tbdd = new TransferBDD(_configAPs, policy);
     paths = tbdd.computePaths();
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3487,9 +3387,8 @@ public class TransferBDDTest {
     // the first
     expected.setPrependedASes(ImmutableList.of(44L, 4L, 42L));
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3541,13 +3440,12 @@ public class TransferBDDTest {
 
     BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, if1, true),
-                new TransferReturn(any, if1.not().and(if2), true),
-                new TransferReturn(any, if1.not().and(if2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, if1, true),
+            new TransferReturn(any, if1.not().and(if2), true),
+            new TransferReturn(any, if1.not().and(if2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3599,13 +3497,12 @@ public class TransferBDDTest {
 
     BDD if2 = any.getProtocolHistory().value(RoutingProtocol.BGP);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(any, if1, false),
-                new TransferReturn(any, if1.not().and(if2), true),
-                new TransferReturn(any, if1.not().and(if2.not()), false))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, if1, false),
+            new TransferReturn(any, if1.not().and(if2), true),
+            new TransferReturn(any, if1.not().and(if2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3645,9 +3542,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(any, any.getFactory().one(), false))));
+    assertEquals(paths, ImmutableList.of(new TransferReturn(any, any.getFactory().one(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3726,9 +3621,8 @@ public class TransferBDDTest {
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 42));
 
     // the tag set in policy1 is matched upon in policy2
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3778,9 +3672,8 @@ public class TransferBDDTest {
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 10));
 
     // the tag set in policy1 is overwritten in policy2
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3831,9 +3724,8 @@ public class TransferBDDTest {
     expected.setMed(MutableBDDInteger.makeFromValue(med.getFactory(), 32, 42));
 
     // the updates from both policies take effect
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
@@ -3866,12 +3758,11 @@ public class TransferBDDTest {
     expectedOut.setNextHopSet(true);
     expectedOut.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths,
-            ImmutableList.of(
-                new TransferReturn(expectedOut, expectedBDD, true),
-                new TransferReturn(any, expectedBDD.not(), true))));
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expectedOut, expectedBDD, true),
+            new TransferReturn(any, expectedBDD.not(), true)));
   }
 
   @Test
@@ -3888,9 +3779,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
   }
 
   @Test
@@ -3907,9 +3797,8 @@ public class TransferBDDTest {
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
 
-    assertTrue(
-        equalsForTesting(
-            paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false))));
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
   }
 
   @Test
