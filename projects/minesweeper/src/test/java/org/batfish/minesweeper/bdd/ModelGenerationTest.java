@@ -65,7 +65,7 @@ public class ModelGenerationTest {
     TransferBDD tbdd = new TransferBDD(configAPs, policy);
     BDDFactory factory = tbdd.getFactory();
     BDDRoute route = new BDDRoute(factory, configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(ImmutableSet.of());
+    List<TransferReturn> paths = tbdd.computePaths();
     assertThat(paths, hasSize(2));
 
     BDD matches10_8 =
