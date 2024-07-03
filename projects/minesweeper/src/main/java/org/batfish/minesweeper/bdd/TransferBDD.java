@@ -291,12 +291,13 @@ public class TransferBDD {
         List<TransferResult> nextResults = new ArrayList<>();
         try {
           for (TransferResult curr : currResults) {
-            BDD currBDD = curr.getReturnValue().getSecond();
+            BDD currBDD = curr.getReturnValue().getInputConstraints();
             compute(e, toTransferBDDState(p.indent(), curr))
                 .forEach(
                     r -> {
                       TransferResult updated =
-                          r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                          r.setReturnValueBDD(
+                              r.getReturnValue().getInputConstraints().and(currBDD));
                       // if we're on a path where e evaluates to false, then this path is done;
                       // otherwise we will evaluate the next conjunct in the next iteration
                       if (!updated.getReturnValue().getAccepted()) {
@@ -309,7 +310,7 @@ public class TransferBDD {
           currResults = nextResults;
         } catch (UnsupportedOperationException ufe) {
           // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
-          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
+          currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getOutputRoute()));
         }
       }
       finalResults.addAll(currResults);
@@ -356,12 +357,13 @@ public class TransferBDD {
           List<TransferResult> nextResults = new ArrayList<>();
           try {
             for (TransferResult curr : currResults) {
-              BDD currBDD = curr.getReturnValue().getSecond();
+              BDD currBDD = curr.getReturnValue().getInputConstraints();
               compute(e, toTransferBDDState(p.indent(), curr))
                   .forEach(
                       r -> {
                         TransferResult updated =
-                            r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                            r.setReturnValueBDD(
+                                r.getReturnValue().getInputConstraints().and(currBDD));
                         // if we're on a path where e evaluates to true, then this path is done;
                         // otherwise we will evaluate the next disjunct in the next iteration
                         if (updated.getReturnValue().getAccepted()) {
@@ -374,7 +376,7 @@ public class TransferBDD {
             currResults = nextResults;
           } catch (UnsupportedOperationException ufe) {
             // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
-            currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getFirst()));
+            currResults.forEach(tr -> unsupported(ufe, tr.getReturnValue().getOutputRoute()));
           }
         }
         finalResults.addAll(currResults);
@@ -433,7 +435,7 @@ public class TransferBDD {
       for (BooleanExpr pol : chainPolicies) {
         List<TransferResult> nextResults = new ArrayList<>();
         for (TransferResult curr : currResults) {
-          BDD currBDD = curr.getReturnValue().getSecond();
+          BDD currBDD = curr.getReturnValue().getInputConstraints();
           TransferParam param = record.indent();
           // we set the fallthrough flag to true initially in order to handle implicit fallthrough
           // properly; if there is an exit or return in the policy then the flag will be unset
@@ -445,7 +447,7 @@ public class TransferBDD {
                     // we explicitly incorporate the constraints accrued on the path through the
                     // prior policies in the chain
                     TransferResult updated =
-                        r.setReturnValueBDD(r.getReturnValue().getSecond().and(currBDD));
+                        r.setReturnValueBDD(r.getReturnValue().getInputConstraints().and(currBDD));
                     if (updated.getFallthroughValue()) {
                       nextResults.add(updated.setFallthroughValue(false));
                     } else {
@@ -638,13 +640,13 @@ public class TransferBDD {
         _factory
             .orAll(
                 finalResults.stream()
-                    .map(r -> r.getReturnValue().getSecond())
+                    .map(r -> r.getReturnValue().getInputConstraints())
                     .collect(Collectors.toList()))
             .not();
     if (!unmatched.isZero()) {
       // then add a non-accepting path corresponding to that predicate
       TransferResult remaining =
-          new TransferResult(new BDDRoute(result.getReturnValue().getFirst()))
+          new TransferResult(new BDDRoute(result.getReturnValue().getOutputRoute()))
               .setReturnValueBDD(unmatched)
               .setReturnValueAccepted(false);
       finalResults.add(remaining);
@@ -773,14 +775,15 @@ public class TransferBDD {
 
       // for each path coming from the guard, symbolically execute the appropriate branch of the If
       List<TransferBDDState> newStates = new ArrayList<>();
-      BDD currPathCondition = result.getReturnValue().getSecond();
+      BDD currPathCondition = result.getReturnValue().getInputConstraints();
       for (TransferResult guardResult : guardResults) {
-        BDD pathCondition = currPathCondition.and(guardResult.getReturnValue().getSecond());
+        BDD pathCondition =
+            currPathCondition.and(guardResult.getReturnValue().getInputConstraints());
         if (pathCondition.isZero()) {
           // prune infeasible paths
           continue;
         }
-        BDDRoute current = guardResult.getReturnValue().getFirst();
+        BDDRoute current = guardResult.getReturnValue().getOutputRoute();
         boolean accepted = guardResult.getReturnValue().getAccepted();
 
         TransferParam pCopy = curP.indent().setData(current);
@@ -838,7 +841,7 @@ public class TransferBDD {
       curP.debug("SetOspfMetricType");
       SetOspfMetricType somt = (SetOspfMetricType) stmt;
       OspfMetricType mt = somt.getMetricType();
-      BDDDomain<OspfType> current = result.getReturnValue().getFirst().getOspfMetric();
+      BDDDomain<OspfType> current = result.getReturnValue().getOutputRoute().getOspfMetric();
       BDDDomain<OspfType> newValue = new BDDDomain<>(current);
       if (mt == OspfMetricType.E1) {
         curP.indent().debug("Value: E1");
@@ -872,7 +875,7 @@ public class TransferBDD {
         || stmt instanceof SetTunnelEncapsulationAttribute) {
       curP.debug("%s", stmt.getClass().getSimpleName());
       BDDTunnelEncapsulationAttribute current =
-          result.getReturnValue().getFirst().getTunnelEncapsulationAttribute();
+          result.getReturnValue().getOutputRoute().getTunnelEncapsulationAttribute();
       BDDTunnelEncapsulationAttribute newValue = BDDTunnelEncapsulationAttribute.copyOf(current);
       if (stmt instanceof SetTunnelEncapsulationAttribute) {
         SetTunnelEncapsulationAttribute st = (SetTunnelEncapsulationAttribute) stmt;
@@ -1022,7 +1025,7 @@ public class TransferBDD {
     for (TransferBDDState state : states) {
       curP = state.getTransferParam();
       result = state.getTransferResult();
-      if (result.getReturnValue().getSecond().isZero()) {
+      if (result.getReturnValue().getInputConstraints().isZero()) {
         // ignore infeasible paths
         continue;
       }
@@ -1043,7 +1046,7 @@ public class TransferBDD {
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
   // one that is in the given TransferParam.
   private TransferBDDState toTransferBDDState(TransferParam curP, TransferResult result) {
-    return new TransferBDDState(curP.setData(result.getReturnValue().getFirst()), result);
+    return new TransferBDDState(curP.setData(result.getReturnValue().getOutputRoute()), result);
   }
 
   // Produce a BDD representing conditions under which the route's destination prefix is within a
