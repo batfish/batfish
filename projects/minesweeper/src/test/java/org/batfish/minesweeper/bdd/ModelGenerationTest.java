@@ -73,24 +73,30 @@ public class ModelGenerationTest {
     {
       List<TransferReturn> matchingPaths =
           paths.stream()
-              .filter(p -> p.getSecond().andSat(matches10_8))
+              .filter(p -> p.getInputConstraints().andSat(matches10_8))
               .collect(Collectors.toList());
       assertThat(matchingPaths, hasSize(1));
       TransferReturn result = matchingPaths.get(0);
       assertThat(
-          result.getFirst().getTunnelEncapsulationAttribute().satAssignmentToValue(factory.one()),
+          result
+              .getOutputRoute()
+              .getTunnelEncapsulationAttribute()
+              .satAssignmentToValue(factory.one()),
           equalTo(Value.literal(attr)));
     }
 
     {
       List<TransferReturn> otherPaths =
           paths.stream()
-              .filter(p -> p.getSecond().diffSat(matches10_8))
+              .filter(p -> p.getInputConstraints().diffSat(matches10_8))
               .collect(Collectors.toList());
       assertThat(otherPaths, hasSize(1));
       TransferReturn result = otherPaths.get(0);
       assertThat(
-          result.getFirst().getTunnelEncapsulationAttribute().satAssignmentToValue(factory.one()),
+          result
+              .getOutputRoute()
+              .getTunnelEncapsulationAttribute()
+              .satAssignmentToValue(factory.one()),
           equalTo(Value.absent()));
     }
   }
