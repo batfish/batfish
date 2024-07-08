@@ -142,7 +142,7 @@ public class AsPathRegex extends BaseParser<String> {
   // Like Number(), but requires either start of string or preceding space.
   @SuppressSubnodes
   Rule ASN() {
-    return Sequence(Number(), push(MAYBE_SEPARATOR + pop()));
+    return Sequence(Number(), push(String.format("%s%s", MAYBE_SEPARATOR, pop())));
   }
 
   // A decimal number.
@@ -154,7 +154,8 @@ public class AsPathRegex extends BaseParser<String> {
   @SuppressSubnodes
   Rule BareAsnRange() {
     return Sequence(
-        Sequence(Number(), '-', Number()), push(MAYBE_SEPARATOR + rangeToOr(pop(1), pop())));
+        Sequence(Number(), '-', Number()),
+        push(String.format("%s%s", MAYBE_SEPARATOR, rangeToOr(pop(1), pop()))));
   }
 
   Rule BareOr() {
@@ -166,7 +167,7 @@ public class AsPathRegex extends BaseParser<String> {
             IgnoreSpace(),
             T_TopLevel(), // pop()
             push(String.format("%s|%s", pop(1), pop()))),
-        push("(" + pop() + ')'));
+        push(String.format("(%s)", pop())));
   }
 
   // BareAsnRange, with [] around it. BareAsnRange does all the stack manipulation.
@@ -186,7 +187,7 @@ public class AsPathRegex extends BaseParser<String> {
     checkArgument(start <= end, "Invalid range %s-%s", start, end);
     String bigOr =
         LongStream.range(start, end + 1).mapToObj(Long::toString).collect(Collectors.joining("|"));
-    return "(" + bigOr + ')';
+    return String.format("(%s)", bigOr);
   }
 
   /** Converts the given Juniper AS Path regular expression to a Java regular expression. */
