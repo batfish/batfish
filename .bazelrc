@@ -9,3 +9,6 @@ build --javacopt "-Xep:RemoveUnusedImports:ERROR"
 # TODO: this does not seem to work, but passing the exact same argument on the command line
 # makes it take effect.
 coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
+
+# Eventually they want us to upgrade to MODULE.bazel but it's not mandatory yet
+common --enable_bzlmod=False
