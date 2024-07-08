@@ -47,7 +47,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
    *
    * <p>Interned for memory overhead.
    */
-  protected static class BgpRouteAttributes implements Serializable {
+  protected static final class BgpRouteAttributes implements Serializable {
     public static BgpRouteAttributes create(
         @Nullable AsPath asPath,
         @Nullable Set<Long> clusterList,
@@ -118,7 +118,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     public boolean equals(Object o) {
       if (this == o) {
         return true;
-      } else if (o == null || getClass() != o.getClass()) {
+      } else if (o == null || !(o instanceof BgpRouteAttributes)) {
         return false;
       }
       BgpRouteAttributes that = (BgpRouteAttributes) o;
