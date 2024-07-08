@@ -30,7 +30,7 @@ public class GroupWildcard extends BaseParser<String> {
             Element(), // pop(1)
             ZeroOrMore(
                 Element(), // pop()
-                push(pop(1) + pop()))),
+                push(String.format("%s%s", pop(1), pop())))),
         EOI);
   }
 
@@ -47,7 +47,9 @@ public class GroupWildcard extends BaseParser<String> {
   Rule CharacterClass() {
     return Sequence(
         Ch('['),
-        Sequence(push(""), Optional(FirstOf(Op_Bang(), Op_Carat()), push(pop(1) + pop()))),
+        Sequence(
+            push(""),
+            Optional(FirstOf(Op_Bang(), Op_Carat()), push(String.format("%s%s", pop(1), pop())))),
         ClassLiterals(),
         Ch(']'),
         push(String.format("[%s%s]", pop(1), pop())));
@@ -77,7 +79,7 @@ public class GroupWildcard extends BaseParser<String> {
     Rule base = FirstOf(ClassLiterals(), Dot());
     return Sequence(
         base, // pop()
-        ZeroOrMore(base, push(pop(1) + pop())));
+        ZeroOrMore(base, push(String.format("%s%s", pop(1), pop()))));
   }
 
   Rule Dot() {
