@@ -1,6 +1,7 @@
 package org.batfish.representation.arista.eos;
 
 import java.io.Serializable;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -80,7 +81,7 @@ public final class AristaBgpVrf implements Serializable {
     _v6aggregates = new HashMap<>(0);
     _v4DynamicNeighbors = new HashMap<>(0);
     _v4neighbors = new HashMap<>(0);
-    _redistributionPolicies = new HashMap<>(0);
+    _redistributionPolicies = new EnumMap<>(AristaRedistributeType.class);
   }
 
   public boolean getDefaultIpv4Unicast() {

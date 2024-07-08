@@ -1,7 +1,7 @@
 package org.batfish.representation.f5_bigip;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -10,13 +10,14 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public abstract class BgpAddressFamily implements Serializable {
 
-  private @Nonnull Map<F5BigipRoutingProtocol, BgpRedistributionPolicy> _redistributionPolicies;
+  private final @Nonnull Map<F5BigipRoutingProtocol, BgpRedistributionPolicy>
+      _redistributionPolicies;
 
   public BgpAddressFamily() {
-    _redistributionPolicies = new HashMap<>();
+    _redistributionPolicies = new EnumMap<>(F5BigipRoutingProtocol.class);
   }
 
-  public Map<F5BigipRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
+  public @Nonnull Map<F5BigipRoutingProtocol, BgpRedistributionPolicy> getRedistributionPolicies() {
     return _redistributionPolicies;
   }
 }

@@ -3084,7 +3084,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     RoutingPolicy routingPolicy = new RoutingPolicy(name, _c);
     List<Statement> statements = routingPolicy.getStatements();
     boolean hasDefaultTerm =
-        ps.getDefaultTerm().hasAtLeastOneFrom() || ps.getDefaultTerm().getThens().size() > 0;
+        ps.getDefaultTerm().hasAtLeastOneFrom() || !ps.getDefaultTerm().getThens().isEmpty();
     List<PsTerm> terms = new ArrayList<>(ps.getTerms().values());
     if (hasDefaultTerm) {
       terms.add(ps.getDefaultTerm());
@@ -3107,7 +3107,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             if (!(line instanceof Route4FilterLine)) {
               continue;
             }
-            if (line.getThens().size() > 0) {
+            if (!line.getThens().isEmpty()) {
               String lineListName = name + "_ACTION_LINE_" + actionLineCounter;
               RouteFilterList lineSpecificList = new RouteFilterList(lineListName);
               ((Route4FilterLine) line).applyTo(lineSpecificList);
@@ -3567,7 +3567,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (rf.getIpv4()) {
         RouteFilterList rfl = new RouteFilterList(name);
         for (RouteFilterLine line : rf.getLines()) {
-          if (line instanceof Route4FilterLine && line.getThens().size() == 0) {
+          if (line instanceof Route4FilterLine && line.getThens().isEmpty()) {
             ((Route4FilterLine) line).applyTo(rfl);
           }
         }
@@ -3792,7 +3792,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                               _w))));
 
       // Create OSPF process (oproc will be null iff disable is configured at process level)
-      if (ri.getOspfAreas().size() > 0) {
+      if (!ri.getOspfAreas().isEmpty()) {
         OspfProcess oproc = createOspfProcess(ri);
         if (oproc != null) {
           vrf.setOspfProcesses(ImmutableSortedMap.of(oproc.getProcessId(), oproc));
@@ -3822,7 +3822,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // create bgp process
-      if (ri.getNamedBgpGroups().size() > 0 || ri.getIpBgpGroups().size() > 0) {
+      if (!ri.getNamedBgpGroups().isEmpty() || !ri.getIpBgpGroups().isEmpty()) {
         BgpProcess proc = createBgpProcess(ri);
         vrf.setBgpProcess(proc);
       }
@@ -4067,7 +4067,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
       assert aFilter instanceof ConcreteFirewallFilter;
       ConcreteFirewallFilter filter = (ConcreteFirewallFilter) aFilter;
-      if (filter.getTerms().size() == 0) {
+      if (filter.getTerms().isEmpty()) {
         _masterLogicalSystem.getFirewallFilters().remove(name);
       }
     }

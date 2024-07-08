@@ -14,8 +14,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import java.util.Collection;
+import java.util.EnumMap;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
@@ -106,7 +106,7 @@ public final class BgpSessionProperties {
     private boolean _replaceNonLocalAsesOnExport;
 
     private Builder() {
-      _routeExchangeSettings = new HashMap<>(1);
+      _routeExchangeSettings = new EnumMap<>(AddressFamily.Type.class);
       _sessionType = SessionType.UNSET;
     }
 

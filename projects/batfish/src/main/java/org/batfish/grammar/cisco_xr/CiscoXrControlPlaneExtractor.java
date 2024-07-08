@@ -1240,7 +1240,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   private static String unquote(String text) {
-    if (text.length() == 0) {
+    if (text.isEmpty()) {
       return text;
     }
     char firstChar = text.charAt(0);
@@ -5774,7 +5774,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     }
     OspfDefaultInformationOriginate defaultInformationOriginate =
         new OspfDefaultInformationOriginate();
-    boolean always = ctx.ALWAYS().size() > 0;
+    boolean always = !ctx.ALWAYS().isEmpty();
     defaultInformationOriginate.setAlways(always);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);

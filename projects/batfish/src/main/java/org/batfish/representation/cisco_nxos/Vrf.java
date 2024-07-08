@@ -4,6 +4,7 @@ import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Multimap;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -23,7 +24,7 @@ public final class Vrf implements Serializable {
   public Vrf(String name, int id) {
     _name = name;
     _id = id;
-    _addressFamilies = new HashMap<>();
+    _addressFamilies = new EnumMap<>(AddressFamily.class);
     _nameServers = new ArrayList<>(1);
     _staticRoutes = new HashMap<>();
     _staticRoutesV6 = HashMultimap.create();

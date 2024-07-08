@@ -300,7 +300,7 @@ public class Vrf extends ComparableStructure<String> {
   /** Preserved for backward compatibility. */
   @Deprecated
   @JsonProperty(PROP_HAS_ORIGINATING_SESSIONS)
-  private void setHasOriginatingSessions(boolean hasOriginatingSessions) {
+  private void setHasOriginatingSessions(boolean ignoredHasOriginatingSessions) {
     _firewallSessionVrfInfo = new FirewallSessionVrfInfo(true);
   }
 

@@ -222,7 +222,7 @@ public final class VendorConfigurationFormatDetector {
 
   private @Nullable ConfigurationFormat checkEmpty() {
     String trimmedText = _fileText.trim();
-    if (trimmedText.length() == 0) {
+    if (trimmedText.isEmpty()) {
       return ConfigurationFormat.EMPTY;
     }
     _firstChar = trimmedText.charAt(0);
