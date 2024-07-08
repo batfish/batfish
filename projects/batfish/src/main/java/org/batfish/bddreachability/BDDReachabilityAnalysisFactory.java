@@ -31,8 +31,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Streams;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -1299,7 +1300,8 @@ public final class BDDReachabilityAnalysisFactory {
       Set<String> finalNodes,
       Set<FlowDisposition> actions) {
     checkArgument(!actions.isEmpty(), "No actions");
-    Set<FlowDisposition> nonLoopActions = new HashSet<>(actions);
+    Set<FlowDisposition> nonLoopActions = EnumSet.noneOf(FlowDisposition.class);
+    nonLoopActions.addAll(actions);
     boolean loopIncluded = nonLoopActions.remove(LOOP);
 
     if (nonLoopActions.isEmpty()) {
@@ -1551,8 +1553,8 @@ public final class BDDReachabilityAnalysisFactory {
     private final Map<PortField, BDD> _portRanges;
 
     public RangeComputer() {
-      _ipRanges = new HashMap<>();
-      _portRanges = new HashMap<>();
+      _ipRanges = new EnumMap<>(IpField.class);
+      _portRanges = new EnumMap<>(PortField.class);
     }
 
     public Map<IpField, BDD> getIpRanges() {

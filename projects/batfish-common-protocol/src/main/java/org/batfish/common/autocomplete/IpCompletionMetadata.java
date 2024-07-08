@@ -19,7 +19,6 @@ public final class IpCompletionMetadata implements Serializable {
   private final @Nullable RangeSet<Ip> _ipSubset;
 
   // TODO: Why does insertion order matter?
-  @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
   private final @Nonnull LinkedHashSet<IpCompletionRelevance> _relevances;
 
   public IpCompletionMetadata() {

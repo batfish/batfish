@@ -257,7 +257,7 @@ public final class FrrConversions {
     c.getAllInterfaces()
         .forEach(
             (iname, iface) -> {
-              if (iface.getAllAddresses().size() == 0
+              if (iface.getAllAddresses().isEmpty()
                   && isUsedForBgpUnnumbered(iface.getName(), frrConfiguration.getBgpProcess())) {
                 iface.setAddress(LINK_LOCAL_ADDRESS);
                 iface.setAllAddresses(ImmutableSet.of(LINK_LOCAL_ADDRESS));

@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -67,7 +68,8 @@ public final class AnswerMetadataUtil {
         .forEach(
             columnAggregationResult ->
                 columnAggregations
-                    .computeIfAbsent(columnAggregationResult.getColumn(), c -> new HashMap<>())
+                    .computeIfAbsent(
+                        columnAggregationResult.getColumn(), c -> new EnumMap<>(Aggregation.class))
                     .computeIfAbsent(
                         columnAggregationResult.getAggregation(),
                         a -> columnAggregationResult.getValue()));

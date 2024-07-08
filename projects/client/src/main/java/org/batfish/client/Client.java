@@ -1623,7 +1623,7 @@ public class Client extends AbstractClient implements IClient {
 
   private boolean processCommand(String command) {
     String line = command.trim();
-    if (line.length() == 0 || line.startsWith("#")) {
+    if (line.isEmpty() || line.startsWith("#")) {
       return true;
     }
     _logger.debugf("Doing command: %s\n", line);
@@ -2252,7 +2252,7 @@ public class Client extends AbstractClient implements IClient {
   private static void validateInstanceData(InstanceData instanceData) {
     String description = instanceData.getDescription();
     String q = "Question: '" + instanceData.getInstanceName() + "'";
-    if (description == null || description.length() == 0) {
+    if (description == null || description.isEmpty()) {
       throw new BatfishException(q + " is missing question description");
     }
     for (Entry<String, Variable> e : instanceData.getVariables().entrySet()) {
@@ -2260,7 +2260,7 @@ public class Client extends AbstractClient implements IClient {
       Variable variable = e.getValue();
       String v = "Variable: '" + variableName + "' in " + q;
       String variableDescription = variable.getDescription();
-      if (variableDescription == null || variableDescription.length() == 0) {
+      if (variableDescription == null || variableDescription.isEmpty()) {
         throw new BatfishException(v + " is missing description");
       }
     }

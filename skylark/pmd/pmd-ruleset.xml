@@ -27,10 +27,9 @@
         <exclude name="JUnitTestContainsTooManyAsserts"/>
         <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="LiteralsFirstInComparisons"/>
+        <exclude name="LooseCoupling"/>
         <exclude name="MethodReturnsInternalArray"/>
         <exclude name="OneDeclarationPerLine"/>
-        <exclude name="PositionLiteralsFirstInCaseInsensitiveComparisons"/>
-        <exclude name="PositionLiteralsFirstInComparisons"/>
         <exclude name="PreserveStackTrace"/>
         <exclude name="SystemPrintln"/>
         <exclude name="UnusedAssignment"/>
@@ -53,15 +52,12 @@
         <exclude name="AvoidLiteralsInIfCondition"/>
         <exclude name="CompareObjectsWithEquals"/>
         <exclude name="ConstructorCallsOverridableMethod"/>
-        <exclude name="DataflowAnomalyAnalysis"/>
         <exclude name="DoNotTerminateVM"/>
         <exclude name="EmptyCatchBlock"/>
-        <exclude name="EmptyIfStmt"/>
         <exclude name="ImplicitSwitchFallThrough"/>
         <exclude name="JUnitSpelling"/>
         <exclude name="MissingSerialVersionUID"/>
         <exclude name="MissingStaticMethodInNonInstantiatableClass"/>
-        <exclude name="LoggerIsNotStaticFinal"/>
         <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="OverrideBothEqualsAndHashcode"/>

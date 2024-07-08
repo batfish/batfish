@@ -2,6 +2,7 @@ package org.batfish.common.util;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.List;
@@ -35,7 +36,7 @@ public final class TracePruner {
 
   private TracePruner(List<Trace> traces) {
     _traces = traces;
-    _dispositionTraces = new HashMap<>();
+    _dispositionTraces = new EnumMap<>(FlowDisposition.class);
     _nodeTraces = new HashMap<>();
     _pickedTraces = Collections.newSetFromMap(new IdentityHashMap<>());
 

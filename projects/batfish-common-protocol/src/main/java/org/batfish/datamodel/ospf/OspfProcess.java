@@ -326,7 +326,7 @@ public final class OspfProcess implements Serializable {
       @JsonProperty(PROP_RFC1583) @Nullable Boolean rfc1583Compatible,
       @JsonProperty(PROP_ROUTER_ID) @Nullable Ip routerId,
       @JsonProperty(PROP_SUMMARY_ADMIN) @Nullable Integer summaryAdminCost,
-      @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) @Nullable Long summaryDiscardMetric) {
+      @JsonProperty(PROP_SUMMARY_DISCARD_METRIC) @Nullable Long ignoredSummaryDiscardMetric) {
     OspfProcess.Builder builder = builder();
     checkArgument(processId != null, "Missing %s", PROP_PROCESS_ID);
     builder.setProcessId(processId);
@@ -617,5 +617,5 @@ public final class OspfProcess implements Serializable {
 
   @Deprecated
   @JsonProperty(PROP_NEIGHBORS)
-  private void setNeighborsDeprecated(JsonNode n) {}
+  private void setNeighborsDeprecated(JsonNode ignoredN) {}
 }

@@ -56,7 +56,6 @@ public final class GeneratedRoute extends AbstractRoute
     private boolean _discard;
     private @Nullable String _generationPolicy;
     private long _localPreference;
-    private long _metric;
     private @Nonnull OriginType _originType;
     private int _weight;
 
@@ -283,17 +282,17 @@ public final class GeneratedRoute extends AbstractRoute
 
   /** Return the set of all community attributes */
   @Override
-  public final @Nonnull CommunitySet getCommunities() {
+  public @Nonnull CommunitySet getCommunities() {
     return _communities;
   }
 
   /** Return the set of all community attributes */
   @Override
-  public final @Nonnull Set<Community> getCommunitiesAsSet() {
+  public @Nonnull Set<Community> getCommunitiesAsSet() {
     return _communities.getCommunities();
   }
 
-  /** Whether this route is route is meant to discard all matching packets */
+  /** Whether this route is meant to discard all matching packets */
   @JsonProperty(PROP_DISCARD)
   public boolean getDiscard() {
     return _discard;

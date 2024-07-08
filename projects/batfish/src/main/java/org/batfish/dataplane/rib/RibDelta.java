@@ -137,7 +137,6 @@ public final class RibDelta<R extends AbstractRouteDecorator> {
   @ParametersAreNonnullByDefault
   public static final class Builder<R extends AbstractRouteDecorator> {
 
-    @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
     private LinkedHashMap<R, RouteAdvertisement<R>> _actions;
 
     /** Initialize a new RibDelta builder */

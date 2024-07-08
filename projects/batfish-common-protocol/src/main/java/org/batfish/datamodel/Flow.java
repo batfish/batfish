@@ -442,7 +442,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
       @JsonProperty(PROP_TCP_FLAGS_RST) @Nullable Integer tcpFlagsRst,
       @JsonProperty(PROP_TCP_FLAGS_SYN) @Nullable Integer tcpFlagsSyn,
       @JsonProperty(PROP_TCP_FLAGS_FIN) @Nullable Integer tcpFlagsFin,
-      @JsonProperty(PROP_DEPRECATED_TAG) String tag,
+      @JsonProperty(PROP_DEPRECATED_TAG) String ignoredTag,
       @JsonProperty(PROP_DEPRECATED_STATE) Object ignored) {
     checkArgument(ipProtocol != null, PROP_IP_PROTOCOL + " must not be null");
     TcpFlags tcpFlags = null;

@@ -319,7 +319,7 @@ import com.google.common.collect.Range;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
@@ -1403,7 +1403,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static String unquote(String text) {
-    if (text.length() == 0) {
+    if (text.isEmpty()) {
       return text;
     }
     char firstChar = text.charAt(0);
@@ -7911,7 +7911,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ROUTE_MAP, map, BGP_REDISTRIBUTE_OSPF_MAP, ctx.map.getStart().getLine());
       }
       if (!ctx.MATCH().isEmpty()) {
-        Set<RoutingProtocol> protocols = new HashSet<>(ctx.ospf_route_type().size());
+        Set<RoutingProtocol> protocols = EnumSet.noneOf(RoutingProtocol.class);
         for (Ospf_route_typeContext ospf_route_typeContext : ctx.ospf_route_type()) {
           protocols.addAll(toOspfRoutingProtocols(ospf_route_typeContext));
         }
@@ -8123,7 +8123,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_default_information(Ro_default_informationContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     proc.setDefaultInformationOriginate(true);
-    boolean always = ctx.ALWAYS().size() > 0;
+    boolean always = !ctx.ALWAYS().isEmpty();
     proc.setDefaultInformationOriginateAlways(always);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);

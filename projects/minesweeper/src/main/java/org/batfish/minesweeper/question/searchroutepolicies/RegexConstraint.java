@@ -80,7 +80,7 @@ public class RegexConstraint {
       regexType = RegexType.REGEX;
     } else if (!startRegex && !endRegex) {
       // the constraint denotes a single value
-      if (curr.length() > 0 && Character.isLetter(curr.charAt(0))) {
+      if (!curr.isEmpty() && Character.isLetter(curr.charAt(0))) {
         // since the regex starts with a letter, treat it as a structure name
         // TODO we could make a syntax for people to explicitly indicate that they are providing a
         // structure name

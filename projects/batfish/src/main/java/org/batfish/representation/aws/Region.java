@@ -258,7 +258,7 @@ public final class Region implements Serializable {
 
       if (integratorFunction == null) {
         // Add warning for unrecognized key in AWS file but don't warn if there is no data
-        if (json.get(key).isArray() && json.get(key).size() == 0) {
+        if (json.get(key).isArray() && json.get(key).isEmpty()) {
           continue;
         }
         pvcae.addUnimplementedWarning(

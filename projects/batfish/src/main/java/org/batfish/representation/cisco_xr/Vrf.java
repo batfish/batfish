@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_xr;
 
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -26,7 +26,7 @@ public final class Vrf implements Serializable {
   private @Nullable Integer _vni;
 
   public Vrf(@Nonnull String name) {
-    _addressFamilies = new HashMap<>();
+    _addressFamilies = new EnumMap<>(AddressFamilyType.class);
     _eigrpProcesses = new TreeMap<>();
     _name = name;
     // Ensure that processes are in insertion order.
