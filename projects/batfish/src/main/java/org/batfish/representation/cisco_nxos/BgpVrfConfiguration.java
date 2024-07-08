@@ -3,6 +3,7 @@ package org.batfish.representation.cisco_nxos;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nullable;
@@ -21,7 +22,7 @@ import org.batfish.representation.cisco_nxos.BgpVrfAddressFamilyConfiguration.Ty
 public final class BgpVrfConfiguration implements Serializable {
 
   public BgpVrfConfiguration() {
-    _addressFamilies = new HashMap<>(); // all address families disabled by default
+    _addressFamilies = new EnumMap<>(Type.class); // all address families disabled by default
     _clusterId = null; // route reflection is disabled by default.
     _logNeighborChanges = false; // disabled by default
     _maxAsLimit = null; // default no limit

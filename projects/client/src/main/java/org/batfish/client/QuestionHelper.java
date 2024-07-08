@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
 import java.io.IOException;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
@@ -98,8 +99,7 @@ public class QuestionHelper {
      * Question#preprocessQuestion(String)} and then we cannot know if the parameter programmed in
      * the template belonged to that of the class.
      */
-    Sets.SetView<String> extraVariables =
-        Sets.difference(variables.keySet(), parsedParameters.keySet());
+    Set<String> extraVariables = Sets.difference(variables.keySet(), parsedParameters.keySet());
     if (!extraVariables.isEmpty()) {
       throw new BatfishException(
           "Template validation should exercise all variables. Un-exercised variables: "

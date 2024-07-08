@@ -7,7 +7,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -141,7 +140,7 @@ public class DisplayHints {
 
     // all extraction vars mentioned in entity configuration should have extraction hints
     Set<String> varsInExtractionHints = _extractions.keySet();
-    SetView<String> missingExtractionVars = Sets.difference(varsInEntities, varsInExtractionHints);
+    Set<String> missingExtractionVars = Sets.difference(varsInEntities, varsInExtractionHints);
     if (!missingExtractionVars.isEmpty()) {
       throw new BatfishException(
           "entities refer to variables that are not in extraction hints: " + missingExtractionVars);

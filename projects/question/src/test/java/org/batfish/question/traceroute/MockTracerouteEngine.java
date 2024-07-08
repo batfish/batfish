@@ -7,7 +7,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -48,7 +47,7 @@ public final class MockTracerouteEngine implements TracerouteEngine {
       Set<Flow> flows, Set<FirewallSessionTraceInfo> sessions, boolean ignoreFilters) {
     checkArgument(_resultsForSessions.containsKey(sessions), "unexpected sessions");
     Map<Flow, List<TraceAndReverseFlow>> results = _resultsForSessions.get(sessions);
-    SetView<Flow> unexpectedFlows = Sets.difference(flows, results.keySet());
+    Set<Flow> unexpectedFlows = Sets.difference(flows, results.keySet());
     checkArgument(unexpectedFlows.isEmpty(), "unexpected Flows");
     return results.entrySet().stream()
         .filter(entry -> flows.contains(entry.getKey()))

@@ -24,7 +24,7 @@ public final class BgpTableFormatDetector {
 
   private @Nullable BgpTableFormat checkEmpty() {
     String trimmedText = _fileText.trim();
-    if (trimmedText.length() == 0) {
+    if (trimmedText.isEmpty()) {
       return BgpTableFormat.EMPTY;
     }
     _firstChar = trimmedText.charAt(0);

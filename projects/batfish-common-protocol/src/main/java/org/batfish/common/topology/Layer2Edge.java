@@ -20,7 +20,7 @@ public final class Layer2Edge {
       @JsonProperty(PROP_NODE1) Layer2Node node1,
       @JsonProperty(PROP_NODE2) Layer2Node node2,
       // PROP_ENCAPSULATED_VLAN_ID for backwards compatibility
-      @JsonProperty(PROP_ENCAPSULATED_VLAN_ID) @Nullable Integer encapsulatedVlanId) {
+      @JsonProperty(PROP_ENCAPSULATED_VLAN_ID) @Nullable Integer ignoredEncapsulatedVlanId) {
     return new Layer2Edge(requireNonNull(node1), requireNonNull(node2));
   }
 

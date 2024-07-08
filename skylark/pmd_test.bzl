@@ -16,10 +16,14 @@ def _impl(ctx):
     ruleset = ctx.file.ruleset
     pmd_cmd_args = [
         pmd_exe_file.short_path,
+        "check",
+        "--no-cache",
+        "--no-progress",
+        "--minimum-priority MEDIUM",
         "-f text",
         "-R {}".format(ruleset.short_path),
         "-d {}".format(src_jar.short_path),
-        "-auxclasspath {}".format(full_transitive_runtime_jars),
+        "--aux-classpath {}".format(full_transitive_runtime_jars),
     ]
     pmd_cmd = " ".join(pmd_cmd_args)
     script = [

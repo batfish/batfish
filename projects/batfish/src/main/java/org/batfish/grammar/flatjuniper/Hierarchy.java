@@ -461,13 +461,10 @@ final class Hierarchy {
       private final @Nonnull Set<String> _appliedGroups;
 
       // Invariant: children == literal + wildcard, keys are disjoint in the latter two.
-      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
       private @Nonnull LinkedHashMap<String, HierarchyChildNode> _children;
 
-      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
       private @Nonnull LinkedHashMap<String, HierarchyLiteralNode> _literalChildren;
 
-      @SuppressWarnings("PMD.LooseCoupling") // insertion order matters
       private @Nonnull LinkedHashMap<String, HierarchyWildcardNode> _wildcardChildren;
 
       @Nonnull List<ErrorNode> _errorNodes;
@@ -640,7 +637,6 @@ final class Hierarchy {
 
     static final class HierarchyPath {
 
-      private boolean _containsWildcard;
       private final List<HierarchyChildNode> _nodes;
       private StatementContext _statement;
 
@@ -654,7 +650,6 @@ final class Hierarchy {
       }
 
       void addWildcardNode(String text, int lineNumber) {
-        _containsWildcard = true;
         HierarchyChildNode newNode = new HierarchyWildcardNode(text, lineNumber);
         _nodes.add(newNode);
       }
