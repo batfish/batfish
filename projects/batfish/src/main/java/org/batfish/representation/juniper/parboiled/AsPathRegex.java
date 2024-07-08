@@ -17,6 +17,7 @@ import org.parboiled.annotations.SuppressSubnodes;
 import org.parboiled.common.StringBuilderSink;
 import org.parboiled.parserunners.BasicParseRunner;
 import org.parboiled.parserunners.TracingParseRunner;
+import org.parboiled.support.DebuggingValueStack;
 import org.parboiled.support.ParsingResult;
 
 /**
@@ -208,10 +209,15 @@ public class AsPathRegex extends BaseParser<String> {
   static @Nonnull String debugConvertToJavaRegex(String regex) {
     AsPathRegex parser = Parboiled.createParser(AsPathRegex.class);
     TracingParseRunner<String> runner =
-        new TracingParseRunner<String>(parser.TopLevel()).withLog(new StringBuilderSink());
+        (TracingParseRunner<String>)
+            new TracingParseRunner<String>(parser.TopLevel())
+                .withLog(new StringBuilderSink())
+                .withValueStack(new DebuggingValueStack<>(new StringBuilderSink()));
+    DebuggingValueStack<String> stack = (DebuggingValueStack<String>) runner.getValueStack();
     ParsingResult<String> result = runner.run(regex);
     if (!result.matched) {
-      throw new IllegalArgumentException("Unhandled input: " + regex + "\n" + runner.getLog());
+      throw new IllegalArgumentException(
+          "Unhandled input: " + regex + "\n" + runner.getLog() + "\n" + stack.log);
     }
     return result.resultValue;
   }
