@@ -4,7 +4,9 @@ import static org.batfish.representation.aws.AwsPrefixes.SERVICE_AMAZON;
 import static org.batfish.representation.aws.AwsPrefixes.SERVICE_EC2;
 import static org.batfish.representation.aws.AwsPrefixes.getAwsServicesPrefixes;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -19,12 +21,12 @@ public class AwsPrefixesTest {
 
   @Test
   public void testGetPrefixes() {
-    assertTrue(AwsPrefixes.getPrefixes().size() > 0);
+    assertThat(AwsPrefixes.getPrefixes(), not(empty()));
   }
 
   @Test
   public void testGetPrefixes_service() {
-    assertTrue(AwsPrefixes.getPrefixes(SERVICE_AMAZON).size() > 0);
+    assertThat(AwsPrefixes.getPrefixes(SERVICE_AMAZON), not(empty()));
     assertTrue(AwsPrefixes.getPrefixes(SERVICE_AMAZON).size() < AwsPrefixes.getPrefixes().size());
   }
 

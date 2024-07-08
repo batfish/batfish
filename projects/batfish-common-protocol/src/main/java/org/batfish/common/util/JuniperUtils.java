@@ -68,7 +68,7 @@ public final class JuniperUtils {
     char prev = first;
     StringBuilder decrypted = new StringBuilder();
 
-    while (chars[0].length() > 0) {
+    while (!chars[0].isEmpty()) {
       List<Integer> decode = _codeMatrix.get(decrypted.length() % _codeMatrix.size());
       int len = decode.size();
       char[] nibbleChars = new char[len];

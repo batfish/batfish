@@ -13,7 +13,6 @@ import com.google.common.collect.HashMultiset;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Multiset;
 import com.google.common.collect.Sets;
-import com.google.common.collect.Sets.SetView;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
@@ -255,7 +254,7 @@ public final class SearchFiltersAnswerer extends Answerer {
   }
 
   /** Adds {@code nodes} (which are present in only one snapshot) to the {@code table} */
-  private static void addOneSnapshotNodes(SetView<String> nodes, TableAnswerElement table) {
+  private static void addOneSnapshotNodes(Set<String> nodes, TableAnswerElement table) {
     for (String node : nodes) {
       table.addRow(Row.builder(table.getMetadata().toColumnMap()).put(COL_NODE, node).build());
     }

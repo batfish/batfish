@@ -55,7 +55,7 @@ public final class SearchFiltersQuestion extends Question {
   private static SearchFiltersQuestion create(
       @JsonProperty(PROP_COMPLEMENT_HEADERSPACE) @Nullable Boolean complementHeaderSpace,
       @JsonProperty(PROP_FILTERS) @Nullable String filters,
-      @JsonProperty(PROP_GENERATE_EXPLANATIONS) @Nullable Boolean generateExplanations,
+      @JsonProperty(PROP_GENERATE_EXPLANATIONS) @Nullable Boolean ignoredGenerateExplanations,
       @JsonProperty(PROP_HEADERS) @Nullable PacketHeaderConstraints headerConstraints,
       @JsonProperty(PROP_NODES) @Nullable String nodes,
       @JsonProperty(PROP_START_LOCATION) @Nullable String start,

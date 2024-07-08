@@ -99,7 +99,7 @@ public final class AutoCompleteUtils {
       // suggestions or the query is the empty string. This logic is done here to ensure that all
       // possible suggestions types have been considered before relaxing the query
       String relaxedQuery = query;
-      while (relaxedQuery.length() > 0 && suggestions.isEmpty()) {
+      while (!relaxedQuery.isEmpty() && suggestions.isEmpty()) {
         relaxedQuery = relaxedQuery.substring(0, relaxedQuery.length() - 1);
         suggestions =
             getPotentialMatches(

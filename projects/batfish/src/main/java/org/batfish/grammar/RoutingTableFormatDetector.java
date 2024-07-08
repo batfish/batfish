@@ -22,7 +22,7 @@ public final class RoutingTableFormatDetector {
 
   private @Nullable RoutingTableFormat checkEmpty() {
     String trimmedText = _fileText.trim();
-    if (trimmedText.length() == 0) {
+    if (trimmedText.isEmpty()) {
       return RoutingTableFormat.EMPTY;
     }
     _firstChar = trimmedText.charAt(0);

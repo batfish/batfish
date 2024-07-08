@@ -133,7 +133,7 @@ public final class BgpRoute {
           TunnelEncapsulationAttribute tunnelEncapsulationAttribute,
       @JsonProperty(PROP_WEIGHT) int weight,
       // For backwards compatibility, does nothing
-      @JsonProperty(PROP_CLASS) @Nullable String clazz) {
+      @JsonProperty(PROP_CLASS) @Nullable String ignoredClazz) {
     checkArgument(network != null, "%s must be specified", PROP_NETWORK);
     checkArgument(originatorIp != null, "%s must be specified", PROP_ORIGINATOR_IP);
     checkArgument(originType != null, "%s must be specified", PROP_ORIGIN_TYPE);

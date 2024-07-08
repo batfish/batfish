@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableMap;
 import java.io.Serializable;
-import java.util.HashMap;
+import java.util.EnumMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -63,7 +63,7 @@ public class RoutingInstance implements Serializable {
 
   public RoutingInstance(@Nonnull String name) {
     _aggregateRouteDefaults = initAggregateRouteDefaults();
-    _appliedRibGroups = new HashMap<>();
+    _appliedRibGroups = new EnumMap<>(RoutingProtocol.class);
     _confederationMembers = new TreeSet<>();
     _dhcpRelayGroups = new TreeMap<>();
     _dhcpRelayServerGroups = new TreeMap<>();

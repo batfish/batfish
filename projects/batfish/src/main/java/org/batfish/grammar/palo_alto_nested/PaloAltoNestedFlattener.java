@@ -37,7 +37,6 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   private SetStatementTree _root;
 
-  @SuppressWarnings("PMD.LooseCoupling") // actually use linked-specific functions in the code
   private LinkedList<List<WordContext>> _stack;
 
   public PaloAltoNestedFlattener(String header) {
