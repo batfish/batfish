@@ -6,8 +6,6 @@ import org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement
 /** A visitor of {@link Statement} that takes 1 generic argument and returns a generic value. */
 public interface StatementVisitor<T, U> {
 
-  T visitBufferedStatement(BufferedStatement bufferedStatement, U arg);
-
   T visitCallStatement(CallStatement callStatement, U arg);
 
   T visitComment(Comment comment, U arg);

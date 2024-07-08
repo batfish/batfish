@@ -24,7 +24,6 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.Statements;
@@ -55,18 +54,6 @@ public class CalledPolicyCollectorTest {
     _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     _collector = new CalledPolicyCollector();
-  }
-
-  @Test
-  public void testVisitBufferedStatement() {
-    BufferedStatement bs =
-        new BufferedStatement(
-            new If(new CallExpr(RM1), ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-
-    Set<String> result =
-        _collector.visitBufferedStatement(bs, new Tuple<>(new HashSet<>(), _baseConfig));
-
-    assertEquals(ImmutableSet.of(RM1), result);
   }
 
   @Test

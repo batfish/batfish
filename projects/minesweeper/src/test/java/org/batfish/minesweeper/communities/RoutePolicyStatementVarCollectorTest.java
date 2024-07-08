@@ -25,7 +25,6 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -59,17 +58,6 @@ public class RoutePolicyStatementVarCollectorTest {
     _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     _varCollector = new RoutePolicyStatementVarCollector();
-  }
-
-  @Test
-  public void testVisitBufferedStatement() {
-    BufferedStatement bs =
-        new BufferedStatement(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1))));
-
-    Set<CommunityVar> result =
-        _varCollector.visitBufferedStatement(bs, new Tuple<>(new HashSet<>(), _baseConfig));
-
-    assertEquals(ImmutableSet.of(CommunityVar.from(COMM1)), result);
   }
 
   @Test
@@ -128,14 +116,12 @@ public class RoutePolicyStatementVarCollectorTest {
   public void testVisitCallStatement() {
     String calledPolicyName = "calledPolicy";
 
-    BufferedStatement bs =
-        new BufferedStatement(new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1))));
-
+    SetCommunities sc = new SetCommunities(new LiteralCommunitySet(CommunitySet.of(COMM1)));
     RoutingPolicy calledPolicy =
         _nf.routingPolicyBuilder()
             .setName(calledPolicyName)
             .setOwner(_baseConfig)
-            .addStatement(bs)
+            .addStatement(sc)
             .build();
 
     RoutingPolicy policy =
@@ -149,7 +135,7 @@ public class RoutePolicyStatementVarCollectorTest {
         ImmutableMap.of(calledPolicyName, calledPolicy, "BASE_POLICY", policy));
 
     Set<CommunityVar> bufferedStmtResult =
-        _varCollector.visitBufferedStatement(bs, new Tuple<>(new HashSet<>(), _baseConfig));
+        _varCollector.visitSetCommunities(sc, new Tuple<>(new HashSet<>(), _baseConfig));
     Set<CommunityVar> callStmtResult =
         _varCollector.visitAll(policy.getStatements(), new Tuple<>(new HashSet<>(), _baseConfig));
     assertEquals(bufferedStmtResult, callStmtResult);

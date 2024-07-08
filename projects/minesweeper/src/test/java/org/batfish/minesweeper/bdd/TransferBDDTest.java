@@ -117,7 +117,6 @@ import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
 import org.batfish.datamodel.routing_policy.expr.VarInt;
 import org.batfish.datamodel.routing_policy.expr.VarLong;
 import org.batfish.datamodel.routing_policy.expr.VarOrigin;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -1889,28 +1888,6 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
-    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
-  }
-
-  @Test
-  public void testBufferedStatement() {
-    RoutingPolicy policy =
-        _policyBuilder
-            .addStatement(new BufferedStatement(new SetLocalPreference(new LiteralLong(42))))
-            .addStatement(new StaticStatement(Statements.ExitAccept))
-            .build();
-    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
-
-    TransferBDD tbdd = new TransferBDD(_configAPs, policy);
-    List<TransferReturn> paths = tbdd.computePaths();
-
-    BDDRoute expected = anyRoute(tbdd.getFactory());
-    MutableBDDInteger localPref = expected.getLocalPref();
-    expected.setLocalPref(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 42));
-
-    List<TransferReturn> expectedPaths =
-        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
-    assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 

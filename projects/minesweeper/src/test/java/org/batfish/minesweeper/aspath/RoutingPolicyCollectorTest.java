@@ -22,7 +22,6 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
-import org.batfish.datamodel.routing_policy.statement.BufferedStatement;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.ExcludeAsPath;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -62,22 +61,6 @@ public class RoutingPolicyCollectorTest {
     _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
 
     _asPathCollector = new AsPathRegexCollector();
-  }
-
-  @Test
-  public void testVisitBufferedStatement() {
-    BufferedStatement bs =
-        new BufferedStatement(
-            new If(
-                makeMatchAsPath(ImmutableList.of(ASPATH1, ASPATH2)),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
-
-    Set<SymbolicAsPathRegex> result =
-        _asPathCollector.visitBufferedStatement(bs, new Tuple<>(new HashSet<>(), _baseConfig));
-
-    assertEquals(
-        ImmutableSet.of(new SymbolicAsPathRegex(ASPATH1), new SymbolicAsPathRegex(ASPATH2)),
-        result);
   }
 
   @Test
@@ -140,17 +123,16 @@ public class RoutingPolicyCollectorTest {
   public void testVisitCallStatement() {
     String calledPolicyName = "calledPolicy";
 
-    BufferedStatement bs =
-        new BufferedStatement(
-            new If(
-                makeMatchAsPath(ImmutableList.of(ASPATH1, ASPATH2)),
-                ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
+    If iff =
+        new If(
+            makeMatchAsPath(ImmutableList.of(ASPATH1, ASPATH2)),
+            ImmutableList.of(Statements.ExitAccept.toStaticStatement()));
 
     RoutingPolicy calledPolicy =
         _nf.routingPolicyBuilder()
             .setName(calledPolicyName)
             .setOwner(_baseConfig)
-            .addStatement(bs)
+            .addStatement(iff)
             .build();
 
     RoutingPolicy policy =
@@ -163,11 +145,11 @@ public class RoutingPolicyCollectorTest {
     _baseConfig.setRoutingPolicies(
         ImmutableMap.of(calledPolicyName, calledPolicy, "BASE_POLICY", policy));
 
-    Set<SymbolicAsPathRegex> bufferedStmtResult =
-        _asPathCollector.visitBufferedStatement(bs, new Tuple<>(new HashSet<>(), _baseConfig));
+    Set<SymbolicAsPathRegex> ifResult =
+        _asPathCollector.visitIf(iff, new Tuple<>(new HashSet<>(), _baseConfig));
     Set<SymbolicAsPathRegex> callStmtResult =
         _asPathCollector.visitAll(
             policy.getStatements(), new Tuple<>(new HashSet<>(), _baseConfig));
-    assertEquals(bufferedStmtResult, callStmtResult);
+    assertEquals(ifResult, callStmtResult);
   }
 }
