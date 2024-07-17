@@ -32,13 +32,9 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java_version }}
+          java-version: '17'
       - name: Java Formatting
         run: tools/fix_java_format.sh --check
-    strategy:
-      matrix:
-        java_version:
-          - "17"
   json_template:
     runs-on: ubuntu-latest
     steps:
@@ -63,13 +59,9 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: ${{ matrix.java_version }}
+          java-version: '17'
       - name: Checkstyle
         run: tools/run_checkstyle.sh
-    strategy:
-      matrix:
-        java_version:
-          - "17"
   bazel_build_test_and_pmd:
     needs:
       - get_date
@@ -85,11 +77,14 @@ jobs:
         uses: actions/cache@v4
         with:
           path: "~/.cache/bazel"
-          key: ${{runner.os}}-bazel-${{ matrix.java_version }}-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
+          key: ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
           restore-keys: |
-            ${{runner.os}}-bazel-${{ matrix.java_version }}-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
-            ${{runner.os}}-bazel-${{ matrix.java_version }}-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
-            ${{runner.os}}-bazel-${{ matrix.java_version }}-
+            ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
+            ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
       - name: Bazel build and test
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
@@ -102,12 +97,8 @@ jobs:
       - name: Save JAR
         uses: actions/upload-artifact@v4
         with:
-          name: allinone_jar_${{ matrix.java_version }}
+          name: allinone_jar_17
           path: workspace/allinone.jar
-    strategy:
-      matrix:
-        java_version:
-          - "17"
   code_cov:
     needs:
       - format
@@ -133,7 +124,7 @@ jobs:
       - uses: actions/setup-java@v4
         with:
           distribution: 'temurin'
-          java-version: '11'
+          java-version: '17'
       - name: Bazel Junit Tests and Coverage
         run: |
           bazel coverage //projects/... \
