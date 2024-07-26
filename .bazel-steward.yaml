@@ -6,6 +6,8 @@ pull-requests:
     group-id: jackson
   - dependencies: "com.google.auto.service:*"
     group-id: google-auto-service
+  - dependencies: "net.sourceforce.pmd*:*"
+    group-id: pmd
   - dependencies: "org.apache.logging.log4j:*"
     group-id: log4j
   - dependencies: "org.glassfish.jersey*:*"
