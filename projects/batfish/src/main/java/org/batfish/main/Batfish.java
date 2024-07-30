@@ -337,7 +337,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
           return flattener;
         }
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         return new NopFlattener(input);
     }

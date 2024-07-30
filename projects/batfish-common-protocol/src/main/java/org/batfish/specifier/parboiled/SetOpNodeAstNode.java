@@ -15,7 +15,7 @@ abstract class SetOpNodeAstNode implements NodeAstNode {
         return new UnionNodeAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceNodeAstNode(leftSpec, rightSpec);
-        // no case for intersection as it travels a different path in the parser
+      // no case for intersection as it travels a different path in the parser
       default:
         throw new IllegalStateException("Unknown set operation for node spec " + c);
     }

@@ -39,7 +39,7 @@ public enum ServiceBuiltIn {
             .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
             .setDstPorts(ImmutableSortedSet.of(SubRange.singleton(443)))
             .build();
-        // any and application-default don't match a specific port
+      // any and application-default don't match a specific port
       case ANY:
       case APPLICATION_DEFAULT:
       default:
@@ -59,7 +59,7 @@ public enum ServiceBuiltIn {
       case SERVICE_HTTPS:
         return new MatchHeaderSpace(_serviceHeaderSpace.get(), matchBuiltInServiceTraceElement());
       case APPLICATION_DEFAULT:
-        // application-default doesn't provide useful headerspace info
+      // application-default doesn't provide useful headerspace info
       default:
         // Should never get here
         return FalseExpr.INSTANCE;

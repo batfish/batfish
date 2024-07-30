@@ -56,12 +56,12 @@ public final class ServiceOrServiceGroupReference
         if (pc.getPanorama() != null) {
           return getVsysName(pc, pc.getPanorama());
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (pc.getShared() != null) {
           return getVsysName(pc, pc.getShared());
         }
-        // fall-through
+      // fall-through
       default:
         return null;
     }

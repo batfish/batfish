@@ -32,7 +32,7 @@ public class OspfRib extends AbstractRib<OspfRoute> {
       case OSPF_IS:
         return 1;
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         throw new BatfishException("Invalid OSPF protocol: '" + protocol + "'");
     }

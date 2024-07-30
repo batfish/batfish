@@ -1346,7 +1346,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       case JUNIPER:
       case JUNIPER_SWITCH:
         return;
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         break;
     }
