@@ -1047,7 +1047,7 @@ public class TransferBDD {
 
     BDD prefixMatch = record.getPrefix().toBDD(range.getPrefix());
     BDD lenMatch = record.getPrefixLength().range(lower, upper);
-    return prefixMatch.and(lenMatch);
+    return prefixMatch.andWith(lenMatch);
   }
 
   // Produce a BDD representing conditions under which the route's next-hop address is within a
