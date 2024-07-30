@@ -111,9 +111,7 @@ import org.batfish.minesweeper.SymbolicRegex;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD.Arg;
 
-/**
- * @author Ryan Beckett
- */
+/** The function from an input routing advertisement to an output routing advertisement. */
 public class TransferBDD {
 
   private static final Logger LOGGER = LogManager.getLogger(TransferBDD.class);
