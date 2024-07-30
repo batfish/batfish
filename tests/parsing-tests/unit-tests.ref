@@ -50494,7 +50494,7 @@
             "              (b_common*",
             "                (b_path_selection*",
             "                  PATH_SELECTION:'path-selection'",
-            "                  (bps_external_router_id*",
+            "                  (bps_external_router_id",
             "                    EXTERNAL_ROUTER_ID:'external-router-id'))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
@@ -71081,6 +71081,16 @@
               "Line" : 4,
               "Parser_Context" : "[s_ip_default_gateway stanza cisco_configuration]",
               "Text" : "ip default-gateway 128.125.253.254"
+            }
+          ]
+        },
+        "configs/juniper_bgp" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 46,
+              "Parser_Context" : "[bps_external_router_id b_path_selection b_common p_bgp s_protocols s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "external-router-id"
             }
           ]
         },
