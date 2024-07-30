@@ -15,7 +15,7 @@ abstract class SetOpIpSpaceAstNode implements IpSpaceAstNode {
         return new UnionIpSpaceAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceIpSpaceAstNode(leftSpec, rightSpec);
-        // intersection takes a different code path
+      // intersection takes a different code path
       default:
         throw new IllegalStateException("Unknown set operation for IpSpace spec " + c);
     }

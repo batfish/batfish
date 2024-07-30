@@ -1938,12 +1938,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return getVsysForReference(ref, _panorama);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return getVsysForReference(ref, _shared);
         }
-        // fall-through
+      // fall-through
       case SHARED:
       default:
         return Optional.empty();
@@ -1978,12 +1978,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return interfaceAddressToConcreteInterfaceAddress(address, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return interfaceAddressToConcreteInterfaceAddress(address, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this value, so parse the value as is
         switch (address.getType()) {
@@ -2019,12 +2019,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return ruleEndpointToIpSpace(endpoint, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return ruleEndpointToIpSpace(endpoint, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
         switch (endpoint.getType()) {
@@ -2104,12 +2104,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return getRuleEndpointTraceElement(endpoint, _panorama, filename);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return getRuleEndpointTraceElement(endpoint, _shared, filename);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
         switch (endpoint.getType()) {
@@ -2148,12 +2148,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (_panorama != null) {
           return ruleEndpointToIpRangeSet(endpoint, _panorama, w);
         }
-        // fall-through
+      // fall-through
       case PANORAMA:
         if (_shared != null) {
           return ruleEndpointToIpRangeSet(endpoint, _shared, w);
         }
-        // fall-through
+      // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
         switch (endpoint.getType()) {

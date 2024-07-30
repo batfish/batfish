@@ -3007,7 +3007,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         return null;
       case ICMP:
       case ICMP6:
-        // both ICMP type and ICMP code are allowed to be unset
+      // both ICMP type and ICMP code are allowed to be unset
       case IP:
         // protocol-number is allowed to be unset
         return null;

@@ -1072,7 +1072,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         .map(
             policy -> {
               switch (policy.getInstance().getProtocol()) {
-                  // If adding support for a new protocol, also add it to supportedProtocols above
+                // If adding support for a new protocol, also add it to supportedProtocols above
                 case BGP:
                   assert policy.getInstance().getTag() != null;
                   long asn = Long.parseLong(policy.getInstance().getTag());

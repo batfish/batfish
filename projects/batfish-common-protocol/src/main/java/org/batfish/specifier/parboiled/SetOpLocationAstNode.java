@@ -15,7 +15,7 @@ abstract class SetOpLocationAstNode implements LocationAstNode {
         return new UnionLocationAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceLocationAstNode(leftSpec, rightSpec);
-        // intersection takes a different code path
+      // intersection takes a different code path
       default:
         throw new IllegalStateException("Unknown set operation for Location spec " + c);
     }

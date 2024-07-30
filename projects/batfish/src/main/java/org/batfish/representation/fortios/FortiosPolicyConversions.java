@@ -511,9 +511,9 @@ public final class FortiosPolicyConversions {
         Ip mask = a.getTypeSpecificFields().getIp2Effective().inverted();
         return IpWildcard.ipWithWildcardMask(ip, mask).toIpSpace();
       case INTERFACE_SUBNET:
-        // TODO test what IPs this actually includes. Docs say it will:
-        //  "automatically create an address object that matches the interface subnet"
-        //  but it's unclear because it supports both "set subnet" and "set interface".
+      // TODO test what IPs this actually includes. Docs say it will:
+      //  "automatically create an address object that matches the interface subnet"
+      //  but it's unclear because it supports both "set subnet" and "set interface".
       case DYNAMIC: // Based on SDN connectors, whose addresses aren't known statically
       case FQDN: // Based on domain names
       case GEOGRAPHY: // Based on countries

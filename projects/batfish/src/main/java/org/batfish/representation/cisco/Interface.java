@@ -305,7 +305,7 @@ public class Interface implements Serializable {
         setProxyArp(true);
         break;
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         break;
     }

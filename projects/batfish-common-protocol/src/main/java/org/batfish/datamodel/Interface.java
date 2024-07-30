@@ -870,7 +870,7 @@ public final class Interface extends ComparableStructure<String> {
       case IPTABLES:
       case UNKNOWN:
       case VXWORKS:
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         throw new BatfishException(
             "Cannot compute interface type for unsupported configuration format: " + format);
