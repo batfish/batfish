@@ -1483,7 +1483,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     switch (applyop) {
-        // case bddop_and: is handled elsehwere
+      // case bddop_and: is handled elsehwere
       case bddop_xor:
         if (l == r) {
           return BDDZERO;
@@ -1502,7 +1502,7 @@ public class JFactory extends BDDFactory implements Serializable {
           r = t;
         }
         break;
-        // case bddop_or: is handled elsehwere
+      // case bddop_or: is handled elsehwere
       case bddop_nand:
         if (l == r) {
           return not_rec(l);

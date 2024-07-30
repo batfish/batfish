@@ -1131,7 +1131,7 @@ public enum JunosApplication implements Application {
           break;
         }
 
-        // $CASES-OMITTED$
+      // $CASES-OMITTED$
       default:
         return null;
     }

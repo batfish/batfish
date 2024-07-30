@@ -90,7 +90,7 @@ public class Link extends BfObject {
       case VPN:
         return LinkType.VIRTUAL;
 
-        // loopback and null shouldn't really happen; lets call it unknown
+      // loopback and null shouldn't really happen; lets call it unknown
       case LOOPBACK:
       case NULL:
       case UNKNOWN:

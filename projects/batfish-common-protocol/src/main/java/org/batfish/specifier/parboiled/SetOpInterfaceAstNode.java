@@ -15,7 +15,7 @@ abstract class SetOpInterfaceAstNode implements InterfaceAstNode {
         return new UnionInterfaceAstNode(leftSpec, rightSpec);
       case '\\':
         return new DifferenceInterfaceAstNode(leftSpec, rightSpec);
-        // intersection takes a different code path
+      // intersection takes a different code path
       default:
         throw new IllegalStateException("Unknown set operation for interface spec " + c);
     }
