@@ -26,11 +26,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 
-/**
- * A collection of attributes describing an packet, represented using BDDs
- *
- * @author Ryan Beckett
- */
+/** A collection of attributes describing an packet, represented using BDDs */
 public class BDDPacket implements Serializable {
 
   /*

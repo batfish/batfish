@@ -7,8 +7,6 @@ import org.batfish.common.BatfishException;
 /**
  * The OSPF type of a message. This is either intra area (O), inter area (OIA), external type 1
  * (E1), or external type 2 (E2)
- *
- * @author Ryan Beckett
  */
 public enum OspfType {
   O,

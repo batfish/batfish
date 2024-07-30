@@ -33,8 +33,6 @@ import org.batfish.minesweeper.OspfType;
 
 /**
  * A collection of attributes describing a route advertisement, used for symbolic route analysis.
- *
- * @author Ryan Beckett
  */
 public final class BDDRoute implements IDeepCopy<BDDRoute> {
 
