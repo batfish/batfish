@@ -22,8 +22,6 @@ import org.batfish.datamodel.bgp.community.Community;
  *
  * <p>Currently we support standard, extended, and large community literals, but regexes are assumed
  * by the analysis to only match against standard communities.
- *
- * @author Ryan Beckett
  */
 @ParametersAreNonnullByDefault
 public final class CommunityVar extends SymbolicRegex implements Comparable<CommunityVar> {
