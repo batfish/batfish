@@ -5,6 +5,19 @@ import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.CLUSTER_LIST;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COMMUNITIES;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.LOCAL_PREFERENCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.METRIC;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NETWORK;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NEXT_HOP;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ORIGIN_TYPE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.PROTOCOL;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TUNNEL_ENCAPSULATION_ATTRIBUTE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.WEIGHT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
@@ -525,10 +538,83 @@ public final class CompareRoutePoliciesUtils {
     Result<BgpRoute> refResult =
         simulatePolicy(otherPolicy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
 
+    List<Result.RouteAttributeType> relevantAttributes =
+        relevantInputAttributesFor(finalConstraints, configAPs);
+    refResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
+    otherResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
+
     // As a sanity check, compare the simulated results above with what the symbolic route analysis
     // predicts will happen.
     assert validateDifference(
         finalConstraints, configAPs, path, otherPath, refResult, otherResult, direction);
     return new Tuple<>(otherResult, refResult);
+  }
+
+  /**
+   * Determine which input route attributes are relevant for this particular difference. If a route
+   * attribute is not included in the result, then that attribute is irrelevant in the sense that
+   * any value can be chosen for that attribute.
+   *
+   * @param constraint predicate that represents the input space leading to a particular difference
+   * @param configAPs information about atomic predicates
+   * @return a list of route attributes that are relevant for this difference
+   */
+  private static List<Result.RouteAttributeType> relevantInputAttributesFor(
+      BDD constraint, ConfigAtomicPredicates configAPs) {
+    List<Result.RouteAttributeType> result = new ArrayList<>();
+
+    BDDFactory factory = constraint.getFactory();
+    BDDRoute origRoute = new BDDRoute(factory, configAPs);
+
+    BDD wf = origRoute.bgpWellFormednessConstraints();
+
+    if (varsAreRelevantFor(constraint, origRoute.getAdminDist().support(), wf)) {
+      result.add(ADMINISTRATIVE_DISTANCE);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getAsPathRegexAtomicPredicates().support(), wf)) {
+      result.add(AS_PATH);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getClusterListLength().support(), wf)) {
+      result.add(CLUSTER_LIST);
+    }
+    if (varsAreRelevantFor(
+        constraint, factory.andAll(origRoute.getCommunityAtomicPredicates()), wf)) {
+      result.add(COMMUNITIES);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getLocalPref().support(), wf)) {
+      result.add(LOCAL_PREFERENCE);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getMed().support(), wf)) {
+      result.add(METRIC);
+    }
+    if (varsAreRelevantFor(
+        constraint,
+        origRoute.getPrefix().support().and(origRoute.getPrefixLength().support()),
+        wf)) {
+      result.add(NETWORK);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getNextHop().support(), wf)) {
+      result.add(NEXT_HOP);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getOriginType().support(), wf)) {
+      result.add(ORIGIN_TYPE);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getProtocolHistory().support(), wf)) {
+      result.add(PROTOCOL);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getTag().support(), wf)) {
+      result.add(TAG);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getTunnelEncapsulationAttribute().support(), wf)) {
+      result.add(TUNNEL_ENCAPSULATION_ATTRIBUTE);
+    }
+    if (varsAreRelevantFor(constraint, origRoute.getWeight().support(), wf)) {
+      result.add(WEIGHT);
+    }
+    return result;
+  }
+
+  private static boolean varsAreRelevantFor(BDD constraint, BDD vars, BDD wfConstraint) {
+    return !constraint.project(vars).equals(wfConstraint.project(vars));
   }
 }

@@ -95,6 +95,10 @@ public final class BDDTunnelEncapsulationAttribute {
     return _domain.getInteger().allDifferences(other._domain.getInteger());
   }
 
+  public BDD support() {
+    return _domain.support();
+  }
+
   /** Returns a new {@link BDDTunnelEncapsulationAttribute} restricted to the given predicate. */
   public @Nonnull BDDTunnelEncapsulationAttribute and(BDD pred) {
     return new BDDTunnelEncapsulationAttribute(new BDDDomain<>(pred, _domain));

@@ -89,6 +89,10 @@ public final class BDDDomain<T> {
     _integer.setValue(idx);
   }
 
+  public BDD support() {
+    return _integer.support();
+  }
+
   public MutableBDDInteger getInteger() {
     return _integer;
   }

@@ -90,6 +90,10 @@ public final class MutableBDDInteger extends BDDInteger {
     return bdd.isZero() ? Optional.empty() : Optional.of(satAssignmentToLong(bdd.satOne()));
   }
 
+  public BDD support() {
+    return _factory.andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet()));
+  }
+
   @Override
   public long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
@@ -102,12 +106,7 @@ public final class MutableBDDInteger extends BDDInteger {
     // very large BDD, which can cause performance issues. instead we only explicitly treat as false
     // the variables that do not appear in the given SAT assignment but are part of the support of
     // this MutableBDDInteger.
-    BDD fullSatAssignment =
-        satAssignment.satOne(
-            satAssignment
-                .getFactory()
-                .andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet())),
-            false);
+    BDD fullSatAssignment = satAssignment.satOne(support(), false);
 
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {

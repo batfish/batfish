@@ -51,8 +51,31 @@ public final class Result<R> {
     }
   }
 
+  /**
+   * A type to represent different attributes of a route, which is used to identify particular
+   * attributes of the input route that are relevant for this result.
+   */
+  public enum RouteAttributeType {
+    ADMINISTRATIVE_DISTANCE,
+    AS_PATH,
+    CLUSTER_LIST,
+    COMMUNITIES,
+    LOCAL_PREFERENCE,
+    METRIC,
+    NETWORK,
+    NEXT_HOP,
+    ORIGIN_TYPE,
+    PROTOCOL,
+    TAG,
+    TUNNEL_ENCAPSULATION_ATTRIBUTE,
+    WEIGHT
+  }
+
   private final RoutingPolicyId _policyId;
   private final R _inputRoute;
+  // if non-null, this list contains the attributes of the input route that are relevant for the
+  // behavior exhibited by this result
+  private @Nullable List<RouteAttributeType> _relevantInputAttributes;
   private final LineAction _action;
   private final @Nullable R _outputRoute;
   private final List<TraceTree> _trace;
@@ -85,6 +108,7 @@ public final class Result<R> {
     return Objects.equals(_policyId, result._policyId)
         && _action == result._action
         && Objects.equals(_inputRoute, result._inputRoute)
+        && Objects.equals(_relevantInputAttributes, result._relevantInputAttributes)
         && Objects.equals(_outputRoute, result._outputRoute)
         && Objects.equals(_trace, result._trace);
   }
@@ -95,6 +119,14 @@ public final class Result<R> {
 
   public R getInputRoute() {
     return _inputRoute;
+  }
+
+  public @Nullable List<RouteAttributeType> getRelevantInputAttributes() {
+    return _relevantInputAttributes;
+  }
+
+  public void setRelevantInputAttributes(List<RouteAttributeType> attributes) {
+    _relevantInputAttributes = attributes;
   }
 
   public Result<R> setOutputRoute(R outputRoute) {
@@ -119,6 +151,7 @@ public final class Result<R> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_policyId, _action, _inputRoute, _outputRoute, _trace);
+    return Objects.hash(
+        _policyId, _action, _inputRoute, _relevantInputAttributes, _outputRoute, _trace);
   }
 }
