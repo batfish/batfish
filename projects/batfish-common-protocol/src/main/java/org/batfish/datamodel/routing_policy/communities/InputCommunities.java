@@ -29,5 +29,10 @@ public final class InputCommunities extends CommunitySetExpr {
     return 0xDA34A708; // randomly generated
   }
 
+  @Override
+  public String toString() {
+    return InputCommunities.class.getSimpleName();
+  }
+
   private static final InputCommunities INSTANCE = new InputCommunities();
 }

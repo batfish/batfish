@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects.ToStringHelper;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -61,6 +62,13 @@ public final class MatchCommunities extends BooleanExpr {
   @Override
   public int hashCode() {
     return Objects.hash(_communitySetExpr, _communitySetMatchExpr);
+  }
+
+  @Override
+  protected ToStringHelper toStringHelper() {
+    return super.toStringHelper()
+        .add(PROP_COMMUNITY_SET_EXPR, _communitySetExpr)
+        .add(PROP_COMMUNITY_SET_MATCH_EXPR, _communitySetMatchExpr);
   }
 
   private static final String PROP_COMMUNITY_SET_EXPR = "communitySetExpr";
