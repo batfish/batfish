@@ -40,6 +40,11 @@ public final class CommunitySetMatchExprReference extends CommunitySetMatchExpr 
     return _name.hashCode();
   }
 
+  @Override
+  public String toString() {
+    return _name;
+  }
+
   private static final String PROP_NAME = "name";
 
   @JsonCreator
