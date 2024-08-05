@@ -1,10 +1,12 @@
 package org.batfish.minesweeper.bdd;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Range;
 import java.util.Objects;
 import java.util.Set;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.IntegerSpace;
@@ -33,16 +35,30 @@ import org.batfish.datamodel.IntegerSpace;
 public class CommunityAPDispositions {
 
   private final int _numAPs;
+  private final @Nonnull IntegerSpace _valid;
   // the atomic predicates that are definitely on the route announcement
   private final @Nonnull IntegerSpace _mustExist;
   // the atomic predicates that are definitely not on the route announcement
   private final @Nonnull IntegerSpace _mustNotExist;
 
   public CommunityAPDispositions(int numAPs, IntegerSpace mustExist, IntegerSpace mustNotExist) {
-    assert mustExist.stream().allMatch(i -> i >= 0 && i < numAPs)
-        : "community atomic predicates must be in the range [0, numAPs)";
-    assert mustNotExist.stream().allMatch(i -> i >= 0 && i < numAPs)
-        : "community atomic predicates must be in the range [0, numAPs)";
+    checkArgument(numAPs > 0, "Must have at least one atomic predicate, not %s", numAPs);
+    _valid = IntegerSpace.of(Range.closed(0, numAPs - 1));
+    checkArgument(
+        _valid.contains(mustExist),
+        "Must exist %s is not contained in the valid range %s",
+        mustExist,
+        _valid);
+    checkArgument(
+        _valid.contains(mustNotExist),
+        "Must not exist %s is not contained in the valid range %s",
+        mustNotExist,
+        _valid);
+    checkArgument(
+        mustExist.intersection(mustNotExist).isEmpty(),
+        "Must exist %s cannot overlap must not exist %s",
+        mustExist,
+        mustNotExist);
     _numAPs = numAPs;
     _mustExist = mustExist;
     _mustNotExist = mustNotExist;
@@ -107,19 +123,13 @@ public class CommunityAPDispositions {
   public static CommunityAPDispositions exactly(Set<Integer> aps, BDDRoute bddRoute) {
     int numAPs = bddRoute.getCommunityAtomicPredicates().length;
     IntegerSpace mustExist = IntegerSpace.builder().includingAll(aps).build();
-    IntegerSpace mustNotExist =
-        IntegerSpace.builder()
-            .including(IntStream.range(0, numAPs).filter(i -> !aps.contains(i)).toArray())
-            .build();
+    IntegerSpace mustNotExist = IntegerSpace.of(Range.closed(0, numAPs - 1)).difference(mustExist);
     return new CommunityAPDispositions(numAPs, mustExist, mustNotExist);
   }
 
-  // an exact CommunityAPDispositions object has no atomic predicates that have unknown
-  // status
   @VisibleForTesting
   boolean isExact() {
-    return IntStream.range(0, _numAPs)
-        .allMatch(i -> _mustExist.contains(i) || _mustNotExist.contains(i));
+    return _valid.equals(_mustExist.union(_mustNotExist));
   }
 
   public int getNumAPs() {
