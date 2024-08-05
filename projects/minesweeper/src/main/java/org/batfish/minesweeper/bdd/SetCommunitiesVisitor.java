@@ -112,7 +112,7 @@ public class SetCommunitiesVisitor
       Set<CommunityVar> commVars, Arg arg) {
     TransferBDD transferBDD = arg.getTransferBDD();
     Set<Integer> aps =
-        transferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
+        TransferBDD.atomicPredicatesFor(commVars, transferBDD.getCommunityAtomicPredicates());
     return CommunityAPDispositions.exactly(aps, arg.getBDDRoute());
   }
 }
