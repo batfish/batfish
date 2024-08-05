@@ -29,7 +29,7 @@ public final class TransferReturn {
   private final @Nonnull BDD _inputConstraints;
   private final boolean _accepted;
 
-  TransferReturn(BDDRoute outputRoute, BDD inputConstraints, boolean accepted) {
+  public TransferReturn(BDDRoute outputRoute, BDD inputConstraints, boolean accepted) {
     _outputRoute = outputRoute;
     _inputConstraints = inputConstraints;
     _accepted = accepted;
