@@ -2,6 +2,7 @@ package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
@@ -90,10 +91,10 @@ public class CompareRoutePoliciesUtilsTest {
 
     assertThat(
         CompareRoutePoliciesUtils.relevantAttributesFor(none, _configAPs),
-        Matchers.is(ImmutableList.of()));
+        equalTo(ImmutableList.of()));
     assertThat(
         CompareRoutePoliciesUtils.relevantAttributesFor(localPref, _configAPs),
-        Matchers.is(ImmutableList.of(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+        equalTo(ImmutableList.of(Result.RouteAttributeType.LOCAL_PREFERENCE)));
     assertThat(
         CompareRoutePoliciesUtils.relevantAttributesFor(commOrMed, _configAPs),
         Matchers.<Collection<Result.RouteAttributeType>>allOf(
@@ -143,8 +144,8 @@ public class CompareRoutePoliciesUtilsTest {
                     ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
                 .build(),
             Environment.Direction.IN);
-    assertThat(res.getFirst().getRelevantInputAttributes(), Matchers.is(ImmutableList.of()));
-    assertThat(res.getSecond().getRelevantInputAttributes(), Matchers.is(ImmutableList.of()));
+    assertThat(res.getFirst().getRelevantInputAttributes(), equalTo(ImmutableList.of()));
+    assertThat(res.getSecond().getRelevantInputAttributes(), equalTo(ImmutableList.of()));
   }
 
   @Test

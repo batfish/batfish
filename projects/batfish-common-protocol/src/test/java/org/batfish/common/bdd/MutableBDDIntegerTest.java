@@ -163,6 +163,23 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
+  public void testSupport() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger xPlusX = x.add(x);
+
+    BDD s1 = x.support();
+    BDD s2 = one.support();
+    BDD s3 = xPlusX.support();
+
+    assertEquals(s1, factory.andAll(x._bitvec));
+    assertEquals(s2, factory.one());
+    // the high-order bit is irrelevant
+    assertEquals(s3, factory.andAll(x._bitvec[1], x._bitvec[2], x._bitvec[3], x._bitvec[4]));
+  }
+
+  @Test
   public void testAllDifferences() {
     BDDFactory factory = BDDUtils.bddFactory(10);
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
