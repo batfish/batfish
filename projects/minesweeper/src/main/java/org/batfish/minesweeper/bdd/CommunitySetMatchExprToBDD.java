@@ -210,14 +210,20 @@ public class CommunitySetMatchExprToBDD
         IntStream.range(0, originalAPs.length)
             .filter(
                 i -> {
-                  // check that the ith AP is compatible with the single-community constraint
-                  BDD model = commConstraint.and(originalAPs[i]).satOne();
-                  if (model.isZero()) {
+                  if (commConstraint.equals(originalAPs[i])) {
+                    return true;
+                  } else if (!commConstraint.andSat(originalAPs[i])) {
                     return false;
                   }
+                  // check that the ith AP is compatible with the single-community constraint
+                  BDD intersection = commConstraint.and(originalAPs[i]);
+                  BDD model = intersection.satOne().existEq(originalAPs[i]);
+                  intersection.free();
                   // if so, check that all other variables in the produced model are negated;
                   // this implies that the ith AP on its own is sufficient to satisfy the constraint
-                  return allNegativeLiterals(model.exist(originalAPs[i]));
+                  boolean ret = allNegativeLiterals(model);
+                  model.free();
+                  return ret;
                 });
 
     // TODO: Two potential performance optimizations to consider in the future.  First, a binary
