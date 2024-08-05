@@ -3154,6 +3154,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     Conjunction conj = new Conjunction();
     List<BooleanExpr> subroutines = new ArrayList<>();
+    if (froms.getFromFamily() != null) {
+      conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
+    }
     if (!froms.getFromAsPaths().isEmpty()) {
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromAsPaths())));
     }
@@ -3173,9 +3176,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromConditions().isEmpty()) {
       // TODO: verify these are disjoined
       conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromConditions())));
-    }
-    if (froms.getFromFamily() != null) {
-      conj.getConjuncts().add(froms.getFromFamily().toBooleanExpr(this, _c, _w));
     }
     if (froms.getFromInstance() != null) {
       conj.getConjuncts().add(froms.getFromInstance().toBooleanExpr(this, _c, _w));
