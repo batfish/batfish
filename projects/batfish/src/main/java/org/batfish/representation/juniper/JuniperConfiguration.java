@@ -3168,7 +3168,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       conj.getConjuncts().add(froms.getFromColor().toBooleanExpr(this, _c, _w));
     }
     if (!froms.getFromCommunities().isEmpty()) {
-      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromCommunities())));
+      conj.getConjuncts()
+          .add(PsFromCommunity.groupToMatchCommunities(_c, froms.getFromCommunities()));
     }
     if (froms.getFromCommunityCount() != null) {
       conj.getConjuncts().add(froms.getFromCommunityCount().toBooleanExpr(this, _c, _w));
