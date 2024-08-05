@@ -273,6 +273,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_as
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_privateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bpa_asContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_always_compare_medContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bps_external_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bridge_domain_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DecContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.DescriptionContext;
@@ -4372,6 +4374,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitBpa_as(Bpa_asContext ctx) {
     long peerAs = toAsNum(ctx.asn);
     _currentBgpGroup.setPeerAs(peerAs);
+  }
+
+  @Override
+  public void exitBps_always_compare_med(Bps_always_compare_medContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitBps_external_router_id(Bps_external_router_idContext ctx) {
+    todo(ctx);
   }
 
   @Override
