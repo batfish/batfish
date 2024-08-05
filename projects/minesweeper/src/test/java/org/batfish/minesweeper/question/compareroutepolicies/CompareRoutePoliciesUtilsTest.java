@@ -18,6 +18,8 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
@@ -124,7 +126,6 @@ public class CompareRoutePoliciesUtilsTest {
 
   @Test
   public void testRelevantInputAttributesForDifferenceNone() {
-
     TransferReturn path = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
     Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
@@ -144,5 +145,109 @@ public class CompareRoutePoliciesUtilsTest {
             Environment.Direction.IN);
     assertThat(res.getFirst().getRelevantInputAttributes(), Matchers.is(ImmutableList.of()));
     assertThat(res.getSecond().getRelevantInputAttributes(), Matchers.is(ImmutableList.of()));
+  }
+
+  @Test
+  public void testRelevantInputAttributesForDifferenceTwo() {
+    TransferReturn path =
+        new TransferReturn(
+            new BDDRoute(_bddRoute),
+            _bddRoute.getLocalPref().value(300).or(_bddRoute.getMed().value(20)),
+            true);
+    TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
+    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+        CompareRoutePoliciesUtils.findConcreteDifference(
+            path,
+            otherPath,
+            _bddRoute.bgpWellFormednessConstraints(),
+            _configAPs,
+            _policyBuilderRef
+                .setStatements(
+                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .build(),
+            _policyBuilderOther
+                .setStatements(
+                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+                .build(),
+            Environment.Direction.IN);
+    assertThat(
+        res.getFirst().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(2),
+            containsInAnyOrder(
+                Result.RouteAttributeType.LOCAL_PREFERENCE, Result.RouteAttributeType.METRIC)));
+    assertThat(
+        res.getSecond().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(2),
+            containsInAnyOrder(
+                Result.RouteAttributeType.LOCAL_PREFERENCE, Result.RouteAttributeType.METRIC)));
+  }
+
+  @Test
+  public void testRelevantInputAttributesForDifferenceIntersect() {
+    TransferReturn path =
+        new TransferReturn(
+            new BDDRoute(_bddRoute),
+            _bddRoute.getLocalPref().value(300).or(_bddRoute.getMed().value(20)),
+            true);
+    TransferReturn otherPath =
+        new TransferReturn(new BDDRoute(_bddRoute), _bddRoute.getLocalPref().value(300), false);
+    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+        CompareRoutePoliciesUtils.findConcreteDifference(
+            path,
+            otherPath,
+            _bddRoute.bgpWellFormednessConstraints(),
+            _configAPs,
+            _policyBuilderRef
+                .setStatements(
+                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .build(),
+            _policyBuilderOther
+                .setStatements(
+                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+                .build(),
+            Environment.Direction.IN);
+    assertThat(
+        res.getFirst().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+    assertThat(
+        res.getSecond().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+  }
+
+  @Test
+  public void testRelevantInputAttributesForDifferenceOutput() {
+    BDDRoute pathRoute = new BDDRoute(_bddRoute);
+    pathRoute.getLocalPref().setValue(300);
+    TransferReturn path = new TransferReturn(pathRoute, _factory.one(), true);
+    TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
+    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+        CompareRoutePoliciesUtils.findConcreteDifference(
+            path,
+            otherPath,
+            _bddRoute.bgpWellFormednessConstraints(),
+            _configAPs,
+            _policyBuilderRef
+                .setStatements(
+                    ImmutableList.of(
+                        new SetLocalPreference(new LiteralLong(300)),
+                        new Statements.StaticStatement(Statements.ExitAccept)))
+                .build(),
+            _policyBuilderOther
+                .setStatements(
+                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .build(),
+            Environment.Direction.IN);
+    assertThat(
+        res.getFirst().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+    assertThat(
+        res.getSecond().getRelevantInputAttributes(),
+        Matchers.<Collection<Result.RouteAttributeType>>allOf(
+            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
   }
 }

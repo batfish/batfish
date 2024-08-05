@@ -90,10 +90,6 @@ public final class MutableBDDInteger extends BDDInteger {
     return bdd.isZero() ? Optional.empty() : Optional.of(satAssignmentToLong(bdd.satOne()));
   }
 
-  public BDD support() {
-    return _factory.andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet()));
-  }
-
   @Override
   public long satAssignmentToLong(BDD satAssignment) {
     checkArgument(satAssignment.isAssignment(), "not a satisfying assignment");
@@ -281,6 +277,14 @@ public final class MutableBDDInteger extends BDDInteger {
                 .collect(ImmutableList.toImmutableList()));
     assertNoLeaks(startBDDCount, 1);
     return result;
+  }
+
+  /**
+   * Produces a BDD that represents the support (i.e., the set of BDD variables) of this BDD
+   * integer.
+   */
+  public BDD support() {
+    return _factory.andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet()));
   }
 
   /*
