@@ -3,6 +3,8 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -82,12 +84,16 @@ import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
+import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
@@ -2111,6 +2117,32 @@ public class TransferBDDTest {
             new TransferReturn(any, conj1.not(), true),
             new TransferReturn(localPref300, conj1, true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testApplyLongExprModification() {
+    TransferBDD tbdd =
+        new TransferBDD(
+            forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME), _policyBuilder.build());
+    TransferParam p = new TransferParam(tbdd.getOriginalRoute(), false);
+
+    MutableBDDInteger toBeModified =
+        MutableBDDInteger.makeFromIndex(tbdd.getFactory(), 32, 0, false);
+    MutableBDDInteger value5 = MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 5);
+    value5.setValue(5);
+
+    assertThat(
+        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementMetric(5)),
+        equalTo(toBeModified.addClipping(value5)));
+    assertThat(
+        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementMetric(5)),
+        equalTo(toBeModified.subClipping(value5)));
+    assertThat(
+        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementLocalPreference(5)),
+        equalTo(toBeModified.addClipping(value5)));
+    assertThat(
+        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementLocalPreference(5)),
+        equalTo(toBeModified.subClipping(value5)));
   }
 
   @Test
