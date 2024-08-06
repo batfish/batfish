@@ -52,7 +52,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopConcrete;
@@ -1495,13 +1494,11 @@ public class SearchRoutePoliciesAnswererTest {
   public void testSolvableConstraints() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(16, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:16-32"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(8, 16));
+    PrefixRange prefixRange = PrefixRange.fromString("0.0.0.0/0:8-16");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -1546,14 +1543,12 @@ public class SearchRoutePoliciesAnswererTest {
   public void testPrefixUnion() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(16, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:16-32"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
-    PrefixRange prefixRange1 = new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(8, 12));
-    PrefixRange prefixRange2 = new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(13, 16));
+    PrefixRange prefixRange1 = PrefixRange.fromString("0.0.0.0/0:8-12");
+    PrefixRange prefixRange2 = PrefixRange.fromString("0.0.0.0/0:13-16");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -1600,9 +1595,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testComplementPrefixes() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(31, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:31-32"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1654,12 +1647,11 @@ public class SearchRoutePoliciesAnswererTest {
   public void testSolvableConstraintsDeny() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-32"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(8, 20));
+    PrefixRange prefixRange = PrefixRange.fromString("0.0.0.0/0:8-20");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -1702,8 +1694,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testUnsolvableConstraints() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 31)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-31"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -1730,8 +1721,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testUnsolvableOutConstraints() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 31)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-31"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
@@ -2268,8 +2258,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testComplementCommunities() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-32"))),
             ImmutableList.of(
                 new SetCommunities(
                     new LiteralCommunitySet(CommunitySet.of(StandardCommunity.parse("4:44")))),
@@ -3475,16 +3464,14 @@ public class SearchRoutePoliciesAnswererTest {
     _policyBuilder
         .addStatement(
             new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
+                matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:8-16"))),
                 ImmutableList.of(
                     new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
                     new StaticStatement(Statements.ExitAccept))))
         .addStatement(new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.build();
 
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
+    PrefixRange prefixRange = PrefixRange.fromString("1.0.0.0/32:8-24");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(
@@ -3531,15 +3518,14 @@ public class SearchRoutePoliciesAnswererTest {
   public void testUnsupportedStatementDeny() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 16)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:8-16"))),
             ImmutableList.of(
                 new ExcludeAsPath(new LiteralAsList(ImmutableList.of())),
                 new StaticStatement(Statements.ExitReject)),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
 
-    PrefixRange prefixRange = new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(8, 24));
+    PrefixRange prefixRange = PrefixRange.fromString("1.0.0.0/32:8-24");
 
     SearchRoutePoliciesQuestion question =
         new SearchRoutePoliciesQuestion(

@@ -334,8 +334,7 @@ public class TransferBDDTest {
   public void testMatchPrefixRange() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -345,9 +344,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
-    BDD expectedBDD =
-        isRelevantForDestination(
-            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD expectedBDD = isRelevantForDestination(anyRoute, PrefixRange.fromString("1.0.0.0/8:16-24"));
 
     assertEquals(
         paths,
@@ -363,9 +360,7 @@ public class TransferBDDTest {
 
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:32-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(4)),
                 Statements.ExitAccept.toStaticStatement())));
@@ -389,9 +384,7 @@ public class TransferBDDTest {
 
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/32"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/32:32-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(4)),
                 Statements.ExitAccept.toStaticStatement())));
@@ -431,8 +424,7 @@ public class TransferBDDTest {
   public void testSuppress() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(Statements.Suppress.toStaticStatement())));
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
 
@@ -444,9 +436,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
-    BDD expectedBDD =
-        isRelevantForDestination(
-            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDD expectedBDD = isRelevantForDestination(anyRoute, PrefixRange.fromString("0.0.0.0/0:32-32"));
 
     assertEquals(
         paths,
@@ -460,13 +450,11 @@ public class TransferBDDTest {
   public void testUnsuppress() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
             ImmutableList.of(Statements.Suppress.toStaticStatement())));
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(Statements.Unsuppress.toStaticStatement())));
 
     _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement());
@@ -478,12 +466,9 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
-    BDD suppressed =
-        isRelevantForDestination(
-            anyRoute, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+    BDD suppressed = isRelevantForDestination(anyRoute, PrefixRange.fromString("1.0.0.0/8:31-32"));
     BDD unsuppressed =
-        isRelevantForDestination(
-            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+        isRelevantForDestination(anyRoute, PrefixRange.fromString("0.0.0.0/0:32-32"));
 
     assertEquals(
         paths,
@@ -537,14 +522,12 @@ public class TransferBDDTest {
   public void testPartialAccept() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
 
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(3)),
                 Statements.ExitAccept.toStaticStatement())));
@@ -557,12 +540,10 @@ public class TransferBDDTest {
 
     BDD if1 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("0.0.0.0/0:32-32"));
     BDD if2 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("1.0.0.0/8:31-32"));
 
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
@@ -580,14 +561,12 @@ public class TransferBDDTest {
   public void testPartialReturn() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(Statements.ExitAccept.toStaticStatement())));
 
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(3)),
                 Statements.ReturnFalse.toStaticStatement())));
@@ -600,12 +579,10 @@ public class TransferBDDTest {
 
     BDD if1 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("0.0.0.0/0:32-32"));
     BDD if2 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("1.0.0.0/8:31-32"));
 
     BDDRoute localPref3 = anyRoute(tbdd.getFactory());
     localPref3.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 3));
@@ -623,15 +600,13 @@ public class TransferBDDTest {
   public void testPartialReturnStatements() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(2)),
                 Statements.ExitAccept.toStaticStatement())));
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
             ImmutableList.of(
                 new SetLocalPreference(new LiteralLong(3)),
                 Statements.ReturnFalse.toStaticStatement())));
@@ -645,12 +620,10 @@ public class TransferBDDTest {
 
     BDD if1 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("0.0.0.0/0:32-32"));
     BDD if2 =
         isRelevantForDestination(
-            anyRoute(tbdd.getFactory()),
-            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+            anyRoute(tbdd.getFactory()), PrefixRange.fromString("1.0.0.0/8:31-32"));
 
     BDDRoute localPref2 = anyRoute(tbdd.getFactory());
     localPref2.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 2));
@@ -671,13 +644,10 @@ public class TransferBDDTest {
   public void testNestedIf() {
     _policyBuilder.addStatement(
         new If(
-            matchPrefixSet(
-                ImmutableList.of(new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+            matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
             ImmutableList.of(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:31-32"))),
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement())))));
 
     RoutingPolicy policy = _policyBuilder.build();
@@ -688,12 +658,8 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD if1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
-    BDD if2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 32)));
+    BDD if1 = isRelevantForDestination(any, PrefixRange.fromString("0.0.0.0/0:32-32"));
+    BDD if2 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:31-32"));
 
     assertEquals(
         paths,
@@ -749,10 +715,7 @@ public class TransferBDDTest {
   public void testNot() {
     _policyBuilder.addStatement(
         new If(
-            new Not(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24))))),
+            new Not(matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24")))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -763,10 +726,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD if1 =
-        isRelevantForDestination(
-                any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))
-            .not();
+    BDD if1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24")).not();
 
     assertEquals(
         paths,
@@ -781,8 +741,8 @@ public class TransferBDDTest {
         new If(
             matchPrefixSet(
                 ImmutableList.of(
-                    new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)),
-                    new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))),
+                    PrefixRange.fromString("1.0.0.0/8:16-24"),
+                    PrefixRange.fromString("1.2.0.0/16:20-32"))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -792,12 +752,8 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD expectedBDD1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD expectedBDD2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(25, 32)));
+    BDD expectedBDD1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD expectedBDD2 = isRelevantForDestination(any, PrefixRange.fromString("1.2.0.0/16:25-32"));
 
     assertEquals(
         paths,
@@ -813,12 +769,8 @@ public class TransferBDDTest {
         new If(
             new Conjunction(
                 ImmutableList.of(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)))))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.2.0.0/16:20-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -828,12 +780,8 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD expectedBDD1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD expectedBDD2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.2.0.0/16"), new SubRange(20, 32)));
+    BDD expectedBDD1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD expectedBDD2 = isRelevantForDestination(any, PrefixRange.fromString("1.2.0.0/16:20-32"));
 
     assertEquals(
         paths,
@@ -886,9 +834,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD expectedBDD =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(31, 31)));
+    BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:31-31"));
 
     assertEquals(
         paths,
@@ -1814,9 +1760,7 @@ public class TransferBDDTest {
         _policyBuilder
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
                     ImmutableList.of(new StaticStatement(Statements.SetDefaultActionAccept))))
             .addStatement(new StaticStatement(Statements.DefaultAction))
             .build();
@@ -1826,9 +1770,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    BDD expectedBDD =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
 
     assertEquals(
         paths,
@@ -1844,9 +1786,7 @@ public class TransferBDDTest {
         _policyBuilder
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
                     ImmutableList.of(
                         new StaticStatement(Statements.SetDefaultActionAccept),
                         new StaticStatement(Statements.ExitReject))))
@@ -1858,9 +1798,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths();
 
     BDDRoute any = anyRoute(tbdd.getFactory());
-    BDD expectedBDD =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
 
     assertEquals(
         paths,
@@ -1991,12 +1929,8 @@ public class TransferBDDTest {
         new If(
             new Conjunction(
                 ImmutableList.of(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2007,12 +1941,8 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD conj1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD conj2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+    BDD conj1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD conj2 = isRelevantForDestination(any, PrefixRange.fromString("0.0.0.0/0:24-32"));
 
     assertEquals(
         paths,
@@ -2029,14 +1959,10 @@ public class TransferBDDTest {
         new If(
             new Conjunction(
                 ImmutableList.of(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
                     // MatchColor is unsupported, so it should be ignored
                     new MatchColor(0L),
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2049,12 +1975,8 @@ public class TransferBDDTest {
     BDDRoute unsupported = new BDDRoute(any);
     unsupported.setUnsupported(true);
 
-    BDD conj1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD conj2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+    BDD conj1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD conj2 = isRelevantForDestination(any, PrefixRange.fromString("0.0.0.0/0:24-32"));
 
     assertEquals(
         paths,
@@ -2177,9 +2099,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD conj1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD conj1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
 
     BDDRoute localPref300 = new BDDRoute(any);
     MutableBDDInteger localPref = localPref300.getLocalPref();
@@ -2216,12 +2136,8 @@ public class TransferBDDTest {
         new If(
             new Disjunction(
                 ImmutableList.of(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2232,12 +2148,8 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD disj1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD disj2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+    BDD disj1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD disj2 = isRelevantForDestination(any, PrefixRange.fromString("0.0.0.0/0:24-32"));
 
     assertEquals(
         paths,
@@ -2254,14 +2166,10 @@ public class TransferBDDTest {
         new If(
             new Disjunction(
                 ImmutableList.of(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
                     // MatchColor is unsupported, so it should be ignored
                     new MatchColor(0L),
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)))))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:24-32"))))),
             ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
     RoutingPolicy policy = _policyBuilder.build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
@@ -2274,12 +2182,8 @@ public class TransferBDDTest {
     BDDRoute unsupported = new BDDRoute(any);
     unsupported.setUnsupported(true);
 
-    BDD disj1 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
-    BDD disj2 =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(24, 32)));
+    BDD disj1 = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
+    BDD disj2 = isRelevantForDestination(any, PrefixRange.fromString("0.0.0.0/0:24-32"));
 
     assertEquals(
         paths,
@@ -2325,9 +2229,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD firstDisjunctBDD =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD firstDisjunctBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
     BDDRoute localPref32 = new BDDRoute(any);
     localPref32.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
 
@@ -3166,9 +3068,7 @@ public class TransferBDDTest {
             .setOwner(_baseConfig)
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("0.0.0.0/0:32-32"))),
                     ImmutableList.of(
                         new CallStatement(calledPolicyName),
                         new StaticStatement(Statements.ExitAccept))))
@@ -3187,9 +3087,7 @@ public class TransferBDDTest {
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
 
-    BDD expectedBDD =
-        isRelevantForDestination(
-            anyRoute, new PrefixRange(Prefix.parse("0.0.0.0/0"), new SubRange(32, 32)));
+    BDD expectedBDD = isRelevantForDestination(anyRoute, PrefixRange.fromString("0.0.0.0/0:32-32"));
     BDDRoute expectedOut = new BDDRoute(anyRoute);
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
 
@@ -3712,9 +3610,7 @@ public class TransferBDDTest {
     _policyBuilder
         .addStatement(
             new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)))),
+                matchPrefixSet(ImmutableList.of(PrefixRange.fromString("1.0.0.0/8:16-24"))),
                 // the SelfNextHop construct is not supported
                 ImmutableList.of(
                     new SetNextHop(UnchangedNextHop.getInstance()),
@@ -3728,9 +3624,7 @@ public class TransferBDDTest {
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
-    BDD expectedBDD =
-        isRelevantForDestination(
-            any, new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24)));
+    BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
 
     BDDRoute expectedOut = new BDDRoute(any);
     expectedOut.setNextHopSet(true);
@@ -3784,7 +3678,7 @@ public class TransferBDDTest {
     BDDRoute bddRoute = anyRoute(JFactory.init(100, 100));
     IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(bddRoute.getPrefix());
 
-    PrefixRange range = new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24));
+    PrefixRange range = PrefixRange.fromString("1.0.0.0/8:16-24");
     BDD rangeBdd = isRelevantForDestination(bddRoute, range);
     BDD notRangeBdd = rangeBdd.not();
 
