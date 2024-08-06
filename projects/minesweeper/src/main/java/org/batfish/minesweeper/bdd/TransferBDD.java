@@ -2,6 +2,7 @@ package org.batfish.minesweeper.bdd;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -1128,9 +1129,9 @@ public class TransferBDD {
       BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher)
       throws UnsupportedOperationException {
     BDD acc = _factory.zero();
-    List<RouteFilterLine> lines = new ArrayList<>(x.getLines());
-    Collections.reverse(lines);
-    for (RouteFilterLine line : lines) {
+    LineAction currentAction = LineAction.PERMIT;
+    List<BDD> lineBDDsWithCurrentAction = new ArrayList<>();
+    for (RouteFilterLine line : Lists.reverse(x.getLines())) {
       if (!line.getIpWildcard().isPrefix()) {
         throw new UnsupportedOperationException(line.getIpWildcard().toString());
       }
@@ -1140,9 +1141,19 @@ public class TransferBDD {
       p.debug("Prefix Range: %s", range);
       p.debug("Action: %s", line.getAction());
       BDD matches = symbolicMatcher.apply(other, range);
-      BDD action = mkBDD(line.getAction() == LineAction.PERMIT);
-      acc = ite(matches, action, acc);
+      if (line.getAction() != currentAction) {
+        BDD allCurrentAction = _factory.orAllAndFree(lineBDDsWithCurrentAction);
+        BDD action = mkBDD(currentAction == LineAction.PERMIT);
+        acc = ite(allCurrentAction, action, acc);
+        // and reset for next step
+        lineBDDsWithCurrentAction.clear();
+        currentAction = line.getAction();
+      }
+      lineBDDsWithCurrentAction.add(matches);
     }
+    BDD allCurrentAction = _factory.orAllAndFree(lineBDDsWithCurrentAction);
+    BDD action = mkBDD(currentAction == LineAction.PERMIT);
+    acc = ite(allCurrentAction, action, acc);
     return acc;
   }
 
