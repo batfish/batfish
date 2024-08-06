@@ -64,12 +64,6 @@ public final class MutableBDDInteger extends BDDInteger {
     return bdd;
   }
 
-  public static MutableBDDInteger makeMaxValue(BDDFactory factory, int length) {
-    MutableBDDInteger bdd = new MutableBDDInteger(factory, length);
-    bdd.setValue(bdd._maxVal);
-    return bdd;
-  }
-
   /** Set this BDD to have an exact value */
   public void setValue(long val) {
     checkArgument(val >= 0, "Cannot set a negative value");
@@ -205,7 +199,7 @@ public final class MutableBDDInteger extends BDDInteger {
       cs[i] = as[i].xor(bs[i]).xorEq(carry);
       carry = as[i].and(bs[i]).orWith(carry.andWith(as[i].or(bs[i])));
     }
-    MutableBDDInteger maxValue = makeMaxValue(_factory, _bitvec.length);
+    MutableBDDInteger maxValue = makeFromValue(_factory, _bitvec.length, _maxVal);
     MutableBDDInteger result = sum.ite(carry.notEq(), maxValue);
     maxValue.free();
     sum.free();
@@ -316,6 +310,34 @@ public final class MutableBDDInteger extends BDDInteger {
       BDD var7 = b[i].or(borrow).diffEq(a[i]);
       borrow = a[i].and(b[i]).andWith(borrow).orWith(var7);
     }
+    borrow.free();
+    assertNoLeaks(startBDDCount, _bitvec.length);
+    return result;
+  }
+
+  /*
+   * Subtract one BDD from another bitwise to create a new BDD. Clips to 0 in case of underflow.
+   */
+  public MutableBDDInteger subClipping(MutableBDDInteger other) {
+    BDD[] as = _bitvec;
+    BDD[] bs = other._bitvec;
+
+    checkArgument(as.length > 0, "Cannot add BDDIntegers of length 0");
+    checkArgument(as.length == bs.length, "Cannot add BDDIntegers of different length");
+
+    long startBDDCount = _factory.numOutstandingBDDs();
+    MutableBDDInteger diff = new MutableBDDInteger(_factory, as.length);
+    BDD[] cs = diff._bitvec;
+    BDD borrow = _factory.zero();
+    for (int i = cs.length - 1; i >= 0; --i) {
+      cs[i] = as[i].xor(bs[i]).xorEq(borrow);
+      BDD var7 = bs[i].or(borrow).diffEq(as[i]);
+      borrow = as[i].and(bs[i]).andWith(borrow).orWith(var7);
+    }
+    MutableBDDInteger zero = makeFromValue(_factory, _bitvec.length, 0);
+    MutableBDDInteger result = diff.ite(borrow.notEq(), zero);
+    zero.free();
+    diff.free();
     borrow.free();
     assertNoLeaks(startBDDCount, _bitvec.length);
     return result;
