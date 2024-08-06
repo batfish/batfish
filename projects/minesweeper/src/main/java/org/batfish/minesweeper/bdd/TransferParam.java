@@ -1,6 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
 import com.google.errorprone.annotations.FormatMethod;
+import java.util.Objects;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.statement.SetDefaultPolicy;
 import org.batfish.minesweeper.collections.PList;
@@ -18,11 +20,11 @@ public class TransferParam {
     NONE
   }
 
-  private BDDRoute _data;
+  private @Nonnull BDDRoute _data;
 
   private int _indent;
 
-  private PList<String> _scopes;
+  private @Nonnull PList<String> _scopes;
 
   private CallContext _callContext;
 
@@ -32,13 +34,13 @@ public class TransferParam {
 
   private boolean _defaultAcceptLocal;
 
-  private SetDefaultPolicy _defaultPolicy;
+  private @Nullable SetDefaultPolicy _defaultPolicy;
 
   private boolean _readIntermediateBgpAttributes;
 
   private final boolean _debug;
 
-  public TransferParam(BDDRoute data, boolean debug) {
+  public TransferParam(@Nonnull BDDRoute data, boolean debug) {
     _data = data;
     _callContext = CallContext.NONE;
     _chainContext = ChainContext.NONE;
@@ -64,7 +66,7 @@ public class TransferParam {
     _debug = p._debug;
   }
 
-  public BDDRoute getData() {
+  public @Nonnull BDDRoute getData() {
     return _data;
   }
 
@@ -84,7 +86,7 @@ public class TransferParam {
     return _defaultAcceptLocal;
   }
 
-  public SetDefaultPolicy getDefaultPolicy() {
+  public @Nullable SetDefaultPolicy getDefaultPolicy() {
     return _defaultPolicy;
   }
 
@@ -180,5 +182,41 @@ public class TransferParam {
       sb.append(String.format(fmt, args));
       System.out.println(sb);
     }
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof TransferParam)) {
+      return false;
+    }
+    TransferParam that = (TransferParam) o;
+    return _indent == that._indent
+        && _defaultAccept == that._defaultAccept
+        && _defaultAcceptLocal == that._defaultAcceptLocal
+        && _readIntermediateBgpAttributes == that._readIntermediateBgpAttributes
+        && _debug == that._debug
+        && _data.equals(that._data)
+        && _scopes.equals(that._scopes)
+        && _callContext == that._callContext
+        && _chainContext == that._chainContext
+        && Objects.equals(_defaultPolicy, that._defaultPolicy);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _data,
+        _indent,
+        _scopes,
+        _callContext,
+        _chainContext,
+        _defaultAccept,
+        _defaultAcceptLocal,
+        _defaultPolicy,
+        _readIntermediateBgpAttributes,
+        _debug);
   }
 }
