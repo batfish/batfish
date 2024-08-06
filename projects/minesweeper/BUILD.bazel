@@ -11,5 +11,6 @@ java_library(
     name = "minesweeper",
     exports = [
         "//projects/minesweeper/src/main/java/org/batfish/minesweeper",
+        "//projects/minesweeper/src/main/java/org/batfish/minesweeper/question/comparelayerpolicies",
     ],
 )
