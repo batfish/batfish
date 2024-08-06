@@ -76,7 +76,8 @@ public final class Result<R> {
 
   /**
    * If non-null, this list contains the attributes of the input route that are relevant for the
-   * behavior exhibited by this result
+   * behavior exhibited by this result. If null, then the relevant attributes have not been
+   * computed.
    */
   private @Nullable List<RouteAttributeType> _relevantInputAttributes;
 
@@ -129,7 +130,7 @@ public final class Result<R> {
    * If non-null, the returned list contains the attributes of the input route that are relevant for
    * the behavior exhibited by this result. The key property is that for any attribute A that is not
    * in the returned list, any concrete value of the appropriate type can be used for A without
-   * affecting the result's behavior.
+   * affecting the result's behavior. If null, then the relevant attributes have not been computed.
    */
   public @Nullable List<RouteAttributeType> getRelevantInputAttributes() {
     return _relevantInputAttributes;

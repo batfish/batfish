@@ -527,6 +527,8 @@ public final class CompareRoutePoliciesUtils {
             outputConstraints.free();
             allConstraints.free();
           }
+        } else {
+          intersection.free();
         }
       }
     }
