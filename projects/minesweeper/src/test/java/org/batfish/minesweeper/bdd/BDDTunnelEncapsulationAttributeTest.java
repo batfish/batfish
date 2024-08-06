@@ -125,4 +125,21 @@ public class BDDTunnelEncapsulationAttributeTest {
     assertThat(aConditional.allDifferences(alwaysA), equalTo(factory.nithVar(4)));
     assertThat(alwaysA.allDifferences(aConditional), equalTo(factory.nithVar(4)));
   }
+
+  @Test
+  public void testSupport() {
+    BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
+    factory.setVarNum(5);
+
+    TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
+    BDDTunnelEncapsulationAttribute base =
+        BDDTunnelEncapsulationAttribute.create(factory, 0, ImmutableList.of(a));
+
+    BDDTunnelEncapsulationAttribute alwaysA = BDDTunnelEncapsulationAttribute.copyOf(base);
+    alwaysA.setValue(Value.literal(a));
+    BDDTunnelEncapsulationAttribute aConditional = alwaysA.and(factory.ithVar(4));
+
+    assertThat(alwaysA.support(), equalTo(factory.one()));
+    assertThat(aConditional.support(), equalTo(factory.ithVar(4)));
+  }
 }
