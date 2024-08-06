@@ -44,7 +44,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -289,9 +288,7 @@ public class ComparePeerGroupPoliciesAnswererTest {
     _policyBuilderDelta
         .addStatement(
             new If(
-                matchPrefixSet(
-                    ImmutableList.of(
-                        new PrefixRange(Prefix.parse("10.0.0.0/24"), new SubRange(32, 32)))),
+                matchPrefixSet(ImmutableList.of(PrefixRange.fromString("10.0.0.0/24:32-32"))),
                 ImmutableList.of(
                     new SetLocalPreference(new LiteralLong(150)),
                     new Statements.StaticStatement(Statements.ExitAccept))))

@@ -45,7 +45,6 @@ import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.RoutingProtocol;
-import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopConcrete;
@@ -1075,18 +1074,14 @@ public class CompareRoutePoliciesAnswererTest {
         _policyBuilderDelta
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("10.0.0.0/24"), new SubRange(32, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("10.0.0.0/24:32-32"))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
     RoutingPolicy policy_new =
         _policyBuilderBase
             .addStatement(
                 new If(
-                    matchPrefixSet(
-                        ImmutableList.of(
-                            new PrefixRange(Prefix.parse("10.0.0.0/24"), new SubRange(16, 32)))),
+                    matchPrefixSet(ImmutableList.of(PrefixRange.fromString("10.0.0.0/24:16-32"))),
                     ImmutableList.of(new StaticStatement(Statements.ExitAccept))))
             .build();
 
