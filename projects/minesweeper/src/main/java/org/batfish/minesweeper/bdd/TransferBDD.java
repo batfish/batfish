@@ -1184,14 +1184,11 @@ public class TransferBDD {
     PrefixSetExpr e = m.getPrefixSet();
     if (e instanceof ExplicitPrefixSet) {
       ExplicitPrefixSet x = (ExplicitPrefixSet) e;
-
-      Set<PrefixRange> ranges = x.getPrefixSpace().getPrefixRanges();
-      BDD acc = _factory.zero();
-      for (PrefixRange range : ranges) {
-        p.debug("Prefix Range: %s", range);
-        acc = acc.or(symbolicMatcher.apply(other, range));
-      }
-      return acc;
+      List<BDD> rangeBDDs =
+          x.getPrefixSpace().getPrefixRanges().stream()
+              .map(r -> symbolicMatcher.apply(other, r))
+              .toList();
+      return _factory.orAllAndFree(rangeBDDs);
 
     } else if (e instanceof NamedPrefixSet) {
       NamedPrefixSet x = (NamedPrefixSet) e;
