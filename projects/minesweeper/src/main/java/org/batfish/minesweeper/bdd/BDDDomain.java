@@ -89,6 +89,11 @@ public final class BDDDomain<T> {
     _integer.setValue(idx);
   }
 
+  /** Produces a BDD that represents the support (i.e., the set of BDD variables) of this domain. */
+  public BDD support() {
+    return _integer.support();
+  }
+
   public MutableBDDInteger getInteger() {
     return _integer;
   }

@@ -5,6 +5,19 @@ import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.CLUSTER_LIST;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COMMUNITIES;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.LOCAL_PREFERENCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.METRIC;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NETWORK;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NEXT_HOP;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ORIGIN_TYPE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.PROTOCOL;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TUNNEL_ENCAPSULATION_ATTRIBUTE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.WEIGHT;
 import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.collect.ImmutableList;
@@ -294,19 +307,19 @@ public final class CompareRoutePoliciesUtils {
    * @param r1 the first of the two output routes that were compared
    * @param r2 the second of the two output routes that were compared
    * @param inputConstraints the input constraints within which we want to identify differences
-   * @return A BDD that represents at least one of the differences in the given diffs list and also
-   *     includes the given input constraints. If there are no differences that are compatible with
-   *     the input constraints then the method returns ZERO.
+   * @return A BDD that represents at least one of the differences in the given diffs list. If there
+   *     are no differences that are compatible with the input constraints then the method returns
+   *     ZERO.
    */
-  private static BDD incorporateOutputConstraints(
+  private static BDD computeOutputConstraints(
       List<BDDRouteDiff.DifferenceType> diffs, BDDRoute r1, BDDRoute r2, BDD inputConstraints) {
     for (BDDRouteDiff.DifferenceType d : diffs) {
       // If the diff in this attribute is compatible with the input constraints then we are done
-      BDD inputDiff = allDifferencesForType(d, r1, r2).andEq(inputConstraints);
-      if (!inputDiff.isZero()) {
-        return inputDiff;
+      BDD differences = allDifferencesForType(d, r1, r2);
+      if (inputConstraints.andSat(differences)) {
+        return differences;
       }
-      inputDiff.free();
+      differences.free();
     }
     // none of the differences are compatible with the input constraints
     return r1.getFactory().zero();
@@ -314,7 +327,7 @@ public final class CompareRoutePoliciesUtils {
 
   /**
    * Return all differences in the two routes for the given attribute. See {@link
-   * #incorporateOutputConstraints(List, BDDRoute, BDDRoute, BDD)}.
+   * #computeOutputConstraints(List, BDDRoute, BDDRoute, BDD)}.
    */
   private static BDD allDifferencesForType(
       BDDRouteDiff.DifferenceType d, BDDRoute r1, BDDRoute r2) {
@@ -420,22 +433,23 @@ public final class CompareRoutePoliciesUtils {
    * Compare two route policies for behavioral differences.
    *
    * @param referencePolicy the routing policy of the reference snapshot
-   * @param policy the routing policy of the current snapshot
-   * @param configAPs an object providing the atomic predicates for the policy's owner configuration
+   * @param otherPolicy the routing policy of the current snapshot
+   * @param configAPs an object providing the atomic predicates for the otherPolicy's owner
+   *     configuration
    * @return a set of differences
    */
   private Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> comparePolicies(
-      RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
+      RoutingPolicy referencePolicy, RoutingPolicy otherPolicy, ConfigAtomicPredicates configAPs) {
     BDDFactory factory = JFactory.init(100000, 10000);
     TransferBDD tBDD = new TransferBDD(factory, configAPs, referencePolicy);
-    TransferBDD otherTBDD = new TransferBDD(factory, configAPs, policy);
+    TransferBDD otherTBDD = new TransferBDD(factory, configAPs, otherPolicy);
 
     // Generate well-formedness constraints
     BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).bgpWellFormednessConstraints();
 
-    // The set of paths for the current policy
+    // The set of paths for the current otherPolicy
     List<TransferReturn> paths = computePaths(tBDD);
-    // The set of paths for the proposed policy, also indexed by input routes.
+    // The set of paths for the proposed otherPolicy, also indexed by input routes.
     List<TransferReturn> otherPaths = computePaths(otherTBDD);
     Map<BDD, TransferReturn> otherPathIndex =
         otherPaths.stream()
@@ -456,7 +470,7 @@ public final class CompareRoutePoliciesUtils {
       for (TransferReturn otherPath : iterationPaths) {
         Tuple<Result<BgpRoute>, Result<BgpRoute>> difference =
             findConcreteDifference(
-                path, otherPath, wf, configAPs, policy, referencePolicy, _direction);
+                path, otherPath, wf, configAPs, referencePolicy, otherPolicy, _direction);
         if (difference != null) {
           differences.add(difference);
         }
@@ -477,6 +491,10 @@ public final class CompareRoutePoliciesUtils {
       Environment.Direction direction) {
     BDD inputRoutes = path.getInputConstraints();
     BDD inputRoutesOther = otherPath.getInputConstraints();
+    // in the case that both paths are accepting, additional constraints will be computed later to
+    // ensure that the chosen concrete input route leads to differing output routes in the paths
+    BDD outputConstraints = inputRoutes.getFactory().one();
+
     BDD intersection = inputRoutesOther.and(inputRoutes).andEq(wellFormedConstraints);
     if (intersection.isZero()) {
       // No common input routes to check equivalence.
@@ -500,16 +518,19 @@ public final class CompareRoutePoliciesUtils {
             computeDifferences(outputRoutes, outputRoutesOther);
         if (!diffs.isEmpty()) {
           // Now try to find a difference that is compatible with the input constraints
-          BDD allConstraints =
-              incorporateOutputConstraints(diffs, outputRoutes, outputRoutesOther, intersection);
+          outputConstraints =
+              computeOutputConstraints(diffs, outputRoutes, outputRoutesOther, intersection);
+          BDD allConstraints = intersection.andEq(outputConstraints);
           if (!allConstraints.isZero()) {
             finalConstraints = allConstraints;
           } else {
+            outputConstraints.free();
             allConstraints.free();
           }
+        } else {
+          intersection.free();
         }
       }
-      intersection.free();
     }
 
     if (finalConstraints == null) {
@@ -520,15 +541,87 @@ public final class CompareRoutePoliciesUtils {
     // we have found a difference, so let's get a concrete example of the difference
     Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
         constraintsToInputs(finalConstraints, configAPs);
-    Result<BgpRoute> otherResult =
-        simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), otherPath.getOutputRoute());
     Result<BgpRoute> refResult =
-        simulatePolicy(otherPolicy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
+        simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
+    Result<BgpRoute> otherResult =
+        simulatePolicy(
+            otherPolicy, t.getFirst(), direction, t.getSecond(), otherPath.getOutputRoute());
+
+    // determine which input route attributes are relevant for this difference, based on the
+    // variables that appear in the input constraints of the two paths as well as the output
+    // constraint generated above. this differs from the variable finalConstraints only in not
+    // including the well-formedness constraint, inclusion of which could cause some
+    // irrelevant attributes to be considered relevant.
+    List<Result.RouteAttributeType> relevantAttributes =
+        relevantAttributesFor(
+            inputRoutes.and(inputRoutesOther).andEq(outputConstraints), configAPs);
+    outputConstraints.free();
+    refResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
+    otherResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
 
     // As a sanity check, compare the simulated results above with what the symbolic route analysis
     // predicts will happen.
     assert validateDifference(
         finalConstraints, configAPs, path, otherPath, refResult, otherResult, direction);
     return new Tuple<>(otherResult, refResult);
+  }
+
+  /**
+   * Determines which route attributes are relevant for the given constraint. If a route attribute
+   * is not included in the result, then that attribute is irrelevant in the sense that any value
+   * can be chosen for that attribute.
+   *
+   * @param constraint predicate that represents the input space leading to a particular difference
+   * @param configAPs information about atomic predicates
+   * @return a list of route attributes that are relevant for this difference
+   */
+  public static List<Result.RouteAttributeType> relevantAttributesFor(
+      BDD constraint, ConfigAtomicPredicates configAPs) {
+    ImmutableList.Builder<Result.RouteAttributeType> result = new ImmutableList.Builder<>();
+
+    BDDFactory factory = constraint.getFactory();
+    BDDRoute origRoute = new BDDRoute(factory, configAPs);
+
+    if (constraint.testsVars(origRoute.getAdminDist().support())) {
+      result.add(ADMINISTRATIVE_DISTANCE);
+    }
+    if (constraint.testsVars(origRoute.getAsPathRegexAtomicPredicates().support())) {
+      result.add(AS_PATH);
+    }
+    if (constraint.testsVars(origRoute.getClusterListLength().support())) {
+      result.add(CLUSTER_LIST);
+    }
+    if (constraint.testsVars(factory.andAll(origRoute.getCommunityAtomicPredicates()))) {
+      result.add(COMMUNITIES);
+    }
+    if (constraint.testsVars(origRoute.getLocalPref().support())) {
+      result.add(LOCAL_PREFERENCE);
+    }
+    if (constraint.testsVars(origRoute.getMed().support())) {
+      result.add(METRIC);
+    }
+    if (constraint.testsVars(
+        origRoute.getPrefix().support().and(origRoute.getPrefixLength().support()))) {
+      result.add(NETWORK);
+    }
+    if (constraint.testsVars(origRoute.getNextHop().support())) {
+      result.add(NEXT_HOP);
+    }
+    if (constraint.testsVars(origRoute.getOriginType().support())) {
+      result.add(ORIGIN_TYPE);
+    }
+    if (constraint.testsVars(origRoute.getProtocolHistory().support())) {
+      result.add(PROTOCOL);
+    }
+    if (constraint.testsVars(origRoute.getTag().support())) {
+      result.add(TAG);
+    }
+    if (constraint.testsVars(origRoute.getTunnelEncapsulationAttribute().support())) {
+      result.add(TUNNEL_ENCAPSULATION_ATTRIBUTE);
+    }
+    if (constraint.testsVars(origRoute.getWeight().support())) {
+      result.add(WEIGHT);
+    }
+    return result.build();
   }
 }

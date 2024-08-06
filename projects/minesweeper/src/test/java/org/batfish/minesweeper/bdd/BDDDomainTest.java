@@ -88,4 +88,18 @@ public class BDDDomainTest {
     assertThat(two.satAssignmentToValue(inputA), equalTo("a"));
     assertThat(two.satAssignmentToValue(inputB), equalTo("a"));
   }
+
+  @Test
+  public void testSupport() {
+    BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
+    factory.setVarNum(5);
+
+    BDDDomain<String> two = new BDDDomain<>(factory, ImmutableList.of("a", "b"), 0);
+    BDD s1 = two.support();
+    assertThat(s1, equalTo(factory.andAll(two.getInteger().support())));
+
+    two.setValue("a");
+    BDD s2 = two.support();
+    assertThat(s2, equalTo(factory.one()));
+  }
 }
