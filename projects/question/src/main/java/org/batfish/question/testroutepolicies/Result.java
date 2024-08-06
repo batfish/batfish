@@ -73,9 +73,13 @@ public final class Result<R> {
 
   private final RoutingPolicyId _policyId;
   private final R _inputRoute;
-  // if non-null, this list contains the attributes of the input route that are relevant for the
-  // behavior exhibited by this result
+
+  /**
+   * If non-null, this list contains the attributes of the input route that are relevant for the
+   * behavior exhibited by this result
+   */
   private @Nullable List<RouteAttributeType> _relevantInputAttributes;
+
   private final LineAction _action;
   private final @Nullable R _outputRoute;
   private final List<TraceTree> _trace;
@@ -121,6 +125,12 @@ public final class Result<R> {
     return _inputRoute;
   }
 
+  /**
+   * If non-null, the returned list contains the attributes of the input route that are relevant for
+   * the behavior exhibited by this result. The key property is that for any attribute A that is not
+   * in the returned list, any concrete value of the appropriate type can be used for A without
+   * affecting the result's behavior.
+   */
   public @Nullable List<RouteAttributeType> getRelevantInputAttributes() {
     return _relevantInputAttributes;
   }

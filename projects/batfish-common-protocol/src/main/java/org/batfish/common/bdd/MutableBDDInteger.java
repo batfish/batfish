@@ -284,7 +284,8 @@ public final class MutableBDDInteger extends BDDInteger {
    * integer.
    */
   public BDD support() {
-    return _factory.andAll(Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet()));
+    return _factory.andAllAndFree(
+        Arrays.stream(_bitvec).map(BDD::support).collect(Collectors.toSet()));
   }
 
   /*

@@ -316,13 +316,10 @@ public final class CompareRoutePoliciesUtils {
     for (BDDRouteDiff.DifferenceType d : diffs) {
       // If the diff in this attribute is compatible with the input constraints then we are done
       BDD differences = allDifferencesForType(d, r1, r2);
-      BDD allConstraints = inputConstraints.and(differences);
-      if (!allConstraints.isZero()) {
-        allConstraints.free();
+      if (inputConstraints.andSat(differences)) {
         return differences;
       }
       differences.free();
-      allConstraints.free();
     }
     // none of the differences are compatible with the input constraints
     return r1.getFactory().zero();
@@ -554,7 +551,9 @@ public final class CompareRoutePoliciesUtils {
     // including the well-formedness constraint, inclusion of which could cause some
     // irrelevant attributes to be considered relevant.
     List<Result.RouteAttributeType> relevantAttributes =
-        relevantAttributesFor(inputRoutes.and(inputRoutesOther).and(outputConstraints), configAPs);
+        relevantAttributesFor(
+            inputRoutes.and(inputRoutesOther).andEq(outputConstraints), configAPs);
+    outputConstraints.free();
     refResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
     otherResult.setRelevantInputAttributes(ImmutableList.copyOf(relevantAttributes));
 
@@ -576,7 +575,7 @@ public final class CompareRoutePoliciesUtils {
    */
   public static List<Result.RouteAttributeType> relevantAttributesFor(
       BDD constraint, ConfigAtomicPredicates configAPs) {
-    List<Result.RouteAttributeType> result = new ArrayList<>();
+    ImmutableList.Builder<Result.RouteAttributeType> result = new ImmutableList.Builder<>();
 
     BDDFactory factory = constraint.getFactory();
     BDDRoute origRoute = new BDDRoute(factory, configAPs);
@@ -621,6 +620,6 @@ public final class CompareRoutePoliciesUtils {
     if (constraint.testsVars(origRoute.getWeight().support())) {
       result.add(WEIGHT);
     }
-    return result;
+    return result.build();
   }
 }

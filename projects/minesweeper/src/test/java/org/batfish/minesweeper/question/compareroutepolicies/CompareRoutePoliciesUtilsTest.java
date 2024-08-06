@@ -1,13 +1,23 @@
 package org.batfish.minesweeper.question.compareroutepolicies;
 
+import static org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesUtils.findConcreteDifference;
+import static org.batfish.minesweeper.question.compareroutepolicies.CompareRoutePoliciesUtils.relevantAttributesFor;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.CLUSTER_LIST;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.COMMUNITIES;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.LOCAL_PREFERENCE;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.METRIC;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NETWORK;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.NEXT_HOP;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.TAG;
+import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.WEIGHT;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasSize;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import java.util.Collection;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.JFactory;
@@ -28,7 +38,6 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -89,40 +98,19 @@ public class CompareRoutePoliciesUtilsTest {
             .or(_bddRoute.getClusterListLength().value(1))
             .and(_bddRoute.getTag().value(101).not());
 
+    assertThat(relevantAttributesFor(none, _configAPs), equalTo(ImmutableList.of()));
     assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(none, _configAPs),
-        equalTo(ImmutableList.of()));
+        relevantAttributesFor(localPref, _configAPs), equalTo(ImmutableList.of(LOCAL_PREFERENCE)));
     assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(localPref, _configAPs),
-        equalTo(ImmutableList.of(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+        relevantAttributesFor(commOrMed, _configAPs), containsInAnyOrder(COMMUNITIES, METRIC));
     assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(commOrMed, _configAPs),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(2),
-            containsInAnyOrder(
-                Result.RouteAttributeType.COMMUNITIES, Result.RouteAttributeType.METRIC)));
+        relevantAttributesFor(notASAndAD, _configAPs),
+        containsInAnyOrder(AS_PATH, ADMINISTRATIVE_DISTANCE));
     assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(notASAndAD, _configAPs),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(2),
-            containsInAnyOrder(
-                Result.RouteAttributeType.AS_PATH,
-                Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE)));
+        relevantAttributesFor(prefixLenAndWeight, _configAPs), containsInAnyOrder(NETWORK, WEIGHT));
     assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(prefixLenAndWeight, _configAPs),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(2),
-            containsInAnyOrder(
-                Result.RouteAttributeType.NETWORK, Result.RouteAttributeType.WEIGHT)));
-    assertThat(
-        CompareRoutePoliciesUtils.relevantAttributesFor(several, _configAPs),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(4),
-            containsInAnyOrder(
-                Result.RouteAttributeType.NETWORK,
-                Result.RouteAttributeType.NEXT_HOP,
-                Result.RouteAttributeType.CLUSTER_LIST,
-                Result.RouteAttributeType.TAG)));
+        relevantAttributesFor(several, _configAPs),
+        containsInAnyOrder(NETWORK, NEXT_HOP, CLUSTER_LIST, TAG));
   }
 
   @Test
@@ -130,18 +118,16 @@ public class CompareRoutePoliciesUtilsTest {
     TransferReturn path = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
     Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
-        CompareRoutePoliciesUtils.findConcreteDifference(
+        findConcreteDifference(
             path,
             otherPath,
             _bddRoute.bgpWellFormednessConstraints(),
             _configAPs,
             _policyBuilderRef
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
                 .build(),
             _policyBuilderOther
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+                .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
                 .build(),
             Environment.Direction.IN);
     assertThat(res.getFirst().getRelevantInputAttributes(), equalTo(ImmutableList.of()));
@@ -157,32 +143,22 @@ public class CompareRoutePoliciesUtilsTest {
             true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
     Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
-        CompareRoutePoliciesUtils.findConcreteDifference(
+        findConcreteDifference(
             path,
             otherPath,
             _bddRoute.bgpWellFormednessConstraints(),
             _configAPs,
             _policyBuilderRef
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
                 .build(),
             _policyBuilderOther
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+                .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
                 .build(),
             Environment.Direction.IN);
     assertThat(
-        res.getFirst().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(2),
-            containsInAnyOrder(
-                Result.RouteAttributeType.LOCAL_PREFERENCE, Result.RouteAttributeType.METRIC)));
+        res.getFirst().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE, METRIC));
     assertThat(
-        res.getSecond().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(2),
-            containsInAnyOrder(
-                Result.RouteAttributeType.LOCAL_PREFERENCE, Result.RouteAttributeType.METRIC)));
+        res.getSecond().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE, METRIC));
   }
 
   @Test
@@ -195,28 +171,20 @@ public class CompareRoutePoliciesUtilsTest {
     TransferReturn otherPath =
         new TransferReturn(new BDDRoute(_bddRoute), _bddRoute.getLocalPref().value(300), false);
     Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
-        CompareRoutePoliciesUtils.findConcreteDifference(
+        findConcreteDifference(
             path,
             otherPath,
             _bddRoute.bgpWellFormednessConstraints(),
             _configAPs,
             _policyBuilderRef
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
                 .build(),
             _policyBuilderOther
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitReject)))
+                .setStatements(ImmutableList.of(Statements.ExitReject.toStaticStatement()))
                 .build(),
             Environment.Direction.IN);
-    assertThat(
-        res.getFirst().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
-    assertThat(
-        res.getSecond().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+    assertThat(res.getFirst().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE));
+    assertThat(res.getSecond().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE));
   }
 
   @Test
@@ -226,7 +194,7 @@ public class CompareRoutePoliciesUtilsTest {
     TransferReturn path = new TransferReturn(pathRoute, _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
     Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
-        CompareRoutePoliciesUtils.findConcreteDifference(
+        findConcreteDifference(
             path,
             otherPath,
             _bddRoute.bgpWellFormednessConstraints(),
@@ -235,20 +203,13 @@ public class CompareRoutePoliciesUtilsTest {
                 .setStatements(
                     ImmutableList.of(
                         new SetLocalPreference(new LiteralLong(300)),
-                        new Statements.StaticStatement(Statements.ExitAccept)))
+                        Statements.ExitAccept.toStaticStatement()))
                 .build(),
             _policyBuilderOther
-                .setStatements(
-                    ImmutableList.of(new Statements.StaticStatement(Statements.ExitAccept)))
+                .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
                 .build(),
             Environment.Direction.IN);
-    assertThat(
-        res.getFirst().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
-    assertThat(
-        res.getSecond().getRelevantInputAttributes(),
-        Matchers.<Collection<Result.RouteAttributeType>>allOf(
-            hasSize(1), containsInAnyOrder(Result.RouteAttributeType.LOCAL_PREFERENCE)));
+    assertThat(res.getFirst().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE));
+    assertThat(res.getSecond().getRelevantInputAttributes(), containsInAnyOrder(LOCAL_PREFERENCE));
   }
 }
