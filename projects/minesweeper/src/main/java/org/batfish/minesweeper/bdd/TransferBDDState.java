@@ -2,6 +2,7 @@ package org.batfish.minesweeper.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -33,5 +34,21 @@ public class TransferBDDState {
 
   public TransferResult getTransferResult() {
     return _result;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof TransferBDDState)) {
+      return false;
+    }
+    TransferBDDState that = (TransferBDDState) o;
+    return _param.equals(that._param) && _result.equals(that._result);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_param, _result);
   }
 }

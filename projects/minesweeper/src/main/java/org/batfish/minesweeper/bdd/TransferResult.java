@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -130,5 +131,30 @@ public class TransferResult {
   public @Nonnull TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
     return new TransferResult(
         _returnValue, _suppressedValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    } else if (!(o instanceof TransferResult)) {
+      return false;
+    }
+    TransferResult that = (TransferResult) o;
+    return _suppressedValue == that._suppressedValue
+        && _fallthroughValue == that._fallthroughValue
+        && _exitAssignedValue == that._exitAssignedValue
+        && _returnAssignedValue == that._returnAssignedValue
+        && Objects.equals(_returnValue, that._returnValue);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _returnValue,
+        _suppressedValue,
+        _fallthroughValue,
+        _exitAssignedValue,
+        _returnAssignedValue);
   }
 }
