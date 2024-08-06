@@ -32,7 +32,7 @@ public final class BDDPrefixTest {
 
   @Test
   public void testInPrefixRange() {
-    PrefixRange range = new PrefixRange(Prefix.parse("1.0.0.0/8"), new SubRange(16, 24));
+    PrefixRange range = PrefixRange.fromString("1.0.0.0/8:16-24");
     BDD rangeBdd = _bddPrefix.inPrefixRange(range);
     BDD notRangeBdd = rangeBdd.not();
     Ip matchingIp = Ip.parse("1.1.1.1");
