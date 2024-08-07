@@ -59,7 +59,7 @@ public final class TransferReturn {
   public boolean equals(@Nullable Object o) {
     if (o == this) {
       return true;
-    } else if (o == null || !(o instanceof TransferReturn)) {
+    } else if (!(o instanceof TransferReturn)) {
       return false;
     }
     TransferReturn other = (TransferReturn) o;
