@@ -1246,11 +1246,11 @@ public class TransferBDD {
       case GE:
         return bddInt.geq(val);
       case GT:
-        return bddInt.geq(val).and(bddInt.value(val).not());
+        return bddInt.geq(val).andEq(bddInt.value(val).notEq());
       case LE:
         return bddInt.leq(val);
       case LT:
-        return bddInt.leq(val).and(bddInt.value(val).not());
+        return bddInt.leq(val).andEq(bddInt.value(val).notEq());
       default:
         throw new IllegalArgumentException(
             "Unexpected int comparison " + comp.getClass().getSimpleName());
