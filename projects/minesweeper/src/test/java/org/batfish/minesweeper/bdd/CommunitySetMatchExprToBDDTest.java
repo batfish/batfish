@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
@@ -27,6 +28,7 @@ import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunityIs;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchAll;
 import org.batfish.datamodel.routing_policy.communities.CommunityMatchRegex;
+import org.batfish.datamodel.routing_policy.communities.CommunityNot;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetAclLine;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetMatchAll;
@@ -207,6 +209,30 @@ public class CommunitySetMatchExprToBDDTest {
             "^65000:123 65011:12[3]$");
     _expectedException.expect(UnsupportedOperationException.class);
     _communitySetMatchExprToBDD.visitCommunitySetMatchRegex(csmr, _arg);
+  }
+
+  @Test
+  public void testVisitCommunityNot() {
+    HasCommunity hc =
+        new HasCommunity(new CommunityNot(new CommunityIs(StandardCommunity.parse("20:30"))));
+
+    BDD result = _communitySetMatchExprToBDD.visitHasCommunity(hc, _arg);
+    BDD[] aps = _arg.getBDDRoute().getCommunityAtomicPredicates();
+    Set<Integer> notCommunityAps =
+        _configAPs
+            .getStandardCommunityAtomicPredicates()
+            .getRegexAtomicPredicates()
+            .get(CommunityVar.from(StandardCommunity.parse("20:30")));
+    BDD expected =
+        result
+            .getFactory()
+            .orAll(
+                IntStream.range(0, aps.length)
+                    .filter(i -> !notCommunityAps.contains(i))
+                    .mapToObj(i -> aps[i])
+                    .toList());
+
+    assertEquals(expected, result);
   }
 
   @Test
