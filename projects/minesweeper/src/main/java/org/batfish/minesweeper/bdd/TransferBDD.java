@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
@@ -49,12 +50,15 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.DiscardNextHop;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntExpr;
@@ -174,40 +178,37 @@ public class TransferBDD {
    * Apply the effect of modifying a long value (e.g., to set the metric).
    * Overflows for IncrementMetric are handled by clipping to the max value.
    */
-  private MutableBDDInteger applyLongExprModification(
+  @VisibleForTesting
+  static MutableBDDInteger applyLongExprModification(
       TransferParam p, MutableBDDInteger x, LongExpr e) throws UnsupportedOperationException {
+    /*
+     * TODO: Increment/Decrement Metric/LocalPreference should NOT be LongExprs, they should be in Statements. As-is,
+     * the correctness of this function relies on the parameter X correctly corresponding to the Metric/LocalPref being
+     * modified. Auditing VS conversion code, we appear to always use them this way, but this is not type-safe.
+     */
     if (e instanceof LiteralLong) {
       LiteralLong z = (LiteralLong) e;
       p.debug("LiteralLong: %s", z.getValue());
       return MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getValue());
     } else if (e instanceof IncrementMetric) {
       IncrementMetric z = (IncrementMetric) e;
-      p.debug("Increment: %s", z.getAddend());
+      p.debug("IncrementMetric: %s", z.getAddend());
       return x.addClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    } else if (e instanceof DecrementMetric) {
+      DecrementMetric z = (DecrementMetric) e;
+      p.debug("DecrementMetric: %s", z.getSubtrahend());
+      return x.subClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
+    } else if (e instanceof IncrementLocalPreference) {
+      IncrementLocalPreference z = (IncrementLocalPreference) e;
+      p.debug("IncrementLocalPreference: %s", z.getAddend());
+      return x.addClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
+    } else if (e instanceof DecrementLocalPreference) {
+      DecrementLocalPreference z = (DecrementLocalPreference) e;
+      p.debug("DecrementLocalPreference: %s", z.getSubtrahend());
+      return x.subClipping(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
     } else {
       throw new UnsupportedOperationException(e.toString());
     }
-
-    /* TODO: These old cases are not correct; removing for now since they are not currently used.
-    First, they should dec/inc the corresponding field of the route, not whatever MutableBDDInteger x
-    is passed in.  Second, they need to prevent overflow.  See LongExpr::evaluate for details.
-
-    if (e instanceof DecrementMetric) {
-      DecrementMetric z = (DecrementMetric) e;
-      p.debug("Decrement: %s", z.getSubtrahend());
-      return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-    if (e instanceof IncrementLocalPreference) {
-      IncrementLocalPreference z = (IncrementLocalPreference) e;
-      p.debug("IncrementLocalPreference: %s", z.getAddend());
-      return x.add(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getAddend()));
-    }
-    if (e instanceof DecrementLocalPreference) {
-      DecrementLocalPreference z = (DecrementLocalPreference) e;
-      p.debug("DecrementLocalPreference: %s", z.getSubtrahend());
-      return x.sub(MutableBDDInteger.makeFromValue(x.getFactory(), 32, z.getSubtrahend()));
-    }
-     */
   }
 
   /**
