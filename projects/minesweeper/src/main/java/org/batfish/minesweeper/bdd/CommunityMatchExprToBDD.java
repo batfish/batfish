@@ -10,7 +10,6 @@ import java.util.Set;
 import java.util.function.Predicate;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -96,9 +95,7 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitCommunityIs(CommunityIs communityIs, Arg arg) {
 
     return CommunitySetMatchExprToBDD.communityVarsToBDD(
-        communityIs.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
-        arg);
+        communityIs.accept(new CommunityMatchExprVarCollector(), arg.getConfiguration()), arg);
   }
 
   @Override
@@ -122,19 +119,14 @@ public class CommunityMatchExprToBDD implements CommunityMatchExprVisitor<BDD, A
   public BDD visitCommunityMatchExprReference(
       CommunityMatchExprReference communityMatchExprReference, Arg arg) {
     String name = communityMatchExprReference.getName();
-    CommunityMatchExpr expr =
-        arg.getTransferBDD().getConfiguration().getCommunityMatchExprs().get(name);
-    if (expr == null) {
-      throw new BatfishException("Cannot find community match expression: " + name);
-    }
+    CommunityMatchExpr expr = arg.getCommunityMatchExpr(name);
     return expr.accept(this, arg);
   }
 
   @Override
   public BDD visitCommunityMatchRegex(CommunityMatchRegex communityMatchRegex, Arg arg) {
     return CommunitySetMatchExprToBDD.communityVarsToBDD(
-        communityMatchRegex.accept(
-            new CommunityMatchExprVarCollector(), arg.getTransferBDD().getConfiguration()),
+        communityMatchRegex.accept(new CommunityMatchExprVarCollector(), arg.getConfiguration()),
         arg);
   }
 

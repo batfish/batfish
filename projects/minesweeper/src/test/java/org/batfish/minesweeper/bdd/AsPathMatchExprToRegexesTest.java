@@ -13,6 +13,7 @@ import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprReference;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
@@ -24,6 +25,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -60,12 +62,11 @@ public class AsPathMatchExprToRegexesTest {
     ConfigAtomicPredicates configAPs =
         ConfigAtomicPredicatesTestUtils.forDevice(
             batfish, batfish.getSnapshot(), HOSTNAME, null, ImmutableSet.of(ASPATH1, ASPATH2));
-    TransferBDD transferBDD =
-        new TransferBDD(
-            configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(configAPs);
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    RoutingPolicy policy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(policy));
     _matchExprToRegexes = new AsPathMatchExprToRegexes();
 
     _asPath1Regex = new SymbolicAsPathRegex(ASPATH1);

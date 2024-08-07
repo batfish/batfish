@@ -121,7 +121,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    * A sequence of AS numbers that is prepended to the original AS-path. The use of a fully concrete
    * value here is sufficient to accurately represent the effects of a single execution path through
    * a route map, since any single path encounters a fixed set of AS-path prepend statements. Hence
-   * this representation is sufficient to support {@link TransferBDD#computePaths()}, which produces
+   * this representation is sufficient to support {@link TransferBDD#computePaths}, which produces
    * one BDDRoute per execution path. However, this representation precludes the use of a BDDRoute
    * to accurately represent the effects of multiple execution paths, unless those paths prepend the
    * same exact sequence of ASes to the AS-path.
