@@ -146,6 +146,21 @@ public class MutableBDDIntegerTest {
   }
 
   @Test
+  public void testSubClipping() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger constant16 = MutableBDDInteger.makeFromValue(factory, 5, 16);
+    BDDInteger xMinus1 = x.subClipping(constant1);
+    BDDInteger xMinus16 = x.subClipping(constant16);
+
+    assertEquals(x.value(31), xMinus1.value(30)); // x == 31 <==> x-1 == 30
+    assertEquals(x.value(30), xMinus1.value(29)); // x == 30 <==> x-1 == 29
+    assertEquals(x.leq(1), xMinus1.value(0)); // x <= 1 ==> x-1 == 0 [clipped]
+    assertEquals(x.leq(16), xMinus16.value(0)); // x <= 16 ==> x-16 == 0 [clipped]
+  }
+
+  @Test
   public void testToBDDIpWildcard() {
     BDDFactory factory = BDDUtils.bddFactory(32);
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 32, 1);
