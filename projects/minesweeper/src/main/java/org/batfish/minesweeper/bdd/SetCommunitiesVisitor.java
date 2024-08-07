@@ -1,7 +1,5 @@
 package org.batfish.minesweeper.bdd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -34,8 +32,7 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitCommunityExprsSet(
       CommunityExprsSet communityExprsSet, Arg arg) {
     Set<CommunityVar> commVars =
-        communityExprsSet.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        communityExprsSet.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 
@@ -67,10 +64,7 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitCommunitySetExprReference(
       CommunitySetExprReference communitySetExprReference, Arg arg) {
     String name = communitySetExprReference.getName();
-    CommunitySetExpr setExpr =
-        arg.getTransferBDD().getConfiguration().getCommunitySetExprs().get(name);
-    checkArgument(
-        setExpr != null, "Undefined reference in community set exprs should not be possible");
+    CommunitySetExpr setExpr = arg.getCommunitySetExpr(name);
     return setExpr.accept(this, arg);
   }
 
@@ -78,8 +72,7 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitCommunitySetReference(
       CommunitySetReference communitySetReference, Arg arg) {
     Set<CommunityVar> commVars =
-        communitySetReference.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        communitySetReference.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 
@@ -103,8 +96,7 @@ public class SetCommunitiesVisitor
   public CommunityAPDispositions visitLiteralCommunitySet(
       LiteralCommunitySet literalCommunitySet, Arg arg) {
     Set<CommunityVar> commVars =
-        literalCommunitySet.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        literalCommunitySet.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return communityAPDispositionsFor(commVars, arg);
   }
 

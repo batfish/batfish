@@ -60,6 +60,7 @@ import org.batfish.minesweeper.bdd.CommunityMatchExprToBDD;
 import org.batfish.minesweeper.bdd.CommunitySetMatchExprToBDD;
 import org.batfish.minesweeper.bdd.ModelGeneration;
 import org.batfish.minesweeper.bdd.TransferBDD;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
@@ -363,7 +364,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return the constraint as a BDD
    */
   private BDD communityRegexConstraintToBDD(
-      RegexConstraint regex, TransferBDD tbdd, BDDRoute route) {
+      RegexConstraint regex, TransferBDD tbdd, BDDRoute route, TransferBDD.Context context) {
     switch (regex.getRegexType()) {
       case REGEX:
         return tbdd.getFactory()
@@ -377,10 +378,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                     .map(i -> route.getCommunityAtomicPredicates()[i])
                     .collect(ImmutableSet.toImmutableSet()));
       case STRUCTURE_NAME:
-        CommunityMatchExpr cme =
-            tbdd.getConfiguration().getCommunityMatchExprs().get(regex.getRegex());
+        CommunityMatchExpr cme = context.config().getCommunityMatchExprs().get(regex.getRegex());
         return cme.accept(
-            new CommunityMatchExprToBDD(), new CommunitySetMatchExprToBDD.Arg(tbdd, route));
+            new CommunityMatchExprToBDD(),
+            new CommunitySetMatchExprToBDD.Arg(tbdd, route, context));
       default:
         throw new UnsupportedOperationException(
             "Unknown regex constraint type: " + regex.getRegexType());
@@ -396,7 +397,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return the overall constraint as a BDD
    */
   private BDD communityRegexConstraintsToBDD(
-      RegexConstraints regexes, TransferBDD tbdd, BDDRoute route) {
+      RegexConstraints regexes, TransferBDD tbdd, BDDRoute route, Context context) {
 
     BDDFactory factory = tbdd.getFactory();
 
@@ -409,13 +410,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             ? factory.one()
             : factory.orAll(
                 regexes.getPositiveRegexConstraints().stream()
-                    .map(r -> communityRegexConstraintToBDD(r, tbdd, route))
+                    .map(r -> communityRegexConstraintToBDD(r, tbdd, route, context))
                     .collect(ImmutableSet.toImmutableSet()));
     // disjoin all negative regex constraints, similarly
     BDD negativeConstraints =
         factory.orAll(
             regexes.getNegativeRegexConstraints().stream()
-                .map(r -> communityRegexConstraintToBDD(r, tbdd, route))
+                .map(r -> communityRegexConstraintToBDD(r, tbdd, route, context))
                 .collect(ImmutableSet.toImmutableSet()));
 
     return positiveConstraints.diffWith(negativeConstraints);
@@ -466,7 +467,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   // given set of BgpRouteConstraints.  The way to represent next-hop constraints depends on whether
   // r is an input or output route, so the outputRoute flag distinguishes these cases.
   private BDD routeConstraintsToBDD(
-      BgpRouteConstraints constraints, BDDRoute r, boolean outputRoute, TransferBDD tbdd) {
+      BgpRouteConstraints constraints,
+      BDDRoute r,
+      boolean outputRoute,
+      TransferBDD tbdd,
+      Context context) {
 
     ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
 
@@ -477,7 +482,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
     result.andWith(longSpaceToBDD(constraints.getMed(), r.getMed()));
     result.andWith(longSpaceToBDD(constraints.getTag(), r.getTag()));
-    result.andWith(communityRegexConstraintsToBDD(constraints.getCommunities(), tbdd, r));
+    result.andWith(communityRegexConstraintsToBDD(constraints.getCommunities(), tbdd, r, context));
     if (outputRoute) {
       // AS-path constraints on the output route need to take any prepends into account
       result.andWith(
@@ -508,9 +513,10 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
   private List<Row> searchPolicy(RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     List<TransferReturn> paths;
     TransferBDD tbdd;
+    Context context = TransferBDD.Context.forPolicy(policy);
     try {
-      tbdd = new TransferBDD(configAPs, policy);
-      paths = tbdd.computePaths();
+      tbdd = new TransferBDD(configAPs);
+      paths = tbdd.computePaths(policy.getStatements(), context);
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "
@@ -533,7 +539,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     Set<PrefixSpace> blockedPrefixes = new HashSet<>();
     BDD inConstraints =
         routeConstraintsToBDD(
-            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, tbdd);
+            _inputConstraints, new BDDRoute(tbdd.getFactory(), configAPs), false, tbdd, context);
     ImmutableList.Builder<Row> builder = ImmutableList.builder();
     for (TransferReturn path : relevantPaths) {
       BDD pathAnnouncements = path.getInputConstraints();
@@ -550,7 +556,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
             routeConstraintsToBDD(
-                _outputConstraints, outputRoute, true, new TransferBDD(outConfigAPs, policy));
+                _outputConstraints, outputRoute, true, new TransferBDD(outConfigAPs), context);
         intersection = intersection.and(outConstraints);
       }
 

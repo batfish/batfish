@@ -33,11 +33,7 @@ public class AsPathMatchExprToRegexes
   @Override
   public Set<SymbolicAsPathRegex> visitAsPathMatchExprReference(
       AsPathMatchExprReference asPathMatchExprReference, CommunitySetMatchExprToBDD.Arg arg) {
-    return arg.getTransferBDD()
-        .getConfiguration()
-        .getAsPathMatchExprs()
-        .get(asPathMatchExprReference.getName())
-        .accept(this, arg);
+    return arg.getAsPathMatchExpr(asPathMatchExprReference.getName()).accept(this, arg);
   }
 
   @Override
