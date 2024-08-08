@@ -5,6 +5,7 @@ import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -15,6 +16,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Range;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -3748,5 +3750,44 @@ public class TransferBDDTest {
     TransferBDD tbdd1 = new TransferBDD(_configAPs);
     TransferBDD tbdd2 = new TransferBDD(_configAPs);
     assertNotSame(tbdd1.getFactory(), tbdd2.getFactory());
+  }
+
+  /**
+   * Tests that a simple exponential paths with identical output is correctly collapsed or not when
+   * retainAllPaths is false or true.
+   */
+  @Test
+  public void testDontRetainAllPaths() {
+    int numIfs = 10;
+    // Make a list of N different If statements, each of which has a different guard but the
+    // same Set.
+    List<Statement> manyMatchesSameResult = new ArrayList<>();
+    for (int i = 0; i < numIfs; ++i) {
+      manyMatchesSameResult.add(
+          new If(
+              new MatchCommunities(
+                  new InputCommunities(),
+                  new HasCommunity(new CommunityIs(StandardCommunity.of(i)))),
+              ImmutableList.of(new SetMetric(new LiteralLong(5)))));
+    }
+    _policyBuilder.setStatements(manyMatchesSameResult).build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    assertThat(
+        _configAPs.getStandardCommunityAtomicPredicates().getNumAtomicPredicates(),
+        equalTo(numIfs + 1));
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    Context context = Context.create("policy", "config", false, _baseConfig);
+
+    BDDRoute routeParam = new BDDRoute(tbdd.getOriginalRoute());
+    TransferBDDState initial =
+        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+    assertThat(
+        tbdd.computePaths(initial, manyMatchesSameResult, context, true), hasSize(1 << numIfs));
+
+    routeParam = new BDDRoute(tbdd.getOriginalRoute());
+    initial =
+        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+    assertThat(tbdd.computePaths(initial, manyMatchesSameResult, context, false), hasSize(2));
   }
 }
