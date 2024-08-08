@@ -324,9 +324,11 @@ public class TransferBDD {
             compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
                 .forEach(
                     r -> {
-                      TransferResult updated =
-                          r.setReturnValueBDD(
-                              r.getReturnValue().getInputConstraints().and(currBDD));
+                      BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                      if (condition.isZero()) {
+                        return;
+                      }
+                      TransferResult updated = r.setReturnValueBDD(condition);
                       // if we're on a path where e evaluates to false, then this path is done;
                       // otherwise we will evaluate the next conjunct in the next iteration
                       if (!updated.getReturnValue().getAccepted()) {
@@ -393,9 +395,11 @@ public class TransferBDD {
               compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
                   .forEach(
                       r -> {
-                        TransferResult updated =
-                            r.setReturnValueBDD(
-                                r.getReturnValue().getInputConstraints().and(currBDD));
+                        BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                        if (condition.isZero()) {
+                          return;
+                        }
+                        TransferResult updated = r.setReturnValueBDD(condition);
                         // if we're on a path where e evaluates to true, then this path is done;
                         // otherwise we will evaluate the next disjunct in the next iteration
                         if (updated.getReturnValue().getAccepted()) {
@@ -479,8 +483,11 @@ public class TransferBDD {
                     // r's BDD only represents the constraints on a path through the policy pol, so
                     // we explicitly incorporate the constraints accrued on the path through the
                     // prior policies in the chain
-                    TransferResult updated =
-                        r.setReturnValueBDD(r.getReturnValue().getInputConstraints().and(currBDD));
+                    BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
+                    if (condition.isZero()) {
+                      return;
+                    }
+                    TransferResult updated = r.setReturnValueBDD(condition);
                     if (updated.getFallthroughValue()) {
                       nextResults.add(updated.setFallthroughValue(false));
                     } else {
@@ -508,7 +515,9 @@ public class TransferBDD {
       // MatchPrefixSet::evaluate obtains the prefix to match (either the destination network or
       // next-hop IP) from the original route, so we do the same here
       BDD prefixSet = matchPrefixSet(p.indent(), m, _originalRoute, context);
-      finalResults.add(result.setReturnValueBDD(prefixSet).setReturnValueAccepted(true));
+      if (!prefixSet.isZero()) {
+        finalResults.add(result.setReturnValueBDD(prefixSet).setReturnValueAccepted(true));
+      }
 
     } else if (expr instanceof CallExpr) {
       p.debug("CallExpr");
@@ -557,7 +566,9 @@ public class TransferBDD {
               .accept(
                   new CommunitySetMatchExprToBDD(),
                   new Arg(this, routeForMatching(p, context), context));
-      finalResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
+      if (!mcPredicate.isZero()) {
+        finalResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
+      }
 
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
