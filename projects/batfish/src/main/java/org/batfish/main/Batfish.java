@@ -55,6 +55,7 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.AbstractMap.SimpleEntry;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -529,6 +530,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     AnswerElement answerElement = null;
     BatfishException exception = null;
+    long startTime = System.nanoTime();
     try {
       if (question.getDifferential()) {
         answerElement =
@@ -537,19 +539,30 @@ public class Batfish extends PluginConsumer implements IBatfish {
         answerElement = Answerer.create(question, this).answer(getSnapshot());
       }
     } catch (Exception e) {
-      exception = new BatfishException("Failed to answer question", e);
+      exception =
+          new BatfishException(
+              String.format("Failed to answer question %s", question.getClass().getSimpleName()),
+              e);
     }
+    Duration answerTime = Duration.ofNanos(System.nanoTime() - startTime);
 
     Answer answer = new Answer();
     answer.setQuestion(question);
 
     if (exception == null) {
-      LOGGER.info("Question answered successfully");
+      LOGGER.info(
+          "Question {} answered successfully in {}",
+          question.getClass().getSimpleName(),
+          answerTime);
       // success
       answer.setStatus(AnswerStatus.SUCCESS);
       answer.addAnswerElement(answerElement);
     } else {
-      LOGGER.warn("Question execution failed", exception);
+      LOGGER.warn(
+          "Question {} execution failed in {}",
+          question.getClass().getSimpleName(),
+          answerTime,
+          exception);
       // failure
       answer.setStatus(AnswerStatus.FAILURE);
       answer.addAnswerElement(exception.getBatfishStackTrace());
