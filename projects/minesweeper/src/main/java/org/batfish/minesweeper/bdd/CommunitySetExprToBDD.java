@@ -4,7 +4,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.communities.CommunityExprsSet;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetDifference;
 import org.batfish.datamodel.routing_policy.communities.CommunitySetExpr;
@@ -28,8 +27,7 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
   @Override
   public BDD visitCommunityExprsSet(CommunityExprsSet communityExprsSet, Arg arg) {
     Set<CommunityVar> commVars =
-        communityExprsSet.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        communityExprsSet.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return CommunitySetMatchExprToBDD.communityVarsToBDD(commVars, arg);
   }
 
@@ -45,19 +43,14 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
   public BDD visitCommunitySetExprReference(
       CommunitySetExprReference communitySetExprReference, Arg arg) {
     String name = communitySetExprReference.getName();
-    CommunitySetExpr expr =
-        arg.getTransferBDD().getConfiguration().getCommunitySetExprs().get(name);
-    if (expr == null) {
-      throw new BatfishException("Cannot find community set expression: " + name);
-    }
+    CommunitySetExpr expr = arg.getCommunitySetExpr(name);
     return expr.accept(this, arg);
   }
 
   @Override
   public BDD visitCommunitySetReference(CommunitySetReference communitySetReference, Arg arg) {
     Set<CommunityVar> commVars =
-        communitySetReference.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        communitySetReference.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return CommunitySetMatchExprToBDD.communityVarsToBDD(commVars, arg);
   }
 
@@ -79,8 +72,7 @@ public class CommunitySetExprToBDD implements CommunitySetExprVisitor<BDD, Arg> 
   @Override
   public BDD visitLiteralCommunitySet(LiteralCommunitySet literalCommunitySet, Arg arg) {
     Set<CommunityVar> commVars =
-        literalCommunitySet.accept(
-            new CommunitySetExprVarCollector(), arg.getTransferBDD().getConfiguration());
+        literalCommunitySet.accept(new CommunitySetExprVarCollector(), arg.getConfiguration());
     return CommunitySetMatchExprToBDD.communityVarsToBDD(commVars, arg);
   }
 }

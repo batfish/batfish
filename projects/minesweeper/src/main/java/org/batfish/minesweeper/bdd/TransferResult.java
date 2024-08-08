@@ -52,12 +52,15 @@ public class TransferResult {
    * condition and FALSE as the initial value for having hit a return/exit/fallthrough statement.
    */
   public TransferResult(BDDRoute bddRoute) {
-    this(
-        new TransferReturn(bddRoute, bddRoute.getFactory().one(), false),
-        false,
-        false,
-        false,
-        false);
+    this(bddRoute, bddRoute.getFactory().one());
+  }
+
+  /**
+   * Construct a TransferResult from a BDDRoute with given input route constraints. This uses FALSE
+   * as the initial value for having hit a return/exit/fallthrough statement.
+   */
+  public TransferResult(BDDRoute bddRoute, BDD inputRouteConstraints) {
+    this(new TransferReturn(bddRoute, inputRouteConstraints, false), false, false, false, false);
   }
 
   public TransferResult(

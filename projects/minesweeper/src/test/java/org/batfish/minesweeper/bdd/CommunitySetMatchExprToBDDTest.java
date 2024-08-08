@@ -22,6 +22,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.ColonSeparatedRendering;
 import org.batfish.datamodel.routing_policy.communities.CommunityAcl;
 import org.batfish.datamodel.routing_policy.communities.CommunityAclLine;
@@ -45,6 +46,7 @@ import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -85,12 +87,11 @@ public class CommunitySetMatchExprToBDDTest {
                 CommunityVar.from(StandardCommunity.parse("20:30")),
                 CommunityVar.from(StandardCommunity.parse("21:30"))),
             null);
-    TransferBDD transferBDD =
-        new TransferBDD(
-            _configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(_configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), _configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _communitySetMatchExprToBDD = new CommunitySetMatchExprToBDD();
   }
