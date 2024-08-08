@@ -18,6 +18,7 @@ import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.AllExtendedCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllLargeCommunities;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -52,6 +53,7 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.CommunityVar.Type;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
+import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
@@ -101,12 +103,11 @@ public class CommunityMatchExprToBDDTest {
                 CommunityVar.from(ExtendedCommunity.opaque(false, 4, 50)),
                 CommunityVar.from(LargeCommunity.of(20, 20, 20))),
             null);
-    TransferBDD transferBDD =
-        new TransferBDD(
-            configAPs,
-            nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build());
+    TransferBDD transferBDD = new TransferBDD(configAPs);
+    RoutingPolicy testPolicy =
+        nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME).build();
     BDDRoute bddRoute = new BDDRoute(transferBDD.getFactory(), configAPs);
-    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute);
+    _arg = new CommunitySetMatchExprToBDD.Arg(transferBDD, bddRoute, Context.forPolicy(testPolicy));
 
     _communityMatchExprToBDD = new CommunityMatchExprToBDD();
   }
