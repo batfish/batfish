@@ -5,9 +5,11 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -15,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
@@ -274,14 +277,20 @@ public class TransferBDD {
   }
 
   /**
-   * Produces one TransferResult per path through the given boolean expression. For most
+   * Produce {@link TransferResult} for all paths through the given boolean expression. For most
    * expressions, for example matching on a prefix or community, this analysis will yield exactly
    * two paths, respectively representing the case when the expression evaluates to true and false.
-   * Some expressions, such as CallExpr, Conjunction, and Disjunction, implicitly or explicitly
-   * contain branches and so can yield more than two paths. TODO: Any updates to the TransferParam
-   * in expr are lost currently
+   * Some expressions, such as {@link CallExpr}, {@link Conjunction}, and {@link Disjunction},
+   * implicitly or explicitly contain branches and so can yield more than two paths.
+   *
+   * <p>If {@code retainAllPaths} is {@code false}, then paths with the same output behavior (aka,
+   * {@link TransferResult} is equivalent except for the input conditions under which the path is
+   * reached) are combined (by unioning those input conditions).
+   *
+   * <p>TODO: Any updates to the TransferParam in expr are lost currently
    */
-  private List<TransferResult> compute(BooleanExpr expr, TransferBDDState state, Context context)
+  private List<TransferResult> compute(
+      BooleanExpr expr, TransferBDDState state, Context context, boolean retainAllPaths)
       throws UnsupportedOperationException {
     TransferParam p = state.getTransferParam();
     TransferResult result = state.getTransferResult();
@@ -296,7 +305,7 @@ public class TransferBDD {
     } else if (expr instanceof Not) {
       p.debug("mkNot");
       Not n = (Not) expr;
-      List<TransferResult> results = compute(n.getExpr(), state, context);
+      List<TransferResult> results = compute(n.getExpr(), state, context, retainAllPaths);
       for (TransferResult res : results) {
         TransferResult newRes = res.setReturnValueAccepted(!res.getReturnValue().getAccepted());
         finalResults.add(newRes);
@@ -312,7 +321,7 @@ public class TransferBDD {
         try {
           for (TransferResult curr : currResults) {
             BDD currBDD = curr.getReturnValue().getInputConstraints();
-            compute(e, toTransferBDDState(p.indent(), curr), context)
+            compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
                 .forEach(
                     r -> {
                       TransferResult updated =
@@ -327,7 +336,7 @@ public class TransferBDD {
                       }
                     });
           }
-          currResults = nextResults;
+          currResults = retainAllPaths ? nextResults : combineTransferResults(nextResults);
         } catch (UnsupportedOperationException ufe) {
           // BooleanExpr e is not supported; ignore it but record the fact that we encountered it
           currResults.forEach(
@@ -381,7 +390,7 @@ public class TransferBDD {
           try {
             for (TransferResult curr : currResults) {
               BDD currBDD = curr.getReturnValue().getInputConstraints();
-              compute(e, toTransferBDDState(p.indent(), curr), context)
+              compute(e, toTransferBDDState(p.indent(), curr), context, retainAllPaths)
                   .forEach(
                       r -> {
                         TransferResult updated =
@@ -430,7 +439,7 @@ public class TransferBDD {
                     .setDefaultPolicy(null)
                     .setChainContext(TransferParam.ChainContext.CONJUNCTION)
                     .indent();
-            compute(e, toTransferBDDState(param, curr), context)
+            compute(e, toTransferBDDState(param, curr), context, retainAllPaths)
                 .forEach(
                     r -> {
                       if (r.getFallthroughValue()) {
@@ -464,7 +473,7 @@ public class TransferBDD {
           // we set the fallthrough flag to true initially in order to handle implicit fallthrough
           // properly; if there is an exit or return in the policy then the flag will be unset
           TransferResult updatedCurr = curr.setFallthroughValue(true);
-          compute(pol, toTransferBDDState(param, updatedCurr), context)
+          compute(pol, toTransferBDDState(param, updatedCurr), context, retainAllPaths)
               .forEach(
                   r -> {
                     // r's BDD only represents the constraints on a path through the policy pol, so
@@ -518,7 +527,8 @@ public class TransferBDD {
               ImmutableList.of(
                   new TransferBDDState(
                       newParam, result.setReturnAssignedValue(false).setExitAssignedValue(false))),
-              context);
+              context,
+              retainAllPaths);
 
       for (TransferBDDState callState : callStates) {
         finalResults.add(
@@ -533,7 +543,7 @@ public class TransferBDD {
       // TODO: this is not correct
       WithEnvironmentExpr we = (WithEnvironmentExpr) expr;
       // TODO: postStatements() and preStatements()
-      finalResults.addAll(compute(we.getExpr(), state, context));
+      finalResults.addAll(compute(we.getExpr(), state, context, retainAllPaths));
 
     } else if (expr instanceof MatchCommunities) {
       p.debug("MatchCommunities");
@@ -682,14 +692,20 @@ public class TransferBDD {
               .setReturnValueAccepted(false);
       finalResults.add(remaining);
     }
-    return ImmutableList.copyOf(finalResults);
+    return ImmutableList.copyOf(
+        retainAllPaths ? finalResults : combineTransferResults(finalResults));
   }
 
-  /*
-   * Symbolic analysis of a single route-policy statement.
-   * Produces one TransferResult per path through the given statement.
+  /**
+   * Symbolic analysis of a single route-policy statement, producing one {@link TransferBDDState}
+   * per path through the given statement.
+   *
+   * <p>If {@code retainAllPaths} is {@code false}, then paths with the same output behavior (aka,
+   * {@link TransferBDDState} is equivalent except for the input conditions under which the path is
+   * reached) are combined (by unioning those input conditions).
    */
-  private List<TransferBDDState> compute(Statement stmt, TransferBDDState state, Context context)
+  private List<TransferBDDState> compute(
+      Statement stmt, TransferBDDState state, Context context, boolean retainAllPaths)
       throws UnsupportedOperationException {
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();
@@ -802,7 +818,8 @@ public class TransferBDD {
       curP.debug("If");
       If i = (If) stmt;
       List<TransferResult> guardResults =
-          compute(i.getGuard(), new TransferBDDState(curP.indent(), result), context);
+          compute(
+              i.getGuard(), new TransferBDDState(curP.indent(), result), context, retainAllPaths);
 
       // for each path coming from the guard, symbolically execute the appropriate branch of the If
       List<TransferBDDState> newStates = new ArrayList<>();
@@ -828,10 +845,11 @@ public class TransferBDD {
                         result.setReturnValue(
                             new TransferReturn(
                                 current, pathCondition, result.getReturnValue().getAccepted())))),
-                context));
+                context,
+                retainAllPaths));
       }
 
-      return ImmutableList.copyOf(newStates);
+      return ImmutableList.copyOf(retainAllPaths ? newStates : combineStates(newStates));
 
     } else if (stmt instanceof SetAdministrativeCost) {
       curP.debug("SetAdministrativeCost");
@@ -970,16 +988,20 @@ public class TransferBDD {
               pol.getStatements(),
               ImmutableList.of(
                   new TransferBDDState(newParam, result.setReturnAssignedValue(false))),
-              context);
+              context,
+              retainAllPaths);
       // TODO: Currently dropping the returned TransferParam on the floor
       TransferParam finalCurP = curP;
       // restore the original returnAssigned value
-      return callResults.stream()
-          .map(
-              r ->
-                  toTransferBDDState(
-                      finalCurP, r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
-          .collect(ImmutableList.toImmutableList());
+      List<TransferBDDState> restoredResults =
+          callResults.stream()
+              .map(
+                  r ->
+                      toTransferBDDState(
+                          finalCurP,
+                          r.getTransferResult().setReturnAssignedValue(oldReturnAssigned)))
+              .collect(ImmutableList.toImmutableList());
+      return retainAllPaths ? restoredResults : combineStates(restoredResults);
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
@@ -994,63 +1016,76 @@ public class TransferBDD {
 
     } else if (stmt instanceof TraceableStatement) {
       return compute(
-          ((TraceableStatement) stmt).getInnerStatements(), ImmutableList.of(state), context);
+          ((TraceableStatement) stmt).getInnerStatements(),
+          ImmutableList.of(state),
+          context,
+          retainAllPaths);
 
     } else {
       throw new UnsupportedOperationException(stmt.toString());
     }
   }
 
-  /*
-   * Symbolic analysis of a list of route-policy statements.
-   * Produces one TransferBDDState per path through the given list of statements.
+  /**
+   * Symbolic analysis of a single routing policy {@link Statement}.
+   *
+   * <p>If {@code retainAllPaths} is {@code false}, then paths with the same output behavior (aka,
+   * {@link TransferBDDState} is equivalent except for the input conditions under which the path is
+   * reached) are combined (by unioning those input conditions).
    */
   private List<TransferBDDState> compute(
-      List<Statement> statements, List<TransferBDDState> states, Context context) {
+      List<Statement> statements,
+      List<TransferBDDState> states,
+      Context context,
+      boolean retainAllPaths) {
     List<TransferBDDState> currStates = states;
+    List<TransferBDDState> returnStates = new ArrayList<>();
     for (Statement stmt : statements) {
       List<TransferBDDState> newStates = new ArrayList<>();
       for (TransferBDDState currState : currStates) {
         try {
           // if the path has already reached an exit/return then just keep it
           if (unreachable(currState.getTransferResult())) {
-            newStates.add(currState);
+            returnStates.add(currState);
           } else {
             // otherwise symbolically execute the next statement
-            newStates.addAll(compute(stmt, currState, context));
+            newStates.addAll(compute(stmt, currState, context, retainAllPaths));
           }
         } catch (UnsupportedOperationException e) {
           unsupported(e, currState.getTransferParam().getData(), context);
           newStates.add(currState);
         }
       }
-      currStates = newStates;
+      currStates = retainAllPaths ? newStates : combineStates(newStates);
     }
-    return currStates;
+    returnStates.addAll(currStates);
+    return retainAllPaths ? returnStates : combineStates(returnStates);
   }
 
   /**
-   * Symbolic analysis of a list of route-policy statements. Returns one TransferResult per path
-   * through the list of statements. The list of paths is unordered, and by construction each path
-   * is unique, as each path has a unique condition under which it is taken (the BDD in the
-   * TransferResult). The particular statements executed along a given path are not included in this
-   * representation but can be reconstructed by simulating one route that takes this path using
-   * {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
+   * Compute the {@link TransferResult} for all paths through the given list of routing policy
+   * {@link Statement statements} from the given initial condition {@link TransferBDDState}.
+   *
+   * <p>If {@code retainAllPaths} is {@code false}, then paths with the same output behavior (aka,
+   * {@link TransferResult} is equivalent except for the input conditions under which the path is
+   * reached) are combined (by unioning those input conditions).
    */
-  private List<TransferResult> computePaths(
-      List<Statement> statements, TransferParam p, Context context) {
-    TransferParam curP = p;
-    TransferResult result = new TransferResult(curP.getData());
+  public List<TransferResult> computePaths(
+      TransferBDDState state, List<Statement> statements, Context context, boolean retainAllPaths) {
     List<TransferBDDState> states =
-        compute(statements, ImmutableList.of(new TransferBDDState(curP, result)), context);
+        compute(statements, ImmutableList.of(state), context, retainAllPaths);
+    return extractResults(states);
+  }
+
+  private List<TransferResult> extractResults(List<TransferBDDState> states) {
     ImmutableList.Builder<TransferResult> results = ImmutableList.builder();
     for (TransferBDDState state : states) {
-      curP = state.getTransferParam();
-      result = state.getTransferResult();
+      TransferResult result = state.getTransferResult();
       if (result.getReturnValue().getInputConstraints().isZero()) {
         // ignore infeasible paths
         continue;
       }
+      TransferParam curP = state.getTransferParam();
       curP.debug("InitialCall finalizing");
       // Only accept routes that are not suppressed
       if (result.getSuppressedValue()) {
@@ -1409,10 +1444,21 @@ public class TransferBDD {
     return computePaths(policy.getStatements(), Context.forPolicy(policy));
   }
 
+  /**
+   * Symbolic analysis of a list of route-policy statements. Returns one {@link TransferReturn} per
+   * path through the list of statements. The list of paths is unordered, and by construction each
+   * path is unique, as each path has a unique condition under which it is taken (the BDD in the
+   * {@link TransferReturn#getInputConstraints()}).
+   *
+   * <p>The particular statements executed along a given path are not included in this
+   * representation but can be reconstructed by simulating one route that takes this path using
+   * {@link org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
+   */
   public List<TransferReturn> computePaths(List<Statement> statements, Context context) {
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
     TransferParam p = new TransferParam(o, false);
-    return computePaths(statements, p, context).stream()
+    TransferBDDState state = new TransferBDDState(p, new TransferResult(p.getData()));
+    return computePaths(state, statements, context, true).stream()
         .map(TransferResult::getReturnValue)
         .collect(ImmutableList.toImmutableList());
   }
@@ -1431,5 +1477,57 @@ public class TransferBDD {
 
   public BDDRoute getOriginalRoute() {
     return _originalRoute;
+  }
+
+  /**
+   * Takes a list of symbolic policy intermediate states, results, etc. and combines any that have
+   * the same state under different inputs (by unioning together the inputs).
+   *
+   * <p>Using combination can result in exponential state space reduction in practice, for example
+   * when a community is added to a route advertisement for 5 non-exclusive reasons. There are 32
+   * possible inputs, but only 2 distinct outputs (at least one of the 5 is matched, or none of
+   * them).
+   *
+   * <p>TODO: consider whether this can speed up even the analyses that require all paths. For
+   * example, using a hybrid approach that refines distinct paths.
+   */
+  private static <T> List<T> combineSymbolicResults(
+      List<T> states,
+      Function<T, BDD> getInputConstraint,
+      BiFunction<BDD, T, T> replaceInputConstraint) {
+    if (states.size() < 2) {
+      return states;
+    }
+    BDDFactory factory = getInputConstraint.apply(states.get(0)).getFactory();
+    Map<T, Collection<BDD>> grouped =
+        states.stream()
+            .collect(
+                ImmutableListMultimap.toImmutableListMultimap(
+                    s -> replaceInputConstraint.apply(factory.one(), s), getInputConstraint))
+            .asMap();
+    if (grouped.size() == states.size()) {
+      return states;
+    }
+    LOGGER.debug("Condensed {} values into {} distinct groups", states.size(), grouped.size());
+    ImmutableList.Builder<T> ret = ImmutableList.builderWithExpectedSize(grouped.size());
+    grouped.forEach(
+        (state, inputConstraints) ->
+            ret.add(replaceInputConstraint.apply(factory.orAll(inputConstraints), state)));
+    return ret.build();
+  }
+
+  private static List<TransferBDDState> combineStates(List<TransferBDDState> states) {
+    return combineSymbolicResults(
+        states,
+        s -> s.getTransferResult().getReturnValue().getInputConstraints(),
+        (b, s) ->
+            new TransferBDDState(s.getTransferParam(), s.getTransferResult().setReturnValueBDD(b)));
+  }
+
+  private static List<TransferResult> combineTransferResults(List<TransferResult> input) {
+    return combineSymbolicResults(
+        input,
+        tr -> tr.getReturnValue().getInputConstraints(),
+        (bdd, tr) -> tr.setReturnValueBDD(bdd));
   }
 }
