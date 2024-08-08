@@ -16,11 +16,11 @@ public class TransferReturnTest {
 
     new EqualsTester()
         .addEqualityGroup(
-            new TransferReturn(route1, factory.zero(), false),
-            new TransferReturn(route1, factory.zero(), false))
-        .addEqualityGroup(new TransferReturn(route2, factory.zero(), false))
+            new TransferReturn(route1, factory.one(), false),
+            new TransferReturn(route1, factory.one(), false))
         .addEqualityGroup(new TransferReturn(route2, factory.one(), false))
-        .addEqualityGroup(new TransferReturn(route2, factory.one(), true))
+        .addEqualityGroup(new TransferReturn(route2, factory.nithVar(1), false))
+        .addEqualityGroup(new TransferReturn(route2, factory.nithVar(1), true))
         .testEquals();
   }
 }
