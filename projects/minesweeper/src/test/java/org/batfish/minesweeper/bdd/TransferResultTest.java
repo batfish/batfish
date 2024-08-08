@@ -11,8 +11,8 @@ public class TransferResultTest {
   public void testEquals() {
     BDDFactory factory = JFactory.init(100, 100);
     BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, ImmutableList.of());
-    TransferReturn r1 = new TransferReturn(route, factory.zero(), false);
-    TransferReturn r2 = new TransferReturn(route, factory.one(), false);
+    TransferReturn r1 = new TransferReturn(route, factory.one(), false);
+    TransferReturn r2 = new TransferReturn(route, factory.nithVar(0), false);
 
     new EqualsTester()
         .addEqualityGroup(

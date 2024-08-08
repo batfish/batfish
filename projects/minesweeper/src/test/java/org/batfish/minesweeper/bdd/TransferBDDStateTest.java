@@ -12,7 +12,7 @@ public class TransferBDDStateTest {
     BDDFactory factory = JFactory.init(100, 100);
     BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, ImmutableList.of());
     TransferParam p = new TransferParam(route, false);
-    TransferReturn ret = new TransferReturn(route, factory.zero(), false);
+    TransferReturn ret = new TransferReturn(route, factory.one(), false);
     TransferResult r1 = new TransferResult(ret, false, false, false, false);
     TransferResult r2 = new TransferResult(ret, true, false, false, false);
 
