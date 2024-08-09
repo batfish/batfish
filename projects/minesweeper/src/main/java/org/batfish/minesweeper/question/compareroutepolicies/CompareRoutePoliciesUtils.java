@@ -579,46 +579,50 @@ public final class CompareRoutePoliciesUtils {
     BDDFactory factory = constraint.getFactory();
     BDDRoute origRoute = new BDDRoute(factory, configAPs);
 
-    if (constraint.testsVars(origRoute.getAdminDist().support())) {
+    BDD support = constraint.support();
+
+    if (support.testsVars(origRoute.getAdminDist().support())) {
       result.add(ADMINISTRATIVE_DISTANCE);
     }
-    if (constraint.testsVars(origRoute.getAsPathRegexAtomicPredicates().support())) {
+    if (support.testsVars(origRoute.getAsPathRegexAtomicPredicates().support())) {
       result.add(AS_PATH);
     }
-    if (constraint.testsVars(origRoute.getClusterListLength().support())) {
+    if (support.testsVars(origRoute.getClusterListLength().support())) {
       result.add(CLUSTER_LIST);
     }
-    if (constraint.testsVars(factory.andAll(origRoute.getCommunityAtomicPredicates()))) {
+    if (support.testsVars(factory.andAll(origRoute.getCommunityAtomicPredicates()))) {
       result.add(COMMUNITIES);
     }
-    if (constraint.testsVars(origRoute.getLocalPref().support())) {
+    if (support.testsVars(origRoute.getLocalPref().support())) {
       result.add(LOCAL_PREFERENCE);
     }
-    if (constraint.testsVars(origRoute.getMed().support())) {
+    if (support.testsVars(origRoute.getMed().support())) {
       result.add(METRIC);
     }
-    if (constraint.testsVars(
+    if (support.testsVars(
         origRoute.getPrefix().support().and(origRoute.getPrefixLength().support()))) {
       result.add(NETWORK);
     }
-    if (constraint.testsVars(origRoute.getNextHop().support())) {
+    if (support.testsVars(origRoute.getNextHop().support())) {
       result.add(NEXT_HOP);
     }
-    if (constraint.testsVars(origRoute.getOriginType().support())) {
+    if (support.testsVars(origRoute.getOriginType().support())) {
       result.add(ORIGIN_TYPE);
     }
-    if (constraint.testsVars(origRoute.getProtocolHistory().support())) {
+    if (support.testsVars(origRoute.getProtocolHistory().support())) {
       result.add(PROTOCOL);
     }
-    if (constraint.testsVars(origRoute.getTag().support())) {
+    if (support.testsVars(origRoute.getTag().support())) {
       result.add(TAG);
     }
-    if (constraint.testsVars(origRoute.getTunnelEncapsulationAttribute().support())) {
+    if (support.testsVars(origRoute.getTunnelEncapsulationAttribute().support())) {
       result.add(TUNNEL_ENCAPSULATION_ATTRIBUTE);
     }
-    if (constraint.testsVars(origRoute.getWeight().support())) {
+    if (support.testsVars(origRoute.getWeight().support())) {
       result.add(WEIGHT);
     }
+
+    support.free();
     return result.build();
   }
 }
