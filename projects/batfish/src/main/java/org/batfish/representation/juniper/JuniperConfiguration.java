@@ -2777,22 +2777,37 @@ public final class JuniperConfiguration extends VendorConfiguration {
   private @Nullable IpsecPeerConfig toIpsecPeerConfig(IpsecVpn ipsecVpn) {
     IpsecStaticPeerConfig.Builder ipsecStaticConfigBuilder = IpsecStaticPeerConfig.builder();
     ipsecStaticConfigBuilder.setTunnelInterface(ipsecVpn.getBindInterface());
-    IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
+    if (ipsecVpn.getGateway() == null) {
+      _w.redFlagf("No IKE gateway configured for ipsec vpn %s", ipsecVpn.getName());
+      return null;
+    }
 
+    IkeGateway ikeGateway = _masterLogicalSystem.getIkeGateways().get(ipsecVpn.getGateway());
     if (ikeGateway == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot find the IKE gateway %s for ipsec vpn %s",
-              ipsecVpn.getGateway(), ipsecVpn.getName()));
+      _w.redFlagf(
+          "Cannot find the IKE gateway %s for ipsec vpn %s",
+          ipsecVpn.getGateway(), ipsecVpn.getName());
       return null;
     }
     ipsecStaticConfigBuilder.setDestinationAddress(ikeGateway.getAddress());
 
     String externalIfaceName = ikeGateway.getExternalInterface();
     String masterIfaceName = interfaceUnitMasterName(externalIfaceName);
+    if (masterIfaceName == null) {
+      _w.redFlagf(
+          "Incorrect non-unit external-interface %s for ipsec vpn %s gateway %s",
+          externalIfaceName, ipsecVpn.getName(), ipsecVpn.getGateway());
+      return null;
+    }
+    Interface masterIface = _masterLogicalSystem.getInterfaces().get(masterIfaceName);
+    if (masterIface == null) {
+      _w.redFlagf(
+          "Cannot find the IKE gateway interface %s for ipsec vpn %s gateway %s",
+          externalIfaceName, ipsecVpn.getName(), ipsecVpn.getGateway());
+      return null;
+    }
 
-    Interface externalIface =
-        _masterLogicalSystem.getInterfaces().get(masterIfaceName).getUnits().get(externalIfaceName);
+    Interface externalIface = masterIface.getUnits().get(externalIfaceName);
 
     ipsecStaticConfigBuilder.setSourceInterface(externalIfaceName);
 
@@ -2803,10 +2818,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
       localAddress = externalIface.getPrimaryAddress().getIp();
     }
     if (localAddress == null || !localAddress.valid()) {
-      _w.redFlag(
-          String.format(
-              "External interface %s configured on IKE Gateway %s does not have any IP",
-              externalIfaceName, ikeGateway.getName()));
+      _w.redFlagf(
+          "External interface %s configured on IKE Gateway %s does not have any IP",
+          externalIfaceName, ikeGateway.getName());
       return null;
     }
     ipsecStaticConfigBuilder.setLocalAddress(localAddress);
@@ -4484,8 +4498,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     _masterLogicalSystem.setHostname(hostname);
   }
 
-  private static String interfaceUnitMasterName(String unitName) {
+  private static @Nullable String interfaceUnitMasterName(String unitName) {
     int pos = unitName.indexOf('.');
+    if (pos <= 0) {
+      return null;
+    }
     String master = unitName.substring(0, pos);
     return master;
   }
