@@ -3774,6 +3774,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testIpsecBugs() {
+    // don't crash
+    parseConfig("ipsec-bugs");
+  }
+
+  @Test
   public void testIpsecPolicy() {
     Configuration c = parseConfig("ipsec-policy");
 
