@@ -758,9 +758,18 @@ public final class VirtualRouter {
     return iface.getAllConcreteAddresses().stream()
         .filter(addr -> shouldGenerateConnectedRoute(iface.getAddressMetadata().get(addr)))
         .map(
-            addr ->
-                generateConnectedRoute(
-                    addr, iface.getName(), iface.getAddressMetadata().get(addr)));
+            addr -> {
+              ConnectedRoute route =
+                  generateConnectedRoute(
+                      addr, iface.getName(), iface.getAddressMetadata().get(addr));
+              if (iface.getEigrp() != null && iface.getEigrp().getEnabled()) {
+                iface
+                    .getOwner()
+                    .getGeneratedEigrpInterfaceSettings()
+                    .put(route.getNextHopInterface(), iface.getEigrp());
+              }
+              return route;
+            });
   }
 
   /**

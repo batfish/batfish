@@ -74,6 +74,8 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.eigrp.ClassicMetric;
+import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
+import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
 import org.batfish.datamodel.eigrp.EigrpTopology;
@@ -119,6 +121,23 @@ public class VirtualRouterTest {
     interfaceAddresses.forEach(
         (ifaceName, address) ->
             ib.setName(ifaceName).setAddress(address).setBandwidth(100d).build());
+  }
+
+  private static void addEigrp(Configuration c) {
+    EigrpMetric metric =
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
+    EigrpInterfaceSettings eigrpInterfaceSettings =
+        EigrpInterfaceSettings.builder()
+            .setAsn(1L)
+            .setEnabled(true)
+            .setMetric(metric)
+            .setExportPolicy("ep")
+            .build();
+
+    c.getActiveInterfaces().values().stream()
+        .forEach(iface -> iface.setEigrp(eigrpInterfaceSettings));
   }
 
   private static VirtualRouter makeF5VirtualRouter(String hostname) {
@@ -1005,6 +1024,36 @@ public class VirtualRouterTest {
     vr.initForIgpComputation(emptyTopology);
 
     assertNotEquals(vrInitialHashcode, vr.computeIterationHashCode());
+  }
+
+  @Test
+  public void testInitConnectedRibForIosEigrp() {
+    EigrpMetric metric =
+        WideMetric.builder()
+            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+            .build();
+    EigrpInterfaceSettings eigrpInterfaceSettings =
+        EigrpInterfaceSettings.builder()
+            .setAsn(1L)
+            .setEnabled(true)
+            .setMetric(metric)
+            .setExportPolicy("ep")
+            .build();
+
+    VirtualRouter vr = makeIosVirtualRouter(null);
+    addInterfaces(vr.getConfiguration(), exampleInterfaceAddresses);
+    vr.getConfiguration().getActiveInterfaces().values().stream()
+        .forEach(iface -> iface.setEigrp(eigrpInterfaceSettings));
+    vr.initRibs();
+
+    // Test
+    vr.initConnectedRib();
+
+    Map<String, EigrpInterfaceSettings> eis =
+        vr.getConfiguration().getGeneratedEigrpInterfaceSettings();
+    System.out.println(eis);
+    exampleInterfaceAddresses.keySet().stream()
+        .forEach(ifaceName -> assertThat(eis.get(ifaceName), equalTo(eigrpInterfaceSettings)));
   }
 
   private static class TestIpOwners extends IpOwnersBaseImpl {
