@@ -166,6 +166,10 @@ public class TransferBDD {
    */
   private final Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
+  private final BDD[] _communityAtomicPredicateExclusions;
+
+  private final Map<BDD, List<Integer>> _communityConstraintCache;
+
   private final Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private final ConfigAtomicPredicates _configAtomicPredicates;
@@ -180,6 +184,33 @@ public class TransferBDD {
     this(JFactory.init(100000, 10000), aps);
   }
 
+  /**
+   * Construct the mutual exclusions between the parameter {@code aps}.
+   *
+   * <p>Note that {@code aps[i]} must equal {@link BDDFactory#ithVar(int)} for the corresponding bit
+   * allocated to this AP.
+   *
+   * <p>This function does quadratic work to construct the BDDs up front, but saves substantially
+   * more in use in {@link CommunitySetMatchExprToBDD#toCommunitySetConstraint(BDD, Arg)}: each call
+   * to that function (that does not short-circuit) does quadratic work.
+   */
+  private BDD[] makeCommmunityAPExclusions(BDD[] aps) {
+    BDD[] ret = new BDD[aps.length];
+    for (int i = 0; i < aps.length; i++) {
+      BDD tmp = _factory.one();
+      // Build from the bottom up so each step is O(1).
+      for (int j = aps.length - 1; j >= 0; --j) {
+        if (j == i) {
+          tmp.andEq(aps[j]);
+        } else {
+          tmp.diffEq(aps[j]);
+        }
+      }
+      ret[i] = tmp;
+    }
+    return ret;
+  }
+
   public TransferBDD(BDDFactory factory, ConfigAtomicPredicates aps) {
     _configAtomicPredicates = aps;
     _unsupportedAlreadyWarned = new HashSet<>();
@@ -191,6 +222,9 @@ public class TransferBDD {
     RegexAtomicPredicates<CommunityVar> standardCommAPs =
         _configAtomicPredicates.getStandardCommunityAtomicPredicates();
     _communityAtomicPredicates = new HashMap<>(standardCommAPs.getRegexAtomicPredicates());
+    _communityAtomicPredicateExclusions =
+        makeCommmunityAPExclusions(_originalRoute.getCommunityAtomicPredicates());
+    _communityConstraintCache = new HashMap<>();
     // add the atomic predicates for the extended/large community literals
     _configAtomicPredicates
         .getNonStandardCommunityLiterals()
@@ -1484,6 +1518,23 @@ public class TransferBDD {
 
   public ConfigAtomicPredicates getConfigAtomicPredicates() {
     return _configAtomicPredicates;
+  }
+
+  /**
+   * An array of {@link BDD} that are full-sat representations of the mutual exclusions between
+   * community APs. That is, the {@code i}th entry has AP {@code i} {@code true} and all others
+   * {@code false}.
+   */
+  public @Nonnull BDD[] getCommunityAtomicPredicateExclusions() {
+    return _communityAtomicPredicateExclusions;
+  }
+
+  /**
+   * A cache mapping a unique community constraint to the set of community atomic predicates it
+   * corresponds to.
+   */
+  public @Nonnull Map<BDD, List<Integer>> getCommunityConstraintCache() {
+    return _communityConstraintCache;
   }
 
   public BDDRoute getOriginalRoute() {
