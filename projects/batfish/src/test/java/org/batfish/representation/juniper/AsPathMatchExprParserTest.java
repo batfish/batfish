@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToAsPathMatchExpr;
 import static org.batfish.representation.juniper.AsPathMatchExprParser.convertToBooleanExpr;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertSame;
@@ -14,8 +15,12 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExprEvaluator;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.junit.Test;
 
@@ -124,6 +129,13 @@ public class AsPathMatchExprParserTest {
       assertDoesNotMatch(res, 1102L);
       assertDoesNotMatch(res, 110L, 122L, 188L);
     }
+  }
+
+  @Test
+  public void testAsPathLength() {
+    AsPathMatchExpr res = convertToAsPathMatchExpr(".{50,}");
+    assertThat(
+        res, equalTo(HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(50)))));
   }
 
   /**

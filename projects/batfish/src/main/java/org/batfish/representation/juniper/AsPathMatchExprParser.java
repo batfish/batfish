@@ -9,10 +9,14 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
+import org.batfish.datamodel.routing_policy.expr.IntComparator;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.representation.juniper.parboiled.AsPathRegex;
 
@@ -37,21 +41,24 @@ public final class AsPathMatchExprParser {
   // "N .*" or "^N .*" : "AS Path starts with N".
   private static final Pattern AS_PATH_STARTS_WITH_ASN = Pattern.compile("\\^?(\\d+) \\.\\*");
 
-  // ".* [start-end] .*" : "AS Path contains an ASN in range between start and end included
+  // ".* [start-end] .*" : "AS Path contains an ASN in range between start and end included"
   private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_1 =
       Pattern.compile("\\.\\* \\[(\\d+)-(\\d+)\\] \\.\\*");
 
-  // ".* start-end .*" : "AS Path contains an ASN in range between start and end included
+  // ".* start-end .*" : "AS Path contains an ASN in range between start and end included"
   private static final Pattern AS_PATH_CONTAINS_ASN_RANGE_PATTERN_2 =
       Pattern.compile("\\.\\* (\\d+)-(\\d+) \\.\\*");
 
-  // "[start-end]" : "AS Path matches single ASN number in range between start and end included
+  // "[start-end]" : "AS Path matches single ASN number in range between start and end included"
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_1 =
       Pattern.compile("\\[(\\d+)-(\\d+)\\]");
 
-  // "start-end" : "AS Path matches single ASN number in range between start and end included
+  // "start-end" : "AS Path matches single ASN number in range between start and end included"
   private static final Pattern AS_PATH_EXACT_MATCH_ASN_RANGE_PATTERN_2 =
       Pattern.compile("(\\d+)-(\\d+)");
+
+  // "{len,}" : "AS Path is at least <len> long"
+  private static final Pattern AS_PATH_LENGTH_GEQ = Pattern.compile("\\.\\{(\\d+),\\}");
 
   /**
    * Converts the given Juniper AS Path regular expression to an instance of {@link
@@ -119,6 +126,12 @@ public final class AsPathMatchExprParser {
           asPathExactMatchAsnRangeNoBrackets.group(2),
           true,
           true);
+    }
+
+    Matcher asPathGeq = AS_PATH_LENGTH_GEQ.matcher(asPathRegex);
+    if (asPathGeq.matches()) {
+      int minLength = Integer.parseInt(asPathGeq.group(1));
+      return HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(minLength)));
     }
 
     String javaRegex = AsPathRegex.convertToJavaRegex(asPathRegex);
