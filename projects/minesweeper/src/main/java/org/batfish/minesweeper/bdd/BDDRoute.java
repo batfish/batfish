@@ -740,7 +740,6 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         _nextHop,
         _prefix,
         _prefixLength,
-        Arrays.hashCode(_communityAtomicPredicates),
         _asPathRegexAtomicPredicates,
         _prependedASes);
   }
