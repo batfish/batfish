@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
@@ -42,6 +43,11 @@ public final class HasAsPathLength extends AsPathMatchExpr {
   @Override
   public int hashCode() {
     return _comparison.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("comparison", _comparison).toString();
   }
 
   private static final String PROP_COMPARISON = "comparison";
