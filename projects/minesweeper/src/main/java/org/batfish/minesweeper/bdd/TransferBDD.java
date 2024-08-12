@@ -1382,15 +1382,13 @@ public class TransferBDD {
       CommunityAPDispositions dispositions, TransferParam curP, Context context) {
     BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
     BDD[] currAPBDDs = routeForMatching(curP, context).getCommunityAtomicPredicates();
-    for (int i = 0; i < currAPBDDs.length; i++) {
-      if (dispositions.getMustExist().contains(i)) {
-        commAPBDDs[i] = mkBDD(true);
-      } else if (dispositions.getMustNotExist().contains(i)) {
-        commAPBDDs[i] = mkBDD(false);
-      } else {
-        commAPBDDs[i] = currAPBDDs[i];
-      }
-    }
+
+    // Initialize commAPBdds with input communities, then override forced trues and falses.
+    System.arraycopy(currAPBDDs, 0, commAPBDDs, 0, currAPBDDs.length);
+    BDD one = _factory.one();
+    BDD zero = _factory.zero();
+    dispositions.getMustExist().stream().forEach(i -> commAPBDDs[i] = one);
+    dispositions.getMustNotExist().stream().forEach(i -> commAPBDDs[i] = zero);
   }
 
   /**
