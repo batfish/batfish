@@ -168,6 +168,35 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
+    public boolean isAnd() {
+      int index = _index;
+      while (!ISCONST(index)) {
+        if (LOW(index) != BDDZERO) {
+          return false;
+        }
+        index = HIGH(index);
+      }
+      return index == BDDONE;
+    }
+
+    @Override
+    public boolean isNor() {
+      int index = _index;
+      while (!ISCONST(index)) {
+        if (HIGH(index) != BDDZERO) {
+          return false;
+        }
+        index = LOW(index);
+      }
+      return index == BDDONE;
+    }
+
+    @Override
+    public boolean isVar() {
+      return !ISCONST(_index) && LOW(_index) == BDDZERO && HIGH(_index) == BDDONE;
+    }
+
+    @Override
     public boolean isAssignment() {
       return bdd_isAssignment(_index);
     }
