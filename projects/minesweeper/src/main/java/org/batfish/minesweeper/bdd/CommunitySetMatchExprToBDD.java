@@ -297,7 +297,8 @@ public class CommunitySetMatchExprToBDD
       BDD intersection = constraint.and(originalAPs[i]);
       BDD model = intersection.satOne().existEq(originalAPs[i]);
       intersection.free();
-      if (allNegativeLiterals(model)) {
+      if (model.isNor()) {
+        // Every AP mentioned is constrained to false, so originalAPs[i] satisfies the constraint.
         indexes.add(i);
       }
       model.free();
@@ -327,31 +328,6 @@ public class CommunitySetMatchExprToBDD
      * the current route rather than the original input route.
      */
     return arg.getTransferBDD().getFactory().orAll(indexes.stream().map(i -> aps[i]).toList());
-  }
-
-  /**
-   * Checks whether all variables in the given variable assignment are negated.
-   *
-   * @param model the variable assignment
-   * @return a boolean indicating whether the check succeeded
-   */
-  static boolean allNegativeLiterals(BDD model) {
-    assert !model.isZero();
-    BDD tmp = model.id();
-    while (!tmp.isOne()) {
-      BDD high = tmp.high();
-      if (!high.isZero()) {
-        high.free();
-        tmp.free();
-        return false;
-      }
-      high.free();
-      BDD low = tmp.low();
-      tmp.free();
-      tmp = low;
-    }
-    tmp.free();
-    return true;
   }
 
   private static final Logger LOGGER = LogManager.getLogger(CommunitySetMatchExprToBDD.class);
