@@ -513,6 +513,21 @@ public final class TracingFactory extends JFactory {
     }
 
     @Override
+    public boolean isAnd() {
+      return _bdd.isAnd();
+    }
+
+    @Override
+    public boolean isNor() {
+      return _bdd.isNor();
+    }
+
+    @Override
+    public boolean isVar() {
+      return _bdd.isVar();
+    }
+
+    @Override
     public TracedBDDImpl high() {
       return trace(() -> _bdd.high(), Operation.HIGH, _bdd);
     }

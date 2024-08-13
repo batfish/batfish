@@ -95,6 +95,58 @@ public class BasicTest {
     z.free();
   }
 
+  @Test
+  public void testIsVar() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isVar());
+    assertFalse(_factory.one().isVar());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertTrue(x.isVar());
+    assertTrue(y.isVar());
+    assertFalse(x.and(y).isVar());
+    assertFalse(x.or(y).isVar());
+    assertFalse(x.diff(y).isVar());
+    assertFalse(x.not().isVar());
+  }
+
+  @Test
+  public void testIsAnd() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isAnd());
+    assertTrue(_factory.one().isAnd());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertTrue(x.isAnd());
+    assertTrue(y.isAnd());
+    assertTrue(x.and(y).isAnd());
+    assertFalse(x.or(y).isAnd());
+    assertFalse(x.diff(y).isAnd());
+    assertFalse(x.not().isAnd());
+  }
+
+  @Test
+  public void testIsNor() {
+    if (_factory.varNum() < 5) {
+      _factory.setVarNum(5);
+    }
+    assertFalse(_factory.zero().isNor());
+    assertTrue(_factory.one().isNor());
+    BDD x = _factory.ithVar(1);
+    BDD y = _factory.ithVar(2);
+    assertFalse(x.isNor());
+    assertFalse(y.isNor());
+    assertFalse(x.and(y).isNor());
+    assertFalse(x.or(y).isNor());
+    assertFalse(x.diff(y).isNor());
+    assertTrue(x.not().isNor());
+    assertTrue(x.not().diff(y).isNor());
+  }
+
   // Assertions that randomFullSatOne returns an assignment that is full and implies the input.
   private static void randomSatOneTestAndFree(BDD input, int seed) {
     BDD randomSatOne = input.randomFullSatOne(seed);

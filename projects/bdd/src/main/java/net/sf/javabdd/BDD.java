@@ -69,7 +69,7 @@ public abstract class BDD implements Serializable {
   public abstract BDDFactory getFactory();
 
   /**
-   * Returns true if this BDD is a satsifiable assignment.
+   * Returns true if this BDD is a satisfiable assignment.
    *
    * <p>A BDD is an assignment if there is exactly a single path to the {@link BDDFactory#one()}
    * BDD.
@@ -92,6 +92,25 @@ public abstract class BDD implements Serializable {
    * @return true if this BDD is the one (true) BDD
    */
   public abstract boolean isOne();
+
+  /**
+   * Returns true if this BDD corresponds to a variable. That is, it tests a single bit with {@link
+   * #high()} one and {@link #low()} zero.
+   */
+  public abstract boolean isVar();
+
+  /**
+   * Returns true if this BDD corresponds to zero or more variables {@link #and(BDD) ANDed}
+   * together.
+   */
+  public abstract boolean isAnd();
+
+  /**
+   * Returns true if this BDD corresponds to zero or more variables {@link #nor(BDD) NORed}
+   * together. Expressed differently, this BDD is zero or more negated variables ({@link
+   * BDDFactory#nithVar(int)}) {@link #and(BDD) ANDed} together.
+   */
+  public abstract boolean isNor();
 
   /**
    * Gets the variable labeling the BDD.
