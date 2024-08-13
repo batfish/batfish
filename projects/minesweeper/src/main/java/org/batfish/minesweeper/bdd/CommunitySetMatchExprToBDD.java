@@ -6,13 +6,15 @@ import com.google.common.collect.ImmutableList;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
-import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchExpr;
@@ -257,7 +259,16 @@ public class CommunitySetMatchExprToBDD
    * @return a community set constraint
    */
   public static BDD toCommunitySetConstraint(BDD commConstraint, Arg arg) {
-    BDD[] originalAPs = arg.getTransferBDD().getOriginalRoute().getCommunityAtomicPredicates();
+    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
+    TransferBDD tbdd = arg.getTransferBDD();
+    Map<BDD, List<Integer>> cache = tbdd.getCommunitySetConstraintCache();
+    List<Integer> cached = cache.get(commConstraint);
+    if (cached != null) {
+      return tbdd.getFactory().orAll(cached.stream().map(i -> aps[i]).toList());
+    }
+
+    BDD[] originalAPs = tbdd.getOriginalRoute().getCommunityAtomicPredicates();
+
     /*
      * The given community constraint is a predicate on community atomic predicates that must be
      * satisfied by *some* element of the route's community set. We can't directly treat this
@@ -277,26 +288,32 @@ public class CommunitySetMatchExprToBDD
      * the community-set constraint.
      */
 
-    // consider each atomic predicate in turn
-    IntStream satisfyingAPs =
-        IntStream.range(0, originalAPs.length)
-            .filter(
-                i -> {
-                  if (commConstraint.equals(originalAPs[i])) {
-                    return true;
-                  } else if (!commConstraint.andSat(originalAPs[i])) {
-                    return false;
-                  }
-                  // check that the ith AP is compatible with the single-community constraint
-                  BDD intersection = commConstraint.and(originalAPs[i]);
-                  BDD model = intersection.satOne().existEq(originalAPs[i]);
-                  intersection.free();
-                  // if so, check that all other variables in the produced model are negated;
-                  // this implies that the ith AP on its own is sufficient to satisfy the constraint
-                  boolean ret = allNegativeLiterals(model);
-                  model.free();
-                  return ret;
-                });
+    List<Integer> indexes = new ArrayList<>(aps.length);
+    BDD constraint = commConstraint.id();
+    for (int i = 0; i < originalAPs.length; i++) {
+      if (!originalAPs[i].andSat(commConstraint)) {
+        continue;
+      }
+      BDD intersection = constraint.and(originalAPs[i]);
+      BDD model = intersection.satOne().existEq(originalAPs[i]);
+      intersection.free();
+      if (allNegativeLiterals(model)) {
+        indexes.add(i);
+      }
+      model.free();
+      constraint.diffEq(originalAPs[i]);
+      if (constraint.isZero()) {
+        LOGGER.debug(
+            "Reached constraint zero on iteration {} and skipping {}",
+            i,
+            originalAPs.length - i - 1);
+        constraint.free();
+        break;
+      }
+    }
+
+    LOGGER.debug("Community constraint matched {} APs", indexes.size());
+    cache.put(commConstraint.id(), indexes);
 
     // TODO: Two potential performance optimizations to consider in the future.  First, a binary
     // encoding of atomic predicates for single-community constraints, for example using the
@@ -309,10 +326,7 @@ public class CommunitySetMatchExprToBDD
      * the arg, which properly handles configuration formats like Juniper that require matching on
      * the current route rather than the original input route.
      */
-    BDD[] aps = arg.getBDDRoute().getCommunityAtomicPredicates();
-    return arg.getTransferBDD()
-        .getFactory()
-        .orAll(satisfyingAPs.mapToObj(i -> aps[i]).collect(Collectors.toList()));
+    return arg.getTransferBDD().getFactory().orAll(indexes.stream().map(i -> aps[i]).toList());
   }
 
   /**
@@ -322,12 +336,23 @@ public class CommunitySetMatchExprToBDD
    * @return a boolean indicating whether the check succeeded
    */
   static boolean allNegativeLiterals(BDD model) {
-    if (model.isZero() || model.isOne()) {
-      return true;
+    assert !model.isZero();
+    BDD tmp = model.id();
+    while (!tmp.isOne()) {
+      BDD high = tmp.high();
+      if (!high.isZero()) {
+        high.free();
+        tmp.free();
+        return false;
+      }
+      high.free();
+      BDD low = tmp.low();
+      tmp.free();
+      tmp = low;
     }
-    if (model.high().isZero()) {
-      return allNegativeLiterals(model.low());
-    }
-    return false;
+    tmp.free();
+    return true;
   }
+
+  private static final Logger LOGGER = LogManager.getLogger(CommunitySetMatchExprToBDD.class);
 }

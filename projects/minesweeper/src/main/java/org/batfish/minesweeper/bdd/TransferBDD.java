@@ -166,6 +166,8 @@ public class TransferBDD {
    */
   private final Map<CommunityVar, Set<Integer>> _communityAtomicPredicates;
 
+  private final Map<BDD, List<Integer>> _communitySetConstraintCache;
+
   private final Map<SymbolicAsPathRegex, Set<Integer>> _asPathRegexAtomicPredicates;
 
   private final ConfigAtomicPredicates _configAtomicPredicates;
@@ -191,6 +193,12 @@ public class TransferBDD {
     RegexAtomicPredicates<CommunityVar> standardCommAPs =
         _configAtomicPredicates.getStandardCommunityAtomicPredicates();
     _communityAtomicPredicates = new HashMap<>(standardCommAPs.getRegexAtomicPredicates());
+    _communitySetConstraintCache = new HashMap<>();
+    for (int i = 0; i < _originalRoute.getCommunityAtomicPredicates().length; i++) {
+      // Pre-cache all individual APs which are exclusive with all other APs by definition.
+      _communitySetConstraintCache.put(
+          _originalRoute.getCommunityAtomicPredicates()[i], ImmutableList.of(i));
+    }
     // add the atomic predicates for the extended/large community literals
     _configAtomicPredicates
         .getNonStandardCommunityLiterals()
@@ -1484,6 +1492,11 @@ public class TransferBDD {
 
   public ConfigAtomicPredicates getConfigAtomicPredicates() {
     return _configAtomicPredicates;
+  }
+
+  /** A cache for {@link CommunitySetMatchExprToBDD#toCommunitySetConstraint(BDD, Arg)}. */
+  public @Nonnull Map<BDD, List<Integer>> getCommunitySetConstraintCache() {
+    return _communitySetConstraintCache;
   }
 
   public BDDRoute getOriginalRoute() {
