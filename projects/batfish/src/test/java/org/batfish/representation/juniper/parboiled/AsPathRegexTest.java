@@ -1,4 +1,4 @@
-package org.batfish.representation.juniper;
+package org.batfish.representation.juniper.parboiled;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;

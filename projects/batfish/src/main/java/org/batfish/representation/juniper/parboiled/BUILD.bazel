@@ -3,6 +3,7 @@ load("@rules_java//java:defs.bzl", "java_library")
 
 package(default_visibility = [
     "//projects/batfish/src/main/java/org/batfish/representation/juniper:__subpackages__",
+    "//projects/batfish/src/test/java/org/batfish/representation/juniper/parboiled:__subpackages__",
 ])
 
 java_library(
