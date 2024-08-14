@@ -1585,25 +1585,23 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return StandardCommunity.parse(text);
   }
 
-  private @Nullable StandardCommunity toStandardCommunity(Sc_namedContext ctx) {
+  private @Nonnull StandardCommunity toStandardCommunity(Sc_namedContext ctx) {
     if (ctx.NO_ADVERTISE() != null) {
       return StandardCommunity.NO_ADVERTISE;
     } else if (ctx.NO_EXPORT() != null) {
       return StandardCommunity.NO_EXPORT;
-    } else if (ctx.NO_EXPORT_SUBCONFED() != null) {
-      return StandardCommunity.NO_EXPORT_SUBCONFED;
     } else {
-      return convProblem(StandardCommunity.class, ctx, null);
+      assert ctx.NO_EXPORT_SUBCONFED() != null;
+      return StandardCommunity.NO_EXPORT_SUBCONFED;
     }
   }
 
-  private @Nullable StandardCommunity toStandardCommunity(Standard_communityContext ctx) {
+  private @Nonnull StandardCommunity toStandardCommunity(Standard_communityContext ctx) {
     if (ctx.sc_literal() != null) {
       return toStandardCommunity(ctx.sc_literal());
-    } else if (ctx.sc_named() != null) {
-      return toStandardCommunity(ctx.sc_named());
     } else {
-      return convProblem(StandardCommunity.class, ctx, null);
+      assert ctx.sc_named() != null;
+      return toStandardCommunity(ctx.sc_named());
     }
   }
 
