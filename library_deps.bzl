@@ -29,7 +29,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.re2j:re2j:1.7",
     "com.ibm.icu:icu4j:74.2",
     "commons-beanutils:commons-beanutils:1.9.4",
-    "commons-cli:commons-cli:1.8.0",
+    "commons-cli:commons-cli:1.9.0",
     "commons-io:commons-io:2.16.1",
     "dk.brics:automaton:1.12-4",
     "jakarta.activation:jakarta.activation-api:1.2.2",
