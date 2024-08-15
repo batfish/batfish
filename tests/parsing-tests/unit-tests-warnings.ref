@@ -1275,6 +1275,13 @@
         "Comment" : "This feature is not currently supported"
       },
       {
+        "Filename" : "configs/juniper_extended_community",
+        "Line" : 6,
+        "Text" : "8075:[1][0][0-3,5-9][0-9][0-9]$",
+        "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ also allows 18075:10000"
+      },
+      {
         "Filename" : "configs/juniper_firewall",
         "Line" : 13,
         "Text" : "icmp-type mask-reply",
@@ -1472,10 +1479,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 204 results",
+      "notes" : "Found 205 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 204
+      "numResults" : 205
     }
   }
 ]

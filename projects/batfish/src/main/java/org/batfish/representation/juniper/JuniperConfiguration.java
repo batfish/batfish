@@ -391,13 +391,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   private static final String FIRST_LOOPBACK_INTERFACE_NAME = "lo0";
 
-  private static String communityRegexToJavaRegex(String regex) {
-    String out = regex;
-    out = out.replace(":*", ":.*");
-    out = out.replaceFirst("^\\*", ".*");
-    return out;
-  }
-
   Configuration _c;
 
   /** Map of policy name to routing instances referenced in the policy, in the order they appear */
@@ -1062,8 +1055,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     public CommunityMatchExpr visitRegexCommunityMember(RegexCommunityMember regexCommunityMember) {
       // TODO: verify regex semantics and rendering
       return new CommunityMatchRegex(
-          ColonSeparatedRendering.instance(),
-          communityRegexToJavaRegex(regexCommunityMember.getRegex()));
+          ColonSeparatedRendering.instance(), regexCommunityMember.getJavaRegex());
     }
 
     private static final CommunityMemberToCommunityMatchExpr INSTANCE =

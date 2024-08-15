@@ -5594,6 +5594,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       if (literalCommunity != null) {
         return new LiteralCommunityMember(literalCommunity);
       }
+      RegexCommunityMember.isRiskyCommunityRegex(text)
+          .ifPresent(
+              message -> warn(ctx, "RISK: Community regex " + text + " also allows " + message));
       return new RegexCommunityMember(text);
     } else {
       assert ctx.sc_named() != null;
