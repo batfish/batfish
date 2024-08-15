@@ -11255,7 +11255,35 @@
           ]
         }
       },
-      "version" : "0.36.0"
+      "version" : "0.36.0",
+      "warnings" : {
+        "configs/as1border1.cfg" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "RISK: Community regex 2:* allows longer matches such as 12:0",
+              "Line" : 52,
+              "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "2:*"
+            }
+          ]
+        },
+        "configs/as1border2.cfg" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "RISK: Community regex 3:* allows longer matches such as 13:0",
+              "Line" : 60,
+              "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "3:*"
+            },
+            {
+              "Comment" : "RISK: Community regex 4:* allows longer matches such as 14:0",
+              "Line" : 62,
+              "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "4:*"
+            }
+          ]
+        }
+      }
     },
     {
       "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
