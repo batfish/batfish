@@ -50,23 +50,18 @@ public final class CompletionMetadataUtils {
           "AWS Route53");
 
   public static Set<String> getFilterNames(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> filterNames = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(configuration -> filterNames.addAll(configuration.getIpAccessLists().keySet()));
-    return filterNames.build();
+    return configurations.values().parallelStream()
+        .flatMap(c -> c.getIpAccessLists().keySet().stream())
+        .distinct()
+        .sorted()
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<NodeInterfacePair> getInterfaces(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<NodeInterfacePair> interfaces = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration.getAllInterfaces().values().stream()
-                    .map(NodeInterfacePair::of)
-                    .forEach(interfaces::add));
-    return interfaces.build();
+    return configurations.values().parallelStream()
+        .flatMap(c -> c.getAllInterfaces().values().stream().map(NodeInterfacePair::of))
+        .sorted()
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   @VisibleForTesting
@@ -291,7 +286,7 @@ public final class CompletionMetadataUtils {
 
   public static Map<String, NodeCompletionMetadata> getNodes(
       Map<String, Configuration> configurations) {
-    return configurations.values().stream()
+    return configurations.values().parallelStream()
         .collect(
             ImmutableMap.toImmutableMap(
                 Configuration::getHostname,
@@ -419,15 +414,11 @@ public final class CompletionMetadataUtils {
   }
 
   public static Set<String> getVrfs(Map<String, Configuration> configurations) {
-    ImmutableSet.Builder<String> vrfs = ImmutableSet.builder();
-    configurations
-        .values()
-        .forEach(
-            configuration ->
-                configuration.getAllInterfaces().values().stream()
-                    .map(Interface::getVrfName)
-                    .forEach(vrfs::add));
-    return vrfs.build();
+    return configurations.values().parallelStream()
+        .flatMap(c -> c.getVrfs().keySet().stream())
+        .distinct()
+        .sorted()
+        .collect(ImmutableSet.toImmutableSet());
   }
 
   public static Set<String> getZones(Map<String, Configuration> configurations) {
