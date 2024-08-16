@@ -35,6 +35,9 @@ public class CommunityVarTest {
     // ensure we get well-formed numbers
     CommunityVar cv6 = CommunityVar.from("^0:.0$");
 
+    // ensure that the ^ and $ markers are not treated as ordinary characters
+    CommunityVar cv7 = CommunityVar.from("..:..");
+
     assertThat(cv0.toAutomaton(), equalTo(new RegExp("^20:30$").toAutomaton()));
     assertThat(cv1.toAutomaton(), equalTo(new RegExp("^20:30$").toAutomaton()));
     assertThat(cv2.toAutomaton(), equalTo(new RegExp("^large:10:20:30$").toAutomaton()));
@@ -45,6 +48,11 @@ public class CommunityVarTest {
     assertThat(cv5.toAutomaton(), equalTo(new RegExp("^40:50$").toAutomaton()));
 
     assertThat(cv6.toAutomaton(), equalTo(new RegExp("^0:[1-9]0$").toAutomaton()));
+
+    String atLeastTwoDigits = "(" + COMMUNITY_NUM_REGEX + "&<10-65535>)";
+    assertThat(
+        cv7.toAutomaton(),
+        equalTo(new RegExp("^" + atLeastTwoDigits + ":" + atLeastTwoDigits + "$").toAutomaton()));
   }
 
   @Test
