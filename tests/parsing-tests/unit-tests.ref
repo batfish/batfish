@@ -71110,6 +71110,16 @@
             }
           ]
         },
+        "configs/juniper_extended_community" : {
+          "Parse warnings" : [
+            {
+              "Comment" : "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ allows longer matches such as 18075:10000",
+              "Line" : 6,
+              "Parser_Context" : "[poc_members_member poc_members po_community s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "8075:[1][0][0-3,5-9][0-9][0-9]$"
+            }
+          ]
+        },
         "configs/juniper_firewall" : {
           "Parse warnings" : [
             {
