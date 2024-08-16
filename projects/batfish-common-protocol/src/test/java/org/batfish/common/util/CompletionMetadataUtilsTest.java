@@ -556,21 +556,12 @@ public final class CompletionMetadataUtilsTest {
 
   @Test
   public void testGetVrfs() {
-    String int1 = "int1";
-    String int2 = "int2";
-    String int3 = "int3";
-
     String vrf1 = "vrf1";
     String vrf2 = "vrf2";
+    Configuration config = createTestConfiguration("config1", ConfigurationFormat.HOST);
+    config.setVrfs(ImmutableSortedMap.of(vrf1, new Vrf(vrf1), vrf2, new Vrf(vrf2)));
 
-    Map<String, Configuration> configs = new HashMap<>();
-    Configuration config =
-        createTestConfiguration("config1", ConfigurationFormat.HOST, int1, int2, int3);
-    config.getAllInterfaces().get(int1).setVrfName(vrf1);
-    config.getAllInterfaces().get(int2).setVrfName(vrf2);
-    config.getAllInterfaces().get(int3).setVrfName(vrf1);
-    configs.put("config1", config);
-
+    Map<String, Configuration> configs = ImmutableMap.of("config1", config);
     assertThat(getVrfs(configs), equalTo(ImmutableSet.of(vrf1, vrf2)));
   }
 

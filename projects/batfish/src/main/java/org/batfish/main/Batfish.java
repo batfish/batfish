@@ -2080,6 +2080,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     if (!action) {
       throw new CleanBatfishException("No task performed! Run with -help flag to see usage\n");
     }
+    LOGGER.info("Completed work.");
     return answer;
   }
 
@@ -2335,6 +2336,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     LOGGER.info("Computing completion metadata");
     computeAndStoreCompletionMetadata(snapshot, configurations);
+
+    LOGGER.info("Completed serializing snapshot data");
     return answer;
   }
 
