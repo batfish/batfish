@@ -1,0 +1,16 @@
+#RANCID-CONTENT-TYPE: juniper
+system {
+    host-name nested-config-with-quote-bug;
+    license {
+        keys {
+            key foo bar";
+        }
+    }
+}
+routing-instances {
+    VRF_NAME {
+        routing-options {
+            autonomous-system 1;
+        }
+    }
+}
