@@ -104,7 +104,7 @@ F_ParenString
 fragment
 F_QuotedString
 :
-   '"' ~'"'* '"'
+   '"' ~["\r\n]* '"'
 ;
 
 // This may appear before a semicolon if settings are present to hide certain secrets.

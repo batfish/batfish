@@ -3057,6 +3057,20 @@ public final class FlatJuniperGrammarTest {
     assertThat(parseTextConfigs(hostname).keySet(), contains(hostname));
   }
 
+  /**
+   * Test that when a hierarchical config has a single missing quote, we can still extract later
+   * data.
+   */
+  @Test
+  public void testNestedConfigWithQuoteBug() throws IOException {
+    String hostname = "nested-config-with-quote-bug";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.getSettings().setDisableUnrecognized(false);
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
+    assertThat(configs, hasKeys(hostname));
+    assertThat(configs.get(hostname).getVrfs(), hasKey("VRF_NAME"));
+  }
+
   /** Test for https://github.com/batfish/batfish/issues/7225. */
   @Test
   public void testNestedConfigWithSecretData() {
