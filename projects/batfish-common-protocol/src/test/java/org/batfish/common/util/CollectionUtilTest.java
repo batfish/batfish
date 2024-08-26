@@ -1,5 +1,6 @@
 package org.batfish.common.util;
 
+import static org.batfish.common.util.CollectionUtil.copyMapAndAdd;
 import static org.batfish.common.util.CollectionUtil.maxValues;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.CollectionUtil.toMap;
@@ -26,6 +27,14 @@ import org.junit.Test;
 
 /** Tests of {@link CollectionUtil}. */
 public class CollectionUtilTest {
+  @Test
+  public void testCopyMapAndAdd() {
+    Map<String, Integer> m = ImmutableMap.of("a", 1, "b", 2);
+    ImmutableMap<String, Integer> newM = copyMapAndAdd(m, "a", 3);
+    // Does not crash and does contain new value.
+    assertThat(newM, equalTo(ImmutableMap.of("a", 3, "b", 2)));
+  }
+
   @Test
   public void testToImmutableMapDoesNotCopy() {
     Map<String, Integer> m = ImmutableMap.of("a", 1, "b", 2);
