@@ -27,6 +27,24 @@ public final class CollectionUtil {
   private static final Logger LOGGER = LogManager.getLogger(CollectionUtil.class);
 
   /**
+   * Create a new {@link com.google.common.collect.ImmutableMap} that contains the given map plus
+   * one new entry.
+   *
+   * <p>This is very similar to building a new map, except it guards against an annoying crash in
+   * ImmutableMap with duplicate keys.
+   */
+  public static <K, V> ImmutableMap<K, V> copyMapAndAdd(Map<K, V> map, K newKey, V newValue) {
+    ImmutableMap.Builder<K, V> ret = ImmutableMap.builderWithExpectedSize(map.size() + 1);
+    for (Map.Entry<K, V> entry : map.entrySet()) {
+      if (!entry.getKey().equals(newKey)) {
+        ret.put(entry.getKey(), entry.getValue());
+      }
+    }
+    ret.put(newKey, newValue);
+    return ret.build();
+  }
+
+  /**
    * Create a new {@link com.google.common.collect.ImmutableMap} from the given {@link Map}, unless
    * that map is already an immutable map.
    *
