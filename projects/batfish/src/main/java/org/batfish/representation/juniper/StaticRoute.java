@@ -37,6 +37,10 @@ public class StaticRoute implements Serializable {
 
   private @Nullable String _nextTable;
 
+  private @Nullable Boolean _noInstall;
+
+  private @Nullable Boolean _noReadvertise;
+
   private @Nullable Boolean _resolve;
 
   /**
@@ -46,8 +50,6 @@ public class StaticRoute implements Serializable {
   private Map<NextHop, QualifiedNextHop> _qualifiedNextHops;
 
   private Long _tag;
-
-  private @Nullable Boolean _noInstall;
 
   public StaticRoute(Prefix prefix) {
     _communities = new TreeSet<>();
@@ -86,6 +88,14 @@ public class StaticRoute implements Serializable {
 
   public @Nullable Boolean getNoInstall() {
     return _noInstall;
+  }
+
+  public @Nullable Boolean getNoReadvertise() {
+    return _noReadvertise;
+  }
+
+  public void setNoReadvertise(@Nullable Boolean noReadvertise) {
+    _noReadvertise = noReadvertise;
   }
 
   public List<String> getPolicies() {

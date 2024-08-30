@@ -363,6 +363,7 @@ import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
@@ -6230,7 +6231,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testStaticRoutes() {
+  public void testStaticRouteConversion() {
     Configuration c = parseConfig("static-routes");
     assertThat(
         c,
@@ -6298,6 +6299,12 @@ public final class FlatJuniperGrammarTest {
                             .setNextHopIp(Ip.parse("1.2.3.6"))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("12.0.0.0/8"))
+                            .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -6347,6 +6354,24 @@ public final class FlatJuniperGrammarTest {
                         .setAdministrativeCost(5)
                         .setRecursive(false)
                         .build()))));
+  }
+
+  @Test
+  public void testStaticRouteParsing() {
+    JuniperConfiguration c = parseJuniperConfig("static-routes");
+    Map<Prefix, org.batfish.representation.juniper.StaticRoute> routes =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("default")
+            .getRibs()
+            .get(RIB_IPV4_UNICAST)
+            .getStaticRoutes();
+    {
+      Prefix p = Prefix.parse("12.0.0.0/8");
+      assertThat(routes, hasKey(p));
+      assertThat(routes.get(p).getNoReadvertise(), equalTo(Boolean.TRUE));
+      assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("1.2.3.4")));
+    }
   }
 
   @Test
