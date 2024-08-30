@@ -37,9 +37,9 @@ public class StaticRoute implements Serializable {
 
   private @Nullable String _nextTable;
 
-  private @Nullable Boolean _noInstall;
+  private @Nullable Boolean _install;
 
-  private @Nullable Boolean _noReadvertise;
+  private @Nullable Boolean _readvertise;
 
   /**
    * Each qualified next hop will produce a separate static route using properties of the static
@@ -76,6 +76,14 @@ public class StaticRoute implements Serializable {
     return _drop;
   }
 
+  public @Nullable Boolean getInstall() {
+    return _install;
+  }
+
+  public void setInstall(@Nullable Boolean install) {
+    _install = install;
+  }
+
   public int getMetric() {
     return _metric;
   }
@@ -86,18 +94,6 @@ public class StaticRoute implements Serializable {
 
   public Set<Ip> getNextHopIp() {
     return _nextHopIp;
-  }
-
-  public @Nullable Boolean getNoInstall() {
-    return _noInstall;
-  }
-
-  public @Nullable Boolean getNoReadvertise() {
-    return _noReadvertise;
-  }
-
-  public void setNoReadvertise(@Nullable Boolean noReadvertise) {
-    _noReadvertise = noReadvertise;
   }
 
   public List<String> getPolicies() {
@@ -114,6 +110,14 @@ public class StaticRoute implements Serializable {
 
   public Map<NextHop, QualifiedNextHop> getQualifiedNextHops() {
     return _qualifiedNextHops;
+  }
+
+  public @Nullable Boolean getReadvertise() {
+    return _readvertise;
+  }
+
+  public void setReadvertise(@Nullable Boolean readvertise) {
+    _readvertise = readvertise;
   }
 
   public Long getTag() {
@@ -158,10 +162,6 @@ public class StaticRoute implements Serializable {
     _nextTable = null;
     _drop = false;
     _nextHopIp.add(nextHopIp);
-  }
-
-  public void setNoInstall(@Nullable Boolean noInstall) {
-    _noInstall = noInstall;
   }
 
   public @Nullable Boolean getResolve() {

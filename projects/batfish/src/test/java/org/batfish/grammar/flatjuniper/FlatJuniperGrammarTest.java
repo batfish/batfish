@@ -6367,10 +6367,33 @@ public final class FlatJuniperGrammarTest {
             .getRibs()
             .get(RIB_IPV4_UNICAST)
             .getStaticRoutes();
+    Map<Prefix, org.batfish.representation.juniper.StaticRoute> routes2 =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("ri2")
+            .getRibs()
+            .get(RIB_IPV4_UNICAST)
+            .getStaticRoutes();
+    {
+      Prefix p = Prefix.parse("1.0.0.0/8");
+      assertThat(routes, hasKey(p));
+      assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("10.0.0.1")));
+      assertThat(routes.get(p).getInstall(), equalTo(Boolean.TRUE));
+      assertThat(routes.get(p).getReadvertise(), equalTo(Boolean.TRUE));
+    }
+    {
+      Prefix p = Prefix.parse("2.0.0.0/8");
+      assertThat(routes2, hasKey(p));
+      assertThat(routes2.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("10.0.0.2")));
+      assertThat(routes2.get(p).getInstall(), nullValue());
+      assertThat(routes2.get(p).getReadvertise(), nullValue());
+      assertThat(routes2.get(p).getTag(), nullValue());
+      assertThat(routes2.get(p).getTag2(), nullValue());
+    }
     {
       Prefix p = Prefix.parse("12.0.0.0/8");
       assertThat(routes, hasKey(p));
-      assertThat(routes.get(p).getNoReadvertise(), equalTo(Boolean.TRUE));
+      assertThat(routes.get(p).getReadvertise(), equalTo(Boolean.FALSE));
       assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("1.2.3.4")));
       assertThat(routes.get(p).getTag(), equalTo(12L));
       assertThat(routes.get(p).getTag2(), equalTo(1212L));
