@@ -592,6 +592,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_resolveContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_preferenceContext;
@@ -6361,8 +6362,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_tag(Rosr_tagContext ctx) {
-    int tag = toInt(ctx.tag);
+    long tag = toLong(ctx.tag);
     _currentStaticRoute.setTag(tag);
+  }
+
+  @Override
+  public void exitRosr_tag2(Rosr_tag2Context ctx) {
+    long tag = toLong(ctx.tag);
+    _currentStaticRoute.setTag2(tag);
+    todo(ctx);
   }
 
   @Override
