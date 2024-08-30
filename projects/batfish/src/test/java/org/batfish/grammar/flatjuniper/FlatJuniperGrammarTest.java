@@ -6306,6 +6306,12 @@ public final class FlatJuniperGrammarTest {
                             .setAdministrativeCost(5)
                             .setRecursive(false)
                             .setTag(12)
+                            .build(),
+                        StaticRoute.builder()
+                            .setNetwork(Prefix.parse("13.0.0.0/8"))
+                            .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
+                            .setAdministrativeCost(5)
+                            .setRecursive(false)
                             .build()))),
             hasVrf(
                 "ri2",

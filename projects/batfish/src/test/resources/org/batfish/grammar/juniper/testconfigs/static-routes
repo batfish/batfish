@@ -19,10 +19,17 @@ set routing-options static route 10.0.0.0/16 qualified-next-hop 1.2.3.5
 # note: /32 is implicit
 set routing-options static route 11.0.0.0 next-hop 1.2.3.6
 #
-set routing-options static route 12.0.0.0/8 no-readvertise
 set routing-options static route 12.0.0.0/8 next-hop 1.2.3.4
+set routing-options static route 12.0.0.0/8 no-readvertise
+set routing-options static route 12.0.0.0/8 no-retain
+set routing-options static route 12.0.0.0/8 passive
 set routing-options static route 12.0.0.0/8 tag 12
 set routing-options static route 12.0.0.0/8 tag2 1212
+#
+set routing-options static route 13.0.0.0/8 next-hop 1.2.3.4
+set routing-options static route 13.0.0.0/8 active
+set routing-options static route 13.0.0.0/8 as-path path "3333 111 1222"
+set routing-options static route 13.0.0.0/8 retain
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5
