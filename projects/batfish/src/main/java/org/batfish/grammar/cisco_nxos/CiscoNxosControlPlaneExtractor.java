@@ -190,6 +190,8 @@ import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV4ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_COMMUNITY_USE_IPV6ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_SOURCE_INTERFACE;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_USER_USE_IPV4ACL;
+import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SNMP_SERVER_USER_USE_IPV6ACL;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_NETWORK_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_QOS;
 import static org.batfish.representation.cisco_nxos.CiscoNxosStructureUsage.SYSQOS_QUEUING;
@@ -702,6 +704,8 @@ import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_community_use_ipv6ac
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmps_hostContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_informsContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpssi_trapsContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpsu_use_ipv4aclContext;
+import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Snmpsu_use_ipv6aclContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Standard_communityContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_definitionContext;
 import org.batfish.grammar.cisco_nxos.CiscoNxosParser.Static_route_nameContext;
@@ -6913,6 +6917,28 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
   @Override
   public void exitSnmps_host(Snmps_hostContext ctx) {
     _currentSnmpServer = null;
+  }
+
+  @Override
+  public void exitSnmpsu_use_ipv4acl(Snmpsu_use_ipv4aclContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    // No implementation needed yet
+    _c.referenceStructure(
+        IP_ACCESS_LIST, name.get(), SNMP_SERVER_USER_USE_IPV4ACL, ctx.name.getStart().getLine());
+  }
+
+  @Override
+  public void exitSnmpsu_use_ipv6acl(Snmpsu_use_ipv6aclContext ctx) {
+    Optional<String> name = toString(ctx, ctx.name);
+    if (!name.isPresent()) {
+      return;
+    }
+    // No implementation needed yet
+    _c.referenceStructure(
+        IPV6_ACCESS_LIST, name.get(), SNMP_SERVER_USER_USE_IPV6ACL, ctx.name.getStart().getLine());
   }
 
   @Override

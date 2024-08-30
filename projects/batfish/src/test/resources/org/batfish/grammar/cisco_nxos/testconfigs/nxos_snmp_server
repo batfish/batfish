@@ -50,3 +50,5 @@ snmp-server source-interface trap mgmt0
 snmp-server source-interface traps mgmt0
 
 snmp-server user snmpuser1 network-admin auth md5 authpass1 priv privpass1 localizedkey
+snmp-server user snmpuser1 use-ipv4acl snmp_acl4
+snmp-server user snmpuser1 use-ipv6acl snmp_acl6
