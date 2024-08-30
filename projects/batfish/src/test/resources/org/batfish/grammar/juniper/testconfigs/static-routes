@@ -19,13 +19,15 @@ set routing-options static route 11.0.0.0 next-hop 1.2.3.6
 #
 set routing-options static route 12.0.0.0/8 no-readvertise
 set routing-options static route 12.0.0.0/8 next-hop 1.2.3.4
+set routing-options static route 12.0.0.0/8 tag 12
+set routing-options static route 12.0.0.0/8 tag2 1212
 #
 set routing-instances ri3 routing-options static route 5.5.5.0/24 preference 150
 set routing-instances ri3 routing-options static route 5.5.5.0/24 next-hop 2.3.4.5
 set routing-instances ri3 routing-options static route 5.5.5.0/24 metric 6
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop ge-0/0/0.0
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 preference 180
-set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 12
+set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 tag 4294967295
 set routing-instances ri3 routing-options static route 5.5.5.0/24 qualified-next-hop 1.2.3.4 metric 7
 set routing-instances ri3 routing-options static route 8.0.0.0/8 next-table inet.0
 #

@@ -6305,6 +6305,7 @@ public final class FlatJuniperGrammarTest {
                             .setNextHop(NextHopIp.of(Ip.parse("1.2.3.4")))
                             .setAdministrativeCost(5)
                             .setRecursive(false)
+                            .setTag(12)
                             .build()))),
             hasVrf(
                 "ri2",
@@ -6344,7 +6345,7 @@ public final class FlatJuniperGrammarTest {
                         .setNetwork(Prefix.parse("5.5.5.0/24"))
                         .setNextHopIp(Ip.parse("1.2.3.4"))
                         .setAdministrativeCost(180)
-                        .setTag(12L)
+                        .setTag(4294967295L)
                         .setMetric(7L)
                         .setRecursive(false)
                         .build(),
@@ -6371,6 +6372,8 @@ public final class FlatJuniperGrammarTest {
       assertThat(routes, hasKey(p));
       assertThat(routes.get(p).getNoReadvertise(), equalTo(Boolean.TRUE));
       assertThat(routes.get(p).getNextHopIp(), containsInAnyOrder(Ip.parse("1.2.3.4")));
+      assertThat(routes.get(p).getTag(), equalTo(12L));
+      assertThat(routes.get(p).getTag2(), equalTo(1212L));
     }
   }
 
