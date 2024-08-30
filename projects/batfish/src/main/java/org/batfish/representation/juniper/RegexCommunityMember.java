@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
@@ -12,6 +14,11 @@ import org.batfish.datamodel.bgp.community.Community;
 /** A {@link CommunityMember} representing a regex match condition for a {@link Community}. */
 @ParametersAreNonnullByDefault
 public final class RegexCommunityMember implements CommunityMember {
+  private static final LoadingCache<String, List<String>> REGEX_CACHE =
+      Caffeine.newBuilder()
+          .maximumSize(2048)
+          .build(RegexCommunityMember::getUnintendedCommunityMatchesImpl);
+
   /**
    * In Junos regexes, you can use {@code *} as a shortcut for {@code .*}, if it's alone. That is,
    * {@code *:5$} is the same as {@code .*:5$} or {@code [0-9]*:5$}.
@@ -49,6 +56,10 @@ public final class RegexCommunityMember implements CommunityMember {
    * documentation</a>}
    */
   public static List<String> getUnintendedCommunityMatches(String junosRegex) {
+    return REGEX_CACHE.get(junosRegex);
+  }
+
+  private static List<String> getUnintendedCommunityMatchesImpl(String junosRegex) {
     if (junosRegex.split(":", -1).length != 2) {
       return ImmutableList.of();
     }
