@@ -581,6 +581,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_activeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_installContext;
@@ -589,11 +591,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_installContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_readvertiseContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_retainContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_readvertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_resolveContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_retainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosrqnhc_metricContext;
@@ -3348,12 +3353,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentRibGroup.addImportPolicy(
         toComplexPolicyStatement(
             ctx.expr, JuniperStructureUsage.ROUTING_OPTIONS_RIB_GROUPS_IMPORT_POLICY));
-  }
-
-  @Override
-  public void exitRosr_next_table(Rosr_next_tableContext ctx) {
-    String name = toString(ctx.name);
-    _currentStaticRoute.setNextTable(name);
   }
 
   @Override
@@ -6305,6 +6304,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitRosr_active(Rosr_activeContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRosr_as_path(Rosr_as_pathContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitRosr_community(Rosr_communityContext ctx) {
     _currentStaticRoute.getCommunities().add(toStandardCommunity(ctx.standard_community()));
   }
@@ -6342,6 +6351,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitRosr_next_table(Rosr_next_tableContext ctx) {
+    String name = toString(ctx.name);
+    _currentStaticRoute.setNextTable(name);
+  }
+
+  @Override
   public void exitRosr_no_install(Rosr_no_installContext ctx) {
     _currentStaticRoute.setInstall(false);
   }
@@ -6353,8 +6368,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitRosr_resolve(Rosr_resolveContext ctx) {
-    _currentStaticRoute.setResolve(true);
+  public void exitRosr_no_retain(Rosr_no_retainContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitRosr_passive(Rosr_passiveContext ctx) {
+    todo(ctx);
   }
 
   @Override
@@ -6373,15 +6393,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitRosr_tag(Rosr_tagContext ctx) {
-    long tag = toLong(ctx.tag);
-    _currentStaticRoute.setTag(tag);
+  public void exitRosr_resolve(Rosr_resolveContext ctx) {
+    _currentStaticRoute.setResolve(true);
   }
 
   @Override
-  public void exitRosr_tag2(Rosr_tag2Context ctx) {
-    long tag = toLong(ctx.tag);
-    _currentStaticRoute.setTag2(tag);
+  public void exitRosr_retain(Rosr_retainContext ctx) {
     todo(ctx);
   }
 
@@ -6416,6 +6433,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitRosrqnhc_tag(Rosrqnhc_tagContext ctx) {
     _currentQualifiedNextHop.setTag(toLong(ctx.tag));
+  }
+
+  @Override
+  public void exitRosr_tag(Rosr_tagContext ctx) {
+    long tag = toLong(ctx.tag);
+    _currentStaticRoute.setTag(tag);
+  }
+
+  @Override
+  public void exitRosr_tag2(Rosr_tag2Context ctx) {
+    long tag = toLong(ctx.tag);
+    _currentStaticRoute.setTag2(tag);
+    todo(ctx);
   }
 
   @Override
