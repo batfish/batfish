@@ -587,6 +587,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_tableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_installContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_readvertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
@@ -6334,7 +6335,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_no_install(Rosr_no_installContext ctx) {
-    _currentStaticRoute.setNoInstall(ctx.NO_INSTALL() != null);
+    _currentStaticRoute.setNoInstall(true);
+  }
+
+  @Override
+  public void exitRosr_no_readvertise(Rosr_no_readvertiseContext ctx) {
+    todo(ctx);
+    _currentStaticRoute.setNoReadvertise(true);
   }
 
   @Override
