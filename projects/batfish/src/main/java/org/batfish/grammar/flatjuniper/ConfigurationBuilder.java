@@ -583,6 +583,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_discardContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_installContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_next_tableContext;
@@ -590,6 +591,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_installContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_readvertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_readvertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_tag2Context;
@@ -6313,6 +6315,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitRosr_install(Rosr_installContext ctx) {
+    _currentStaticRoute.setInstall(true);
+  }
+
+  @Override
   public void exitRosr_metric(Rosr_metricContext ctx) {
     int metric = toInt(ctx.metric);
     _currentStaticRoute.setMetric(metric);
@@ -6336,13 +6343,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitRosr_no_install(Rosr_no_installContext ctx) {
-    _currentStaticRoute.setNoInstall(true);
+    _currentStaticRoute.setInstall(false);
   }
 
   @Override
   public void exitRosr_no_readvertise(Rosr_no_readvertiseContext ctx) {
     todo(ctx);
-    _currentStaticRoute.setNoReadvertise(true);
+    _currentStaticRoute.setReadvertise(false);
   }
 
   @Override
@@ -6353,6 +6360,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitRosr_preference(Rosr_preferenceContext ctx) {
     _currentStaticRoute.setDistance(toInt(ctx.pref));
+  }
+
+  @Override
+  public void exitRosr_readvertise(Rosr_readvertiseContext ctx) {
+    _currentStaticRoute.setReadvertise(true);
   }
 
   @Override

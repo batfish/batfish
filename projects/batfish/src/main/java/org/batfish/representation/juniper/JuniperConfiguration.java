@@ -3311,7 +3311,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
 
     // static route corresponding to the next hop
-    boolean noInstall = firstNonNull(route.getNoInstall(), Boolean.FALSE);
+    boolean noInstall = !firstNonNull(route.getInstall(), Boolean.TRUE);
     // TOOD: return routing-instance-level default setting instead of false
     boolean resolve = firstNonNull(route.getResolve(), Boolean.FALSE);
 
