@@ -3652,6 +3652,16 @@ M_SnmpUserGroup_AUTH
   'auth' -> type ( AUTH ) , popMode
 ;
 
+M_SnmpUserGroup_USE_IPV4ACL
+:
+  'use-ipv4acl' -> type ( USE_IPV4ACL ) , mode ( M_Word )
+;
+
+M_SnmpUserGroup_USE_IPV6ACL
+:
+  'use-ipv6acl' -> type ( USE_IPV6ACL ) , mode ( M_Word )
+;
+
 M_SnmpUserGroup_WORD
 :
   F_Word -> type ( WORD ) , popMode

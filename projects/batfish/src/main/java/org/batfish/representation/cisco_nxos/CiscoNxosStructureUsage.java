@@ -157,6 +157,8 @@ public enum CiscoNxosStructureUsage implements StructureUsage {
   SNMP_SERVER_COMMUNITY_USE_IPV4ACL("snmp-server community use-ipv4acl"),
   SNMP_SERVER_COMMUNITY_USE_IPV6ACL("snmp-server community use-ipv6acl"),
   SNMP_SERVER_SOURCE_INTERFACE("snmp-server source-interface"),
+  SNMP_SERVER_USER_USE_IPV4ACL("snmp-server user use-ipv4acl"),
+  SNMP_SERVER_USER_USE_IPV6ACL("snmp-server user use-ipv6acl"),
   SYSQOS_NETWORK_QOS("system qos service-policy type network-qos"),
   SYSQOS_QOS("system qos service-policy type qos"),
   SYSQOS_QUEUING("system qos service-policy type queuing"),

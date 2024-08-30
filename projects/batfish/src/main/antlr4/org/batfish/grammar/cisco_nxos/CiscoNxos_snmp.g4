@@ -133,12 +133,27 @@ snmpssi_traps
 
 snmps_user
 :
-  USER user = user_name group = group_name? snmpsu_auth
+  USER user = user_name group = group_name?
+  (
+    snmpsu_auth
+    | snmpsu_use_ipv4acl
+    | snmpsu_use_ipv6acl
+  )
 ;
 
 snmpsu_auth
 :
   AUTH (MD5 | SHA) user_pass = user_password (PRIV AES_128? priv_pass = privacy_password)? LOCALIZEDKEY? NEWLINE
+;
+
+snmpsu_use_ipv4acl
+:
+  USE_IPV4ACL name = ip_access_list_name NEWLINE
+;
+
+snmpsu_use_ipv6acl
+:
+  USE_IPV6ACL name = ip_access_list_name NEWLINE
 ;
 
 privacy_password
