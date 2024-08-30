@@ -41,15 +41,17 @@ public class StaticRoute implements Serializable {
 
   private @Nullable Boolean _noReadvertise;
 
-  private @Nullable Boolean _resolve;
-
   /**
    * Each qualified next hop will produce a separate static route using properties of the static
    * route and overriding with properties of {@link QualifiedNextHop}
    */
   private Map<NextHop, QualifiedNextHop> _qualifiedNextHops;
 
+  private @Nullable Boolean _resolve;
+
   private Long _tag;
+
+  private @Nullable Long _tag2;
 
   public StaticRoute(Prefix prefix) {
     _communities = new TreeSet<>();
@@ -118,6 +120,18 @@ public class StaticRoute implements Serializable {
     return _tag;
   }
 
+  public void setTag(long tag) {
+    _tag = tag;
+  }
+
+  public @Nullable Long getTag2() {
+    return _tag2;
+  }
+
+  public void setTag2(@Nullable Long tag2) {
+    _tag2 = tag2;
+  }
+
   public void setDistance(int distance) {
     _distance = distance;
   }
@@ -148,10 +162,6 @@ public class StaticRoute implements Serializable {
 
   public void setNoInstall(@Nullable Boolean noInstall) {
     _noInstall = noInstall;
-  }
-
-  public void setTag(long tag) {
-    _tag = tag;
   }
 
   public @Nullable Boolean getResolve() {

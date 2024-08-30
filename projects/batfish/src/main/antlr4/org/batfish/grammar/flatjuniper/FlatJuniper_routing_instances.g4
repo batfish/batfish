@@ -592,6 +592,7 @@ rosr_common
    | rosr_resolve
    | rosr_retain
    | rosr_tag
+   | rosr_tag2
 ;
 
 rosr_community
@@ -689,7 +690,12 @@ rosr_retain
 
 rosr_tag
 :
-   TAG tag = dec
+   TAG tag = uint32
+;
+
+rosr_tag2
+:
+   TAG2 tag = uint32
 ;
 
 rosrqnh_common
@@ -713,7 +719,7 @@ rosrqnhc_preference
 
 rosrqnhc_tag
 :
-   TAG tag = dec
+   TAG tag = uint32
 ;
 
 s_routing_instances
