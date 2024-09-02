@@ -1,7 +1,5 @@
 package org.batfish.grammar;
 
-import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
@@ -86,9 +84,8 @@ public final class VendorConfigurationFormatDetector {
   // checkPaloAlto patterns
   private static final Pattern FLAT_PALO_ALTO_PATTERN =
       Pattern.compile(Pattern.quote(BATFISH_FLATTENED_PALO_ALTO_HEADER));
-  private static final Pattern PALO_ALTO_DEVICECONFIG_PATTERN = Pattern.compile("(?m)deviceconfig");
-  private static final Pattern PALO_ALTO_PANORAMA_PATTERN =
-      Pattern.compile("(?m)(send-to-panorama|panorama-server)");
+  private static final Pattern PALO_ALTO_PANORAMA_DEVICECONFIG_PATTERN =
+      Pattern.compile("(?m)(send-to-panorama|panorama-server|deviceconfig)");
   // open brace not likely to be opening a string literal of a JSON object
   private static final Pattern PALO_ALTO_NESTED_PATTERN = Pattern.compile("(?m)[^\"']\\{");
 
@@ -126,19 +123,21 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
-  private static final Pattern ARISTA_EOS_PATTERN =
-      Pattern.compile("(?m)^! device: .*\\(.*EOS-\\d.*");
-  private static final Pattern ARISTA_FLASH_PATTERN =
-      Pattern.compile("(?m)^.*boot system flash.*\\.swi");
-  private static final Pattern ARISTA_TELLS =
-      Pattern.compile("(?m)^ip (ext)?community-list regexp");
+  private static final String ARISTA_EOS_LINE_REGEX = "^! device: .*\\(.*EOS-\\d";
+  private static final String ARISTA_FLASH_REGEX = "^.*boot system flash.*\\.swi";
+  private static final String ARISTA_TELLS_REGEX = "^ip (ext)?community-list regexp";
+  private static final Pattern ARISTA_PATTERN =
+      Pattern.compile(
+          "(?m)("
+              + ARISTA_EOS_LINE_REGEX
+              + "|"
+              + ARISTA_FLASH_REGEX
+              + "|"
+              + ARISTA_TELLS_REGEX
+              + ")");
 
   private @Nullable ConfigurationFormat checkArista() {
-    if (fileTextMatches(ARISTA_FLASH_PATTERN)) {
-      return ConfigurationFormat.ARISTA;
-    } else if (fileTextMatches(ARISTA_EOS_PATTERN)) {
-      return ConfigurationFormat.ARISTA;
-    } else if (fileTextMatches(ARISTA_TELLS)) {
+    if (fileTextMatches(ARISTA_PATTERN)) {
       return ConfigurationFormat.ARISTA;
     }
 
@@ -322,9 +321,7 @@ public final class VendorConfigurationFormatDetector {
   private @Nullable ConfigurationFormat checkPaloAlto(boolean preMatch) {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.PALO_ALTO;
-    } else if (preMatch
-        || fileTextMatches(PALO_ALTO_DEVICECONFIG_PATTERN)
-        || fileTextMatches(PALO_ALTO_PANORAMA_PATTERN)) {
+    } else if (preMatch || fileTextMatches(PALO_ALTO_PANORAMA_DEVICECONFIG_PATTERN)) {
       if (fileTextMatches(PALO_ALTO_NESTED_PATTERN)) {
         return ConfigurationFormat.PALO_ALTO_NESTED;
       }
@@ -487,49 +484,40 @@ public final class VendorConfigurationFormatDetector {
   }
 
   private ConfigurationFormat identifyConfigurationFormat() {
-    ConfigurationFormat format;
-    format = checkEmpty();
-    if (format != null) {
-      return format;
-    }
-    format = checkBatfish();
-    if (format != null) {
-      return format;
-    }
-    format = checkRancid();
-    if (format != null) {
-      return format;
-    }
+    ConfigurationFormat format = checkEmpty();
+    format = (format == null) ? checkBatfish() : format;
+    format = (format == null) ? checkRancid() : format;
 
     // Heuristics are somewhat brittle. This function adds information about which configuration
     // formats we know this file does not match.
-    configureHeuristicBlacklist();
+    if (format == null) {
+      configureHeuristicBlacklist();
+    }
 
-    return firstNonNull(
-        checkA10(),
-        checkCheckPoint(),
-        checkFortios(),
-        checkRuckusIcx(),
-        checkCadant(),
-        checkCumulusConcatenated(),
-        checkCumulusNclu(),
-        checkF5(),
-        checkCiscoXr(),
-        checkFlatVyos(),
-        checkIpTables(),
-        checkMetamako(),
-        checkMrv(),
-        checkMrvCommands(),
-        checkPaloAlto(false),
-        checkVyos(),
-        checkArista(),
-        checkBlade(),
-        checkVxWorks(),
-        checkJuniper(false),
-        checkAlcatelAos(),
-        checkMss(),
-        checkArubaOS(),
-        checkCisco(),
-        ConfigurationFormat.UNKNOWN);
+    format = (format == null) ? checkA10() : format;
+    format = (format == null) ? checkCheckPoint() : format;
+    format = (format == null) ? checkFortios() : format;
+    format = (format == null) ? checkRuckusIcx() : format;
+    format = (format == null) ? checkCadant() : format;
+    format = (format == null) ? checkCumulusConcatenated() : format;
+    format = (format == null) ? checkCumulusNclu() : format;
+    format = (format == null) ? checkF5() : format;
+    format = (format == null) ? checkCiscoXr() : format;
+    format = (format == null) ? checkFlatVyos() : format;
+    format = (format == null) ? checkIpTables() : format;
+    format = (format == null) ? checkMetamako() : format;
+    format = (format == null) ? checkMrv() : format;
+    format = (format == null) ? checkMrvCommands() : format;
+    format = (format == null) ? checkPaloAlto(false) : format;
+    format = (format == null) ? checkVyos() : format;
+    format = (format == null) ? checkArista() : format;
+    format = (format == null) ? checkBlade() : format;
+    format = (format == null) ? checkVxWorks() : format;
+    format = (format == null) ? checkJuniper(false) : format;
+    format = (format == null) ? checkAlcatelAos() : format;
+    format = (format == null) ? checkMss() : format;
+    format = (format == null) ? checkArubaOS() : format;
+    format = (format == null) ? checkCisco() : format;
+    return (format == null) ? ConfigurationFormat.UNKNOWN : format;
   }
 }
