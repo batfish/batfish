@@ -311,6 +311,7 @@ BFD: 'bfd';
 BFD_LIVENESS_DETECTION: 'bfd-liveness-detection';
 
 BGP: 'bgp';
+BGP_OUTPUT_QUEUE_PRIORITY: 'bgp-output-queue-priority';
 
 BIFF: 'biff';
 
@@ -659,6 +660,8 @@ EXCLUDE_NON_FEASIBLE: 'exclude-non-feasible';
 EXEC: 'exec';
 
 EXP: 'exp';
+
+EXPEDITED: 'expedited';
 
 EXPLICIT_PRIORITY: 'explicit-priority';
 
@@ -2034,6 +2037,8 @@ OUTPUT: 'output' -> pushMode(M_Name);
 
 OUTPUT_LIST: 'output-list' -> pushMode(M_Name);
 
+OUTPUT_QUEUE_PRIORITY: 'output-queue-priority';
+
 OUTPUT_TRAFFIC_CONTROL_PROFILE: 'output-traffic-control-profile' -> pushMode(M_Name);
 
 OUTPUT_VLAN_MAP: 'output-vlan-map';
@@ -2997,7 +3002,7 @@ WIDE_METRICS_ONLY: 'wide-metrics-only';
 WILDCARD_ADDRESS: 'wildcard-address';
 
 WINNUKE: 'winnuke';
-
+WITHDRAW_PRIORITY: 'withdraw-priority';
 XAUTH: 'xauth';
 
 XDMCP: 'xdmcp';
