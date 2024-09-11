@@ -201,6 +201,18 @@ b_neighbor
    ) b_common
 ;
 
+b_output_queue_priority
+:
+   OUTPUT_QUEUE_PRIORITY
+   (
+      boqp_defaults_null
+      | boqp_queue_id
+   )
+;
+
+boqp_defaults_null: DEFAULTS null_filler;
+boqp_queue_id: bgp_priority_queue_id null_filler;
+
 b_no_client_reflect
 :
    NO_CLIENT_REFLECT
@@ -369,6 +381,7 @@ bfi_unicast
       | bfiu_loops
       | bfiu_prefix_limit
       | bfiu_rib_group
+      | bfiu_withdraw_priority
    )
 ;
 
@@ -391,6 +404,7 @@ bfi6_unicast
    (
       apply
       | bfi6u_prefix_limit
+      | bfi6u_withdraw_priority
    )
 ;
 
@@ -398,6 +412,8 @@ bfi6u_prefix_limit
 :
    PREFIX_LIMIT null_filler
 ;
+
+bfi6u_withdraw_priority: WITHDRAW_PRIORITY bgp_priority_queue_id;
 
 bfiu_add_path
 :
@@ -422,6 +438,8 @@ bfiu_rib_group
 :
    RIB_GROUP name = junos_name
 ;
+
+bfiu_withdraw_priority: WITHDRAW_PRIORITY bgp_priority_queue_id;
 
 bfiua_receive
 :
@@ -537,5 +555,6 @@ p_bgp
       | b_enable
       | b_group
       | b_neighbor
+      | b_output_queue_priority
    )
 ;

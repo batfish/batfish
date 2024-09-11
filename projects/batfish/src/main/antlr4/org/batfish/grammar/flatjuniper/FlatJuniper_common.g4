@@ -69,6 +69,18 @@ bgp_asn
     | asn4hi = uint16 PERIOD asn4lo = uint16
 ;
 
+bgp_priority_queue_number
+:
+  // 1-16
+  uint8
+;
+
+bgp_priority_queue_id
+:
+   EXPEDITED
+   | PRIORITY bgp_priority_queue_number
+;
+
 dec
 :
   UINT8
