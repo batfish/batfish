@@ -1315,6 +1315,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpValidation() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-validation");
+  }
+
+  @Test
   public void testBgpAddPathExtraction() {
     String hostname = "juniper-bgp-add-path";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
