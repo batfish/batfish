@@ -1746,6 +1746,7 @@ MAX_PRE_AUTHENTICATION_PACKETS: 'max-pre-authentication-packets';
 
 MAX_SESSION_NUMBER: 'max-session-number';
 
+MAX_SESSIONS: 'max-sessions';
 MAX_SESSIONS_PER_CONNECTION: 'max-sessions-per-connection';
 
 MAX_SUPPRESS: 'max-suppress';
@@ -2004,8 +2005,8 @@ NODE_GROUP: 'node-group' -> pushMode(M_Name);
 NODE_LINK_PROTECTION: 'node-link-protection';
 NONE: 'none';
 NONSTOP_ROUTING: 'nonstop-routing';
-
 NON_STRICT_PRIORITY_SCHEDULING: 'non-strict-priority-scheduling';
+NOTIFICATION_RIB: 'notification-rib' -> pushMode(M_Name);
 
 NSSA: 'nssa';
 
@@ -2305,6 +2306,7 @@ READVERTISE: 'readvertise';
 
 RECEIVE: 'receive';
 
+RECORD_LIFETIME: 'record-lifetime';
 RECORD_ROUTE_OPTION: 'record-route-option';
 
 REDIRECT: 'redirect';
@@ -2329,6 +2331,7 @@ REFERENCE_BANDWIDTH
    'reference-bandwidth' -> pushMode ( M_Bandwidth )
 ;
 
+REFRESH_TIME: 'refresh-time';
 REJECT: 'reject';
 
 REKEY: 'rekey';
@@ -2542,6 +2545,7 @@ SERVICE_FILTER: 'service-filter';
 SERVICES: 'services';
 
 SERVICES_OFFLOAD: 'services-offload';
+SESSION: 'session';
 
 SET
 :
@@ -2911,6 +2915,7 @@ USER_DEFINED_OPTION_TYPE: 'user-defined-option-type';
 UUID: 'uuid';
 
 V1_ONLY: 'v1-only';
+VALIDATION: 'validation';
 
 VERSION
 :
