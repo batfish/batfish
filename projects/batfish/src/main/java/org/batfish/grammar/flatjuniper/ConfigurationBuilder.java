@@ -528,6 +528,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv4Context;
@@ -6060,6 +6061,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_tag(Popst_tagContext ctx) {
     _currentPsThens.add(new PsThenTag(toLong(ctx.uint32())));
+  }
+
+  @Override
+  public void exitPopst_tag2(Popst_tag2Context ctx) {
+    todo(ctx);
   }
 
   @Override

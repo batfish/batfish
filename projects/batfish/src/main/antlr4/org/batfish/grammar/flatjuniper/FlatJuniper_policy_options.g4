@@ -537,6 +537,7 @@ popst_common
    | popst_priority
    | popst_reject
    | popst_tag
+   | popst_tag2
    | popst_tunnel_attribute
 ;
 
@@ -723,6 +724,11 @@ popst_reject
 popst_tag
 :
    TAG uint32
+;
+
+popst_tag2
+:
+   TAG2 uint32
 ;
 
 popst_tunnel_attribute
