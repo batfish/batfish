@@ -6,6 +6,16 @@ options {
    tokenVocab = FlatJuniperLexer;
 }
 
+// Common stuff
+
+send_path_count
+:
+  // 2-64
+  uint8
+;
+
+//
+
 b_advertise_external
 :
    ADVERTISE_EXTERNAL
@@ -403,9 +413,60 @@ bfi6_unicast
    UNICAST
    (
       apply
+      | bfi6u_add_path
       | bfi6u_prefix_limit
       | bfi6u_withdraw_priority
    )
+;
+
+bfi6u_add_path
+:
+   ADD_PATH
+   (
+      bfi6ua_receive
+      | bfi6ua_send
+   )
+;
+
+bfi6ua_receive
+:
+   RECEIVE
+;
+
+bfi6ua_send
+:
+  SEND
+  (
+    apply
+    | bfi6uas_multipath
+    | bfi6uas_path_count
+    | bfi6uas_path_selection_mode
+    | bfi6uas_prefix_policy
+  )
+;
+
+bfi6uas_multipath
+:
+  MULTIPATH
+;
+
+bfi6uas_path_count
+:
+   PATH_COUNT count = send_path_count
+;
+
+bfi6uas_path_selection_mode
+:
+  PATH_SELECTION_MODE
+  (
+    ALL_PATHS
+    | EQUAL_COST_PATHS
+  )
+;
+
+bfi6uas_prefix_policy
+:
+   PREFIX_POLICY policy = junos_name
 ;
 
 bfi6u_prefix_limit
@@ -466,12 +527,6 @@ bfiuas_multipath
 bfiuas_path_count
 :
    PATH_COUNT count = send_path_count
-;
-
-send_path_count
-:
-  // 2-64
-  uint8
 ;
 
 bfiuas_path_selection_mode
