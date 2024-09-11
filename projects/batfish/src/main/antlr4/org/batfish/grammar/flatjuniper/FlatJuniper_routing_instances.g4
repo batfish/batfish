@@ -299,6 +299,73 @@ ro_static
    )
 ;
 
+ro_validation
+:
+   VALIDATION
+   (
+     rov_group
+     | rov_notification_rib
+   )
+;
+
+rov_group
+:
+   GROUP name = junos_name
+   (
+      rovg_max_sessions
+      | rovg_session
+   )
+;
+
+rovg_max_sessions: MAX_SESSIONS num = dec;
+rovg_session
+:
+   SESSION server_ip = ip_address
+   (
+      rovgs_hold_time
+      | rovgs_local_address
+      | rovgs_port
+      | rovgs_record_lifetime
+      | rovgs_refresh_time
+   )
+;
+
+rovgs_hold_time
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 10-3600, default 600
+   HOLD_TIME secs=uint16
+;
+
+rovgs_local_address
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   LOCAL_ADDRESS ip = ip_address
+;
+
+rovgs_port
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 1-255, default 100
+   PORT port
+;
+
+rovgs_record_lifetime
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 60-604800, default 3600
+   RECORD_LIFETIME secs=uint32
+;
+
+rovgs_refresh_time
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/session-edit-routing-options-validation.html
+   // 1-1800, default 300
+   REFRESH_TIME secs=uint16
+;
+
+rov_notification_rib: NOTIFICATION_RIB rib = junos_name;
+
 roa_active
 :
   ACTIVE
@@ -755,5 +822,6 @@ s_routing_options
       | ro_router_id
       | ro_srlg
       | ro_static
+      | ro_validation
    )
 ;
