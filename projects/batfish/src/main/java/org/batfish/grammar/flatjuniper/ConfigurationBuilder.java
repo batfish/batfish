@@ -510,6 +510,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_bgp_output_queue_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_color2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_community_addContext;
@@ -5883,6 +5884,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  @Override
+  public void exitPopst_bgp_output_queue_priority(Popst_bgp_output_queue_priorityContext ctx) {
+    todo(ctx);
   }
 
   @Override

@@ -1179,6 +1179,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpPriority() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-output-queue-priority");
+  }
+
+  @Test
   public void testBgpPreferenceExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-preference");
     RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
