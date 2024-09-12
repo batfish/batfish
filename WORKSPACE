@@ -5,6 +5,16 @@ load("@bazel_tools//tools/build_defs/repo:http.bzl", "http_archive", "http_jar")
 ##########################################################
 # Bazel helpers                                          #
 ##########################################################
+# Manage up rules_license since there's a diamond dependency with skylib and jvm_external
+http_archive(
+    name = "rules_license",
+    sha256 = "26d4021f6898e23b82ef953078389dd49ac2b5618ac564ade4ef87cced147b38",
+    urls = [
+        "https://mirror.bazel.build/github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz",
+        "https://github.com/bazelbuild/rules_license/releases/download/1.0.0/rules_license-1.0.0.tar.gz",
+    ],
+)
+
 http_archive(
     name = "bazel_skylib",
     sha256 = "bc283cdfcd526a52c3201279cda4bc298652efa898b10b4db0837dc51652756f",
@@ -22,9 +32,9 @@ bazel_skylib_workspace()
 # External Java dependencies (from Maven)                #
 ##########################################################
 
-RULES_JVM_EXTERNAL_TAG = "6.2"
+RULES_JVM_EXTERNAL_TAG = "6.3"
 
-RULES_JVM_EXTERNAL_SHA = "808cb5c30b5f70d12a2a745a29edc46728fd35fa195c1762a596b63ae9cebe05"
+RULES_JVM_EXTERNAL_SHA = "c18a69d784bcd851be95897ca0eca0b57dc86bb02e62402f15736df44160eb02"
 
 http_archive(
     name = "rules_jvm_external",
