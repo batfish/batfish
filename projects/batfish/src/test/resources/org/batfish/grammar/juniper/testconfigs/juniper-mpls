@@ -1,0 +1,8 @@
+#
+set system host-name juniper-mpls
+#
+set protocols bgp group G family inet unicast extended-nexthop-tunnel
+set protocols bgp group G family inet6 unicast extended-nexthop-tunnel
+#
+set routing-instances RI protocols bgp forwarding-context master
+#
