@@ -388,6 +388,7 @@ bfi_unicast
    (
       apply
       | bfiu_add_path
+      | bfiu_extended_nexthop_tunnel_null
       | bfiu_loops
       | bfiu_prefix_limit
       | bfiu_rib_group
@@ -414,6 +415,7 @@ bfi6_unicast
    (
       apply
       | bfi6u_add_path
+      | bfi6u_extended_nexthop_tunnel_null
       | bfi6u_loops
       | bfi6u_prefix_limit
       | bfi6u_withdraw_priority
@@ -470,6 +472,8 @@ bfi6uas_prefix_policy
    PREFIX_POLICY policy = junos_name
 ;
 
+bfi6u_extended_nexthop_tunnel_null: EXTENDED_NEXTHOP_TUNNEL;
+
 bfi6u_loops
 :
    // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
@@ -492,6 +496,8 @@ bfiu_add_path
       | bfiua_send
    )
 ;
+
+bfiu_extended_nexthop_tunnel_null: EXTENDED_NEXTHOP_TUNNEL;
 
 bfiu_loops
 :
@@ -620,8 +626,11 @@ p_bgp
       b_common
       | b_disable
       | b_enable
+      | b_forwarding_context_null
       | b_group
       | b_neighbor
       | b_output_queue_priority
    )
 ;
+
+b_forwarding_context_null: FORWARDING_CONTEXT name = junos_name;
