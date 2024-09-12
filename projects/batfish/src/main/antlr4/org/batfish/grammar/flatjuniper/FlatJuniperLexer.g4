@@ -680,6 +680,7 @@ EXPORT_RIB: 'export-rib' -> pushMode(M_Name);
 
 EXPRESSION: 'expression';
 
+EXTENDED_NEXTHOP_TUNNEL: 'extended-nexthop-tunnel';
 EXTENDED_VNI_LIST: 'extended-vni-list' -> pushMode(M_ExtendedVniList);
 
 EXTENSIBLE_SUBSCRIBER: 'extensible-subscriber';
@@ -764,7 +765,7 @@ FORWARDING_CLASS_ACCOUNTING: 'forwarding-class-accounting';
 FORWARDING_CLASS_SET: 'forwarding-class-set' -> pushMode(M_Name);
 
 FORWARDING_CLASSES: 'forwarding-classes';
-
+FORWARDING_CONTEXT: 'forwarding-context' -> pushMode(M_Name);
 FORWARDING_OPTIONS: 'forwarding-options';
 
 FORWARDING_POLICY: 'forwarding-policy';

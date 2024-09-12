@@ -1321,6 +1321,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testMpls() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-mpls");
+  }
+
+  @Test
   public void testBgpValidation() {
     // Just don't crash.
     parseJuniperConfig("bgp-validation");
