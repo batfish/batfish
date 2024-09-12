@@ -1,0 +1,7 @@
+#
+set system host-name routing-options-misc
+#
+set routing-options martians 240.0.0.0/4 orlonger allow
+set routing-options rib inet.0 martians 240.0.0.0/4 orlonger allow
+set routing-instances RI routing-options martians 240.0.0.0/4 orlonger allow
+#

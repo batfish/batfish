@@ -6038,6 +6038,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRoutingOptionsMiscParsing() {
+    // Just don't have parse warnings, for now.
+    parseJuniperConfig("routing-options-misc");
+  }
+
+  @Test
   public void testRoutingPolicy() {
     Configuration c = parseConfig("routing-policy");
 
