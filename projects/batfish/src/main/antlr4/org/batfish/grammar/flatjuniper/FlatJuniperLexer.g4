@@ -311,6 +311,7 @@ BFD: 'bfd';
 BFD_LIVENESS_DETECTION: 'bfd-liveness-detection';
 
 BGP: 'bgp';
+BGP_ERROR_TOLERANCE: 'bgp-error-tolerance';
 BGP_OUTPUT_QUEUE_PRIORITY: 'bgp-output-queue-priority';
 
 BIFF: 'biff';
