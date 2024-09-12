@@ -101,7 +101,7 @@ ADDRESS_MASK: 'address-mask';
 ADDRESS_SET: 'address-set' -> pushMode(M_Name);
 
 ADVERTISE_EXTERNAL: 'advertise-external';
-
+ADVERTISE_FROM_MAIN_VPN_TABLES: 'advertise-from-main-vpn-tables';
 ADVERTISE_HIGH_METRICS: 'advertise-high-metrics';
 
 ADVERTISE_INACTIVE: 'advertise-inactive';

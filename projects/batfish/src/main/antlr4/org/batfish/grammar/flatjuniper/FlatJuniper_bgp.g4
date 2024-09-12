@@ -623,7 +623,8 @@ p_bgp
 :
    BGP
    (
-      b_common
+      b_advertise_from_main_vpn_tables_null
+      | b_common
       | b_disable
       | b_enable
       | b_forwarding_context_null
@@ -633,4 +634,6 @@ p_bgp
    )
 ;
 
+// Protocol-wide config only
+b_advertise_from_main_vpn_tables_null: ADVERTISE_FROM_MAIN_VPN_TABLES;
 b_forwarding_context_null: FORWARDING_CONTEXT name = junos_name;

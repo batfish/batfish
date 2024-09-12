@@ -1,0 +1,5 @@
+#
+set system host-name juniper-vpn
+#
+set protocols bgp advertise-from-main-vpn-tables
+#

@@ -1333,6 +1333,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testVpn() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-vpn");
+  }
+
+  @Test
   public void testBgpAddPathExtraction() {
     String hostname = "juniper-bgp-add-path";
     JuniperConfiguration vc = parseJuniperConfig(hostname);
