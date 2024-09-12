@@ -414,6 +414,7 @@ bfi6_unicast
    (
       apply
       | bfi6u_add_path
+      | bfi6u_loops
       | bfi6u_prefix_limit
       | bfi6u_withdraw_priority
    )
@@ -469,6 +470,13 @@ bfi6uas_prefix_policy
    PREFIX_POLICY policy = junos_name
 ;
 
+bfi6u_loops
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
+;
+
 bfi6u_prefix_limit
 :
    PREFIX_LIMIT null_filler
@@ -487,7 +495,9 @@ bfiu_add_path
 
 bfiu_loops
 :
-   LOOPS count = dec
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
 ;
 
 bfiu_prefix_limit
@@ -558,7 +568,9 @@ bl_common
 
 bl_loops
 :
-   LOOPS dec
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/loops-edit-protocols-bgp-family.html
+   // 1-10
+   LOOPS count = uint8
 ;
 
 bl_no_prepend_global_as

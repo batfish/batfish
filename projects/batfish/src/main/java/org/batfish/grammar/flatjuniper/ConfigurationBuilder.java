@@ -4334,7 +4334,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitBfiu_loops(Bfiu_loopsContext ctx) {
-    _currentBgpGroup.setLoops(toInt(ctx.dec()));
+    _currentBgpGroup.setLoops(toInteger(ctx.count));
   }
 
   @Override
@@ -4353,7 +4353,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitBl_loops(Bl_loopsContext ctx) {
     todo(ctx);
-    int loops = toInt(ctx.dec());
+    int loops = toInteger(ctx.count);
     _currentBgpGroup.setLoops(loops);
   }
 
