@@ -1327,6 +1327,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpMisc() {
+    // Just don't crash.
+    parseJuniperConfig("bgp-misc");
+  }
+
+  @Test
   public void testBgpValidation() {
     // Just don't crash.
     parseJuniperConfig("bgp-validation");

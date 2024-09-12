@@ -1,0 +1,10 @@
+#
+set system host-name bgp-misc
+#
+set protocols bgp bgp-error-tolerance
+set protocols bgp drop-path-attributes 128
+set protocols bgp mtu-discovery
+set protocols bgp tcp-mss 4096
+set protocols bgp traceoptions file bgp.log
+set protocols bgp traceoptions flag state
+#
