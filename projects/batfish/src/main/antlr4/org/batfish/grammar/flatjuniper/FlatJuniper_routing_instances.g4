@@ -256,6 +256,7 @@ ro_rib
       apply
       | ro_aggregate
       | ro_generate
+      | ro_martians
       | ro_static
    )
 ;
