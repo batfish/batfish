@@ -541,6 +541,7 @@ DESTINATION_NETWORK_UNKNOWN: 'destination-network-unknown';
 DESTINATION_PORT: 'destination-port' -> pushMode(M_Port);
 
 DESTINATION_PORT_EXCEPT: 'destination-port-except' -> pushMode(M_Port);
+DESTINATION_PORT_RANGE_OPTIMIZE: 'destination-port-range-optimize';
 
 DESTINATION_PREFIX_LIST: 'destination-prefix-list' -> pushMode(M_Name);
 
@@ -2646,6 +2647,7 @@ SOURCE_NAT: 'source-nat';
 
 SOURCE_PORT: 'source-port' -> pushMode(M_Port);
 SOURCE_PORT_EXCEPT: 'source-port-except' -> pushMode(M_Port);
+SOURCE_PORT_RANGE_OPTIMIZE: 'source-port-range-optimize';
 
 SOURCE_PREFIX_LIST: 'source-prefix-list' -> pushMode(M_Name);
 
