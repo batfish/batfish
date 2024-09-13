@@ -1,0 +1,7 @@
+#
+set system host-name juniper-bgp-bmp
+#
+set protocols bgp group G bmp route-monitoring pre-policy
+set protocols bgp group G bmp route-monitoring post-policy exclude-non-eligible
+set protocols bgp group G bmp route-monitoring rib-out post-policy
+#
