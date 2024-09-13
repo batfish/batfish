@@ -123,6 +123,7 @@ ipsec_authentication_algorithm
 :
    HMAC_MD5_96
    | HMAC_SHA1_96
+   | HMAC_SHA_256_128
 ;
 
 ipsec_protocol
