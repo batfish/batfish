@@ -74,6 +74,7 @@ fft_from
       | fftf_destination_address
       | fftf_destination_port
       | fftf_destination_port_except
+      | fftf_destination_port_range_optimize
       | fftf_destination_prefix_list
       | fftf_dscp
       | fftf_exp
@@ -106,6 +107,7 @@ fft_from
       | fftf_source_mac_address
       | fftf_source_port
       | fftf_source_port_except
+      | fftf_source_port_range_optimize
       | fftf_source_prefix_list
       | fftf_tcp_established
       | fftf_tcp_flags
@@ -161,6 +163,7 @@ fftf_destination_address
 fftf_destination_port: DESTINATION_PORT port_range;
 
 fftf_destination_port_except: DESTINATION_PORT_EXCEPT port_range;
+fftf_destination_port_range_optimize: DESTINATION_PORT_RANGE_OPTIMIZE;
 
 fftf_destination_prefix_list
 :
@@ -347,6 +350,7 @@ fftf_source_mac_address
 fftf_source_port: SOURCE_PORT port_range;
 
 fftf_source_port_except: SOURCE_PORT_EXCEPT port_range;
+fftf_source_port_range_optimize: SOURCE_PORT_RANGE_OPTIMIZE;
 
 fftf_source_prefix_list
 :
