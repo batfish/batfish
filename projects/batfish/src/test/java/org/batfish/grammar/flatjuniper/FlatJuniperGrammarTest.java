@@ -1341,6 +1341,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSecurityMisc() {
+    // Just don't have parse warnings.
+    parseJuniperConfig("juniper-security-misc");
+  }
+
+  @Test
   public void testVpn() {
     // Just don't have parse warnings.
     parseJuniperConfig("juniper-vpn");

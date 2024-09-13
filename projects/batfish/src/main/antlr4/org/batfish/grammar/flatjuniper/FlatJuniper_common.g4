@@ -521,7 +521,7 @@ secret_string
 
 certificate_string
 :
-  CERTIFICATE_STRING
+  CERTIFICATE_STRING | SCRUBBED
 ;
 
 null_filler
