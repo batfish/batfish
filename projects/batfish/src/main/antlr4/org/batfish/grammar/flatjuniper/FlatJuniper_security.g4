@@ -710,7 +710,30 @@ seikg_address
 
 seikg_dead_peer_detection
 :
-   DEAD_PEER_DETECTION ALWAYS_SEND?
+   DEAD_PEER_DETECTION
+   (
+      seikgdpd_always_send
+      | seikgdpd_interval
+      | seikgdpd_optimized
+      | seikgdpd_probe_idle_tunnel
+      | seikgdpd_threshold
+   )?
+;
+
+seikgdpd_always_send: ALWAYS_SEND;
+seikgdpd_interval
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-dead-peer-detection.html
+   // 2-60, default 10
+   INTERVAL secs = uint8
+;
+seikgdpd_optimized: OPTIMIZED;
+seikgdpd_probe_idle_tunnel: PROBE_IDLE_TUNNEL;
+seikgdpd_threshold
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/security-edit-dead-peer-detection.html
+   // 1-5, default 5
+   THRESHOLD max_failures = uint8
 ;
 
 seikg_dynamic
@@ -754,7 +777,7 @@ seikg_no_nat_traversal
 
 seikg_version
 :
-   VERSION V1_ONLY
+   VERSION (V1_ONLY | V2_ONLY)
 ;
 
 seikg_xauth
@@ -802,7 +825,12 @@ seikp_mode
 
 seikp_pre_shared_key
 :
-   PRE_SHARED_KEY ASCII_TEXT key = DOUBLE_QUOTED_STRING
+   PRE_SHARED_KEY
+   (
+      ASCII_TEXT key = DOUBLE_QUOTED_STRING
+      | HEXADECIMAL key = DOUBLE_QUOTED_STRING
+      | SCRUBBED
+   )
 ;
 
 seikp_proposal_set
@@ -933,7 +961,7 @@ seipv_bind_interface
 
 seipv_df_bit
 :
-   DF_BIT CLEAR
+   DF_BIT (CLEAR| COPY)
 ;
 
 seipv_establish_tunnels
