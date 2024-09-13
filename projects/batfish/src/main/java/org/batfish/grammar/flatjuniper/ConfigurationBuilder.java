@@ -100,6 +100,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_SOURCE_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_STATIC_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SERVER_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.NTP_SOURCE_ADDRESS_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_AS_PATH;
@@ -131,6 +132,8 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMM
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_LOGICAL_SYSTEM;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SNMP_COMMUNITY_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.STATIC_ROUTE_NEXT_HOP_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.SYSLOG_HOST_ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.TACPLUS_SERVER_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VLAN_L3_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.VTEP_SOURCE_INTERFACE;
@@ -739,10 +742,13 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_services_linetypeCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_server_routing_instanceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syp_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syr_encrypted_passwordContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_secretContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_source_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Tacplus_server_hostContext;
@@ -4100,6 +4106,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSyn_source_address(Syn_source_addressContext ctx) {
+    if (ctx.ri != null) {
+      String name = toString(ctx.ri);
+      _configuration.referenceStructure(
+          ROUTING_INSTANCE, name, NTP_SOURCE_ADDRESS_ROUTING_INSTANCE, getLine(ctx.getStart()));
+    }
+  }
+
+  @Override
   public void enterSyp_disable(Syp_disableContext ctx) {
     // line is disabled so remove it from list of lines
     _currentLogicalSystem.getJf().getLines().remove(_currentLine.getName());
@@ -7231,6 +7246,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitSysh_routing_instance(Sysh_routing_instanceContext ctx) {
+    String name = toString(ctx.ri);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, SYSLOG_HOST_ROUTING_INSTANCE, getLine(ctx.ri.getStart()));
+  }
+
+  @Override
   public void exitSysp_logical_system(Sysp_logical_systemContext ctx) {
     _configuration.referenceStructure(
         LOGICAL_SYSTEM,
@@ -7243,6 +7265,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitSyt_source_address(Syt_source_addressContext ctx) {
     Ip sourceAddress = toIp(ctx.address);
     _currentTacplusServer.setSourceAddress(sourceAddress);
+  }
+
+  @Override
+  public void exitSyt_routing_instance(Syt_routing_instanceContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ROUTING_INSTANCE, name, TACPLUS_SERVER_ROUTING_INSTANCE, getLine(ctx.name.getStart()));
   }
 
   @Override

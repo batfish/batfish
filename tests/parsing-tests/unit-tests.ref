@@ -55668,7 +55668,7 @@
             "            SYSTEM:'system'",
             "            (sy_ntp*",
             "              NTP:'ntp'",
-            "              (syn_source_address*",
+            "              (syn_source_address",
             "                SOURCE_ADDRESS:'source-address'",
             "                address = IP_ADDRESS:'2.3.4.5'))))))",
             "    NEWLINE:'\\n')",

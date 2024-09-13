@@ -95,7 +95,7 @@ syn_server
 
 syn_source_address
 :
-   SOURCE_ADDRESS address = IP_ADDRESS
+   SOURCE_ADDRESS address = IP_ADDRESS (ROUTING_INSTANCE ri = junos_name)?
 ;
 
 syn_server_key
@@ -196,6 +196,7 @@ sys_host
    HOST hostname = junos_name
    (
       sysh_null
+      | sysh_routing_instance
    )
 ;
 
@@ -209,6 +210,8 @@ sys_null
       | USER
    ) null_filler
 ;
+
+sysh_routing_instance: ROUTING_INSTANCE ri = junos_name;
 
 sys_source_address
 :
@@ -311,6 +314,7 @@ sy_tacplus_server
       | syt_secret
       | syt_source_address
       | syt_null
+      | syt_routing_instance
    )
 ;
 
@@ -385,6 +389,8 @@ syt_secret
   SECRET secret_string
 ;
 
+syt_routing_instance: ROUTING_INSTANCE name = junos_name;
+
 syt_source_address
 :
    SOURCE_ADDRESS address = ip_address
@@ -398,3 +404,4 @@ syt_null
       | TIMEOUT
    ) null_filler
 ;
+
