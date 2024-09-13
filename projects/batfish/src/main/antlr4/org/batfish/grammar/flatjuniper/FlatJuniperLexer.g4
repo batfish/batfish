@@ -3537,7 +3537,7 @@ F_CertificateString
 fragment
 F_Scrubbed
 :
-  '<SCRUBBED>'
+  '<SCRUBBED>' | '%CENSORED%'
 ;
 
 fragment
@@ -4710,6 +4710,7 @@ M_CertificatesLocal_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_Certificate;
 M_Certificate_CERTIFICATE_STRING: F_CertificateString -> type(CERTIFICATE_STRING), popMode;
+M_Certificate_SCRUBBED: F_Scrubbed -> type(SCRUBBED), popMode;
 M_Certificate_WS: F_WhitespaceChar+ -> skip;
 M_Certificate_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
