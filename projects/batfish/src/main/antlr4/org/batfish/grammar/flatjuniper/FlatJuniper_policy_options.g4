@@ -167,6 +167,7 @@ pops_from
       | popsf_local_preference
       | popsf_metric
       | popsf_neighbor
+      | popsf_next_hop
       | popsf_origin
       | popsf_policy
       | popsf_prefix_list
@@ -290,8 +291,17 @@ popsf_neighbor
 :
    NEIGHBOR
    (
-      IP_ADDRESS
-      | IPV6_ADDRESS
+      v4 = ip_address
+      | v6 = ipv6_address
+   )
+;
+
+popsf_next_hop
+:
+   NEXT_HOP
+   (
+      v4 = ip_address
+      | v6 = ipv6_address
    )
 ;
 

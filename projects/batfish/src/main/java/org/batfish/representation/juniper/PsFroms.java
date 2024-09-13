@@ -3,6 +3,8 @@ package org.batfish.representation.juniper;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.LinkedHashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,6 +25,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromInterface> _fromInterfaces;
   private PsFromLocalPreference _fromLocalPreference;
   private PsFromMetric _fromMetric;
+  private final List<PsFromNextHop> _fromNextHops;
   private final Set<PsFromPolicyStatement> _fromPolicyStatements;
   private final Set<PsFromPolicyStatementConjunction> _fromPolicyStatementConjunctions;
   private final Set<PsFromPrefixList> _fromPrefixLists;
@@ -39,6 +42,7 @@ public final class PsFroms implements Serializable {
     _fromCommunities = new LinkedHashSet<>();
     _fromConditions = new LinkedHashSet<>();
     _fromInterfaces = new LinkedHashSet<>();
+    _fromNextHops = new LinkedList<>();
     _fromPolicyStatements = new LinkedHashSet<>();
     _fromPolicyStatementConjunctions = new LinkedHashSet<>();
     _fromPrefixLists = new LinkedHashSet<>();
@@ -72,6 +76,11 @@ public final class PsFroms implements Serializable {
   public void addFromInterface(@Nonnull PsFromInterface fromInterface) {
     _atLeastOneFrom = true;
     _fromInterfaces.add(fromInterface);
+  }
+
+  public void addFromNextHop(@Nonnull PsFromNextHop fromNextHop) {
+    _atLeastOneFrom = true;
+    _fromNextHops.add(fromNextHop);
   }
 
   public void addFromPolicyStatement(@Nonnull PsFromPolicyStatement fromPolicyStatement) {
@@ -169,6 +178,11 @@ public final class PsFroms implements Serializable {
   @Nullable
   PsFromMetric getFromMetric() {
     return _fromMetric;
+  }
+
+  @Nonnull
+  List<PsFromNextHop> getFromNextHops() {
+    return _fromNextHops;
   }
 
   @Nonnull

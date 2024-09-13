@@ -3196,6 +3196,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (froms.getFromMetric() != null) {
       conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
     }
+    for (PsFromNextHop from : froms.getFromNextHops()) {
+      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    }
     for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
       subroutines.add(from.toBooleanExpr(this, _c, _w));
     }
