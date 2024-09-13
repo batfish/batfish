@@ -950,6 +950,11 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpBmpParsing() {
+    parseJuniperConfig("juniper-bgp-bmp");
+  }
+
+  @Test
   public void testClassOfServiceParsing() {
     parseJuniperConfig("juniper-class-of-service");
   }

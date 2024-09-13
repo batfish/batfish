@@ -66,6 +66,28 @@ b_as_override
    AS_OVERRIDE
 ;
 
+b_bmp
+:
+   BMP
+   (
+      bbmp_route_monitoring
+   )
+;
+
+bbmp_route_monitoring
+:
+   ROUTE_MONITORING
+   (
+      bbmprm_pre_policy
+      | bbmprm_post_policy
+      | bbmprm_rib_out
+   )
+;
+
+bbmprm_pre_policy: PRE_POLICY;
+bbmprm_post_policy: POST_POLICY EXCLUDE_NON_ELIGIBLE;
+bbmprm_rib_out: RIB_OUT POST_POLICY;
+
 b_cluster
 :
    CLUSTER id = ip_address
@@ -81,6 +103,7 @@ b_common
    | b_authentication_algorithm
    | b_authentication_key
    | b_authentication_key_chain
+   | b_bmp
    | b_cluster
    | b_damping
    | b_description
