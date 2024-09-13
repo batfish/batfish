@@ -874,8 +874,8 @@ HMAC_MD5_96: 'hmac-md5-96';
 HMAC_SHA1: 'hmac-sha-1';
 
 HMAC_SHA1_96: 'hmac-sha1-96';
-
 HMAC_SHA_1_96: 'hmac-sha-1-96';
+HMAC_SHA_256_128: 'hmac-sha-256-128';
 
 HOLD_DOWN: 'hold-down';
 
