@@ -7080,6 +7080,18 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperNtp() {
+    // Parse with no warnings
+    parseJuniperConfig("juniper-ntp");
+  }
+
+  @Test
+  public void testJuniperSyslog() {
+    // Parse with no warnings
+    parseJuniperConfig("juniper-syslog");
+  }
+
+  @Test
   public void testSwitchOptionsVtepSourceInterfaceExtraction() {
     JuniperConfiguration juniperConfiguration = parseJuniperConfig("juniper-vtep-source");
     String vtep =

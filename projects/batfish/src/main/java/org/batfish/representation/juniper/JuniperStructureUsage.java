@@ -57,6 +57,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   NAT_SOURCE_RULE_SET_RULE_THEN("nat source rule-set rule then pool"),
   NAT_STATIC_RULE_SET_RULE_THEN("nat static rule-set rule then pool"),
   NTP_SERVER_ROUTING_INSTANCE("ntp server routing-instance"),
+  NTP_SOURCE_ADDRESS_ROUTING_INSTANCE("ntp source-address routing-instance"),
   OSPF_AREA_INTERFACE("ospf area interface"),
   OSPF_EXPORT_POLICY("ospf export policy-statement"),
   POLICY_STATEMENT_FROM_AS_PATH("policy-statement from as-path"),
@@ -89,6 +90,8 @@ public enum JuniperStructureUsage implements StructureUsage {
   SNMP_COMMUNITY_CLIENT_LIST_NAME("snmp community client-list-name"),
   SNMP_COMMUNITY_ROUTING_INSTANCE("snmp community routing-instance"),
   STATIC_ROUTE_NEXT_HOP_INTERFACE("static route next-hop"),
+  SYSLOG_HOST_ROUTING_INSTANCE("syslog host routing-instance"),
+  TACPLUS_SERVER_ROUTING_INSTANCE("tacplus-server routing-instance"),
   VLAN_INTERFACE("vlan interface"),
   VLAN_L3_INTERFACE("vlan l3-interface"),
   VTEP_SOURCE_INTERFACE("routing-instances vtep-source-interface");
