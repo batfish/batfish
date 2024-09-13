@@ -3886,6 +3886,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Prefix prefix = ifr.getPrefix();
     if (prefix == null) {
+      if (ifr.getPrefix6() != null) {
+        return TrackMethods.alwaysFalse();
+      }
       // TODO: verify missing prefix means true
       return TrackMethods.alwaysTrue();
     }

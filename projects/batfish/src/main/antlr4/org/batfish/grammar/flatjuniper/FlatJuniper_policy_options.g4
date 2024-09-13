@@ -51,11 +51,14 @@ pocond_if_route_exists
   (
     pocondi_address_family
     | pocondiafi_prefix
+    | pocondiafi_prefix6
     | pocondiafi_table
   )
 ;
 
 pocondiafi_prefix: prefix = ip_prefix;
+
+pocondiafi_prefix6: prefix = ipv6_prefix;
 
 pocondiafi_table: TABLE name = junos_name;
 
