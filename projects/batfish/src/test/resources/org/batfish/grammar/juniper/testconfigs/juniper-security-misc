@@ -1,0 +1,3 @@
+set system host-name juniper-security-misc
+#
+set security certificates local MY_CERT <SCRUBBED>
