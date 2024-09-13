@@ -494,6 +494,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_neighborContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
@@ -922,6 +924,8 @@ import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromMetric;
+import org.batfish.representation.juniper.PsFromNextHop;
+import org.batfish.representation.juniper.PsFromNextHop.Hop;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
 import org.batfish.representation.juniper.PsFromPolicyStatementConjunction;
 import org.batfish.representation.juniper.PsFromPrefixList;
@@ -5737,6 +5741,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsf_metric(Popsf_metricContext ctx) {
     int metric = toInt(ctx.metric);
     _currentPsTerm.getFroms().setFromMetric(new PsFromMetric(metric));
+  }
+
+  @Override
+  public void exitPopsf_neighbor(Popsf_neighborContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
+  public void exitPopsf_next_hop(Popsf_next_hopContext ctx) {
+    Hop hop;
+    if (ctx.v4 != null) {
+      hop = Hop.of(toIp(ctx.v4));
+    } else {
+      assert ctx.v6 != null;
+      hop = Hop.of(toIp6(ctx.v6));
+    }
+    _currentPsTerm.getFroms().addFromNextHop(new PsFromNextHop(hop));
   }
 
   @Override

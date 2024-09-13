@@ -140,6 +140,7 @@ import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSet
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
+import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.transformation.IpField.DESTINATION;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
 import static org.batfish.datamodel.transformation.Noop.NOOP_DEST_NAT;
@@ -1216,7 +1217,7 @@ public final class FlatJuniperGrammarTest {
             .setOriginType(OriginType.INCOMPLETE)
             .setProtocol(RoutingProtocol.BGP)
             .setAdmin(140);
-    in.process(received.build(), received, Direction.IN);
+    in.process(received.build(), received, IN);
     assertThat(received.build(), hasAdministrativeCost(150));
   }
 
@@ -3296,7 +3297,7 @@ public final class FlatJuniperGrammarTest {
             .setAdministrativeCost(1)
             .build();
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(IN);
     policyPreference.call(
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
@@ -4783,6 +4784,20 @@ public final class FlatJuniperGrammarTest {
     assertFalse(result.getBooleanValue());
 
     /*
+    Next-hop policy
+     */
+    RoutingPolicy nhPolicy = c.getRoutingPolicies().get("NEXT_HOP_POLICY");
+    result =
+        nhPolicy.call(
+            envWithRoute(c, bgpRouteBuilder.setNextHop(NextHopDiscard.instance()).build(), IN));
+    assertFalse(result.getBooleanValue());
+    result =
+        nhPolicy.call(
+            envWithRoute(
+                c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.4"))).build(), IN));
+    assertFalse(result.getBooleanValue());
+
+    /*
     NETWORK_POLICY should accept routes with networks matching any prefix list or route filter line.
     Prefix lists are all defined as PLX = [ X.X.X.0/24 ].
       set policy-options policy-statement NETWORK_POLICY term T1 from prefix-list PL1
@@ -4919,7 +4934,16 @@ public final class FlatJuniperGrammarTest {
   }
 
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
-    return Environment.builder(c).setOriginalRoute(route).setOutputRoute(route.toBuilder()).build();
+    return envWithRoute(c, route, Direction.OUT);
+  }
+
+  private static Environment envWithRoute(
+      Configuration c, AbstractRoute route, Direction direction) {
+    return Environment.builder(c)
+        .setDirection(direction)
+        .setOriginalRoute(route)
+        .setOutputRoute(route.toBuilder())
+        .build();
   }
 
   @Test
@@ -6071,7 +6095,7 @@ public final class FlatJuniperGrammarTest {
     ConnectedRoute connectedRouteMaskInvalidLength =
         new ConnectedRoute(Prefix.parse("1.9.3.9/17"), "nhinttest");
 
-    Environment.Builder eb = Environment.builder(c).setDirection(Direction.IN);
+    Environment.Builder eb = Environment.builder(c).setDirection(IN);
 
     assertThat(
         policyExact.call(eb.setOriginalRoute(connectedRouteExact).build()).getBooleanValue(),
@@ -6199,20 +6223,20 @@ public final class FlatJuniperGrammarTest {
     assertThat(ospfE2.getProtocol(), equalTo(RoutingProtocol.OSPF_E2));
 
     // "from protocol isis" should match any type of IS-IS route
-    assertTrue(fromIsis.process(isisL1, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisL2, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisEl1, IsisRoute.builder(), Direction.IN));
-    assertTrue(fromIsis.process(isisEl2, IsisRoute.builder(), Direction.IN));
+    assertTrue(fromIsis.process(isisL1, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisL2, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisEl1, IsisRoute.builder(), IN));
+    assertTrue(fromIsis.process(isisEl2, IsisRoute.builder(), IN));
 
     // "from protocol ospf" should match any type of OSPF route
-    assertTrue(fromOspf.process(ospfIntra, ospfIntra.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfInter, ospfInter.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfE1, ospfE1.toBuilder(), Direction.IN));
-    assertTrue(fromOspf.process(ospfE2, ospfE2.toBuilder(), Direction.IN));
+    assertTrue(fromOspf.process(ospfIntra, ospfIntra.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfInter, ospfInter.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfE1, ospfE1.toBuilder(), IN));
+    assertTrue(fromOspf.process(ospfE2, ospfE2.toBuilder(), IN));
 
     // Neither policy should match routes of other protocols
-    assertFalse(fromIsis.process(ospfIntra, IsisRoute.builder(), Direction.IN));
-    assertFalse(fromOspf.process(isisL1, ospfIntra.toBuilder(), Direction.IN));
+    assertFalse(fromIsis.process(ospfIntra, IsisRoute.builder(), IN));
+    assertFalse(fromOspf.process(isisL1, ospfIntra.toBuilder(), IN));
   }
 
   @Test
@@ -8006,28 +8030,28 @@ public final class FlatJuniperGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-no-count");
       Bgpv4Route inputRoute = inputRouteEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.empty()));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("last-as-count-2");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 1L, 1L, 2L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("as-list");
       Bgpv4Route inputRoute = inputRouteNonEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       assertThat(
           outputRoute.getAsPath(),
           equalTo(AsPath.ofSingletonAsSets(123L, (456L << 16) + 789L, 1L, 2L)));
@@ -8036,7 +8060,7 @@ public final class FlatJuniperGrammarTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("expand-then-prepend");
       Bgpv4Route inputRoute = inputRouteEmptyAsPath;
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
-      rp.process(inputRoute, outputRoute, Direction.IN);
+      rp.process(inputRoute, outputRoute, IN);
       // prepend 456
       // expand 123
       // The prepend is applied before the expand, even though it is declared after.
