@@ -11,9 +11,18 @@ set security ike proposal ike-phase1-proposal encryption-algorithm aes-128-cbc
 set security ike policy ike-phase1-policy mode main
 set security ike policy ike-phase1-policy proposals [ ike-phase1-proposal ]
 set security ike policy ike-phase1-policy pre-shared-key ascii-text "psk1"
+set security ike policy ike-phase1-policy pre-shared-key hexadecimal "f00ba4"
+set security ike policy ike-phase1-policy pre-shared-key hexadecimal "$9$nJXv9A0O1RESr.P5F36At"
+set security ike policy ike-phase1-policy pre-shared-key <SCRUBBED>
 set security ike gateway gw-chicago external-interface ge-0/0/3.0
 set security ike gateway gw-chicago ike-policy ike-phase1-policy
 set security ike gateway gw-chicago address 198.51.100.102
+set security ike gateway gw-chicago dead-peer-detection always-send
+set security ike gateway gw-chicago dead-peer-detection optimized
+set security ike gateway gw-chicago dead-peer-detection probe-idle-tunnel
+set security ike gateway gw-chicago dead-peer-detection interval 10
+set security ike gateway gw-chicago dead-peer-detection threshold 2
+set security ike gateway gw-chicago version v2-only
 # configuring ipsec phase 2
 set security ipsec proposal ipsec-phase2-proposal protocol esp
 set security ipsec proposal ipsec-phase2-proposal authentication-algorithm hmac-sha1-96
@@ -24,3 +33,5 @@ set security ipsec policy ipsec-phase2-policy perfect-forward-secrecy keys group
 set security ipsec vpn ike-vpn-chicago ike gateway gw-chicago
 set security ipsec vpn ike-vpn-chicago ike ipsec-policy ipsec-phase2-policy
 set security ipsec vpn ike-vpn-chicago bind-interface st0.0
+set security ipsec vpn ike-vpn-chicago df-bit clear
+set security ipsec vpn ike-vpn-chicago df-bit copy

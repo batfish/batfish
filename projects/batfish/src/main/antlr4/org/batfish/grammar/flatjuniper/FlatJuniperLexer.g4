@@ -434,7 +434,7 @@ CONNECTIVITY_FAULT_MANAGEMENT: 'connectivity-fault-management';
 CONSOLE: 'console';
 
 CONTACT: 'contact';
-
+COPY: 'copy';
 COS_NEXT_HOP_MAP: 'cos-next-hop-map' -> pushMode(M_Name);
 
 COUNT: 'count' -> pushMode(M_Name);
@@ -856,6 +856,7 @@ HELLO_INTERVAL: 'hello-interval';
 HELLO_PADDING: 'hello-padding';
 
 HELPERS: 'helpers';
+HEXADECIMAL: 'hexadecimal';
 
 HIGH: 'high';
 
@@ -1079,6 +1080,7 @@ INTERNAL: 'internal';
 
 INTERNET_OPTIONS: 'internet-options';
 INTERPOLATE: 'interpolate';
+INTERVAL: 'interval';
 INVERT_MATCH: 'invert-match';
 
 IP: 'ip';
@@ -2020,6 +2022,7 @@ OFF: 'off';
 
 OFFSET: 'offset';
 
+OPTIMIZED: 'optimized';
 OPTIONS: 'options';
 
 ORIGIN: 'origin';
@@ -2238,6 +2241,7 @@ PRIORITY_COST: 'priority-cost';
 
 PRIVATE: 'private';
 
+PROBE_IDLE_TUNNEL: 'probe-idle-tunnel';
 PROCESSES: 'processes';
 
 PROPOSAL: 'proposal' -> pushMode(M_Name);
@@ -2917,6 +2921,7 @@ USER_DEFINED_OPTION_TYPE: 'user-defined-option-type';
 UUID: 'uuid';
 
 V1_ONLY: 'v1-only';
+V2_ONLY: 'v2-only';
 VALIDATION: 'validation';
 
 VERSION
@@ -4329,6 +4334,11 @@ mode M_Version;
 M_Version_V1_ONLY
 :
    'v1-only' -> type ( V1_ONLY ) , popMode
+;
+
+M_Version_V2_ONLY
+:
+   'v2-only' -> type ( V2_ONLY ) , popMode
 ;
 
 M_Version_QUOTED_STRING
