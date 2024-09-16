@@ -1586,6 +1586,20 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosInterface() throws IOException {
+    Configuration c = parseConfig("ios-interface");
+    assertThat(c, hasInterface("FiftyGigE1/0/0", hasBandwidth(50e9)));
+    assertThat(c, hasInterface("FiftyGigE2/0/0", hasBandwidth(50e9)));
+    assertThat(c, hasInterface("FiftyGigE3/0/0", hasBandwidth(50e9)));
+    //
+    assertThat(c, hasInterface("FortyGigabitEthernet1/0/0", hasBandwidth(40e9)));
+    assertThat(c, hasInterface("FortyGigabitEthernet2/0/0", hasBandwidth(40e9)));
+    //
+    assertThat(c, hasInterface("HundredGigabitEthernet1/0/0", hasBandwidth(100e9)));
+    assertThat(c, hasInterface("HundredGigabitEthernet2/0/0", hasBandwidth(100e9)));
+  }
+
+  @Test
   public void testIosInterfaceDelay() throws IOException {
     Configuration c = parseConfig("ios-interface-delay");
 
