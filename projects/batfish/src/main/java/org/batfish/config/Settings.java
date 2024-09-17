@@ -387,7 +387,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_MAX_RUNTIME_MS, 0);
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
-    setDefaultProperty(ARG_PARSE_REUSE, true);
+    setDefaultProperty(ARG_PARSE_REUSE, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
