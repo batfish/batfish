@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import org.batfish.datamodel.routing_policy.Environment;
 
-public class LiteralLong extends LongExpr {
+public final class LiteralLong extends LongExpr {
   private static final String PROP_VALUE = "value";
 
   private long _value;
@@ -26,18 +26,11 @@ public class LiteralLong extends LongExpr {
   public boolean equals(Object obj) {
     if (this == obj) {
       return true;
-    }
-    if (obj == null) {
-      return false;
-    }
-    if (getClass() != obj.getClass()) {
+    } else if (!(obj instanceof LiteralLong)) {
       return false;
     }
     LiteralLong other = (LiteralLong) obj;
-    if (_value != other._value) {
-      return false;
-    }
-    return true;
+    return _value == other._value;
   }
 
   @Override
@@ -52,10 +45,7 @@ public class LiteralLong extends LongExpr {
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + (int) (_value ^ (_value >>> 32));
-    return result;
+    return Long.hashCode(_value);
   }
 
   @Override
