@@ -32,18 +32,16 @@ public class RibGroupTest {
   }
 
   @Test
-  public void testJavaSerialization() {
+  public void testSerialization() {
     RibId rib1 = new RibId("hostname", "vrfname", "ribname");
     RibId exportRib = new RibId("hostname", "vrfname", "exportRib");
     RibGroup rg = new RibGroup("name", ImmutableList.of(rib1), "policy1", exportRib);
     assertThat(SerializationUtils.clone(rg), equalTo(rg));
-  }
-
-  @Test
-  public void testJsonSerialization() {
-    RibId rib1 = new RibId("hostname", "vrfname", "ribname");
-    RibId exportRib = new RibId("hostname", "vrfname", "exportRib");
-    RibGroup rg = new RibGroup("name", ImmutableList.of(rib1), "policy1", exportRib);
     assertThat(BatfishObjectMapper.clone(rg, RibGroup.class), equalTo(rg));
+
+    // Also test an empty list
+    RibGroup empty = new RibGroup("name", ImmutableList.of(), "policy1", exportRib);
+    assertThat(SerializationUtils.clone(empty), equalTo(empty));
+    assertThat(BatfishObjectMapper.clone(empty, RibGroup.class), equalTo(empty));
   }
 }

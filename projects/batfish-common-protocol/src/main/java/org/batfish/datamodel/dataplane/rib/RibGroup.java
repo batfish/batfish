@@ -1,9 +1,11 @@
 package org.batfish.datamodel.dataplane.rib;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.List;
 import java.util.Objects;
@@ -44,9 +46,8 @@ public final class RibGroup implements Serializable {
       @JsonProperty(PROP_IMPORT_POLICY) @Nullable String importPolicy,
       @JsonProperty(PROP_EXPORT_RIB) @Nullable RibId exportRib) {
     checkArgument(name != null, "RibGroup: missing %s", PROP_NAME);
-    checkArgument(ribIds != null, "RibGroup: missing %s", PROP_RIB_IDS);
     checkArgument(importPolicy != null, "RibGroup: missing %s", PROP_IMPORT_POLICY);
-    return new RibGroup(name, ribIds, importPolicy, exportRib);
+    return new RibGroup(name, firstNonNull(ribIds, ImmutableList.of()), importPolicy, exportRib);
   }
 
   @JsonProperty(PROP_NAME)
@@ -82,10 +83,10 @@ public final class RibGroup implements Serializable {
       return false;
     }
     RibGroup ribGroup = (RibGroup) o;
-    return Objects.equals(_name, ribGroup._name)
+    return _name.equals(ribGroup._name)
         && Objects.equals(_exportRib, ribGroup._exportRib)
-        && Objects.equals(_importPolicy, ribGroup._importPolicy)
-        && Objects.equals(_importRibs, ribGroup._importRibs);
+        && _importPolicy.equals(ribGroup._importPolicy)
+        && _importRibs.equals(ribGroup._importRibs);
   }
 
   @Override
