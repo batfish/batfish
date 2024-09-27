@@ -2,7 +2,6 @@ package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
@@ -57,7 +56,6 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
         MAX_ADMIN_DISTANCE);
   }
 
-  @JsonCreator
   protected AbstractRoute(
       @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
