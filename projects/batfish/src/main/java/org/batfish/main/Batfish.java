@@ -2334,8 +2334,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     LOGGER.info("Post-processing the Vendor-Independent devices");
     postProcessSnapshot(snapshot, configurations);
 
-    LOGGER.info("Computing completion metadata");
-    computeAndStoreCompletionMetadata(snapshot, configurations);
+    if (_settings.getPrecomputeAutocomplete()) {
+      LOGGER.info("Computing completion metadata");
+      computeAndStoreCompletionMetadata(snapshot, configurations);
+    }
 
     LOGGER.info("Completed serializing snapshot data");
     return answer;

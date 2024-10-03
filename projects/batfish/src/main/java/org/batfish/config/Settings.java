@@ -56,6 +56,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
 
   private static final String ARG_NO_SHUFFLE = "noshuffle";
 
+  private static final String ARG_PRECOMPUTE_AUTOCOMPLETE = "precompute-autocomplete";
+
   private static final String ARG_PRINT_PARSE_TREES = "ppt";
 
   private static final String ARG_PRINT_PARSE_TREE_LINE_NUMS = "printparsetreelinenums";
@@ -254,6 +256,10 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     return _config.getInt(ARG_MAX_RUNTIME_MS);
   }
 
+  public boolean getPrecomputeAutocomplete() {
+    return _config.getBoolean(ARG_PRECOMPUTE_AUTOCOMPLETE);
+  }
+
   @Override
   public boolean getPrintParseTree() {
     return _config.getBoolean(ARG_PRINT_PARSE_TREES);
@@ -388,6 +394,7 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     setDefaultProperty(ARG_CHECK_BGP_REACHABILITY, true);
     setDefaultProperty(ARG_NO_SHUFFLE, false);
     setDefaultProperty(ARG_PARSE_REUSE, false);
+    setDefaultProperty(ARG_PRECOMPUTE_AUTOCOMPLETE, true);
     setDefaultProperty(ARG_PRINT_PARSE_TREES, false);
     setDefaultProperty(ARG_PRINT_PARSE_TREE_LINE_NUMS, false);
     setDefaultProperty(BfConsts.ARG_QUESTION_NAME, null);
@@ -532,6 +539,8 @@ public final class Settings extends BaseSettings implements GrammarSettings {
     addBooleanOption(ARG_NO_SHUFFLE, "do not shuffle parallel jobs");
 
     addBooleanOption(ARG_PARSE_REUSE, "reuse parse results when appropriate");
+
+    addBooleanOption(ARG_PRECOMPUTE_AUTOCOMPLETE, "pre-compute autocomplete results");
 
     addBooleanOption(ARG_PRINT_PARSE_TREES, "print parse trees");
 
