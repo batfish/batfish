@@ -15,7 +15,7 @@ jobs:
     steps:
       - name: Get current date
         id: date
-        run: echo "name=ymd::$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
+        run: echo "ymd=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
     outputs:
       ymd: ${{ steps.date.outputs.ymd }}
   format:
