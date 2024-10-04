@@ -5,7 +5,7 @@ on:
     branches:
       - master
   schedule:
-    - cron: '0 * * * *'  # Hourly
+    - cron: "0 * * * *" # Hourly
   workflow_dispatch:
 
 jobs:
@@ -31,8 +31,8 @@ jobs:
           key: google-java-format-${{ hashFiles('tools/fix_java_format.sh') }}
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: Java Formatting
         run: tools/fix_java_format.sh --check
   json_template:
@@ -58,8 +58,8 @@ jobs:
           key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: Checkstyle
         run: tools/run_checkstyle.sh
   bazel_build_test_and_pmd:
@@ -83,8 +83,8 @@ jobs:
             ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: Bazel build and test
         run: |
           bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
@@ -123,8 +123,8 @@ jobs:
             ${{runner.os}}-bazel-
       - uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
       - name: Bazel Junit Tests and Coverage
         run: |
           bazel coverage //projects/... \
