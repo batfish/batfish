@@ -14,6 +14,7 @@ policy-options {
                 /* not a description because no non-comment follows before end brace */
                 /* community [ foo ]; */
             }
+            /* comment with trailing semicolon is not a description */;
             then reject;
         }
     }
