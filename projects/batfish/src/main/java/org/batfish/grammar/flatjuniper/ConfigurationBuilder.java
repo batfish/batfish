@@ -1016,6 +1016,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
 
+  private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
+      IntegerSpace.of(new SubRange(1, 255));
+  private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
+      IntegerSpace.of(new SubRange(1, 65535));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
@@ -5546,26 +5550,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitOai_dead_interval(Oai_dead_intervalContext ctx) {
-    int seconds = toInt(ctx.dec());
-    // Must be between 1 and 65535:
-    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/dead-interval-edit-protocols-ospf.html
-    if (seconds < 1 || seconds > 65535) {
-      _w.redFlag("Invalid OSPF dead interval, must be 1-65535");
-      return;
-    }
-    _currentOspfSettings.setOspfDeadInterval(seconds);
+    toIntegerInSpace(ctx, ctx.uint16(), OSPF_DEAD_INTERVAL_RANGE, "OSPF dead interval")
+        .ifPresent(_currentOspfSettings::setOspfDeadInterval);
   }
 
   @Override
   public void exitOai_hello_interval(Oai_hello_intervalContext ctx) {
-    int seconds = toInt(ctx.dec());
-    // Must be between 1 and 255:
-    // https://www.juniper.net/documentation/en_US/junos/topics/reference/configuration-statement/hello-interval-edit-protocols-ospf.html
-    if (seconds < 1 || seconds > 255) {
-      _w.redFlag("Invalid OSPF hello interval, must be 1-255");
-      return;
-    }
-    _currentOspfSettings.setOspfHelloInterval(seconds);
+    toIntegerInSpace(ctx, ctx.uint8(), OSPF_HELLO_INTERVAL_RANGE, "OSPF hello interval")
+        .ifPresent(_currentOspfSettings::setOspfHelloInterval);
   }
 
   @Override
