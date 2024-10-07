@@ -24,7 +24,8 @@ extra_close_brace: CLOSE_BRACE;
 
 statement
 :
-  flat_statement
+  empty_statement
+  | flat_statement
   | hierarchical_statement
 ;
 
@@ -42,6 +43,14 @@ hierarchical_statement
     | bracketed_clause close = CLOSE_BRACKET terminator
     | terminator
   )
+;
+
+empty_statement
+:
+   (
+      MULTILINE_COMMENT
+   )*
+   SEMICOLON
 ;
 
 terminator
