@@ -36,6 +36,7 @@ import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasA
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasPrefix;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasProtocol;
+import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasTag;
 import static org.batfish.datamodel.matchers.AddressFamilyCapabilitiesMatchers.hasAllowLocalAsIn;
 import static org.batfish.datamodel.matchers.AddressFamilyMatchers.hasAddressFamilyCapabilites;
 import static org.batfish.datamodel.matchers.AnnotatedRouteMatchers.hasSourceVrf;
@@ -3060,6 +3061,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(gr2.getDiscard(), equalTo(false));
     assertThat(gr3.getDiscard(), equalTo(false));
     assertThat(gr4.getDiscard(), equalTo(false));
+    assertThat(gr4, hasTag(3));
   }
 
   @Test

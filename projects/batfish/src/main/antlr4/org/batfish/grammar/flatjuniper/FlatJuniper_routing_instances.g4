@@ -500,6 +500,7 @@ rog_common
   | rog_metric
   | rog_passive
   | rog_policy
+  | rog_tag
 ;
 
 rog_community
@@ -530,6 +531,11 @@ rog_passive
 rog_policy
 :
    POLICY expr = policy_expression
+;
+
+rog_tag
+:
+   TAG tag = uint32
 ;
 
 rog_route

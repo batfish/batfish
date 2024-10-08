@@ -584,6 +584,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rog_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roi_rib_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_lanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointContext;
@@ -6345,6 +6346,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           .getPolicies()
           .add(toComplexPolicyStatement(ctx.expr, GENERATED_ROUTE_POLICY));
     }
+  }
+
+  @Override
+  public void exitRog_tag(Rog_tagContext ctx) {
+    _currentGeneratedRoute.setTag(toLong(ctx.tag));
   }
 
   @Override
