@@ -354,7 +354,7 @@ popsf_protocol
 
 popsf_rib
 :
-   RIB name = junos_name
+   RIB name = rib_name
 ;
 
 popsf_route_filter
@@ -764,7 +764,7 @@ popsto_level
 
 popsto_rib
 :
-   RIB junos_name
+   RIB rib_name
 ;
 
 s_policy_options

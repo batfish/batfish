@@ -237,7 +237,7 @@ ro_resolution
 
 rores_rib
 :
-  RIB name = junos_name
+  RIB name = rib_name
   (
     apply
     | roresr_import
@@ -251,14 +251,51 @@ roresr_import
 
 ro_rib
 :
-   RIB name = junos_name
+   RIB
    (
+      ror_inet
+      | ror_inet6
+      | ror_iso
+      | ror_mpls
+   )
+;
+
+
+ror_inet
+:
+    name = inet_rib_name ror_common
+;
+
+ror_inet6
+:
+    name = inet6_rib_name
+    (
       apply
       | ro_aggregate
       | ro_generate
       | ro_martians
-      | ro_static
+      | ro6_static
    )
+;
+
+ror_iso
+:
+    name = iso_rib_name ror_common
+;
+
+ror_mpls
+:
+    name = mpls_rib_name ror_common
+;
+
+
+ror_common
+:
+  apply
+  | ro_aggregate
+  | ro_generate
+  | ro_martians
+  | ro_static
 ;
 
 ro_rib_groups
@@ -296,7 +333,17 @@ ro_static
    (
       apply
       | ros_rib_group
-      | ros_route
+      | ros_route4
+   )
+;
+
+ro6_static
+:
+   STATIC
+   (
+      apply
+      | ros_rib_group
+      | ros_route6
    )
 ;
 
@@ -607,16 +654,22 @@ ros_rib_group
    RIB_GROUP name = junos_name
 ;
 
-ros_route
+
+ros_route4
 :
-   ROUTE
-   (
-      prefix = ip_prefix_default_32
-      | ipv6_prefix
-   )
+    ROUTE prefix = ip_prefix_default_32
    (
       rosr_common
       | rosr_qualified_next_hop
+   )
+;
+
+ros_route6
+:
+    ROUTE prefix = ipv6_prefix_default_128
+   (
+      rosr_common
+      | rosr_qualified_next_hop6
    )
 ;
 
@@ -731,6 +784,16 @@ rosr_qualified_next_hop
    QUALIFIED_NEXT_HOP
    (
       ip_address
+      | interface_id
+   )
+   rosrqnh_common?
+;
+
+rosr_qualified_next_hop6
+:
+   QUALIFIED_NEXT_HOP
+   (
+      ipv6_address
       | interface_id
    )
    rosrqnh_common?

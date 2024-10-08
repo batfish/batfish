@@ -192,6 +192,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
+import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV6_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 import static org.batfish.representation.juniper.Zone.getInboundFilterName;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -4530,7 +4531,7 @@ public final class FlatJuniperGrammarTest {
             .call(
                 Environment.builder(c)
                     .setOriginalRoute(
-                        StaticRoute.testBuilder()
+                        org.batfish.datamodel.StaticRoute.testBuilder()
                             .setAdministrativeCost(0)
                             .setNetwork(Prefix.parse("1.1.1.0/24"))
                             .build())
@@ -6482,6 +6483,25 @@ public final class FlatJuniperGrammarTest {
       assertThat(routes.get(p).getTag(), equalTo(12L));
       assertThat(routes.get(p).getTag2(), equalTo(1212L));
     }
+  }
+
+  @Test
+  public void testStaticRouteIPv6Parsing() {
+    JuniperConfiguration c = parseJuniperConfig("static-routes-ipv6");
+    RoutingInformationBase routesDefault =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("default")
+            .getRibs()
+            .get(RIB_IPV6_UNICAST);
+    RoutingInformationBase routesTestVrf =
+        c.getMasterLogicalSystem()
+            .getRoutingInstances()
+            .get("TEST-VRF")
+            .getRibs()
+            .get("TEST-VRF.inet6.0");
+    assertThat(routesDefault.getStaticRoutes().keySet(), empty());
+    assertThat(routesTestVrf.getStaticRoutes().keySet(), empty());
   }
 
   @Test

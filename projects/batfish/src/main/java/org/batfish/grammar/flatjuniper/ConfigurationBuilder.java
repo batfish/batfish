@@ -381,6 +381,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_methodContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Inet6_rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Inet_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_interface_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_namedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Interface_idContext;
@@ -423,12 +425,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Isl_wide_metrics_onlyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_advertise_high_metricsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Iso_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_credibility_protocol_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
@@ -551,12 +555,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_named_routing_instan
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vrf_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ri_vtep_source_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_autonomous_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_confederationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_instance_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_maximum_prefixesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
@@ -586,9 +590,14 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roifie_point_to_pointCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_export_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_import_ribContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inet6Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_inetContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_isoContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ror_mplsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_routeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route4Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
@@ -602,6 +611,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_readvertiseCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_no_retainContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_passiveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hop6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_qualified_next_hopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_readvertiseContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_rejectContext;
@@ -1015,6 +1025,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
   private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
+
+  private static final QualifiedNextHop DUMMY_QUALIFIED_NEXT_HOP =
+      new QualifiedNextHop(new NextHop(Ip.ZERO));
 
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
@@ -3335,7 +3348,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterRo_rib(Ro_ribContext ctx) {
+  public void enterRor_inet(Ror_inetContext ctx) {
+    String name = toString(ctx.name);
+    Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
+    _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void enterRor_inet6(Ror_inet6Context ctx) {
+    String name = toString(ctx.name);
+    Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
+    _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void enterRor_iso(Ror_isoContext ctx) {
+    String name = toString(ctx.name);
+    Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
+    _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
+  }
+
+  @Override
+  public void enterRor_mpls(Ror_mplsContext ctx) {
     String name = toString(ctx.name);
     Map<String, RoutingInformationBase> ribs = _currentRoutingInstance.getRibs();
     _currentRib = ribs.computeIfAbsent(name, RoutingInformationBase::new);
@@ -3401,14 +3435,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void enterRos_route(Ros_routeContext ctx) {
-    if (ctx.prefix != null) {
-      Prefix prefix = toPrefix(ctx.prefix);
-      Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
-      _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
-    } else if (ctx.ipv6_prefix() != null) {
-      _currentStaticRoute = DUMMY_STATIC_ROUTE;
-    }
+  public void enterRos_route4(Ros_route4Context ctx) {
+    Prefix prefix = toPrefix(ctx.prefix);
+    Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
+    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
+  }
+
+  @Override
+  public void enterRos_route6(Ros_route6Context ctx) {
+    _currentStaticRoute = DUMMY_STATIC_ROUTE;
   }
 
   @Override
@@ -6473,6 +6508,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterRosr_qualified_next_hop6(Rosr_qualified_next_hop6Context ctx) {
+    _currentQualifiedNextHop = DUMMY_QUALIFIED_NEXT_HOP;
+  }
+
+  @Override
   public void exitRosrqnhc_metric(Rosrqnhc_metricContext ctx) {
     _currentQualifiedNextHop.setMetric(toInt(ctx.metric));
   }
@@ -7876,7 +7916,27 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   private @Nonnull String toString(Name_or_ipContext ctx) {
-    return unquote(ctx.getText(), ctx);
+    return ctx.getText();
+  }
+
+  private @Nonnull String toString(Inet_rib_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private @Nonnull String toString(Inet6_rib_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private @Nonnull String toString(Iso_rib_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private @Nonnull String toString(Mpls_rib_nameContext ctx) {
+    return ctx.getText();
+  }
+
+  private @Nonnull String toString(Rib_nameContext ctx) {
+    return ctx.getText();
   }
 
   private String toComplexPolicyStatement(

@@ -24,9 +24,13 @@ tokens {
    IGNORED_WORD,
    INTERFACE_ID,
    INTERFACE_WILDCARD,
+   INET_RIB_NAME,
+   INET6_RIB_NAME,
+   ISO_RIB_NAME,
    ISO_ADDRESS,
    LAST_AS,
    LITERAL_OR_REGEX_COMMUNITY,
+   MPLS_RIB_NAME,
    NAME,
    PIPE,
    POLICY_EXPRESSION,
@@ -2383,7 +2387,8 @@ REVERSE_TELNET: 'reverse-telnet';
 
 REWRITE_RULES: 'rewrite-rules';
 
-RIB: 'rib' -> pushMode(M_Name);
+RIB: 'rib' -> pushMode(M_RibName);
+
 
 RIB_GROUP
 :
@@ -3609,6 +3614,13 @@ fragment
 F_PositiveDigit
 :
    [1-9]
+;
+
+fragment
+F_RoutingInstanceNameChar
+:
+   // https://www.juniper.net/documentation/us/en/software/junos/vpn-l3/topics/topic-map/l3-vpns-routing-instances.html#id-configuring-routing-instances-on-pe-routers-in-vpns__d57160e331
+   [A-Za-z] | '-'
 ;
 
 fragment
@@ -4953,3 +4965,11 @@ M_BgpAsn2_UINT8: F_Uint8 -> type(UINT8);
 M_BgpAsn2_UINT16: F_Uint16 -> type(UINT16);
 M_BgpAsn2_UINT32: F_Uint32 -> type(UINT32);
 M_BgpAsn2_PERIOD: '.' -> type(PERIOD);
+
+mode M_RibName;
+M_RibName_INET: (F_RoutingInstanceNameChar+ PERIOD)? INET PERIOD UINT8 -> type(INET_RIB_NAME), popMode;
+M_RibName_INET6: (F_RoutingInstanceNameChar+ PERIOD)? INET6 PERIOD UINT8 -> type(INET6_RIB_NAME), popMode;
+M_RibName_MPLS: MPLS PERIOD UINT8 -> type(MPLS_RIB_NAME), popMode;
+M_RibName_ISO: ISO PERIOD UINT8 -> type(ISO_RIB_NAME), popMode;
+M_RibName_WS: F_WhitespaceChar+ -> skip;
+M_RibName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
