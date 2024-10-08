@@ -1676,6 +1676,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJunosFtiConfiguration() {
+    parseConfig("juniper_fti");
+    // don't crash.
+  }
+
+  @Test
   public void testSetProtocolsIsis() throws IOException {
     // don't crash.
     String hostname = "juniper-set-protocols-isis";

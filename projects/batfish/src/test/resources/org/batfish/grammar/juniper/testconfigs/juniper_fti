@@ -1,0 +1,15 @@
+#
+set system host-name juniper_fti
+#
+set interfaces fti0 unit 3 tunnel encapsulation udp source address 1.2.3.4
+set interfaces fti0 unit 3 tunnel encapsulation udp destination address 3.4.5.6
+set interfaces fti0 unit 3 family inet address 1.2.3.7/31
+set interfaces fti0 unit 3 family inet destination-udp-port 1000
+set interfaces fti0 unit 3 family iso destination-udp-port 2000
+set interfaces fti0 unit 3 family inet6 destination-udp-port 3000
+set interfaces fti0 unit 3 family mpls destination-udp-port 4000
+#
+set protocols isis interface fti0.3
+set protocols mpls interface fti0.3
+set protocols rsvp interface fti0.3
+#

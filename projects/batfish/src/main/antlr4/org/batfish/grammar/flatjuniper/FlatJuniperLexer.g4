@@ -544,7 +544,7 @@ DESTINATION_PORT_EXCEPT: 'destination-port-except' -> pushMode(M_Port);
 DESTINATION_PORT_RANGE_OPTIMIZE: 'destination-port-range-optimize';
 
 DESTINATION_PREFIX_LIST: 'destination-prefix-list' -> pushMode(M_Name);
-
+DESTINATION_UDP_PORT: 'destination-udp-port';
 DESTINATION_UNREACHABLE: 'destination-unreachable';
 
 DF_BIT: 'df-bit';
@@ -3975,6 +3975,11 @@ mode M_ISO;
 M_ISO_ADDRESS
 :
    'address' -> type ( ADDRESS ) , mode ( M_ISO_Address )
+;
+
+M_ISO_DESTINATION_UDP_PORT
+:
+   'destination-udp-port' -> type ( DESTINATION_UDP_PORT ) , popMode
 ;
 
 M_ISO_MTU

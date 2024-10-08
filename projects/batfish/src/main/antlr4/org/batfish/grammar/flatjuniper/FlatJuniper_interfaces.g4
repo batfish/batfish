@@ -360,6 +360,7 @@ if_inet
    (
       apply
       | ifi_address
+      | ifi_destination_udp_port
       | ifi_filter
       | ifi_mtu
       | ifi_no_redirects
@@ -371,8 +372,17 @@ if_inet
 
 if_inet6
 :
-   INET6 null_filler
+   INET6
+   (
+      apply
+      | ifi6_destination_udp_port
+      | ifi6_null
+   )
 ;
+
+ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
+
+ifi6_null: null_filler;
 
 if_iso
 :
@@ -380,6 +390,7 @@ if_iso
    (
       apply
       | ifiso_address
+      | ifiso_destination_udp_port
       | ifiso_mtu
    )
 ;
@@ -389,6 +400,7 @@ if_mpls
    MPLS
    (
       apply
+      | ifm_destination_udp_port
       | ifm_filter
       | ifm_maximum_labels
       | ifm_mtu
@@ -481,6 +493,8 @@ ifi_filter
 :
    filter
 ;
+
+ifi_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
 ifi_mtu
 :
@@ -644,10 +658,14 @@ ifiso_address
    ADDRESS iso_address
 ;
 
+ifiso_destination_udp_port: DESTINATION_UDP_PORT port_number;
+
 ifiso_mtu
 :
    MTU dec
 ;
+
+ifm_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
 ifm_filter
 :
