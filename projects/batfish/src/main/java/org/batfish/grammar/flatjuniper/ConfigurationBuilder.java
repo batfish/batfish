@@ -367,7 +367,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_tcp_mssContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifia_arpContext;
@@ -379,6 +381,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_preemptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_priorityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiav_virtual_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifiso_destination_udp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifm_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_algorithmContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ike_authentication_methodContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Int_interface_rangeContext;
@@ -5096,6 +5100,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitIfi_destination_udp_port(Ifi_destination_udp_portContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitIfi_filter(Ifi_filterContext ctx) {
     FilterContext filter = ctx.filter();
     if (filter.direction() == null) {
@@ -5200,6 +5209,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitIfiso_destination_udp_port(Ifiso_destination_udp_portContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
   public void exitIntir_member(Intir_memberContext ctx) {
     String member =
         unquote(
@@ -5215,6 +5229,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
               "Could not include member '%s' in interface range '%s': %s",
               member, _currentInterfaceOrRange.getName(), e.getMessage()));
     }
+  }
+
+  @Override
+  public void exitIfm_destination_udp_port(Ifm_destination_udp_portContext ctx) {
+    todo(ctx);
+  }
+
+  @Override
+  public void exitIfi6_destination_udp_port(Ifi6_destination_udp_portContext ctx) {
+    todo(ctx);
   }
 
   @Override
