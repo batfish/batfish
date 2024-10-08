@@ -2372,7 +2372,7 @@ RESTRICT: 'restrict';
 RESTRICTED_QUEUES: 'restricted-queues';
 
 RETAIN: 'retain';
-
+RETRANSMIT_INTERVAL: 'retransmit-interval';
 REUSE: 'reuse';
 
 REVERSE: 'reverse';
