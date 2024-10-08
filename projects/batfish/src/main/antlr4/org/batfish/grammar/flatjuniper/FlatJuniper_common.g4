@@ -193,6 +193,30 @@ icmp6_only_type
     | PACKET_TOO_BIG
 ;
 
+inet_rib_name
+:
+INET_RIB_NAME
+;
+
+inet6_rib_name
+:
+INET6_RIB_NAME
+;
+
+iso_rib_name
+:
+ISO_RIB_NAME
+;
+
+mpls_rib_name
+:
+MPLS_RIB_NAME
+;
+
+rib_name
+:
+(inet_rib_name | inet6_rib_name | iso_rib_name | mpls_rib_name )
+;
 
 interface_id: INTERFACE_ID;
 
@@ -221,6 +245,8 @@ ip_prefix_default_32: IP_PREFIX | IP_ADDRESS;
 ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;
+
+ipv6_prefix_default_128: IPV6_PREFIX | IPV6_ADDRESS;
 
 iso_address: ISO_ADDRESS;
 
