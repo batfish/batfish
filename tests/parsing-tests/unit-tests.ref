@@ -40693,7 +40693,7 @@
             "            ROUTING_OPTIONS:'routing-options'",
             "            (ro_static",
             "              STATIC:'static'",
-            "              (ros_route",
+            "              (ros_route4",
             "                ROUTE:'route'",
             "                prefix = (ip_prefix_default_32*",
             "                  IP_PREFIX:'10.40.40.0/24')",

@@ -2383,7 +2383,19 @@ REVERSE_TELNET: 'reverse-telnet';
 
 REWRITE_RULES: 'rewrite-rules';
 
-RIB: 'rib' -> pushMode(M_Name);
+RIB: 'rib'
+    {
+        switch(lastTokenType()) {
+            case ROUTING_OPTIONS:
+                pushMode(M_RibName);
+                break;
+            default:
+                pushMode(M_Name);
+                break;
+        }
+    }
+;
+
 
 RIB_GROUP
 :
@@ -3609,6 +3621,12 @@ fragment
 F_PositiveDigit
 :
    [1-9]
+;
+
+fragment
+F_RoutingInstanceNameChar
+:
+   [A-Za-z] | '-'
 ;
 
 fragment
@@ -4953,3 +4971,14 @@ M_BgpAsn2_UINT8: F_Uint8 -> type(UINT8);
 M_BgpAsn2_UINT16: F_Uint16 -> type(UINT16);
 M_BgpAsn2_UINT32: F_Uint32 -> type(UINT32);
 M_BgpAsn2_PERIOD: '.' -> type(PERIOD);
+
+mode M_RibName;
+M_RibName_INET: 'inet' -> type(INET);
+M_RibName_INET6: 'inet6' -> type(INET6);
+M_RibName_MPLS: 'mpls' -> type(MPLS);
+M_RibName_ISO: 'iso' -> type(ISO);
+M_RibName_RINAME: F_RoutingInstanceNameChar+ -> type(NAME);
+M_RibName_PERIOD: '.' -> type(PERIOD);
+M_RibName_UINT8: F_Uint8 -> type(UINT8), popMode;
+M_RibName_WS: F_WhitespaceChar+ -> skip;
+M_RibName_NEWLINE: F_Newline -> type(NEWLINE), popMode;

@@ -193,6 +193,26 @@ icmp6_only_type
     | PACKET_TOO_BIG
 ;
 
+inet_rib_name
+:
+(routing_instance = junos_name PERIOD)? INET PERIOD num = uint8
+;
+
+inet6_rib_name
+:
+(routing_instance = junos_name PERIOD)? INET6 PERIOD num = uint8
+;
+
+iso_rib_name
+:
+ISO PERIOD num = uint8
+;
+
+mpls_rib_name
+:
+MPLS PERIOD num = uint8
+;
+
 
 interface_id: INTERFACE_ID;
 
@@ -221,6 +241,8 @@ ip_prefix_default_32: IP_PREFIX | IP_ADDRESS;
 ipv6_address: IPV6_ADDRESS;
 
 ipv6_prefix: IPV6_PREFIX;
+
+ipv6_address: IPV6_ADDRESS;
 
 iso_address: ISO_ADDRESS;
 
