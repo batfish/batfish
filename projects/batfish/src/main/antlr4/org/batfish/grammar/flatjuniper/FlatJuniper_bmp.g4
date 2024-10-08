@@ -55,10 +55,10 @@ robs_hold_down_null
 :
    HOLD_DOWN
    (
-     | timer = uint16
+     timer = uint16
      | FLAPS flaps = uint8
      | FLAP_PERIOD period = uint16
-   )
+   )*
 ;
 
 robs_local_address_null
