@@ -5,10 +5,11 @@ repos:
     hooks:
     -   id: java-format
         name: java-format
-        entry: ./tools/fix_java_format.sh --diff
+        entry: ./tools/fix_java_format.sh --replace
         language: script
         files: '\.java$'
-        pass_filenames: false  # this is a global check, only run it once
+        require_serial: true
+        pass_filenames: true
     -   id: buildifier
         name: buildifier
         entry: bazel --noblock_for_lock run //:buildifier.fix
