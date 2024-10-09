@@ -14,7 +14,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.bgp.community.Community;
 
-public class StaticRoute implements Serializable {
+public class StaticRouteV4 implements Serializable {
 
   /* https://www.juniper.net/documentation/en_US/junos/topics/reference/general/routing-protocols-default-route-preference-values.html */
   private static final int DEFAULT_ADMIN_DISTANCE = 5;
@@ -53,7 +53,7 @@ public class StaticRoute implements Serializable {
 
   private @Nullable Long _tag2;
 
-  public StaticRoute(Prefix prefix) {
+  public StaticRouteV4(Prefix prefix) {
     _communities = new TreeSet<>();
     _prefix = prefix;
     _policies = new ArrayList<>();
