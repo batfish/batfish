@@ -20,31 +20,27 @@ else
   GNU_FIND=find
 fi
 
-if [ "${1:-}" = "--diff" ]; then
-  # All java files in the diff
-  git diff --cached --name-only --diff-filter=ACMR | (grep ".*java$" || echo -n) > files_to_check
-else
-  # All java files in the project
-  ${GNU_FIND} projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' > files_to_check
-fi
+# Collect all the arguments passed in by CLI or pre-commit.
+all_args=("$@")
 
-if [ ! -s files_to_check ]; then
-  echo "No files to check"
-  rm files_to_check
-  exit 0
-fi
-
-if [ "${1:-}" = "--check" ]; then
-  ARGS="--dry-run --set-exit-if-changed"
+# If no args are provided user is running manually, so find all Java files and fix all issues.
+if [ ${#all_args[@]} -eq 0 ]; then
+    echo "--replace" > args_and_files
+    ${GNU_FIND} projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' >> args_and_files
+# If the --check arg is provided, this is a CI run. Find all files, but fail instead of fixing.
+elif [ ${all_args[0]} = "--check" ]; then
+    echo "--dry-run --set-exit-if-changed" > args_and_files
+    ${GNU_FIND} projects -regex '.*/src/main/.*\.java' -or -regex '.*/src/test/.*\.java' >> args_and_files
+# Args were provided by pre-commit
 else
-  ARGS="--replace"
+    echo "${all_args[@]}" > args_and_files
 fi
 
 # Run the check
-java -jar ${JAR} ${ARGS} @files_to_check || FAIL="fail"
-rm -f files_to_check
+java -jar ${JAR} @args_and_files || FAIL="fail"
+rm -f args_and_files
 if [ "${FAIL:-}" = "fail" ]; then
-  echo -e "\nThe files listed above are not formatted correctly. Use $0 to fix these issues. We recommend you install the Eclipse or IntelliJ plugin for google-java-format version ${GJF_VERSION}."
+  echo -e "\nThe files listed above are not formatted correctly. Use $0 to fix these issues. We recommend you install the IntelliJ plugin for google-java-format version ${GJF_VERSION}."
   echo
   echo "To never have to deal with this again, enable Batfish's pre-commit integration: https://pre-commit.com/#install"
   exit 1
