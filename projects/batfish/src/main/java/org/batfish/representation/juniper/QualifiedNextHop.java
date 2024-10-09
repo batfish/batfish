@@ -4,7 +4,7 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Represents a qualified next-hop configured for a {@link StaticRoute} */
+/** Represents a qualified next-hop configured for a {@link StaticRouteV4} */
 public class QualifiedNextHop implements Serializable {
   private @Nullable Integer _metric;
   private @Nonnull NextHop _nextHop;

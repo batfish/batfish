@@ -3276,7 +3276,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         statements);
   }
 
-  private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRoute route) {
+  private Set<org.batfish.datamodel.StaticRoute> toStaticRoutes(StaticRouteV4 route) {
     String nextTable = route.getNextTable();
     Prefix prefix = route.getPrefix();
     String nextVrf = null;
@@ -3741,7 +3741,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       // static routes
-      for (StaticRoute route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
+      for (StaticRouteV4 route : ri.getRibs().get(RIB_IPV4_UNICAST).getStaticRoutes().values()) {
         vrf.getStaticRoutes().addAll(toStaticRoutes(route));
       }
 

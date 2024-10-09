@@ -1006,7 +1006,7 @@ import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
-import org.batfish.representation.juniper.StaticRoute;
+import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StubSettings;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
@@ -1029,7 +1029,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
 
-  private static final StaticRoute DUMMY_STATIC_ROUTE = new StaticRoute(Prefix.ZERO);
+  private static final StaticRouteV4 DUMMY_STATIC_ROUTE = new StaticRouteV4(Prefix.ZERO);
 
   private static final QualifiedNextHop DUMMY_QUALIFIED_NEXT_HOP =
       new QualifiedNextHop(new NextHop(Ip.ZERO));
@@ -2318,7 +2318,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private SnmpServer _currentSnmpServer;
 
-  private StaticRoute _currentStaticRoute;
+  private StaticRouteV4 _currentStaticRoute;
 
   private TacplusServer _currentTacplusServer;
 
@@ -3446,8 +3446,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void enterRos_route4(Ros_route4Context ctx) {
     Prefix prefix = toPrefix(ctx.prefix);
-    Map<Prefix, StaticRoute> staticRoutes = _currentRib.getStaticRoutes();
-    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRoute::new);
+    Map<Prefix, StaticRouteV4> staticRoutes = _currentRib.getStaticRoutes();
+    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV4::new);
   }
 
   @Override
