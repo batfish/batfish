@@ -471,6 +471,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
+import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -6287,21 +6288,17 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testStaticRouteOverwrite() {
     JuniperConfiguration c = parseJuniperConfig("static-route-overwrite");
-    Map<Prefix, org.batfish.representation.juniper.StaticRoute> staticRoutes =
+    Map<Prefix, StaticRouteV4> staticRoutes =
         c.getMasterLogicalSystem()
             .getRoutingInstances()
             .get(DEFAULT_VRF_NAME)
             .getRibs()
             .get(RIB_IPV4_UNICAST)
             .getStaticRoutes();
-    org.batfish.representation.juniper.StaticRoute r0 =
-        staticRoutes.get(Prefix.parse("10.0.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r1 =
-        staticRoutes.get(Prefix.parse("10.1.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r2 =
-        staticRoutes.get(Prefix.parse("10.2.0.0/16"));
-    org.batfish.representation.juniper.StaticRoute r3 =
-        staticRoutes.get(Prefix.parse("10.3.0.0/16"));
+    StaticRouteV4 r0 = staticRoutes.get(Prefix.parse("10.0.0.0/16"));
+    StaticRouteV4 r1 = staticRoutes.get(Prefix.parse("10.1.0.0/16"));
+    StaticRouteV4 r2 = staticRoutes.get(Prefix.parse("10.2.0.0/16"));
+    StaticRouteV4 r3 = staticRoutes.get(Prefix.parse("10.3.0.0/16"));
 
     // Old next-hops are cleared
     assertFalse(r0.getDrop());
@@ -6453,14 +6450,14 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testStaticRouteParsing() {
     JuniperConfiguration c = parseJuniperConfig("static-routes");
-    Map<Prefix, org.batfish.representation.juniper.StaticRoute> routes =
+    Map<Prefix, StaticRouteV4> routes =
         c.getMasterLogicalSystem()
             .getRoutingInstances()
             .get("default")
             .getRibs()
             .get(RIB_IPV4_UNICAST)
             .getStaticRoutes();
-    Map<Prefix, org.batfish.representation.juniper.StaticRoute> routes2 =
+    Map<Prefix, StaticRouteV4> routes2 =
         c.getMasterLogicalSystem()
             .getRoutingInstances()
             .get("ri2")

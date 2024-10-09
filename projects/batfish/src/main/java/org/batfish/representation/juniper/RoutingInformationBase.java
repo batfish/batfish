@@ -19,7 +19,7 @@ public class RoutingInformationBase implements Serializable {
   private final Map<Prefix, AggregateRoute> _aggregateRoutes;
   private final Map<Prefix, GeneratedRoute> _generatedRoutes;
   private final String _name;
-  private final Map<Prefix, StaticRoute> _staticRoutes;
+  private final Map<Prefix, StaticRouteV4> _staticRoutes;
 
   public RoutingInformationBase(@Nonnull String name) {
     _name = name;
@@ -40,7 +40,7 @@ public class RoutingInformationBase implements Serializable {
     return _name;
   }
 
-  public @Nonnull Map<Prefix, StaticRoute> getStaticRoutes() {
+  public @Nonnull Map<Prefix, StaticRouteV4> getStaticRoutes() {
     return _staticRoutes;
   }
 }
