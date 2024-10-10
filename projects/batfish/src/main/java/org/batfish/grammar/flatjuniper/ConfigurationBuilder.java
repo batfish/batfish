@@ -402,6 +402,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_authentication_al
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipsec_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_prefixContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ipv6_prefix_default_128Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_ignore_attached_bitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Is_importContext;
@@ -1006,7 +1007,9 @@ import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
+import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StaticRouteV4;
+import org.batfish.representation.juniper.StaticRouteV6;
 import org.batfish.representation.juniper.StubSettings;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
@@ -1028,11 +1031,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final AggregateRoute DUMMY_AGGREGATE_ROUTE = new AggregateRoute(Prefix.ZERO);
 
   private static final BgpGroup DUMMY_BGP_GROUP = new BgpGroup();
-
-  private static final StaticRouteV4 DUMMY_STATIC_ROUTE = new StaticRouteV4(Prefix.ZERO);
-
-  private static final QualifiedNextHop DUMMY_QUALIFIED_NEXT_HOP =
-      new QualifiedNextHop(new NextHop(Ip.ZERO));
 
   private static final IntegerSpace OSPF_HELLO_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 255));
@@ -2318,7 +2316,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private SnmpServer _currentSnmpServer;
 
-  private StaticRouteV4 _currentStaticRoute;
+  private StaticRoute _currentStaticRoute;
 
   private TacplusServer _currentTacplusServer;
 
@@ -3452,7 +3450,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRos_route6(Ros_route6Context ctx) {
-    _currentStaticRoute = DUMMY_STATIC_ROUTE;
+    Prefix6 prefix = toPrefix6(ctx.prefix);
+    Map<Prefix6, StaticRouteV6> staticRoutes = _currentRib.getStaticRoutesV6();
+    _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV6::new);
   }
 
   @Override
@@ -6447,16 +6447,29 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRosr_next_hop(Rosr_next_hopContext ctx) {
     if (ctx.ip_address() != null) {
       Ip nextHopIp = toIp(ctx.ip_address());
+      if (!(_currentStaticRoute instanceof StaticRouteV4)) {
+        warn(ctx, "Only IPv4 routes can have IPv4 next hops");
+        return;
+      }
       _currentStaticRoute.addNextHopIp(nextHopIp);
-    } else if (ctx.interface_id() != null) {
-      String ifaceName = getInterfaceFullName(ctx.interface_id());
-      _currentStaticRoute.addNextHopInterface(ifaceName);
-      _configuration.referenceStructure(
-          INTERFACE,
-          ifaceName,
-          STATIC_ROUTE_NEXT_HOP_INTERFACE,
-          getLine(ctx.interface_id().getStop()));
+      return;
+    } else if (ctx.ipv6_address() != null) {
+      if (!(_currentStaticRoute instanceof StaticRouteV6)) {
+        warn(ctx, "Only IPv6 routes can have IPv6 next hops");
+        return;
+      }
+      Ip6 nextHopIp = toIp6(ctx.ipv6_address());
+      _currentStaticRoute.addNextHopIp(nextHopIp);
+      return;
     }
+    assert ctx.interface_id() != null;
+    String ifaceName = getInterfaceFullName(ctx.interface_id());
+    _currentStaticRoute.addNextHopInterface(ifaceName);
+    _configuration.referenceStructure(
+        INTERFACE,
+        ifaceName,
+        STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        getLine(ctx.interface_id().getStop()));
   }
 
   @Override
@@ -6531,7 +6544,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterRosr_qualified_next_hop6(Rosr_qualified_next_hop6Context ctx) {
-    _currentQualifiedNextHop = DUMMY_QUALIFIED_NEXT_HOP;
+    if (ctx.ipv6_address() != null) {
+      Ip6 ip = toIp6(ctx.ipv6_address());
+      _currentQualifiedNextHop = _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ip));
+      return;
+    }
+    assert ctx.interface_id() != null;
+    String ifaceName = getInterfaceFullName(ctx.interface_id());
+    _currentQualifiedNextHop =
+        _currentStaticRoute.getOrCreateQualifiedNextHop(new NextHop(ifaceName));
+    _configuration.referenceStructure(
+        INTERFACE,
+        ifaceName,
+        STATIC_ROUTE_NEXT_HOP_INTERFACE,
+        getLine(ctx.interface_id().getStop()));
   }
 
   @Override
@@ -7454,6 +7480,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static @Nonnull Prefix6 toPrefix6(Ipv6_prefixContext ctx) {
     return Prefix6.parse(ctx.getText());
+  }
+
+  private static @Nonnull Prefix6 toPrefix6(Ipv6_prefix_default_128Context ctx) {
+    if (ctx.IPV6_PREFIX() != null) {
+      return Prefix6.parse(ctx.getText());
+    }
+    assert ctx.IPV6_ADDRESS() != null;
+    return Ip6.parse(ctx.getText()).toPrefix6();
   }
 
   @Override

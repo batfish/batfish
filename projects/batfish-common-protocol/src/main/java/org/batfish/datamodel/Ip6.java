@@ -150,6 +150,10 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     return asIpv6AddressString(_ip6);
   }
 
+  public Prefix6 toPrefix6() {
+    return new Prefix6(this, Prefix6.MAX_PREFIX_LENGTH);
+  }
+
   public boolean valid() {
     return _ip6.compareTo(BigInteger.ZERO) >= 0
         && _ip6.compareTo(new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16)) <= 0;
