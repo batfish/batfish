@@ -4,6 +4,8 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.net.InetAddresses;
 import java.io.Serializable;
 import java.math.BigInteger;
@@ -19,15 +21,24 @@ import org.apache.commons.lang3.StringUtils;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  private static final LoadingCache<BigInteger, Ip6> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(Ip6::new);
+
   private static Map<Ip6, BitSet> _addressBitsCache = new ConcurrentHashMap<>();
 
-  public static final Ip6 AUTO = new Ip6(BigInteger.valueOf(-1L));
+  public static @Nonnull Ip6 create(BigInteger value) {
+    return CACHE.get(value);
+  }
 
-  public static final Ip6 MAX = new Ip6(new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
+  public static final Ip6 AUTO = create(BigInteger.valueOf(-1L));
+
+  public static final Ip6 MAX = create(new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
 
   private static final int NUM_BYTES = 16;
 
-  public static final Ip6 ZERO = new Ip6(BigInteger.ZERO);
+  public static final Ip6 ZERO = create(BigInteger.ZERO);
 
   private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {
     BigInteger remainder = ipv6AddressAsBigInteger;
@@ -50,7 +61,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   public static Ip6 numSubnetBitsToSubnetMask(int numBits) {
     BigInteger mask = numSubnetBitsToSubnetBigInteger(numBits);
-    return new Ip6(mask);
+    return create(mask);
   }
 
   /**
@@ -65,17 +76,11 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     }
   }
 
-  private final BigInteger _ip6;
-
-  public Ip6(BigInteger ip6AsBigInteger) {
-    _ip6 = ip6AsBigInteger;
-  }
-
   public static @Nonnull Ip6 parse(@Nonnull String ipAsString) {
     byte[] ip6AsByteArray = null;
     checkArgument(ipAsString.contains(":"), "Invalid IPv6 address literal '%s'", ipAsString);
     ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
-    return new Ip6(new BigInteger(ip6AsByteArray));
+    return create(new BigInteger(ip6AsByteArray));
   }
 
   public BigInteger asBigInteger() {
@@ -117,7 +122,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   public Ip6 getNetworkAddress(int subnetBits) {
     BigInteger mask = numSubnetBitsToSubnetBigInteger(subnetBits);
-    return new Ip6(_ip6.and(mask));
+    return create(_ip6.and(mask));
   }
 
   @Override
@@ -128,11 +133,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   public Ip6 inverted() {
     BigInteger mask = new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16);
     BigInteger invertedBigInteger = mask.andNot(_ip6);
-    return new Ip6(invertedBigInteger);
-  }
-
-  public String networkString(int prefixLength) {
-    return toString() + "/" + prefixLength;
+    return create(invertedBigInteger);
   }
 
   public int numSubnetBits() {
@@ -151,7 +152,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   }
 
   public Prefix6 toPrefix6() {
-    return new Prefix6(this, Prefix6.MAX_PREFIX_LENGTH);
+    return Prefix6.create(this, Prefix6.MAX_PREFIX_LENGTH);
   }
 
   public boolean valid() {
@@ -165,5 +166,12 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
       throw new IllegalArgumentException("Missing value for IPv6 address");
     }
     return parse(ipAsString);
+  }
+
+  private final BigInteger _ip6;
+
+  /** Private constructor, use {@link #create} instead */
+  private Ip6(BigInteger ip6AsBigInteger) {
+    _ip6 = ip6AsBigInteger;
   }
 }

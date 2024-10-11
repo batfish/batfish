@@ -4,15 +4,27 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 
 public class Prefix6 implements Comparable<Prefix6>, Serializable {
+  // Soft values: let it be garbage collected in times of pressure.
+  // Maximum size 2^20: Just some upper bound on cache size, well less than GiB.
+  private static final LoadingCache<Prefix6, Prefix6> CACHE =
+      Caffeine.newBuilder().softValues().maximumSize(1 << 20).build(x -> x);
+
+  public static @Nonnull Prefix6 create(Ip6 ip, int prefixLength) {
+    Prefix6 tmp = new Prefix6(ip, prefixLength);
+    return CACHE.get(tmp);
+  }
+
   public static final int MAX_PREFIX_LENGTH = 128;
 
-  public static final Prefix6 ZERO = new Prefix6(Ip6.ZERO, 0);
+  public static final Prefix6 ZERO = create(Ip6.ZERO, 0);
 
   private static BigInteger getNetworkEnd(BigInteger networkStart, int prefixLength) {
     BigInteger networkEnd = networkStart;
@@ -35,31 +47,13 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
 
   private int _prefixLength;
 
-  public Prefix6(Ip6 network, int prefixLength) {
-    checkArgument(
-        prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
-        "Invalid prefix length %s",
-        prefixLength);
-    if (network.valid()) {
-      _address = network.getNetworkAddress(prefixLength);
-    } else {
-      _address = network;
-    }
-    _prefixLength = prefixLength;
-  }
-
-  public Prefix6(@Nonnull Ip6 address, @Nonnull Ip6 mask) {
-    _address = address;
-    _prefixLength = mask.numSubnetBits();
-  }
-
   @JsonCreator
   public static @Nonnull Prefix6 parse(String text) {
     String[] parts = text.split("/");
     checkArgument(parts.length == 2, "Invalid IPv6 prefix: '%s'", text);
     Ip6 address6 = Ip6.parse(parts[0]);
     int prefixLength = Integer.parseInt(parts[1]);
-    return new Prefix6(address6, prefixLength);
+    return create(address6, prefixLength);
   }
 
   /**
@@ -106,7 +100,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   }
 
   public Ip6 getEndAddress() {
-    return new Ip6(getNetworkEnd(_address.asBigInteger(), _prefixLength));
+    return Ip6.create(getNetworkEnd(_address.asBigInteger(), _prefixLength));
   }
 
   public Ip6 getNetworkAddress() {
@@ -114,7 +108,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   }
 
   public Prefix6 getNetworkPrefix() {
-    return new Prefix6(getNetworkAddress(), _prefixLength);
+    return create(getNetworkAddress(), _prefixLength);
   }
 
   public int getPrefixLength() {
@@ -124,7 +118,7 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   public Ip6 getPrefixWildcard() {
     int numWildcardBits = MAX_PREFIX_LENGTH - _prefixLength;
     BigInteger wildcardBigInteger = numWildcardBitsToWildcardBigInteger(numWildcardBits);
-    return new Ip6(wildcardBigInteger);
+    return Ip6.create(wildcardBigInteger);
   }
 
   @Override
@@ -144,5 +138,19 @@ public class Prefix6 implements Comparable<Prefix6>, Serializable {
   @JsonValue
   public String toString() {
     return _address + "/" + _prefixLength;
+  }
+
+  /** Private constructor, use {@link #create}. */
+  private Prefix6(Ip6 network, int prefixLength) {
+    checkArgument(
+        prefixLength >= 0 && prefixLength <= MAX_PREFIX_LENGTH,
+        "Invalid prefix length %s",
+        prefixLength);
+    if (network.valid()) {
+      _address = network.getNetworkAddress(prefixLength);
+    } else {
+      _address = network;
+    }
+    _prefixLength = prefixLength;
   }
 }

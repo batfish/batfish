@@ -21,7 +21,7 @@ public class AbstractIp6SpaceContainsIpTest {
 
   @Test
   public void testVisitPrefixIpSpace() {
-    PrefixIp6Space ip6Space = (PrefixIp6Space) new Prefix6(IP1, 31).toIp6Space();
+    PrefixIp6Space ip6Space = (PrefixIp6Space) Prefix6.create(IP1, 31).toIp6Space();
     assertTrue(containsIp(IP1).visitPrefixIp6Space(ip6Space));
     assertFalse(containsIp(IP2).visitPrefixIp6Space(ip6Space));
   }
