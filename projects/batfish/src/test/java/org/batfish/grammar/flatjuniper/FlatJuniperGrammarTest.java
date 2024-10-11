@@ -290,6 +290,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
@@ -426,6 +427,7 @@ import org.batfish.representation.juniper.InterfaceRangeMemberRange;
 import org.batfish.representation.juniper.IpBgpGroup;
 import org.batfish.representation.juniper.IpUnknownProtocol;
 import org.batfish.representation.juniper.JuniperConfiguration;
+import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
 import org.batfish.representation.juniper.Nat;
@@ -446,6 +448,7 @@ import org.batfish.representation.juniper.NatRuleThenOff;
 import org.batfish.representation.juniper.NatRuleThenPool;
 import org.batfish.representation.juniper.NatRuleThenPrefix;
 import org.batfish.representation.juniper.NatRuleThenPrefixName;
+import org.batfish.representation.juniper.NextHop;
 import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
@@ -472,6 +475,7 @@ import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
 import org.batfish.representation.juniper.StaticRouteV4;
+import org.batfish.representation.juniper.StaticRouteV6;
 import org.batfish.representation.juniper.TcpFinNoAck;
 import org.batfish.representation.juniper.TcpNoFlag;
 import org.batfish.representation.juniper.TcpSynFin;
@@ -6507,6 +6511,50 @@ public final class FlatJuniperGrammarTest {
             .get("TEST-VRF.inet6.0");
     assertThat(routesDefault.getStaticRoutes().keySet(), empty());
     assertThat(routesTestVrf.getStaticRoutes().keySet(), empty());
+
+    {
+      Prefix6 p = Prefix6.parse("01f1:8:1e:8fff::10/57");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getTag(), equalTo(12L));
+      assertThat(route.getTag2(), equalTo(1212L));
+      assertThat(route.getNextHopIp(), containsInAnyOrder(Ip6.parse("21f1:8:1e:8fff::11")));
+      NextHop nh = new NextHop("ge-0/0/0.0");
+      assertThat(route.getQualifiedNextHops(), hasKey(nh));
+      assertThat(
+          c.getStructureManager().getStructureReferences(JuniperStructureType.INTERFACE),
+          hasKey("ge-0/0/0.0"));
+    }
+    {
+      Prefix6 p = Prefix6.parse("3ff1:8:1e:8fff::10/89");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      NextHop nh = new NextHop(Ip6.parse("3ff1:8:1e:8fff::11"));
+      assertThat(route.getQualifiedNextHops(), hasKey(nh));
+      assertThat(route.getQualifiedNextHops().get(nh).getPreference(), equalTo(180));
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getDistance(), equalTo(150));
+      assertThat(route.getInstall(), equalTo(Boolean.TRUE));
+      assertThat(route.getMetric(), equalTo(6));
+      assertThat(route.getResolve(), equalTo(Boolean.TRUE));
+    }
+    {
+      Prefix6 p = Prefix6.parse("0ff1:8:1e:8fff::/42");
+      assertThat(routesTestVrf.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesTestVrf.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+      assertThat(route.getDrop(), equalTo(Boolean.TRUE));
+      assertThat(route.getInstall(), equalTo(Boolean.FALSE));
+      assertThat(route.getTag(), equalTo(201L));
+    }
+    {
+      // Check default 128 if no prefix length is provided
+      Prefix6 p = Prefix6.parse("52f1:1:1e:8f1f::8/128");
+      assertThat(routesDefault.getStaticRoutesV6(), hasKey(p));
+      StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
+      assertThat(route.getPrefix6(), equalTo(p));
+    }
   }
 
   @Test
