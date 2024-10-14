@@ -1174,7 +1174,7 @@ public final class FlatJuniperGrammarTest {
 
     String bgpNeighborStructureName = Names.bgpNeighborStructureName("1.2.3.4", "default");
     String bgpNeighborStructureName6 =
-        Names.bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+        Names.bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(filename, BGP_GROUP, "G", containsInAnyOrder(4, 5)));

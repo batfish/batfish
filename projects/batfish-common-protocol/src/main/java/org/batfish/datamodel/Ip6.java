@@ -17,7 +17,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.apache.commons.lang3.ArrayUtils;
-import org.apache.commons.lang3.StringUtils;
 
 public class Ip6 implements Comparable<Ip6>, Serializable {
 
@@ -41,14 +40,66 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   public static final Ip6 ZERO = create(BigInteger.ZERO);
 
   private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {
+    // Cut the address into the 8 /16s that are used for strings.
+    int[] segments = new int[8];
     BigInteger remainder = ipv6AddressAsBigInteger;
-    String[] pieces = new String[8];
     for (int i = 0; i < 8; i++) {
-      int mask = (int) remainder.shortValue() & 0xFFFF;
-      pieces[7 - i] = String.format("%x", mask);
+      segments[7 - i] = remainder.shortValue() & 0xFFFF;
       remainder = remainder.shiftRight(16);
     }
-    return StringUtils.join(pieces, ":");
+
+    /* **********************************************************************************
+     * ZERO compression: The left-most, longest string of 2+ consecutive zeros should be
+     * compressed to :: from 0:...:0
+     * **********************************************************************************/
+    // Find the longest sequence of consecutive zeros
+    int longestStart = -1;
+    int longestLength = 0;
+    int currentStart = -1;
+    int currentLength = 0;
+
+    for (int i = 0; i < segments.length; i++) {
+      if (segments[i] == 0) {
+        if (currentStart == -1) {
+          currentStart = i;
+        }
+        currentLength++;
+        if (currentLength >= 2 && currentLength > longestLength) {
+          // Only collapse at least 2 zeros in a row in ::
+          longestStart = currentStart;
+          longestLength = currentLength;
+        }
+      } else {
+        currentStart = -1;
+        currentLength = 0;
+      }
+    }
+
+    /* **********************************************************
+     * Compute the final String by skipping zeros as appropriate.
+     * **********************************************************/
+    StringBuilder sb = new StringBuilder();
+    if (longestStart == 0) {
+      // Edge case: need a preceding ':' since no prior segment put one in.
+      sb.append(':');
+    }
+    // Core: put in <Segment><:>, skipping last segment's :
+    for (int i = 0; i < segments.length; i++) {
+      if (i >= longestStart && i < longestStart + longestLength) {
+        // Skip this zero, putting in a single : which will go with the preceding one to make ::
+        assert segments[i] == 0;
+        if (i == longestStart) {
+          sb.append(':');
+        }
+      } else {
+        sb.append(Integer.toHexString(segments[i]));
+        if (i != 7) {
+          sb.append(':');
+        }
+      }
+    }
+
+    return sb.toString();
   }
 
   private static BigInteger numSubnetBitsToSubnetBigInteger(int numBits) {
@@ -77,9 +128,8 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
   }
 
   public static @Nonnull Ip6 parse(@Nonnull String ipAsString) {
-    byte[] ip6AsByteArray = null;
     checkArgument(ipAsString.contains(":"), "Invalid IPv6 address literal '%s'", ipAsString);
-    ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
+    byte[] ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
     return create(new BigInteger(ip6AsByteArray));
   }
 

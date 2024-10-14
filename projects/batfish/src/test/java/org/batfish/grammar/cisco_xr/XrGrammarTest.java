@@ -553,9 +553,9 @@ public final class XrGrammarTest {
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
-    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
-    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:0:0:0:0:0:0/32", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8::/32", "default");
 
     assertThat(
         ccae,

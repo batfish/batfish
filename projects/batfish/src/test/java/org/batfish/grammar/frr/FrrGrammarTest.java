@@ -1146,9 +1146,9 @@ public class FrrGrammarTest {
         "bgp listen range 2001:db8:85a3::/48 peer-group PG");
 
     String neighborIp = bgpNeighborStructureName("1.1.1.1", "default");
-    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3:0:0:8a2e:370:7334", "default");
+    String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
     String neighborPrefix = bgpNeighborStructureName("1.2.3.0/24", "default");
-    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3:0:0:0:0:0/48", "default");
+    String neighborPrefix6 = bgpNeighborStructureName("2001:db8:85a3::/48", "default");
     String neighborInterface = bgpNeighborStructureName("swp1", "default");
 
     assertThat(
@@ -1208,8 +1208,8 @@ public class FrrGrammarTest {
         "    neighbor 2001:100:1:31::2 route-map rm-out out",
         "    neighbor 2001:100:1:31::2 route-map rm-in in");
     Map<String, BgpNeighbor> neighbors = _frr.getBgpProcess().getDefaultVrf().getNeighbors();
-    assertThat(neighbors.keySet(), contains("2001:100:1:31:0:0:0:2"));
-    BgpNeighbor foo = neighbors.get("2001:100:1:31:0:0:0:2");
+    assertThat(neighbors.keySet(), contains("2001:100:1:31::2"));
+    BgpNeighbor foo = neighbors.get("2001:100:1:31::2");
     assertThat(foo.getRemoteAs(), equalTo(RemoteAs.explicit(2)));
     assertThat(_warnings.getParseWarnings(), empty());
   }
