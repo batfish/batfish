@@ -58,7 +58,7 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
   }
 
   public Ip6Wildcard(Ip6 ip) {
-    this(new Prefix6(ip, Prefix6.MAX_PREFIX_LENGTH));
+    this(Prefix6.create(ip, Prefix6.MAX_PREFIX_LENGTH));
   }
 
   public Ip6Wildcard(Ip6 address, Ip6 wildcardMask) {
@@ -110,7 +110,7 @@ public class Ip6Wildcard implements Serializable, Comparable<Ip6Wildcard> {
 
   public Prefix6 toPrefix() {
     if (isPrefix()) {
-      return new Prefix6(_ip, _wildcardMask.inverted());
+      return Prefix6.create(_ip, _wildcardMask.inverted().numSubnetBits());
     } else {
       throw new BatfishException(
           "Invalid wildcard format for conversion to prefix: " + _wildcardMask);
