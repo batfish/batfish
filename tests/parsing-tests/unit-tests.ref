@@ -74073,7 +74073,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1 (VRF default)" : {
+            "1::1 (VRF default)" : {
               "definitionLines" : "6",
               "numReferrers" : 1
             }
@@ -74755,11 +74755,11 @@
               "definitionLines" : "16-17",
               "numReferrers" : 2
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead::2 (VRF default)" : {
               "definitionLines" : "42",
               "numReferrers" : 1
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef::1 (VRF default)" : {
               "definitionLines" : "25",
               "numReferrers" : 1
             }
@@ -81002,7 +81002,7 @@
         },
         "configs/ios_bgp" : {
           "bgp neighbor" : {
-            "1:0:0:0:0:0:0:1 (VRF default)" : {
+            "1::1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 6
               ]
@@ -82002,12 +82002,12 @@
                 17
               ]
             },
-            "beef:dead:0:0:0:0:0:2 (VRF default)" : {
+            "beef:dead::2 (VRF default)" : {
               "bgp neighbor self ref" : [
                 42
               ]
             },
-            "dead:beef:0:0:0:0:0:1 (VRF default)" : {
+            "dead:beef::1 (VRF default)" : {
               "bgp neighbor self ref" : [
                 25
               ]
