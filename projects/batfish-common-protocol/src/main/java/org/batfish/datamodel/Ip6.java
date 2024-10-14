@@ -24,8 +24,6 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     return CACHE.get(value);
   }
 
-  public static final Ip6 AUTO = create(BigInteger.valueOf(-1L));
-
   public static final Ip6 MAX = create(new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", 16));
 
   public static final Ip6 ZERO = create(BigInteger.ZERO);
