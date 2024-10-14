@@ -5510,7 +5510,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
         Prefix6List pl = _configuration.getPrefix6Lists().computeIfAbsent(name, Prefix6List::new);
         Prefix6 prefix6;
         if (ctx.ipv6a != null) {
-          prefix6 = new Prefix6(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
+          prefix6 = Prefix6.create(toIp6(ctx.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
         } else {
           prefix6 = Prefix6.parse(ctx.ipv6_prefix.getText());
         }
@@ -8414,7 +8414,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           lower = prefix.getPrefixLength();
           upper = Prefix.MAX_PREFIX_LENGTH;
         } else if (pctxt.ipv6a != null) {
-          prefix6 = new Prefix6(toIp6(pctxt.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
+          prefix6 = Prefix6.create(toIp6(pctxt.ipv6a), Prefix6.MAX_PREFIX_LENGTH);
           lower = prefix6.getPrefixLength();
           upper = Prefix6.MAX_PREFIX_LENGTH;
         } else if (pctxt.ipv6_prefix != null) {

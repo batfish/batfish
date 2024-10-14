@@ -29,6 +29,6 @@ public class Ipv6BgpPeerGroup extends LeafBgpPeerGroup {
 
   @Override
   public Prefix6 getNeighborPrefix6() {
-    return new Prefix6(_ip6, Prefix6.MAX_PREFIX_LENGTH);
+    return Prefix6.create(_ip6, Prefix6.MAX_PREFIX_LENGTH);
   }
 }
