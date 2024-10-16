@@ -6555,6 +6555,16 @@ public final class FlatJuniperGrammarTest {
       StaticRouteV6 route = routesDefault.getStaticRoutesV6().get(p);
       assertThat(route.getPrefix6(), equalTo(p));
     }
+    {
+      // Simple test of RIB routing-instance name allowing numbers and underscores
+      RoutingInformationBase routesTestVrf2 =
+          c.getMasterLogicalSystem()
+              .getRoutingInstances()
+              .get("TEST_VRF2")
+              .getRibs()
+              .get("TEST_VRF2.inet6.0");
+      assertThat(routesTestVrf2.getStaticRoutesV6(), hasKey(Prefix6.parse("0ff1:8:1e:8fff::/42")));
+    }
   }
 
   @Test

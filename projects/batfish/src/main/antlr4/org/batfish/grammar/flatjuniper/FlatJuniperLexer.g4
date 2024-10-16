@@ -2459,7 +2459,7 @@ ROUTING: 'routing';
 
 ROUTING_HEADER: 'routing-header';
 
-ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_Name);
+ROUTING_INSTANCE: 'routing-instance' -> pushMode(M_RoutingInstanceName);
 ROUTING_INSTANCE_ACCESS: 'routing-instance-access';
 ROUTING_INSTANCES: 'routing-instances' -> pushMode(M_Routing_Instances);
 ROUTING_INTERFACE: 'routing-interface' -> pushMode(M_Interface);
@@ -3619,8 +3619,17 @@ F_PositiveDigit
 fragment
 F_RoutingInstanceNameChar
 :
+   // Letters, numbers, and hyphens
    // https://www.juniper.net/documentation/us/en/software/junos/vpn-l3/topics/topic-map/l3-vpns-routing-instances.html#id-configuring-routing-instances-on-pe-routers-in-vpns__d57160e331
-   [A-Za-z] | '-'
+   // Underscores are also allowed in practice, e.g., https://www.juniper.net/documentation/us/en/software/junos/vpn-l3/topics/example/mpls-qfx-series-vpn-layer3.html
+   // has "set routing-instances CE1_L3vpn protocols bgp group CE1 type external"
+   [A-Za-z0-9_] | '-'
+;
+
+fragment
+F_RoutingInstanceName
+:
+   F_RoutingInstanceNameChar+
 ;
 
 fragment
@@ -4160,6 +4169,12 @@ M_Bandwidth_WS
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;
 
+mode M_RoutingInstanceName;
+
+M_RoutingInstanceName_NAME: F_RoutingInstanceName -> type ( NAME ) , popMode;
+M_RoutingInstanceName_WS: F_WhitespaceChar+ -> channel ( HIDDEN );
+M_RoutingInstanceName_NEWLINE: F_NewlineChar+ -> type ( NEWLINE ) , popMode;
+
 mode M_TcpFlags;
 
 M_TcpFlags_ACK
@@ -4324,7 +4339,7 @@ M_Routing_Instances_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 M_Routing_Instances_SCRUBBED: F_Scrubbed -> type(NAME), popMode;
 M_Routing_Instances_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_Routing_Instances_APPLY_GROUPS: 'apply-groups' -> type(APPLY_GROUPS), mode(M_ApplyGroups);
-M_Routing_Instances_NAME: F_Name -> type(NAME), popMode;
+M_Routing_Instances_NAME: F_RoutingInstanceName -> type(NAME), popMode;
 
 mode M_Speed;
 
@@ -4725,7 +4740,7 @@ M_SourceIdentity_WS: F_WhitespaceChar+ -> skip;
 M_SourceIdentity_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_PrefixName;
-M_PrefixName_ROUTING_INSTANCE: 'routing-instance' -> type(ROUTING_INSTANCE), mode(M_Name);
+M_PrefixName_ROUTING_INSTANCE: 'routing-instance' -> type(ROUTING_INSTANCE), mode(M_RoutingInstanceName);
 M_PrefixName_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
 M_PrefixName_NAME: F_Name -> type(NAME), popMode;
 M_PrefixName_WS: F_WhitespaceChar+ -> skip;
@@ -4972,8 +4987,8 @@ M_BgpAsn2_UINT32: F_Uint32 -> type(UINT32);
 M_BgpAsn2_PERIOD: '.' -> type(PERIOD);
 
 mode M_RibName;
-M_RibName_INET: (F_RoutingInstanceNameChar+ PERIOD)? INET PERIOD UINT8 -> type(INET_RIB_NAME), popMode;
-M_RibName_INET6: (F_RoutingInstanceNameChar+ PERIOD)? INET6 PERIOD UINT8 -> type(INET6_RIB_NAME), popMode;
+M_RibName_INET: (F_RoutingInstanceName PERIOD)? INET PERIOD UINT8 -> type(INET_RIB_NAME), popMode;
+M_RibName_INET6: (F_RoutingInstanceName PERIOD)? INET6 PERIOD UINT8 -> type(INET6_RIB_NAME), popMode;
 M_RibName_MPLS: MPLS PERIOD UINT8 -> type(MPLS_RIB_NAME), popMode;
 M_RibName_ISO: ISO PERIOD UINT8 -> type(ISO_RIB_NAME), popMode;
 M_RibName_WS: F_WhitespaceChar+ -> skip;
