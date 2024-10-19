@@ -1,0 +1,9 @@
+#
+set system host-name rib-name-misc
+#
+set routing-options rib :vxlan.inet.0 martians 240.0.0.0/4 orlonger allow
+#
+set policy-options policy-statement POLICY-NAME term TERM from rib bgp.l2vpn.0
+set policy-options policy-statement POLICY-NAME term TERM from rib bgp.l3vpn.0
+set policy-options policy-statement POLICY-NAME term TERM from rib bgp.l3vpn-inet6.0
+#

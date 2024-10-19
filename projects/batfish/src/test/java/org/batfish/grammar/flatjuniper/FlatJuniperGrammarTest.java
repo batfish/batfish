@@ -6094,6 +6094,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRibNamesMiscParsing() {
+    // Just don't have parse warnings
+    parseJuniperConfig("routing-options-misc");
+  }
+
+  @Test
   public void testRoutingPolicy() {
     Configuration c = parseConfig("routing-policy");
 

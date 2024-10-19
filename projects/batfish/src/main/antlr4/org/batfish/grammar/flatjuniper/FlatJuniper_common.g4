@@ -81,6 +81,11 @@ bgp_priority_queue_id
    | PRIORITY bgp_priority_queue_number
 ;
 
+bgp_rib_name
+:
+    BGP_RIB_NAME
+;
+
 dec
 :
   UINT8
@@ -215,7 +220,7 @@ MPLS_RIB_NAME
 
 rib_name
 :
-(inet_rib_name | inet6_rib_name | iso_rib_name | mpls_rib_name )
+(bgp_rib_name | inet_rib_name | inet6_rib_name | iso_rib_name | mpls_rib_name | vxlan_rib_name )
 ;
 
 interface_id: INTERFACE_ID;
@@ -749,6 +754,11 @@ uint32
 uint32l
 :
   UINT32L
+;
+
+vxlan_rib_name
+:
+    VXLAN_RIB_NAME
 ;
 
 wildcard
