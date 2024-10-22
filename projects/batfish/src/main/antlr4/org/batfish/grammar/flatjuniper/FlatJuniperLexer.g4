@@ -16,6 +16,7 @@ tokens {
    ACK,
    AS_PATH_REGEX,
    BANG,
+   BGP_RIB_NAME,
    CERTIFICATE_STRING,
    DOUBLE_QUOTED_NAME,
    DYNAMIC_DB,
@@ -39,6 +40,7 @@ tokens {
    SYN,
    UINT32L,
    VERSION_STRING,
+   VXLAN_RIB_NAME,
    WILDCARD_ARTIFACT
 }
 
@@ -1608,6 +1610,10 @@ L2_INTERFACE
 ;
 
 L2_LEARNING: 'l2-learning';
+
+L3VPN: 'l3vpn';
+
+L3VPN_INET6: 'l3vpn-inet6';
 
 L3_INTERFACE
 :
@@ -4991,5 +4997,7 @@ M_RibName_INET: (F_RoutingInstanceName PERIOD)? INET PERIOD UINT8 -> type(INET_R
 M_RibName_INET6: (F_RoutingInstanceName PERIOD)? INET6 PERIOD UINT8 -> type(INET6_RIB_NAME), popMode;
 M_RibName_MPLS: MPLS PERIOD UINT8 -> type(MPLS_RIB_NAME), popMode;
 M_RibName_ISO: ISO PERIOD UINT8 -> type(ISO_RIB_NAME), popMode;
+M_RibName_BGP: BGP PERIOD ( L2VPN | L3VPN | L3VPN_INET6 ) PERIOD UINT8 -> type(BGP_RIB_NAME), popMode;
+M_RibName_VXLAN: COLON VXLAN PERIOD INET PERIOD UINT8 -> type(VXLAN_RIB_NAME), popMode;
 M_RibName_WS: F_WhitespaceChar+ -> skip;
 M_RibName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
