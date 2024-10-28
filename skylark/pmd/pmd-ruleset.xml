@@ -23,15 +23,15 @@
         <exclude name="CheckResultSet"/>
         <exclude name="ForLoopCanBeForeach"/>
         <exclude name="GuardLogStatement"/>
-        <exclude name="JUnitAssertionsShouldIncludeMessage"/>
-        <exclude name="JUnitTestContainsTooManyAsserts"/>
-        <exclude name="JUnitTestsShouldIncludeAssert"/>
         <exclude name="LiteralsFirstInComparisons"/>
         <exclude name="LooseCoupling"/>
         <exclude name="MethodReturnsInternalArray"/>
         <exclude name="OneDeclarationPerLine"/>
         <exclude name="PreserveStackTrace"/>
         <exclude name="SystemPrintln"/>
+        <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
+        <exclude name="UnitTestContainsTooManyAsserts"/>
+        <exclude name="UnitTestShouldIncludeAssert"/>
         <exclude name="UnusedAssignment"/>
         <exclude
                 name="UnusedPrivateMethod"/> <!--reenable after resolution of https://github.com/pmd/pmd/issues/1189 -->
