@@ -6332,7 +6332,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "115-116",
               "numReferrers" : 2
             }
@@ -6544,7 +6544,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "98-99",
               "numReferrers" : 2
             }
@@ -6712,7 +6712,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "definitionLines" : "92-93",
               "numReferrers" : 2
             }
@@ -6953,7 +6953,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 115,
                 116
@@ -7290,7 +7290,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 98,
                 99
@@ -7526,7 +7526,7 @@
             }
           },
           "policy-statement term" : {
-            "bgp_export 1" : {
+            "bgp_export term 1" : {
               "policy-statement term" : [
                 92,
                 93

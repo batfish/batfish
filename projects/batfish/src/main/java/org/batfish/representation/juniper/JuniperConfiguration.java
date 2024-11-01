@@ -267,7 +267,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static @Nonnull String computePolicyStatementTermName(
       @Nonnull String policyStatementName, @Nonnull String termName) {
-    return String.format("%s %s", policyStatementName, termName);
+    return String.format("%s term %s", policyStatementName, termName);
   }
 
   @VisibleForTesting

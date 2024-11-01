@@ -73977,23 +73977,23 @@
             }
           },
           "policy-statement term" : {
-            "export-loopback lo0" : {
+            "export-loopback term lo0" : {
               "definitionLines" : "162-165",
               "numReferrers" : 2
             },
-            "fabric fabric" : {
+            "fabric term fabric" : {
               "definitionLines" : "168-174",
               "numReferrers" : 3
             },
-            "fabric vni-100" : {
+            "fabric term vni-100" : {
               "definitionLines" : "175-178",
               "numReferrers" : 2
             },
-            "fabric vni-101" : {
+            "fabric term vni-101" : {
               "definitionLines" : "179-182",
               "numReferrers" : 2
             },
-            "lbpp 1" : {
+            "lbpp term 1" : {
               "definitionLines" : "185-189",
               "numReferrers" : 1
             }
@@ -75273,11 +75273,11 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME AS_PATH" : {
+            "POLICY-NAME term AS_PATH" : {
               "definitionLines" : "40-41",
               "numReferrers" : 2
             },
-            "POLICY-NAME TERM" : {
+            "POLICY-NAME term TERM" : {
               "definitionLines" : "4-39",
               "numReferrers" : 36
             }
@@ -75393,11 +75393,11 @@
             }
           },
           "policy-statement term" : {
-            "route-filter-test-v4 t1" : {
+            "route-filter-test-v4 term t1" : {
               "definitionLines" : "4-9",
               "numReferrers" : 6
             },
-            "route-filter-test-v6 t1" : {
+            "route-filter-test-v6 term t1" : {
               "definitionLines" : "11-16",
               "numReferrers" : 6
             }
@@ -75435,11 +75435,11 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME TERM1" : {
+            "POLICY-NAME term TERM1" : {
               "definitionLines" : "7-8",
               "numReferrers" : 2
             },
-            "POLICY-NAME TERM2" : {
+            "POLICY-NAME term TERM2" : {
               "definitionLines" : "9-10",
               "numReferrers" : 2
             }
@@ -80910,27 +80910,27 @@
             }
           },
           "policy-statement term" : {
-            "export-loopback lo0" : {
+            "export-loopback term lo0" : {
               "policy-statement term" : [
                 162
               ]
             },
-            "fabric fabric" : {
+            "fabric term fabric" : {
               "policy-statement term" : [
                 168
               ]
             },
-            "fabric vni-100" : {
+            "fabric term vni-100" : {
               "policy-statement term" : [
                 175
               ]
             },
-            "fabric vni-101" : {
+            "fabric term vni-101" : {
               "policy-statement term" : [
                 179
               ]
             },
-            "lbpp 1" : {
+            "lbpp term 1" : {
               "policy-statement term" : [
                 185
               ]
@@ -82667,13 +82667,13 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME AS_PATH" : {
+            "POLICY-NAME term AS_PATH" : {
               "policy-statement term" : [
                 40,
                 41
               ]
             },
-            "POLICY-NAME TERM" : {
+            "POLICY-NAME term TERM" : {
               "policy-statement term" : [
                 4,
                 5,
@@ -82880,7 +82880,7 @@
         },
         "configs/juniper_route_filter" : {
           "policy-statement term" : {
-            "route-filter-test-v4 t1" : {
+            "route-filter-test-v4 term t1" : {
               "policy-statement term" : [
                 4,
                 5,
@@ -82890,7 +82890,7 @@
                 9
               ]
             },
-            "route-filter-test-v6 t1" : {
+            "route-filter-test-v6 term t1" : {
               "policy-statement term" : [
                 11,
                 12,
@@ -82949,13 +82949,13 @@
             }
           },
           "policy-statement term" : {
-            "POLICY-NAME TERM1" : {
+            "POLICY-NAME term TERM1" : {
               "policy-statement term" : [
                 7,
                 8
               ]
             },
-            "POLICY-NAME TERM2" : {
+            "POLICY-NAME term TERM2" : {
               "policy-statement term" : [
                 9,
                 10
