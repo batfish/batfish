@@ -11400,27 +11400,27 @@
             }
           },
           "policy-statement term" : {
-            "as1_to_as1 forward" : {
+            "as1_to_as1 term forward" : {
               "definitionLines" : "30-31",
               "numReferrers" : 2
             },
-            "as1_to_as1 originate" : {
+            "as1_to_as1 term originate" : {
               "definitionLines" : "32-33",
               "numReferrers" : 2
             },
-            "as1_to_as2 as3" : {
+            "as1_to_as2 term as3" : {
               "definitionLines" : "38-41",
               "numReferrers" : 4
             },
-            "as1_to_as2 originate" : {
+            "as1_to_as2 term originate" : {
               "definitionLines" : "34-37",
               "numReferrers" : 4
             },
-            "as2_to_as1 1" : {
+            "as2_to_as1 term 1" : {
               "definitionLines" : "42-44",
               "numReferrers" : 3
             },
-            "match_original_prefixes 1" : {
+            "match_original_prefixes term 1" : {
               "definitionLines" : "45-46",
               "numReferrers" : 2
             }
@@ -11550,35 +11550,35 @@
             }
           },
           "policy-statement term" : {
-            "as1_to_as1 forward" : {
+            "as1_to_as1 term forward" : {
               "definitionLines" : "28-29",
               "numReferrers" : 2
             },
-            "as1_to_as1 originate" : {
+            "as1_to_as1 term originate" : {
               "definitionLines" : "30-31",
               "numReferrers" : 2
             },
-            "as1_to_as3 as3" : {
+            "as1_to_as3 term as3" : {
               "definitionLines" : "36-39",
               "numReferrers" : 4
             },
-            "as1_to_as3 originate" : {
+            "as1_to_as3 term originate" : {
               "definitionLines" : "32-35",
               "numReferrers" : 4
             },
-            "as1_to_as4 as3" : {
+            "as1_to_as4 term as3" : {
               "definitionLines" : "47-49",
               "numReferrers" : 3
             },
-            "as1_to_as4 originate" : {
+            "as1_to_as4 term originate" : {
               "definitionLines" : "43-46",
               "numReferrers" : 4
             },
-            "as3_to_as1 1" : {
+            "as3_to_as1 term 1" : {
               "definitionLines" : "40-42",
               "numReferrers" : 3
             },
-            "as4_to_as1 1" : {
+            "as4_to_as1 term 1" : {
               "definitionLines" : "50-53",
               "numReferrers" : 4
             }
@@ -12921,19 +12921,19 @@
             }
           },
           "policy-statement term" : {
-            "as1_to_as1 forward" : {
+            "as1_to_as1 term forward" : {
               "policy-statement term" : [
                 30,
                 31
               ]
             },
-            "as1_to_as1 originate" : {
+            "as1_to_as1 term originate" : {
               "policy-statement term" : [
                 32,
                 33
               ]
             },
-            "as1_to_as2 as3" : {
+            "as1_to_as2 term as3" : {
               "policy-statement term" : [
                 38,
                 39,
@@ -12941,7 +12941,7 @@
                 41
               ]
             },
-            "as1_to_as2 originate" : {
+            "as1_to_as2 term originate" : {
               "policy-statement term" : [
                 34,
                 35,
@@ -12949,14 +12949,14 @@
                 37
               ]
             },
-            "as2_to_as1 1" : {
+            "as2_to_as1 term 1" : {
               "policy-statement term" : [
                 42,
                 43,
                 44
               ]
             },
-            "match_original_prefixes 1" : {
+            "match_original_prefixes term 1" : {
               "policy-statement term" : [
                 45,
                 46
@@ -13125,19 +13125,19 @@
             }
           },
           "policy-statement term" : {
-            "as1_to_as1 forward" : {
+            "as1_to_as1 term forward" : {
               "policy-statement term" : [
                 28,
                 29
               ]
             },
-            "as1_to_as1 originate" : {
+            "as1_to_as1 term originate" : {
               "policy-statement term" : [
                 30,
                 31
               ]
             },
-            "as1_to_as3 as3" : {
+            "as1_to_as3 term as3" : {
               "policy-statement term" : [
                 36,
                 37,
@@ -13145,7 +13145,7 @@
                 39
               ]
             },
-            "as1_to_as3 originate" : {
+            "as1_to_as3 term originate" : {
               "policy-statement term" : [
                 32,
                 33,
@@ -13153,14 +13153,14 @@
                 35
               ]
             },
-            "as1_to_as4 as3" : {
+            "as1_to_as4 term as3" : {
               "policy-statement term" : [
                 47,
                 48,
                 49
               ]
             },
-            "as1_to_as4 originate" : {
+            "as1_to_as4 term originate" : {
               "policy-statement term" : [
                 43,
                 44,
@@ -13168,14 +13168,14 @@
                 46
               ]
             },
-            "as3_to_as1 1" : {
+            "as3_to_as1 term 1" : {
               "policy-statement term" : [
                 40,
                 41,
                 42
               ]
             },
-            "as4_to_as1 1" : {
+            "as4_to_as1 term 1" : {
               "policy-statement term" : [
                 50,
                 51,
