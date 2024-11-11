@@ -5,6 +5,8 @@ import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_SECURITY_GROUPS;
@@ -45,6 +47,7 @@ import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.aws.IpPermissions.AddressType;
@@ -61,14 +64,14 @@ public class SecurityGroupsTest {
   private Warnings _warnings;
 
   public static String TEST_ACL = "test_acl";
-  private static final MatchHeaderSpace matchIp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(Ip.parse("1.2.3.4").toIpSpace()).build(),
+  private static final AclLineMatchExpr matchIp =
+      matchSrc(
+          Ip.parse("1.2.3.4").toIpSpace(),
           traceElementForAddress("source", "1.2.3.4/32", AddressType.CIDR_IP));
 
-  private static final MatchHeaderSpace matchUniverse =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(UniverseIpSpace.INSTANCE).build(),
+  private static final AclLineMatchExpr matchUniverse =
+      matchSrc(
+          UniverseIpSpace.INSTANCE,
           traceElementForAddress("source", "0.0.0.0/0", AddressType.CIDR_IP));
 
   private static final MatchHeaderSpace matchTcp =
@@ -362,10 +365,8 @@ public class SecurityGroupsTest {
                     ImmutableList.of(
                         matchTcp,
                         matchPorts(80, 80),
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setDstIps(Ip.parse("5.6.7.8").toIpSpace())
-                                .build(),
+                        matchDst(
+                            Ip.parse("5.6.7.8").toIpSpace(),
                             traceElementForAddress(
                                 "destination", "5.6.7.8/32", AddressType.CIDR_IP))),
                     getTraceElementForRule(outRangeDesc)))));
@@ -505,10 +506,8 @@ public class SecurityGroupsTest {
                             ImmutableList.of(
                                 matchTcp,
                                 matchPorts(22, 22),
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(Prefix.parse("2.2.2.0/24").toIpSpace())
-                                        .build(),
+                                matchSrc(
+                                    Prefix.parse("2.2.2.0/24").toIpSpace(),
                                     traceElementForAddress(
                                         "source", "2.2.2.0/24", AddressType.CIDR_IP))),
                             getTraceElementForRule(rangeDesc)))

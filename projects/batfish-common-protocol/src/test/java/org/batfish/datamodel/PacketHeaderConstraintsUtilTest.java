@@ -103,13 +103,15 @@ public class PacketHeaderConstraintsUtilTest {
             .setIpProtocols(ImmutableSet.of(IpProtocol.TCP))
             .setApplications("ssh, dns")
             .build();
+    IpSpace srcIp = Prefix.parse("1.0.0.0/8").toIpSpace();
+    IpSpace dstIp = Prefix.parse("2.0.0.0/8").toIpSpace();
     assertEquals(
-        toAclLineMatchExpr(phc, EmptyIpSpace.INSTANCE, EmptyIpSpace.INSTANCE),
+        toAclLineMatchExpr(phc, srcIp, dstIp),
         and(
             // src ip
-            match(HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build()),
+            matchSrc(srcIp),
             // dst ip
-            match(HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()),
+            matchDst(dstIp),
             // ip protocols
             match(HeaderSpace.builder().setIpProtocols(IpProtocol.TCP).build()),
             // application

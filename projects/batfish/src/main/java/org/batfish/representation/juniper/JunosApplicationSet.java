@@ -8,14 +8,12 @@ import java.util.List;
 import java.util.function.Supplier;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.HeaderSpace.Builder;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 
 public enum JunosApplicationSet implements ApplicationSetMember {
   JUNOS_CIFS,
@@ -368,9 +366,7 @@ public enum JunosApplicationSet implements ApplicationSetMember {
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Warnings w) {
     if (!hasDefinition()) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build(),
-          getTraceElement(convertToJuniperName()));
+      return new FalseExpr(getTraceElement(convertToJuniperName()));
     }
     return _applicationSet.get().toAclLineMatchExpr(jc, w);
   }

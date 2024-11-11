@@ -256,9 +256,21 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public Boolean visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    setTraceElement(matchDestinationIp.getTraceElement());
+    return traceDstIp(matchDestinationIp.getIps());
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     setTraceElement(matchHeaderSpace.getTraceElement());
     return trace(matchHeaderSpace.getHeaderspace());
+  }
+
+  @Override
+  public Boolean visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    setTraceElement(matchSourceIp.getTraceElement());
+    return traceSrcIp(matchSourceIp.getIps());
   }
 
   @Override

@@ -7,13 +7,16 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -72,11 +75,31 @@ public class HeaderSpaceSanitizer
   }
 
   @Override
+  public AclLineMatchExpr visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    IpSpaceDereferencer def = new IpSpaceDereferencer(_namedIpSpaces);
+    IpSpace derefed = matchDestinationIp.getIps().accept(def);
+    if (derefed == matchDestinationIp.getIps()) {
+      return matchDestinationIp;
+    }
+    return AclLineMatchExprs.matchDst(derefed, matchDestinationIp.getTraceElement());
+  }
+
+  @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace)
       throws CircularReferenceException, UndefinedReferenceException {
     return new MatchHeaderSpace(
         IpSpaceDereferencer.dereferenceHeaderSpace(
             matchHeaderSpace.getHeaderspace(), _namedIpSpaces));
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    IpSpaceDereferencer def = new IpSpaceDereferencer(_namedIpSpaces);
+    IpSpace derefed = matchSourceIp.getIps().accept(def);
+    if (derefed == matchSourceIp.getIps()) {
+      return matchSourceIp;
+    }
+    return AclLineMatchExprs.matchSrc(derefed, matchSourceIp.getTraceElement());
   }
 
   @Override

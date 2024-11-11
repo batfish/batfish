@@ -3,11 +3,10 @@ package org.batfish.representation.juniper;
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from source-address */
@@ -36,14 +35,10 @@ public final class FwFromSourceAddress implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+    return AclLineMatchExprs.matchSrc(_ipWildcard.toIpSpace(), getTraceElement());
   }
 
   private TraceElement getTraceElement() {
     return TraceElement.of(String.format("Matched source-address %s", _description));
-  }
-
-  private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setSrcIps(_ipWildcard.toIpSpace()).build();
   }
 }
