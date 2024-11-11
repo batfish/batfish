@@ -6,7 +6,9 @@ import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -41,8 +43,18 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
   }
 
   @Override
+  public HeaderSpace visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    return HeaderSpace.builder().setDstIps(matchDestinationIp.getIps()).build();
+  }
+
+  @Override
   public HeaderSpace visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return matchHeaderSpace.getHeaderspace();
+  }
+
+  @Override
+  public HeaderSpace visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    return HeaderSpace.builder().setSrcIps(matchSourceIp.getIps()).build();
   }
 
   @Override

@@ -1,16 +1,16 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+
 import com.google.common.annotations.VisibleForTesting;
 import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Test for security policy match source-address */
@@ -37,11 +37,11 @@ public final class FwFromSourceAddressBookEntry implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(w), getTraceElement());
+    return matchSrc(toIpSpace(w), getTraceElement());
   }
 
   @VisibleForTesting
-  HeaderSpace toHeaderspace(Warnings w) {
+  IpSpace toIpSpace(Warnings w) {
     AddressBook addressBook = _zone == null ? _globalAddressBook : _zone.getAddressBook();
     String addressBookName = addressBook.getAddressBookName(_addressBookEntryName);
     IpSpace referencedIpSpace;
@@ -53,7 +53,7 @@ public final class FwFromSourceAddressBookEntry implements FwFrom {
       String ipSpaceName = addressBookName + "~" + _addressBookEntryName;
       referencedIpSpace = new IpSpaceReference(ipSpaceName);
     }
-    return HeaderSpace.builder().setSrcIps(referencedIpSpace).build();
+    return referencedIpSpace;
   }
 
   private TraceElement getTraceElement() {

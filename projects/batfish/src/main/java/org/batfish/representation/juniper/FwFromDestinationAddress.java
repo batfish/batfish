@@ -1,14 +1,13 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+
 import javax.annotation.Nonnull;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from destination-address */
@@ -37,15 +36,10 @@ public final class FwFromDestinationAddress implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+    return matchDst(_ipWildcard.toIpSpace(), getTraceElement());
   }
 
   private TraceElement getTraceElement() {
     return TraceElement.of(String.format("Matched destination-address %s", _description));
-  }
-
-  @VisibleForTesting
-  HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setDstIps(_ipWildcard.toIpSpace()).build();
   }
 }

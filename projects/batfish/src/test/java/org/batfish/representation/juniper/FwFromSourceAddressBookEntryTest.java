@@ -4,7 +4,6 @@ import static org.junit.Assert.assertEquals;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.junit.Test;
@@ -27,11 +26,7 @@ public class FwFromSourceAddressBookEntryTest {
     FwFromSourceAddressBookEntry from =
         new FwFromSourceAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    assertEquals(
-        from.toHeaderspace(w),
-        HeaderSpace.builder()
-            .setSrcIps(new IpSpaceReference("addressBook~addressBookEntry"))
-            .build());
+    assertEquals(from.toIpSpace(w), new IpSpaceReference("addressBook~addressBookEntry"));
   }
 
   @Test
@@ -43,7 +38,6 @@ public class FwFromSourceAddressBookEntryTest {
     FwFromSourceAddressBookEntry from =
         new FwFromSourceAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    assertEquals(
-        from.toHeaderspace(w), HeaderSpace.builder().setSrcIps(EmptyIpSpace.INSTANCE).build());
+    assertEquals(from.toIpSpace(w), EmptyIpSpace.INSTANCE);
   }
 }

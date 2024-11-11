@@ -9,6 +9,7 @@ import java.util.Iterator;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.DscpType;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IcmpCode;
 import org.batfish.datamodel.IntegerSpace;
@@ -151,14 +152,20 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchDst(IpSpace ipSpace) {
-    return matchDst(ipSpace, null);
+    return matchDst(ipSpace, (TraceElement) null);
+  }
+
+  public static AclLineMatchExpr matchDst(IpSpace ipSpace, String traceText) {
+    return matchDst(ipSpace, TraceElement.of(traceText));
   }
 
   public static AclLineMatchExpr matchDst(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
       return traceElement == null ? TRUE : new TrueExpr(traceElement);
+    } else if (ipSpace.equals(EmptyIpSpace.INSTANCE)) {
+      return traceElement == null ? FALSE : new FalseExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement);
+    return new MatchDestinationIp(ipSpace, traceElement);
   }
 
   public static AclLineMatchExpr matchDst(Ip ip) {
@@ -201,14 +208,20 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr matchSrc(IpSpace ipSpace) {
-    return matchSrc(ipSpace, null);
+    return matchSrc(ipSpace, (TraceElement) null);
+  }
+
+  public static AclLineMatchExpr matchSrc(IpSpace ipSpace, String traceText) {
+    return matchSrc(ipSpace, TraceElement.of(traceText));
   }
 
   public static AclLineMatchExpr matchSrc(IpSpace ipSpace, @Nullable TraceElement traceElement) {
     if (ipSpace.equals(UniverseIpSpace.INSTANCE)) {
       return traceElement == null ? TRUE : new TrueExpr(traceElement);
+    } else if (ipSpace.equals(EmptyIpSpace.INSTANCE)) {
+      return traceElement == null ? FALSE : new FalseExpr(traceElement);
     }
-    return new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement);
+    return new MatchSourceIp(ipSpace, traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchFragmentOffset(int fragmentOffset) {

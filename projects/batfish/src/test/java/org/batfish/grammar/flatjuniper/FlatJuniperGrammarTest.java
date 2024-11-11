@@ -26,6 +26,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.DEST_NAT;
@@ -3794,21 +3795,14 @@ public final class FlatJuniperGrammarTest {
                             new AndMatchExpr(
                                 ImmutableList.of(
                                     or(
-                                        new MatchHeaderSpace(
-                                            HeaderSpace.builder()
-                                                .setSrcIps(
-                                                    IpWildcard.ipWithWildcardMask(
-                                                            Ip.parse("1.0.3.0"),
-                                                            Ip.parse("0.255.0.255"))
-                                                        .toIpSpace())
-                                                .build(),
+                                        matchSrc(
+                                            IpWildcard.ipWithWildcardMask(
+                                                    Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
+                                                .toIpSpace(),
                                             TraceElement.of(
                                                 "Matched source-address 1.2.3.4/255.0.255.0")),
-                                        new MatchHeaderSpace(
-                                            HeaderSpace.builder()
-                                                .setSrcIps(
-                                                    IpWildcard.parse("2.3.4.5/24").toIpSpace())
-                                                .build(),
+                                        matchSrc(
+                                            IpWildcard.parse("2.3.4.5/24").toIpSpace(),
                                             TraceElement.of(
                                                 "Matched source-address 2.3.4.5/24"))))))
                         .setName("TERM")
@@ -3822,10 +3816,8 @@ public final class FlatJuniperGrammarTest {
                         .setMatchCondition(
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse("0.0.0.0/0").toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        IpWildcard.parse("0.0.0.0/0").toIpSpace(),
                                         TraceElement.of("Matched source-address 0.0.0.0/0")),
                                     and(
                                         new MatchHeaderSpace(
@@ -4162,22 +4154,16 @@ public final class FlatJuniperGrammarTest {
                                 new AndMatchExpr(
                                     ImmutableList.of(
                                         or(
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setDstIps(
-                                                        IpWildcard.ipWithWildcardMask(
-                                                                Ip.parse("1.0.3.0"),
-                                                                Ip.parse("0.255.0.255"))
-                                                            .toIpSpace())
-                                                    .build(),
+                                            matchDst(
+                                                IpWildcard.ipWithWildcardMask(
+                                                        Ip.parse("1.0.3.0"),
+                                                        Ip.parse("0.255.0.255"))
+                                                    .toIpSpace(),
                                                 TraceElement.of(
                                                     "Matched destination-address"
                                                         + " 1.2.3.4/255.0.255.0")),
-                                            new MatchHeaderSpace(
-                                                HeaderSpace.builder()
-                                                    .setDstIps(
-                                                        IpWildcard.parse("2.3.4.5/24").toIpSpace())
-                                                    .build(),
+                                            matchDst(
+                                                IpWildcard.parse("2.3.4.5/24").toIpSpace(),
                                                 TraceElement.of(
                                                     "Matched destination-address 2.3.4.5/24"))))))
                             .setName("TERM")
@@ -5619,7 +5605,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet1Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("1.1.1.1/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("1.1.1.1/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .build())
             .build();
@@ -5628,7 +5617,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet3Transformation =
         when(matchSrcInterface("ge-0/0/0.0", "ge-0/0/1.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("3.3.3.3/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("3.3.3.3/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .setOrElse(ruleSet1Transformation)
                     .build())
@@ -5639,7 +5631,10 @@ public final class FlatJuniperGrammarTest {
     Transformation ruleSet2Transformation =
         when(matchSrcInterface("ge-0/0/0.0"))
             .setAndThen(
-                when(matchDst(Prefix.parse("2.2.2.2/24")))
+                when(match(
+                        HeaderSpace.builder()
+                            .setDstIps(Prefix.parse("2.2.2.2/24").toIpSpace())
+                            .build()))
                     .apply(transformationStep, portTransformationStep)
                     .setOrElse(
                         // routing instance rule set
@@ -6820,10 +6815,8 @@ public final class FlatJuniperGrammarTest {
                             LineAction.PERMIT,
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse("1.2.3.6").toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        IpWildcard.parse("1.2.3.6").toIpSpace(),
                                         TraceElement.of("Matched source-address 1.2.3.6")))),
                             "TERM",
                             matchingFirewallFilterTerm(

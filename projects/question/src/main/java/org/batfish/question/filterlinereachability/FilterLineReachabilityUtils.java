@@ -33,7 +33,9 @@ import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -207,8 +209,18 @@ public class FilterLineReachabilityUtils {
     }
 
     @Override
+    public Stream<String> visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      return Stream.empty();
+    }
+
+    @Override
     public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return Stream.of();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      return Stream.empty();
     }
 
     @Override
@@ -280,8 +292,18 @@ public class FilterLineReachabilityUtils {
     }
 
     @Override
+    public Stream<String> visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      return Stream.empty();
+    }
+
+    @Override
     public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return Stream.of();
+    }
+
+    @Override
+    public Stream<String> visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      return Stream.empty();
     }
 
     @Override

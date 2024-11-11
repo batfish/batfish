@@ -526,6 +526,32 @@ public class AclTracerTest {
   }
 
   @Test
+  public void testMatchDestinationIp_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchDestinationIp(UniverseIpSpace.INSTANCE, null));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchDestinationIp_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchDestinationIp(UniverseIpSpace.INSTANCE, a));
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testMatchSourceIp_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchSourceIp(UniverseIpSpace.INSTANCE, null));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchSourceIp_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchSourceIp(UniverseIpSpace.INSTANCE, a));
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
   public void testPermittedByAcl() {
     TraceElement a = TraceElement.of("a");
     String aclName = "acl";

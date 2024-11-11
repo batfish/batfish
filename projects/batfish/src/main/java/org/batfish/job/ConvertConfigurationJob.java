@@ -76,7 +76,9 @@ import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -354,6 +356,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
 
     @Override
+    public Void visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      visit(matchDestinationIp.getIps());
+      return null;
+    }
+
+    @Override
     public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       HeaderSpace hs = matchHeaderSpace.getHeaderspace();
       if (hs == null) {
@@ -363,6 +371,12 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE));
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      visit(matchSourceIp.getIps());
       return null;
     }
 

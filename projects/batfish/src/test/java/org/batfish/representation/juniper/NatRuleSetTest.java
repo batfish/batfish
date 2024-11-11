@@ -1,6 +1,6 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.flow.TransformationStep.TransformationType.SOURCE_NAT;
 import static org.batfish.datamodel.transformation.IpField.SOURCE;
@@ -25,6 +25,7 @@ import javax.annotation.Nullable;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDiff;
+import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.Prefix;
@@ -148,12 +149,12 @@ public class NatRuleSetTest {
     // the transformation for the rules themselves
     Transformation rulesTransformation =
         // first apply natRule1
-        when(matchDst(prefix1))
+        when(match(HeaderSpace.builder().setDstIps(prefix1.toIpSpace()).build()))
             .apply(NOOP_SOURCE_NAT)
             .setAndThen(andThen)
             .setOrElse(
                 // only apply natRule2 if natRule1 doesn't match
-                when(matchDst(prefix2))
+                when(match(HeaderSpace.builder().setDstIps(prefix2.toIpSpace()).build()))
                     .apply(
                         assignSourceIp(poolStart, poolEnd),
                         assignSourcePort(Nat.DEFAULT_FROM_PORT, Nat.DEFAULT_TO_PORT))

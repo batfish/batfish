@@ -1,11 +1,9 @@
 package org.batfish.representation.juniper;
 
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.Warnings;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Prefix;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,8 +29,6 @@ public class FwFromDestinationPrefixListTest {
   public void testToHeaderSpace() {
     FwFromDestinationPrefixList fwFrom = new FwFromDestinationPrefixList(BASE_PREFIX_LIST_NAME);
 
-    HeaderSpace headerSpace = fwFrom.toHeaderSpace(_jc, _w);
-
-    assertThat(headerSpace, hasDstIps(equalTo(BASE_IP_PREFIX.toIpSpace())));
+    assertThat(fwFrom.toIpSpace(_jc, _w), equalTo(BASE_IP_PREFIX.toIpSpace()));
   }
 }

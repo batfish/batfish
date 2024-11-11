@@ -1,6 +1,7 @@
 package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.representation.aws.Utils.getTraceElementForRule;
@@ -90,12 +91,8 @@ public class IpPermissionsTest {
     OrMatchExpr matchIpSpaces =
         new OrMatchExpr(
             ImmutableList.of(
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(Ip.parse("1.1.1.1").toIpSpace()).build(),
-                    traceElementEniPrivateIp(INSTANCE_1)),
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(Ip.parse("2.2.2.2").toIpSpace()).build(),
-                    traceElementEniPrivateIp(INSTANCE_2))),
+                matchSrc(Ip.parse("1.1.1.1").toIpSpace(), traceElementEniPrivateIp(INSTANCE_1)),
+                matchSrc(Ip.parse("2.2.2.2").toIpSpace(), traceElementEniPrivateIp(INSTANCE_2))),
             traceElementForAddress("source", SG_NAME, AddressType.SECURITY_GROUP));
     assertThat(
         line,
