@@ -5,9 +5,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
@@ -102,7 +102,7 @@ public final class AristaDestinationStaticNat implements Serializable {
       default:
         if (usesPorts) {
           // ANY means anything with ports, so TCP or UDP.
-          conditions.add(or(matchIpProtocol(IpProtocol.TCP), matchIpProtocol(IpProtocol.UDP)));
+          conditions.add(matchIpProtocols(IpProtocol.TCP, IpProtocol.UDP));
         }
         break;
     }

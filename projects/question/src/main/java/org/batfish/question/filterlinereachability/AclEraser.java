@@ -1,5 +1,7 @@
 package org.batfish.question.filterlinereachability;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import org.batfish.datamodel.AclAclLine;
@@ -17,6 +19,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -101,6 +104,13 @@ public final class AclEraser
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     // TODO erase within IpSpaces if/when we add TraceElements to them
     return new MatchHeaderSpace(matchHeaderSpace.getHeaderspace());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    return matchIpProtocol.getTraceElement() == null
+        ? matchIpProtocol
+        : matchIpProtocol(matchIpProtocol.getProtocol());
   }
 
   @Override

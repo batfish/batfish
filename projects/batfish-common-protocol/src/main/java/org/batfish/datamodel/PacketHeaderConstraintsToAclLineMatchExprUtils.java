@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 
 import com.google.common.collect.ImmutableList;
@@ -46,9 +47,7 @@ final class PacketHeaderConstraintsToAclLineMatchExprUtils {
 
   static @Nullable AclLineMatchExpr ipProtocolsToAclLineMatchExpr(
       @Nullable Set<IpProtocol> ipProtocols) {
-    return Optional.ofNullable(ipProtocols)
-        .map(k -> match(HeaderSpace.builder().setIpProtocols(k).build()))
-        .orElse(null);
+    return ipProtocols == null ? null : matchIpProtocols(ipProtocols, null);
   }
 
   static @Nullable AclLineMatchExpr icmpCodeToAclLineMatchExpr(@Nullable IntegerSpace icmpCode) {

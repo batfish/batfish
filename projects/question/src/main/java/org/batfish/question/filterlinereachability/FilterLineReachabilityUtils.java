@@ -36,6 +36,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -226,6 +227,11 @@ public class FilterLineReachabilityUtils {
     }
 
     @Override
+    public Stream<String> visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return Stream.empty();
+    }
+
+    @Override
     public Stream<String> visitMatchSourceIp(MatchSourceIp matchSourceIp) {
       return Stream.empty();
     }
@@ -316,6 +322,11 @@ public class FilterLineReachabilityUtils {
     @Override
     public Stream<String> visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return Stream.of();
+    }
+
+    @Override
+    public Stream<String> visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return Stream.empty();
     }
 
     @Override

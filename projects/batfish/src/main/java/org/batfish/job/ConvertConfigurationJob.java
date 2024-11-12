@@ -79,6 +79,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -378,6 +379,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       visit(firstNonNull(hs.getNotDstIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getSrcIps(), EmptyIpSpace.INSTANCE));
       visit(firstNonNull(hs.getNotSrcIps(), EmptyIpSpace.INSTANCE));
+      return null;
+    }
+
+    @Override
+    public Void visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
       return null;
     }
 

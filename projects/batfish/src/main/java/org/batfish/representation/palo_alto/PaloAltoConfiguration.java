@@ -12,6 +12,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVIC
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
@@ -728,9 +729,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     IpProtocol protocol = rule.getIpProtocol();
     assert protocol != null;
     conjuncts.add(
-        new MatchHeaderSpace(
-            HeaderSpace.builder().setIpProtocols(protocol).build(),
-            TraceElement.of("Matched protocol " + protocol.name())));
+        matchIpProtocol(protocol, TraceElement.of("Matched protocol " + protocol.name())));
     conjuncts.add(matchDstPort(rule.getPort(), TraceElement.of("Matched port")));
 
     return new AndMatchExpr(conjuncts);
