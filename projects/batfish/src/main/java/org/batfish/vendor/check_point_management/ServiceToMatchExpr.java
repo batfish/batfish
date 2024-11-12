@@ -166,7 +166,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
         descendantObjExprs.add(FalseExpr.INSTANCE);
       }
     }
-    return AclLineMatchExprs.or(serviceGroupTraceElement(group), descendantObjExprs);
+    return AclLineMatchExprs.or(descendantObjExprs, serviceGroupTraceElement(group));
   }
 
   /** Convert an entire CheckPoint port string to an {@link IntegerSpace}. */
