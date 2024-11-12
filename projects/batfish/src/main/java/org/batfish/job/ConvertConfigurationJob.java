@@ -446,6 +446,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * org.batfish.datamodel.TraceElement}s.
    */
   @VisibleForTesting
+  @SuppressWarnings("unused") // https://github.com/batfish/batfish/issues/9267
   static void removeInvalidVendorStructureIds(Configuration c, VendorConfiguration vc, Warnings w) {
     InvalidVendorStructureIdEraser vsidEraser =
         new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
@@ -461,15 +462,19 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
    * org.batfish.datamodel.TraceElement}s.
    */
   @VisibleForTesting
-  static void assertVendorStructureIdsValid(Configuration c, VendorConfiguration vc, Warnings w) {
+  static boolean assertVendorStructureIdsValid(
+      Configuration c, VendorConfiguration vc, Warnings w) {
     InvalidVendorStructureIdEraser eraser =
         new InvalidVendorStructureIdEraser(vc.getFilename(), vc.getStructureManager());
     // Erase invalid VSIDs and confirm no changes occur
     for (IpAccessList acl : c.getIpAccessLists().values()) {
       for (AclLine line : acl.getLines()) {
-        assert line.equals(eraser.visit(line));
+        if (!line.equals(eraser.visit(line))) {
+          return false;
+        }
       }
     }
+    return true;
   }
 
   /**
@@ -502,8 +507,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     removeInvalidStaticRoutes(c, w);
     removeUndefinedTrackReferences(c, w);
     // Make tests fail if they have invalid VSIDs
-    assertVendorStructureIdsValid(c, vc, w);
-    removeInvalidVendorStructureIds(c, vc, w);
+    assert assertVendorStructureIdsValid(c, vc, w);
+    // Too slow right now: https://github.com/batfish/batfish/issues/9267
+    // removeInvalidVendorStructureIds(c, vc, w);
 
     c.setAsPathAccessLists(
         verifyAndToImmutableMap(c.getAsPathAccessLists(), AsPathAccessList::getName, w));
