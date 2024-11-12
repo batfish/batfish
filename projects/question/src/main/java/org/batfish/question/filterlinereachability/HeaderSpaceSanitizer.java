@@ -15,8 +15,10 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -85,6 +87,11 @@ public class HeaderSpaceSanitizer
   }
 
   @Override
+  public AclLineMatchExpr visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    return matchDestinationPort;
+  }
+
+  @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace)
       throws CircularReferenceException, UndefinedReferenceException {
     return new MatchHeaderSpace(
@@ -100,6 +107,11 @@ public class HeaderSpaceSanitizer
       return matchSourceIp;
     }
     return AclLineMatchExprs.matchSrc(derefed, matchSourceIp.getTraceElement());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    return matchSourcePort;
   }
 
   @Override

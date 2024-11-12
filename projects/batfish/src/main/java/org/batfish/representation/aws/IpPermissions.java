@@ -4,6 +4,7 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
@@ -48,6 +49,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpIpSpace;
 import org.batfish.datamodel.IpProtocol;
@@ -350,15 +352,13 @@ public final class IpPermissions implements Serializable {
         ipSpace, traceElementForAddress("destination", vsAddressStructure, addressType));
   }
 
-  /** Returns a MatchHeaderSpace to match the destination ports in this IpPermission instance */
-  private @Nullable MatchHeaderSpace exprForDstPorts() {
+  /** Returns a AclLineMatchExpr to match the destination ports in this IpPermission instance */
+  private @Nullable AclLineMatchExpr exprForDstPorts() {
     // if the range isn't all ports, set it in ACL
     int low = (_fromPort == null || _fromPort == -1) ? 0 : _fromPort;
     int hi = (_toPort == null || _toPort == -1) ? 65535 : _toPort;
     if (low != 0 || hi != 65535) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setDstPorts(new SubRange(low, hi)).build(),
-          traceElementForDstPorts(low, hi));
+      return matchDstPort(IntegerSpace.of(new SubRange(low, hi)), traceElementForDstPorts(low, hi));
     }
     return null;
   }

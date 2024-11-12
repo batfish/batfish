@@ -27,8 +27,10 @@ import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceMetadata;
 import org.batfish.datamodel.IpSpaceReference;
@@ -45,6 +47,8 @@ public class AclTracerTest {
   private static final String ACL_NAME = "acl";
 
   private static final Flow FLOW = Flow.builder().setDstIp(Ip.ZERO).setIngressNode("node1").build();
+  private static final Flow FLOW_PORTS =
+      FLOW.toBuilder().setIpProtocol(IpProtocol.TCP).setSrcPort(1).setDstPort(2).build();
 
   private static final String SRC_INTERFACE = null;
 
@@ -58,8 +62,12 @@ public class AclTracerTest {
   }
 
   private static List<TraceTree> trace(AclLineMatchExpr expr) {
+    return trace(expr, FLOW);
+  }
+
+  private static List<TraceTree> trace(AclLineMatchExpr expr, Flow flow) {
     return AclTracer.trace(
-        expr, FLOW, SRC_INTERFACE, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
+        expr, flow, SRC_INTERFACE, ImmutableMap.of(), ImmutableMap.of(), ImmutableMap.of());
   }
 
   private static AclLineMatchExpr trueExpr(String traceElement) {
@@ -548,6 +556,32 @@ public class AclTracerTest {
   public void testMatchSourceIp_withTraceElement() {
     TraceElement a = TraceElement.of("a");
     List<TraceTree> trace = trace(new MatchSourceIp(UniverseIpSpace.INSTANCE, a));
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testMatchDestinationPort_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchDestinationPort(IntegerSpace.of(2), null), FLOW_PORTS);
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchDestinationPort_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchDestinationPort(IntegerSpace.of(2), a), FLOW_PORTS);
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
+  public void testMatchSourcePort_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchSourcePort(IntegerSpace.of(1), null), FLOW_PORTS);
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchSourcePort_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchSourcePort(IntegerSpace.of(1), a), FLOW_PORTS);
     assertThat(trace, contains(isTraceTree(a)));
   }
 

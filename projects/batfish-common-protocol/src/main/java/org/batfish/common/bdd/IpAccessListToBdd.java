@@ -36,8 +36,10 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -339,6 +341,14 @@ public abstract class IpAccessListToBdd {
     }
 
     @Override
+    public BDD visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+      return _factory.orAllAndFree(
+          matchDestinationPort.getPorts().getSubRanges().stream()
+              .map(r -> _pkt.getDstPort().range(r.getStart(), r.getEnd()))
+              .toList());
+    }
+
+    @Override
     public final BDD visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return _headerSpaceToBDD.toBDD(matchHeaderSpace.getHeaderspace());
     }
@@ -346,6 +356,14 @@ public abstract class IpAccessListToBdd {
     @Override
     public BDD visitMatchSourceIp(MatchSourceIp matchSourceIp) {
       return _headerSpaceToBDD.getSrcIpSpaceToBdd().visit(matchSourceIp.getIps());
+    }
+
+    @Override
+    public BDD visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+      return _factory.orAllAndFree(
+          matchSourcePort.getPorts().getSubRanges().stream()
+              .map(r -> _pkt.getSrcPort().range(r.getStart(), r.getEnd()))
+              .toList());
     }
 
     @Override

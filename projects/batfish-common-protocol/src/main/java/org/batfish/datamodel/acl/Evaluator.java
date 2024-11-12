@@ -65,6 +65,12 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   }
 
   @Override
+  public Boolean visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    return _flow.getDstPort() != null
+        && matchDestinationPort.getPorts().contains(_flow.getDstPort());
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return matchHeaderSpace.getHeaderspace().matches(_flow, _namedIpSpaces);
   }
@@ -72,6 +78,11 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   @Override
   public Boolean visitMatchSourceIp(MatchSourceIp matchSourceIp) {
     return matchSourceIp.getIps().containsIp(_flow.getSrcIp(), _namedIpSpaces);
+  }
+
+  @Override
+  public Boolean visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    return _flow.getSrcPort() != null && matchSourcePort.getPorts().contains(_flow.getSrcPort());
   }
 
   @Override
