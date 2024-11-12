@@ -4,8 +4,10 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
-import java.util.Iterator;
+import java.util.Arrays;
+import java.util.Collection;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.DscpType;
@@ -89,36 +91,33 @@ public final class AclLineMatchExprs {
   }
 
   public static AclLineMatchExpr and(String traceElement, AclLineMatchExpr... exprs) {
-    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+    return and(Arrays.asList(exprs), TraceElement.of(traceElement));
   }
 
   public static AclLineMatchExpr and(TraceElement traceElement, AclLineMatchExpr... exprs) {
-    return new AndMatchExpr(ImmutableList.copyOf(exprs), traceElement);
+    return and(Arrays.asList(exprs), traceElement);
   }
 
   public static AclLineMatchExpr and(AclLineMatchExpr... exprs) {
-    return and(ImmutableList.copyOf(exprs));
+    return and(Arrays.asList(exprs));
+  }
+
+  public static AclLineMatchExpr and(Collection<AclLineMatchExpr> exprs) {
+    return and(exprs, null);
   }
 
   /**
    * Constant-time constructor for AndMatchExpr. Simplifies if given zero or one conjunct. Doesn't
    * do other simplifications that require more work (like removing all {@link TrueExpr TrueExprs}).
    */
-  public static AclLineMatchExpr and(Iterable<AclLineMatchExpr> exprs) {
-    Iterator<AclLineMatchExpr> iter = exprs.iterator();
-
-    if (!iter.hasNext()) {
-      // Empty. Return the identity element
-      return TrueExpr.INSTANCE;
+  public static AclLineMatchExpr and(
+      Collection<AclLineMatchExpr> exprs, TraceElement traceElement) {
+    if (exprs.isEmpty()) {
+      return traceElement == null ? TRUE : new TrueExpr(traceElement);
+    } else if (traceElement == null && exprs.size() == 1) {
+      return Iterables.getOnlyElement(exprs);
     }
-
-    AclLineMatchExpr first = iter.next();
-    if (!iter.hasNext()) {
-      // Only 1 element
-      return first;
-    }
-
-    return new AndMatchExpr(exprs);
+    return new AndMatchExpr(exprs, traceElement);
   }
 
   /**
@@ -376,34 +375,34 @@ public final class AclLineMatchExprs {
     return new NotMatchExpr(expr);
   }
 
-  public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
-    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
-  }
-
-  public static AclLineMatchExpr or(TraceElement traceElement, Iterable<AclLineMatchExpr> exprs) {
-    return new OrMatchExpr(ImmutableList.copyOf(exprs), traceElement);
-  }
-
   public static AclLineMatchExpr or(AclLineMatchExpr... exprs) {
-    return or(ImmutableList.copyOf(exprs));
+    return or(Arrays.asList(exprs));
+  }
+
+  public static AclLineMatchExpr or(String traceElement, AclLineMatchExpr... exprs) {
+    return or(TraceElement.of(traceElement), exprs);
+  }
+
+  public static AclLineMatchExpr or(TraceElement traceElement, AclLineMatchExpr... exprs) {
+    return or(Arrays.asList(exprs), traceElement);
+  }
+
+  public static AclLineMatchExpr or(Collection<AclLineMatchExpr> exprs) {
+    return or(exprs, null);
   }
 
   /**
    * Constant-time constructor for OrMatchExpr. Simplifies if given zero or one conjunct. Doesn't do
    * other simplifications that require more work (like removing all {@link FalseExpr FalseExprs}).
    */
-  public static AclLineMatchExpr or(Iterable<AclLineMatchExpr> exprs) {
-    Iterator<AclLineMatchExpr> iter = exprs.iterator();
-    if (!iter.hasNext()) {
-      // Empty. Return the identity element.
-      return FalseExpr.INSTANCE;
+  public static AclLineMatchExpr or(
+      Collection<AclLineMatchExpr> exprs, @Nullable TraceElement traceElement) {
+    if (exprs.isEmpty()) {
+      return traceElement == null ? FALSE : new FalseExpr(traceElement);
+    } else if (traceElement == null && exprs.size() == 1) {
+      return Iterables.getOnlyElement(exprs);
     }
-    AclLineMatchExpr first = iter.next();
-    if (!iter.hasNext()) {
-      // Only 1 element
-      return first;
-    }
-    return new OrMatchExpr(exprs);
+    return new OrMatchExpr(exprs, traceElement);
   }
 
   public static PermittedByAcl permittedByAcl(String aclName) {
