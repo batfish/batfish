@@ -636,9 +636,7 @@ public final class ConvertConfigurationJobTest {
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
 
-    // No answer element, should fail assertion
-    _thrown.expect(AssertionError.class);
-    assertVendorStructureIdsValid(c, vc, w);
+    assertFalse(assertVendorStructureIdsValid(c, vc, w));
   }
 
   @Test
@@ -665,9 +663,7 @@ public final class ConvertConfigurationJobTest {
     VendorConfiguration vc = new CiscoConfiguration();
     vc.setFilename(filename);
 
-    // No matching defined structure, should fail assertion
-    _thrown.expect(AssertionError.class);
-    assertVendorStructureIdsValid(c, vc, w);
+    assertFalse(assertVendorStructureIdsValid(c, vc, w));
   }
 
   @Test
@@ -697,7 +693,7 @@ public final class ConvertConfigurationJobTest {
     vc.defineSingleLineStructure(type, validStructureName, 1);
 
     // Matching defined structure, should not fail assertion
-    assertVendorStructureIdsValid(c, vc, w);
+    assertTrue(assertVendorStructureIdsValid(c, vc, w));
   }
 
   private static class SaveStructureInfoSingleFileTestVendorConfiguration
