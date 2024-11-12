@@ -8,6 +8,7 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.applications.Application;
 
 final class PacketHeaderConstraintsToAclLineMatchExprUtils {
@@ -65,17 +66,11 @@ final class PacketHeaderConstraintsToAclLineMatchExprUtils {
   }
 
   static @Nullable AclLineMatchExpr srcPortsToAclLineMatchExpr(@Nullable IntegerSpace srcPorts) {
-    return Optional.ofNullable(srcPorts)
-        .map(IntegerSpace::getSubRanges)
-        .map(k -> match(HeaderSpace.builder().setSrcPorts(k).build()))
-        .orElse(null);
+    return Optional.ofNullable(srcPorts).map(AclLineMatchExprs::matchSrcPort).orElse(null);
   }
 
   static @Nullable AclLineMatchExpr dstPortsToAclLineMatchExpr(@Nullable IntegerSpace dstPorts) {
-    return Optional.ofNullable(dstPorts)
-        .map(IntegerSpace::getSubRanges)
-        .map(k -> match(HeaderSpace.builder().setDstPorts(k).build()))
-        .orElse(null);
+    return Optional.ofNullable(dstPorts).map(AclLineMatchExprs::matchDstPort).orElse(null);
   }
 
   static @Nullable AclLineMatchExpr applicationsToAclLineMatchExpr(

@@ -85096,13 +85096,8 @@
                           }
                         },
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstPorts" : [
-                              "3306-3306"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchDestinationPort",
+                          "ports" : "3306",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85158,13 +85153,8 @@
                           }
                         },
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstPorts" : [
-                              "3306-3306"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchDestinationPort",
+                          "ports" : "3306",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85220,13 +85210,8 @@
                           }
                         },
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstPorts" : [
-                              "3306-3306"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchDestinationPort",
+                          "ports" : "3306",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85282,13 +85267,8 @@
                           }
                         },
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstPorts" : [
-                              "3306-3306"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchDestinationPort",
+                          "ports" : "3306",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85344,13 +85324,8 @@
                           }
                         },
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "dstPorts" : [
-                              "3306-3306"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchDestinationPort",
+                          "ports" : "3306",
                           "traceElement" : {
                             "fragments" : [
                               {

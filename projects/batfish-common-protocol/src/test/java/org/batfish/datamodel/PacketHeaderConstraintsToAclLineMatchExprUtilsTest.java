@@ -1,6 +1,8 @@
 package org.batfish.datamodel;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.junit.Assert.assertEquals;
 
@@ -77,7 +79,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.srcPortsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
-        match(HeaderSpace.builder().setSrcPorts(new SubRange(10, 11)).build()));
+        matchSrcPort(IntegerSpace.of(new SubRange(10, 11))));
   }
 
   @Test
@@ -85,7 +87,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.dstPortsToAclLineMatchExpr(
             IntegerSpace.of(new SubRange(10, 11))),
-        match(HeaderSpace.builder().setDstPorts(new SubRange(10, 11)).build()));
+        matchDstPort(IntegerSpace.of(new SubRange(10, 11))));
   }
 
   @Test

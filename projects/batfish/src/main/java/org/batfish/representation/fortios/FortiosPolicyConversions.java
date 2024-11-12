@@ -59,7 +59,6 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.VendorStructureId;
@@ -388,9 +387,7 @@ public final class FortiosPolicyConversions {
       case IP:
       case TCP_UDP_SCTP:
         List<AclLineMatchExpr> exprs =
-            toHeaderSpaces(service)
-                .map(MatchHeaderSpace::new)
-                .collect(ImmutableList.toImmutableList());
+            toServiceMatchExprs(service).collect(ImmutableList.toImmutableList());
         // Any valid service should match *some* packets
         assert !exprs.isEmpty();
         return new OrMatchExpr(exprs, traceElement);
@@ -399,26 +396,27 @@ public final class FortiosPolicyConversions {
     }
   }
 
-  private static @Nonnull Stream<HeaderSpace> toHeaderSpaces(Service service) {
+  private static @Nonnull Stream<AclLineMatchExpr> toServiceMatchExprs(Service service) {
     switch (service.getProtocolEffective()) {
       case TCP_UDP_SCTP:
         return Stream.of(
-                buildHeaderSpaceWithPorts(
+                buildMatchExprWithPorts(
                     IpProtocol.TCP,
                     service.getTcpPortRangeSrcEffective(),
                     service.getTcpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
+                buildMatchExprWithPorts(
                     IpProtocol.UDP,
                     service.getUdpPortRangeSrcEffective(),
                     service.getUdpPortRangeDst()),
-                buildHeaderSpaceWithPorts(
+                buildMatchExprWithPorts(
                     IpProtocol.SCTP,
                     service.getSctpPortRangeSrcEffective(),
                     service.getSctpPortRangeDst()))
             .filter(Objects::nonNull);
       case ICMP:
         return Stream.of(
-            buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
+                buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()))
+            .map(AclLineMatchExprs::match);
       case IP:
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
@@ -427,9 +425,10 @@ public final class FortiosPolicyConversions {
         // Protocol number 0 indicates all protocols.
         // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
         return Stream.of(
-            protocolNumber == 0
-                ? hs.build()
-                : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build());
+                protocolNumber == 0
+                    ? hs.build()
+                    : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build())
+            .map(AclLineMatchExprs::match);
       case ICMP6:
         throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
       default:
@@ -438,8 +437,10 @@ public final class FortiosPolicyConversions {
     }
   }
 
-  /** Returns a {@link HeaderSpace} with the given ports, or null if {@code dstPorts} are null */
-  private static @Nullable HeaderSpace buildHeaderSpaceWithPorts(
+  /**
+   * Returns an {@link AclLineMatchExpr} with the given ports, or null if {@code dstPorts} are null
+   */
+  private static @Nullable AclLineMatchExpr buildMatchExprWithPorts(
       @Nonnull IpProtocol protocol,
       @Nullable IntegerSpace srcPorts,
       @Nullable IntegerSpace dstPorts) {
@@ -449,7 +450,7 @@ public final class FortiosPolicyConversions {
     HeaderSpace.Builder headerSpace =
         HeaderSpace.builder().setIpProtocols(protocol).setDstPorts(dstPorts.getSubRanges());
     Optional.ofNullable(srcPorts).ifPresent(src -> headerSpace.setSrcPorts(src.getSubRanges()));
-    return headerSpace.build();
+    return AclLineMatchExprs.match(headerSpace.build());
   }
 
   private static HeaderSpace buildIcmpHeaderSpace(

@@ -6,6 +6,7 @@ import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
@@ -39,6 +40,7 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -82,10 +84,9 @@ public class SecurityGroupsTest {
       new MatchHeaderSpace(
           HeaderSpace.builder().setIpProtocols(ICMP).build(), traceElementForProtocol(ICMP));
 
-  private static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
-        traceElementForDstPorts(fromPort, toPort));
+  private static AclLineMatchExpr matchPorts(int fromPort, int toPort) {
+    return matchDstPort(
+        IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
   @Before

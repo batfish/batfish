@@ -77,8 +77,10 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -362,6 +364,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
 
     @Override
+    public Void visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+      return null;
+    }
+
+    @Override
     public Void visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       HeaderSpace hs = matchHeaderSpace.getHeaderspace();
       if (hs == null) {
@@ -377,6 +384,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Void visitMatchSourceIp(MatchSourceIp matchSourceIp) {
       visit(matchSourceIp.getIps());
+      return null;
+    }
+
+    @Override
+    public Void visitMatchSourcePort(MatchSourcePort matchSourcePort) {
       return null;
     }
 
