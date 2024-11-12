@@ -2,6 +2,7 @@ package org.batfish.question.filterlinereachability;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -13,6 +14,7 @@ import java.util.Map;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
@@ -20,6 +22,7 @@ import org.batfish.datamodel.acl.CircularReferenceException;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
@@ -123,6 +126,12 @@ public class HeaderSpaceSanitizerTest {
   @Test
   public void testSourcePort() {
     MatchSourcePort match = (MatchSourcePort) matchSrcPort(1);
+    assertThat(SANITIZER.visit(match), sameInstance(match));
+  }
+
+  @Test
+  public void testIpProtocol() {
+    MatchIpProtocol match = (MatchIpProtocol) matchIpProtocol(IpProtocol.TCP);
     assertThat(SANITIZER.visit(match), sameInstance(match));
   }
 

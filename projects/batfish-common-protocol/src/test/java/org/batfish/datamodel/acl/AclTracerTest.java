@@ -534,6 +534,19 @@ public class AclTracerTest {
   }
 
   @Test
+  public void testMatchIpProtocol_withoutTraceElement() {
+    List<TraceTree> trace = trace(new MatchIpProtocol(FLOW.getIpProtocol(), null));
+    assertThat(trace, empty());
+  }
+
+  @Test
+  public void testMatchIpProtocol_withTraceElement() {
+    TraceElement a = TraceElement.of("a");
+    List<TraceTree> trace = trace(new MatchIpProtocol(FLOW.getIpProtocol(), a));
+    assertThat(trace, contains(isTraceTree(a)));
+  }
+
+  @Test
   public void testMatchDestinationIp_withoutTraceElement() {
     List<TraceTree> trace = trace(new MatchDestinationIp(UniverseIpSpace.INSTANCE, null));
     assertThat(trace, empty());

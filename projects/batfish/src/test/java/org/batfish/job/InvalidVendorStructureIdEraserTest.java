@@ -2,6 +2,7 @@ package org.batfish.job;
 
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -16,6 +17,7 @@ import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -26,6 +28,7 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -156,6 +159,7 @@ public class InvalidVendorStructureIdEraserTest {
     assertExprHandled(te -> (MatchSourceIp) matchSrc(Ip.ZERO.toIpSpace(), te));
     assertExprHandled(te -> (MatchDestinationPort) matchDstPort(1, te));
     assertExprHandled(te -> (MatchSourcePort) matchSrcPort(1, te));
+    assertExprHandled(te -> (MatchIpProtocol) matchIpProtocol(IpProtocol.TCP, te));
   }
 
   @Test

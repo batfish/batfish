@@ -1,12 +1,12 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from protocol */
@@ -29,14 +29,10 @@ public final class FwFromProtocol implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+    return matchIpProtocol(_protocol, getTraceElement());
   }
 
   private TraceElement getTraceElement() {
     return TraceElement.of(String.format("Matched protocol %s", _protocol.name().toLowerCase()));
-  }
-
-  private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder().setIpProtocols(_protocol).build();
   }
 }

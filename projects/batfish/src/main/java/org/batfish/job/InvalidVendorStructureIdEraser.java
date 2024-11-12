@@ -21,6 +21,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -187,6 +188,18 @@ public final class InvalidVendorStructureIdEraser
             ? null
             : eraseInvalid(matchHeaderSpace.getTraceElement());
     return new MatchHeaderSpace(matchHeaderSpace.getHeaderspace(), te);
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    if (matchIpProtocol.getTraceElement() == null) {
+      return matchIpProtocol;
+    }
+    TraceElement te = eraseInvalid(matchIpProtocol.getTraceElement());
+    if (te.equals(matchIpProtocol.getTraceElement())) {
+      return matchIpProtocol;
+    }
+    return AclLineMatchExprs.matchIpProtocol(matchIpProtocol.getProtocol(), te);
   }
 
   @Override
