@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import java.io.Serializable;
 import java.util.Comparator;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -104,7 +103,7 @@ public final class SubRange implements Serializable, Comparable<SubRange> {
 
   @Override
   public int hashCode() {
-    return Objects.hash(_end, _start);
+    return 31 * _end + _start;
   }
 
   /** Check whether a given integer belongs to this range. */
