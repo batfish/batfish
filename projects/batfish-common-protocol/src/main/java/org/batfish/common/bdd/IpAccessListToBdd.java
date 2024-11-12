@@ -343,10 +343,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public BDD visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
-      return _factory.orAllAndFree(
-          matchDestinationPort.getPorts().getSubRanges().stream()
-              .map(r -> _pkt.getDstPort().range(r.getStart(), r.getEnd()))
-              .toList());
+      return _headerSpaceToBDD.dstPortsToBDD(matchDestinationPort.getPorts());
     }
 
     @Override
@@ -356,7 +353,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public BDD visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
-      return _pkt.getIpProtocol().value(matchIpProtocol.getProtocol());
+      return _headerSpaceToBDD.ipProtocolToBDD(matchIpProtocol.getProtocol());
     }
 
     @Override
@@ -366,10 +363,7 @@ public abstract class IpAccessListToBdd {
 
     @Override
     public BDD visitMatchSourcePort(MatchSourcePort matchSourcePort) {
-      return _factory.orAllAndFree(
-          matchSourcePort.getPorts().getSubRanges().stream()
-              .map(r -> _pkt.getSrcPort().range(r.getStart(), r.getEnd()))
-              .toList());
+      return _headerSpaceToBDD.sourcePortsToBDD(matchSourcePort.getPorts());
     }
 
     @Override
