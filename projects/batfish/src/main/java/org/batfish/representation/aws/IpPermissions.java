@@ -3,6 +3,8 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_DESCRIPTION;
@@ -339,16 +341,13 @@ public final class IpPermissions implements Serializable {
   }
 
   /** Returns a MatchHeaderSpace to match the provided IpSpace either in ingress or egress mode */
-  private static MatchHeaderSpace exprForSrcOrDstIps(
+  private static AclLineMatchExpr exprForSrcOrDstIps(
       IpSpace ipSpace, String vsAddressStructure, boolean ingress, AddressType addressType) {
     if (ingress) {
-      return new MatchHeaderSpace(
-          HeaderSpace.builder().setSrcIps(ipSpace).build(),
-          traceElementForAddress("source", vsAddressStructure, addressType));
+      return matchSrc(ipSpace, traceElementForAddress("source", vsAddressStructure, addressType));
     }
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setDstIps(ipSpace).build(),
-        traceElementForAddress("destination", vsAddressStructure, addressType));
+    return matchDst(
+        ipSpace, traceElementForAddress("destination", vsAddressStructure, addressType));
   }
 
   /** Returns a MatchHeaderSpace to match the destination ports in this IpPermission instance */
@@ -454,11 +453,9 @@ public final class IpPermissions implements Serializable {
       TraceElement traceElement = traceElementEniPrivateIp(ipAndInstance.getValue());
       IpIpSpace ipSpace = ipAndInstance.getKey().toIpSpace();
       if (ingress) {
-        matchExprBuilder.add(
-            new MatchHeaderSpace(HeaderSpace.builder().setSrcIps(ipSpace).build(), traceElement));
+        matchExprBuilder.add(matchSrc(ipSpace, traceElement));
       } else {
-        matchExprBuilder.add(
-            new MatchHeaderSpace(HeaderSpace.builder().setDstIps(ipSpace).build(), traceElement));
+        matchExprBuilder.add(matchDst(ipSpace, traceElement));
       }
     }
     // See note about naming on SecurityGroup#getGroupName.

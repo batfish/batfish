@@ -53,7 +53,10 @@ public class FalseExpr extends AclLineMatchExpr {
 
   @Override
   public String toString() {
-    return MoreObjects.toStringHelper(getClass()).toString();
+    return MoreObjects.toStringHelper(getClass())
+        .omitNullValues()
+        .add(PROP_TRACE_ELEMENT, _traceElement)
+        .toString();
   }
 
   @JsonCreator

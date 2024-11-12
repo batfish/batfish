@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.equalTo;
 
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.EmptyIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.junit.Test;
@@ -29,13 +28,7 @@ public class FwFromDestinationAddressBookEntryTest {
     FwFromDestinationAddressBookEntry from =
         new FwFromDestinationAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    HeaderSpace headerSpace = from.toHeaderspace(w);
-    assertThat(
-        headerSpace,
-        equalTo(
-            HeaderSpace.builder()
-                .setDstIps(new IpSpaceReference("addressBook~addressBookEntry"))
-                .build()));
+    assertThat(from.toIpSpace(w), equalTo(new IpSpaceReference("addressBook~addressBookEntry")));
   }
 
   @Test
@@ -47,8 +40,6 @@ public class FwFromDestinationAddressBookEntryTest {
     FwFromDestinationAddressBookEntry from =
         new FwFromDestinationAddressBookEntry(null, globalAddressBook, addressBookEntryName);
 
-    HeaderSpace headerSpace = from.toHeaderspace(w);
-    assertThat(
-        headerSpace, equalTo(HeaderSpace.builder().setDstIps(EmptyIpSpace.INSTANCE).build()));
+    assertThat(from.toIpSpace(w), equalTo(EmptyIpSpace.INSTANCE));
   }
 }

@@ -1,7 +1,10 @@
 package org.batfish.question.filterlinereachability;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 
 import com.google.common.collect.ImmutableMap;
 import java.util.Map;
@@ -12,7 +15,9 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.acl.CircularReferenceException;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.UndefinedReferenceException;
 import org.junit.Rule;
 import org.junit.Test;
@@ -76,6 +81,33 @@ public class HeaderSpaceSanitizerTest {
             HeaderSpace.builder().setDstIps(new IpSpaceReference("unknown name")).build());
     _thrown.expect(UndefinedReferenceException.class);
     SANITIZER.visit(matchHeaderSpace);
+  }
+
+  @Test
+  public void testDestinationIpError() {
+    MatchDestinationIp matchDestinationIp =
+        (MatchDestinationIp) matchDst(new IpSpaceReference("unknown name"));
+    _thrown.expect(UndefinedReferenceException.class);
+    SANITIZER.visit(matchDestinationIp);
+  }
+
+  @Test
+  public void testDestinationIpInterning() {
+    // Unchanged is interned
+    MatchDestinationIp matchDestinationIp = (MatchDestinationIp) matchDst(REFERENCED_IP);
+    assertThat(SANITIZER.visit(matchDestinationIp), sameInstance(matchDestinationIp));
+    MatchDestinationIp referencedIp =
+        (MatchDestinationIp) matchDst(new IpSpaceReference(IP_SPACE_NAME));
+    assertThat(SANITIZER.visit(referencedIp), equalTo(matchDestinationIp));
+  }
+
+  @Test
+  public void testSourceIpInterning() {
+    // Unchanged is interned
+    MatchSourceIp matchSourceIp = (MatchSourceIp) matchSrc(REFERENCED_IP);
+    assertThat(SANITIZER.visit(matchSourceIp), sameInstance(matchSourceIp));
+    MatchSourceIp referencedIp = (MatchSourceIp) matchSrc(new IpSpaceReference(IP_SPACE_NAME));
+    assertThat(SANITIZER.visit(referencedIp), equalTo(matchSourceIp));
   }
 
   @Test

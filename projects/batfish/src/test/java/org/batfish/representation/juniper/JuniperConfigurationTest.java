@@ -4,6 +4,7 @@ import static org.batfish.common.Warnings.TAG_PEDANTIC;
 import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasUnimplementedWarning;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.matchers.AclLineMatchers.hasTraceElement;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_DEAD_INTERVAL;
@@ -134,10 +135,8 @@ public class JuniperConfigurationTest {
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                    .build(),
+                            matchSrc(
+                                IpWildcard.parse(ipAddrPrefix).toIpSpace(),
                                 TraceElement.of("Matched source-address 1.2.3.0/24")))))
                 .build()));
   }
@@ -231,10 +230,8 @@ public class JuniperConfigurationTest {
                         ImmutableList.of(
                             new AndMatchExpr(
                                 ImmutableList.of(
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(IpWildcard.parse(ipAddrPrefix).toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        IpWildcard.parse(ipAddrPrefix).toIpSpace(),
                                         TraceElement.of("Matched source-address 1.2.3.0/24")))),
                             new MatchSrcInterface(zone.getInterfaces()))))
                 .build()));

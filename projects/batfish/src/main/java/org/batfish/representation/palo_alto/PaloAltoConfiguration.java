@@ -124,6 +124,7 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
@@ -698,7 +699,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs.
-    List<MatchHeaderSpace> srcExprs =
+    List<AclLineMatchExpr> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), vsys, _w, _filename);
     assert !srcExprs.isEmpty();
     conjuncts.add(
@@ -710,7 +711,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs.
-    List<MatchHeaderSpace> dstExprs =
+    List<AclLineMatchExpr> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(rule.getDestination(), vsys, _w, _filename);
     assert !dstExprs.isEmpty();
     conjuncts.add(
@@ -1599,24 +1600,24 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .collect(Collectors.toList()));
   }
 
-  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointSources(
+  private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointSources(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
             source ->
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setSrcIps(ruleEndpointToIpSpace(source, vsys, w)).build(),
+                AclLineMatchExprs.matchSrc(
+                    ruleEndpointToIpSpace(source, vsys, w),
                     getRuleEndpointTraceElement(source, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
 
-  private @Nonnull List<MatchHeaderSpace> aclLineMatchExprsFromRuleEndpointDestinations(
+  private @Nonnull List<AclLineMatchExpr> aclLineMatchExprsFromRuleEndpointDestinations(
       Collection<RuleEndpoint> endpoints, Vsys vsys, Warnings w, String filename) {
     return endpoints.stream()
         .map(
             dest ->
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setDstIps(ruleEndpointToIpSpace(dest, vsys, w)).build(),
+                AclLineMatchExprs.matchDst(
+                    ruleEndpointToIpSpace(dest, vsys, w),
                     getRuleEndpointTraceElement(dest, vsys, filename)))
         .collect(ImmutableList.toImmutableList());
   }
@@ -1656,7 +1657,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 2. Match SRC IPs if specified.
-    List<MatchHeaderSpace> srcExprs =
+    List<AclLineMatchExpr> srcExprs =
         aclLineMatchExprsFromRuleEndpointSources(rule.getSource(), namespaceVsys, _w, _filename);
     if (!srcExprs.isEmpty()) {
       conjuncts.add(
@@ -1669,7 +1670,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs if specified.
-    List<MatchHeaderSpace> dstExprs =
+    List<AclLineMatchExpr> dstExprs =
         aclLineMatchExprsFromRuleEndpointDestinations(
             rule.getDestination(), namespaceVsys, _w, _filename);
     if (!dstExprs.isEmpty()) {
