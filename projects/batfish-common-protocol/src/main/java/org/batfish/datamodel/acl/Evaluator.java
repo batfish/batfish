@@ -60,8 +60,18 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   }
 
   @Override
+  public Boolean visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+    return matchDestinationIp.getIps().containsIp(_flow.getDstIp(), _namedIpSpaces);
+  }
+
+  @Override
   public Boolean visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return matchHeaderSpace.getHeaderspace().matches(_flow, _namedIpSpaces);
+  }
+
+  @Override
+  public Boolean visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+    return matchSourceIp.getIps().containsIp(_flow.getSrcIp(), _namedIpSpaces);
   }
 
   @Override

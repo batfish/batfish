@@ -6,6 +6,7 @@ import static org.batfish.datamodel.flow.TransformationStep.TransformationType.S
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.base.MoreObjects;
 import java.io.Serializable;
 import java.util.Objects;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -59,5 +60,10 @@ public final class Noop implements TransformationStep, Serializable {
   @JsonProperty(PROP_TRANSFORMATION_TYPE)
   public TransformationType getType() {
     return _type;
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add(PROP_TRANSFORMATION_TYPE, _type).toString();
   }
 }

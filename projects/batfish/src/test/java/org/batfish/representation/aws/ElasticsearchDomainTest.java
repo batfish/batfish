@@ -3,6 +3,8 @@ package org.batfish.representation.aws;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.TCP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasDeviceModel;
@@ -224,8 +226,8 @@ public class ElasticsearchDomainTest {
                 hasMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder().setDstIps(UniverseIpSpace.INSTANCE).build(),
+                            matchDst(
+                                UniverseIpSpace.INSTANCE,
                                 traceElementForAddress(
                                     "destination", "0.0.0.0/0", AddressType.CIDR_IP))),
                         getTraceElementForRule(null))))));
@@ -241,10 +243,8 @@ public class ElasticsearchDomainTest {
                             ImmutableList.of(
                                 matchTcp,
                                 matchPorts(45, 50),
-                                new MatchHeaderSpace(
-                                    HeaderSpace.builder()
-                                        .setSrcIps(Ip.parse("1.2.3.4").toIpSpace())
-                                        .build(),
+                                matchSrc(
+                                    Ip.parse("1.2.3.4").toIpSpace(),
                                     traceElementForAddress(
                                         "source", "1.2.3.4/32", AddressType.CIDR_IP))),
                             getTraceElementForRule("Closed interval")),
@@ -255,10 +255,8 @@ public class ElasticsearchDomainTest {
                                 or(
                                     traceTextForAddress(
                                         "source", "Test-Instance-SG", AddressType.SECURITY_GROUP),
-                                    new MatchHeaderSpace(
-                                        HeaderSpace.builder()
-                                            .setSrcIps(Ip.parse("10.193.16.105").toIpSpace())
-                                            .build(),
+                                    matchSrc(
+                                        Ip.parse("10.193.16.105").toIpSpace(),
                                         traceElementEniPrivateIp(
                                             "eni-05e8949c37b78cf4d on i-066b1b9957b9200e7 (Test"
                                                 + " host)")))),

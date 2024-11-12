@@ -57,6 +57,7 @@ import org.batfish.datamodel.Names;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -307,20 +308,17 @@ public final class FortiosPolicyConversions {
     List<AclLineMatchExpr> srcAddrExprs =
         Sets.intersection(srcAddrs, namedIpSpaces).stream()
             .map(
-                addr -> {
-                  HeaderSpace hs =
-                      HeaderSpace.builder().setSrcIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(hs, "Matched source address");
-                })
+                addr ->
+                    AclLineMatchExprs.matchSrc(
+                        new IpSpaceReference(addr), "Matched source address"))
             .collect(ImmutableList.toImmutableList());
 
     List<AclLineMatchExpr> dstAddrExprs =
         Sets.intersection(dstAddrs, namedIpSpaces).stream()
             .map(
                 addr -> {
-                  HeaderSpace hs =
-                      HeaderSpace.builder().setDstIps(new IpSpaceReference(addr)).build();
-                  return new MatchHeaderSpace(hs, "Matched destination address");
+                  return AclLineMatchExprs.matchDst(
+                      new IpSpaceReference(addr), TraceElement.of("Matched destination address"));
                 })
             .collect(ImmutableList.toImmutableList());
 

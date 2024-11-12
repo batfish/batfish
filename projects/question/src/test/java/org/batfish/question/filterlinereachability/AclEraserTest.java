@@ -1,5 +1,10 @@
 package org.batfish.question.filterlinereachability;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -7,6 +12,7 @@ import java.util.List;
 import org.batfish.datamodel.AclAclLine;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -14,7 +20,9 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -65,6 +73,19 @@ public class AclEraserTest {
       assertEquals(
           new MatchHeaderSpace(headerSpace),
           _eraser.visit(new MatchHeaderSpace(headerSpace, _traceElem)));
+    }
+    {
+      MatchDestinationIp noTrace = (MatchDestinationIp) matchDst(Ip.parse("1.1.1.1"));
+      MatchDestinationIp trace =
+          (MatchDestinationIp) matchDst(Ip.parse("1.1.1.1").toIpSpace(), _traceElem);
+      assertThat(_eraser.visit(noTrace), sameInstance(noTrace));
+      assertThat(_eraser.visit(trace), equalTo(noTrace));
+    }
+    {
+      MatchSourceIp noTrace = (MatchSourceIp) matchSrc(Ip.parse("1.1.1.1"));
+      MatchSourceIp trace = (MatchSourceIp) matchSrc(Ip.parse("1.1.1.1").toIpSpace(), _traceElem);
+      assertThat(_eraser.visit(noTrace), sameInstance(noTrace));
+      assertThat(_eraser.visit(trace), equalTo(noTrace));
     }
   }
 

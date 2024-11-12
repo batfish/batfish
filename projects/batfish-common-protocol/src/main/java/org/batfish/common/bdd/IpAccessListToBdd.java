@@ -35,7 +35,9 @@ import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
+import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -332,8 +334,18 @@ public abstract class IpAccessListToBdd {
     }
 
     @Override
+    public BDD visitMatchDestinationIp(MatchDestinationIp matchDestinationIp) {
+      return _headerSpaceToBDD.getDstIpSpaceToBdd().visit(matchDestinationIp.getIps());
+    }
+
+    @Override
     public final BDD visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return _headerSpaceToBDD.toBDD(matchHeaderSpace.getHeaderspace());
+    }
+
+    @Override
+    public BDD visitMatchSourceIp(MatchSourceIp matchSourceIp) {
+      return _headerSpaceToBDD.getSrcIpSpaceToBdd().visit(matchSourceIp.getIps());
     }
 
     @Override
