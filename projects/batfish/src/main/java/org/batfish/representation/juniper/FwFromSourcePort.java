@@ -1,13 +1,17 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from source-port */
@@ -34,20 +38,20 @@ public final class FwFromSourcePort implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+    return and(
+        getTraceElement(_portRange),
+        or(
+            matchIpProtocol(IpProtocol.TCP),
+            matchIpProtocol(IpProtocol.UDP),
+            matchIpProtocol(IpProtocol.SCTP)),
+        matchSrcPort(IntegerSpace.of(_portRange)));
   }
 
-  private TraceElement getTraceElement() {
-    return _portRange.isSingleValue()
-        ? TraceElement.of(String.format("Matched source-port %d", _portRange.getStart()))
+  // Visible for use by siblings.
+  static TraceElement getTraceElement(SubRange portRange) {
+    return portRange.isSingleValue()
+        ? TraceElement.of(String.format("Matched source-port %d", portRange.getStart()))
         : TraceElement.of(
-            String.format("Matched source-port %d-%d", _portRange.getStart(), _portRange.getEnd()));
-  }
-
-  private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder()
-        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
-        .setSrcPorts(_portRange)
-        .build();
+            String.format("Matched source-port %d-%d", portRange.getStart(), portRange.getEnd()));
   }
 }

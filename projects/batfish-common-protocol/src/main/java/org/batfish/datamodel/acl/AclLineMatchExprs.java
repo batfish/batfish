@@ -185,8 +185,7 @@ public final class AclLineMatchExprs {
 
   public static @Nonnull AclLineMatchExpr matchDstPort(int port) {
     checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
-    return match(
-        HeaderSpace.builder().setDstPorts(ImmutableList.of(SubRange.singleton(port))).build());
+    return matchDstPort(IntegerSpace.of(port));
   }
 
   public static @Nonnull AclLineMatchExpr matchDstPort(IntegerSpace portSpace) {
@@ -199,7 +198,7 @@ public final class AclLineMatchExprs {
         0 <= portSpace.least() && portSpace.greatest() <= 0xFFFF,
         "Invalid port space: %s",
         portSpace);
-    return match(HeaderSpace.builder().setDstPorts(portSpace.getSubRanges()).build(), traceElement);
+    return new MatchDestinationPort(portSpace, traceElement);
   }
 
   public static AclLineMatchExpr matchDstPrefix(String prefix) {
@@ -334,18 +333,27 @@ public final class AclLineMatchExprs {
     return matchSrc(Prefix.parse(prefix).toIpSpace());
   }
 
-  public static MatchHeaderSpace matchSrcPort(int port) {
+  public static @Nonnull AclLineMatchExpr matchSrcPort(int port) {
+    return matchSrcPort(port, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchSrcPort(
+      int port, @Nullable TraceElement traceElement) {
     checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
-    return match(
-        HeaderSpace.builder().setSrcPorts(ImmutableList.of(SubRange.singleton(port))).build());
+    return matchSrcPort(IntegerSpace.of(port), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchSrcPort(IntegerSpace portSpace) {
+    return matchSrcPort(portSpace, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchSrcPort(
+      IntegerSpace portSpace, @Nullable TraceElement traceElement) {
     checkArgument(
         0 <= portSpace.least() && portSpace.greatest() <= 0xFFFF,
         "Invalid port space: %s",
         portSpace);
-    return match(HeaderSpace.builder().setSrcPorts(portSpace.getSubRanges()).build());
+    return new MatchSourcePort(portSpace, traceElement);
   }
 
   public static @Nonnull MatchSrcInterface matchSrcInterface(Iterable<String> ifaces) {

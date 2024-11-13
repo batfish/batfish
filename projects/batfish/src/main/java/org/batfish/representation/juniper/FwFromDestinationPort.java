@@ -1,14 +1,17 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.annotations.VisibleForTesting;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from destination port */
@@ -35,22 +38,21 @@ public final class FwFromDestinationPort implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
+    return and(
+        getTraceElement(_portRange),
+        or(
+            matchIpProtocol(IpProtocol.TCP),
+            matchIpProtocol(IpProtocol.UDP),
+            matchIpProtocol(IpProtocol.SCTP)),
+        matchDstPort(IntegerSpace.of(_portRange)));
   }
 
-  @VisibleForTesting
-  HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder()
-        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.SCTP)
-        .setDstPorts(_portRange)
-        .build();
-  }
-
-  private TraceElement getTraceElement() {
-    return _portRange.getStart() == _portRange.getEnd()
-        ? TraceElement.of(String.format("Matched destination-port %d", _portRange.getStart()))
+  // Visible for use by siblings.
+  static TraceElement getTraceElement(SubRange portRange) {
+    return portRange.getStart() == portRange.getEnd()
+        ? TraceElement.of(String.format("Matched destination-port %d", portRange.getStart()))
         : TraceElement.of(
             String.format(
-                "Matched destination-port %d-%d", _portRange.getStart(), _portRange.getEnd()));
+                "Matched destination-port %d-%d", portRange.getStart(), portRange.getEnd()));
   }
 }
