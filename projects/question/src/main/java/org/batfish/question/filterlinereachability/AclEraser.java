@@ -15,8 +15,10 @@ import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -89,6 +91,13 @@ public final class AclEraser
   }
 
   @Override
+  public AclLineMatchExpr visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    return matchDestinationPort.getTraceElement() == null
+        ? matchDestinationPort
+        : AclLineMatchExprs.matchDstPort(matchDestinationPort.getPorts());
+  }
+
+  @Override
   public AclLineMatchExpr visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     // TODO erase within IpSpaces if/when we add TraceElements to them
     return new MatchHeaderSpace(matchHeaderSpace.getHeaderspace());
@@ -99,6 +108,13 @@ public final class AclEraser
     return matchSourceIp.getTraceElement() == null
         ? matchSourceIp
         : AclLineMatchExprs.matchSrc(matchSourceIp.getIps());
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    return matchSourcePort.getTraceElement() == null
+        ? matchSourcePort
+        : AclLineMatchExprs.matchSrcPort(matchSourcePort.getPorts());
   }
 
   @Override

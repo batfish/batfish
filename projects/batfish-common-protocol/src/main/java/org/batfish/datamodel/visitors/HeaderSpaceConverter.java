@@ -7,8 +7,10 @@ import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.GenericAclLineMatchExprVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
+import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSourceIp;
+import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
 import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.OrMatchExpr;
@@ -48,6 +50,13 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
   }
 
   @Override
+  public HeaderSpace visitMatchDestinationPort(MatchDestinationPort matchDestinationPort) {
+    return HeaderSpace.builder()
+        .setDstPorts(matchDestinationPort.getPorts().getSubRanges())
+        .build();
+  }
+
+  @Override
   public HeaderSpace visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
     return matchHeaderSpace.getHeaderspace();
   }
@@ -55,6 +64,11 @@ public class HeaderSpaceConverter implements GenericAclLineMatchExprVisitor<Head
   @Override
   public HeaderSpace visitMatchSourceIp(MatchSourceIp matchSourceIp) {
     return HeaderSpace.builder().setSrcIps(matchSourceIp.getIps()).build();
+  }
+
+  @Override
+  public HeaderSpace visitMatchSourcePort(MatchSourcePort matchSourcePort) {
+    return HeaderSpace.builder().setSrcPorts(matchSourcePort.getPorts().getSubRanges()).build();
   }
 
   @Override

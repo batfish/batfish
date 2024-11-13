@@ -1,14 +1,18 @@
 package org.batfish.representation.juniper;
 
-import com.google.common.collect.ImmutableList;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.representation.juniper.FwTerm.Field;
 
 /** Class for firewall filter from port */
@@ -35,14 +39,16 @@ public final class FwFromPort implements FwFrom {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr(JuniperConfiguration jc, Configuration c, Warnings w) {
-    return new MatchHeaderSpace(toHeaderspace(), getTraceElement());
-  }
-
-  private HeaderSpace toHeaderspace() {
-    return HeaderSpace.builder()
-        .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP)
-        .setSrcOrDstPorts(ImmutableList.of(_portRange))
-        .build();
+    IntegerSpace space = IntegerSpace.of(_portRange);
+    return and(
+        getTraceElement(),
+        or(
+            matchIpProtocol(IpProtocol.TCP),
+            matchIpProtocol(IpProtocol.UDP),
+            matchIpProtocol(IpProtocol.SCTP)),
+        or(
+            matchDstPort(space, FwFromDestinationPort.getTraceElement(_portRange)),
+            matchSrcPort(space, FwFromSourcePort.getTraceElement(_portRange))));
   }
 
   private TraceElement getTraceElement() {

@@ -2,6 +2,7 @@ package org.batfish.vendor.check_point_management;
 
 import static org.batfish.datamodel.IntegerSpace.PORTS;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.applications.PortsApplication.MAX_PORT_NUMBER;
 import static org.batfish.vendor.check_point_management.CheckPointManagementTraceElementCreators.serviceCpmiAnyTraceElement;
@@ -30,7 +31,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
 
@@ -101,11 +101,8 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
     return and(
         serviceTcpTraceElement(serviceTcp),
         matchIpProtocol(IpProtocol.TCP, ipProtocolTraceElement(IpProtocol.TCP)),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
-                .build(),
-            destPortTraceElement(portDefinition)));
+        matchDstPort(
+            portStringToIntegerSpace(portDefinition), destPortTraceElement(portDefinition)));
   }
 
   @Override
@@ -114,11 +111,8 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
     return and(
         serviceUdpTraceElement(serviceUdp),
         matchIpProtocol(IpProtocol.UDP, ipProtocolTraceElement(IpProtocol.UDP)),
-        new MatchHeaderSpace(
-            HeaderSpace.builder()
-                .setDstPorts(portStringToIntegerSpace(portDefinition).getSubRanges())
-                .build(),
-            destPortTraceElement(portDefinition)));
+        matchDstPort(
+            portStringToIntegerSpace(portDefinition), destPortTraceElement(portDefinition)));
   }
 
   @VisibleForTesting

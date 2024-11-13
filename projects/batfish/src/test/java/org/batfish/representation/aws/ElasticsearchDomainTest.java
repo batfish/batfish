@@ -4,6 +4,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
@@ -54,6 +55,7 @@ import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
@@ -61,6 +63,7 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -87,10 +90,9 @@ public class ElasticsearchDomainTest {
       new MatchHeaderSpace(
           HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
 
-  public static MatchHeaderSpace matchPorts(int fromPort, int toPort) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setDstPorts(new SubRange(fromPort, toPort)).build(),
-        traceElementForDstPorts(fromPort, toPort));
+  public static AclLineMatchExpr matchPorts(int fromPort, int toPort) {
+    return matchDstPort(
+        IntegerSpace.of(new SubRange(fromPort, toPort)), traceElementForDstPorts(fromPort, toPort));
   }
 
   @Before
