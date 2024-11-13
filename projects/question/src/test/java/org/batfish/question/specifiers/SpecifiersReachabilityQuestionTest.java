@@ -4,8 +4,9 @@ import static org.batfish.datamodel.FlowDisposition.ACCEPTED;
 import static org.batfish.datamodel.FlowDisposition.DELIVERED_TO_SUBNET;
 import static org.batfish.datamodel.FlowDisposition.EXITS_NETWORK;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -15,7 +16,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Set;
 import org.batfish.datamodel.AclIpSpace;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -111,11 +111,7 @@ public class SpecifiersReachabilityQuestionTest {
         and(
             matchSrc(UniverseIpSpace.INSTANCE),
             matchDst(UniverseIpSpace.INSTANCE),
-            match(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.UDP)
-                    .setDstPorts(SubRange.singleton(53))
-                    .build())));
+            and(matchIpProtocol(IpProtocol.UDP), matchDstPort(53))));
   }
 
   @Test

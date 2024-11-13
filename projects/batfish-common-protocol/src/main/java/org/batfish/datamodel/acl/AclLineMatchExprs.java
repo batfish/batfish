@@ -284,10 +284,7 @@ public final class AclLineMatchExprs {
         0 <= ipProtocolNumber && ipProtocolNumber <= 255,
         "Invalid IP protocol number: %s",
         ipProtocolNumber);
-    return new MatchHeaderSpace(
-        HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.fromNumber(ipProtocolNumber)))
-            .build());
+    return matchIpProtocol(IpProtocol.fromNumber(ipProtocolNumber));
   }
 
   public static @Nonnull AclLineMatchExpr matchIpProtocol(IpProtocol ipProtocol) {
@@ -296,8 +293,21 @@ public final class AclLineMatchExprs {
 
   public static @Nonnull AclLineMatchExpr matchIpProtocol(
       IpProtocol ipProtocol, @Nullable TraceElement traceElement) {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setIpProtocols(ImmutableList.of(ipProtocol)).build(), traceElement);
+    return new MatchIpProtocol(ipProtocol, traceElement);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocols(IpProtocol... ipProtocol) {
+    return matchIpProtocols(Arrays.asList(ipProtocol), null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocols(
+      TraceElement traceElement, IpProtocol... ipProtocol) {
+    return matchIpProtocols(Arrays.asList(ipProtocol), traceElement);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocols(
+      Collection<IpProtocol> ipProtocol, @Nullable TraceElement traceElement) {
+    return or(ipProtocol.stream().map(AclLineMatchExprs::matchIpProtocol).toList(), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchPacketLength(IntegerSpace packetLengthSpace) {

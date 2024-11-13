@@ -275,6 +275,12 @@ public final class AclTracer extends AclLineEvaluator {
   }
 
   @Override
+  public Boolean visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    setTraceElement(matchIpProtocol.getTraceElement());
+    return _flow.getIpProtocol() == matchIpProtocol.getProtocol();
+  }
+
+  @Override
   public Boolean visitMatchSourceIp(MatchSourceIp matchSourceIp) {
     setTraceElement(matchSourceIp.getTraceElement());
     return traceSrcIp(matchSourceIp.getIps());

@@ -17,6 +17,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -97,6 +98,11 @@ public class HeaderSpaceSanitizer
     return new MatchHeaderSpace(
         IpSpaceDereferencer.dereferenceHeaderSpace(
             matchHeaderSpace.getHeaderspace(), _namedIpSpaces));
+  }
+
+  @Override
+  public AclLineMatchExpr visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    return matchIpProtocol;
   }
 
   @Override

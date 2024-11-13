@@ -76,6 +76,11 @@ public class Evaluator implements GenericAclLineMatchExprVisitor<Boolean> {
   }
 
   @Override
+  public Boolean visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+    return _flow.getIpProtocol() == matchIpProtocol.getProtocol();
+  }
+
+  @Override
   public Boolean visitMatchSourceIp(MatchSourceIp matchSourceIp) {
     return matchSourceIp.getIps().containsIp(_flow.getSrcIp(), _namedIpSpaces);
   }
