@@ -177,7 +177,7 @@ public final class InvalidVendorStructureIdEraser
     if (te.equals(matchDestinationPort.getTraceElement())) {
       return matchDestinationPort;
     }
-    return AclLineMatchExprs.matchDstPort(matchDestinationPort.getPorts());
+    return AclLineMatchExprs.matchDstPort(matchDestinationPort.getPorts(), te);
   }
 
   @Override
@@ -210,7 +210,7 @@ public final class InvalidVendorStructureIdEraser
     if (te.equals(matchSourcePort.getTraceElement())) {
       return matchSourcePort;
     }
-    return AclLineMatchExprs.matchSrcPort(matchSourcePort.getPorts());
+    return AclLineMatchExprs.matchSrcPort(matchSourcePort.getPorts(), te);
   }
 
   @Override

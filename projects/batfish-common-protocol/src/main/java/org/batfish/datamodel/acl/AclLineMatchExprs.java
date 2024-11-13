@@ -184,8 +184,13 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchDstPort(int port) {
+    return matchDstPort(port, null);
+  }
+
+  public static @Nonnull AclLineMatchExpr matchDstPort(
+      int port, @Nullable TraceElement traceElement) {
     checkArgument(0 <= port && port <= 0xFFFF, "Invalid port: %s", port);
-    return matchDstPort(IntegerSpace.of(port));
+    return matchDstPort(IntegerSpace.of(port), traceElement);
   }
 
   public static @Nonnull AclLineMatchExpr matchDstPort(IntegerSpace portSpace) {
