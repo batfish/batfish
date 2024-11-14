@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
@@ -22,7 +23,6 @@ import java.util.Map;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Flow;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -33,7 +33,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.AndMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.trace.TraceTree;
 import org.batfish.representation.aws.IpPermissions.AddressType;
@@ -50,9 +49,8 @@ public class IpPermissionsTest {
   private static final String PL_ID = "pl-id";
   private static final String PL_NAME = "pl name";
 
-  private static final MatchHeaderSpace matchTcp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
+  private static final AclLineMatchExpr matchTcp =
+      matchIpProtocol(TCP, traceElementForProtocol(TCP));
 
   private static final AclLineMatchExpr matchSSH =
       matchDstPort(IntegerSpace.of(22), traceElementForDstPorts(22, 22));

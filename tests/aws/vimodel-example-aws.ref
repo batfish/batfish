@@ -85079,13 +85079,8 @@
                       "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                       "conjuncts" : [
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "ipProtocols" : [
-                              "TCP"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchIpProtocol",
+                          "protocol" : "TCP",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85136,13 +85131,8 @@
                       "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                       "conjuncts" : [
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "ipProtocols" : [
-                              "TCP"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchIpProtocol",
+                          "protocol" : "TCP",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85193,13 +85183,8 @@
                       "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                       "conjuncts" : [
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "ipProtocols" : [
-                              "TCP"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchIpProtocol",
+                          "protocol" : "TCP",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85250,13 +85235,8 @@
                       "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                       "conjuncts" : [
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "ipProtocols" : [
-                              "TCP"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchIpProtocol",
+                          "protocol" : "TCP",
                           "traceElement" : {
                             "fragments" : [
                               {
@@ -85307,13 +85287,8 @@
                       "class" : "org.batfish.datamodel.acl.AndMatchExpr",
                       "conjuncts" : [
                         {
-                          "class" : "org.batfish.datamodel.acl.MatchHeaderSpace",
-                          "headerSpace" : {
-                            "ipProtocols" : [
-                              "TCP"
-                            ],
-                            "negate" : false
-                          },
+                          "class" : "org.batfish.datamodel.acl.MatchIpProtocol",
+                          "protocol" : "TCP",
                           "traceElement" : {
                             "fragments" : [
                               {

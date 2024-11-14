@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.representation.aws.AwsVpcEntity.JSON_KEY_CIDR_IP;
@@ -310,11 +311,7 @@ public final class IpPermissions implements Serializable {
     ImmutableList.Builder<AclLineMatchExpr> matchesBuilder = ImmutableList.builder();
     IpProtocol ipProtocol = Utils.toIpProtocol(_ipProtocol);
     Optional.ofNullable(ipProtocol)
-        .map(
-            protocol ->
-                new MatchHeaderSpace(
-                    HeaderSpace.builder().setIpProtocols(protocol).build(),
-                    traceElementForProtocol(protocol)))
+        .map(protocol -> matchIpProtocol(protocol, traceElementForProtocol(protocol)))
         .ifPresent(matchesBuilder::add);
     if (ipProtocol == IpProtocol.TCP || ipProtocol == IpProtocol.UDP) {
       Optional.ofNullable(exprForDstPorts()).ifPresent(matchesBuilder::add);

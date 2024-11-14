@@ -1,7 +1,9 @@
 package org.batfish.datamodel;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.junit.Assert.assertEquals;
@@ -55,7 +57,7 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
     assertEquals(
         PacketHeaderConstraintsToAclLineMatchExprUtils.ipProtocolsToAclLineMatchExpr(
             ImmutableSet.of(IpProtocol.TCP)),
-        match(HeaderSpace.builder().setIpProtocols(ImmutableList.of(IpProtocol.TCP)).build()));
+        matchIpProtocol(IpProtocol.TCP));
   }
 
   @Test
@@ -96,16 +98,8 @@ public class PacketHeaderConstraintsToAclLineMatchExprUtilsTest {
         PacketHeaderConstraintsToAclLineMatchExprUtils.applicationsToAclLineMatchExpr(
             ImmutableSet.of(Protocol.SSH.toApplication(), Protocol.DNS.toApplication())),
         or(
-            match(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.TCP)
-                    .setDstPorts(SubRange.singleton(22))
-                    .build()),
-            match(
-                HeaderSpace.builder()
-                    .setIpProtocols(IpProtocol.UDP)
-                    .setDstPorts(SubRange.singleton(53))
-                    .build())));
+            and(matchIpProtocol(IpProtocol.TCP), matchDstPort(22)),
+            and(matchIpProtocol(IpProtocol.UDP), matchDstPort(53))));
   }
 
   @Test

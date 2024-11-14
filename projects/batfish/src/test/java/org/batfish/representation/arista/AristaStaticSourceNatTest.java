@@ -5,9 +5,9 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
-import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.transformation.Transformation.when;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationIp;
 import static org.batfish.datamodel.transformation.TransformationStep.assignDestinationPort;
@@ -48,7 +48,7 @@ public class AristaStaticSourceNatTest {
             matchDst(Ip.parse("2.2.2.2")),
             matchDstPort(22),
             matchSrc(new IpSpaceReference(nameOfSourceNatIpSpaceFromAcl("someAcl"))),
-            or(matchIpProtocol(IpProtocol.TCP), matchIpProtocol(IpProtocol.UDP))));
+            matchIpProtocols(IpProtocol.TCP, IpProtocol.UDP)));
     // Test apply
     assertThat(
         trans.getTransformationSteps(),
@@ -72,7 +72,7 @@ public class AristaStaticSourceNatTest {
             matchSrc(Ip.parse("1.1.1.1")),
             matchSrcPort(11),
             matchDst(new IpSpaceReference(nameOfSourceNatIpSpaceFromAcl("someAcl"))),
-            or(matchIpProtocol(IpProtocol.TCP), matchIpProtocol(IpProtocol.UDP))));
+            matchIpProtocols(IpProtocol.TCP, IpProtocol.UDP)));
     // Test apply
     assertThat(
         trans.getTransformationSteps(),
