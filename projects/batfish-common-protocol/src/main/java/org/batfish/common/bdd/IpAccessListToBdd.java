@@ -38,6 +38,7 @@ import org.batfish.datamodel.acl.GenericAclLineVisitor;
 import org.batfish.datamodel.acl.MatchDestinationIp;
 import org.batfish.datamodel.acl.MatchDestinationPort;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.MatchIpProtocol;
 import org.batfish.datamodel.acl.MatchSourceIp;
 import org.batfish.datamodel.acl.MatchSourcePort;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -351,6 +352,11 @@ public abstract class IpAccessListToBdd {
     @Override
     public final BDD visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace) {
       return _headerSpaceToBDD.toBDD(matchHeaderSpace.getHeaderspace());
+    }
+
+    @Override
+    public BDD visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return _pkt.getIpProtocol().value(matchIpProtocol.getProtocol());
     }
 
     @Override

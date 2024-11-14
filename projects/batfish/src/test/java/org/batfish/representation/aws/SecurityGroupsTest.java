@@ -7,6 +7,7 @@ import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.matchers.AclLineMatchers.isExprAclLineThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
@@ -76,13 +77,11 @@ public class SecurityGroupsTest {
           UniverseIpSpace.INSTANCE,
           traceElementForAddress("source", "0.0.0.0/0", AddressType.CIDR_IP));
 
-  private static final MatchHeaderSpace matchTcp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(TCP).build(), traceElementForProtocol(TCP));
+  private static final AclLineMatchExpr matchTcp =
+      matchIpProtocol(TCP, traceElementForProtocol(TCP));
 
-  private static final MatchHeaderSpace matchIcmp =
-      new MatchHeaderSpace(
-          HeaderSpace.builder().setIpProtocols(ICMP).build(), traceElementForProtocol(ICMP));
+  private static final AclLineMatchExpr matchIcmp =
+      matchIpProtocol(ICMP, traceElementForProtocol(ICMP));
 
   private static AclLineMatchExpr matchPorts(int fromPort, int toPort) {
     return matchDstPort(

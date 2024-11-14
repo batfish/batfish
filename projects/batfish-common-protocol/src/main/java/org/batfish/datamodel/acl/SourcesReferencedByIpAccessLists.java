@@ -129,6 +129,11 @@ public final class SourcesReferencedByIpAccessLists {
     }
 
     @Override
+    public Void visitMatchIpProtocol(MatchIpProtocol matchIpProtocol) {
+      return null;
+    }
+
+    @Override
     public Void visitMatchSourceIp(MatchSourceIp matchSourceIp) {
       return null;
     }

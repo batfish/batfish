@@ -1,14 +1,17 @@
 package org.batfish.datamodel.applications;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /** An abstract class that represents an application that has ports (TCP, Udp) */
 @ParametersAreNonnullByDefault
@@ -29,8 +32,9 @@ public abstract class PortsApplication extends Application {
 
   @Override
   public AclLineMatchExpr toAclLineMatchExpr() {
-    return new MatchHeaderSpace(
-        HeaderSpace.builder().setIpProtocols(super.getIpProtocol()).setDstPorts(_ports).build());
+    return and(
+        matchIpProtocol(super.getIpProtocol()),
+        matchDstPort(IntegerSpace.unionOfSubRanges(_ports)));
   }
 
   public @Nonnull List<SubRange> getPorts() {

@@ -18,6 +18,8 @@ public interface GenericAclLineMatchExprVisitor<R> {
 
   R visitMatchHeaderSpace(MatchHeaderSpace matchHeaderSpace);
 
+  R visitMatchIpProtocol(MatchIpProtocol matchIpProtocol);
+
   R visitMatchSourceIp(MatchSourceIp matchSourceIp);
 
   R visitMatchSourcePort(MatchSourcePort matchSourcePort);
