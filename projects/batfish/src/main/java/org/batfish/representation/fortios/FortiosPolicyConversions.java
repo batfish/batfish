@@ -8,7 +8,12 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.ORIGINATING_FROM_DEVIC
 import static org.batfish.datamodel.acl.AclLineMatchExprs.TRUE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpCode;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIcmpType;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.representation.fortios.FortiosTraceElementCreators.matchPolicyTraceElement;
@@ -44,7 +49,6 @@ import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
@@ -416,20 +420,17 @@ public final class FortiosPolicyConversions {
             .filter(Objects::nonNull);
       case ICMP:
         return Stream.of(
-                buildIcmpHeaderSpace(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()))
-            .map(AclLineMatchExprs::match);
+            buildIcmpMatchExpr(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
       case IP:
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
         int protocolNumber = service.getProtocolNumberEffective();
-        HeaderSpace.Builder hs = HeaderSpace.builder();
-        // Protocol number 0 indicates all protocols.
-        // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
-        return Stream.of(
-                protocolNumber == 0
-                    ? hs.build()
-                    : hs.setIpProtocols(IpProtocol.fromNumber(protocolNumber)).build())
-            .map(AclLineMatchExprs::match);
+        if (protocolNumber == 0) {
+          // Protocol number 0 indicates all protocols.
+          // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
+          return Stream.of(TRUE);
+        }
+        return Stream.of(matchIpProtocol(protocolNumber));
       case ICMP6:
         throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
       default:
@@ -449,20 +450,25 @@ public final class FortiosPolicyConversions {
       return null;
     }
     List<AclLineMatchExpr> exprs = new LinkedList<>();
-    exprs.add(AclLineMatchExprs.matchIpProtocol(protocol));
-    exprs.add(AclLineMatchExprs.matchDstPort(dstPorts));
+    exprs.add(matchIpProtocol(protocol));
+    exprs.add(matchDstPort(dstPorts));
     if (srcPorts != null) {
-      exprs.add(AclLineMatchExprs.matchSrcPort(srcPorts));
+      exprs.add(matchSrcPort(srcPorts));
     }
-    return AclLineMatchExprs.and(exprs);
+    return and(exprs);
   }
 
-  private static HeaderSpace buildIcmpHeaderSpace(
+  private static AclLineMatchExpr buildIcmpMatchExpr(
       IpProtocol icmpProtocol, @Nullable Integer icmpCode, @Nullable Integer icmpType) {
-    HeaderSpace.Builder headerSpace = HeaderSpace.builder().setIpProtocols(icmpProtocol);
-    Optional.ofNullable(icmpCode).ifPresent(headerSpace::setIcmpCodes);
-    Optional.ofNullable(icmpType).ifPresent(headerSpace::setIcmpTypes);
-    return headerSpace.build();
+    List<AclLineMatchExpr> exprs = new LinkedList<>();
+    exprs.add(matchIpProtocol(icmpProtocol));
+    if (icmpType != null) {
+      exprs.add(matchIcmpType(icmpType));
+    }
+    if (icmpCode != null) {
+      exprs.add(matchIcmpCode(icmpCode));
+    }
+    return and(exprs);
   }
 
   public static IpSpace toIpSpace(Addrgrp a, Warnings w) {
