@@ -214,7 +214,12 @@ public abstract class NumberSpace<
 
   @Override
   public final int hashCode() {
-    return _rangeset.hashCode();
+    int ret = _hashCode;
+    if (ret == 0) {
+      ret = _rangeset.hashCode();
+      _hashCode = ret;
+    }
+    return ret;
   }
 
   /** This space as a set of included {@link Range}s */
@@ -377,4 +382,6 @@ public abstract class NumberSpace<
         completeSpace);
     return isEmpty() ? "none" : equals(completeSpace) ? "all" : toString();
   }
+
+  private transient int _hashCode;
 }
