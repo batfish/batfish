@@ -575,7 +575,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       p.setPassiveNeighbors(ImmutableMap.copyOf(p.getPassiveNeighbors()));
     }
 
-    verifyAclInvariants(c, w);
+    assert verifyAclInvariants(c); // this is expensive on some devices
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
   }
@@ -847,10 +847,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     }
   }
 
-  private static void verifyAclInvariants(Configuration c, Warnings w) {
+  private static boolean verifyAclInvariants(Configuration c) {
     if (c.getConfigurationFormat() == ConfigurationFormat.CISCO_ASA) {
       // ASA has some invariant issues.
-      return;
+      return true;
     }
     AclPacketMatchValidityChecker checker = checkerFor(c);
     for (IpAccessList acl : c.getIpAccessLists().values()) {
@@ -860,7 +860,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               String.format(
                   "Filter %s on device %s does not meet the expected packet invariants",
                   acl.getName(), c.getHostname());
-          w.redFlag(message);
           assert false : message;
         }
       } catch (Exception e) {
@@ -868,10 +867,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             String.format(
                 "Filter %s on device %s failed to convert to BDD: %s",
                 acl.getName(), c.getHostname(), Throwables.getStackTraceAsString(e));
-        w.redFlag(message);
         assert false : message;
       }
     }
+    return true;
   }
 
   private static void verifyAsPathStructures(Configuration c) {
