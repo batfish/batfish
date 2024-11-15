@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -15,7 +17,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public enum HostProtocol {
   ALL,
@@ -59,7 +60,7 @@ public enum HostProtocol {
               other.getMatchExpr().ifPresent(exprs::add);
             }
           }
-          return Optional.of(new OrMatchExpr(exprs.build(), traceElement));
+          return Optional.of(or(exprs.build(), traceElement));
         }
 
       case BFD:

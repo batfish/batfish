@@ -31,18 +31,14 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasAclName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPostTransformationIncomingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasPreTransformationOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAllAddresses;
 import static org.batfish.datamodel.matchers.InterfaceMatchers.hasEigrp;
@@ -57,8 +53,6 @@ import static org.batfish.datamodel.matchers.IpSpaceMatchers.containsIp;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
 import static org.batfish.datamodel.matchers.LineMatchers.requiresAuthentication;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
-import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.hasHeaderSpace;
-import static org.batfish.datamodel.matchers.MatchHeaderSpaceMatchers.isMatchHeaderSpaceThat;
 import static org.batfish.datamodel.matchers.TraceTreeMatchers.isTraceTree;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
 import static org.batfish.datamodel.routing_policy.Common.SUMMARY_ONLY_SUPPRESSION_POLICY_NAME;
@@ -389,17 +383,16 @@ public final class CiscoAsaGrammarTest {
                         isAndMatchExprThat(
                             hasConjuncts(
                                 containsInAnyOrder(
-                                    ImmutableList.of(
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasDstIps(
-                                                        isIpSpaceReferenceThat(hasName("on2"))),
-                                                    hasSrcIps(
-                                                        isIpSpaceReferenceThat(hasName("on1")))))),
-                                        isPermittedByAclThat(
-                                            hasAclName(
-                                                computeServiceObjectAclName("os1"))))))))))));
+                                    equalTo(
+                                        matchDst(
+                                            new IpSpaceReference(
+                                                "on2", "Match network object: 'on2'"))),
+                                    equalTo(
+                                        matchSrc(
+                                            new IpSpaceReference(
+                                                "on1", "Match network object: 'on1'"))),
+                                    isPermittedByAclThat(
+                                        hasAclName(computeServiceObjectAclName("os1")))))))))));
 
     /*
      * We expect only objects osunused1, onunused1 to have zero referrers

@@ -121,9 +121,7 @@ import org.batfish.datamodel.UseConstantIp;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -2318,9 +2316,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     return IpAccessList.builder()
         .setName(aclName)
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.rejecting(new OrMatchExpr(matches)), ExprAclLine.ACCEPT_ALL))
+        .setLines(ImmutableList.of(ExprAclLine.rejecting(or(matches)), ExprAclLine.ACCEPT_ALL))
         .build();
   }
 
@@ -2349,7 +2345,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         ? null
         : IpAccessList.builder()
             .setName(aclName)
-            .setLines(ImmutableList.of(ExprAclLine.accepting(new AndMatchExpr(matches))))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(and(matches))))
             .build();
   }
 
@@ -2408,7 +2404,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     IpAccessList combinedAcl =
         IpAccessList.builder()
             .setName(combinedAclName)
-            .setLines(ImmutableList.of(ExprAclLine.accepting(new AndMatchExpr(aclConjunctList))))
+            .setLines(ImmutableList.of(ExprAclLine.accepting(and(aclConjunctList))))
             .build();
 
     _c.getIpAccessLists().put(combinedAclName, combinedAcl);
@@ -2698,7 +2694,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
             l ->
                 new ExprAclLine(
                     l.getAction(),
-                    new AndMatchExpr(ImmutableList.of(l.getMatchCondition(), conjunctMatchExpr)),
+                    and(l.getMatchCondition(), conjunctMatchExpr),
                     l.getName(),
                     l.getTraceElement(),
                     l.getVendorStructureId().orElse(null)))
@@ -3051,7 +3047,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   }
                 })
             .collect(ImmutableList.toImmutableList());
-    return new AndMatchExpr(conjuncts, traceElement);
+    return and(conjuncts, traceElement);
   }
 
   private PacketPolicy toPacketPolicy(ConcreteFirewallFilter filter) {

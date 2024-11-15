@@ -5,6 +5,9 @@ import static org.batfish.datamodel.IkePhase1Policy.PREFIX_ISAKMP_KEY;
 import static org.batfish.datamodel.IkePhase1Policy.PREFIX_RSA_PUB;
 import static org.batfish.datamodel.Interface.INVALID_LOCAL_INTERFACE;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
 import static org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
 import static org.batfish.representation.arista.AristaConfiguration.aclLineStructureName;
@@ -55,7 +58,6 @@ import org.batfish.datamodel.RouteFilterLine;
 import org.batfish.datamodel.RouteFilterList;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.isis.IsisLevelSettings;
 import org.batfish.datamodel.ospf.OspfInterfaceSettings;
@@ -947,12 +949,7 @@ public class Conversions {
                       .setDstIps(dstIpSpace)
                       .build());
     } else {
-      match =
-          new AndMatchExpr(
-              ImmutableList.of(
-                  matchService,
-                  new MatchHeaderSpace(
-                      HeaderSpace.builder().setSrcIps(srcIpSpace).setDstIps(dstIpSpace).build())));
+      match = and(matchService, matchSrc(srcIpSpace), matchDst(dstIpSpace));
     }
 
     return ExprAclLine.builder()

@@ -65,7 +65,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.vendor.VendorStructureId;
 
 /** Helper functions for generating VI ACLs for {@link FortiosConfiguration}. */
@@ -382,7 +381,7 @@ public final class FortiosPolicyConversions {
     // Any valid service group should match *some* service group members
     assert !exprs.isEmpty();
 
-    return new OrMatchExpr(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
+    return or(exprs, matchServiceGroupTraceElement(serviceGroup, filename));
   }
 
   private static @Nonnull AclLineMatchExpr toMatchExpr(Service service, String filename) {
@@ -395,7 +394,7 @@ public final class FortiosPolicyConversions {
             toServiceMatchExprs(service).collect(ImmutableList.toImmutableList());
         // Any valid service should match *some* packets
         assert !exprs.isEmpty();
-        return new OrMatchExpr(exprs, traceElement);
+        return or(exprs, traceElement);
       default:
         return new FalseExpr(traceElement);
     }

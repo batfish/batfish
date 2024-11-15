@@ -3792,19 +3792,15 @@ public final class FlatJuniperGrammarTest {
                     ExprAclLine.builder()
                         .setAction(LineAction.PERMIT)
                         .setMatchCondition(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    or(
-                                        matchSrc(
-                                            IpWildcard.ipWithWildcardMask(
-                                                    Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
-                                                .toIpSpace(),
-                                            TraceElement.of(
-                                                "Matched source-address 1.2.3.4/255.0.255.0")),
-                                        matchSrc(
-                                            IpWildcard.parse("2.3.4.5/24").toIpSpace(),
-                                            TraceElement.of(
-                                                "Matched source-address 2.3.4.5/24"))))))
+                            or(
+                                matchSrc(
+                                    IpWildcard.ipWithWildcardMask(
+                                            Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
+                                        .toIpSpace(),
+                                    TraceElement.of("Matched source-address 1.2.3.4/255.0.255.0")),
+                                matchSrc(
+                                    IpWildcard.parse("2.3.4.5/24").toIpSpace(),
+                                    TraceElement.of("Matched source-address 2.3.4.5/24"))))
                         .setName("TERM")
                         .setTraceElement(matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
                         .setVendorStructureId(
@@ -4151,21 +4147,17 @@ public final class FlatJuniperGrammarTest {
                         ExprAclLine.builder()
                             .setAction(LineAction.PERMIT)
                             .setMatchCondition(
-                                new AndMatchExpr(
-                                    ImmutableList.of(
-                                        or(
-                                            matchDst(
-                                                IpWildcard.ipWithWildcardMask(
-                                                        Ip.parse("1.0.3.0"),
-                                                        Ip.parse("0.255.0.255"))
-                                                    .toIpSpace(),
-                                                TraceElement.of(
-                                                    "Matched destination-address"
-                                                        + " 1.2.3.4/255.0.255.0")),
-                                            matchDst(
-                                                IpWildcard.parse("2.3.4.5/24").toIpSpace(),
-                                                TraceElement.of(
-                                                    "Matched destination-address 2.3.4.5/24"))))))
+                                or(
+                                    matchDst(
+                                        IpWildcard.ipWithWildcardMask(
+                                                Ip.parse("1.0.3.0"), Ip.parse("0.255.0.255"))
+                                            .toIpSpace(),
+                                        TraceElement.of(
+                                            "Matched destination-address"
+                                                + " 1.2.3.4/255.0.255.0")),
+                                    matchDst(
+                                        IpWildcard.parse("2.3.4.5/24").toIpSpace(),
+                                        TraceElement.of("Matched destination-address 2.3.4.5/24"))))
                             .setName("TERM")
                             .setTraceElement(
                                 matchingFirewallFilterTerm(filename, filterNameV4, "TERM"))
@@ -6813,11 +6805,9 @@ public final class FlatJuniperGrammarTest {
                     ImmutableList.of(
                         new ExprAclLine(
                             LineAction.PERMIT,
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    matchSrc(
-                                        IpWildcard.parse("1.2.3.6").toIpSpace(),
-                                        TraceElement.of("Matched source-address 1.2.3.6")))),
+                            matchSrc(
+                                IpWildcard.parse("1.2.3.6").toIpSpace(),
+                                TraceElement.of("Matched source-address 1.2.3.6")),
                             "TERM",
                             matchingFirewallFilterTerm(
                                 "configs/" + config.getHostname(), "FILTER1", "TERM"),
@@ -6847,9 +6837,7 @@ public final class FlatJuniperGrammarTest {
                 .setName("~SCREEN_ZONE~untrust")
                 .setLines(
                     ImmutableList.of(
-                        ExprAclLine.accepting(
-                            new AndMatchExpr(
-                                ImmutableList.of(new PermittedByAcl("~SCREEN~IDS_OPTION_NAME"))))))
+                        ExprAclLine.accepting(new PermittedByAcl("~SCREEN~IDS_OPTION_NAME"))))
                 .build()));
 
     assertThat(

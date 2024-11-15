@@ -135,10 +135,8 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.TunnelConfiguration;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -1865,13 +1863,12 @@ public final class AsaConfiguration extends VendorConfiguration {
       lineBuilder.add(
           ExprAclLine.accepting()
               .setMatchCondition(
-                  new AndMatchExpr(
-                      ImmutableList.of(
-                          securityLevelPolicies,
-                          new PermittedByAcl(
-                              oldOutgoingFilterName,
-                              asaPermittedByOutputFilterTraceElement(
-                                  _filename, c.getIpAccessLists().get(oldOutgoingFilterName))))))
+                  and(
+                      securityLevelPolicies,
+                      new PermittedByAcl(
+                          oldOutgoingFilterName,
+                          asaPermittedByOutputFilterTraceElement(
+                              _filename, c.getIpAccessLists().get(oldOutgoingFilterName)))))
               .build());
     } else {
       lineBuilder.add(ExprAclLine.accepting().setMatchCondition(securityLevelPolicies).build());
@@ -3461,10 +3458,10 @@ public final class AsaConfiguration extends VendorConfiguration {
           AclLineMatchExpr matchClassMap;
           switch (matchSemantics) {
             case MATCH_ALL:
-              matchClassMap = new AndMatchExpr(matchConditions);
+              matchClassMap = and(matchConditions);
               break;
             case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
+              matchClassMap = or(matchConditions);
               break;
             default:
               throw new BatfishException(
@@ -3681,9 +3678,7 @@ public final class AsaConfiguration extends VendorConfiguration {
         .setLines(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setMatchCondition(
-                        new AndMatchExpr(
-                            ImmutableList.of(matchSrcZoneInterface, permittedByPolicyMap)))
+                    .setMatchCondition(and(matchSrcZoneInterface, permittedByPolicyMap))
                     .setName(
                         String.format(
                             "Allow traffic received on interface in zone '%s' permitted by"
