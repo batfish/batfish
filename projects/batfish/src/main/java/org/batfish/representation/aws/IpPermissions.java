@@ -3,6 +3,7 @@ package org.batfish.representation.aws;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.FALSE;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
@@ -61,9 +62,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** IP packet permissions within AWS security groups */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -402,7 +401,7 @@ public final class IpPermissions implements Serializable {
     _ipRanges.stream()
         .map(
             ipRange ->
-                new AndMatchExpr(
+                and(
                     ImmutableList.<AclLineMatchExpr>builder()
                         .addAll(protocolAndPortExprs)
                         .add(
@@ -456,17 +455,20 @@ public final class IpPermissions implements Serializable {
       }
     }
     // See note about naming on SecurityGroup#getGroupName.
-    return new OrMatchExpr(
+    return or(
         matchExprBuilder.build(),
-        traceTextForAddress(
-            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP));
+        TraceElement.of(
+            traceTextForAddress(
+                ingress ? "source" : "destination",
+                sg.getGroupName(),
+                AddressType.SECURITY_GROUP)));
   }
 
   private AclLineMatchExpr createAclLineExprForSg(
       List<AclLineMatchExpr> protocolAndPortExprs,
       AclLineMatchExpr matchAddressForSg,
       @Nullable String ruleDescription) {
-    return new AndMatchExpr(
+    return and(
         ImmutableList.<AclLineMatchExpr>builder()
             .addAll(protocolAndPortExprs)
             .add(matchAddressForSg)
@@ -481,7 +483,7 @@ public final class IpPermissions implements Serializable {
     return prefixLists.entrySet().stream()
         .map(
             entry ->
-                new AndMatchExpr(
+                and(
                     ImmutableList.<AclLineMatchExpr>builder()
                         .addAll(protocolAndPortExprs)
                         .add(

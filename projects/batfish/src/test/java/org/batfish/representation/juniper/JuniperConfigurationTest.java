@@ -133,11 +133,9 @@ public class JuniperConfigurationTest {
                 .setTraceElement(TraceElement.builder().add("Matched ").add("term", vsId).build())
                 .setVendorStructureId(vsId)
                 .setMatchCondition(
-                    new AndMatchExpr(
-                        ImmutableList.of(
-                            matchSrc(
-                                IpWildcard.parse(ipAddrPrefix).toIpSpace(),
-                                TraceElement.of("Matched source-address 1.2.3.0/24")))))
+                    matchSrc(
+                        IpWildcard.parse(ipAddrPrefix).toIpSpace(),
+                        TraceElement.of("Matched source-address 1.2.3.0/24")))
                 .build()));
   }
 
@@ -228,11 +226,9 @@ public class JuniperConfigurationTest {
                 .setMatchCondition(
                     new AndMatchExpr(
                         ImmutableList.of(
-                            new AndMatchExpr(
-                                ImmutableList.of(
-                                    matchSrc(
-                                        IpWildcard.parse(ipAddrPrefix).toIpSpace(),
-                                        TraceElement.of("Matched source-address 1.2.3.0/24")))),
+                            matchSrc(
+                                IpWildcard.parse(ipAddrPrefix).toIpSpace(),
+                                TraceElement.of("Matched source-address 1.2.3.0/24")),
                             new MatchSrcInterface(zone.getInterfaces()))))
                 .build()));
   }
@@ -600,10 +596,7 @@ public class JuniperConfigurationTest {
             IpAccessList.builder()
                 .setName("~SCREEN_ZONE~zone")
                 .setLines(
-                    ImmutableList.of(
-                        ExprAclLine.accepting(
-                            new AndMatchExpr(
-                                ImmutableList.of(new PermittedByAcl("~SCREEN~screen1"))))))
+                    ImmutableList.of(ExprAclLine.accepting(new PermittedByAcl("~SCREEN~screen1"))))
                 .build()));
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen1"), notNullValue());
     assertThat(config._c.getIpAccessLists().get("~SCREEN~screen2"), nullValue());

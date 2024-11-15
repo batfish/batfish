@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper;
 
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
+
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import java.io.Serializable;
@@ -15,7 +17,6 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 public final class BaseApplication implements Application, Serializable {
 
@@ -153,7 +154,7 @@ public final class BaseApplication implements Application, Serializable {
       return new MatchHeaderSpace(_mainTerm.toHeaderSpace(), topLevelTraceElement);
     }
 
-    return new OrMatchExpr(
+    return or(
         _terms.values().stream()
             .map(Term::toAclLineMatchExpr)
             .collect(ImmutableList.toImmutableList()),

@@ -69,7 +69,6 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructu
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasIpProtocols;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasMemberInterfaces;
-import static org.batfish.datamodel.matchers.DataModelMatchers.hasName;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilterName;
@@ -79,15 +78,12 @@ import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStru
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasRouteFilterList;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasZone;
-import static org.batfish.datamodel.matchers.DataModelMatchers.isIpSpaceReferenceThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.isPermittedByAclThat;
 import static org.batfish.datamodel.matchers.DataModelMatchers.permits;
 import static org.batfish.datamodel.matchers.EigrpMetricMatchers.hasDelay;
 import static org.batfish.datamodel.matchers.EigrpRouteMatchers.hasEigrpMetric;
 import static org.batfish.datamodel.matchers.ExprAclLineMatchers.hasMatchCondition;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstIps;
 import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasDstPorts;
-import static org.batfish.datamodel.matchers.HeaderSpaceMatchers.hasSrcIps;
 import static org.batfish.datamodel.matchers.HsrpGroupMatchers.hasTrackActions;
 import static org.batfish.datamodel.matchers.IkePhase1KeyMatchers.hasKeyType;
 import static org.batfish.datamodel.matchers.IkePhase1PolicyMatchers.hasIkePhase1Key;
@@ -334,6 +330,7 @@ import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpaceReference;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
@@ -856,17 +853,17 @@ public final class CiscoGrammarTest {
                         isAndMatchExprThat(
                             hasConjuncts(
                                 containsInAnyOrder(
-                                    ImmutableList.of(
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasDstIps(
-                                                        isIpSpaceReferenceThat(hasName("ogn2"))),
-                                                    hasSrcIps(
-                                                        isIpSpaceReferenceThat(hasName("ogn1")))))),
-                                        isPermittedByAclThat(
-                                            hasAclName(
-                                                computeServiceObjectGroupAclName("ogs1"))))))))))));
+                                    equalTo(
+                                        matchDst(
+                                            new IpSpaceReference(
+                                                "ogn2", "Match network object-group: 'ogn2'"))),
+                                    equalTo(
+                                        matchSrc(
+                                            new IpSpaceReference(
+                                                "ogn1", "Match network object-group: 'ogn1'"))),
+                                    isPermittedByAclThat(
+                                        hasAclName(
+                                            computeServiceObjectGroupAclName("ogs1")))))))))));
 
     /*
      * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
@@ -2252,12 +2249,8 @@ public final class CiscoGrammarTest {
             hasLines(
                 isExprAclLineThat(
                     hasMatchCondition(
-                        isOrMatchExprThat(
-                            hasDisjuncts(
-                                contains(
-                                    isMatchHeaderSpaceThat(
-                                        hasHeaderSpace(
-                                            hasIpProtocols(contains(IpProtocol.ICMP))))))))))));
+                        isMatchHeaderSpaceThat(
+                            hasHeaderSpace(hasIpProtocols(contains(IpProtocol.ICMP)))))))));
     /* og-tcp */
     assertThat(
         c,

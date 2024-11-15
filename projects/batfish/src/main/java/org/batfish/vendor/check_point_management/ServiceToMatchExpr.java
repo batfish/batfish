@@ -29,7 +29,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.vendor.check_point_management.parsing.parboiled.EmptyAstNode;
@@ -73,7 +72,7 @@ public class ServiceToMatchExpr implements ServiceVisitor<AclLineMatchExpr, Bool
                         HeaderSpace.builder().setIcmpCodes(code).build(),
                         icmpCodeTraceElement(code))));
 
-    return new AndMatchExpr(exprs.build(), serviceIcmpTraceElement(serviceIcmp));
+    return and(exprs.build(), serviceIcmpTraceElement(serviceIcmp));
   }
 
   @Override
