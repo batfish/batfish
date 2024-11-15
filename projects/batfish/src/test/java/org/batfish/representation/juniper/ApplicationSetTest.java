@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.OrMatchExpr;
 import org.junit.Test;
@@ -66,6 +67,6 @@ public class ApplicationSetTest {
 
     assertEquals(
         appSet.toAclLineMatchExpr(jc, null),
-        new OrMatchExpr(ImmutableList.of(), JunosApplicationSet.getTraceElement(parentAppSetName)));
+        new FalseExpr(JunosApplicationSet.getTraceElement(parentAppSetName)));
   }
 }
