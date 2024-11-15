@@ -3,6 +3,8 @@ package org.batfish.common.bdd;
 import static org.batfish.common.bdd.BDDOps.mapAndOrAllNull;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.Table;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -13,6 +15,7 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.SubRange;
@@ -25,6 +28,9 @@ public final class HeaderSpaceToBDD {
   private final IpSpaceToBDD _dstIpSpaceToBdd;
   private final IpSpaceToBDD _srcIpSpaceToBdd;
 
+  /** A cache shared across various header fields for match conditions against those fields. */
+  private final @Nonnull Table<ImmutableBDDInteger, Object, BDD> _matchFieldCache;
+
   public HeaderSpaceToBDD(BDDPacket bddPacket, Map<String, IpSpace> namedIpSpaces) {
     _bddFactory = bddPacket.getFactory();
     _bddPacket = bddPacket;
@@ -36,6 +42,26 @@ public final class HeaderSpaceToBDD {
         namedIpSpaces.isEmpty()
             ? bddPacket.getSrcIpSpaceToBDD()
             : new IpSpaceToBDD(bddPacket.getSrcIpSpaceToBDD(), namedIpSpaces);
+    _matchFieldCache = HashBasedTable.create();
+  }
+
+  private BDD convertSubRange(ImmutableBDDInteger var, SubRange range) {
+    Map<Object, BDD> table = _matchFieldCache.row(var);
+    return table
+        .computeIfAbsent(range, r -> var.range(((SubRange) r).getStart(), ((SubRange) r).getEnd()))
+        .id();
+  }
+
+  private BDD convertIntegerSpace(ImmutableBDDInteger var, IntegerSpace space) {
+    Map<Object, BDD> table = _matchFieldCache.row(var);
+    return table
+        .computeIfAbsent(
+            space,
+            s ->
+                _bddFactory.orAllAndFree(
+                    ((IntegerSpace) s)
+                        .getSubRanges().stream().map(r -> convertSubRange(var, r)).toList()))
+        .id();
   }
 
   /** Returns bdd.not() or {@code null} if given {@link BDD} is null. */
@@ -68,8 +94,8 @@ public final class HeaderSpaceToBDD {
     return _srcIpSpaceToBdd;
   }
 
-  private @Nullable BDD toBDD(Collection<Integer> ints, BDDInteger var) {
-    return mapAndOrAllNull(ints, i -> var.value((long) i));
+  private @Nullable BDD toBDD(Collection<Integer> ints, ImmutableBDDInteger var) {
+    return mapAndOrAllNull(ints, i -> convertSubRange(var, SubRange.singleton(i)));
   }
 
   @VisibleForTesting
@@ -78,45 +104,33 @@ public final class HeaderSpaceToBDD {
   }
 
   private @Nullable BDD toBDD(Set<IpProtocol> ipProtocols) {
-    return mapAndOrAllNull(ipProtocols, _bddPacket.getIpProtocol()::value);
+    return mapAndOrAllNull(
+        ipProtocols,
+        p ->
+            convertSubRange(
+                _bddPacket.getIpProtocol().getBDDInteger(), SubRange.singleton(p.number())));
   }
 
-  private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDInteger var) {
-    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
+  private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, ImmutableBDDInteger var) {
+    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var, range));
   }
 
   private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpCode var) {
-    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
+    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var.getBDDInteger(), range));
   }
 
   private @Nullable BDD toBDD(@Nullable Set<SubRange> ranges, BDDIcmpType var) {
-    return mapAndOrAllNull(ranges, (range) -> toBDD(range, var));
+    return mapAndOrAllNull(ranges, (range) -> convertSubRange(var.getBDDInteger(), range));
   }
 
   private BDD toBDD(@Nullable Set<SubRange> packetLengths, BDDPacketLength packetLength) {
     return mapAndOrAllNull(packetLengths, (range) -> toBDD(range, packetLength));
   }
 
-  private static BDD toBDD(SubRange range, BDDIcmpCode var) {
-    int start = range.getStart();
-    int end = range.getEnd();
-    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
-  }
-
-  private static BDD toBDD(SubRange range, BDDIcmpType var) {
-    int start = range.getStart();
-    int end = range.getEnd();
-    return start == end ? var.value(start) : var.geq(start).and(var.leq(end));
-  }
-
   private static BDD toBDD(SubRange range, BDDPacketLength packetLength) {
     int start = range.getStart();
     int end = range.getEnd();
     return start == end ? packetLength.value(start) : packetLength.range(start, end);
-  }
-
-  private static BDD toBDD(SubRange range, BDDInteger var) {
-    return var.range(range.getStart(), range.getEnd());
   }
 
   private BDD toBDD(List<TcpFlagsMatchConditions> tcpFlags) {
@@ -232,5 +246,18 @@ public final class HeaderSpaceToBDD {
       res.notEq();
     }
     return res;
+  }
+
+  public BDD dstPortsToBDD(IntegerSpace ports) {
+    return convertIntegerSpace(_bddPacket.getDstPort(), ports);
+  }
+
+  public BDD ipProtocolToBDD(IpProtocol protocol) {
+    return convertSubRange(
+        _bddPacket.getIpProtocol().getBDDInteger(), SubRange.singleton(protocol.number()));
+  }
+
+  public BDD sourcePortsToBDD(IntegerSpace ports) {
+    return convertIntegerSpace(_bddPacket.getSrcPort(), ports);
   }
 }
