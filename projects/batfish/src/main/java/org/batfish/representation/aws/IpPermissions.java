@@ -63,7 +63,6 @@ import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.OrMatchExpr;
 
 /** IP packet permissions within AWS security groups */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -456,10 +455,13 @@ public final class IpPermissions implements Serializable {
       }
     }
     // See note about naming on SecurityGroup#getGroupName.
-    return new OrMatchExpr(
+    return or(
         matchExprBuilder.build(),
-        traceTextForAddress(
-            ingress ? "source" : "destination", sg.getGroupName(), AddressType.SECURITY_GROUP));
+        TraceElement.of(
+            traceTextForAddress(
+                ingress ? "source" : "destination",
+                sg.getGroupName(),
+                AddressType.SECURITY_GROUP)));
   }
 
   private AclLineMatchExpr createAclLineExprForSg(

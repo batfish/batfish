@@ -14,6 +14,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.deniedByAcl;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDstPort;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.permittedByAcl;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.NEVER;
@@ -130,7 +131,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.NotMatchExpr;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.AddressFamilyCapabilities;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -708,8 +708,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         rule.getNegateSource()
             // TODO: for negation, only the top-level trace element survives, so we need to
             // make the negated trace element much more interesting.
-            ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
-            : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
+            ? new NotMatchExpr(or(srcExprs), matchNegatedSourceAddressTraceElement())
+            : or(srcExprs, matchSourceAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 3. Match DST IPs.
@@ -720,9 +720,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         rule.getNegateDestination()
             // TODO: for negation, only the top-level trace element survives, so we need to
             // make the negated trace element much more interesting.
-            ? new NotMatchExpr(
-                new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
-            : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
+            ? new NotMatchExpr(or(dstExprs), matchNegatedDestinationAddressTraceElement())
+            : or(dstExprs, matchDestinationAddressTraceElement()));
 
     //////////////////////////////////////////////////////////////////////////////////////////
     // 4. Match protocol and ports
@@ -763,7 +762,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         ImmutableList.Builder<AclLineMatchExpr> childMatchExprs = ImmutableList.builder();
         childMatchExprs.add(
             new NotMatchExpr(
-                new OrMatchExpr(preceding.build(), "Matched a different override rule")));
+                or(preceding.build(), TraceElement.of("Matched a different override rule"))));
         childMatchExprs.add(ruleAcl);
         appMatchExprs.add(
             new AndMatchExpr(
@@ -774,7 +773,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
       preceding.add(ruleAcl);
     }
-    return new OrMatchExpr(appMatchExprs, getTraceElementForAppReference(app, vsys).orElse(null));
+    return or(appMatchExprs, getTraceElementForAppReference(app, vsys).orElse(null));
   }
 
   /**
@@ -1661,8 +1660,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           rule.getNegateSource()
               // TODO: for negation, only the top-level trace element survives, so we need to
               // make the negated trace element much more interesting.
-              ? new NotMatchExpr(new OrMatchExpr(srcExprs), matchNegatedSourceAddressTraceElement())
-              : new OrMatchExpr(srcExprs, matchSourceAddressTraceElement()));
+              ? new NotMatchExpr(or(srcExprs), matchNegatedSourceAddressTraceElement())
+              : or(srcExprs, matchSourceAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1675,9 +1674,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           rule.getNegateDestination()
               // TODO: for negation, only the top-level trace element survives, so we need to
               // make the negated trace element much more interesting.
-              ? new NotMatchExpr(
-                  new OrMatchExpr(dstExprs), matchNegatedDestinationAddressTraceElement())
-              : new OrMatchExpr(dstExprs, matchDestinationAddressTraceElement()));
+              ? new NotMatchExpr(or(dstExprs), matchNegatedDestinationAddressTraceElement())
+              : or(dstExprs, matchDestinationAddressTraceElement()));
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////
@@ -1708,7 +1706,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // Common application matching for any service except deferred / application-default
     AclLineMatchExpr applicationMatchNotDefault =
-        new OrMatchExpr(matchServicesForApplications(rule, vsys, appOverrideAcls, false));
+        or(matchServicesForApplications(rule, vsys, appOverrideAcls, false));
 
     List<AclLineMatchExpr> serviceDisjuncts = new LinkedList<>();
     for (ServiceOrServiceGroupReference service : services) {
@@ -1735,7 +1733,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             new AndMatchExpr(ImmutableList.of(applicationMatchNotDefault, serviceMatch)));
       } else if (serviceName.equals(ServiceBuiltIn.APPLICATION_DEFAULT.getName())) {
         serviceDisjuncts.add(
-            new OrMatchExpr(
+            or(
                 matchServicesForApplications(rule, vsys, appOverrideAcls, true),
                 matchServiceApplicationDefaultTraceElement()));
       } else if (serviceName.equals(ServiceBuiltIn.SERVICE_HTTP.getName())) {
@@ -1752,7 +1750,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _w.redFlagf("No matching service group/object found for: %s", serviceName);
       }
     }
-    return Optional.of(new OrMatchExpr(serviceDisjuncts));
+    return Optional.of(or(serviceDisjuncts));
   }
 
   /**
@@ -1779,7 +1777,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       ApplicationGroup group = containingVsys.getApplicationGroups().get(name);
       if (group != null) {
         return ImmutableList.of(
-            new OrMatchExpr(
+            or(
                 group
                     .getDescendantObjects(
                         containingVsys.getApplications(), containingVsys.getApplicationGroups())
@@ -1864,7 +1862,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
 
     AclLineMatchExpr appExpr =
-        new OrMatchExpr(
+        or(
             application.getServices().stream()
                 .map(s -> s.toMatchExpr(w))
                 .collect(ImmutableList.toImmutableList()),

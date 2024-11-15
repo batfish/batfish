@@ -2252,12 +2252,8 @@ public final class CiscoGrammarTest {
             hasLines(
                 isExprAclLineThat(
                     hasMatchCondition(
-                        isOrMatchExprThat(
-                            hasDisjuncts(
-                                contains(
-                                    isMatchHeaderSpaceThat(
-                                        hasHeaderSpace(
-                                            hasIpProtocols(contains(IpProtocol.ICMP))))))))))));
+                        isMatchHeaderSpaceThat(
+                            hasHeaderSpace(hasIpProtocols(contains(IpProtocol.ICMP)))))))));
     /* og-tcp */
     assertThat(
         c,

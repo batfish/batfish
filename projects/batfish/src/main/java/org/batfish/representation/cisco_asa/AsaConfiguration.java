@@ -138,7 +138,6 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -3464,7 +3463,7 @@ public final class AsaConfiguration extends VendorConfiguration {
               matchClassMap = new AndMatchExpr(matchConditions);
               break;
             case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
+              matchClassMap = or(matchConditions);
               break;
             default:
               throw new BatfishException(

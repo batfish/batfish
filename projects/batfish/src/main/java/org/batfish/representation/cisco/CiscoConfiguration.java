@@ -12,6 +12,7 @@ import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENG
 import static org.batfish.datamodel.Names.generatedBgpRedistributionPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfDefaultRouteGenerationPolicyName;
 import static org.batfish.datamodel.Names.generatedOspfExportPolicyName;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import static org.batfish.datamodel.acl.SourcesReferencedByIpAccessLists.SOURCE_ORIGINATING_FROM_DEVICE;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFERENCE;
@@ -137,7 +138,6 @@ import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -3274,7 +3274,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
               matchClassMap = new AndMatchExpr(matchConditions);
               break;
             case MATCH_ANY:
-              matchClassMap = new OrMatchExpr(matchConditions);
+              matchClassMap = or(matchConditions);
               break;
             default:
               throw new BatfishException(

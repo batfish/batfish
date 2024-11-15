@@ -123,7 +123,6 @@ import org.batfish.datamodel.VrfLeakConfig;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.MatchSrcInterface;
-import org.batfish.datamodel.acl.OrMatchExpr;
 import org.batfish.datamodel.acl.OriginatingFromDevice;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.acl.TrueExpr;
@@ -2318,9 +2317,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     return IpAccessList.builder()
         .setName(aclName)
-        .setLines(
-            ImmutableList.of(
-                ExprAclLine.rejecting(new OrMatchExpr(matches)), ExprAclLine.ACCEPT_ALL))
+        .setLines(ImmutableList.of(ExprAclLine.rejecting(or(matches)), ExprAclLine.ACCEPT_ALL))
         .build();
   }
 
