@@ -44,6 +44,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_P
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ADDRESS_BOOK_ATTACH_ZONE;
@@ -92,6 +93,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
@@ -143,6 +145,7 @@ import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Range;
 import com.google.common.primitives.Ints;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -189,6 +192,7 @@ import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IsoAddress;
 import org.batfish.datamodel.Line;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
@@ -438,6 +442,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_srlgContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
@@ -568,6 +573,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_maximum_prefixesCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_resolutionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_rib_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_router_idContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_srlgContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ro_staticContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roa_communityContext;
@@ -604,6 +610,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rores_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roresr_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route4Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ros_route6Context;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roslrg_srlg_costContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Roslrg_srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_activeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Rosr_communityContext;
@@ -746,6 +754,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmpcls_routing_instanc
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Snmptg_targetsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_route_distinguisherContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.So_vtep_source_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_costContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Srlg_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Standard_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.SubrangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_authentication_methodContext;
@@ -1007,6 +1017,7 @@ import org.batfish.representation.juniper.RoutingInformationBase;
 import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
+import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRoute;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
@@ -1036,6 +1047,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       IntegerSpace.of(new SubRange(1, 255));
   private static final IntegerSpace OSPF_DEAD_INTERVAL_RANGE =
       IntegerSpace.of(new SubRange(1, 65535));
+  private static final IntegerSpace SRLG_COST_RANGE = IntegerSpace.of(new SubRange(1, 65535));
+  private static final LongSpace SRLG_VALUE_RANGE = LongSpace.of(Range.closed(1L, 4294967295L));
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
@@ -1997,6 +2010,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return Long.parseLong(ctx.getText());
   }
 
+  private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Srlg_valueContext ctx) {
+    return toLongInSpace(messageCtx, ctx, SRLG_VALUE_RANGE, "srlg-value");
+  }
+
   private static IpProtocol toIpProtocol(Ip_protocolContext ctx) {
     if (ctx.dec() != null) {
       int protocolNum = toInt(ctx.dec());
@@ -2315,6 +2332,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private SnmpCommunity _currentSnmpCommunity;
 
   private SnmpServer _currentSnmpServer;
+
+  private Srlg _currentSrlg;
 
   private StaticRoute _currentStaticRoute;
 
@@ -3453,6 +3472,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Prefix6 prefix = toPrefix6(ctx.prefix);
     Map<Prefix6, StaticRouteV6> staticRoutes = _currentRib.getStaticRoutesV6();
     _currentStaticRoute = staticRoutes.computeIfAbsent(prefix, StaticRouteV6::new);
+  }
+
+  @Override
+  public void enterRo_srlg(Ro_srlgContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(SRLG, name, ctx, _parser);
+    _currentSrlg = _currentLogicalSystem.getOrCreateSrlg(name);
+  }
+
+  @Override
+  public void exitRo_srlg(Ro_srlgContext ctx) {
+    _currentSrlg = null;
+  }
+
+  @Override
+  public void exitRoslrg_srlg_cost(Roslrg_srlg_costContext ctx) {
+    toInteger(ctx, ctx.cost).ifPresent(_currentSrlg::setCost);
+  }
+
+  @Override
+  public void exitRoslrg_srlg_value(Roslrg_srlg_valueContext ctx) {
+    toLong(ctx, ctx.value).ifPresent(_currentSrlg::setValue);
   }
 
   @Override
@@ -5454,6 +5495,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitMplsi_srlg(Mplsi_srlgContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        SRLG, name, MPLS_INTERFACE_SRLG, getLine(ctx.name.getStart()));
+  }
+
+  @Override
   public void exitNatp_address(Natp_addressContext ctx) {
     if (ctx.from_prefix != null) {
       // from IP_PREFIX to IP_PREFIX
@@ -5972,6 +6020,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toIntegerInSpace(
       ParserRuleContext messageCtx, ParserRuleContext ctx, IntegerSpace space, String name) {
     int num = Integer.parseInt(ctx.getText());
+    if (!space.contains(num)) {
+      warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
+      return Optional.empty();
+    }
+    return Optional.of(num);
+  }
+
+  /**
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
+   * decimal integer to an {@link Long} if it is contained in the provided {@code space}, or else
+   * {@link Optional#empty}.
+   */
+  private @Nonnull Optional<Long> toLongInSpace(
+      ParserRuleContext messageCtx, ParserRuleContext ctx, LongSpace space, String name) {
+    long num = Long.parseLong(ctx.getText());
     if (!space.contains(num)) {
       warn(messageCtx, String.format("Expected %s in range %s, but got '%d'", name, space, num));
       return Optional.empty();
@@ -7603,6 +7666,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Send_path_countContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, ADD_PATH_SEND_PATH_COUNT_RANGE, "path-count");
+  }
+
+  private @Nonnull Optional<Integer> toInteger(ParserRuleContext messageCtx, Srlg_costContext ctx) {
+    return toIntegerInSpace(messageCtx, ctx, SRLG_COST_RANGE, "srlg-cost");
   }
 
   private @Nonnull Optional<Integer> toInteger(

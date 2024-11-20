@@ -1,6 +1,7 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.NavigableMap;
@@ -98,6 +99,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, PrefixList> _snmpClientLists;
 
+  private final Map<String, Srlg> _srlgs;
+
   private NavigableSet<String> _syslogHosts;
 
   private NavigableSet<String> _tacplusServers;
@@ -148,6 +151,7 @@ public class LogicalSystem implements Serializable {
     _routingInstances.put(Configuration.DEFAULT_VRF_NAME, _defaultRoutingInstance);
     _securityPolicies = new TreeMap<>();
     _snmpClientLists = new TreeMap<>();
+    _srlgs = new HashMap<>();
     _syslogHosts = new TreeSet<>();
     _tacplusServers = new TreeSet<>();
     _tunnelAttributes = new TreeMap<>();
@@ -344,6 +348,14 @@ public class LogicalSystem implements Serializable {
       default:
         throw new IllegalArgumentException("Unknnown nat type " + natType);
     }
+  }
+
+  public @Nonnull Srlg getOrCreateSrlg(String name) {
+    return _srlgs.computeIfAbsent(name, Srlg::new);
+  }
+
+  public Map<String, Srlg> getSrlgs() {
+    return Collections.unmodifiableMap(_srlgs);
   }
 
   public Zone getOrCreateZone(String zoneName) {

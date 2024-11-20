@@ -29,5 +29,22 @@ p_connections
 
 p_mpls
 :
-   MPLS null_filler
+   MPLS
+   (
+       mpls_interface
+   )
+;
+
+mpls_interface
+:
+   INTERFACE name = interface_id
+   (
+      apply
+      | mplsi_srlg
+   )
+;
+
+mplsi_srlg
+:
+   SRLG name = junos_name
 ;

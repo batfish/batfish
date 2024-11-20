@@ -679,14 +679,26 @@ ros_route6
    )
 ;
 
+srlg_cost
+:
+  // 1-65535, default 1
+  uint16
+;
+
+srlg_value
+:
+  // 1-4294967295
+  uint32
+;
+
 roslrg_srlg_cost
 :
-   SRLG_COST cost = dec
+   SRLG_COST cost = srlg_cost
 ;
 
 roslrg_srlg_value
 :
-   SRLG_VALUE value = dec
+   SRLG_VALUE value = srlg_value
 ;
 
 rosr_active
