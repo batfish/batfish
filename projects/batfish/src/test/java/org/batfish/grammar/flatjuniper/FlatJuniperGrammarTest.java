@@ -184,11 +184,13 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.APPLICATION_SET_MEMBER_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE_VLAN;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
@@ -475,6 +477,7 @@ import org.batfish.representation.juniper.RoutingInstance;
 import org.batfish.representation.juniper.Screen;
 import org.batfish.representation.juniper.ScreenAction;
 import org.batfish.representation.juniper.ScreenOption;
+import org.batfish.representation.juniper.Srlg;
 import org.batfish.representation.juniper.StaticRouteV4;
 import org.batfish.representation.juniper.StaticRouteV6;
 import org.batfish.representation.juniper.TcpFinNoAck;
@@ -6745,6 +6748,32 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(pools.get("POOL5").getFromAddress(), equalTo(ip1));
     assertThat(pools.get("POOL5").getToAddress(), equalTo(ip2));
+  }
+
+  @Test
+  public void testSrlgExtraction() {
+    JuniperConfiguration jc = parseJuniperConfig("junos-srlg");
+    assertThat(jc.getMasterLogicalSystem().getSrlgs(), hasKeys("srlg-a", "srlg-b"));
+    Srlg srlgA = jc.getMasterLogicalSystem().getSrlgs().get("srlg-a");
+    assertThat(srlgA.getCost(), equalTo(10));
+    assertThat(srlgA.getValue(), equalTo(101L));
+    Srlg srlgB = jc.getMasterLogicalSystem().getSrlgs().get("srlg-b");
+    assertThat(srlgB.getCost(), nullValue());
+    assertThat(srlgB.getValue(), equalTo(102L));
+  }
+
+  @Test
+  public void testSrlgReferences() throws IOException {
+    String hostname = "junos-srlg";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae, hasDefinedStructureWithDefinitionLines(filename, SRLG, "srlg-a", contains(4, 5)));
+    assertThat(ccae, hasReferencedStructure(filename, SRLG, "srlg-a", MPLS_INTERFACE_SRLG));
   }
 
   @Test

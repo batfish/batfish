@@ -49,6 +49,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   ISIS_EXPORT_POLICY("isis export"),
   ISIS_IMPORT_POLICY("isis import"),
   ISIS_INTERFACE("isis interface"),
+  MPLS_INTERFACE_SRLG("mpls interface srlg"),
   NAT_DESTINATION_RULE_SET_RULE_THEN("nat destination rule-set rule then pool"),
   NAT_RULE_SET_FROM_INTERFACE("nat rule-set rule from interface"),
   NAT_RULE_SET_FROM_ROUTING_INSTANCE("nat rule-set rule from routing-instance"),

@@ -1,0 +1,8 @@
+#
+set system host-name junos-srlg
+# See: https://www.juniper.net/documentation/us/en/software/junos/mpls/topics/topic-map/srlg-for-mpls.html#id-example-configuring-srlg
+set routing-options srlg srlg-a srlg-value 101
+set routing-options srlg srlg-a srlg-cost 10
+set routing-options srlg srlg-b srlg-value 102
+set protocols mpls interface ge-0/0/2.0 srlg srlg-a
+#
