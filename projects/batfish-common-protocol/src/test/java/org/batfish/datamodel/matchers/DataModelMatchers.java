@@ -236,17 +236,17 @@ public final class DataModelMatchers {
 
   /**
    * Provides a matcher that matches if the provided {@link ConvertConfigurationAnswerElement} has a
-   * defined structure for {@code hostname} of type {@code type} named {@code structureName} with
+   * defined structure for {@code filename} of type {@code type} named {@code structureName} with
    * definition lines matching the provided {@code subMatcher}.
    */
   public static @Nonnull Matcher<ConvertConfigurationAnswerElement>
       hasDefinedStructureWithDefinitionLines(
-          @Nonnull String hostname,
+          @Nonnull String filename,
           @Nonnull StructureType type,
           @Nonnull String structureName,
           @Nonnull Matcher<? super Set<Integer>> subMatcher) {
     return new ConvertConfigurationAnswerElementMatchers.HasDefinedStructureWithDefinitionLines(
-        hostname, type, structureName, subMatcher);
+        filename, type, structureName, subMatcher);
   }
 
   /**
