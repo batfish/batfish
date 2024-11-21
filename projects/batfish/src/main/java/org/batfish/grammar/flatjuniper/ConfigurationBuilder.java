@@ -23,6 +23,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.CONDITION;
 import static org.batfish.representation.juniper.JuniperStructureType.DHCP_RELAY_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INET6_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
@@ -372,6 +373,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6f_inputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_filterContext;
@@ -2607,7 +2609,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _currentFilter = new ConcreteFirewallFilter(name, _currentFirewallFamily);
       filters.put(name, _currentFilter);
     }
-    _configuration.defineFlattenedStructure(FIREWALL_FILTER, name, ctx, _parser);
+    JuniperStructureType filterType =
+        _currentFirewallFamily == Family.INET6 ? FIREWALL_INET6_FILTER : FIREWALL_FILTER;
+    _configuration.defineFlattenedStructure(filterType, name, ctx, _parser);
   }
 
   @Override
@@ -5075,7 +5079,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_mtu(I_mtuContext ctx) {
-    int size = toInt(ctx.size);
+    int size = toInteger(ctx.bytes);
     _currentInterfaceOrRange.setMtu(size);
   }
 
@@ -5316,6 +5320,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfi6_destination_udp_port(Ifi6_destination_udp_portContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void exitIfi6f_input(Ifi6f_inputContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        FIREWALL_INET6_FILTER, name, INTERFACE_FILTER, getLine(ctx.name.start));
   }
 
   @Override

@@ -49213,7 +49213,7 @@
             "                      (i_common_physical*",
             "                        (i_mtu",
             "                          MTU:'mtu'",
-            "                          size = (dec*",
+            "                          bytes = (uint16*",
             "                            UINT16:'9300'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49244,7 +49244,7 @@
             "                            (ifi_mtu*",
             "                              (i_mtu",
             "                                MTU:'mtu'",
-            "                                size = (dec*",
+            "                                bytes = (uint16*",
             "                                  UINT16:'9000')))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -52465,6 +52465,32 @@
             "                        ICMP_TYPE:'icmp-type'",
             "                        (icmp6_only_type*",
             "                          NEIGHBOR_SOLICIT:'neighbor-solicit'  <== mode:M_IcmpCodeOrType)))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_interfaces*",
+            "            INTERFACES:'interfaces'",
+            "            (int_named",
+            "              (interface_id*",
+            "                INTERFACE_ID:'lo0'  <== mode:M_Interface)",
+            "              (i_unit",
+            "                UNIT:'unit'",
+            "                num = (dec*",
+            "                  UINT8:'0')",
+            "                (i_common*",
+            "                  (i_family*",
+            "                    FAMILY:'family'",
+            "                    (if_inet6*",
+            "                      INET6:'inet6'",
+            "                      (ifi6_filter*",
+            "                        FILTER:'filter'",
+            "                        (ifi6f_input",
+            "                          INPUT:'input'  <== mode:M_Filter",
+            "                          name = (junos_name*",
+            "                            NAME:'blah6'  <== mode:M_Filter))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
@@ -71149,49 +71175,49 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 50,
+              "Line" : 51,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options any"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 51,
+              "Line" : 52,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options loose-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 52,
+              "Line" : 53,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options route-record"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 53,
+              "Line" : 54,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options router-alert"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 54,
+              "Line" : 55,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options security"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 55,
+              "Line" : 56,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options stream-id"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 56,
+              "Line" : 57,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options strict-source-route"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 57,
+              "Line" : 58,
               "Parser_Context" : "[fftf_ip_options fft_from ff_term f_filter f_common f_family s_firewall s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "ip-options timestamp"
             }
@@ -74894,17 +74920,19 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall family inet6 filter" : {
+            "blah6" : {
+              "definitionLines" : "44-46",
+              "numReferrers" : 1
+            }
+          },
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
-              "definitionLines" : "49",
+              "definitionLines" : "50",
               "numReferrers" : 0
             },
             "blah" : {
               "definitionLines" : "5-28,30,32,35-36,38,40,42",
-              "numReferrers" : 0
-            },
-            "blah6" : {
-              "definitionLines" : "44-46",
               "numReferrers" : 0
             },
             "f1" : {
@@ -74912,13 +74940,13 @@
               "numReferrers" : 0
             },
             "ip_options" : {
-              "definitionLines" : "50-57",
+              "definitionLines" : "51-58",
               "numReferrers" : 0
             }
           },
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
-              "definitionLines" : "49",
+              "definitionLines" : "50",
               "numReferrers" : 1
             },
             "blah blorp" : {
@@ -74954,8 +74982,18 @@
               "numReferrers" : 1
             },
             "ip_options t1" : {
-              "definitionLines" : "50-57",
+              "definitionLines" : "51-58",
               "numReferrers" : 8
+            }
+          },
+          "interface" : {
+            "lo0" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
+            },
+            "lo0.0" : {
+              "definitionLines" : "47",
+              "numReferrers" : 1
             }
           },
           "routing-instance" : {
@@ -82151,10 +82189,17 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall family inet6 filter" : {
+            "blah6" : {
+              "interface firewall filter" : [
+                47
+              ]
+            }
+          },
           "firewall filter term" : {
             "ISP-INBOUND-L2 ALLOW-ARP" : {
               "firewall filter term" : [
-                49
+                50
               ]
             },
             "blah blorp" : {
@@ -82226,14 +82271,26 @@
             },
             "ip_options t1" : {
               "firewall filter term" : [
-                50,
                 51,
                 52,
                 53,
                 54,
                 55,
                 56,
-                57
+                57,
+                58
+              ]
+            }
+          },
+          "interface" : {
+            "lo0" : {
+              "interface" : [
+                47
+              ]
+            },
+            "lo0.0" : {
+              "interface" : [
+                47
               ]
             }
           },
