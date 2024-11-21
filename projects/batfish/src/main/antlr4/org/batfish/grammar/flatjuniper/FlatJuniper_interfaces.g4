@@ -232,7 +232,9 @@ i_mac
 
 i_mtu
 :
-   MTU size = dec
+// maximum is chassis-dependent, but it ranges from 1 to about 16KB it looks like:
+// https://www.juniper.net/documentation/us/en/software/junos/cli-reference/topics/ref/statement/mtu-edit-interfaces-ni.html
+   MTU bytes = uint16
 ;
 
 i_native_vlan_id
@@ -376,13 +378,18 @@ if_inet6
    (
       apply
       | ifi6_destination_udp_port
-      | ifi6_null
+      | ifi6_filter
+      | ifi6_mtu
    )
 ;
 
 ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
-ifi6_null: null_filler;
+ifi6_filter: FILTER ifi6f_input;
+
+ifi6f_input: INPUT name = junos_name;
+
+ifi6_mtu: i_mtu;
 
 if_iso
 :
