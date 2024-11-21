@@ -2684,6 +2684,18 @@
         }
       },
       {
+        "Structure_Type" : "firewall family inet6 filter",
+        "Structure_Name" : "blah6",
+        "Source_Lines" : {
+          "filename" : "configs/juniper_firewall",
+          "lines" : [
+            44,
+            45,
+            46
+          ]
+        }
+      },
+      {
         "Structure_Type" : "firewall filter",
         "Structure_Name" : "ISP-INBOUND-L2",
         "Source_Lines" : {
@@ -2730,18 +2742,6 @@
             38,
             40,
             42
-          ]
-        }
-      },
-      {
-        "Structure_Type" : "firewall filter",
-        "Structure_Name" : "blah6",
-        "Source_Lines" : {
-          "filename" : "configs/juniper_firewall",
-          "lines" : [
-            44,
-            45,
-            46
           ]
         }
       },

@@ -24,6 +24,7 @@ public enum JuniperStructureType implements StructureType {
   CONDITION("condition"),
   DHCP_RELAY_SERVER_GROUP("dhcp-relay server-group"),
   FIREWALL_FILTER("firewall filter"),
+  FIREWALL_INET6_FILTER("firewall family inet6 filter"),
   FIREWALL_FILTER_TERM("firewall filter term"),
   FIREWALL_INTERFACE_SET("firewall interface-set"),
   IKE_GATEWAY("ike gateway"),

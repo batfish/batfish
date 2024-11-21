@@ -49213,7 +49213,7 @@
             "                      (i_common_physical*",
             "                        (i_mtu",
             "                          MTU:'mtu'",
-            "                          size = (dec*",
+            "                          bytes = (uint16*",
             "                            UINT16:'9300'))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -49244,7 +49244,7 @@
             "                            (ifi_mtu*",
             "                              (i_mtu",
             "                                MTU:'mtu'",
-            "                                size = (dec*",
+            "                                bytes = (uint16*",
             "                                  UINT16:'9000')))))))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
@@ -74894,6 +74894,12 @@
           }
         },
         "configs/juniper_firewall" : {
+          "firewall family inet6 filter" : {
+            "blah6" : {
+              "definitionLines" : "44-46",
+              "numReferrers" : 0
+            }
+          },
           "firewall filter" : {
             "ISP-INBOUND-L2" : {
               "definitionLines" : "49",
@@ -74901,10 +74907,6 @@
             },
             "blah" : {
               "definitionLines" : "5-28,30,32,35-36,38,40,42",
-              "numReferrers" : 0
-            },
-            "blah6" : {
-              "definitionLines" : "44-46",
               "numReferrers" : 0
             },
             "f1" : {
