@@ -504,7 +504,6 @@ public final class VendorConfigurationFormatDetector {
     format = (format == null) ? checkF5() : format;
     format = (format == null) ? checkCiscoXr() : format;
     format = (format == null) ? checkFlatVyos() : format;
-    format = (format == null) ? checkIpTables() : format;
     format = (format == null) ? checkMetamako() : format;
     format = (format == null) ? checkMrv() : format;
     format = (format == null) ? checkMrvCommands() : format;
@@ -518,6 +517,7 @@ public final class VendorConfigurationFormatDetector {
     format = (format == null) ? checkMss() : format;
     format = (format == null) ? checkArubaOS() : format;
     format = (format == null) ? checkCisco() : format;
+    format = (format == null) ? checkIpTables() : format;
     return (format == null) ? ConfigurationFormat.UNKNOWN : format;
   }
 }
