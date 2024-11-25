@@ -36,7 +36,11 @@ public class VendorConfigurationFormatDetectorTest {
   @Test
   public void testA10() {
     String fileText =
-        "!\n" + "!version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)\n" + "hostname foo\n";
+        """
+        !
+        !version 3.4.5-A6-B78, build 90 (Aug-5-2021,01:23)
+        hostname foo
+        """;
     assertThat(identifyConfigurationFormat(fileText), equalTo(A10_ACOS));
   }
 
