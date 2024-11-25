@@ -50,7 +50,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.apache.logging.log4j:log4j-core:2.24.2",
     "org.apache.logging.log4j:log4j-slf4j-impl:2.24.2",
     "org.codehaus.jettison:jettison:1.5.4",
-    "io.github.java-diff-utils:java-diff-utils:4.12",
+    "io.github.java-diff-utils:java-diff-utils:4.15",
     "org.glassfish.grizzly:grizzly-http-server:2.4.4",
     "org.glassfish.grizzly:grizzly-framework:2.4.4",
     "org.glassfish.jersey.containers:jersey-container-grizzly2-http:2.45",
