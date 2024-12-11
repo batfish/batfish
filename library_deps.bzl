@@ -66,7 +66,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.mockito:mockito-core:5.14.2",
     "org.mockito:mockito-inline:5.2.0",
     "org.jgrapht:jgrapht-core:1.5.2",
-    "org.jline:jline:3.27.1",
+    "org.jline:jline:3.28.0",
     "org.parboiled:parboiled-core:1.4.1",
     "org.parboiled:parboiled-java:1.4.1",
     "org.skyscreamer:jsonassert:1.5.3",
