@@ -28,6 +28,18 @@ public final class ExtendedCommunity extends Community {
   private static final Set<Integer> VALID_TYPES =
       ImmutableSet.of(0x00, 0x01, 0x02, 0x03, 0x40, 0x41, 0x43);
 
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_VALID =
+      ExtendedCommunity.opaque(false, 0, 0);
+
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_NOT_FOUND =
+      ExtendedCommunity.opaque(false, 0, 1);
+
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_INVALID =
+      ExtendedCommunity.opaque(false, 0, 2);
+
   /** 1 byte. */
   private final int _type;
 
