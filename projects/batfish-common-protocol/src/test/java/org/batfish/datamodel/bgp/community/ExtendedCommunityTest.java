@@ -301,4 +301,21 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.opaque(true, 0x04, 3).getSubtype(), equalTo(0x04));
     assertThat(ExtendedCommunity.target(1, 3).getSubtype(), equalTo(0x02));
   }
+
+  @Test
+  public void testWellKnownCommunities() {
+    /*
+     * The following byte arrays are copied directly out of RFC's level bit representation. Would not recommend using
+     * this type of test otherwise.
+     */
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_VALID.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 0}));
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_NOT_FOUND.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 1}));
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_INVALID.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 2}));
+  }
 }
