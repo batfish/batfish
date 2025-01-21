@@ -24,8 +24,8 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.11.0",  # managed up for CVE-2022-25647
     "com.google.errorprone:error_prone_annotations:2.36.0",
-    "com.google.guava:guava:33.0.0-jre",
-    maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "33.0.0-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
+    "com.google.guava:guava:33.4.0-jre",
+    maven.artifact(group = "com.google.guava", artifact = "guava-testlib", version = "33.4.0-jre", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
     "com.google.re2j:re2j:1.8",
     "com.ibm.icu:icu4j:74.2",
     "commons-beanutils:commons-beanutils:1.10.0",
