@@ -6,6 +6,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.TCP;
 import static org.batfish.datamodel.IpProtocol.UDP;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocols;
 import static org.batfish.representation.aws.AwsLocationInfoUtils.INFRASTRUCTURE_LOCATION_INFO;
 import static org.batfish.representation.aws.Subnet.findSubnetNetworkAcl;
 import static org.batfish.representation.aws.Utils.addNodeToSubnet;
@@ -46,8 +47,8 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.TraceElement;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.acl.NotMatchExpr;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -87,8 +88,7 @@ final class NatGateway implements AwsVpcEntity, Serializable {
   static AclLine UNSUPPORTED_PROTOCOL_ACL_LINE =
       ExprAclLine.rejecting(
           TraceElement.of("Denied IP protocols NOT supported by the NAT gateway"),
-          new NotMatchExpr(
-              new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())));
+          AclLineMatchExprs.not(matchIpProtocols(NAT_PROTOCOLS)));
 
   /**
    * Post transformation filter on the interface facing the subnet that drops all illegal packets
