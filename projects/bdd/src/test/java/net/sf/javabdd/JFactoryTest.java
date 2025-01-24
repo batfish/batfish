@@ -635,6 +635,22 @@ public class JFactoryTest {
   }
 
   @Test
+  public void testOnehot() {
+    _factory.setVarNum(3);
+    BDD a = _factory.ithVar(0);
+    BDD b = _factory.ithVar(1);
+    BDD c = _factory.ithVar(2);
+    assertThat(_factory.onehot(), equalTo(_factory.zero()));
+    assertThat(_factory.onehot(a), equalTo(a));
+    assertThat(_factory.onehot(c), equalTo(c));
+    assertThat(_factory.onehot(b, c), equalTo(b.xor(c)));
+    assertThat(_factory.onehot(a, c), equalTo(a.xor(c)));
+    assertThat(
+        _factory.onehot(a, b, c),
+        equalTo(a.diff(b).diff(c).or(b.diff(a).diff(c)).or(c.diff(a).diff(b))));
+  }
+
+  @Test
   public void testToIntOperands() {
     _factory.setVarNum(2);
     BDD v0 = _factory.ithVar(0);
