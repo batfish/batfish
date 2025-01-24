@@ -1029,6 +1029,46 @@ public class JFactory extends BDDFactory implements Serializable {
     return last;
   }
 
+  @Override
+  public BDD onehot(BDD... variables) {
+    if (variables.length == 0) {
+      return makeBDD(BDDZERO);
+    }
+    // This function skips the operator cache, since it's so cheap
+
+    // Construct the result bottom-up. Given variable j, we keep track of two formulas:
+    //
+    //   1. allFalse[j] is the negation of all variables [k>=j] at this level or lower.
+    //   2. onehot[j] is the onehot encoding for all variables [k>=j] at this level or lower.
+    //
+    // Then for the variable i immediately above j in the tree, we can construct
+    //
+    //     onehot[i] = (i ^ allFalse[j]) v (!i ^ onehot[j])
+    //     allFalse[i] = !i ^ allFalse[j]
+    //
+    int onehot = BDDZERO;
+    int allFalse = BDDONE;
+
+    // We only have two live refs: highest computed onehot and allFalse. Just allocate 2 refs
+    // and overwrite, rather than push/pop.
+    INITREF();
+    PUSHREF(onehot);
+    PUSHREF(allFalse);
+
+    for (int i = variables.length - 1; i >= 0; i--) {
+      BDD var = variables[i];
+      checkArgument(var.isVar(), "Variable %s is not a variable: %s", i, var);
+      int id = ((BDDImpl) var)._index;
+      int level = LEVEL(id);
+      onehot = bdd_makenode(level, onehot, allFalse);
+      SETREF(0, onehot);
+      allFalse = bdd_makenode(level, allFalse, BDDZERO);
+      SETREF(1, allFalse);
+    }
+
+    return makeBDD(onehot);
+  }
+
   /**
    * Extracts the indices from the input bddOperands as an array. If {@code shortCircuit} is found,
    * the returned array will contain {@code shortCircuit} is the first value. If all values are
@@ -3860,6 +3900,10 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private void POPREF(int a) {
     bddrefstack.discard(a);
+  }
+
+  private void SETREF(int index, int a) {
+    bddrefstack.set(index, a);
   }
 
   private int bdd_nodecount(int r) {

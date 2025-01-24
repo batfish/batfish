@@ -382,6 +382,14 @@ public abstract class BDDFactory {
   protected abstract BDD orAll(Collection<BDD> bdds, boolean free);
 
   /**
+   * Returns the condition that exactly one of the given variables is true.
+   *
+   * <p>Precondition: The inputs must have {@link BDD#isVar()} true and levels should be strictly
+   * increasing.
+   */
+  public abstract BDD onehot(BDD... variables);
+
+  /**
    * Sets the node table size.
    *
    * @param n new size of table
