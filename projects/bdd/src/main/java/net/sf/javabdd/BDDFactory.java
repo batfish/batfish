@@ -748,15 +748,15 @@ public abstract class BDDFactory {
    * @version $Id: BDDFactory.java,v 1.18 2005/10/12 10:27:08 joewhaley Exp $
    */
   public static class CacheStats {
-    public int uniqueAccess;
-    public int uniqueChain;
-    public int uniqueHit;
-    public int uniqueMiss;
-    public int uniqueTrivial;
-    public int opHit;
-    public int opMiss;
-    public int opOverwrite;
-    public int swapCount;
+    public long uniqueAccess;
+    public long uniqueChain;
+    public long uniqueHit;
+    public long uniqueMiss;
+    public long uniqueTrivial;
+    public long opHit;
+    public long opMiss;
+    public long opOverwrite;
+    public long swapCount;
 
     protected CacheStats() {}
 
