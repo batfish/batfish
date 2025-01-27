@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -648,6 +649,26 @@ public class JFactoryTest {
     assertThat(
         _factory.onehot(a, b, c),
         equalTo(a.diff(b).diff(c).or(b.diff(a).diff(c)).or(c.diff(a).diff(b))));
+  }
+
+  @Test
+  public void testOnehotVars() {
+    _factory.setVarNum(3);
+    BDD a = _factory.ithVar(0);
+    BDD b = _factory.ithVar(1);
+    BDD c = _factory.ithVar(2);
+    assertThat(_factory.onehotVars(), equalTo(_factory.zero()));
+    assertThat(_factory.onehotVars(a), equalTo(a));
+    assertThat(_factory.onehotVars(c), equalTo(c));
+    assertThat(_factory.onehotVars(b, c), equalTo(b.xor(c)));
+    assertThat(_factory.onehotVars(a, c), equalTo(a.xor(c)));
+    assertThat(
+        _factory.onehotVars(a, b, c),
+        equalTo(a.diff(b).diff(c).or(b.diff(a).diff(c)).or(c.diff(a).diff(b))));
+
+    // Error cases
+    assertThrows(IllegalArgumentException.class, () -> _factory.onehotVars(c, a));
+    assertThrows(IllegalArgumentException.class, () -> _factory.onehotVars(a, b.not()));
   }
 
   @Test

@@ -24,7 +24,7 @@ jmh_java_benchmarks(
 
 jmh_java_benchmarks(
     name = "onehot",
-    srcs = ["BenchmarkOneHot.java"],
+    srcs = ["BenchmarkOnehot.java"],
     deps = [
         "//projects/bdd",
     ],

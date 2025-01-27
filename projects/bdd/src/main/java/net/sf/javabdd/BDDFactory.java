@@ -382,12 +382,38 @@ public abstract class BDDFactory {
   protected abstract BDD orAll(Collection<BDD> bdds, boolean free);
 
   /**
+   * Returns the condition that exactly one of the given BDDs is true.
+   *
+   * <p>If the inputs are all variables (with {@link BDD#isVar()} true, use {@link
+   * #onehotVars(BDD...)} instead.
+   */
+  public BDD onehot(BDD... bdds) {
+    if (bdds.length == 0) {
+      return zero();
+    }
+
+    // Speculative optimization: sort by decreasing level
+    List<BDD> ordered = Arrays.stream(bdds).sorted((b1, b2) -> b2.level() - b1.level()).toList();
+
+    BDD onehot = zero();
+    BDD allFalse = one();
+    for (BDD bdd : ordered) {
+      BDD oldhot = onehot;
+      onehot = bdd.ite(allFalse, onehot);
+      oldhot.free();
+      allFalse.diffEq(bdd);
+    }
+    allFalse.free();
+    return onehot;
+  }
+
+  /**
    * Returns the condition that exactly one of the given variables is true.
    *
    * <p>Precondition: The inputs must have {@link BDD#isVar()} true and levels should be strictly
    * increasing.
    */
-  public abstract BDD onehot(BDD... variables);
+  public abstract BDD onehotVars(BDD... variables);
 
   /**
    * Sets the node table size.
