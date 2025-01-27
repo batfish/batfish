@@ -1030,7 +1030,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   @Override
-  public BDD onehot(BDD... variables) {
+  public BDD onehotVars(BDD... variables) {
     if (variables.length == 0) {
       return makeBDD(BDDZERO);
     }
@@ -1054,12 +1054,21 @@ public class JFactory extends BDDFactory implements Serializable {
     INITREF();
     PUSHREF(onehot);
     PUSHREF(allFalse);
+    int lastLevel = Integer.MAX_VALUE;
 
     for (int i = variables.length - 1; i >= 0; i--) {
       BDD var = variables[i];
       checkArgument(var.isVar(), "Variable %s is not a variable: %s", i, var);
       int id = ((BDDImpl) var)._index;
       int level = LEVEL(id);
+      checkArgument(
+          level < lastLevel,
+          "Levels are not strictly increasing: index %s (level %s) is >= index %s (level %s)",
+          i,
+          level,
+          i + 1,
+          lastLevel);
+      lastLevel = level;
       onehot = bdd_makenode(level, onehot, allFalse);
       SETREF(0, onehot);
       allFalse = bdd_makenode(level, allFalse, BDDZERO);

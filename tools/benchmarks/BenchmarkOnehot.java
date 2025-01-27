@@ -20,13 +20,13 @@ import org.openjdk.jmh.annotations.TearDown;
 
 @BenchmarkMode(Mode.Throughput)
 @State(Scope.Benchmark)
-public class BenchmarkOneHot {
+public class BenchmarkOnehot {
   private static final int NUM_VARIANTS = 1 << 16;
 
   private BDDFactory _factory;
   private Random _rng;
 
-  @Param({"8", "32", "128", "512"})
+  @Param({"32", "128", "512"})
   public int _numDisjuncts;
 
   private List<BDD[]> _trials;
@@ -58,7 +58,13 @@ public class BenchmarkOneHot {
   }
 
   @Benchmark
-  public void benchOneHot() {
+  public void benchOnehotVars() {
+    BDD[] trial = _trials.get(_rng.nextInt(_trials.size()));
+    _factory.onehotVars(trial).free();
+  }
+
+  @Benchmark
+  public void benchOnehot() {
     BDD[] trial = _trials.get(_rng.nextInt(_trials.size()));
     _factory.onehot(trial).free();
   }
