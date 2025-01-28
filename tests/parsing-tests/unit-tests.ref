@@ -71286,6 +71286,24 @@
               "Text" : "protocol access-internal"
             },
             {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 23,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend 123.456"
+            },
+            {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 24,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 789"
+            },
+            {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 25,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 123.1 789"
+            },
+            {
               "Comment" : "This feature is not currently supported",
               "Line" : 32,
               "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",

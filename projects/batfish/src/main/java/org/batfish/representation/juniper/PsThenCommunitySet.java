@@ -35,4 +35,17 @@ public final class PsThenCommunitySet extends PsThen {
   }
 
   private final String _name;
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof PsThenCommunitySet that)) {
+      return false;
+    }
+    return _name.equals(that._name);
+  }
+
+  @Override
+  public int hashCode() {
+    return _name.hashCode();
+  }
 }

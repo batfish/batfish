@@ -465,6 +465,8 @@ import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
+import org.batfish.representation.juniper.PsThenCommunityAdd;
+import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
@@ -4596,6 +4598,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatementThenCommunity() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-community");
+    Map<String, PsTerm> pses =
+        c.getMasterLogicalSystem().getPolicyStatements().get("PS").getTerms();
+    assertThat(
+        pses.get("MULTI_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+    assertThat(
+        pses.get("SET_ADD").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("COMM1"), new PsThenCommunityAdd("COMM2")));
+    assertThat(
+        pses.get("ADD_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
     {
@@ -4610,30 +4626,32 @@ public final class FlatJuniperGrammarTest {
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
       assertThat(policy.getTerms(), hasKeys("TSETMIN", "TADDMAX", "TSUB3"));
       assertThat(
-          policy.getTerms().get("TSETMIN").getThens(),
+          policy.getTerms().get("TSETMIN").getThens().getAllThens(),
           contains(new PsThenLocalPreference(0, Operator.SET)));
       assertThat(
-          policy.getTerms().get("TADDMAX").getThens(),
+          policy.getTerms().get("TADDMAX").getThens().getAllThens(),
           contains(new PsThenLocalPreference(MAX_LOCAL_PREFERENCE, Operator.ADD)));
       assertThat(
-          policy.getTerms().get("TSUB3").getThens(),
+          policy.getTerms().get("TSUB3").getThens().getAllThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
     }
     {
       PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("TAG_POLICY");
       assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
-      assertThat(policy.getTerms().get("TMIN").getThens(), contains(new PsThenTag(0)));
-      assertThat(policy.getTerms().get("TMAX").getThens(), contains(new PsThenTag(MAX_TAG)));
+      assertThat(
+          policy.getTerms().get("TMIN").getThens().getAllThens(), contains(new PsThenTag(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getThens().getAllThens(), contains(new PsThenTag(MAX_TAG)));
     }
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("TUNNEL_ATTR_POLICY");
       assertThat(policy.getTerms(), hasKeys("SET_TUNNEL_ATTR", "REMOVE_TUNNEL_ATTR"));
       assertThat(
-          policy.getTerms().get("SET_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("SET_TUNNEL_ATTR").getThens().getAllThens(),
           contains(new PsThenTunnelAttributeSet("TA")));
       assertThat(
-          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens().getAllThens(),
           contains(PsThenTunnelAttributeRemove.INSTANCE));
     }
   }
@@ -8089,27 +8107,30 @@ public final class FlatJuniperGrammarTest {
           vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(1));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-count-2");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(2));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("as-list");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
       PsThenAsPathExpandAsList then =
-          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
     }
     {
@@ -8118,16 +8139,17 @@ public final class FlatJuniperGrammarTest {
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
       assertThat(
-          term.getThens(),
+          term.getThens().getAllThens(),
           contains(
               // reverse of declared order is expected
               instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
 
-      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      PsThenAsPathPrepend prepend =
+          (PsThenAsPathPrepend) Iterables.get(term.getThens().getAllThens(), 0);
       assertThat(prepend.getAsList(), contains(456L));
 
       PsThenAsPathExpandAsList expand =
-          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens().getAllThens(), 1);
       assertThat(expand.getAsList(), contains(123L));
     }
   }
