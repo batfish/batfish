@@ -903,7 +903,7 @@ public class JuniperConfigurationTest {
 
     PolicyStatement ps = new PolicyStatement("ps");
     PsTerm term = new PsTerm("psterm");
-    term.getThens().add(new PsThenTag(234L));
+    term.getThens().addPsThen(new PsThenTag(234L));
     ps.getTerms().put(term.getName(), term);
 
     // no Froms case: expect a traceable (for the then we added) and end of policy
