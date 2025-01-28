@@ -3092,7 +3092,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       terms.add(ps.getDefaultTerm());
     }
     for (PsTerm term : terms) {
-      List<Statement> thens = toStatements(term.getThens());
+      List<Statement> thens = toStatements(term.getThens().getAllThens());
       if (term.hasAtLeastOneFrom()) {
         If ifStatement = new If();
         ifStatement.setComment(term.getName());
@@ -3122,7 +3122,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
                   new MatchPrefixSet(
                       DestinationNetwork.instance(), new NamedPrefixSet(lineListName));
               lineSpecificIfStatement.setGuard(mrf);
-              lineSpecificIfStatement.getTrueStatements().addAll(toStatements(line.getThens()));
+              lineSpecificIfStatement
+                  .getTrueStatements()
+                  .addAll(toStatements(line.getThens().getAllThens()));
               statements.add(lineSpecificIfStatement);
             }
           }

@@ -1,21 +1,20 @@
 package org.batfish.representation.juniper;
 
 import java.io.Serializable;
-import java.util.HashSet;
-import java.util.Set;
+import javax.annotation.Nonnull;
 
 public abstract class RouteFilterLine implements Serializable {
 
-  private final Set<PsThen> _thens;
+  private final @Nonnull PsThens _thens;
 
   public RouteFilterLine() {
-    _thens = new HashSet<>();
+    _thens = new PsThens();
   }
 
   @Override
   public abstract boolean equals(Object o);
 
-  public Set<PsThen> getThens() {
+  public final @Nonnull PsThens getThens() {
     return _thens;
   }
 
