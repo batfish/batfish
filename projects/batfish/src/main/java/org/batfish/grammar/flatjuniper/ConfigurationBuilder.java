@@ -993,6 +993,7 @@ import org.batfish.representation.juniper.PsThenReject;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
+import org.batfish.representation.juniper.PsThens;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.Resolution;
@@ -2311,7 +2312,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private PsTerm _currentPsTerm;
 
-  private Set<PsThen> _currentPsThens;
+  private PsThens _currentPsThens;
+
+  private void addPsThen(PsThen then, ParserRuleContext ctx) {
+    List<String> cleared = _currentPsThens.addPsThen(then);
+    if (!cleared.isEmpty()) {
+      warn(
+          ctx,
+          String.format(
+              "Overwriting existing %s %s",
+              cleared.size() > 1 ? "thens" : "then", String.join(", ", cleared)));
+    }
+  }
 
   private QualifiedNextHop _currentQualifiedNextHop;
 
@@ -5975,24 +5987,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_accept(Popst_acceptContext ctx) {
-    _currentPsThens.add(PsThenAccept.INSTANCE);
+    addPsThen(PsThenAccept.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopst_as_path_prepend(Popst_as_path_prependContext ctx) {
     List<Long> asPaths =
         ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
-    _currentPsThens.removeIf(PsThenAsPathPrepend.class::isInstance);
-    _currentPsThens.add(new PsThenAsPathPrepend(asPaths));
-    Optional<PsThenAsPathExpand> expand =
-        _currentPsThens.stream()
-            .filter(PsThenAsPathExpand.class::isInstance)
-            .map(PsThenAsPathExpand.class::cast)
-            .findFirst();
-    if (expand.isPresent()) {
-      _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
-      _currentPsThens.add(expand.get());
-    }
+    addPsThen(new PsThenAsPathPrepend(asPaths), ctx);
   }
 
   @Override
@@ -6010,8 +6012,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           ctx.bgp_asn().stream().map(this::toAsNum).collect(ImmutableList.toImmutableList());
       expand = new PsThenAsPathExpandAsList(asPaths);
     }
-    _currentPsThens.removeIf(PsThenAsPathExpand.class::isInstance);
-    _currentPsThens.add(expand);
+    addPsThen(expand, ctx);
   }
 
   private static final IntegerSpace AS_PATH_EXPAND_LAST_AS_COUNT_RANGE =
@@ -6077,7 +6078,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_community_add(Popst_community_addContext ctx) {
     String name = toString(ctx.name);
     PsThenCommunityAdd then = new PsThenCommunityAdd(name);
-    _currentPsThens.add(then);
+    addPsThen(then, ctx);
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_THEN_ADD_COMMUNITY, getLine(ctx.name.getStart()));
   }
@@ -6085,8 +6086,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_community_delete(Popst_community_deleteContext ctx) {
     String name = toString(ctx.name);
-    PsThenCommunityDelete then = new PsThenCommunityDelete(name);
-    _currentPsThens.add(then);
+    addPsThen(new PsThenCommunityDelete(name), ctx);
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_THEN_DELETE_COMMUNITY, getLine(ctx.name.getStart()));
   }
@@ -6095,28 +6095,28 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopst_community_set(Popst_community_setContext ctx) {
     String name = toString(ctx.name);
     PsThenCommunitySet then = new PsThenCommunitySet(name);
-    _currentPsThens.add(then);
+    addPsThen(then, ctx);
     _configuration.referenceStructure(
         COMMUNITY, name, POLICY_STATEMENT_THEN_SET_COMMUNITY, getLine(ctx.name.getStart()));
   }
 
   @Override
   public void exitPopst_default_action_accept(Popst_default_action_acceptContext ctx) {
-    _currentPsThens.add(new PsThenDefaultActionAccept());
+    addPsThen(new PsThenDefaultActionAccept(), ctx);
   }
 
   @Override
   public void exitPopst_default_action_reject(Popst_default_action_rejectContext ctx) {
-    _currentPsThens.add(new PsThenDefaultActionReject());
+    addPsThen(new PsThenDefaultActionReject(), ctx);
   }
 
   @Override
   public void exitPopst_external(Popst_externalContext ctx) {
     int type = toInt(ctx.dec());
     if (type == 1) {
-      _currentPsThens.add(new PsThenExternal(OspfMetricType.E1));
+      addPsThen(new PsThenExternal(OspfMetricType.E1), ctx);
     } else if (type == 2) {
-      _currentPsThens.add(new PsThenExternal(OspfMetricType.E2));
+      addPsThen(new PsThenExternal(OspfMetricType.E2), ctx);
     } else {
       _w.redFlagf("unimplemented: then %s", getFullText(ctx));
     }
@@ -6130,20 +6130,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             : (ctx.SUBTRACT() != null
                 ? PsThenLocalPreference.Operator.SUBTRACT
                 : PsThenLocalPreference.Operator.SET);
-    _currentPsThens.add(new PsThenLocalPreference(toLong(ctx.localpref), op));
+    addPsThen(new PsThenLocalPreference(toLong(ctx.localpref), op), ctx);
   }
 
   @Override
   public void exitPopst_metric(Popst_metricContext ctx) {
     int metric = toInt(ctx.metric);
     PsThenMetric then = new PsThenMetric(metric);
-    _currentPsThens.add(then);
+    addPsThen(then, ctx);
   }
 
   @Override
   public void exitPopst_metric_add(Popst_metric_addContext ctx) {
     int metric = toInt(ctx.metric);
-    _currentPsThens.add(new PsThenMetricAdd(metric));
+    addPsThen(new PsThenMetricAdd(metric), ctx);
   }
 
   @Override
@@ -6153,14 +6153,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopstnh_discard(Popstnh_discardContext ctx) {
-    _currentPsThens.add(PsThenNextHopDiscard.INSTANCE);
+    addPsThen(PsThenNextHopDiscard.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopstnh_ipv4(Popstnh_ipv4Context ctx) {
     Ip nextHopIp = toIp(ctx.ip_address());
-    PsThen then = new PsThenNextHopIp(nextHopIp);
-    _currentPsThens.add(then);
+    addPsThen(new PsThenNextHopIp(nextHopIp), ctx);
   }
 
   @Override
@@ -6170,22 +6169,22 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopstnh_peer_address(Popstnh_peer_addressContext ctx) {
-    _currentPsThens.add(PsThenNextHopPeerAddress.INSTANCE);
+    addPsThen(PsThenNextHopPeerAddress.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopstnh_reject(Popstnh_rejectContext ctx) {
-    _currentPsThens.add(PsThenNextHopReject.INSTANCE);
+    addPsThen(PsThenNextHopReject.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopstnh_self(Popstnh_selfContext ctx) {
-    _currentPsThens.add(PsThenNextHopSelf.INSTANCE);
+    addPsThen(PsThenNextHopSelf.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopst_next_policy(Popst_next_policyContext ctx) {
-    _currentPsThens.add(PsThenNextPolicy.INSTANCE);
+    addPsThen(PsThenNextPolicy.INSTANCE, ctx);
   }
 
   @Override
@@ -6209,24 +6208,24 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       _w.redFlagf("unimplemented origin type: %s", getFullText(ctx));
       return;
     }
-    _currentPsThens.add(new PsThenOrigin(origin));
+    addPsThen(new PsThenOrigin(origin), ctx);
   }
 
   @Override
   public void exitPopst_preference(Popst_preferenceContext ctx) {
     int preference = toInt(ctx.preference);
     PsThenPreference then = new PsThenPreference(preference);
-    _currentPsThens.add(then);
+    addPsThen(then, ctx);
   }
 
   @Override
   public void exitPopst_reject(Popst_rejectContext ctx) {
-    _currentPsThens.add(PsThenReject.INSTANCE);
+    addPsThen(PsThenReject.INSTANCE, ctx);
   }
 
   @Override
   public void exitPopst_tag(Popst_tagContext ctx) {
-    _currentPsThens.add(new PsThenTag(toLong(ctx.uint32())));
+    addPsThen(new PsThenTag(toLong(ctx.uint32())), ctx);
   }
 
   @Override
@@ -6237,7 +6236,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopstta_remove(FlatJuniperParser.Popstta_removeContext ctx) {
     if (ctx.ALL() != null) {
-      _currentPsThens.add(PsThenTunnelAttributeRemove.INSTANCE);
+      addPsThen(PsThenTunnelAttributeRemove.INSTANCE, ctx);
     } else {
       assert ctx.name != null;
       warn(ctx, "Removing specific tunnel-attributes is not yet supported");
@@ -6252,7 +6251,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopstta_set(FlatJuniperParser.Popstta_setContext ctx) {
     String tunnelAttrName = toString(ctx.name);
-    _currentPsThens.add(new PsThenTunnelAttributeSet(tunnelAttrName));
+    addPsThen(new PsThenTunnelAttributeSet(tunnelAttrName), ctx);
     _configuration.referenceStructure(
         TUNNEL_ATTRIBUTE,
         tunnelAttrName,
@@ -8094,7 +8093,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       PsTerm conjunctionPolicyTerm = conjunctionPolicy.getDefaultTerm();
       PsFromPolicyStatementConjunction from = new PsFromPolicyStatementConjunction(conjuncts);
       conjunctionPolicyTerm.getFroms().addFromPolicyStatementConjunction(from);
-      conjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
+      conjunctionPolicyTerm.getThens().addPsThen(PsThenAccept.INSTANCE);
       _currentLogicalSystem.getPolicyStatements().put(conjunctionPolicyName, conjunctionPolicy);
       return conjunctionPolicyName;
     } else if (expr.pe_disjunction() != null) {
@@ -8111,7 +8110,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         PsFromPolicyStatement from = new PsFromPolicyStatement(disjunct);
         disjunctionPolicyTerm.getFroms().addFromPolicyStatement(from);
       }
-      disjunctionPolicyTerm.getThens().add(PsThenAccept.INSTANCE);
+      disjunctionPolicyTerm.getThens().addPsThen(PsThenAccept.INSTANCE);
       _currentLogicalSystem.getPolicyStatements().put(disjunctionPolicyName, disjunctionPolicy);
       return disjunctionPolicyName;
     } else {
