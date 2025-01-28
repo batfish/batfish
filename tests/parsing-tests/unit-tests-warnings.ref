@@ -1409,6 +1409,27 @@
       },
       {
         "Filename" : "configs/juniper_policy_statement",
+        "Line" : 23,
+        "Text" : "as-path-prepend 123.456",
+        "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "Overwriting existing then as-path-prepend"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 24,
+        "Text" : "as-path-prepend \"456 789",
+        "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "Overwriting existing then as-path-prepend"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 25,
+        "Text" : "as-path-prepend \"456 123.1 789",
+        "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "Overwriting existing then as-path-prepend"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
         "Line" : 32,
         "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334",
         "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
@@ -1479,10 +1500,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 205 results",
+      "notes" : "Found 208 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 205
+      "numResults" : 208
     }
   }
 ]
