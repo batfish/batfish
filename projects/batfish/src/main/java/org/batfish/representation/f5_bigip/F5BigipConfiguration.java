@@ -1603,14 +1603,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nonnull Statement toStatement(LineAction action) {
-    switch (action) {
-      case PERMIT:
-        return Statements.ReturnTrue.toStaticStatement();
-      case DENY:
-        return Statements.ReturnFalse.toStaticStatement();
-      default:
-        throw new IllegalArgumentException(String.format("Invalid action: %s", action));
-    }
+    return switch (action) {
+      case PERMIT -> Statements.ReturnTrue.toStaticStatement();
+      case DENY -> Statements.ReturnFalse.toStaticStatement();
+    };
   }
 
   /** Returns a {@link StaticRoute} if {code route} is valid, or else {@code null}. */
@@ -2086,20 +2082,13 @@ public class F5BigipConfiguration extends VendorConfiguration {
   }
 
   private @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      OspfNetworkType type) {
+      @Nullable OspfNetworkType type) {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case NON_BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
-
-      default:
-        _w.redFlag(
-            String.format(
-                "Conversion of F5 BIG-IP OSPF network type '%s' is not handled.", type.toString()));
-        return null;
-    }
+    return switch (type) {
+      case NON_BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+    };
   }
 
   /**

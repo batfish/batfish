@@ -204,19 +204,14 @@ public class RoutesAnswererUtil {
   @VisibleForTesting
   static boolean prefixMatches(
       PrefixMatchType prefixMatchType, Prefix inputNetwork, Prefix routeNetwork) {
-    switch (prefixMatchType) {
-      case EXACT:
-        return inputNetwork.equals(routeNetwork);
-      case LONGER_PREFIXES:
-        return inputNetwork.containsPrefix(routeNetwork);
-      case SHORTER_PREFIXES:
-        return routeNetwork.containsPrefix(inputNetwork);
-      case LONGEST_PREFIX_MATCH: // handled separately in the caller
-        throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
-      default:
-        throw new UnsupportedOperationException(
-            "Unimplemented prefix match type " + prefixMatchType);
-    }
+    // handled separately in the caller
+    return switch (prefixMatchType) {
+      case EXACT -> inputNetwork.equals(routeNetwork);
+      case LONGER_PREFIXES -> inputNetwork.containsPrefix(routeNetwork);
+      case SHORTER_PREFIXES -> routeNetwork.containsPrefix(inputNetwork);
+      case LONGEST_PREFIX_MATCH ->
+          throw new IllegalArgumentException("Illegal PrefixMatchType " + prefixMatchType);
+    };
   }
 
   /**

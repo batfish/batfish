@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Optional;
 import java.util.function.Supplier;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
@@ -210,12 +209,7 @@ public enum HostProtocol {
               HeaderSpace.builder().setIpProtocols(ImmutableSet.of(IpProtocol.VRRP)).build();
           return Optional.of(new MatchHeaderSpace(hs, traceElement));
         }
-
-      default:
-        {
-          throw new BatfishException(
-              "missing definition for host-inbound-traffic protocol: \"" + name() + "\"");
-        }
     }
+    throw new IllegalStateException("Should be unreachable");
   }
 }

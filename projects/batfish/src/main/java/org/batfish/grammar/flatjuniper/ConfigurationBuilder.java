@@ -3784,9 +3784,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                     + " defined",
                 _currentAddressBook.getName(), zone.getName()));
         break;
-      default:
-        throw new BatfishException(
-            "Unsupported AddressBook type: " + _currentZone.getAddressBookType());
     }
   }
 
@@ -4023,9 +4020,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentAddressBook =
             _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
         break;
-      default:
-        throw new BatfishException(
-            "Unsupported AddressBook type: " + _currentZone.getAddressBookType());
     }
   }
 
@@ -6751,19 +6745,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitRsrt_nat_pool(Rsrt_nat_poolContext ctx) {
     String name = toString(ctx.name);
     _currentNatRule.setThen(new NatRuleThenPool(name));
-    JuniperStructureUsage usage;
-    switch (_currentNat.getType()) {
-      case DESTINATION:
-        usage = NAT_DESTINATION_RULE_SET_RULE_THEN;
-        break;
-      case SOURCE:
-        usage = NAT_SOURCE_RULE_SET_RULE_THEN;
-        break;
-      case STATIC:
-      default:
-        usage = NAT_STATIC_RULE_SET_RULE_THEN;
-        break;
-    }
+    JuniperStructureUsage usage =
+        switch (_currentNat.getType()) {
+          case DESTINATION -> NAT_DESTINATION_RULE_SET_RULE_THEN;
+          case SOURCE -> NAT_SOURCE_RULE_SET_RULE_THEN;
+          case STATIC -> NAT_STATIC_RULE_SET_RULE_THEN;
+        };
     _configuration.referenceStructure(NAT_POOL, name, usage, getLine(ctx.name.start));
   }
 

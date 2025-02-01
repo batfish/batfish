@@ -329,25 +329,26 @@ public class LogicalSystem implements Serializable {
   }
 
   public Nat getOrCreateNat(Nat.Type natType) {
-    switch (natType) {
-      case DESTINATION:
+    return switch (natType) {
+      case DESTINATION -> {
         if (_natDestination == null) {
           _natDestination = new Nat(Type.DESTINATION);
         }
-        return _natDestination;
-      case SOURCE:
+        yield _natDestination;
+      }
+      case SOURCE -> {
         if (_natSource == null) {
           _natSource = new Nat(Type.SOURCE);
         }
-        return _natSource;
-      case STATIC:
+        yield _natSource;
+      }
+      case STATIC -> {
         if (_natStatic == null) {
           _natStatic = new Nat(Type.STATIC);
         }
-        return _natStatic;
-      default:
-        throw new IllegalArgumentException("Unknnown nat type " + natType);
-    }
+        yield _natStatic;
+      }
+    };
   }
 
   public @Nonnull Srlg getOrCreateSrlg(String name) {

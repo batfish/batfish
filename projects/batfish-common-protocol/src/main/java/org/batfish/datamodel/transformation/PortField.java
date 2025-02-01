@@ -6,13 +6,9 @@ public enum PortField {
   DESTINATION;
 
   public PortField opposite() {
-    switch (this) {
-      case SOURCE:
-        return DESTINATION;
-      case DESTINATION:
-        return SOURCE;
-      default:
-        throw new IllegalArgumentException("Unexpected PortField " + name());
-    }
+    return switch (this) {
+      case SOURCE -> DESTINATION;
+      case DESTINATION -> SOURCE;
+    };
   }
 }

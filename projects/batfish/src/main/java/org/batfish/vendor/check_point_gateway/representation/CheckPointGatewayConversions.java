@@ -308,20 +308,17 @@ public final class CheckPointGatewayConversions {
       return LineAction.DENY;
     } else {
       RulebaseAction ra = (RulebaseAction) obj;
-      switch (ra.getAction()) {
-        case DROP:
-          return LineAction.DENY;
-        case ACCEPT:
-          return LineAction.PERMIT;
-        case UNHANDLED:
-        default:
-          w.redFlag(
-              String.format(
-                  "Cannot convert action '%s' (Uid '%s') into an access-rule action, defaulting to"
-                      + " deny action",
-                  ra.getName(), uid.getValue()));
-          return LineAction.DENY;
-      }
+      return switch (ra.getAction()) {
+        case DROP -> LineAction.DENY;
+        case ACCEPT -> LineAction.PERMIT;
+        case UNHANDLED -> {
+          w.redFlagf(
+              "Cannot convert action '%s' (Uid '%s') into an access-rule action, defaulting to deny"
+                  + " action",
+              ra.getName(), uid.getValue());
+          yield LineAction.DENY;
+        }
+      };
     }
   }
 

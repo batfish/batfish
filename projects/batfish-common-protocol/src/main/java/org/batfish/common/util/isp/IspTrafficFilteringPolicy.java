@@ -23,14 +23,9 @@ public interface IspTrafficFilteringPolicy {
   IpAccessList filterTrafficToNetwork();
 
   static IspTrafficFilteringPolicy createFor(IspTrafficFiltering trafficFiltering) {
-    switch (trafficFiltering.getMode()) {
-      case NONE:
-        return NoTrafficFilteringPolicy.create();
-      case BLOCK_RESERVED_ADDRESSES_AT_INTERNET:
-        return BlockReservedAddressesAtInternet.create();
-      default:
-        throw new IllegalArgumentException(
-            "Unknown ISP traffic filtering mode " + trafficFiltering.getMode());
-    }
+    return switch (trafficFiltering.getMode()) {
+      case NONE -> NoTrafficFilteringPolicy.create();
+      case BLOCK_RESERVED_ADDRESSES_AT_INTERNET -> BlockReservedAddressesAtInternet.create();
+    };
   }
 }

@@ -35,15 +35,10 @@ public class ActionGetter implements GenericAclLineVisitor<LineAction> {
     VARIABLE;
 
     public static @Nonnull LineBehavior fromLineAction(@Nonnull LineAction lineAction) {
-      switch (lineAction) {
-        case PERMIT:
-          return PERMIT;
-        case DENY:
-          return DENY;
-        default:
-          throw new IllegalArgumentException(
-              String.format("Unrecognized ACL line action %s", lineAction));
-      }
+      return switch (lineAction) {
+        case PERMIT -> PERMIT;
+        case DENY -> DENY;
+      };
     }
   }
 

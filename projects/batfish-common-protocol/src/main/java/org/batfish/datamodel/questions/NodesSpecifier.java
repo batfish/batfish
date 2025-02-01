@@ -6,7 +6,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,7 +14,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.answers.AutocompleteSuggestion;
@@ -232,19 +230,13 @@ public class NodesSpecifier {
   /** Return the set of nodes that match this specifier. */
   @JsonIgnore
   public Set<String> getMatchingNodes(SpecifierContext ctxt) {
-    switch (_type) {
-      case NAME:
-        return getMatchingNodesByName(ctxt.getConfigs().keySet());
-      case ROLE:
-        Optional<NodeRoleDimension> roleDimension = ctxt.getNodeRoleDimension(_roleDimension);
-        if (roleDimension.isPresent()) {
-          return getMatchingNodesByRole(roleDimension.get(), ctxt.getConfigs().keySet());
-        } else {
-          return Collections.emptySet();
-        }
-      default:
-        throw new BatfishException("Unhandled NodesSpecifier type: " + _type);
-    }
+    return switch (_type) {
+      case NAME -> getMatchingNodesByName(ctxt.getConfigs().keySet());
+      case ROLE ->
+          ctxt.getNodeRoleDimension(_roleDimension)
+              .map(rd -> getMatchingNodesByRole(rd, ctxt.getConfigs().keySet()))
+              .orElse(ImmutableSet.of());
+    };
   }
 
   public Set<String> getMatchingNodesByName(Set<String> nodes) {

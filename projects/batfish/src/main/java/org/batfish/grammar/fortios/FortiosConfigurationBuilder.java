@@ -2937,9 +2937,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       case GEOGRAPHY:
       case MAC:
         return null;
-      default:
-        return String.format("address type %s is unknown", a.getTypeEffective());
     }
+    throw new IllegalStateException("This line should be unreachable");
   }
 
   /** Returns message indicating why addrgrp can't be committed in the CLI, or null if it can */
@@ -2997,23 +2996,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return "name is invalid"; // currently, only invalid name can cause valid to be false
     }
     // TODO Check validity of _ipRange; it is not yet used in conversion
-    switch (s.getProtocolEffective()) {
-      case TCP_UDP_SCTP:
+    return switch (s.getProtocolEffective()) {
+      case TCP_UDP_SCTP -> {
         if (s.getTcpPortRangeDst() == null
             && s.getUdpPortRangeDst() == null
             && s.getSctpPortRangeDst() == null) {
-          return "TCP/UDP/SCTP portrange cannot all be empty";
+          yield "TCP/UDP/SCTP portrange cannot all be empty";
         }
-        return null;
-      case ICMP:
-      case ICMP6:
+        yield null;
+      }
       // both ICMP type and ICMP code are allowed to be unset
-      case IP:
-        // protocol-number is allowed to be unset
-        return null;
-      default:
-        return String.format("protocol %s is unknown", s.getProtocolEffective());
-    }
+      case ICMP, ICMP6, IP ->
+          // protocol-number is allowed to be unset
+          null;
+    };
   }
 
   /**

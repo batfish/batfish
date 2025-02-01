@@ -26,30 +26,29 @@ public final class SchemaUtils {
       return null;
     }
     try {
-      switch (schema.getType()) {
-        case BASE:
-          return convertType(jsonNode, schema.getBaseType());
-        case LIST:
+      return switch (schema.getType()) {
+        case BASE -> convertType(jsonNode, schema.getBaseType());
+        case LIST -> {
           List<JsonNode> list =
               BatfishObjectMapper.mapper()
                   .readValue(
                       BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
                       new TypeReference<List<JsonNode>>() {});
-          return list.stream()
+          yield list.stream()
               .map(in -> convertType(in, schema.getInnerSchema()))
               .collect(Collectors.toList());
-        case SET:
+        }
+        case SET -> {
           Set<JsonNode> set =
               BatfishObjectMapper.mapper()
                   .readValue(
                       BatfishObjectMapper.mapper().treeAsTokens(jsonNode),
                       new TypeReference<Set<JsonNode>>() {});
-          return set.stream()
+          yield set.stream()
               .map(in -> convertType(in, schema.getInnerSchema()))
               .collect(Collectors.toSet());
-        default:
-          throw new IllegalArgumentException("Cannot handle Schema of type: " + schema.getType());
-      }
+        }
+      };
     } catch (IOException e) {
       throw new ClassCastException(
           String.format(

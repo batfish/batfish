@@ -55,7 +55,6 @@ import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -1317,18 +1316,12 @@ public class CiscoConversions {
     newProcess.setNetAddress(proc.getNetAddress());
     IsisLevelSettings settings = IsisLevelSettings.builder().build();
     switch (proc.getLevel()) {
-      case LEVEL_1:
-        newProcess.setLevel1(settings);
-        break;
-      case LEVEL_1_2:
+      case LEVEL_1 -> newProcess.setLevel1(settings);
+      case LEVEL_2 -> newProcess.setLevel2(settings);
+      case LEVEL_1_2 -> {
         newProcess.setLevel1(settings);
         newProcess.setLevel2(settings);
-        break;
-      case LEVEL_2:
-        newProcess.setLevel2(settings);
-        break;
-      default:
-        throw new BatfishException("Unhandled IS-IS level.");
+      }
     }
     return newProcess.build();
   }

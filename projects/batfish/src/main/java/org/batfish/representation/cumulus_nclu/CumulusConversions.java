@@ -1273,7 +1273,7 @@ public final class CumulusConversions {
                       Optional.ofNullable(ospfInterface.getPassive())
                           .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                   .setDeadInterval(
                       Optional.ofNullable(ospfInterface.getDeadInterval())
                           .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
@@ -1308,22 +1308,14 @@ public final class CumulusConversions {
   }
 
   private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      @Nullable OspfNetworkType type, Warnings w) {
+      @Nullable OspfNetworkType type) {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        w.redFlag(
-            String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
-                type.toString()));
-        return null;
-    }
+    return switch (type) {
+      case BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT -> org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    };
   }
 
   static void convertIpCommunityLists(

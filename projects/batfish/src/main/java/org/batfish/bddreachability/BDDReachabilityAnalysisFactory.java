@@ -1566,25 +1566,17 @@ public final class BDDReachabilityAnalysisFactory {
     }
 
     private IpSpaceToBDD getIpSpaceToBDD(IpField ipField) {
-      switch (ipField) {
-        case DESTINATION:
-          return _dstIpSpaceToBDD;
-        case SOURCE:
-          return _srcIpSpaceToBDD;
-        default:
-          throw new IllegalArgumentException("Unknown IpField " + ipField);
-      }
+      return switch (ipField) {
+        case DESTINATION -> _dstIpSpaceToBDD;
+        case SOURCE -> _srcIpSpaceToBDD;
+      };
     }
 
     private BDDInteger getPortVar(PortField portField) {
-      switch (portField) {
-        case DESTINATION:
-          return _bddPacket.getDstPort();
-        case SOURCE:
-          return _bddPacket.getSrcPort();
-        default:
-          throw new IllegalArgumentException("Unknown PortField " + portField);
-      }
+      return switch (portField) {
+        case DESTINATION -> _bddPacket.getDstPort();
+        case SOURCE -> _bddPacket.getSrcPort();
+      };
     }
 
     @Override

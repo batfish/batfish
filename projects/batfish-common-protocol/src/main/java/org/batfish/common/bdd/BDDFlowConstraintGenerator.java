@@ -10,7 +10,6 @@ import java.util.EnumMap;
 import java.util.List;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
@@ -354,28 +353,25 @@ public final class BDDFlowConstraintGenerator {
   }
 
   private BddRefiner generateFlowPreference(FlowPreference preference) {
-    switch (preference) {
-      case DEBUGGING:
-        return refineAll(
-            // application preferences
-            refineFirst(_icmpConstraints, _udpConstraints, _tcpConstraints),
-            _ipConstraints,
-            _defaultPacketLength);
-      case APPLICATION:
-      case TESTFILTER:
-        return refineAll(
-            // application preferences
-            refineFirst(_tcpConstraints, _udpConstraints, _icmpConstraints),
-            _ipConstraints,
-            _defaultPacketLength);
-      case TRACEROUTE:
-        return refineAll(
-            // application preferences
-            refineFirst(_udpConstraints, _tcpConstraints, _icmpConstraints),
-            _ipConstraints,
-            _defaultPacketLength);
-      default:
-        throw new BatfishException("Not supported flow preference");
-    }
+    return switch (preference) {
+      case DEBUGGING ->
+          refineAll(
+              // application preferences
+              refineFirst(_icmpConstraints, _udpConstraints, _tcpConstraints),
+              _ipConstraints,
+              _defaultPacketLength);
+      case APPLICATION, TESTFILTER ->
+          refineAll(
+              // application preferences
+              refineFirst(_tcpConstraints, _udpConstraints, _icmpConstraints),
+              _ipConstraints,
+              _defaultPacketLength);
+      case TRACEROUTE ->
+          refineAll(
+              // application preferences
+              refineFirst(_udpConstraints, _tcpConstraints, _icmpConstraints),
+              _ipConstraints,
+              _defaultPacketLength);
+    };
   }
 }

@@ -49,8 +49,6 @@ public class Assertion {
                   "Value '%s' of assertion type '%s' is not a list", expect, assertionType));
         }
         break;
-      default:
-        throw new IllegalArgumentException("Unhandled assertion type: " + assertionType);
     }
     _assertionType = assertionType;
     _expect = expect;

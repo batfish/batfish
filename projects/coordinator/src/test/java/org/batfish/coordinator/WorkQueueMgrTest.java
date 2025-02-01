@@ -122,8 +122,6 @@ public final class WorkQueueMgrTest {
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
-      default:
-        throw new BatfishException("Unhandled action type " + action.action);
     }
     return null;
   }

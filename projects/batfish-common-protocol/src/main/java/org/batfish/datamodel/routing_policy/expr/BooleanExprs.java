@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
 
@@ -49,23 +48,12 @@ public final class BooleanExprs {
     @JsonCreator
     private static StaticBooleanExpr create(@JsonProperty(PROP_TYPE) StaticExpressionType type) {
       checkArgument(type != null, "%s must be provided", PROP_TYPE);
-      switch (type) {
-        case CallExprContext:
-          return CALL_EXPR_CONTEXT;
-
-        case CallStatementContext:
-          return CALL_STATEMENT_CONTEXT;
-
-        case False:
-          return FALSE;
-
-        case True:
-          return TRUE;
-
-        default:
-          throw new BatfishException(
-              "Unhandled " + StaticBooleanExpr.class.getCanonicalName() + ": " + type);
-      }
+      return switch (type) {
+        case CallExprContext -> CALL_EXPR_CONTEXT;
+        case CallStatementContext -> CALL_STATEMENT_CONTEXT;
+        case False -> FALSE;
+        case True -> TRUE;
+      };
     }
 
     @Override
@@ -75,19 +63,12 @@ public final class BooleanExprs {
 
     @Override
     public Result evaluate(Environment environment) {
-      switch (_type) {
-        case CallExprContext:
-          return new Result(environment.getCallExprContext());
-        case CallStatementContext:
-          return new Result(environment.getCallStatementContext());
-        case False:
-          return new Result(false);
-        case True:
-          return new Result(true);
-        default:
-          throw new BatfishException(
-              "Unhandled " + StaticBooleanExpr.class.getCanonicalName() + ": " + _type);
-      }
+      return switch (_type) {
+        case CallExprContext -> new Result(environment.getCallExprContext());
+        case CallStatementContext -> new Result(environment.getCallStatementContext());
+        case False -> new Result(false);
+        case True -> new Result(true);
+      };
     }
 
     @JsonProperty(PROP_TYPE)

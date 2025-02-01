@@ -2762,27 +2762,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private <B extends BgpRoute.Builder<B, R>, R extends EvpnRoute<B, R>, T extends EvpnMasterRib<R>>
       T getRib(Class<R> clazz, RibType type) {
     if (clazz.equals(EvpnType3Route.class)) {
-      switch (type) {
-        case EBGP:
-          return (T) _ebgpType3EvpnRib;
-        case IBGP:
-          return (T) _ibgpType3EvpnRib;
-        case COMBINED:
-          return (T) _evpnType3Rib;
-        default:
-          throw new IllegalArgumentException("Unsupported RIB type: " + type);
-      }
+      return switch (type) {
+        case EBGP -> (T) _ebgpType3EvpnRib;
+        case IBGP -> (T) _ibgpType3EvpnRib;
+        case COMBINED -> (T) _evpnType3Rib;
+      };
     } else if (clazz.equals(EvpnType5Route.class)) {
-      switch (type) {
-        case EBGP:
-          return (T) _ebgpType5EvpnRib;
-        case IBGP:
-          return (T) _ibgpType5EvpnRib;
-        case COMBINED:
-          return (T) _evpnType5Rib;
-        default:
-          throw new IllegalArgumentException("Unsupported RIB type: " + type);
-      }
+      return switch (type) {
+        case EBGP -> (T) _ebgpType5EvpnRib;
+        case IBGP -> (T) _ibgpType5EvpnRib;
+        case COMBINED -> (T) _evpnType5Rib;
+      };
     } else {
       throw new IllegalArgumentException("Unsupported BGP route type: " + clazz.getCanonicalName());
     }
