@@ -229,17 +229,11 @@ public final class BgpProtocolHelper {
     if (asPath.getAsSets().isEmpty()) {
       return true;
     }
-    switch (mode) {
-      case ALWAYS:
-        return true;
-      case NEVER:
-        return asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
-      case EXCEPT_FIRST:
-        return !asSets.get(0).containsAs(peerAs);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unsupported AllowsRemoteAsOutMode: %s", mode));
-    }
+    return switch (mode) {
+      case ALWAYS -> true;
+      case NEVER -> asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
+      case EXCEPT_FIRST -> !asSets.get(0).containsAs(peerAs);
+    };
   }
 
   /**

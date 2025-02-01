@@ -6,13 +6,9 @@ public enum IpField {
   DESTINATION;
 
   public IpField opposite() {
-    switch (this) {
-      case SOURCE:
-        return DESTINATION;
-      case DESTINATION:
-        return SOURCE;
-      default:
-        throw new IllegalArgumentException("Unknown IpField " + this);
-    }
+    return switch (this) {
+      case SOURCE -> DESTINATION;
+      case DESTINATION -> SOURCE;
+    };
   }
 }

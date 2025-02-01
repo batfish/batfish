@@ -521,12 +521,6 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
               autoStaticNatObjects.add(src);
             }
             continue;
-          default:
-            assert false;
-            warnings.redFlag(
-                String.format(
-                    "Automatic NAT rule %s has unrecognized NAT method %s and will be" + " ignored",
-                    rule.getRuleNumber(), rule.getMethod()));
         }
       }
     }

@@ -51,18 +51,11 @@ public class Interface implements Serializable {
     if (_linkSpeed == null) {
       return getDefaultSpeed(_name);
     }
-    switch (_linkSpeed) {
-      case TEN_M_FULL:
-      case TEN_M_HALF:
-        return 10E6;
-      case HUNDRED_M_FULL:
-      case HUNDRED_M_HALF:
-        return 100E6;
-      case THOUSAND_M_FULL:
-        return 1000E6;
-      default:
-        throw new IllegalStateException("Unsupported link speed " + _linkSpeed);
-    }
+    return switch (_linkSpeed) {
+      case TEN_M_FULL, TEN_M_HALF -> 10E6;
+      case HUNDRED_M_FULL, HUNDRED_M_HALF -> 100E6;
+      case THOUSAND_M_FULL -> 1000E6;
+    };
   }
 
   public @Nullable Integer getMtu() {

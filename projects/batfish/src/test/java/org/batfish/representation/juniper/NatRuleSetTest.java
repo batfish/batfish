@@ -56,8 +56,6 @@ public class NatRuleSetTest {
       case RoutingInstanceType:
         location.setRoutingInstance(String.format("RoutingInstance-%s", direction));
         break;
-      default:
-        return;
     }
   }
 

@@ -154,17 +154,15 @@ final class BDDReverseTransformationRangesImpl implements BDDReverseTransformati
   }
 
   private BDD computeReverseTransformationRange(Key key) {
-    switch (key._transformationType) {
-      case INCOMING:
+    return switch (key._transformationType) {
+      case INCOMING -> {
         assert key._inIface == null || key._inIface.equals(key._iface);
-        return computeReverseIncomingTransformationRange(key._node, key._iface, key._lastHop);
-      case OUTGOING:
-        return computeReverseOutgoingTransformationRange(
-            key._node, key._iface, key._inIface, key._lastHop);
-      default:
-        throw new IllegalArgumentException(
-            "Unexpected TransformationType: " + key._transformationType);
-    }
+        yield computeReverseIncomingTransformationRange(key._node, key._iface, key._lastHop);
+      }
+      case OUTGOING ->
+          computeReverseOutgoingTransformationRange(
+              key._node, key._iface, key._inIface, key._lastHop);
+    };
   }
 
   private BDD computeReverseIncomingTransformationRange(

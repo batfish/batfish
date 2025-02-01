@@ -32,122 +32,78 @@ public final class SpecifierFactories {
   public static final Version ACTIVE_VERSION = Version.V2;
 
   public static ApplicationSpecifier getApplicationSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledAppSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1, V2 -> ParboiledAppSpecifier.parse(input);
+    };
   }
 
   public static FilterSpecifier getFilterSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 filter grammar has been nixed");
-      case V2:
-        return ParboiledFilterSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 filter grammar has been nixed");
+      case V2 -> ParboiledFilterSpecifier.parse(input);
+    };
   }
 
   public static InterfaceSpecifier getInterfaceSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 interface grammar has been nixed");
-      case V2:
-        return ParboiledInterfaceSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 interface grammar has been nixed");
+      case V2 -> ParboiledInterfaceSpecifier.parse(input);
+    };
   }
 
   public static IpProtocolSpecifier getIpProtocolSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledIpProtocolSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1, V2 -> ParboiledIpProtocolSpecifier.parse(input);
+    };
   }
 
   public static IpSpaceSpecifier getIpSpaceSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
-      case V2:
-        return ParboiledIpSpaceSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
+      case V2 -> ParboiledIpSpaceSpecifier.parse(input);
+    };
   }
 
   public static IpSpaceAssignmentSpecifier getIpSpaceAssignmentSpecifier(
       String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
-      case V2:
-        return ParboiledIpSpaceSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 IpSpace grammar has been nixed");
+      case V2 -> ParboiledIpSpaceSpecifier.parse(input);
+    };
   }
 
   public static LocationSpecifier getLocationSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 location grammar has been nixed");
-      case V2:
-        return ParboiledLocationSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 location grammar has been nixed");
+      case V2 -> ParboiledLocationSpecifier.parse(input);
+    };
   }
 
   public static <T> EnumSetSpecifier<T> getEnumSetSpecifier(
       String input, Grammar grammar, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledEnumSetSpecifier.parse(input, grammar);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1, V2 -> ParboiledEnumSetSpecifier.parse(input, grammar);
+    };
   }
 
   public static NameSetSpecifier getNameSetSpecifier(
       String input, Grammar grammar, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledNameSetSpecifier.parse(input, grammar);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1, V2 -> ParboiledNameSetSpecifier.parse(input, grammar);
+    };
   }
 
   public static NodeSpecifier getNodeSpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-        throw new IllegalArgumentException("V1 grammar has been completely removed");
-      case V2:
-        return ParboiledNodeSpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1 -> throw new IllegalArgumentException("V1 grammar has been completely removed");
+      case V2 -> ParboiledNodeSpecifier.parse(input);
+    };
   }
 
   public static RoutingPolicySpecifier getRoutingPolicySpecifier(String input, Version version) {
-    switch (version) {
-      case V1:
-      case V2:
-        return ParboiledRoutingPolicySpecifier.parse(input);
-      default:
-        throw new IllegalStateException("Unhandled grammar version " + version);
-    }
+    return switch (version) {
+      case V1, V2 -> ParboiledRoutingPolicySpecifier.parse(input);
+    };
   }
 
   public static ApplicationSpecifier getApplicationSpecifierOrDefault(

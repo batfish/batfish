@@ -655,21 +655,18 @@ final class IncrementalBdpEngine {
 
   @VisibleForTesting
   static boolean evaluateTrackRoute(TrackRoute trackRoute, Node node) {
-    switch (trackRoute.getRibType()) {
-      case BGP:
-        return TrackRouteUtils.evaluateTrackRoute(
-            trackRoute,
-            Optional.ofNullable(
-                    node.getVirtualRouter(trackRoute.getVrf()).get().getBgpRoutingProcess())
-                .<GetRoutesForPrefix<Bgpv4Route>>map(brp -> brp._bgpv4Rib::getRoutes)
-                .orElse(TrackRouteUtils::emptyGetRoutesForPrefix));
-      case MAIN:
-        return TrackRouteUtils.evaluateTrackRoute(
-            trackRoute, node.getVirtualRouter(trackRoute.getVrf()).get().getMainRib()::getRoutes);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unsupported RibType: %s", trackRoute.getRibType()));
-    }
+    return switch (trackRoute.getRibType()) {
+      case BGP ->
+          TrackRouteUtils.evaluateTrackRoute(
+              trackRoute,
+              Optional.ofNullable(
+                      node.getVirtualRouter(trackRoute.getVrf()).get().getBgpRoutingProcess())
+                  .<GetRoutesForPrefix<Bgpv4Route>>map(brp -> brp._bgpv4Rib::getRoutes)
+                  .orElse(TrackRouteUtils::emptyGetRoutesForPrefix));
+      case MAIN ->
+          TrackRouteUtils.evaluateTrackRoute(
+              trackRoute, node.getVirtualRouter(trackRoute.getVrf()).get().getMainRib()::getRoutes);
+    };
   }
 
   /**

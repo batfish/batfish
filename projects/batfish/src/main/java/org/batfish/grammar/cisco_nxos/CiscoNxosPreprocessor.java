@@ -240,97 +240,84 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
       NxosMajorVersion majorVersion,
       int defaultLayer2EvidenceCount,
       int defaultLayer3EvidenceCount) {
-    switch (platform) {
-      case NEXUS_1000V:
-        // TODO: verify
-        return true;
-      case NEXUS_3000:
-        // verified for NXOS6
-        return true;
-      case NEXUS_5000:
-        // verified for NXOS7
-        return true;
-      case NEXUS_6000:
-        // verified for NXOS7
-        return true;
-      case NEXUS_7000:
-        // verified for NXOS6
-        return false;
-      case NEXUS_9000:
-      case UNKNOWN:
-        switch (majorVersion) {
-          case NXOS5:
-            // docs are ambiguous, but sounds like switchport is default
-            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3548/sw/cmd_ref/503_A1/interfaces/3548_cmd_ref_if/3k_cmd_ref_if_cmds.html
-            return true;
-          case NXOS6:
-            // TODO: add doc pointer
-            return false;
-
-          case NXOS7:
-          case NXOS9:
-          case NXOS10:
-          case UNKNOWN:
-            // Assume NXOS7+ behavior arbitrarily when version is unknown.
-            // Value depends on model, so just make an educated guess based on statistical analysis
-            return defaultLayer2EvidenceCount > defaultLayer3EvidenceCount;
-
-          case NXOS4:
-          default:
-            throw new IllegalArgumentException(
-                String.format("Unsupported major version: %s", majorVersion));
-        }
-      default:
-        throw new IllegalArgumentException(String.format("Unsupported platform: %s", platform));
-    }
+    return switch (platform) {
+      case NEXUS_1000V ->
+          // TODO: verify
+          true;
+      case NEXUS_3000 ->
+          // verified for NXOS6
+          true;
+      case NEXUS_5000 ->
+          // verified for NXOS7
+          true;
+      case NEXUS_6000 ->
+          // verified for NXOS7
+          true;
+      case NEXUS_7000 ->
+          // verified for NXOS6
+          false;
+      case NEXUS_9000, UNKNOWN ->
+          switch (majorVersion) {
+            case NXOS5 ->
+                // docs are ambiguous, but sounds like switchport is default
+                // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3548/sw/cmd_ref/503_A1/interfaces/3548_cmd_ref_if/3k_cmd_ref_if_cmds.html
+                true;
+            case NXOS6 ->
+                // TODO: add doc pointer
+                false;
+            case NXOS7, NXOS9, NXOS10, UNKNOWN ->
+                // Assume NXOS7+ behavior arbitrarily when version is unknown.
+                // Value depends on model, so just make an educated guess based on statistical
+                // analysis
+                defaultLayer2EvidenceCount > defaultLayer3EvidenceCount;
+            default ->
+                throw new IllegalArgumentException(
+                    String.format("Unsupported major version: %s", majorVersion));
+          };
+    };
   }
 
   public static boolean getNonSwitchportDefaultShutdown(
       NexusPlatform platform, NxosMajorVersion majorVersion) {
-    switch (platform) {
-      case NEXUS_1000V:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus1000/sw/4_2_1_s_v_1_4/command/reference/n1000v_cmd_ref/n1000v_cmds_s.html
-        return false;
-      case NEXUS_3000:
-        switch (majorVersion) {
-          case NXOS5:
-          case NXOS6:
-          case NXOS7:
-            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/command/reference/5_0_3/interfaces/3k_cmd_ref_if/3k_cmd_ref_if_cmds.html
-            // TODO: verify for NXOS6,7
-            return false;
-          case NXOS9:
-            // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/interfaces/configuration/guide/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x_chapter_011.html
-            return true;
-          case NXOS10:
-            // https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/101x/configuration/interfaces/cisco-nexus-9000-nx-os-interfaces-configuration-guide-101x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-93x_chapter_0101.html#:~:text=you%20would%20use.-,Default%20Settings,Admin%20state,-Shut
-            return true;
-          case NXOS4:
-          case UNKNOWN:
-          default:
-            throw new IllegalArgumentException(
-                String.format("Unsupported major version: %s", majorVersion));
-        }
-      case NEXUS_5000:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus5000/sw/interfaces/command/cisco_nexus_5000_interfaces_command_ref/s_commands.html
-        return false;
-      case NEXUS_6000:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus6000/sw/command/reference/interfaces/N6k_if_cmd_ref/n6k_if_cmds_s.html
-        return false;
-      case NEXUS_7000:
-        // NO DEFAULT according to
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/interfaces/command/cisco_nexus7000_interfaces_command_ref/s_commands.html#wp2891012724
-        // Since it doesn't matter, just default to false
-        return false;
-      case NEXUS_9000:
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/interfaces/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide_chapter_010.html
-        // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/92x/interfaces/configuration/guide/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x_chapter_011.html#concept_B279E7CC6BC04683BE07B09298887229
-        return true;
-      case UNKNOWN:
-      default:
-        // bias towards interfaces being on
-        return false;
-    }
+    return switch (platform) {
+      case NEXUS_1000V ->
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus1000/sw/4_2_1_s_v_1_4/command/reference/n1000v_cmd_ref/n1000v_cmds_s.html
+          false;
+      case NEXUS_3000 ->
+          switch (majorVersion) {
+            case NXOS5, NXOS6, NXOS7 ->
+                // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3000/sw/command/reference/5_0_3/interfaces/3k_cmd_ref_if/3k_cmd_ref_if_cmds.html
+                // TODO: verify for NXOS6,7
+                false;
+            case NXOS9 ->
+                // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus3600/sw/93x/interfaces/configuration/guide/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x/b-cisco-nexus-3600-nx-os-interfaces-configuration-guide-93x_chapter_011.html
+                true;
+            case NXOS10 ->
+                // https://www.cisco.com/c/en/us/td/docs/dcn/nx-os/nexus9000/101x/configuration/interfaces/cisco-nexus-9000-nx-os-interfaces-configuration-guide-101x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-93x_chapter_0101.html#:~:text=you%20would%20use.-,Default%20Settings,Admin%20state,-Shut
+                true;
+            case NXOS4, UNKNOWN ->
+                throw new IllegalArgumentException(
+                    String.format("Unsupported major version: %s", majorVersion));
+          };
+      case NEXUS_5000 ->
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus5000/sw/interfaces/command/cisco_nexus_5000_interfaces_command_ref/s_commands.html
+          false;
+      case NEXUS_6000 ->
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus6000/sw/command/reference/interfaces/N6k_if_cmd_ref/n6k_if_cmds_s.html
+          false;
+      case NEXUS_7000 ->
+          // NO DEFAULT according to
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus7000/sw/interfaces/command/cisco_nexus7000_interfaces_command_ref/s_commands.html#wp2891012724
+          // Since it doesn't matter, just default to false
+          false;
+      case NEXUS_9000 ->
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/6-x/interfaces/configuration/guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide/b_Cisco_Nexus_9000_Series_NX-OS_Interfaces_Configuration_Guide_chapter_010.html
+          // https://www.cisco.com/c/en/us/td/docs/switches/datacenter/nexus9000/sw/92x/interfaces/configuration/guide/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x/b-cisco-nexus-9000-nx-os-interfaces-configuration-guide-92x_chapter_011.html#concept_B279E7CC6BC04683BE07B09298887229
+          true;
+      case UNKNOWN ->
+          // bias towards interfaces being on
+          false;
+    };
   }
 
   private final @Nonnull CiscoNxosConfiguration _configuration;

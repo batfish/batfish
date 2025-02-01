@@ -100,15 +100,12 @@ public final class WideMetric implements EigrpMetric {
 
   @Override
   public UnsignedLong cost(EigrpMetricVersion version) {
-    switch (version) {
-      case V1:
-        return costV1();
-      case V2:
-        /* TODO */
-        return costV1();
-      default:
-        throw new IllegalArgumentException("Unsupported version " + version);
-    }
+    return switch (version) {
+      case V1 -> costV1();
+      case V2 ->
+          /* TODO */
+          costV1();
+    };
   }
 
   private UnsignedLong costV1() {

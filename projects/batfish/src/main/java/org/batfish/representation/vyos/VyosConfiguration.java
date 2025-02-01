@@ -13,7 +13,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -204,14 +203,8 @@ public class VyosConfiguration extends VendorConfiguration {
           espGroup.setPfsSource(PfsSource.IKE_GROUP);
         }
         switch (espGroup.getPfsSource()) {
-          case DISABLED:
-          case IKE_GROUP:
-            break;
-          case ESP_GROUP:
-            ipsecPhase2Policy.setPfsKeyGroup(espGroup.getPfsDhGroup());
-            break;
-          default:
-            throw new BatfishException("Invalid pfs source");
+          case ESP_GROUP -> ipsecPhase2Policy.setPfsKeyGroup(espGroup.getPfsDhGroup());
+          case DISABLED, IKE_GROUP -> {}
         }
 
         // convert contained esp proposals
@@ -339,14 +332,8 @@ public class VyosConfiguration extends VendorConfiguration {
       }
       ifStatement.setGuard(conj.simplify());
       switch (rule.getAction()) {
-        case PERMIT:
-          trueStatements.add(Statements.ExitAccept.toStaticStatement());
-          break;
-        case DENY:
-          trueStatements.add(Statements.ExitReject.toStaticStatement());
-          break;
-        default:
-          throw new BatfishException("Invalid action");
+        case PERMIT -> trueStatements.add(Statements.ExitAccept.toStaticStatement());
+        case DENY -> trueStatements.add(Statements.ExitReject.toStaticStatement());
       }
       statements.add(ifStatement);
     }

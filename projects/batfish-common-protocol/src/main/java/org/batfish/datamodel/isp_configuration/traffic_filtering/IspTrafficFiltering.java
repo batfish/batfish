@@ -58,14 +58,11 @@ public final class IspTrafficFiltering {
   private static @Nonnull IspTrafficFiltering jsonCreator(
       @JsonProperty(PROP_MODE) @Nullable Mode mode) {
     checkArgument(mode != null, "Missing %s", PROP_MODE);
-    switch (mode) {
-      case NONE:
-        return IspTrafficFiltering.none();
-      case BLOCK_RESERVED_ADDRESSES_AT_INTERNET:
-        return IspTrafficFiltering.blockReservedAddressesAtInternet();
-      default:
-        throw new UnsupportedOperationException("Unhandled mode " + mode);
-    }
+    return switch (mode) {
+      case NONE -> IspTrafficFiltering.none();
+      case BLOCK_RESERVED_ADDRESSES_AT_INTERNET ->
+          IspTrafficFiltering.blockReservedAddressesAtInternet();
+    };
   }
 
   @Override

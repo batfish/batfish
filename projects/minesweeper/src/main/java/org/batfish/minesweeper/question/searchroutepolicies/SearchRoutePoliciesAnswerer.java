@@ -365,27 +365,25 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private BDD communityRegexConstraintToBDD(
       RegexConstraint regex, TransferBDD tbdd, BDDRoute route, TransferBDD.Context context) {
-    switch (regex.getRegexType()) {
-      case REGEX:
-        return tbdd.getFactory()
-            .orAll(
-                tbdd
-                    .getConfigAtomicPredicates()
-                    .getStandardCommunityAtomicPredicates()
-                    .getRegexAtomicPredicates()
-                    .get(CommunityVar.from(regex.getRegex()))
-                    .stream()
-                    .map(i -> route.getCommunityAtomicPredicates()[i])
-                    .collect(ImmutableSet.toImmutableSet()));
-      case STRUCTURE_NAME:
+    return switch (regex.getRegexType()) {
+      case REGEX ->
+          tbdd.getFactory()
+              .orAll(
+                  tbdd
+                      .getConfigAtomicPredicates()
+                      .getStandardCommunityAtomicPredicates()
+                      .getRegexAtomicPredicates()
+                      .get(CommunityVar.from(regex.getRegex()))
+                      .stream()
+                      .map(i -> route.getCommunityAtomicPredicates()[i])
+                      .collect(ImmutableSet.toImmutableSet()));
+      case STRUCTURE_NAME -> {
         CommunityMatchExpr cme = context.config().getCommunityMatchExprs().get(regex.getRegex());
-        return cme.accept(
+        yield cme.accept(
             new CommunityMatchExprToBDD(),
             new CommunitySetMatchExprToBDD.Arg(tbdd, route, context));
-      default:
-        throw new UnsupportedOperationException(
-            "Unknown regex constraint type: " + regex.getRegexType());
-    }
+      }
+    };
   }
 
   /**
@@ -593,19 +591,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .flatMap(
                     rc -> {
                       String regex = rc.getRegex();
-                      switch (rc.getRegexType()) {
-                        case REGEX:
-                          return ImmutableList.of(CommunityVar.from(regex)).stream();
-                        case STRUCTURE_NAME:
-                          return config
-                              .getCommunityMatchExprs()
-                              .get(regex)
-                              .accept(new CommunityMatchExprVarCollector(), config)
-                              .stream();
-                        default:
-                          throw new UnsupportedOperationException(
-                              "Unknown regex constraint type: " + rc.getRegexType());
-                      }
+                      return switch (rc.getRegexType()) {
+                        case REGEX -> ImmutableList.of(CommunityVar.from(regex)).stream();
+                        case STRUCTURE_NAME ->
+                            config
+                                .getCommunityMatchExprs()
+                                .get(regex)
+                                .accept(new CommunityMatchExprVarCollector(), config)
+                                .stream();
+                      };
                     })
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes.stream()

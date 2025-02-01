@@ -29,17 +29,11 @@ public class FilterStep extends Step<FilterStepDetail> {
     PRE_TRANSFORMATION_EGRESS_FILTER;
 
     public FlowDisposition deniedDisposition() {
-      switch (this) {
-        case INGRESS_FILTER:
-        case POST_TRANSFORMATION_INGRESS_FILTER:
-          return FlowDisposition.DENIED_IN;
-        case EGRESS_FILTER:
-        case EGRESS_ORIGINAL_FLOW_FILTER:
-        case PRE_TRANSFORMATION_EGRESS_FILTER:
-          return FlowDisposition.DENIED_OUT;
-        default:
-          throw new IllegalArgumentException("Unexpected FilterType: " + this);
-      }
+      return switch (this) {
+        case INGRESS_FILTER, POST_TRANSFORMATION_INGRESS_FILTER -> FlowDisposition.DENIED_IN;
+        case EGRESS_FILTER, EGRESS_ORIGINAL_FLOW_FILTER, PRE_TRANSFORMATION_EGRESS_FILTER ->
+            FlowDisposition.DENIED_OUT;
+      };
     }
   }
 

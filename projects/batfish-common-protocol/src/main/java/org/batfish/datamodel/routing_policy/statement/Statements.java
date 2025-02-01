@@ -160,9 +160,6 @@ public enum Statements {
         case Unsuppress:
           environment.setSuppressed(false);
           break;
-
-        default:
-          break;
       }
       return new Result(false);
     }

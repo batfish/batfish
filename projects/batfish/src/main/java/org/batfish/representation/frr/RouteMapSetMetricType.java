@@ -21,17 +21,10 @@ public final class RouteMapSetMetricType implements RouteMapSet {
 
   @Override
   public @Nonnull Stream<Statement> toStatements(Configuration c, FrrConfiguration vc, Warnings w) {
-    switch (_metricType) {
-      case TYPE_1:
-        return Stream.of(new SetOspfMetricType(OspfMetricType.E1));
-
-      case TYPE_2:
-        return Stream.of(new SetOspfMetricType(OspfMetricType.E2));
-
-      default:
-        // should not happen
-        return Stream.empty();
-    }
+    return switch (_metricType) {
+      case TYPE_1 -> Stream.of(new SetOspfMetricType(OspfMetricType.E1));
+      case TYPE_2 -> Stream.of(new SetOspfMetricType(OspfMetricType.E2));
+    };
   }
 
   private final @Nonnull RouteMapMetricType _metricType;
