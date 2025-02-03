@@ -383,14 +383,14 @@ public class TransferBDD {
                                     new Arg(this, currRoute, context))
                                 .stream())
                 .collect(ImmutableSet.toImmutableSet());
-        finalResults.add(
-            result
-                .setReturnValueBDD(
-                    asPathRegexesToBDD(
-                        ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
-                        _asPathRegexAtomicPredicates,
-                        routeForMatching(p, context)))
-                .setReturnValueAccepted(true));
+        BDD asPathRegexBDD =
+            asPathRegexes.isEmpty()
+                ? _factory.zero()
+                : asPathRegexesToBDD(
+                    ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                    _asPathRegexAtomicPredicates,
+                    routeForMatching(p, context));
+        finalResults.add(result.setReturnValueBDD(asPathRegexBDD).setReturnValueAccepted(true));
       } else {
         List<TransferResult> currResults = new ArrayList<>();
         // the default result is false
