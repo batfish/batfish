@@ -79,6 +79,9 @@ public abstract class BDD implements Serializable {
    */
   public abstract boolean isAssignment();
 
+  /** Returns true if this BDD is either the zero (false) or the one (true) BDD. */
+  public abstract boolean isConstant();
+
   /**
    * Returns true if this BDD is the zero (false) BDD.
    *
