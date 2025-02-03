@@ -264,19 +264,12 @@ public final class A10Configuration extends VendorConfiguration {
   }
 
   public static @Nonnull InterfaceType getInterfaceType(Interface iface) {
-    switch (iface.getType()) {
-      case ETHERNET:
-        return InterfaceType.PHYSICAL;
-      case LOOPBACK:
-        return InterfaceType.LOOPBACK;
-      case VE:
-        return InterfaceType.VLAN;
-      case TRUNK:
-        return InterfaceType.AGGREGATED;
-      default:
-        assert false;
-        return InterfaceType.UNKNOWN;
-    }
+    return switch (iface.getType()) {
+      case ETHERNET -> InterfaceType.PHYSICAL;
+      case LOOPBACK -> InterfaceType.LOOPBACK;
+      case VE -> InterfaceType.VLAN;
+      case TRUNK -> InterfaceType.AGGREGATED;
+    };
   }
 
   public static @Nonnull String getInterfaceName(InterfaceReference ref) {

@@ -208,8 +208,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             headerSpaceBuilder.setSrcPorts(
                 Iterables.concat(headerSpaceBuilder.getSrcPorts(), match.toPortRanges()));
             break;
-          default:
-            throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
       ExprAclLine aclLine =

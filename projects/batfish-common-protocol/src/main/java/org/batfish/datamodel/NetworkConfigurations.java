@@ -50,16 +50,11 @@ public final class NetworkConfigurations {
    * null}.
    */
   public @Nullable BgpPeerConfig getBgpPeerConfig(BgpPeerConfigId id) {
-    switch (id.getType()) {
-      case ACTIVE:
-        return getBgpPointToPointPeerConfig(id);
-      case DYNAMIC:
-        return getBgpDynamicPeerConfig(id);
-      case UNNUMBERED:
-        return getBgpUnnumberedPeerConfig(id);
-      default:
-        throw new IllegalArgumentException(String.format("Unrecognized peer type: %s", id));
-    }
+    return switch (id.getType()) {
+      case ACTIVE -> getBgpPointToPointPeerConfig(id);
+      case DYNAMIC -> getBgpDynamicPeerConfig(id);
+      case UNNUMBERED -> getBgpUnnumberedPeerConfig(id);
+    };
   }
 
   /**

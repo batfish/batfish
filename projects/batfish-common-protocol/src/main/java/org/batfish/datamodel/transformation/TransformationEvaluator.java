@@ -49,50 +49,30 @@ public class TransformationEvaluator {
 
     private void set(IpField field, Ip ip) {
       switch (field) {
-        case DESTINATION:
-          _flowBuilder.setDstIp(ip);
-          break;
-        case SOURCE:
-          _flowBuilder.setSrcIp(ip);
-          break;
-        default:
-          throw new IllegalArgumentException("unknown IpField " + field);
+        case DESTINATION -> _flowBuilder.setDstIp(ip);
+        case SOURCE -> _flowBuilder.setSrcIp(ip);
       }
     }
 
     private void set(PortField field, int port) {
       switch (field) {
-        case DESTINATION:
-          _flowBuilder.setDstPort(port);
-          break;
-        case SOURCE:
-          _flowBuilder.setSrcPort(port);
-          break;
-        default:
-          throw new IllegalArgumentException("unknown PortField " + field);
+        case DESTINATION -> _flowBuilder.setDstPort(port);
+        case SOURCE -> _flowBuilder.setSrcPort(port);
       }
     }
 
     private Ip get(IpField field) {
-      switch (field) {
-        case DESTINATION:
-          return _flowBuilder.getDstIp();
-        case SOURCE:
-          return _flowBuilder.getSrcIp();
-        default:
-          throw new IllegalArgumentException("unknown IpField " + field);
-      }
+      return switch (field) {
+        case DESTINATION -> _flowBuilder.getDstIp();
+        case SOURCE -> _flowBuilder.getSrcIp();
+      };
     }
 
     private int get(PortField field) {
-      switch (field) {
-        case DESTINATION:
-          return verifyNotNull(_flowBuilder.getDstPort(), "Missing destination port");
-        case SOURCE:
-          return verifyNotNull(_flowBuilder.getSrcPort(), "Missing source port");
-        default:
-          throw new IllegalArgumentException("unknown PortField " + field);
-      }
+      return switch (field) {
+        case DESTINATION -> verifyNotNull(_flowBuilder.getDstPort(), "Missing destination port");
+        case SOURCE -> verifyNotNull(_flowBuilder.getSrcPort(), "Missing source port");
+      };
     }
 
     private ImmutableSortedSet.Builder<FlowDiff> getFlowDiffs(TransformationType type) {

@@ -45,7 +45,6 @@ import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.collections.InsertOrderedMap;
-import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;
@@ -330,28 +329,16 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   /** Convert interface speed setting into bits per second. */
   private static double toSpeed(Interface.Speed speed) {
-    switch (speed) {
-      case TEN_FULL:
-      case TEN_HALF:
-        return 10e6;
-      case HUNDRED_FULL:
-      case HUNDRED_HALF:
-        return 100e6;
-      case THOUSAND_FULL:
-      case THOUSAND_HALF:
-        return 1000e6;
-      case TEN_THOUSAND_FULL:
-      case TEN_THOUSAND_HALF:
-        return 10000e6;
-      case HUNDRED_GFULL:
-      case HUNDRED_GHALF:
-        return 100e9;
-      case AUTO:
-      default:
-        assert speed == Speed.AUTO;
-        // Assume 10Gbps default
-        return 10000e6;
-    }
+    return switch (speed) {
+      case TEN_FULL, TEN_HALF -> 10e6;
+      case HUNDRED_FULL, HUNDRED_HALF -> 100e6;
+      case THOUSAND_FULL, THOUSAND_HALF -> 1000e6;
+      case TEN_THOUSAND_FULL, TEN_THOUSAND_HALF -> 10000e6;
+      case HUNDRED_GFULL, HUNDRED_GHALF -> 100e9;
+      case AUTO ->
+          // Assume 10Gbps default
+          10000e6;
+    };
   }
 
   /**
@@ -368,22 +355,22 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private @Nullable InterfaceType toViType(Interface.Type vsType) {
-    switch (vsType) {
-      case LOOPBACK:
-        return InterfaceType.LOOPBACK;
-      case PHYSICAL:
-        return InterfaceType.PHYSICAL;
-      case TUNNEL:
-        return InterfaceType.TUNNEL;
-      case VLAN:
-        return InterfaceType.LOGICAL;
-      case AGGREGATE: // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
-      case REDUNDANT: // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
-      case WL_MESH: // TODO Support this type
-      case EMAC_VLAN: // TODO Support this type
-      default:
-        return null;
-    }
+    return switch (vsType) {
+      case LOOPBACK -> InterfaceType.LOOPBACK;
+      case PHYSICAL -> InterfaceType.PHYSICAL;
+      case TUNNEL -> InterfaceType.TUNNEL;
+      case VLAN -> InterfaceType.LOGICAL;
+      case
+          // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
+          AGGREGATE,
+          // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
+          REDUNDANT,
+          // TODO Support this type
+          WL_MESH,
+          // TODO Support this type
+          EMAC_VLAN ->
+          null;
+    };
   }
 
   @VisibleForTesting

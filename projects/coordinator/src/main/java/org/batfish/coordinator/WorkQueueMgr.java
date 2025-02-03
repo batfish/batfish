@@ -111,10 +111,8 @@ public class WorkQueueMgr {
         _snapshotMetadataManager.getInitializationMetadata(
             wDetails.getNetworkId(), wDetails.getSnapshotId());
 
-    switch (metadata.getProcessingStatus()) {
-      case UNINITIALIZED:
-      case PARSING_FAIL:
-      case PARSING:
+    return switch (metadata.getProcessingStatus()) {
+      case UNINITIALIZED, PARSING_FAIL, PARSING -> {
         if (currentParsingWork == null) {
           throw new BatfishException(
               String.format(
@@ -122,23 +120,18 @@ public class WorkQueueMgr {
                       + " exists",
                   wDetails.getSnapshotId(), metadata.getProcessingStatus()));
         }
-        return currentParsingWork;
-      case PARSED:
-        return currentParsingWork;
-      case DATAPLANING:
-        // we get here only when currentDataplaningWork is null; by virtue of the calling context
-        throw new BatfishException(
-            String.format(
-                "Cannot queue dataplane work for %s: Status is %s but no incomplete dataplaning"
-                    + " work exists",
-                wDetails.getSnapshotId(), metadata.getProcessingStatus()));
-      case DATAPLANED:
-      case DATAPLANING_FAIL:
-        return null;
-      default:
-        throw new BatfishException(
-            "Unknown snapshot processingStatus: " + metadata.getProcessingStatus());
-    }
+        yield currentParsingWork;
+      }
+      case PARSED -> currentParsingWork;
+      case DATAPLANING ->
+          // we get here only when currentDataplaningWork is null; by virtue of the calling context
+          throw new BatfishException(
+              String.format(
+                  "Cannot queue dataplane work for %s: Status is %s but no incomplete dataplaning"
+                      + " work exists",
+                  wDetails.getSnapshotId(), metadata.getProcessingStatus()));
+      case DATAPLANED, DATAPLANING_FAIL -> null;
+    };
   }
 
   /**
@@ -158,10 +151,8 @@ public class WorkQueueMgr {
 
     QueuedWork dataplaningWork = getIncompleteWork(networkId, snapshotId, WorkType.DATAPLANING);
 
-    switch (metadata.getProcessingStatus()) {
-      case UNINITIALIZED:
-      case PARSING_FAIL:
-      case PARSING:
+    return switch (metadata.getProcessingStatus()) {
+      case UNINITIALIZED, PARSING_FAIL, PARSING -> {
         if (parsingWork == null) {
           throw new BatfishException(
               String.format(
@@ -169,18 +160,19 @@ public class WorkQueueMgr {
                       + "Status is %s but no incomplete parsing work exists",
                   snapshotId, metadata.getProcessingStatus()));
         }
-        return parsingWork;
-      case PARSED:
+        yield parsingWork;
+      }
+      case PARSED -> {
         if (parsingWork != null) {
-          return parsingWork;
+          yield parsingWork;
         }
         if (dataplaningWork != null) {
-          return dataplaningWork;
+          yield dataplaningWork;
         }
-        return generateAndQueueDataplaneWork(
+        yield generateAndQueueDataplaneWork(
             wItem.getNetwork(), work.getDetails().getNetworkId(), snapshot, snapshotId);
-      case DATAPLANING_FAIL:
-      case DATAPLANING:
+      }
+      case DATAPLANING_FAIL, DATAPLANING -> {
         if (dataplaningWork == null) {
           throw new BatfishException(
               String.format(
@@ -188,19 +180,18 @@ public class WorkQueueMgr {
                       + "Status is %s but no incomplete dataplaning work exists",
                   snapshotId, metadata.getProcessingStatus()));
         }
-        return dataplaningWork;
-      case DATAPLANED:
+        yield dataplaningWork;
+      }
+      case DATAPLANED -> {
         if (parsingWork != null) {
-          return parsingWork;
+          yield parsingWork;
         }
         if (dataplaningWork != null) {
-          return dataplaningWork;
+          yield dataplaningWork;
         }
-        return null;
-      default:
-        throw new BatfishException(
-            "Unknown snapshot processingStatus: " + metadata.getProcessingStatus());
-    }
+        yield null;
+      }
+    };
   }
 
   private QueuedWork getBlockerForParsingDependentWork(
@@ -213,10 +204,8 @@ public class WorkQueueMgr {
 
     QueuedWork parsingWork = getIncompleteWork(networkId, snapshotId, WorkType.PARSING);
 
-    switch (metadata.getProcessingStatus()) {
-      case UNINITIALIZED:
-      case PARSING:
-      case PARSING_FAIL:
+    return switch (metadata.getProcessingStatus()) {
+      case UNINITIALIZED, PARSING, PARSING_FAIL -> {
         if (parsingWork == null) {
           throw new BatfishException(
               String.format(
@@ -224,16 +213,10 @@ public class WorkQueueMgr {
                       + "Status is %s but no incomplete parsing work exists",
                   snapshot, metadata.getProcessingStatus()));
         }
-        return parsingWork;
-      case PARSED:
-      case DATAPLANING:
-      case DATAPLANED:
-      case DATAPLANING_FAIL:
-        return parsingWork;
-      default:
-        throw new BatfishException(
-            "Unknown snapshot processingStatus: " + metadata.getProcessingStatus());
-    }
+        yield parsingWork;
+      }
+      case PARSED, DATAPLANING, DATAPLANED, DATAPLANING_FAIL -> parsingWork;
+    };
   }
 
   /**
@@ -271,25 +254,17 @@ public class WorkQueueMgr {
   }
 
   public synchronized long getLength(QueueType qType) {
-    switch (qType) {
-      case COMPLETED:
-        return _queueCompletedWork.getLength();
-      case INCOMPLETE:
-        return _queueIncompleteWork.getLength();
-      default:
-        return -1;
-    }
+    return switch (qType) {
+      case COMPLETED -> _queueCompletedWork.getLength();
+      case INCOMPLETE -> _queueIncompleteWork.getLength();
+    };
   }
 
   public synchronized QueuedWork getMatchingWork(WorkItem workItem, QueueType qType) {
-    switch (qType) {
-      case COMPLETED:
-        return getMatchingWork(workItem, _queueCompletedWork);
-      case INCOMPLETE:
-        return getMatchingWork(workItem, _queueIncompleteWork);
-      default:
-        throw new BatfishException("Unknown QueueType " + qType);
-    }
+    return switch (qType) {
+      case COMPLETED -> getMatchingWork(workItem, _queueCompletedWork);
+      case INCOMPLETE -> getMatchingWork(workItem, _queueIncompleteWork);
+    };
   }
 
   private synchronized QueuedWork getMatchingWork(WorkItem workItem, WorkQueue queue) {
@@ -310,14 +285,10 @@ public class WorkQueueMgr {
   }
 
   private @Nullable synchronized QueuedWork getWork(UUID workId, QueueType qType) {
-    switch (qType) {
-      case COMPLETED:
-        return _queueCompletedWork.getWork(workId);
-      case INCOMPLETE:
-        return _queueIncompleteWork.getWork(workId);
-      default:
-        return null;
-    }
+    return switch (qType) {
+      case COMPLETED -> _queueCompletedWork.getWork(workId);
+      case INCOMPLETE -> _queueIncompleteWork.getWork(workId);
+    };
   }
 
   public @Nullable synchronized QueuedWork getWorkForAssignment() {
@@ -530,9 +501,6 @@ public class WorkQueueMgr {
           }
         }
         break;
-      default:
-        throw new BatfishException(
-            "Unhandled " + TaskStatus.class.getCanonicalName() + ": " + task.getStatus());
     }
   }
 
@@ -644,22 +612,15 @@ public class WorkQueueMgr {
       cleanUpInitMetaDataIfNeeded(
           work.getDetails().getNetworkId(), wDetails.getReferenceSnapshotId());
     }
-    switch (work.getDetails().getWorkType()) {
-      case PARSING:
-        return queueParsingWork(work);
-      case DATAPLANING:
-        return queueDataplaningWork(work);
-      case INDEPENDENT_ANSWERING:
-        // assume that this type of work shouldn't be blocked at all
-        return _queueIncompleteWork.enque(work);
-      case PARSING_DEPENDENT_ANSWERING:
-        return queueDependentAnsweringWork(work, false);
-      case DATAPLANE_DEPENDENT_ANSWERING:
-        return queueDependentAnsweringWork(work, true);
-      case UNKNOWN:
-        return _queueIncompleteWork.enque(work);
-      default:
-        throw new BatfishException("Unknown WorkType " + work.getDetails().getWorkType());
-    }
+    return switch (work.getDetails().getWorkType()) {
+      case PARSING -> queueParsingWork(work);
+      case DATAPLANING -> queueDataplaningWork(work);
+      case INDEPENDENT_ANSWERING ->
+          // assume that this type of work shouldn't be blocked at all
+          _queueIncompleteWork.enque(work);
+      case PARSING_DEPENDENT_ANSWERING -> queueDependentAnsweringWork(work, false);
+      case DATAPLANE_DEPENDENT_ANSWERING -> queueDependentAnsweringWork(work, true);
+      case UNKNOWN -> _queueIncompleteWork.enque(work);
+    };
   }
 }

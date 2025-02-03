@@ -61,19 +61,11 @@ public final class MatchBgpSessionType extends BooleanExpr {
     if (props == null) {
       return new Result(false);
     }
-    switch (props.getSessionType()) {
-      case EBGP_SINGLEHOP:
-      case EBGP_MULTIHOP:
-      case EBGP_UNNUMBERED:
-        return new Result(_types.contains(Type.EBGP));
-      case IBGP:
-      case IBGP_UNNUMBERED:
-        return new Result(_types.contains(Type.IBGP));
-      case UNSET:
-      default:
-        throw new IllegalStateException(
-            "Established session cannot have type " + props.getSessionType());
-    }
+    return switch (props.getSessionType()) {
+      case EBGP_SINGLEHOP, EBGP_MULTIHOP, EBGP_UNNUMBERED -> new Result(_types.contains(Type.EBGP));
+      case IBGP, IBGP_UNNUMBERED -> new Result(_types.contains(Type.IBGP));
+      case UNSET -> throw new IllegalStateException("Established session cannot have type UNSET");
+    };
   }
 
   @JsonProperty(PROP_TYPES)

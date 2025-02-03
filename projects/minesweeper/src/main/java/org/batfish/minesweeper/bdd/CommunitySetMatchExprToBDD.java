@@ -213,29 +213,27 @@ public class CommunitySetMatchExprToBDD
     }
     BDDFactory factory = arg.getTransferBDD().getFactory();
     int val = ((LiteralInt) cmp.getExpr()).getValue();
-    switch (cmp.getComparator()) {
-      case EQ:
-        // Too hard to predict what this clause is for.
-        throw new UnsupportedOperationException(hasSize.toString());
-      case GE:
-        // This is likely protecting against too-large community sets.
-        // Only return true if the value allows any set.
-        return val <= 0 ? factory.one() : factory.zero();
-      case GT:
-        // This is likely protecting against too-large community sets.
-        // Only return true if the value allows any set.
-        return val < 0 ? factory.one() : factory.zero();
-      case LE:
-        // This is likely protecting against too-large community sets. Return true if the value
-        // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
-        return val >= 64 ? factory.one() : factory.zero();
-      case LT:
-        // This is likely protecting against too-large community sets. Return true if the value
-        // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
-        return val > 64 ? factory.one() : factory.zero();
-      default:
-        throw new IllegalStateException("Should be unreachable");
-    }
+    return switch (cmp.getComparator()) {
+      case EQ ->
+          // Too hard to predict what this clause is for.
+          throw new UnsupportedOperationException(hasSize.toString());
+      case GE ->
+          // This is likely protecting against too-large community sets.
+          // Only return true if the value allows any set.
+          val <= 0 ? factory.one() : factory.zero();
+      case GT ->
+          // This is likely protecting against too-large community sets.
+          // Only return true if the value allows any set.
+          val < 0 ? factory.one() : factory.zero();
+      case LE ->
+          // This is likely protecting against too-large community sets. Return true if the value
+          // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+          val >= 64 ? factory.one() : factory.zero();
+      case LT ->
+          // This is likely protecting against too-large community sets. Return true if the value
+          // allows any set of 64 or fewer communities. Threshold was chosen semi-arbitrarily.
+          val > 64 ? factory.one() : factory.zero();
+    };
   }
 
   static BDD communityVarsToBDD(Set<CommunityVar> commVars, Arg arg) {

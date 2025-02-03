@@ -445,21 +445,18 @@ public abstract class BgpRib<R extends BgpRoute<?, ?>> extends AbstractRib<R> {
       // Nothing to do; defer to best-path selection
       return 0;
     }
-    switch (_multipathEquivalentAsPathMatchMode) {
-      case EXACT_PATH:
-        return lhs.equals(rhs) ? 0 : -1;
-      case FIRST_AS:
+    return switch (_multipathEquivalentAsPathMatchMode) {
+      case EXACT_PATH -> lhs.equals(rhs) ? 0 : -1;
+      case FIRST_AS -> {
         AsSet lhsFirstAsSet = lhs.getAsSets().isEmpty() ? AsSet.empty() : lhs.getAsSets().get(0);
         AsSet rhsFirstAsSet = rhs.getAsSets().isEmpty() ? AsSet.empty() : rhs.getAsSets().get(0);
-        return lhsFirstAsSet.equals(rhsFirstAsSet) ? 0 : -1;
-      case PATH_LENGTH:
+        yield lhsFirstAsSet.equals(rhsFirstAsSet) ? 0 : -1;
+      }
+      case PATH_LENGTH -> {
         assert lhs.length() == rhs.length();
-        return 0;
-      default:
-        throw new IllegalStateException(
-            String.format(
-                "Unsupported AS PATH comparison mode: %s", _multipathEquivalentAsPathMatchMode));
-    }
+        yield 0;
+      }
+    };
   }
 
   private void selectBestPath(Prefix prefix) {

@@ -121,53 +121,35 @@ public class Parser extends CommonParser {
 
   @Override
   Rule getInputRule(Grammar grammar) {
-    switch (grammar) {
-      case APPLICATION_SPECIFIER:
-        return input(AppSpec());
-      case BGP_PEER_PROPERTY_SPECIFIER:
-      case BGP_PROCESS_PROPERTY_SPECIFIER:
-      case BGP_ROUTE_STATUS_SPECIFIER:
-      case BGP_SESSION_COMPAT_STATUS_SPECIFIER:
-      case BGP_SESSION_STATUS_SPECIFIER:
-      case BGP_SESSION_TYPE_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case FILTER_SPECIFIER:
-        return input(FilterSpec());
-      case INTERFACE_PROPERTY_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case INTERFACE_SPECIFIER:
-        return input(InterfaceSpec());
-      case IP_PROTOCOL_SPECIFIER:
-        return input(IpProtocolSpec());
-      case IP_SPACE_SPECIFIER:
-        return input(IpSpaceSpec());
-      case IPSEC_SESSION_STATUS_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case LOCATION_SPECIFIER:
-        return input(LocationSpec());
-      case MLAG_ID_SPECIFIER:
-        return input(NameSetSpec());
-      case NAMED_STRUCTURE_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case NODE_PROPERTY_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case NODE_SPECIFIER:
-        return input(NodeSpec());
-      case OSPF_INTERFACE_PROPERTY_SPECIFIER:
-      case OSPF_PROCESS_PROPERTY_SPECIFIER:
-      case OSPF_SESSION_STATUS_SPECIFIER:
-      case ROUTING_PROTOCOL_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      case ROUTING_POLICY_SPECIFIER:
-        return input(RoutingPolicySpec());
-      case SINGLE_APPLICATION_SPECIFIER:
-        return input(OneAppSpec());
-      case VXLAN_VNI_PROPERTY_SPECIFIER:
-        return input(EnumSetSpec(Grammar.getEnumValues(grammar)));
-      default:
-        throw new IllegalArgumentException(
-            "Main grammar rule not defined for " + grammar.getFriendlyName());
-    }
+    return switch (grammar) {
+      case APPLICATION_SPECIFIER -> input(AppSpec());
+      case BGP_PEER_PROPERTY_SPECIFIER,
+          BGP_PROCESS_PROPERTY_SPECIFIER,
+          BGP_ROUTE_STATUS_SPECIFIER,
+          BGP_SESSION_COMPAT_STATUS_SPECIFIER,
+          BGP_SESSION_STATUS_SPECIFIER,
+          BGP_SESSION_TYPE_SPECIFIER ->
+          input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case FILTER_SPECIFIER -> input(FilterSpec());
+      case INTERFACE_PROPERTY_SPECIFIER -> input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case INTERFACE_SPECIFIER -> input(InterfaceSpec());
+      case IP_PROTOCOL_SPECIFIER -> input(IpProtocolSpec());
+      case IP_SPACE_SPECIFIER -> input(IpSpaceSpec());
+      case IPSEC_SESSION_STATUS_SPECIFIER -> input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case LOCATION_SPECIFIER -> input(LocationSpec());
+      case MLAG_ID_SPECIFIER -> input(NameSetSpec());
+      case NAMED_STRUCTURE_SPECIFIER -> input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case NODE_PROPERTY_SPECIFIER -> input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case NODE_SPECIFIER -> input(NodeSpec());
+      case OSPF_INTERFACE_PROPERTY_SPECIFIER,
+          OSPF_PROCESS_PROPERTY_SPECIFIER,
+          OSPF_SESSION_STATUS_SPECIFIER,
+          ROUTING_PROTOCOL_SPECIFIER ->
+          input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+      case ROUTING_POLICY_SPECIFIER -> input(RoutingPolicySpec());
+      case SINGLE_APPLICATION_SPECIFIER -> input(OneAppSpec());
+      case VXLAN_VNI_PROPERTY_SPECIFIER -> input(EnumSetSpec(Grammar.getEnumValues(grammar)));
+    };
   }
 
   /** Matches Reference Book name. */

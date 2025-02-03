@@ -51,14 +51,8 @@ public final class IpSpaceToRangeSet implements GenericIpSpaceVisitor<RangeSet<I
     for (AclIpSpaceLine line : Lists.reverse(aclIpSpace.getLines())) {
       RangeSet<Ip> lineIps = line.getIpSpace().accept(this);
       switch (line.getAction()) {
-        case PERMIT:
-          ips.addAll(lineIps);
-          break;
-        case DENY:
-          ips.removeAll(lineIps);
-          break;
-        default:
-          throw new IllegalStateException("Unexpected AclIpSpace line action: " + line.getAction());
+        case PERMIT -> ips.addAll(lineIps);
+        case DENY -> ips.removeAll(lineIps);
       }
     }
     return ImmutableRangeSet.copyOf(ips);

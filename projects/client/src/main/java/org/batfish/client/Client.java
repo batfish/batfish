@@ -796,9 +796,6 @@ public class Client extends AbstractClient implements IClient {
           e.printStackTrace();
         }
         break;
-      default:
-        System.err.println("org.batfish.client: Unknown run mode.");
-        System.exit(1);
     }
   }
 
@@ -1224,15 +1221,6 @@ public class Client extends AbstractClient implements IClient {
   }
 
   private void initHelpers() {
-    switch (_settings.getRunMode()) {
-      case batch:
-      case interactive:
-        break;
-
-      default:
-        return;
-    }
-
     _workHelper = new BfCoordWorkHelper(_logger, _settings);
 
     int numTries = 0;
@@ -1657,79 +1645,40 @@ public class Client extends AbstractClient implements IClient {
       List<String> options,
       List<String> parameters)
       throws Exception {
-    switch (command) {
-      case ADD_BATFISH_OPTION:
-        return addBatfishOption(words, options, parameters);
-      case ANSWER:
-        return answer(words, outWriter, options, parameters);
-      case DEBUG_DELETE:
-        return debugDelete(outWriter, options, parameters);
-      case DEBUG_GET:
-        return debugGet(outWriter, options, parameters);
-      case DEBUG_POST:
-        return debugPost(outWriter, options, parameters);
-      case DEBUG_PUT:
-        return debugPut(outWriter, options, parameters);
-      case DEL_BATFISH_OPTION:
-        return delBatfishOption(options, parameters);
-      case DEL_NETWORK:
-        return delNetwork(options, parameters);
-      case GEN_DP:
-        return generateDataplane(outWriter, options, parameters);
-      case GET:
-        return get(words, outWriter, options, parameters);
-      case GET_POJO_TOPOLOGY:
-        return getPojoTopology(outWriter, options, parameters);
-      case HELP:
-        return help(options, parameters);
-      case INIT_REFERENCE_SNAPSHOT:
-        return initSnapshot(outWriter, options, parameters, true);
-      case INIT_NETWORK:
-        return initNetwork(options, parameters);
-      case INIT_SNAPSHOT:
-        return initSnapshot(outWriter, options, parameters, false);
-      case LOAD_QUESTIONS:
-        return loadQuestions(outWriter, options, parameters, _bfq);
-      case SET_BATFISH_LOGLEVEL:
-        return setBatfishLogLevel(options, parameters);
-      case SET_REFERENCE_SNAPSHOT:
-        return setReferenceSnapshot(options, parameters);
-      case SET_LOGLEVEL:
-        return setLogLevel(options, parameters);
-      case SET_NETWORK:
-        return setNetwork(options, parameters);
-      case SET_SNAPSHOT:
-        return setSnapshot(options, parameters);
-      case SHOW_API_KEY:
-        return showApiKey(options, parameters);
-      case SHOW_BATFISH_LOGLEVEL:
-        return showBatfishLogLevel(options, parameters);
-      case SHOW_BATFISH_OPTIONS:
-        return showBatfishOptions(options, parameters);
-      case SHOW_COORDINATOR_HOST:
-        return showCoordinatorHost(options, parameters);
-      case SHOW_REFERENCE_SNAPSHOT:
-        return showReferenceSnapshot(options, parameters);
-      case SHOW_LOGLEVEL:
-        return showLogLevel(options, parameters);
-      case SHOW_NETWORK:
-        return showNetwork(options, parameters);
-      case SHOW_SNAPSHOT:
-        return showSnapshot(options, parameters);
-      case TEST:
-        return test(options, parameters);
-      case VALIDATE_TEMPLATE:
-        return validateTemplate(words, outWriter, options, parameters);
-
-      case EXIT:
-      case QUIT:
-        return exit(options, parameters);
-
-      default:
-        _logger.errorf("Unsupported command %s\n", words[0]);
-        _logger.error("Type 'help' to see the list of valid commands\n");
-        return false;
-    }
+    return switch (command) {
+      case ADD_BATFISH_OPTION -> addBatfishOption(words, options, parameters);
+      case ANSWER -> answer(words, outWriter, options, parameters);
+      case DEBUG_DELETE -> debugDelete(outWriter, options, parameters);
+      case DEBUG_GET -> debugGet(outWriter, options, parameters);
+      case DEBUG_POST -> debugPost(outWriter, options, parameters);
+      case DEBUG_PUT -> debugPut(outWriter, options, parameters);
+      case DEL_BATFISH_OPTION -> delBatfishOption(options, parameters);
+      case DEL_NETWORK -> delNetwork(options, parameters);
+      case GEN_DP -> generateDataplane(outWriter, options, parameters);
+      case GET -> get(words, outWriter, options, parameters);
+      case GET_POJO_TOPOLOGY -> getPojoTopology(outWriter, options, parameters);
+      case HELP -> help(options, parameters);
+      case INIT_REFERENCE_SNAPSHOT -> initSnapshot(outWriter, options, parameters, true);
+      case INIT_NETWORK -> initNetwork(options, parameters);
+      case INIT_SNAPSHOT -> initSnapshot(outWriter, options, parameters, false);
+      case LOAD_QUESTIONS -> loadQuestions(outWriter, options, parameters, _bfq);
+      case SET_BATFISH_LOGLEVEL -> setBatfishLogLevel(options, parameters);
+      case SET_REFERENCE_SNAPSHOT -> setReferenceSnapshot(options, parameters);
+      case SET_LOGLEVEL -> setLogLevel(options, parameters);
+      case SET_NETWORK -> setNetwork(options, parameters);
+      case SET_SNAPSHOT -> setSnapshot(options, parameters);
+      case SHOW_API_KEY -> showApiKey(options, parameters);
+      case SHOW_BATFISH_LOGLEVEL -> showBatfishLogLevel(options, parameters);
+      case SHOW_BATFISH_OPTIONS -> showBatfishOptions(options, parameters);
+      case SHOW_COORDINATOR_HOST -> showCoordinatorHost(options, parameters);
+      case SHOW_REFERENCE_SNAPSHOT -> showReferenceSnapshot(options, parameters);
+      case SHOW_LOGLEVEL -> showLogLevel(options, parameters);
+      case SHOW_NETWORK -> showNetwork(options, parameters);
+      case SHOW_SNAPSHOT -> showSnapshot(options, parameters);
+      case TEST -> test(options, parameters);
+      case VALIDATE_TEMPLATE -> validateTemplate(words, outWriter, options, parameters);
+      case EXIT, QUIT -> exit(options, parameters);
+    };
   }
 
   private boolean debugDelete(FileWriter outWriter, List<String> options, List<String> parameters) {
@@ -1914,10 +1863,6 @@ public class Client extends AbstractClient implements IClient {
           runInteractive();
           break;
         }
-
-      default:
-        System.err.println("org.batfish.client: Unknown run mode.");
-        System.exit(1);
     }
   }
 

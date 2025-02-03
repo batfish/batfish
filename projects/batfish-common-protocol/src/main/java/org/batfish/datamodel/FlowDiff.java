@@ -20,7 +20,6 @@ import java.util.Set;
 import java.util.SortedSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.datamodel.transformation.IpField;
 import org.batfish.datamodel.transformation.PortField;
 
@@ -77,25 +76,17 @@ public final class FlowDiff implements Comparable<FlowDiff> {
   }
 
   private static String portFieldName(PortField portField) {
-    switch (portField) {
-      case DESTINATION:
-        return PROP_DST_PORT;
-      case SOURCE:
-        return PROP_SRC_PORT;
-      default:
-        throw new BatfishException("Unknown PortField: " + portField);
-    }
+    return switch (portField) {
+      case DESTINATION -> PROP_DST_PORT;
+      case SOURCE -> PROP_SRC_PORT;
+    };
   }
 
   private static String ipFieldName(IpField ipField) {
-    switch (ipField) {
-      case DESTINATION:
-        return PROP_DST_IP;
-      case SOURCE:
-        return PROP_SRC_IP;
-      default:
-        throw new BatfishException("Unknown IpField: " + ipField);
-    }
+    return switch (ipField) {
+      case DESTINATION -> PROP_DST_IP;
+      case SOURCE -> PROP_SRC_IP;
+    };
   }
 
   /** Create a {@link FlowDiff} for a specific changed IpField. */

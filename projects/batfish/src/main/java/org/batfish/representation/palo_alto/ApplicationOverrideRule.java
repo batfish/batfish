@@ -111,15 +111,11 @@ public final class ApplicationOverrideRule implements Serializable {
   }
 
   public @Nullable IpProtocol getIpProtocol() {
-    switch (_protocol) {
-      case TCP:
-        return IpProtocol.TCP;
-      case UDP:
-        return IpProtocol.UDP;
-      case UNSPECIFIED:
-      default:
-        return null;
-    }
+    return switch (_protocol) {
+      case TCP -> IpProtocol.TCP;
+      case UDP -> IpProtocol.UDP;
+      case UNSPECIFIED -> null;
+    };
   }
 
   public @Nonnull IntegerSpace getPort() {
