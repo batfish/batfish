@@ -62,23 +62,15 @@ public final class Interface implements Serializable {
       boolean subinterface,
       boolean systemDefaultSwitchportShutdown,
       boolean nonSwitchportDefaultShutdown) {
-    switch (type) {
-      case ETHERNET:
-        return switchportMode == SwitchportMode.NONE
-            ? nonSwitchportDefaultShutdown
-            : systemDefaultSwitchportShutdown;
-
-      case PORT_CHANNEL:
-        return subinterface;
-
-      case VLAN:
-        return true;
-
-      case LOOPBACK:
-      case MGMT:
-      default:
-        return false;
-    }
+    return switch (type) {
+      case ETHERNET ->
+          switchportMode == SwitchportMode.NONE
+              ? nonSwitchportDefaultShutdown
+              : systemDefaultSwitchportShutdown;
+      case PORT_CHANNEL -> subinterface;
+      case VLAN -> true;
+      case LOOPBACK, MGMT -> false;
+    };
   }
 
   /** Default bandwidth in bits/second */

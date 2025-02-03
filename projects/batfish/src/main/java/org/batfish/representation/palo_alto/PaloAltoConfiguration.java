@@ -1234,20 +1234,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
     // rule-type doc:
     // https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClomCAC
-    switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
-      case INTRAZONE:
-        return fromZoneName.equals(toZoneName);
-      case INTERZONE:
-        return !fromZoneName.equals(toZoneName);
-      case UNIVERSAL:
-        return true;
-      default:
-        warnings.redFlag(
-            String.format(
-                "Skipped unhandled rule type '%s' from zone %s to %s",
-                rule.getRuleType(), fromZoneName, toZoneName));
-        return false;
-    }
+    return switch (firstNonNull(rule.getRuleType(), RuleType.UNIVERSAL)) {
+      case INTRAZONE -> fromZoneName.equals(toZoneName);
+      case INTERZONE -> !fromZoneName.equals(toZoneName);
+      case UNIVERSAL -> true;
+    };
   }
 
   /**
@@ -1936,9 +1927,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         }
       // fall-through
       case SHARED:
-      default:
         return Optional.empty();
     }
+    throw new IllegalStateException("unreachable");
   }
 
   /** Converts interface address {@code String} to {@link IpSpace} */
@@ -1977,16 +1968,15 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // fall-through
       default:
         // No named object found matching this value, so parse the value as is
-        switch (address.getType()) {
-          case IP_ADDRESS:
-            return ConcreteInterfaceAddress.create(Ip.parse(addressText), Prefix.MAX_PREFIX_LENGTH);
-          case IP_PREFIX:
-            return ConcreteInterfaceAddress.parse(addressText);
-          case REFERENCE:
-          default:
-            // Assume warning is surfaced in undefined references or in conversion to concrete addr
-            return null;
-        }
+        return switch (address.getType()) {
+          case IP_ADDRESS ->
+              ConcreteInterfaceAddress.create(Ip.parse(addressText), Prefix.MAX_PREFIX_LENGTH);
+          case IP_PREFIX -> ConcreteInterfaceAddress.parse(addressText);
+          case REFERENCE ->
+              // Assume warning is surfaced in undefined references or in conversion to concrete
+              // addr
+              null;
+        };
     }
   }
 
@@ -2018,27 +2008,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return UniverseIpSpace.INSTANCE;
-          case IP_ADDRESS:
-            return Ip.parse(endpointValue).toIpSpace();
-          case IP_PREFIX:
-            return Prefix.parse(endpointValue).toIpSpace();
-          case IP_RANGE:
+        return switch (endpoint.getType()) {
+          case Any -> UniverseIpSpace.INSTANCE;
+          case IP_ADDRESS -> Ip.parse(endpointValue).toIpSpace();
+          case IP_PREFIX -> Prefix.parse(endpointValue).toIpSpace();
+          case IP_RANGE -> {
             Optional<IpSpace> ipSpace = rangeStringToIpSpace(endpointValue);
             if (ipSpace.isPresent()) {
-              return ipSpace.get();
+              yield ipSpace.get();
             }
             w.redFlag("Could not convert RuleEndpoint range to IpSpace: " + endpoint);
-            return EmptyIpSpace.INSTANCE;
-          case REFERENCE:
-            // Rely on undefined references to surface this issue (endpoint reference not defined)
-            return EmptyIpSpace.INSTANCE;
-          default:
-            w.redFlag("Could not convert RuleEndpoint to IpSpace: " + endpoint);
-            return EmptyIpSpace.INSTANCE;
-        }
+            yield EmptyIpSpace.INSTANCE;
+          }
+          case REFERENCE ->
+              // Rely on undefined references to surface this issue (endpoint reference not defined)
+              EmptyIpSpace.INSTANCE;
+        };
     }
   }
 
@@ -2103,18 +2088,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return matchAddressAnyTraceElement();
-          case IP_ADDRESS:
-          case IP_PREFIX:
-          case IP_RANGE:
-            return matchAddressValueTraceElement(endpointValue);
-          case REFERENCE:
-          default:
-            // Unresolved reference or unhandled type
-            return null;
-        }
+        return switch (endpoint.getType()) {
+          case Any -> matchAddressAnyTraceElement();
+          case IP_ADDRESS, IP_PREFIX, IP_RANGE -> matchAddressValueTraceElement(endpointValue);
+          case REFERENCE ->
+              // Unresolved reference or unhandled type
+              null;
+        };
     }
   }
 
@@ -2147,60 +2127,49 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // fall-through
       default:
         // No named object found matching this endpoint, so parse the endpoint value as is
-        switch (endpoint.getType()) {
-          case Any:
-            return ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
-          case IP_ADDRESS:
-            return ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
-          case IP_PREFIX:
+        return switch (endpoint.getType()) {
+          case Any -> ImmutableRangeSet.of(Range.closed(Ip.ZERO, Ip.MAX));
+          case IP_ADDRESS -> ImmutableRangeSet.of(Range.singleton(Ip.parse(endpointValue)));
+          case IP_PREFIX -> {
             Prefix prefix = Prefix.parse(endpointValue);
-            return ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
-          case IP_RANGE:
+            yield ImmutableRangeSet.of(Range.closed(prefix.getStartIp(), prefix.getEndIp()));
+          }
+          case IP_RANGE -> {
             Optional<Range<Ip>> range = rangeStringToRange(endpointValue);
             if (range.isPresent()) {
-              return ImmutableRangeSet.of(range.get());
+              yield ImmutableRangeSet.of(range.get());
             }
             w.redFlag("Could not convert RuleEndpoint range to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-          case REFERENCE:
-            // Rely on undefined references to surface this issue (endpoint reference not defined)
-            return ImmutableRangeSet.of();
-          default:
-            w.redFlag("Could not convert RuleEndpoint to RangeSet: " + endpoint);
-            return ImmutableRangeSet.of();
-        }
+            yield ImmutableRangeSet.of();
+          }
+          case REFERENCE ->
+              // Rely on undefined references to surface this issue (endpoint reference not defined)
+              ImmutableRangeSet.of();
+        };
     }
   }
 
   private static InterfaceType batfishInterfaceType(
-      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType, Warnings w) {
-    switch (panType) {
-      case AGGREGATED_ETHERNET:
-        return InterfaceType.AGGREGATED;
-      case PHYSICAL:
-        return InterfaceType.PHYSICAL;
-      case LAYER2:
-      case LAYER3:
+      @Nonnull Interface.Type panType, @Nullable Interface.Type parentType) {
+    return switch (panType) {
+      case AGGREGATED_ETHERNET -> InterfaceType.AGGREGATED;
+      case PHYSICAL -> InterfaceType.PHYSICAL;
+      case LAYER2, LAYER3 -> {
         if (parentType == Interface.Type.AGGREGATED_ETHERNET) {
-          return InterfaceType.AGGREGATE_CHILD;
+          yield InterfaceType.AGGREGATE_CHILD;
         }
-        return InterfaceType.LOGICAL;
-      case LOOPBACK:
-        return InterfaceType.LOOPBACK;
-      case TUNNEL:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case TUNNEL_UNIT:
-        return InterfaceType.TUNNEL;
-      case VLAN:
-        // TODO: temporary hack until bind dependencies are removed
-        return InterfaceType.LOOPBACK;
-      case VLAN_UNIT:
-        return InterfaceType.VLAN;
-      default:
-        w.unimplemented("Unknown Palo Alto interface type " + panType);
-        return InterfaceType.UNKNOWN;
-    }
+        yield InterfaceType.LOGICAL;
+      }
+      case LOOPBACK -> InterfaceType.LOOPBACK;
+      case TUNNEL ->
+          // TODO: temporary hack until bind dependencies are removed
+          InterfaceType.LOOPBACK;
+      case TUNNEL_UNIT -> InterfaceType.TUNNEL;
+      case VLAN ->
+          // TODO: temporary hack until bind dependencies are removed
+          InterfaceType.LOOPBACK;
+      case VLAN_UNIT -> InterfaceType.VLAN;
+    };
   }
 
   /** Convert Palo Alto specific interface into vendor independent model interface */
@@ -2215,7 +2184,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         org.batfish.datamodel.Interface.builder()
             .setName(name)
             .setOwner(_c)
-            .setType(batfishInterfaceType(iface.getType(), parentType, _w));
+            .setType(batfishInterfaceType(iface.getType(), parentType));
 
     Integer mtu = iface.getMtu();
     if (mtu != null) {

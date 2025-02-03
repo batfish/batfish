@@ -42,16 +42,11 @@ public final class FirewallSessionInterfaceInfo implements Serializable {
      */
     public SessionAction toSessionAction(
         String originalFlowIngressIface, @Nullable NodeInterfacePair nextHop) {
-      switch (this) {
-        case FORWARD_OUT_IFACE:
-          return new ForwardOutInterface(originalFlowIngressIface, nextHop);
-        case PRE_NAT_FIB_LOOKUP:
-          return PreNatFibLookup.INSTANCE;
-        case POST_NAT_FIB_LOOKUP:
-          return PostNatFibLookup.INSTANCE;
-        default:
-          throw new UnsupportedOperationException("Unknown session action " + this);
-      }
+      return switch (this) {
+        case FORWARD_OUT_IFACE -> new ForwardOutInterface(originalFlowIngressIface, nextHop);
+        case PRE_NAT_FIB_LOOKUP -> PreNatFibLookup.INSTANCE;
+        case POST_NAT_FIB_LOOKUP -> PostNatFibLookup.INSTANCE;
+      };
     }
   }
 

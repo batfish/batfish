@@ -201,11 +201,6 @@ public class SonicConversions {
             memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
             memberInterface.setAccessVlan(vlanId);
             break;
-          default:
-            w.redFlag(
-                String.format(
-                    "Unhandled tagging_mode %s for vlan member %s",
-                    vlanMember.getTaggingMode().get(), memberKey));
         }
       }
     }
@@ -420,8 +415,7 @@ public class SonicConversions {
               c,
               aclName,
               // if an Acl is in ACL_TABLE but not in ACL_RULE, we create an empty Acl
-              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
-              w);
+              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()));
       AclTable aclTable = aclTables.get(aclName);
       attachAcl(c, ipAccessList, aclTable, w);
     }
@@ -468,21 +462,20 @@ public class SonicConversions {
    * device configuration {@code c}.
    */
   private static IpAccessList convertAcl(
-      Configuration c, String aclName, SortedSet<AclRuleWithName> aclRules, Warnings w) {
+      Configuration c, String aclName, SortedSet<AclRuleWithName> aclRules) {
     return IpAccessList.builder()
         .setOwner(c)
         .setName(aclName)
         .setLines(
             aclRules.stream()
-                .map(rule -> convertAclRule(aclName, rule, w))
+                .map(SonicConversions::convertAclRule)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
-  private static Optional<AclLine> convertAclRule(
-      String aclName, AclRuleWithName aclRuleWithName, Warnings w) {
+  private static Optional<AclLine> convertAclRule(AclRuleWithName aclRuleWithName) {
     AclRule aclRule = aclRuleWithName._rule;
 
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
@@ -503,19 +496,10 @@ public class SonicConversions {
     }
     AclLineMatchExpr matchExpr = and(conjuncts);
 
-    switch (aclRuleWithName.getPacketAction()) {
-      case ACCEPT:
-      case FORWARD:
-        return Optional.of(ExprAclLine.accepting(aclRuleWithName._name, matchExpr));
-      case DROP:
-        return Optional.of(ExprAclLine.rejecting(aclRuleWithName._name, matchExpr));
-      default:
-        w.redFlag(
-            String.format(
-                "Ignored ACL_RULE %s|%s: PACKET_ACTION %s is unimplemented",
-                aclName, aclRuleWithName._name, aclRuleWithName.getPacketAction()));
-        return Optional.empty();
-    }
+    return switch (aclRuleWithName.getPacketAction()) {
+      case ACCEPT, FORWARD -> Optional.of(ExprAclLine.accepting(aclRuleWithName._name, matchExpr));
+      case DROP -> Optional.of(ExprAclLine.rejecting(aclRuleWithName._name, matchExpr));
+    };
   }
 
   /**

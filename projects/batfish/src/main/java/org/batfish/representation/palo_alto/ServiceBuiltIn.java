@@ -28,23 +28,20 @@ public enum ServiceBuiltIn {
   }
 
   private HeaderSpace init() {
-    switch (this) {
-      case SERVICE_HTTP:
-        return HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-            .setDstPorts(ImmutableSortedSet.of(SubRange.singleton(80), new SubRange(8080, 8080)))
-            .build();
-      case SERVICE_HTTPS:
-        return HeaderSpace.builder()
-            .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
-            .setDstPorts(ImmutableSortedSet.of(SubRange.singleton(443)))
-            .build();
+    return switch (this) {
+      case SERVICE_HTTP ->
+          HeaderSpace.builder()
+              .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+              .setDstPorts(ImmutableSortedSet.of(SubRange.singleton(80), new SubRange(8080, 8080)))
+              .build();
+      case SERVICE_HTTPS ->
+          HeaderSpace.builder()
+              .setIpProtocols(ImmutableList.of(IpProtocol.TCP))
+              .setDstPorts(ImmutableSortedSet.of(SubRange.singleton(443)))
+              .build();
       // any and application-default don't match a specific port
-      case ANY:
-      case APPLICATION_DEFAULT:
-      default:
-        return null;
-    }
+      case ANY, APPLICATION_DEFAULT -> null;
+    };
   }
 
   public HeaderSpace getHeaderSpace() {
@@ -52,32 +49,22 @@ public enum ServiceBuiltIn {
   }
 
   public AclLineMatchExpr toAclLineMatchExpr() {
-    switch (this) {
-      case ANY:
-        return new TrueExpr(matchServiceAnyTraceElement());
-      case SERVICE_HTTP:
-      case SERVICE_HTTPS:
-        return new MatchHeaderSpace(_serviceHeaderSpace.get(), matchBuiltInServiceTraceElement());
-      case APPLICATION_DEFAULT:
-      // application-default doesn't provide useful headerspace info
-      default:
-        // Should never get here
-        return FalseExpr.INSTANCE;
-    }
+    return switch (this) {
+      case ANY -> new TrueExpr(matchServiceAnyTraceElement());
+      case SERVICE_HTTP, SERVICE_HTTPS ->
+          new MatchHeaderSpace(_serviceHeaderSpace.get(), matchBuiltInServiceTraceElement());
+      case APPLICATION_DEFAULT ->
+          // application-default doesn't provide useful headerspace info
+          FalseExpr.INSTANCE;
+    };
   }
 
   public String getName() {
-    switch (this) {
-      case ANY:
-        return "any";
-      case APPLICATION_DEFAULT:
-        return "application-default";
-      case SERVICE_HTTP:
-        return "service-http";
-      case SERVICE_HTTPS:
-        return "service-https";
-      default:
-        return null;
-    }
+    return switch (this) {
+      case ANY -> "any";
+      case APPLICATION_DEFAULT -> "application-default";
+      case SERVICE_HTTP -> "service-http";
+      case SERVICE_HTTPS -> "service-https";
+    };
   }
 }

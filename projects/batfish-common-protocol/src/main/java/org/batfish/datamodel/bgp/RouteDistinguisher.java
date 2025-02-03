@@ -146,18 +146,16 @@ public final class RouteDistinguisher implements Serializable, Comparable<RouteD
   @Override
   @JsonValue
   public @Nonnull String toString() {
-    switch (_type) {
-      case TYPE0:
-        // Administrator (2 bytes):AssignedNumber (4 bytes)
-        return (_value >> 32) + ":" + (_value & 0xFFFFFFFFL);
-      case TYPE1:
-        // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
-        return Ip.create(_value >> 16).toString() + ":" + (_value & 0xFFFFL);
-      case TYPE2:
-        // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
-        return (_value >> 16) + ":" + (_value & 0xFFFFL);
-      default:
-        return Long.toString(_value);
-    }
+    return switch (_type) {
+      case TYPE0 ->
+          // Administrator (2 bytes):AssignedNumber (4 bytes)
+          (_value >> 32) + ":" + (_value & 0xFFFFFFFFL);
+      case TYPE1 ->
+          // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
+          Ip.create(_value >> 16).toString() + ":" + (_value & 0xFFFFL);
+      case TYPE2 ->
+          // Administrator (4 bytes, IP address):AssignedNumber (2 bytes)
+          (_value >> 16) + ":" + (_value & 0xFFFFL);
+    };
   }
 }

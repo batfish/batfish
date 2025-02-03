@@ -266,14 +266,10 @@ public abstract class BgpPeerConfig implements Serializable {
    */
   @JsonIgnore
   public @Nullable AddressFamily getAddressFamily(AddressFamily.Type type) {
-    switch (type) {
-      case IPV4_UNICAST:
-        return _ipv4UnicastAddressFamily;
-      case EVPN:
-        return _evpnAddressFamily;
-      default:
-        throw new IllegalArgumentException(String.format("Unknown address family type: %s", type));
-    }
+    return switch (type) {
+      case IPV4_UNICAST -> _ipv4UnicastAddressFamily;
+      case EVPN -> _evpnAddressFamily;
+    };
   }
 
   /**

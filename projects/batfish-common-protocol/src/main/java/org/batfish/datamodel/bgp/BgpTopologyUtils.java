@@ -237,26 +237,23 @@ public final class BgpTopologyUtils {
         graph.nodes().parallelStream()
             .flatMap(
                 neighborId -> {
-                  switch (neighborId.getType()) {
-                    case DYNAMIC:
-                      // Passive end of the peering cannot initiate a connection
-                      return Stream.of();
-                    case ACTIVE:
-                      return addActivePeerEdges(
-                          neighborId,
-                          networkConfigurations,
-                          ipVrfOwners,
-                          receivers,
-                          localIps.get(neighborId),
-                          checkReachability,
-                          tracerouteEngine);
-                    case UNNUMBERED:
-                      return addUnnumberedPeerEdges(
-                          neighborId, graph.nodes(), networkConfigurations, l3Adjacencies);
-                    default:
-                      throw new IllegalArgumentException(
-                          String.format("Unrecognized peer type: %s", neighborId));
-                  }
+                  return switch (neighborId.getType()) {
+                    case DYNAMIC ->
+                        // Passive end of the peering cannot initiate a connection
+                        Stream.of();
+                    case ACTIVE ->
+                        addActivePeerEdges(
+                            neighborId,
+                            networkConfigurations,
+                            ipVrfOwners,
+                            receivers,
+                            localIps.get(neighborId),
+                            checkReachability,
+                            tracerouteEngine);
+                    case UNNUMBERED ->
+                        addUnnumberedPeerEdges(
+                            neighborId, graph.nodes(), networkConfigurations, l3Adjacencies);
+                  };
                 })
             .collect(Collectors.toList());
     for (BgpEdge newEdge : newEdges) {

@@ -131,20 +131,13 @@ public final class InferRoles {
     DIGIT_PLUS;
 
     public String tokenToRegex(String s) {
-      switch (this) {
-        case ALPHA_PLUS:
-          return plus(ALPHABETIC_REGEX);
-        case ALPHA_PLUS_DIGIT_PLUS:
-          return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
-        case ALNUM_PLUS:
-          return plus(ALPHANUMERIC_REGEX);
-        case DELIMITER:
-          return Pattern.quote(s);
-        case DIGIT_PLUS:
-          return plus(DIGIT_REGEX);
-        default:
-          throw new BatfishException("this case should be unreachable");
-      }
+      return switch (this) {
+        case ALPHA_PLUS -> plus(ALPHABETIC_REGEX);
+        case ALPHA_PLUS_DIGIT_PLUS -> plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
+        case ALNUM_PLUS -> plus(ALPHANUMERIC_REGEX);
+        case DELIMITER -> Pattern.quote(s);
+        case DIGIT_PLUS -> plus(DIGIT_REGEX);
+      };
     }
   }
 
@@ -248,8 +241,6 @@ public final class InferRoles {
         case DIGIT_PLUS:
           tokens.add(new TokenizedString(chars.toString(), Token.DIGIT_PLUS));
           break;
-        default:
-          throw new BatfishException("Unknown pretoken " + pt);
       }
       i++;
     }

@@ -558,21 +558,18 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     TransformationStep transformDstIp = TransformationStep.assignDestinationIp(targetIp, targetIp);
     TransformationStep transformDstPort =
         TransformationStep.assignDestinationPort(target.getPort(), target.getPort());
-    switch (targetGroupType) {
-      case INSTANCE:
-        // No source NAT for instance targets
-        return new ApplyAll(transformDstIp, transformDstPort);
-      case IP:
-        return new ApplyAll(
-            TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
-            TransformationStep.assignSourcePort(
-                EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
-            transformDstIp,
-            transformDstPort);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unrecognized target group type %s", targetGroupType));
-    }
+    return switch (targetGroupType) {
+      case INSTANCE ->
+          // No source NAT for instance targets
+          new ApplyAll(transformDstIp, transformDstPort);
+      case IP ->
+          new ApplyAll(
+              TransformationStep.assignSourceIp(loadBalancerIp, loadBalancerIp),
+              TransformationStep.assignSourcePort(
+                  EPHEMERAL_LOWEST.number(), EPHEMERAL_HIGHEST.number()),
+              transformDstIp,
+              transformDstPort);
+    };
   }
 
   /**
@@ -585,21 +582,20 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       TargetGroup.Type targetType,
       Set<String> enabledTargetZones,
       Region region) {
-    switch (targetType) {
-      case IP:
-        return "all".equals(targetHealthDescription.getTarget().getAvailabilityZone())
-            || enabledTargetZones.contains(
-                targetHealthDescription.getTarget().getAvailabilityZone());
-      case INSTANCE:
+    return switch (targetType) {
+      case IP ->
+          "all".equals(targetHealthDescription.getTarget().getAvailabilityZone())
+              || enabledTargetZones.contains(
+                  targetHealthDescription.getTarget().getAvailabilityZone());
+      case INSTANCE -> {
         Instance instance = region.getInstances().get(targetHealthDescription.getTarget().getId());
         if (instance == null) {
-          return false;
+          yield false;
         }
         Subnet subnet = region.getSubnets().get(instance.getSubnetId());
-        return subnet != null && enabledTargetZones.contains(subnet.getAvailabilityZone());
-      default:
-        throw new IllegalArgumentException("Unknown target group type " + targetType);
-    }
+        yield subnet != null && enabledTargetZones.contains(subnet.getAvailabilityZone());
+      }
+    };
   }
 
   /** Chains the provided list of transformations. */

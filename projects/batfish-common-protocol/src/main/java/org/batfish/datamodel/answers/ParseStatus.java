@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import org.batfish.common.BatfishException;
 
 public enum ParseStatus {
   /** The file was empty, we have nothing to do */
@@ -42,30 +41,17 @@ public enum ParseStatus {
 
   /** Get explanation for parse statuses. */
   public static String explanation(ParseStatus status) {
-    switch (status) {
-      case EMPTY:
-        return "File is empty";
-      case FAILED:
-        return "File failed to parse";
-      case IGNORED:
-        return "File explicitly ignored by user";
-      case ORPHANED:
-        return "File is an orphaned overlay configuration";
-      case PARTIALLY_UNRECOGNIZED:
-        return "File contained at least one unrecognized line";
-      case PASSED:
-        return "File parsed successfully";
-      case UNEXPECTED_PACKAGING:
-        return "File was not correctly packaged in the snapshot";
-      case UNKNOWN:
-        return "File format is unknown";
-      case UNSUPPORTED:
-        return "File format is known but unsupported";
-      case WILL_NOT_COMMIT:
-        return "File contains configuration that will be rejected by a device";
-      default:
-        throw new BatfishException(
-            String.format("Unhandled parse status explanation for status: %s", status));
-    }
+    return switch (status) {
+      case EMPTY -> "File is empty";
+      case FAILED -> "File failed to parse";
+      case IGNORED -> "File explicitly ignored by user";
+      case ORPHANED -> "File is an orphaned overlay configuration";
+      case PARTIALLY_UNRECOGNIZED -> "File contained at least one unrecognized line";
+      case PASSED -> "File parsed successfully";
+      case UNEXPECTED_PACKAGING -> "File was not correctly packaged in the snapshot";
+      case UNKNOWN -> "File format is unknown";
+      case UNSUPPORTED -> "File format is known but unsupported";
+      case WILL_NOT_COMMIT -> "File contains configuration that will be rejected by a device";
+    };
   }
 }

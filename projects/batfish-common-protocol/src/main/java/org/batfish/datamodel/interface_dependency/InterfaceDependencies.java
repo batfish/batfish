@@ -382,9 +382,6 @@ public class InterfaceDependencies {
               }
               break;
             }
-          default:
-            throw new IllegalStateException(
-                "Unexpected Interface.DependencyType " + outEdge.getDependencyType().name());
         }
       }
     }

@@ -2,7 +2,6 @@ package org.batfish.minesweeper;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
-import org.batfish.common.BatfishException;
 
 /**
  * The OSPF type of a message. This is either intra area (O), inter area (OIA), external type 1
@@ -18,17 +17,11 @@ public enum OspfType {
 
   @Override
   public String toString() {
-    switch (this) {
-      case O:
-        return "O";
-      case OIA:
-        return "O IA";
-      case E1:
-        return "O E1";
-      case E2:
-        return "O E2";
-      default:
-        throw new BatfishException("Invalid Ospf Type");
-    }
+    return switch (this) {
+      case O -> "O";
+      case OIA -> "O IA";
+      case E1 -> "O E1";
+      case E2 -> "O E2";
+    };
   }
 }

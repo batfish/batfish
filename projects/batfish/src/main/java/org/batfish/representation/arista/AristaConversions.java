@@ -892,25 +892,21 @@ final class AristaConversions {
 
   static @Nonnull Collection<RoutingProtocol> toOspfRedistributionProtocols(
       RedistributionSourceProtocol protocol) {
-    switch (protocol) {
-      case BGP_ANY:
-        return ImmutableList.of(
-            RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
-      case CONNECTED:
-        return ImmutableList.of(RoutingProtocol.CONNECTED);
-      case ISIS_ANY:
-        return ImmutableList.of(
-            RoutingProtocol.ISIS_EL1,
-            RoutingProtocol.ISIS_EL2,
-            RoutingProtocol.ISIS_L1,
-            RoutingProtocol.ISIS_L2);
-      case STATIC:
-        return ImmutableList.of(RoutingProtocol.STATIC);
-      case ISIS_L1:
-      default:
-        throw new IllegalArgumentException(
-            "Unknown/invalid redistribution source protocol for OSPF" + protocol);
-    }
+    return switch (protocol) {
+      case BGP_ANY ->
+          ImmutableList.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
+      case CONNECTED -> ImmutableList.of(RoutingProtocol.CONNECTED);
+      case ISIS_ANY ->
+          ImmutableList.of(
+              RoutingProtocol.ISIS_EL1,
+              RoutingProtocol.ISIS_EL2,
+              RoutingProtocol.ISIS_L1,
+              RoutingProtocol.ISIS_L2);
+      case STATIC -> ImmutableList.of(RoutingProtocol.STATIC);
+      case ISIS_L1 ->
+          throw new IllegalArgumentException(
+              "Unknown/invalid redistribution source protocol for OSPF" + protocol);
+    };
   }
 
   private AristaConversions() {} // prevent instantiation of utility class.

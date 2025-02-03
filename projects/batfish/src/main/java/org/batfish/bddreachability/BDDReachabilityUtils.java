@@ -237,21 +237,14 @@ public final class BDDReachabilityUtils {
               IngressLocation loc = entry.getKey();
               BDD headerSpace = entry.getValue();
               Optional<Builder> optionalFlow = pkt.getFlow(headerSpace);
-              if (!optionalFlow.isPresent()) {
+              if (optionalFlow.isEmpty()) {
                 return Stream.of();
               }
               Flow.Builder flow = optionalFlow.get();
               flow.setIngressNode(loc.getNode());
               switch (loc.getType()) {
-                case INTERFACE_LINK:
-                  flow.setIngressInterface(loc.getInterface());
-                  break;
-                case VRF:
-                  flow.setIngressVrf(loc.getVrf());
-                  break;
-                default:
-                  throw new BatfishException(
-                      "Unexpected IngressLocation Type: " + loc.getType().name());
+                case INTERFACE_LINK -> flow.setIngressInterface(loc.getInterface());
+                case VRF -> flow.setIngressVrf(loc.getVrf());
               }
               return Stream.of(flow.build());
             })
@@ -264,29 +257,17 @@ public final class BDDReachabilityUtils {
    * throw on that input. See {@link BDDLoopDetectionAnalysis}.
    */
   public static StateExpr dispositionState(FlowDisposition disposition) {
-    switch (disposition) {
-      case ACCEPTED:
-        return Accept.INSTANCE;
-      case DELIVERED_TO_SUBNET:
-        return DeliveredToSubnet.INSTANCE;
-      case DENIED_IN:
-        return DropAclIn.INSTANCE;
-      case DENIED_OUT:
-        return DropAclOut.INSTANCE;
-      case EXITS_NETWORK:
-        return ExitsNetwork.INSTANCE;
-      case INSUFFICIENT_INFO:
-        return InsufficientInfo.INSTANCE;
-      case LOOP:
-        throw new BatfishException("FlowDisposition LOOP is unsupported");
-      case NEIGHBOR_UNREACHABLE:
-        return NeighborUnreachable.INSTANCE;
-      case NO_ROUTE:
-        return DropNoRoute.INSTANCE;
-      case NULL_ROUTED:
-        return DropNullRoute.INSTANCE;
-      default:
-        throw new BatfishException("Unknown FlowDisposition " + disposition);
-    }
+    return switch (disposition) {
+      case ACCEPTED -> Accept.INSTANCE;
+      case DELIVERED_TO_SUBNET -> DeliveredToSubnet.INSTANCE;
+      case DENIED_IN -> DropAclIn.INSTANCE;
+      case DENIED_OUT -> DropAclOut.INSTANCE;
+      case EXITS_NETWORK -> ExitsNetwork.INSTANCE;
+      case INSUFFICIENT_INFO -> InsufficientInfo.INSTANCE;
+      case LOOP -> throw new BatfishException("FlowDisposition LOOP is unsupported");
+      case NEIGHBOR_UNREACHABLE -> NeighborUnreachable.INSTANCE;
+      case NO_ROUTE -> DropNoRoute.INSTANCE;
+      case NULL_ROUTED -> DropNullRoute.INSTANCE;
+    };
   }
 }

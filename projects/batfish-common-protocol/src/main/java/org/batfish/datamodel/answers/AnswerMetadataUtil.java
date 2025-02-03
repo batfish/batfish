@@ -41,18 +41,12 @@ public final class AnswerMetadataUtil {
       @Nonnull TableAnswerElement table,
       @Nonnull ColumnAggregation columnAggregation,
       @Nonnull BatfishLogger logger) {
-    Object value;
     String column = columnAggregation.getColumn();
     Aggregation aggregation = columnAggregation.getAggregation();
-    switch (aggregation) {
-      case MAX:
-        value = computeColumnMax(table, column, logger);
-        break;
-      default:
-        String message = String.format("Unhandled aggregation type: %s", aggregation);
-        logger.errorf("%s\n", message);
-        throw new IllegalArgumentException(message);
-    }
+    Object value =
+        switch (aggregation) {
+          case MAX -> computeColumnMax(table, column, logger);
+        };
     return value == null ? null : new ColumnAggregationResult(aggregation, column, value);
   }
 

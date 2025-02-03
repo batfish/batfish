@@ -2033,18 +2033,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        _w.redFlag(
-            String.format(
-                "Conversion of Cisco NXOS OSPF network type '%s' is not handled.",
-                type.toString()));
-        return null;
-    }
+    return switch (type) {
+      case BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT -> org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    };
   }
 
   private @Nonnull org.batfish.datamodel.Interface toInterface(Interface iface) {
@@ -2407,11 +2399,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                         + " anything",
                     distributeList.getFilterName()));
         return false;
-      default:
-        throw new IllegalStateException(
-            String.format(
-                "Unrecognized distribute-list filter type %s", distributeList.getFilterType()));
     }
+    throw new IllegalStateException("Should be unreachable");
   }
 
   public static String eigrpNeighborImportPolicyName(String ifaceName, String vrfName, int asn) {
@@ -2457,20 +2446,13 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
 
   private @Nonnull InterfaceType toInterfaceType(
       CiscoNxosInterfaceType type, boolean subinterface) {
-    switch (type) {
-      case ETHERNET:
-        return subinterface ? InterfaceType.LOGICAL : InterfaceType.PHYSICAL;
-      case LOOPBACK:
-        return InterfaceType.LOOPBACK;
-      case MGMT:
-        return InterfaceType.PHYSICAL;
-      case PORT_CHANNEL:
-        return subinterface ? InterfaceType.AGGREGATE_CHILD : InterfaceType.AGGREGATED;
-      case VLAN:
-        return InterfaceType.VLAN;
-      default:
-        return InterfaceType.UNKNOWN;
-    }
+    return switch (type) {
+      case ETHERNET -> subinterface ? InterfaceType.LOGICAL : InterfaceType.PHYSICAL;
+      case LOOPBACK -> InterfaceType.LOOPBACK;
+      case MGMT -> InterfaceType.PHYSICAL;
+      case PORT_CHANNEL -> subinterface ? InterfaceType.AGGREGATE_CHILD : InterfaceType.AGGREGATED;
+      case VLAN -> InterfaceType.VLAN;
+    };
   }
 
   private @Nonnull org.batfish.datamodel.IpAccessList toIpAccessList(IpAccessList list) {
@@ -3686,29 +3668,26 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     .flatMap(
                         t -> {
                           // https://www.cisco.com/c/m/en_us/techdoc/dc/reference/cli/nxos/commands/bgp/match-route-type.html
-                          switch (t) {
-                            case EXTERNAL:
-                              return Stream.of(
-                                  RoutingProtocol.BGP,
-                                  RoutingProtocol.EIGRP,
-                                  RoutingProtocol.OSPF_E1,
-                                  RoutingProtocol.OSPF_E2);
-                            case INTERNAL:
-                              return Stream.of(
-                                  RoutingProtocol.IBGP,
-                                  RoutingProtocol.OSPF,
-                                  RoutingProtocol.OSPF_IA);
-                            case LOCAL:
-                              return Stream.of(RoutingProtocol.LOCAL);
-                            case TYPE_1:
-                              return Stream.of(RoutingProtocol.OSPF_E1);
-                            case TYPE_2:
-                              return Stream.of(RoutingProtocol.OSPF_E2);
-                            case NSSA_EXTERNAL:
-                            default:
+                          return switch (t) {
+                            case EXTERNAL ->
+                                Stream.of(
+                                    RoutingProtocol.BGP,
+                                    RoutingProtocol.EIGRP,
+                                    RoutingProtocol.OSPF_E1,
+                                    RoutingProtocol.OSPF_E2);
+                            case INTERNAL ->
+                                Stream.of(
+                                    RoutingProtocol.IBGP,
+                                    RoutingProtocol.OSPF,
+                                    RoutingProtocol.OSPF_IA);
+                            case LOCAL -> Stream.of(RoutingProtocol.LOCAL);
+                            case TYPE_1 -> Stream.of(RoutingProtocol.OSPF_E1);
+                            case TYPE_2 -> Stream.of(RoutingProtocol.OSPF_E2);
+                            case NSSA_EXTERNAL -> {
                               unsupported.set(true);
-                              return Stream.of(/* TODO */ );
-                          }
+                              yield Stream.of(/* TODO */ );
+                            }
+                          };
                         })
                     .collect(ImmutableSet.toImmutableSet());
             if (unsupported.get()) {
@@ -3839,23 +3818,12 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           @Override
           public Stream<Statement> visitRouteMapSetMetricType(
               RouteMapSetMetricType routeMapSetMetricType) {
-            switch (routeMapSetMetricType.getMetricType()) {
-              case EXTERNAL:
-                return Stream.of(new SetIsisMetricType(IsisMetricType.EXTERNAL));
-
-              case INTERNAL:
-                return Stream.of(new SetIsisMetricType(IsisMetricType.INTERNAL));
-
-              case TYPE_1:
-                return Stream.of(new SetOspfMetricType(OspfMetricType.E1));
-
-              case TYPE_2:
-                return Stream.of(new SetOspfMetricType(OspfMetricType.E2));
-
-              default:
-                // should not happen
-                return Stream.empty();
-            }
+            return switch (routeMapSetMetricType.getMetricType()) {
+              case EXTERNAL -> Stream.of(new SetIsisMetricType(IsisMetricType.EXTERNAL));
+              case INTERNAL -> Stream.of(new SetIsisMetricType(IsisMetricType.INTERNAL));
+              case TYPE_1 -> Stream.of(new SetOspfMetricType(OspfMetricType.E1));
+              case TYPE_2 -> Stream.of(new SetOspfMetricType(OspfMetricType.E2));
+            };
           }
 
           @Override
