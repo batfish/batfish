@@ -44,6 +44,17 @@ public class JFactoryTest {
   }
 
   @Test
+  public void testIsConstant() {
+    _factory.setVarNum(3);
+    assertTrue(_factory.zero().isConstant());
+    assertTrue(_factory.one().isConstant());
+    assertFalse(_factory.ithVar(0).isConstant());
+    assertFalse(_factory.nithVar(0).isConstant());
+    assertFalse(_factory.ithVar(2).isConstant());
+    assertFalse(_factory.nithVar(2).isConstant());
+  }
+
+  @Test
   public void testAnd() {
     _factory.setVarNum(10);
     BDD x = _factory.ithVar(0);
