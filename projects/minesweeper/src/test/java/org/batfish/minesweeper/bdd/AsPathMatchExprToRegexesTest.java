@@ -1,6 +1,11 @@
 package org.batfish.minesweeper.bdd;
 
+import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThrows;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
@@ -27,9 +32,7 @@ import org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.junit.Before;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.ExpectedException;
 
 /** Tests for {@link AsPathMatchExprToRegexes}. */
 public class AsPathMatchExprToRegexesTest {
@@ -43,8 +46,6 @@ public class AsPathMatchExprToRegexesTest {
   private static final String ASPATH2 = "^$";
   private SymbolicAsPathRegex _asPath1Regex;
   private SymbolicAsPathRegex _asPath2Regex;
-
-  @Rule public ExpectedException _expectedException = ExpectedException.none();
 
   @Before
   public void setup() {
@@ -112,9 +113,36 @@ public class AsPathMatchExprToRegexesTest {
 
   @Test
   public void testHasAsPathLength() {
-    HasAsPathLength hapl =
-        HasAsPathLength.of(new IntComparison(IntComparator.EQ, new LiteralInt(32)));
-    _expectedException.expect(UnsupportedOperationException.class);
-    hapl.accept(_matchExprToRegexes, _arg);
+    // EQ is invalid
+    HasAsPathLength eq10 =
+        HasAsPathLength.of(new IntComparison(IntComparator.EQ, new LiteralInt(10)));
+    assertThrows(UnsupportedOperationException.class, () -> eq10.accept(_matchExprToRegexes, _arg));
+
+    // Boundary conditions that evaluate to false (or crash, in EQ's case).
+    for (HasAsPathLength expr :
+        ImmutableList.of(
+            HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(1))),
+            HasAsPathLength.of(new IntComparison(IntComparator.GT, new LiteralInt(0))),
+            HasAsPathLength.of(
+                new IntComparison(IntComparator.LT, new LiteralInt(ASSUMED_MAX_AS_PATH_LENGTH))),
+            HasAsPathLength.of(
+                new IntComparison(
+                    IntComparator.LE, new LiteralInt(ASSUMED_MAX_AS_PATH_LENGTH - 1))))) {
+      assertThat(expr.accept(_matchExprToRegexes, _arg), empty());
+    }
+
+    // Boundary conditions that evaluate to true.
+    for (HasAsPathLength expr :
+        ImmutableList.of(
+            HasAsPathLength.of(new IntComparison(IntComparator.GE, new LiteralInt(0))),
+            HasAsPathLength.of(new IntComparison(IntComparator.GT, new LiteralInt(-1))),
+            HasAsPathLength.of(
+                new IntComparison(
+                    IntComparator.LT, new LiteralInt(ASSUMED_MAX_AS_PATH_LENGTH + 1))),
+            HasAsPathLength.of(
+                new IntComparison(IntComparator.LE, new LiteralInt(ASSUMED_MAX_AS_PATH_LENGTH))))) {
+      assertThat(
+          expr.accept(_matchExprToRegexes, _arg), contains(SymbolicAsPathRegex.ALL_AS_PATHS));
+    }
   }
 }
