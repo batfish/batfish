@@ -476,11 +476,10 @@ public final class Utils {
             .findFirst()
             .orElseGet(
                 () -> {
-                  warnings.redFlag(
-                      String.format(
-                          "Primary address not found for interface '%s'. Using lowest address as"
-                              + " primary",
-                          netInterface.getId()));
+                  warnings.redFlagf(
+                      "Primary address not found for interface '%s'. Using lowest address as"
+                          + " primary",
+                      netInterface.getId());
                   return ifaceAddresses.stream().min(naturalOrder()).orElse(null);
                 });
 

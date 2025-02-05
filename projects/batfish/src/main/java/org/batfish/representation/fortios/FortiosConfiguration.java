@@ -270,10 +270,9 @@ public class FortiosConfiguration extends VendorConfiguration {
   private void convertInterface(Interface iface, Configuration c) {
     InterfaceType type = toViType(iface.getTypeEffective());
     if (type == null) {
-      _w.redFlag(
-          String.format(
-              "Interface %s has unsupported type %s and will not be converted",
-              iface.getName(), iface.getTypeEffective()));
+      _w.redFlagf(
+          "Interface %s has unsupported type %s and will not be converted",
+          iface.getName(), iface.getTypeEffective());
       return;
     }
     String vdom = iface.getVdom();

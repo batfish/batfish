@@ -319,20 +319,18 @@ public final class IpPermissions implements Serializable {
       int code = firstNonNull(_toPort, -1);
       if (type == -1 && code != -1) {
         // Code should not be configured if type isn't.
-        warnings.redFlag(
-            String.format(
-                "IpPermissions for term %s: unexpected for ICMP to have FromPort=%s and ToPort=%s",
-                aclLineName, _fromPort, _toPort));
+        warnings.redFlagf(
+            "IpPermissions for term %s: unexpected for ICMP to have FromPort=%s and ToPort=%s",
+            aclLineName, _fromPort, _toPort);
         return null;
       }
       exprForIcmpTypeAndCode(type, code).forEach(matchesBuilder::add);
     } else if (_fromPort != null || _toPort != null) {
       // if protocols not from the above then fromPort and toPort should be null
-      warnings.redFlag(
-          String.format(
-              "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and"
-                  + " ToPort=%s",
-              aclLineName, _ipProtocol, _fromPort, _toPort));
+      warnings.redFlagf(
+          "IpPermissions for term %s: unexpected to have IpProtocol=%s, FromPort=%s, and"
+              + " ToPort=%s",
+          aclLineName, _ipProtocol, _fromPort, _toPort);
       return null;
     }
     return matchesBuilder.build();

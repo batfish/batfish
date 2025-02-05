@@ -260,10 +260,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     Optional<NetworkInterface> networkInterface =
         findMyInterface(availabilityZone.getSubnetId(), _arn, region);
     if (!networkInterface.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "Network interface not found for load balancer %s (%s) in subnet %s.",
-              _name, _arn, availabilityZone.getSubnetId()));
+      warnings.redFlagf(
+          "Network interface not found for load balancer %s (%s) in subnet %s.",
+          _name, _arn, availabilityZone.getSubnetId());
       return cfgNode;
     }
     Subnet subnet = region.getSubnets().get(availabilityZone.getSubnetId());
@@ -272,11 +271,10 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
 
     LoadBalancerAttributes loadBalancerAttributes = region.getLoadBalancerAttributes().get(_arn);
     if (loadBalancerAttributes == null) {
-      warnings.redFlag(
-          String.format(
-              "Attributes not found for load balancer %s (%s). Assuming that cross zone load"
-                  + " balancing is disabled.",
-              _name, _arn));
+      warnings.redFlagf(
+          "Attributes not found for load balancer %s (%s). Assuming that cross zone load"
+              + " balancing is disabled.",
+          _name, _arn);
     }
     boolean crossZoneLoadBalancing =
         loadBalancerAttributes != null && loadBalancerAttributes.getCrossZoneLoadBalancing();
@@ -395,10 +393,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
               .filter(defaultAction -> defaultAction.getType() == ActionType.FORWARD)
               .findFirst();
       if (!forwardingAction.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "No forwarding action found for listener %s of load balancer %s (%s)",
-                listener, _arn, _name));
+        warnings.redFlagf(
+            "No forwarding action found for listener %s of load balancer %s (%s)",
+            listener, _arn, _name);
         return null;
       }
 
@@ -418,11 +415,10 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
       return new LoadBalancerTransformation(
           new MatchHeaderSpace(matchHeaderSpace), transformationStep);
     } catch (Exception e) {
-      warnings.redFlag(
-          String.format(
-              "Failed to compute listener transformation for listener %s of load balancer %s (%s):"
-                  + " %s",
-              listener, _arn, _name, Throwables.getStackTraceAsString(e)));
+      warnings.redFlagf(
+          "Failed to compute listener transformation for listener %s of load balancer %s (%s):"
+              + " %s",
+          listener, _arn, _name, Throwables.getStackTraceAsString(e));
       return null;
     }
   }
@@ -453,10 +449,9 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
             .collect(ImmutableSet.toImmutableSet());
     if (enabledTargets.isEmpty()) {
       if (fileWarnings) {
-        warnings.redFlag(
-            String.format(
-                "No targets found in enabled availability zone(s) for target group ARN %s",
-                targetGroup.getId()));
+        warnings.redFlagf(
+            "No targets found in enabled availability zone(s) for target group ARN %s",
+            targetGroup.getId());
       }
       return ImmutableSet.of();
     }
@@ -494,9 +489,8 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
     LoadBalancerTargetHealth targetHealths =
         region.getLoadBalancerTargetHealths().get(targetGroupArn);
     if (targetHealths == null) {
-      warnings.redFlag(
-          String.format(
-              "Target health information not found for target group ARN %s", targetGroupArn));
+      warnings.redFlagf(
+          "Target health information not found for target group ARN %s", targetGroupArn);
       return null;
     }
 

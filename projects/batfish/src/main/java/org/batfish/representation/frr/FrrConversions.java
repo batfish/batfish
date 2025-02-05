@@ -606,11 +606,10 @@ public final class FrrConversions {
 
     // if this interface is not defined warn and move on
     if (viIface == null) {
-      w.redFlag(
-          String.format(
-              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
-                  + " device",
-              neighbor.getName()));
+      w.redFlagf(
+          "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+              + " device",
+          neighbor.getName());
       return;
     }
 
@@ -968,19 +967,17 @@ public final class FrrConversions {
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());
 
             if (iface == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
             ConcreteInterfaceAddress concreteAddress = iface.getConcreteAddress();
             if (concreteAddress == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find an address for interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find an address for interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 

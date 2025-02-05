@@ -171,10 +171,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
               if (key.equals(e.getKey())) {
                 return true;
               }
-              w.redFlag(
-                  String.format(
-                      "Batfish internal error: invalid entry %s -> %s named %s",
-                      e.getKey(), e.getValue(), key));
+              w.redFlagf(
+                  "Batfish internal error: invalid entry %s -> %s named %s",
+                  e.getKey(), e.getValue(), key);
               return false;
             })
         .sorted(Entry.comparingByKey(comparator)) /* ImmutableMap is insert ordered. */
@@ -589,15 +588,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                   .filter(name -> !c.getAllInterfaces().containsKey(name))
                   .collect(ImmutableList.toImmutableList());
           if (!undefinedInterfaces.isEmpty()) {
-            w.redFlag(
-                String.format(
-                    "Removing undefined interfaces %s from OSPF process %s area %s on node %s vrf"
-                        + " %s",
-                    undefinedInterfaces,
-                    proc.getProcessId(),
-                    area.getAreaNumber(),
-                    c.getHostname(),
-                    v.getName()));
+            w.redFlagf(
+                "Removing undefined interfaces %s from OSPF process %s area %s on node %s vrf %s",
+                undefinedInterfaces,
+                proc.getProcessId(),
+                area.getAreaNumber(),
+                c.getHostname(),
+                v.getName());
             OspfArea newArea =
                 area.toBuilder()
                     .setInterfaces(
@@ -674,10 +671,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
                 if (c.getTrackingGroups().containsKey(trackName)) {
                   definedTracks.add(trackName);
                 } else {
-                  w.redFlag(
-                      String.format(
-                          "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
-                          trackName, vrfName));
+                  w.redFlagf(
+                      "Removing reference to undefined track '%s' in BGP process for vrf '%s'",
+                      trackName, vrfName);
                 }
               }
               proc.setTracks(definedTracks.build());
@@ -692,11 +688,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
         String track = sr.getTrack();
         if (track != null && !c.getTrackingGroups().containsKey(track)) {
           modified = true;
-          w.redFlag(
-              String.format(
-                  "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
-                      + " '%s'",
-                  track, sr.getNetwork(), v.getName()));
+          w.redFlagf(
+              "Removing reference to undefined track '%s' on static route for prefix %s in vrf"
+                  + " '%s'",
+              track, sr.getNetwork(), v.getName());
           routes.add(sr.toBuilder().setTrack(null).build());
         } else {
           routes.add(sr);
@@ -723,10 +718,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           if (!c.getTrackingGroups().containsKey(track)) {
             tracksModified = true;
             groupsModified = true;
-            w.redFlag(
-                String.format(
-                    "Removing reference to undefined track '%s' in HSRP group %d on '%s'",
-                    track, id, NodeInterfacePair.of(i)));
+            w.redFlagf(
+                "Removing reference to undefined track '%s' in HSRP group %d on '%s'",
+                track, id, NodeInterfacePair.of(i));
           } else {
             newActions.put(track, actionByTrack.getValue());
           }
@@ -759,10 +753,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           if (!c.getTrackingGroups().containsKey(track)) {
             tracksModified = true;
             groupsModified = true;
-            w.redFlag(
-                String.format(
-                    "Removing reference to undefined track '%s' in VRRP group %d on '%s'",
-                    track, id, NodeInterfacePair.of(i)));
+            w.redFlagf(
+                "Removing reference to undefined track '%s' in VRRP group %d on '%s'",
+                track, id, NodeInterfacePair.of(i));
           } else {
             newActions.put(track, actionByTrack.getValue());
           }
@@ -815,10 +808,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Boolean visitNextHopInterface(NextHopInterface nextHopInterface) {
       if (!_c.getAllInterfaces().containsKey(nextHopInterface.getInterfaceName())) {
-        _w.redFlag(
-            String.format(
-                "Removing invalid static route on node '%s' with undefined next hop interface '%s'",
-                _c.getHostname(), nextHopInterface.getInterfaceName()));
+        _w.redFlagf(
+            "Removing invalid static route on node '%s' with undefined next hop interface '%s'",
+            _c.getHostname(), nextHopInterface.getInterfaceName());
         return false;
       }
       return true;
@@ -832,10 +824,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     @Override
     public Boolean visitNextHopVrf(NextHopVrf nextHopVrf) {
       if (!_c.getVrfs().containsKey(nextHopVrf.getVrfName())) {
-        _w.redFlag(
-            String.format(
-                "Removing invalid static route on node '%s' with undefined next hop vrf '%s'",
-                _c.getHostname(), nextHopVrf.getVrfName()));
+        _w.redFlagf(
+            "Removing invalid static route on node '%s' with undefined next hop vrf '%s'",
+            _c.getHostname(), nextHopVrf.getVrfName());
         return false;
       }
       return true;
@@ -899,11 +890,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
             vrrpGroup.getVirtualAddresses().entrySet()) {
           String referencedIface = addressesByInterface.getKey();
           if (!c.getAllInterfaces().containsKey(referencedIface)) {
-            w.redFlag(
-                String.format(
-                    "Removing virtual addresses to be assigned to non-existent interface '%s' for"
-                        + " VRID %d on sync interface '%s'",
-                    referencedIface, vrid, i.getName()));
+            w.redFlagf(
+                "Removing virtual addresses to be assigned to non-existent interface '%s' for"
+                    + " VRID %d on sync interface '%s'",
+                referencedIface, vrid, i.getName());
             modified = true;
           } else {
             addressesBuilder.put(referencedIface, addressesByInterface.getValue());
@@ -929,10 +919,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       // VI invariant: switchport is true iff SwitchportMode is not NONE.
       boolean hasSwitchportMode = i.getSwitchportMode() != SwitchportMode.NONE;
       if (hasSwitchportMode != i.getSwitchport()) {
-        w.redFlag(
-            String.format(
-                "Interface %s has switchport %s but switchport mode %s",
-                name, i.getSwitchport(), i.getSwitchportMode()));
+        w.redFlagf(
+            "Interface %s has switchport %s but switchport mode %s",
+            name, i.getSwitchport(), i.getSwitchportMode());
         c.getAllInterfaces().remove(name);
         continue;
       }
@@ -954,18 +943,16 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
           String aggregateName = i.getChannelGroup();
           Interface aggregate = c.getAllInterfaces().get(aggregateName);
           if (aggregate == null) {
-            w.redFlag(
-                String.format(
-                    "Interface %s is a member of undefined aggregate or or redundant interface %s",
-                    name, aggregateName));
+            w.redFlagf(
+                "Interface %s is a member of undefined aggregate or or redundant interface %s",
+                name, aggregateName);
             c.getAllInterfaces().remove(name);
             continue;
           }
           if (!i.getAllAddresses().isEmpty()) {
-            w.redFlag(
-                String.format(
-                    "Interface %s is a member of %s interface %s but it has L3 addresses",
-                    name, aggregate.getInterfaceType(), aggregateName));
+            w.redFlagf(
+                "Interface %s is a member of %s interface %s but it has L3 addresses",
+                name, aggregate.getInterfaceType(), aggregateName);
             c.getAllInterfaces().remove(name);
             continue;
           }
@@ -991,17 +978,13 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       String refName = dependency.getInterfaceName();
       if (!c.getAllInterfaces().containsKey(refName)) {
         if (dependency.getType() == DependencyType.BIND) {
-          w.redFlag(
-              String.format(
-                  "Interface %s has a bind dependency on missing interface %s", name, refName));
+          w.redFlagf("Interface %s has a bind dependency on missing interface %s", name, refName);
           c.getAllInterfaces().remove(name);
           return false;
         } else {
           assert dependency.getType() == DependencyType.AGGREGATE;
-          w.redFlag(
-              String.format(
-                  "Interface %s has an aggregate dependency on missing interface %s",
-                  name, refName));
+          w.redFlagf(
+              "Interface %s has an aggregate dependency on missing interface %s", name, refName);
           i.setDependencies(
               i.getDependencies().stream()
                   .filter(d -> !d.equals(dependency))
@@ -1051,10 +1034,9 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
       assert aggregate != null;
       String name = i.getName();
       if (!i.getAllAddresses().isEmpty()) {
-        w.redFlag(
-            String.format(
-                "Interface %s is a child of a member of %s interface %s but it has L3 addresses",
-                name, aggregate.getInterfaceType(), aggregateName));
+        w.redFlagf(
+            "Interface %s is a child of a member of %s interface %s but it has L3 addresses",
+            name, aggregate.getInterfaceType(), aggregateName);
         c.getAllInterfaces().remove(name);
         return false;
       }

@@ -83,24 +83,20 @@ public final class CheckPointGatewayConversions {
       Warnings warnings) {
     boolean valid = true;
     if (!(src instanceof AddressSpace)) {
-      warnings.redFlag(
-          String.format(
-              "source %s has unsupported type %s and will be ignored",
-              src.getName(), src.getClass()));
+      warnings.redFlagf(
+          "source %s has unsupported type %s and will be ignored", src.getName(), src.getClass());
       valid = false;
     }
     if (!(dst instanceof AddressSpace)) {
-      warnings.redFlag(
-          String.format(
-              "destination %s has unsupported type %s and will be ignored",
-              dst.getName(), dst.getClass()));
+      warnings.redFlagf(
+          "destination %s has unsupported type %s and will be ignored",
+          dst.getName(), dst.getClass());
       valid = false;
     }
     if (!(service instanceof Service)) {
-      warnings.redFlag(
-          String.format(
-              "service %s has unsupported type %s and will be ignored",
-              service.getName(), service.getClass()));
+      warnings.redFlagf(
+          "service %s has unsupported type %s and will be ignored",
+          service.getName(), service.getClass());
       valid = false;
     }
     return valid;
@@ -277,11 +273,10 @@ public final class CheckPointGatewayConversions {
             .map(
                 o -> {
                   if (!(o instanceof Service)) {
-                    w.redFlag(
-                        String.format(
-                            "Cannot convert %s (type %s) to a service match expression,"
-                                + " making unmatchable.",
-                            o.getName(), o.getClass().getSimpleName()));
+                    w.redFlagf(
+                        "Cannot convert %s (type %s) to a service match expression,"
+                            + " making unmatchable.",
+                        o.getName(), o.getClass().getSimpleName());
                     return FalseExpr.INSTANCE;
                   }
                   return serviceToMatchExpr.visit((Service) o, permitting);
@@ -293,18 +288,16 @@ public final class CheckPointGatewayConversions {
   /** Convert specified {@link TypedManagementObject} to a {@link LineAction}. */
   static @Nonnull LineAction toAction(@Nullable NamedManagementObject obj, Uid uid, Warnings w) {
     if (obj == null) {
-      w.redFlag(
-          String.format(
-              "Cannot convert non-existent object (Uid '%s') into an access-rule action, defaulting"
-                  + " to deny action",
-              uid.getValue()));
+      w.redFlagf(
+          "Cannot convert non-existent object (Uid '%s') into an access-rule action, defaulting"
+              + " to deny action",
+          uid.getValue());
       return LineAction.DENY;
     } else if (!(obj instanceof RulebaseAction)) {
-      w.redFlag(
-          String.format(
-              "Cannot convert object '%s' (Uid '%s') of type %s into an access-rule action,"
-                  + " defaulting to deny action",
-              obj.getName(), uid.getValue(), obj.getClass().getSimpleName()));
+      w.redFlagf(
+          "Cannot convert object '%s' (Uid '%s') of type %s into an access-rule action,"
+              + " defaulting to deny action",
+          obj.getName(), uid.getValue(), obj.getClass().getSimpleName());
       return LineAction.DENY;
     } else {
       RulebaseAction ra = (RulebaseAction) obj;
@@ -340,11 +333,9 @@ public final class CheckPointGatewayConversions {
                 u -> {
                   NamedManagementObject o = objs.get(u);
                   if (o == null) {
-                    w.redFlag(
-                        String.format(
-                            "Cannot convert non-existent object (Uid '%s') to IpSpace,"
-                                + " ignoring",
-                            u.getValue()));
+                    w.redFlagf(
+                        "Cannot convert non-existent object (Uid '%s') to IpSpace," + " ignoring",
+                        u.getValue());
                     IpSpace ref =
                         new IpSpaceReference(String.format("non-existent-%s", u.getValue()));
                     return matchSource
@@ -352,11 +343,10 @@ public final class CheckPointGatewayConversions {
                         : AclLineMatchExprs.matchDst(ref);
                   } else if (!(o instanceof AddressSpace)) {
                     String type = o.getClass().getSimpleName();
-                    w.redFlag(
-                        String.format(
-                            "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
-                                + " ignoring",
-                            o.getName(), u.getValue(), type));
+                    w.redFlagf(
+                        "Cannot convert object '%s' (Uid '%s') of type '%s' to IpSpace,"
+                            + " ignoring",
+                        o.getName(), u.getValue(), type);
                     IpSpace ref =
                         new IpSpaceReference(
                             String.format("unsupported-%s-%s", type, u.getValue()));

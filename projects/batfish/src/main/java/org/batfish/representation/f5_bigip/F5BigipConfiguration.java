@@ -335,9 +335,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
       if (outboundRouteMap != null) {
         peerExportConditions.getConjuncts().add(new CallExpr(outboundRouteMapName));
       } else {
-        _w.redFlag(
-            String.format(
-                "Ignoring reference to missing outbound route-map: %s", outboundRouteMapName));
+        _w.redFlagf("Ignoring reference to missing outbound route-map: %s", outboundRouteMapName);
       }
     }
     // If there is an inbound route-map configured, and it exists, set the v4 BGP import policy.
@@ -516,10 +514,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     SnatPool snatPool = _snatPools.get(snatPoolName);
     if (snatPool == null) {
       // Cannot translate without pool
-      _w.redFlag(
-          String.format(
-              "Cannot SNAT for snat '%s' using missing snatpool: '%s'",
-              snat.getName(), snatPoolName));
+      _w.redFlagf(
+          "Cannot SNAT for snat '%s' using missing snatpool: '%s'", snat.getName(), snatPoolName);
       return Optional.empty();
     }
     if (!snat.getIpv6Origins().isEmpty()) {
@@ -621,9 +617,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     VirtualAddress virtualAddress = _virtualAddresses.get(destination);
     if (virtualAddress == null) {
       // Cannot match without destination virtual address
-      _w.redFlag(
-          String.format(
-              "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination));
+      _w.redFlagf(
+          "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination);
       return Optional.empty();
     }
     Ip destinationIp = virtualAddress.getAddress();
@@ -662,19 +657,16 @@ public class F5BigipConfiguration extends VendorConfiguration {
     String poolName = virtual.getPool();
     if (poolName == null) {
       // Cannot continue without action
-      _w.redFlag(
-          String.format(
-              "Cannot install virtual '%s' without action; need either ip-forward, pool, or reject",
-              virtual.getName()));
+      _w.redFlagf(
+          "Cannot install virtual '%s' without action; need either ip-forward, pool, or reject",
+          virtual.getName());
       return Optional.empty();
     }
     Pool pool = _pools.get(poolName);
     if (pool == null) {
       // Cannot translate without pool
-      _w.redFlag(
-          String.format(
-              "Cannot DNAT for virtual '%s' using missing pool: '%s'",
-              virtual.getName(), poolName));
+      _w.redFlagf(
+          "Cannot DNAT for virtual '%s' using missing pool: '%s'", virtual.getName(), poolName);
       return Optional.empty();
     }
 
@@ -698,9 +690,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     VirtualAddress virtualAddress = _virtualAddresses.get(destination);
     if (virtualAddress == null) {
       // Cannot match without destination virtual address
-      _w.redFlag(
-          String.format(
-              "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination));
+      _w.redFlagf(
+          "Virtual '%s' refers to missing destination '%s'", virtual.getName(), destination);
       return Optional.empty();
     }
     Ip destinationIp = virtualAddress.getAddress();
@@ -909,11 +900,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                   if (address != null) {
                     return address.getIp();
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip"
-                                + " address",
-                            neighbor.getName(), updateSourceInterface));
+                    _w.redFlagf(
+                        "BGP neighbor: '%s' update-source interface: '%s' not assigned an ip"
+                            + " address",
+                        neighbor.getName(), updateSourceInterface);
                   }
                 }
               }
@@ -1587,10 +1577,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
         .filter(entry -> entry.getAction() == null)
         .forEach(
             entry ->
-                _w.redFlag(
-                    String.format(
-                        "route-map: '%s' entry '%d' has no action",
-                        routeMap.getName(), entry.getNum())));
+                _w.redFlagf(
+                    "route-map: '%s' entry '%d' has no action",
+                    routeMap.getName(), entry.getNum()));
     routeMap.getEntries().values().stream()
         .filter(entry -> entry.getAction() != null)
         .map(entry -> toRoutingPolicyStatement(entry))
@@ -1877,11 +1866,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
                   Comparator.comparing(BgpProcess::getName), _bgpProcesses.values())
               .first();
       if (_bgpProcesses.size() > 1) {
-        _w.redFlag(
-            String.format(
-                "Multiple BGP processes not supported. Only using first process alphabetically:"
-                    + " '%s'",
-                proc.getName()));
+        _w.redFlagf(
+            "Multiple BGP processes not supported. Only using first process alphabetically:"
+                + " '%s'",
+            proc.getName());
       }
       _c.getDefaultVrf().setBgpProcess(toBgpProcess(proc));
     }
@@ -2111,11 +2099,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
             .map(ConcreteInterfaceAddress::getIp)
             .max(Comparator.naturalOrder());
     if (!highestIp.isPresent()) {
-      w.redFlag(
-          String.format(
-              "Router-id is not manually configured for %s in VRF %s. Unable to infer default"
-                  + " router-id as no interfaces have IP addresses",
-              processDesc, vrf));
+      w.redFlagf(
+          "Router-id is not manually configured for %s in VRF %s. Unable to infer default"
+              + " router-id as no interfaces have IP addresses",
+          processDesc, vrf);
       return Ip.ZERO;
     }
     return highestIp.get();
@@ -2181,31 +2168,27 @@ public class F5BigipConfiguration extends VendorConfiguration {
     boolean ipv4 = ipv4Gw || ipv4Network;
     boolean ipv6 = ipv6Gw || ipv6Network;
     if (!ipv4Gw && !ipv6Gw) {
-      _w.redFlag(
-          String.format(
-              "Cannot convert %s to static route because it is missing default gateway",
-              route.getName()));
+      _w.redFlagf(
+          "Cannot convert %s to static route because it is missing default gateway",
+          route.getName());
     }
     if (!ipv4Network && !ipv6Network) {
-      _w.redFlag(
-          String.format(
-              "Cannot convert %s to static route because it is missing network", route.getName()));
+      _w.redFlagf(
+          "Cannot convert %s to static route because it is missing network", route.getName());
     }
     if (ipv4 && ipv6) {
-      _w.redFlag(
-          String.format(
-              "Cannot convert %s to static route because it has mixed IPv4 and IPv6 information",
-              route.getName()));
+      _w.redFlagf(
+          "Cannot convert %s to static route because it has mixed IPv4 and IPv6 information",
+          route.getName());
     }
   }
 
   private void warnInvalidPrefixList(PrefixList prefixList) {
     if (prefixList.getEntries().values().stream()
         .anyMatch(entry -> entry.getPrefix() != null && entry.getPrefix6() != null)) {
-      _w.redFlag(
-          String.format(
-              "prefix-list '%s' is invalid since it contains both IPv4 and IPv6 information",
-              prefixList.getName()));
+      _w.redFlagf(
+          "prefix-list '%s' is invalid since it contains both IPv4 and IPv6 information",
+          prefixList.getName());
     }
   }
 }

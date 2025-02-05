@@ -651,11 +651,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
             ipv4AfSettingsBuilder.setAdditionalPathsSelectAll(true);
             // TODO: implement max additional-paths to send in datamodel and populate here
           } else {
-            _w.redFlag(
-                String.format(
-                    "add-path send disabled because add-path send path-count not configured for"
-                        + " neighbor %s",
-                    prefix));
+            _w.redFlagf(
+                "add-path send disabled because add-path send path-count not configured for"
+                    + " neighbor %s",
+                prefix);
           }
         }
       }
@@ -1639,10 +1638,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     Ip ospfArea = ospfInterfaceSettings.getOspfArea();
     if (newIface.getConcreteAddress() == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign interface %s to area %s because it has no IP address.",
-              interfaceName, ospfArea));
+      _w.redFlagf(
+          "Cannot assign interface %s to area %s because it has no IP address.",
+          interfaceName, ospfArea);
       return;
     }
     long ospfAreaLong = ospfArea.asLong();
@@ -1901,11 +1899,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     String name = iface.getName();
     if (iface.getParent().getRedundantParentInterface() != null) {
-      _w.redFlag(
-          String.format(
-              "Refusing to convert illegal unit '%s' on parent that is a member of a redundant"
-                  + " ethernet group '%s'",
-              name, iface.getParent().getRedundantParentInterface()));
+      _w.redFlagf(
+          "Refusing to convert illegal unit '%s' on parent that is a member of a redundant"
+              + " ethernet group '%s'",
+          name, iface.getParent().getRedundantParentInterface());
       return null;
     }
     org.batfish.datamodel.Interface newIface =
@@ -1959,10 +1956,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
             newIface.setPacketPolicy(incomingFilterName);
           } else {
             newIface.setPacketPolicy(null);
-            _w.redFlag(
-                String.format(
-                    "Interface %s: cannot resolve applied filter %s, defaulting to no filter",
-                    name, incomingFilterName));
+            _w.redFlagf(
+                "Interface %s: cannot resolve applied filter %s, defaulting to no filter",
+                name, incomingFilterName);
           }
         }
       }
@@ -2039,11 +2035,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       newIface.setSwitchport(false);
       if (iface.getVlanId() != null) {
         if (iface.getParent().getVlanTagging() == VlanTaggingMode.NONE) {
-          _w.redFlag(
-              String.format(
-                  "%s: VLAN-ID can only be specified on tagged ethernet interfaces, but %s is not"
-                      + " configured with vlan-tagging or flexible-vlan-tagging",
-                  iface.getName(), iface.getParent().getName()));
+          _w.redFlagf(
+              "%s: VLAN-ID can only be specified on tagged ethernet interfaces, but %s is not"
+                  + " configured with vlan-tagging or flexible-vlan-tagging",
+              iface.getName(), iface.getParent().getName());
         } else {
           newIface.setEncapsulationVlan(iface.getVlanId());
         }
@@ -2061,11 +2056,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         (vrid, vrrpGroup) -> {
           Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
           if (virtualAddresses.isEmpty()) {
-            _w.redFlag(
-                String.format(
-                    "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
-                        + " on interface '%s' because no virtual-address is assigned.",
-                    vrid, ifaceName));
+            _w.redFlagf(
+                "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
+                    + " on interface '%s' because no virtual-address is assigned.",
+                vrid, ifaceName);
             return;
           }
           groupsBuilder.put(
@@ -2129,10 +2123,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     List<VlanMember> effectiveMembers =
         !vlanMembers.isEmpty() ? vlanMembers : ImmutableList.of(DEFAULT_VLAN_MEMBER);
     if (effectiveMembers.size() > 1) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign access vlan to interface %s: more than one member declared %s",
-              ifaceName, effectiveMembers));
+      _w.redFlagf(
+          "Cannot assign access vlan to interface %s: more than one member declared %s",
+          ifaceName, effectiveMembers);
       return null;
     }
 
@@ -2142,15 +2135,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // This is the expected case. One member, with one vlan assigned.
       return members.singletonValue();
     } else if (members.isEmpty()) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign access vlan to interface %s: no vlan-id is assigned to vlan %s",
-              ifaceName, member));
+      _w.redFlagf(
+          "Cannot assign access vlan to interface %s: no vlan-id is assigned to vlan %s",
+          ifaceName, member);
       return null;
     }
-    _w.redFlag(
-        String.format(
-            "Cannot assign more than one access vlan to interface %s: %s", ifaceName, member));
+    _w.redFlagf("Cannot assign more than one access vlan to interface %s: %s", ifaceName, member);
     return null;
   }
 
@@ -2176,9 +2166,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     } else if (vlanMember instanceof AllVlans) {
       return ALL_VLANS;
     } else {
-      _w.redFlag(
-          String.format(
-              "Unsupported vlan member type: %s", vlanMember.getClass().getCanonicalName()));
+      _w.redFlagf("Unsupported vlan member type: %s", vlanMember.getClass().getCanonicalName());
       return IntegerSpace.EMPTY;
     }
   }
@@ -2195,9 +2183,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
       case P2MP:
         return OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
-        _w.redFlag(
-            String.format(
-                "Conversion of Juniper OSPF network type '%s' is not handled.", type.toString()));
+        _w.redFlagf(
+            "Conversion of Juniper OSPF network type '%s' is not handled.", type.toString());
         return null;
     }
   }
@@ -3281,10 +3268,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (nextTable != null) {
       RibId ribId = toRibId(getHostname(), nextTable, _w);
       if (ribId == null) {
-        _w.redFlag(
-            String.format(
-                "Static route for prefix %s contains illegal next-table value: %s",
-                prefix, nextTable));
+        _w.redFlagf(
+            "Static route for prefix %s contains illegal next-table value: %s", prefix, nextTable);
         return ImmutableSet.of();
       }
       if (!ribId.getRibName().equals(RibId.DEFAULT_RIB_NAME)) {
@@ -3294,19 +3279,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
       nextVrf = ribId.getVrfName();
     }
     if (nextVrf != null && !route.getQualifiedNextHops().isEmpty()) {
-      _w.redFlag(
-          String.format(
-              "Static route for prefix %s illegally contains both next-table and"
-                  + " qualified-next-hop",
-              prefix));
+      _w.redFlagf(
+          "Static route for prefix %s illegally contains both next-table and"
+              + " qualified-next-hop",
+          prefix);
       return ImmutableSet.of();
     }
     if (route.getDrop() && !route.getQualifiedNextHops().isEmpty()) {
-      _w.redFlag(
-          String.format(
-              "Static route for prefix %s cannot contain both discard nexthop and"
-                  + " qualified-next-hop. Ignoring this route.",
-              prefix));
+      _w.redFlagf(
+          "Static route for prefix %s cannot contain both discard nexthop and"
+              + " qualified-next-hop. Ignoring this route.",
+          prefix);
       return ImmutableSet.of();
     }
     ImmutableSet.Builder<org.batfish.datamodel.StaticRoute> viStaticRoutes = ImmutableSet.builder();
@@ -4123,11 +4106,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         .filter(Predicates.not(_c.getCommunitySets()::containsKey))
         .forEach(
             name ->
-                _w.redFlag(
-                    String.format(
-                        "community '%s' contains no literal communities, but is illegally used in"
-                            + " 'then community' statement",
-                        name)));
+                _w.redFlagf(
+                    "community '%s' contains no literal communities, but is illegally used in"
+                        + " 'then community' statement",
+                    name));
   }
 
   /** Initialize default protocol-specific import policies */
@@ -4193,9 +4175,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                             && newUnitInterface.getVlan() == null) {
                           // TODO: May still be active if part of a bridge, though maybe it still
                           //       needs a vlan.
-                          _w.redFlag(
-                              String.format(
-                                  "Deactivating %s because it has no assigned vlan", name));
+                          _w.redFlagf("Deactivating %s because it has no assigned vlan", name);
                           newUnitInterface.deactivate(InactiveReason.INCOMPLETE);
                         }
 
@@ -4307,11 +4287,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
         continue;
       }
       if (irbVlanIds.containsKey(l3Interface)) {
-        _w.redFlag(
-            String.format(
-                "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
-                    + " to vlan '%s'",
-                l3Interface, vlanId, irbVlanIds.get(l3Interface)));
+        _w.redFlagf(
+            "Cannot assign '%s' as the l3-interface of vlan '%s' since it is already assigned"
+                + " to vlan '%s'",
+            l3Interface, vlanId, irbVlanIds.get(l3Interface));
         continue;
       }
       irbVlanIds.put(l3Interface, vlanId);
@@ -4323,19 +4302,17 @@ public final class JuniperConfiguration extends VendorConfiguration {
         Interface i = optionalInterface.get();
         EthernetSwitching es = i.getEthernetSwitching();
         if (es != null && (es.getSwitchportMode() != null || !es.getVlanMembers().isEmpty())) {
-          _w.redFlag(
-              String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
-                      + " configuration under family ethernet-switching",
-                  memberIfName, vlanId));
+          _w.redFlagf(
+              "Cannot assign '%s' as interface of vlan '%s' since it is already has vlan"
+                  + " configuration under family ethernet-switching",
+              memberIfName, vlanId);
           continue;
         }
         if (_indirectAccessPorts.containsKey(memberIfName)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
-                      + " vlan '%s'",
-                  memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName()));
+          _w.redFlagf(
+              "Cannot assign '%s' as interface of vlan '%s' since it is already interface of"
+                  + " vlan '%s'",
+              memberIfName, vlanId, _indirectAccessPorts.get(memberIfName).getName());
           continue;
         }
         _indirectAccessPorts.put(memberIfName, new VlanReference(vlan.getName()));
