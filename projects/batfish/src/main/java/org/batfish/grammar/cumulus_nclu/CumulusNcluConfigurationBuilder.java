@@ -427,17 +427,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for bond clashes with existing vrf in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for bond clashes with existing vrf in: %s", name, getFullText(ctx));
       return null;
     }
     if (_c.getVxlans().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for bond clashes with existing vxlan in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for bond clashes with existing vxlan in: %s", name, getFullText(ctx));
       return null;
     }
     return new Bond(name);
@@ -455,35 +451,31 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
 
     // Early exits
     if (name.equals(LOOPBACK_INTERFACE_NAME)) {
-      _w.redFlag(
-          String.format(
-              "Loopback interface can only be configured via 'net add loopback' family of"
-                  + " commands; following is invalid: %s",
-              getFullText(ctx)));
+      _w.redFlagf(
+          "Loopback interface can only be configured via 'net add loopback' family of"
+              + " commands; following is invalid: %s",
+          getFullText(ctx));
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "bond interface '%s' can only be configured via 'net add bond' family of commands;"
-                  + " following is invalid: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "bond interface '%s' can only be configured via 'net add bond' family of commands;"
+              + " following is invalid: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "VRF loopback interface '%s' can only be configured via 'net add vrf' family of"
-                  + " commands; following is invalid: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "VRF loopback interface '%s' can only be configured via 'net add vrf' family of"
+              + " commands; following is invalid: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getVxlans().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands;"
-                  + " following is invalid: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "VXLAN interface '%s' can only be configured via 'net add vxlan' family of commands;"
+              + " following is invalid: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (PHYSICAL_INTERFACE_PATTERN.matcher(name).matches()) {
@@ -496,21 +488,19 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       } else if (_c.getBonds().containsKey(superInterfaceName)) {
         type = CumulusInterfaceType.BOND_SUBINTERFACE;
       } else {
-        _w.redFlag(
-            String.format(
-                "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond"
-                    + " interface in: %s",
-                name, superInterfaceName, getFullText(ctx)));
+        _w.redFlagf(
+            "Subinterface name '%s' is invalid since '%s' is neither a physical nor a bond"
+                + " interface in: %s",
+            name, superInterfaceName, getFullText(ctx));
         return null;
       }
       try {
         encapsulationVlan = Integer.parseInt(vlanStr, 10);
         checkArgument(1 <= encapsulationVlan && encapsulationVlan <= 4094);
       } catch (IllegalArgumentException e) {
-        _w.redFlag(
-            String.format(
-                "Subinterface name '%s' is invalid since '%s' is not a valid VLAN number in: %s",
-                name, vlanStr, getFullText(ctx)));
+        _w.redFlagf(
+            "Subinterface name '%s' is invalid since '%s' is not a valid VLAN number in: %s",
+            name, vlanStr, getFullText(ctx));
         return null;
       }
     } else {
@@ -533,24 +523,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vrf clashes with existing bond interface in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vrf clashes with existing bond interface in: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getInterfaces().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vrf clashes with existing interface in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vrf clashes with existing interface in: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getVxlans().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vrf clashes with existing vxlan in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vrf clashes with existing vxlan in: %s", name, getFullText(ctx));
       return null;
     }
     return new Vrf(name);
@@ -569,24 +555,20 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       return null;
     }
     if (_c.getBonds().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vxlan clashes with existing bond interface in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vxlan clashes with existing bond interface in: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getInterfaces().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vxlan clashes with existing interface in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vxlan clashes with existing interface in: %s",
+          name, getFullText(ctx));
       return null;
     }
     if (_c.getVrfs().containsKey(name)) {
-      _w.redFlag(
-          String.format(
-              "Invalid name '%s' for vxlan clashes with existing vrf in: %s",
-              name, getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid name '%s' for vxlan clashes with existing vrf in: %s", name, getFullText(ctx));
       return null;
     }
     return new Vxlan(name);
@@ -605,11 +587,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         _c.setBgpProcess(_currentBgpProcess);
       } else {
         // Do not attach new BGP process to configuration since since line is invalid
-        _w.redFlag(
-            String.format(
-                "Must first create BGP process via 'net add bgp autonomous-system <number>'"
-                    + " before: %s",
-                getFullText(ctx)));
+        _w.redFlagf(
+            "Must first create BGP process via 'net add bgp autonomous-system <number>'"
+                + " before: %s",
+            getFullText(ctx));
       }
     }
     _currentBgpVrf = _currentBgpProcess.getDefaultVrf();
@@ -696,11 +677,10 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
       // create them if necessary when setting id
       _currentVxlans = initVxlansIfAbsent(names, ctx);
     } else if (!_c.getVxlans().keySet().containsAll(names)) {
-      _w.redFlag(
-          String.format(
-              "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id"
-                  + " <id>' before line: %s",
-              getFullText(ctx.getParent())));
+      _w.redFlagf(
+          "All referenced vxlan instances must be created via 'net add vxlan <name> vxlan id"
+              + " <id>' before line: %s",
+          getFullText(ctx.getParent()));
       _currentVxlans = ImmutableList.of();
     } else {
       _currentVxlans =
@@ -785,10 +765,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
         ImmutableSet.of(_currentBgpNeighborName),
         ctx,
         CumulusStructureUsage.BGP_NEIGHBOR_INTERFACE)) {
-      _w.redFlag(
-          String.format(
-              "Cannot create BGP neighbor for illegal abstract interface name '%s' in: %s",
-              _currentBgpNeighborName, getFullText(ctx)));
+      _w.redFlagf(
+          "Cannot create BGP neighbor for illegal abstract interface name '%s' in: %s",
+          _currentBgpNeighborName, getFullText(ctx));
       _currentBgpNeighbor = new BgpPeerGroupNeighbor("dummy");
       return;
     }
@@ -1152,16 +1131,13 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             .filter(port -> SUBINTERFACE_PATTERN.matcher(port).matches())
             .collect(ImmutableList.toImmutableList());
     if (!subinterfaces.isEmpty()) {
-      _w.redFlag(
-          String.format(
-              "Cannot add subinterfaces: %s to bridge in: %s", subinterfaces, getFullText(ctx)));
+      _w.redFlagf("Cannot add subinterfaces: %s to bridge in: %s", subinterfaces, getFullText(ctx));
       return;
     }
     if (!referenceAbstractInterfaces(ports, ctx, CumulusStructureUsage.BRIDGE_PORT)) {
-      _w.redFlag(
-          String.format(
-              "Cannot add illegal ports glob '%s' to bridge in: %s",
-              ctx.ports.getText(), getFullText(ctx)));
+      _w.redFlagf(
+          "Cannot add illegal ports glob '%s' to bridge in: %s",
+          ctx.ports.getText(), getFullText(ctx));
       return;
     }
     _c.getBridge().setPorts(ports);
@@ -1358,10 +1334,9 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
   public void exitRmm_interface(Rmm_interfaceContext ctx) {
     Set<String> names = toStrings(ctx.interfaces);
     if (!referenceAbstractInterfaces(names, ctx, CumulusStructureUsage.ROUTE_MAP_MATCH_INTERFACE)) {
-      _w.redFlag(
-          String.format(
-              "Cannot match illegal interface glob '%s' in: %s",
-              ctx.interfaces.getText(), getFullText(ctx)));
+      _w.redFlagf(
+          "Cannot match illegal interface glob '%s' in: %s",
+          ctx.interfaces.getText(), getFullText(ctx));
       return;
     }
     _currentRouteMapEntry.setMatchInterface(new RouteMapMatchInterface(names));

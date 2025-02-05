@@ -245,10 +245,9 @@ public class AwsConfiguration extends VendorConfiguration {
           region.addPrefixListReferenceBook(_convertedConfiguration, getWarnings());
         } catch (Exception e) {
           getWarnings()
-              .redFlag(
-                  String.format(
-                      "Failed conversion for account %s, region %s\n%s",
-                      account.getId(), region.getName(), Throwables.getStackTraceAsString(e)));
+              .redFlagf(
+                  "Failed conversion for account %s, region %s\n%s",
+                  account.getId(), region.getName(), Throwables.getStackTraceAsString(e));
         }
       }
     }
@@ -260,9 +259,7 @@ public class AwsConfiguration extends VendorConfiguration {
           .forEach(_convertedConfiguration::addNode);
     } catch (Exception e) {
       getWarnings()
-          .redFlag(
-              String.format(
-                  "Failed to convert transit gateways %s", Throwables.getStackTraceAsString(e)));
+          .redFlagf("Failed to convert transit gateways %s", Throwables.getStackTraceAsString(e));
     }
     TransitGatewayPeeringConnector.connect(this, _convertedConfiguration, getWarnings());
   }
@@ -280,9 +277,7 @@ public class AwsConfiguration extends VendorConfiguration {
           c -> c.createConnection(_convertedConfiguration, getWarnings()));
     } catch (Exception e) {
       getWarnings()
-          .redFlag(
-              String.format(
-                  "Failed to process VPC peerings %s", Throwables.getStackTraceAsString(e)));
+          .redFlagf("Failed to process VPC peerings %s", Throwables.getStackTraceAsString(e));
     }
   }
 

@@ -995,18 +995,16 @@ public final class AsaConfiguration extends VendorConfiguration {
     Interface commIface = _interfaces.get(_failoverCommunicationInterface);
     Interface sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
     if (commIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: communication interface %s is not present",
-              _failoverCommunicationInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: communication interface %s is not present",
+          _failoverCommunicationInterface);
       return;
     }
     if (sigIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: stateful signaling interface %s is not"
-                  + " present",
-              _failoverStatefulSignalingInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: stateful signaling interface %s is not"
+              + " present",
+          _failoverStatefulSignalingInterface);
       return;
     }
 
@@ -2926,9 +2924,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }

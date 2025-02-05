@@ -175,10 +175,8 @@ final class NatGateway implements AwsVpcEntity, Serializable {
     String networkInterfaceId = _natGatewayAddresses.get(0).getNetworkInterfaceId();
     NetworkInterface networkInterface = region.getNetworkInterfaces().get(networkInterfaceId);
     if (networkInterface == null) {
-      warnings.redFlag(
-          String.format(
-              "Network interface %s not found for NAT gateway %s.",
-              networkInterfaceId, _natGatewayId));
+      warnings.redFlagf(
+          "Network interface %s not found for NAT gateway %s.", networkInterfaceId, _natGatewayId);
       return cfgNode;
     }
     createPublicIpsRefBook(Collections.singleton(networkInterface), cfgNode);
@@ -257,19 +255,17 @@ final class NatGateway implements AwsVpcEntity, Serializable {
 
     Vpc vpc = region.getVpcs().get(_vpcId);
     if (vpc == null) {
-      warnings.redFlag(
-          String.format(
-              "VPC %s for NAT gateway %s not found in region %s",
-              _vpcId, _natGatewayId, region.getName()));
+      warnings.redFlagf(
+          "VPC %s for NAT gateway %s not found in region %s",
+          _vpcId, _natGatewayId, region.getName());
       return null;
     }
 
     Configuration vpcCfg = awsConfiguration.getNode(Vpc.nodeName(vpc.getId()));
     if (vpcCfg == null) {
-      warnings.redFlag(
-          String.format(
-              "Configuration for VPC %s not found while building the NAT gateway node %s",
-              _vpcId, _natGatewayId));
+      warnings.redFlagf(
+          "Configuration for VPC %s not found while building the NAT gateway node %s",
+          _vpcId, _natGatewayId);
       return null;
     }
 

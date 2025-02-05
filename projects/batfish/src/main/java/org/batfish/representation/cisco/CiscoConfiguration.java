@@ -577,11 +577,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
                               "No virtual address set for VRRP on interface: '" + ifaceName + "'");
                         }
                       } else {
-                        _w.redFlag(
-                            String.format(
-                                "Could not determine source address of VRRP control traffic on"
-                                    + " interface '%s' due to missing ip address",
-                                ifaceName));
+                        _w.redFlagf(
+                            "Could not determine source address of VRRP control traffic on"
+                                + " interface '%s' due to missing ip address",
+                            ifaceName);
                       }
                       iface.addVrrpGroup(vrid, newGroup.build());
                     });
@@ -1320,10 +1319,9 @@ public final class CiscoConfiguration extends VendorConfiguration {
     String channelGroup = iface.getChannelGroup();
     newIface.setChannelGroup(channelGroup);
     if (iface.getActive() && channelGroup != null && !_interfaces.containsKey(channelGroup)) {
-      _w.redFlag(
-          String.format(
-              "Deactivating interface %s that refers to undefined channel-group %s",
-              ifaceName, channelGroup));
+      _w.redFlagf(
+          "Deactivating interface %s that refers to undefined channel-group %s",
+          ifaceName, channelGroup);
       newIface.deactivate(InactiveReason.INVALID);
     }
 
@@ -2714,9 +2712,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }

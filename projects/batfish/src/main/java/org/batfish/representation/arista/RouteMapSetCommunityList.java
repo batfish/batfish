@@ -35,18 +35,16 @@ public final class RouteMapSetCommunityList extends RouteMapSetLine {
       StandardCommunityList scl = cc.getStandardCommunityLists().get(communityListName);
       if (scl != null) {
         if (scl.getLines().stream().anyMatch(line -> line.getAction() != LineAction.PERMIT)) {
-          w.redFlag(
-              String.format(
-                  "route-map set community community-list ignores deny lines in standard"
-                      + " community-list: '%s'",
-                  communityListName));
+          w.redFlagf(
+              "route-map set community community-list ignores deny lines in standard"
+                  + " community-list: '%s'",
+              communityListName);
         }
       } else {
-        w.redFlag(
-            String.format(
-                "route-map set community community-list is ignored for expanded community list:"
-                    + " '%s'",
-                communityListName));
+        w.redFlagf(
+            "route-map set community community-list is ignored for expanded community list:"
+                + " '%s'",
+            communityListName);
       }
     }
     CommunitySetExpr retainedCommunities =

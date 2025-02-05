@@ -237,11 +237,10 @@ public final class CiscoIosDynamicNat extends CiscoIosNat {
           assert c != null; // should only be null for SOURCE_OUTSIDE rules
           Optional<IpAccessList> reverseAcl = getOrCreateReverseAcl(c);
           if (!reverseAcl.isPresent()) {
-            w.redFlag(
-                String.format(
-                    "Ignoring inside destination NAT rule with ACL %s: Cannot convert to reverse"
-                        + " ACL",
-                    _aclName));
+            w.redFlagf(
+                "Ignoring inside destination NAT rule with ACL %s: Cannot convert to reverse"
+                    + " ACL",
+                _aclName);
           }
           yield reverseAcl.map(ipAccessList -> permittedByAcl(ipAccessList.getName()));
         }

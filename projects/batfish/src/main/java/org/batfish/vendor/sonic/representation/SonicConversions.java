@@ -232,9 +232,8 @@ public class SonicConversions {
   private static void warnMissingVlans(Set<String> vlans, Set<String> vlanInterfaces, Warnings w) {
     Set<String> missingVlans = Sets.difference(vlanInterfaces, vlans);
     if (!missingVlans.isEmpty()) {
-      w.redFlag(
-          String.format(
-              "Ignoring VLAN_INTERFACEs %s because they don't have VLANs defined.", missingVlans));
+      w.redFlagf(
+          "Ignoring VLAN_INTERFACEs %s because they don't have VLANs defined.", missingVlans);
     }
   }
 
@@ -245,27 +244,24 @@ public class SonicConversions {
       return false;
     }
     if (vlanId < 1 || vlanId > 4094) {
-      w.redFlag(
-          String.format(
-              "%s ignored: It has invalid vlan id %d. Vlan ids should be between 1 and 4094.",
-              vlanName, vlanId));
+      w.redFlagf(
+          "%s ignored: It has invalid vlan id %d. Vlan ids should be between 1 and 4094.",
+          vlanName, vlanId);
       return false;
     }
     try {
       int vlanIdFromName = Integer.parseInt(vlanName.replaceFirst("^Vlan", ""));
       if (vlanIdFromName != vlanId) {
-        w.redFlag(
-            String.format(
-                "%s ignored: Vlan id in the name does not match configured vlan id %d",
-                vlanName, vlanId));
+        w.redFlagf(
+            "%s ignored: Vlan id in the name does not match configured vlan id %d",
+            vlanName, vlanId);
         return false;
       }
     } catch (NumberFormatException e) {
-      w.redFlag(
-          String.format(
-              "%s ignored: Unexpected name format. Vlan names should be like 'Vlan1', with 'Vlan'"
-                  + " followed by its numerical id.",
-              vlanName));
+      w.redFlagf(
+          "%s ignored: Unexpected name format. Vlan names should be like 'Vlan1', with 'Vlan'"
+              + " followed by its numerical id.",
+          vlanName);
       return false;
     }
     return true;
@@ -392,10 +388,9 @@ public class SonicConversions {
                     .get(aclName)
                     .forEach(
                         aclRuleWithName ->
-                            w.redFlag(
-                                String.format(
-                                    "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
-                                    aclName, aclRuleWithName._name, aclName))));
+                            w.redFlagf(
+                                "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
+                                aclName, aclRuleWithName._name, aclName)));
   }
 
   /**
@@ -442,10 +437,9 @@ public class SonicConversions {
       Interface viIface = c.getAllInterfaces().get(port);
       if (viIface == null) {
         if (!aclTable.isControlPlanePort(port)) {
-          w.redFlag(
-              String.format(
-                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.",
-                  port, ipAccessList.getName()));
+          w.redFlagf(
+              "Port '%s' referenced in ACL_TABLE '%s' does not exist.",
+              port, ipAccessList.getName());
         }
         continue;
       }

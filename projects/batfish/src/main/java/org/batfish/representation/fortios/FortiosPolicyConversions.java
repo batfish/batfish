@@ -285,10 +285,9 @@ public final class FortiosPolicyConversions {
         line = ExprAclLine.rejecting();
         break;
       default: // TODO: Support policies with action IPSEC
-        w.redFlag(
-            String.format(
-                "Ignoring policy %s: Action %s is not supported",
-                numAndName, policy.getActionEffective()));
+        w.redFlagf(
+            "Ignoring policy %s: Action %s is not supported",
+            numAndName, policy.getActionEffective());
         return Optional.empty();
     }
 
@@ -335,11 +334,10 @@ public final class FortiosPolicyConversions {
           srcAddrExprs.isEmpty()
               ? "source addresses"
               : dstAddrExprs.isEmpty() ? "destination addresses" : "services";
-      w.redFlag(
-          String.format(
-              "Policy %s will not match any packets because none of its %s were successfully"
-                  + " converted",
-              numAndName, emptyField));
+      w.redFlagf(
+          "Policy %s will not match any packets because none of its %s were successfully"
+              + " converted",
+          numAndName, emptyField);
     }
     matchConjuncts.add(or(srcAddrExprs));
     matchConjuncts.add(or(dstAddrExprs));
@@ -485,10 +483,9 @@ public final class FortiosPolicyConversions {
   public static IpSpace toIpSpace(Address a, Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
     if (a.getAssociatedInterface() != null || a.getAssociatedInterfaceZone() != null) {
-      w.redFlag(
-          String.format(
-              "Address associated-interface is not yet supported and will be ignored for %s",
-              a.getName()));
+      w.redFlagf(
+          "Address associated-interface is not yet supported and will be ignored for %s",
+          a.getName());
     }
     switch (a.getTypeEffective()) {
       case IPMASK:

@@ -132,18 +132,16 @@ final class VpcPeeringConnection implements AwsVpcEntity, Serializable {
   void createConnection(ConvertedConfiguration awsConfiguration, Warnings warnings) {
     Configuration accepterCfg = awsConfiguration.getNode(Vpc.nodeName(_accepterVpcId));
     if (accepterCfg == null) {
-      warnings.redFlag(
-          String.format(
-              "Accepter VPC %s not found for connection %s. Will not create the connection.",
-              _accepterVpcId, _vpcPeeringConnectionId));
+      warnings.redFlagf(
+          "Accepter VPC %s not found for connection %s. Will not create the connection.",
+          _accepterVpcId, _vpcPeeringConnectionId);
       return;
     }
     Configuration requesterCfg = awsConfiguration.getNode(Vpc.nodeName(_requesterVpcId));
     if (requesterCfg == null) {
-      warnings.redFlag(
-          String.format(
-              "Requested VPC %s not found for connection %s. Will not create the connection.",
-              _requesterVpcId, _vpcPeeringConnectionId));
+      warnings.redFlagf(
+          "Requested VPC %s not found for connection %s. Will not create the connection.",
+          _requesterVpcId, _vpcPeeringConnectionId);
       return;
     }
 

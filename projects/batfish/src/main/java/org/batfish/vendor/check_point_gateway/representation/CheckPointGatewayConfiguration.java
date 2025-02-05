@@ -233,10 +233,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
       }
     }
     if (cluster == null) {
-      _w.redFlag(
-          String.format(
-              "Could not find matching cluster of type %s for this gateway of type %s",
-              clusterClass.getSimpleName(), gateway.getClass().getSimpleName()));
+      _w.redFlagf(
+          "Could not find matching cluster of type %s for this gateway of type %s",
+          clusterClass.getSimpleName(), gateway.getClass().getSimpleName());
       return Optional.empty();
     }
     return Optional.of(cluster);
@@ -305,11 +304,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             obj -> {
               if (obj instanceof UnknownTypedManagementObject) {
                 UnknownTypedManagementObject utmo = (UnknownTypedManagementObject) obj;
-                _w.redFlag(
-                    String.format(
-                        "Batfish does not handle converting objects of type %s. These objects will"
-                            + " be ignored.",
-                        utmo.getType()));
+                _w.redFlagf(
+                    "Batfish does not handle converting objects of type %s. These objects will"
+                        + " be ignored.",
+                    utmo.getType());
                 return;
               }
 
@@ -694,10 +692,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             ? cluster.get().getPolicy().getAccessPolicyName()
             : gateway.getPolicy().getAccessPolicyName();
     if (accessPackageName == null) {
-      _w.redFlag(
-          String.format(
-              "No access package found for gateway '%s', so no access rules will be added",
-              gateway.getName()));
+      _w.redFlagf(
+          "No access package found for gateway '%s', so no access rules will be added",
+          gateway.getName());
       return Optional.empty();
     }
 
@@ -707,10 +704,9 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             .filter(p -> p.getPackage().getName().equals(accessPackageName))
             .findFirst();
     if (!maybePackage.isPresent()) {
-      _w.redFlag(
-          String.format(
-              "Gateway or server '%s' access-policy-name refers to non-existent package '%s'",
-              gateway.getName(), accessPackageName));
+      _w.redFlagf(
+          "Gateway or server '%s' access-policy-name refers to non-existent package '%s'",
+          gateway.getName(), accessPackageName);
     }
     return maybePackage;
   }
@@ -874,11 +870,10 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
                       .collect(ImmutableSet.toImmutableSet()));
 
               if (bg.getModeEffective() == Mode.ACTIVE_BACKUP) {
-                _w.redFlag(
-                    String.format(
-                        "Bonding group mode active-backup is not yet supported in Batfish."
-                            + " Deactivating interface %s.",
-                        ifaceName));
+                _w.redFlagf(
+                    "Bonding group mode active-backup is not yet supported in Batfish."
+                        + " Deactivating interface %s.",
+                    ifaceName);
                 newIface.setAdminUp(false);
               }
             });
@@ -950,20 +945,18 @@ public class CheckPointGatewayConfiguration extends VendorConfiguration {
             return;
           }
           if (!maybeRemoteHost.isPresent()) {
-            _w.redFlag(
-                String.format(
-                    "Cannot generate Sync interface edge to cluster member '%s' whose hostname"
-                        + " cannot be determined",
-                    memberName));
+            _w.redFlagf(
+                "Cannot generate Sync interface edge to cluster member '%s' whose hostname"
+                    + " cannot be determined",
+                memberName);
             return;
           }
           String remoteHost = maybeRemoteHost.get();
           if (!mc.hasSyncInterface(remoteHost)) {
-            _w.redFlag(
-                String.format(
-                    "Cannot generate Sync interface edge to remote host '%s' because it lacks a"
-                        + " Sync interface",
-                    remoteHost));
+            _w.redFlagf(
+                "Cannot generate Sync interface edge to remote host '%s' because it lacks a"
+                    + " Sync interface",
+                remoteHost);
             return;
           }
           builder.add(

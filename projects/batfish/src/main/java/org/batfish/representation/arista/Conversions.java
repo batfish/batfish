@@ -403,24 +403,20 @@ public class Conversions {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
     if (isakmpProfile.getLocalInterfaceName().equals(INVALID_LOCAL_INTERFACE)) {
-      w.redFlag(
-          String.format(
-              "Invalid local address interface configured for ISAKMP profile %s",
-              isakmpProfileName));
+      w.redFlagf(
+          "Invalid local address interface configured for ISAKMP profile %s", isakmpProfileName);
     } else if (isakmpProfile.getKeyring() == null) {
       w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
-      w.redFlag(
-          String.format(
-              "Cannot find keyring %s for ISAKMP profile %s",
-              isakmpProfile.getKeyring(), isakmpProfileName));
+      w.redFlagf(
+          "Cannot find keyring %s for ISAKMP profile %s",
+          isakmpProfile.getKeyring(), isakmpProfileName);
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
       if (tempIkePhase1Key.getLocalInterface().equals(INVALID_LOCAL_INTERFACE)) {
-        w.redFlag(
-            String.format(
-                "Invalid local address interface configured for keyring %s",
-                isakmpProfile.getKeyring()));
+        w.redFlagf(
+            "Invalid local address interface configured for keyring %s",
+            isakmpProfile.getKeyring());
       } else if (tempIkePhase1Key.match(
           isakmpProfile.getLocalInterfaceName(), isakmpProfile.getMatchIdentity())) {
         // found a matching keyring
@@ -483,10 +479,9 @@ public class Conversions {
       Warnings w) {
     Ip localAddress = tunnel.getSourceAddress();
     if (localAddress == null || !localAddress.valid()) {
-      w.redFlag(
-          String.format(
-              "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
-              tunnelIfaceName));
+      w.redFlagf(
+          "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
+          tunnelIfaceName);
       return Optional.empty();
     }
 
@@ -539,10 +534,9 @@ public class Conversions {
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
       if (iface.getConcreteAddress() == null) {
-        w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
+        w.redFlagf(
+            "Interface %s with declared crypto-map %s has no ip-address",
+            iface.getName(), cryptoMapName);
         continue;
       }
       // add one IPSec peer config per interface for the crypto map entry
@@ -610,10 +604,9 @@ public class Conversions {
           ipsecPeerConfigBuilder.setPolicyAccessList(symmetricCryptoAcl);
         } else {
           // log a warning if the ACL was not made symmetrical successfully
-          w.redFlag(
-              String.format(
-                  "Cannot process the Access List for crypto map %s:%s",
-                  cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
+          w.redFlagf(
+              "Cannot process the Access List for crypto map %s:%s",
+              cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
         }
       }
     }
@@ -804,21 +797,19 @@ public class Conversions {
       // only prefix-lists are supported in distribute-list
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
-                      + " supported in dist-lists by Batfish",
-                  vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType()));
+          .redFlagf(
+              "OSPF process %s:%s in %s uses distribute-list of type %s, only prefix-lists are"
+                  + " supported in dist-lists by Batfish",
+              vrfName, ospfProcessId, oldConfig.getHostname(), distributeList.getFilterType());
       return false;
     } else if (!c.getRouteFilterLists().containsKey(distributeList.getFilterName())) {
       // if referred prefix-list is not defined, all prefixes will be allowed
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
-                      + " dist-list will allow everything",
-                  vrfName, ospfProcessId));
+          .redFlagf(
+              "dist-list in OSPF process %s:%s uses a prefix-list which is not defined, this"
+                  + " dist-list will allow everything",
+              vrfName, ospfProcessId);
       return false;
     }
     return true;
@@ -892,11 +883,10 @@ public class Conversions {
       c.getRoutingPolicies().put(routingPolicy.getName(), routingPolicy);
       OspfInterfaceSettings ospfSettings = iface.getOspfSettings();
       if (ospfSettings == null) {
-        w.redFlag(
-            String.format(
-                "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
-                    + " configured for OSPF.",
-                ifaceName, iface.getName()));
+        w.redFlagf(
+            "Cannot attach inbound distribute list policy '%s' to interface '%s' not"
+                + " configured for OSPF.",
+            ifaceName, iface.getName());
       } else {
         ospfSettings.setInboundDistributeListPolicy(policyName);
       }
@@ -1038,9 +1028,8 @@ public class Conversions {
       case POINT_TO_MULTIPOINT:
         return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT;
       default:
-        warnings.redFlag(
-            String.format(
-                "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString()));
+        warnings.redFlagf(
+            "Conversion of Cisco OSPF network type '%s' is not handled.", type.toString());
         return null;
     }
   }
@@ -1061,24 +1050,20 @@ public class Conversions {
     AclIpSpace.Builder builder = AclIpSpace.builder();
     for (ExtendedAccessListLine line : acl.getLines()) {
       if (!(line.getSourceAddressSpecifier() instanceof AnyAddressSpecifier)) {
-        w.redFlag(
-            String.format(
-                "%s line %s: source address must be 'any'", acl.getName(), line.getName()));
+        w.redFlagf("%s line %s: source address must be 'any'", acl.getName(), line.getName());
         continue;
       }
       if (line.getDestinationAddressSpecifier() instanceof AnyAddressSpecifier) {
-        w.redFlag(
-            String.format(
-                "%s line %s: destination address cannot be 'any'", acl.getName(), line.getName()));
+        w.redFlagf(
+            "%s line %s: destination address cannot be 'any'", acl.getName(), line.getName());
         continue;
       }
       if (!line.getServiceSpecifier()
           .toAclLineMatchExpr()
           .equals(new MatchHeaderSpace(HeaderSpace.builder().build()))) {
-        w.redFlag(
-            String.format(
-                "%s line %s: cannot filter on anything but destination address",
-                acl.getName(), line.getName()));
+        w.redFlagf(
+            "%s line %s: cannot filter on anything but destination address",
+            acl.getName(), line.getName());
         continue;
       }
       assert line.getDestinationAddressSpecifier() instanceof WildcardAddressSpecifier;

@@ -37,12 +37,10 @@ public final class PsFromAsPathGroup extends PsFrom {
             AsPathMatchExprParser.convertToBooleanExpr(namedAsPath.getRegex());
         asPaths.add(booleanExpr);
       } catch (Exception e) {
-        w.redFlag(
-            String.format(
-                "Error converting Juniper as-path-group regex %s, will assume no paths match"
-                    + " instead: %s.",
-                asPathGroup.getName(), e.getMessage()));
-        /* Handle error, add false to the list instead */
+        w.redFlagf(
+            "Error converting Juniper as-path-group regex %s, will assume no paths match instead:"
+                + " %s.",
+            asPathGroup.getName(), e.getMessage());
         asPaths.add(BooleanExprs.FALSE);
       }
     }

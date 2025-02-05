@@ -40,10 +40,9 @@ public final class PsThenTunnelAttributeSet extends PsThen {
     TunnelAttribute.Type type = tunnelAttribute.getType();
     Ip remoteEndpoint = tunnelAttribute.getRemoteEndPoint();
     if (type == null || remoteEndpoint == null) {
-      warnings.redFlag(
-          String.format(
-              "Ignoring tunnel-attribute %s because its %s is not set",
-              _tunnelAttrName, type == null ? "tunnel-type" : "remote-end-point"));
+      warnings.redFlagf(
+          "Ignoring tunnel-attribute %s because its %s is not set",
+          _tunnelAttrName, type == null ? "tunnel-type" : "remote-end-point");
       return;
     }
     statements.add(
