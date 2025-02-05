@@ -580,10 +580,8 @@ public final class A10Configuration extends VendorConfiguration {
       }
     }
     if (peerInterface == null) {
-      _w.redFlag(
-          String.format(
-              "Could not find any interface in a subnet containing any of the peer IPs: %s",
-              peerIps));
+      _w.redFlagf(
+          "Could not find any interface in a subnet containing any of the peer IPs: %s", peerIps);
       return;
     }
     // vrid -> virtual addresses
@@ -684,10 +682,9 @@ public final class A10Configuration extends VendorConfiguration {
     }
     if (heartbeatInterface == null) {
       // Abort, since we couldn't find the heartbeat interface.
-      _w.redFlag(
-          String.format(
-              "Could not find any interface with address in subnet of ha conn-mirror IP %s",
-              connMirror));
+      _w.redFlagf(
+          "Could not find any interface with address in subnet of ha conn-mirror IP %s",
+          connMirror);
       return;
     }
     // ha group id -> virtual addresses
@@ -995,19 +992,17 @@ public final class A10Configuration extends VendorConfiguration {
                     if (!ifaceExists) {
                       // Cannot tell if this missing member would invalidate other members or not
                       // So, optimistically leave other members
-                      _w.redFlag(
-                          String.format(
-                              "Trunk member %s does not exist, cannot add to %s",
-                              memberName, trunkName));
+                      _w.redFlagf(
+                          "Trunk member %s does not exist, cannot add to %s",
+                          memberName, trunkName);
                     }
                     return ifaceExists;
                   })
               .collect(ImmutableSet.toImmutableSet());
       if (memberNames.isEmpty()) {
-        _w.redFlag(
-            String.format(
-                "%s does not contain any member interfaces",
-                getInterfaceName(Interface.Type.TRUNK, trunkIface.getNumber())));
+        _w.redFlagf(
+            "%s does not contain any member interfaces",
+            getInterfaceName(Type.TRUNK, trunkIface.getNumber()));
       } else {
         newIface.setChannelGroupMembers(memberNames);
         newIface.setDependencies(
@@ -1021,10 +1016,9 @@ public final class A10Configuration extends VendorConfiguration {
         // If this trunk doesn't have VLAN configured directly (e.g. ACOS v2), inherit it
         if (!vlanIsConfigured) {
           if (vlanSettingsDifferent(memberNames)) {
-            _w.redFlag(
-                String.format(
-                    "VLAN settings for members of %s are different, ignoring their VLAN settings",
-                    trunkName));
+            _w.redFlagf(
+                "VLAN settings for members of %s are different, ignoring their VLAN settings",
+                trunkName);
           } else {
             // All members have the same VLAN settings, so just use the first
             String firstMemberName = memberNames.iterator().next();
@@ -1033,11 +1027,10 @@ public final class A10Configuration extends VendorConfiguration {
         } else {
           if (memberNames.stream()
               .anyMatch(memberName -> hasVlanSettings(_ifaceNametoIface.get(memberName)))) {
-            _w.redFlag(
-                String.format(
-                    "Cannot configure VLAN settings on %s as well as its members. Member VLAN"
-                        + " settings will be ignored.",
-                    trunkName));
+            _w.redFlagf(
+                "Cannot configure VLAN settings on %s as well as its members. Member VLAN"
+                    + " settings will be ignored.",
+                trunkName);
           }
         }
       }

@@ -124,9 +124,8 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     IntegerSpace ifaceVids = bridge.getVids();
     if (!_bridge.getPorts().contains(name)) {
       if (access != null || ifacePvid != null || !ifaceVids.isEmpty()) {
-        _w.redFlag(
-            String.format(
-                "No support for VLAN switching options on non-'bridge bridge' port: '%s'", name));
+        _w.redFlagf(
+            "No support for VLAN switching options on non-'bridge bridge' port: '%s'", name);
       }
       return;
     }
@@ -548,25 +547,21 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
   private boolean isValidSlave(String bondName, String slaveName) {
     Interface slave = _interfaces.get(slaveName);
     if (!slave.getIpAddresses().isEmpty()) {
-      _w.redFlag(
-          String.format(
-              "Refusing to add slave %s to bond %s because it has an L3 address",
-              slaveName, bondName));
+      _w.redFlagf(
+          "Refusing to add slave %s to bond %s because it has an L3 address", slaveName, bondName);
       return false;
     }
     if (isUsedForBgpUnnumbered(slave.getName(), _bgpProcess)) {
-      _w.redFlag(
-          String.format(
-              "Refusing to add slave %s to bond %s because it is used for BGP unnumbered",
-              slaveName, bondName));
+      _w.redFlagf(
+          "Refusing to add slave %s to bond %s because it is used for BGP unnumbered",
+          slaveName, bondName);
       return false;
     }
     for (Interface i : _interfaces.values()) {
       if (slaveName.equals(i.getSuperInterfaceName())) {
-        _w.redFlag(
-            String.format(
-                "Refusing to add slave %s to bond %s because it has a subinterface %s",
-                slaveName, bondName, i.getName()));
+        _w.redFlagf(
+            "Refusing to add slave %s to bond %s because it has a subinterface %s",
+            slaveName, bondName, i.getName());
         return false;
       }
     }
@@ -714,13 +709,9 @@ public class CumulusNcluConfiguration extends VendorConfiguration {
     clagBondsById.forEach(
         (id, clagBonds) -> {
           if (clagBonds.size() > 1) {
-            _w.redFlag(
-                String.format(
-                    "clag-id %d is erroneously configured on more than one bond: %s",
-                    id,
-                    clagBonds.stream()
-                        .map(Bond::getName)
-                        .collect(ImmutableList.toImmutableList())));
+            _w.redFlagf(
+                "clag-id %d is erroneously configured on more than one bond: %s",
+                id, clagBonds.stream().map(Bond::getName).collect(ImmutableList.toImmutableList()));
           }
         });
   }

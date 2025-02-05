@@ -2444,10 +2444,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
           routingProtocol = RoutingProtocol.CONNECTED;
           break;
         default:
-          _w.redFlag(
-              String.format(
-                  "type = %s is not valid under redist-profile %s",
-                  protocol, _currentRedistProfile.getName()));
+          _w.redFlagf(
+              "type = %s is not valid under redist-profile %s",
+              protocol, _currentRedistProfile.getName());
           break;
       }
       if (routingProtocol != null) {

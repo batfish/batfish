@@ -2356,11 +2356,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
     Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
     if (!commonNodes.isEmpty()) {
-      internetWarnings.redFlag(
-          String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already"
-                  + " exist in the snapshot: %s",
-              commonNodes));
+      internetWarnings.redFlagf(
+          "Cannot add internet and ISP nodes because nodes with the following names already"
+              + " exist in the snapshot: %s",
+          commonNodes);
       return;
     }
     configurations.putAll(modeledConfigs);

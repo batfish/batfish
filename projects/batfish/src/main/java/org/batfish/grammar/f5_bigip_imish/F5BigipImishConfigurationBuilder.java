@@ -444,10 +444,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRbn_description(Rbn_descriptionContext ctx) {
     if (_currentAbstractNeighbor == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot add description to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      _w.redFlagf(
+          "Cannot add description to non-existent neighbor: '%s' in: '%s'",
+          _currentNeighborName, getFullText(ctx.getParent().getParent()));
       return;
     }
     _currentAbstractNeighbor.setDescription(ctx.text.getText());
@@ -456,10 +455,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @Override
   public void exitRbn_next_hop_self(Rbn_next_hop_selfContext ctx) {
     if (_currentAbstractNeighbor == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot apply next-hop-self to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      _w.redFlagf(
+          "Cannot apply next-hop-self to non-existent neighbor: '%s' in: '%s'",
+          _currentNeighborName, getFullText(ctx.getParent().getParent()));
       return;
     }
     _currentAbstractNeighbor.setNextHopSelf(true);
@@ -496,17 +494,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       ipv6 = true;
     } else {
       // should not be possible
-      _w.redFlag(
-          String.format(
-              "Unsupported neighbor id: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      _w.redFlagf(
+          "Unsupported neighbor id: '%s' in: '%s'",
+          _currentNeighborName, getFullText(ctx.getParent().getParent()));
       return;
     }
     if (!_currentBgpProcess.getPeerGroups().containsKey(peerGroupName)) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
-              peerGroupName, getFullText(ctx.getParent())));
+      _w.redFlagf(
+          "Cannot assign bgp neighbor to non-existent peer-group: '%s' in: '%s'",
+          peerGroupName, getFullText(ctx.getParent()));
       return;
     }
     if (_currentNeighbor == null) {
@@ -534,10 +530,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     } else if (Ip6.tryParse(_currentNeighborName).isPresent()) {
       ipv6 = true;
     } else if (_currentPeerGroup == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign remote-as to non-existent peer-group: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      _w.redFlagf(
+          "Cannot assign remote-as to non-existent peer-group: '%s' in: '%s'",
+          _currentNeighborName, getFullText(ctx.getParent().getParent()));
       return;
     }
     if (_currentAbstractNeighbor == null) {
@@ -579,10 +574,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     }
     _c.referenceStructure(F5BigipStructureType.ROUTE_MAP, routeMapName, usage, line);
     if (_currentAbstractNeighbor == null) {
-      _w.redFlag(
-          String.format(
-              "Cannot assign outbound route-map to non-existent neighbor: '%s' in: '%s'",
-              _currentNeighborName, getFullText(ctx.getParent().getParent())));
+      _w.redFlagf(
+          "Cannot assign outbound route-map to non-existent neighbor: '%s' in: '%s'",
+          _currentNeighborName, getFullText(ctx.getParent().getParent()));
       return;
     }
     if (ipv4) {
@@ -676,10 +670,8 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
     Prefix prefix = toPrefix(ctx.ip_spec());
     _c.defineStructure(F5BigipStructureType.ACCESS_LIST, name, ctx);
     if (prefix == null) {
-      _w.redFlag(
-          String.format(
-              "Invalid source IP specifier: '%s' in: '%s'",
-              ctx.ip_spec().getText(), getFullText(ctx)));
+      _w.redFlagf(
+          "Invalid source IP specifier: '%s' in: '%s'", ctx.ip_spec().getText(), getFullText(ctx));
       return;
     }
     _c.getAccessLists()
@@ -710,10 +702,9 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       if (ge != null) {
         if (ge < prefixLength) {
           // Ineffectual, so warn
-          _w.redFlag(
-              String.format(
-                  "ge (min) arg '%d' less than prefix-length '%d' in: %s",
-                  ge, prefixLength, getFullText(ctx.getParent())));
+          _w.redFlagf(
+              "ge (min) arg '%d' less than prefix-length '%d' in: %s",
+              ge, prefixLength, getFullText(ctx.getParent()));
         } else {
           low = ge;
         }
@@ -721,17 +712,15 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
       if (le != null) {
         if (le < prefixLength) {
           // Invalid and cannot match anything, so warn and do not add
-          _w.redFlag(
-              String.format(
-                  "le (max) arg '%d' less than prefix-length '%d' in: %s",
-                  le, prefixLength, getFullText(ctx.getParent())));
+          _w.redFlagf(
+              "le (max) arg '%d' less than prefix-length '%d' in: %s",
+              le, prefixLength, getFullText(ctx.getParent()));
           return;
         } else if (ge != null && le < ge) {
           // Invalid and cannot match anything, so warn and do not add
-          _w.redFlag(
-              String.format(
-                  "le (max) arg '%d' less than ge (min) arg '%d' in: %s",
-                  le, ge, getFullText(ctx.getParent())));
+          _w.redFlagf(
+              "le (max) arg '%d' less than ge (min) arg '%d' in: %s",
+              le, ge, getFullText(ctx.getParent()));
           return;
         } else {
           high = le;

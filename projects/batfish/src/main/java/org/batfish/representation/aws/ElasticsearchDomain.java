@@ -213,9 +213,8 @@ public final class ElasticsearchDomain implements AwsVpcEntity, Serializable {
       Warnings warnings) {
     Subnet subnet = region.getSubnets().get(subnetId);
     if (subnet == null) {
-      warnings.redFlag(
-          String.format(
-              "Subnet \"%s\" for Elasticsearch domain \"%s\" not found", subnetId, _domainName));
+      warnings.redFlagf(
+          "Subnet \"%s\" for Elasticsearch domain \"%s\" not found", subnetId, _domainName);
       return null;
     }
     Configuration cfgNode =

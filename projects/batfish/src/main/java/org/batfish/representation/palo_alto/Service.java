@@ -192,10 +192,9 @@ public final class Service implements ServiceGroupMember {
 
   public @Nonnull AclLineMatchExpr toMatchExpr(@Nonnull Warnings w) {
     if (_protocol == null) {
-      w.redFlag(
-          String.format(
-              "Unable to convert %s %s: missing IP Protocol type",
-              PaloAltoStructureType.SERVICE.getDescription(), _name));
+      w.redFlagf(
+          "Unable to convert %s %s: missing IP Protocol type",
+          PaloAltoStructureType.SERVICE.getDescription(), _name);
       return FalseExpr.INSTANCE;
     }
     HeaderSpace.Builder headerSpace =

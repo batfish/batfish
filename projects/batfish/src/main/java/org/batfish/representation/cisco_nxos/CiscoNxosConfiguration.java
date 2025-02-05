@@ -971,27 +971,23 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       EigrpVrfConfiguration vrfConfig) {
     Integer asn = getEigrpAsn(processConfig, vrfConfig).orElse(null);
     if (asn == null) {
-      _w.redFlag(
-          String.format(
-              "Must configure the EIGRP autonomous-system number for vrf %s in process %s",
-              vrfName, procName));
+      _w.redFlagf(
+          "Must configure the EIGRP autonomous-system number for vrf %s in process %s",
+          vrfName, procName);
       return;
     }
     org.batfish.datamodel.Vrf v = _c.getVrfs().get(vrfName);
     if (v == null) {
       // Already warned on undefined reference
-      _w.redFlag(
-          String.format(
-              "Ignoring EIGRP configuration for non-existent vrf %s in process %s",
-              vrfName, procName));
+      _w.redFlagf(
+          "Ignoring EIGRP configuration for non-existent vrf %s in process %s", vrfName, procName);
       return;
     }
     if (v.getEigrpProcesses().containsKey(Long.valueOf(asn))) {
       // TODO: figure out what this does and handle it.
-      _w.redFlag(
-          String.format(
-              "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
-              vrfName, asn, procName));
+      _w.redFlagf(
+          "VRF %s already has an EIGRP process for autonomous-system number %s. Skipping %s",
+          vrfName, asn, procName);
       return;
     }
     Ip routerId = vrfConfig.getRouterId();
@@ -1044,10 +1040,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                   if (supportedProtocols.contains(redistPolicy.getInstance().getProtocol())) {
                     return true;
                   }
-                  _w.redFlag(
-                      String.format(
-                          "Redistribution from %s into EIGRP is not supported",
-                          redistPolicy.getInstance().getProtocol()));
+                  _w.redFlagf(
+                      "Redistribution from %s into EIGRP is not supported",
+                      redistPolicy.getInstance().getProtocol());
                   return false;
                 })
             .collect(ImmutableList.toImmutableList());
@@ -1655,10 +1650,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
                     && !_vlans.containsKey(iface.getVlan()))
         .forEach(
             iface -> {
-              _w.redFlag(
-                  String.format(
-                      "Disabling interface '%s' because it refers to an undefined vlan",
-                      iface.getName()));
+              _w.redFlagf(
+                  "Disabling interface '%s' because it refers to an undefined vlan",
+                  iface.getName());
               iface.deactivate(INVALID);
             });
   }
@@ -1975,11 +1969,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (trackInterface.getMode() == Mode.LINE_PROTOCOL) {
         return interfaceActive(trackInterface.getInterface());
       }
-      w.redFlag(
-          String.format(
-              "Interface track mode %s is not yet supported and will be treated as always"
-                  + " succeeding.",
-              trackInterface.getMode()));
+      w.redFlagf(
+          "Interface track mode %s is not yet supported and will be treated as always"
+              + " succeeding.",
+          trackInterface.getMode());
     } else if (track instanceof TrackIpRoute) {
       TrackIpRoute trackIpRoute = (TrackIpRoute) track;
       return route(
@@ -2056,11 +2049,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         && iface.getType() == CiscoNxosInterfaceType.ETHERNET
         && iface.getSwitchportModeEffective(_systemDefaultSwitchport) == SwitchportMode.NONE
         && iface.getShutdown() == null) {
-      _w.redFlag(
-          String.format(
-              "Non-switchport interface %s missing explicit (no) shutdown, so setting"
-                  + " administratively active arbitrarily",
-              ifaceName));
+      _w.redFlagf(
+          "Non-switchport interface %s missing explicit (no) shutdown, so setting"
+              + " administratively active arbitrarily",
+          ifaceName);
     }
     boolean shutdownEffective =
         iface.getShutdownEffective(
@@ -2086,11 +2078,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       if (_fabricForwardingAnycastGatewayMac != null) {
         newIfaceBuilder.setHmm(true);
       } else {
-        _w.redFlag(
-            String.format(
-                "Could not enable HMM on interface '%s' because fabric forwarding"
-                    + " anycast-gateway-mac is unset",
-                ifaceName));
+        _w.redFlagf(
+            "Could not enable HMM on interface '%s' because fabric forwarding"
+                + " anycast-gateway-mac is unset",
+            ifaceName);
       }
     }
 
@@ -2187,11 +2178,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (speedMbps != null) {
       speed = speedMbps * SPEED_CONVERSION_FACTOR;
       if (runtimeSpeed != null && !speed.equals(runtimeSpeed)) {
-        _w.redFlag(
-            String.format(
-                "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f"
-                    + " bps. Configured value will be used.",
-                getHostname(), ifaceName, speed, runtimeSpeed));
+        _w.redFlagf(
+            "Interface %s:%s has configured speed %.0f bps but runtime data shows speed %.0f"
+                + " bps. Configured value will be used.",
+            getHostname(), ifaceName, speed, runtimeSpeed);
       }
     } else if (runtimeSpeed != null) {
       speed = runtimeSpeed;
@@ -2204,11 +2194,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
     if (nxosBandwidth != null) {
       finalBandwidth = nxosBandwidth * BANDWIDTH_CONVERSION_FACTOR;
       if (runtimeBandwidth != null && !finalBandwidth.equals(runtimeBandwidth)) {
-        _w.redFlag(
-            String.format(
-                "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows"
-                    + " bandwidth %.0f bps. Configured value will be used.",
-                getHostname(), ifaceName, finalBandwidth, runtimeBandwidth));
+        _w.redFlagf(
+            "Interface %s:%s has configured bandwidth %.0f bps but runtime data shows"
+                + " bandwidth %.0f bps. Configured value will be used.",
+            getHostname(), ifaceName, finalBandwidth, runtimeBandwidth);
       }
     } else if (speedMbps != null) {
       // Prefer explicitly configured speed over runtime bandwidth
@@ -2260,10 +2249,8 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       // Non-existent VRF set; leave in default VRF and disable if not already down
       vrf = _c.getVrfs().get(DEFAULT_VRF_NAME);
       if (newIface.getAdminUp()) {
-        _w.redFlag(
-            String.format(
-                "Disabling interface '%s' because it is a member of an undefined vrf",
-                iface.getName()));
+        _w.redFlagf(
+            "Disabling interface '%s' because it is a member of an undefined vrf", iface.getName());
         newIface.deactivate(INVALID);
       }
     } else if (_vrfs.get(vrfName).getShutdown() && newIface.getAdminUp()) {
@@ -2294,10 +2281,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
           // Found a process on interface
           if (eigrpProcess != null) {
             // TODO Support interfaces with multiple EIGRP processes
-            _w.redFlag(
-                String.format(
-                    "Interface %s matches multiple EIGRP processes. Only process %s will be used.",
-                    iface.getName(), processTag));
+            _w.redFlagf(
+                "Interface %s matches multiple EIGRP processes. Only process %s will be used.",
+                iface.getName(), processTag);
             break;
           }
           eigrpProcess = process;
@@ -2382,10 +2368,9 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       case ROUTE_MAP:
         vsConfig
             .getWarnings()
-            .redFlag(
-                String.format(
-                    "Route-maps are not supported in EIGRP distribute-lists: %s",
-                    distributeList.getFilterName()));
+            .redFlagf(
+                "Route-maps are not supported in EIGRP distribute-lists: %s",
+                distributeList.getFilterName());
         return false;
       case PREFIX_LIST:
         if (vsConfig.getIpPrefixLists().containsKey(distributeList.getFilterName())) {
@@ -2393,11 +2378,10 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
         }
         vsConfig
             .getWarnings()
-            .redFlag(
-                String.format(
-                    "distribute-list references an undefined prefix-list `%s`, it will not filter"
-                        + " anything",
-                    distributeList.getFilterName()));
+            .redFlagf(
+                "distribute-list references an undefined prefix-list `%s`, it will not filter"
+                    + " anything",
+                distributeList.getFilterName());
         return false;
     }
     throw new IllegalStateException("Should be unreachable");
@@ -3870,9 +3854,7 @@ public final class CiscoNxosConfiguration extends VendorConfiguration {
       nh = NextHopIp.of(staticRoute.getNextHopIp());
     } else {
       // Should be unreachable. Warn just in case.
-      _w.redFlag(
-          String.format(
-              "Could not determine a next hop for static route: %s", staticRoute.getPrefix()));
+      _w.redFlagf("Could not determine a next hop for static route: %s", staticRoute.getPrefix());
       return null;
     }
     Integer track = staticRoute.getTrack();

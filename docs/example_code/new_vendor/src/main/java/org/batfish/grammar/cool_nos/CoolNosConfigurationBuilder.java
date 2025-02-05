@@ -279,8 +279,9 @@ public final class CoolNosConfigurationBuilder extends CoolNosParserBaseListener
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _w.redFlagf(
+          "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+          line, lineText);
     }
   }
 

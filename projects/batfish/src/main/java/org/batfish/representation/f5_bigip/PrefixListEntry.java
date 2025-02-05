@@ -33,10 +33,9 @@ public final class PrefixListEntry implements Serializable {
       return false;
     }
     if (_lengthRange.getStart() < 0 || _lengthRange.getEnd() > Prefix.MAX_PREFIX_LENGTH) {
-      w.redFlag(
-          String.format(
-              "Invalid IPv4 prefix-len-range '%d:%d' in prefix-list '%s' entry '%d'",
-              _lengthRange.getStart(), _lengthRange.getEnd(), listName, _num));
+      w.redFlagf(
+          "Invalid IPv4 prefix-len-range '%d:%d' in prefix-list '%s' entry '%d'",
+          _lengthRange.getStart(), _lengthRange.getEnd(), listName, _num);
       return false;
     }
     return true;

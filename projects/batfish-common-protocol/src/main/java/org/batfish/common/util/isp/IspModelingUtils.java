@@ -278,17 +278,15 @@ public final class IspModelingUtils {
         .forEach(
             peeringInfo -> {
               if (!ispModels.containsKey(peeringInfo.getPeer1().getAsn())) {
-                warnings.redFlag(
-                    String.format(
-                        "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                        peeringInfo.getPeer1().getAsn()));
+                warnings.redFlagf(
+                    "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                    peeringInfo.getPeer1().getAsn());
                 return;
               }
               if (!ispModels.containsKey(peeringInfo.getPeer2().getAsn())) {
-                warnings.redFlag(
-                    String.format(
-                        "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
-                        peeringInfo.getPeer2().getAsn()));
+                warnings.redFlagf(
+                    "ISP Modeling: Could not find ISP with ASN %s, specified for ISP peering",
+                    peeringInfo.getPeer2().getAsn());
                 return;
               }
               ispPeerings.add(IspPeering.create(peeringInfo));
@@ -403,9 +401,8 @@ public final class IspModelingUtils {
     NodeInterfacePair nodeInterfacePair = borderInterface.getBorderInterface();
     Configuration snapshotHost = configurations.get(nodeInterfacePair.getHostname());
     if (snapshotHost == null) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: Non-existent border node %s", nodeInterfacePair.getHostname()));
+      warnings.redFlagf(
+          "ISP Modeling: Non-existent border node %s", nodeInterfacePair.getHostname());
       return ImmutableList.of();
     }
     Interface snapshotIface =
@@ -437,10 +434,8 @@ public final class IspModelingUtils {
             .collect(Collectors.toList());
 
     if (validBgpPeers.isEmpty()) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: No valid eBGP configurations for border interface %s",
-              nodeInterfacePair));
+      warnings.redFlagf(
+          "ISP Modeling: No valid eBGP configurations for border interface %s", nodeInterfacePair);
       return ImmutableList.of();
     }
 
@@ -450,10 +445,9 @@ public final class IspModelingUtils {
             .collect(ImmutableSet.toImmutableSet());
 
     if (asns.size() > 1) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: Skipping border interface %s because it connects to multiple ASNs",
-              nodeInterfacePair));
+      warnings.redFlagf(
+          "ISP Modeling: Skipping border interface %s because it connects to multiple ASNs",
+          nodeInterfacePair);
       return ImmutableList.of();
     }
 
@@ -531,10 +525,9 @@ public final class IspModelingUtils {
               .sorted()
               .findFirst();
       if (!matchingVrf.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: No VRF %s found on node %s",
-                bgpPeerInfo.getVrf(), snapshotBgpHost.getHostname()));
+        warnings.redFlagf(
+            "ISP Modeling: No VRF %s found on node %s",
+            bgpPeerInfo.getVrf(), snapshotBgpHost.getHostname());
         return Optional.empty();
       }
       bgpPeerVrf = matchingVrf.get();
@@ -554,10 +547,9 @@ public final class IspModelingUtils {
             .filter(peer -> bgpPeerInfo.getPeerAddress().equals(peer.getPeerAddress()))
             .findFirst();
     if (!snapshotBgpPeerOpt.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: No BGP neighbor %s found on node %s in %s vrf",
-              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), bgpPeerVrf));
+      warnings.redFlagf(
+          "ISP Modeling: No BGP neighbor %s found on node %s in %s vrf",
+          bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), bgpPeerVrf);
       return Optional.empty();
     }
     BgpActivePeerConfig snapshotBgpPeer = snapshotBgpPeerOpt.get();
@@ -566,10 +558,9 @@ public final class IspModelingUtils {
     Optional<String> invalidReason =
         validateOrExplainProblemCreatingIspConfig(snapshotBgpPeer, remoteIps, remoteAsns);
     if (invalidReason.isPresent()) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: BGP neighbor %s on node %s is invalid: %s.",
-              bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), invalidReason.get()));
+      warnings.redFlagf(
+          "ISP Modeling: BGP neighbor %s on node %s is invalid: %s.",
+          bgpPeerInfo.getPeerAddress(), bgpPeerInfo.getHostname(), invalidReason.get());
       return Optional.empty();
     }
 
@@ -614,9 +605,8 @@ public final class IspModelingUtils {
             : ispAttachment.getHostname();
     Configuration attachmentHost = configurations.get(attachmentHostname);
     if (attachmentHost == null) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: Non-existent ISP attachment node %s", ispAttachment.getHostname()));
+      warnings.redFlagf(
+          "ISP Modeling: Non-existent ISP attachment node %s", ispAttachment.getHostname());
       return Optional.empty();
     }
 
@@ -626,10 +616,9 @@ public final class IspModelingUtils {
             .findFirst()
             .orElse(null);
     if (attachmentIface == null) {
-      warnings.redFlag(
-          String.format(
-              "ISP Modeling: Non-existent attachment interface %s on node %s",
-              ispAttachment.getInterface(), attachmentHostname));
+      warnings.redFlagf(
+          "ISP Modeling: Non-existent attachment interface %s on node %s",
+          ispAttachment.getInterface(), attachmentHostname);
       return Optional.empty();
     }
     // TODO: Enforce attachmentIface interface type constraint here.
@@ -656,15 +645,14 @@ public final class IspModelingUtils {
               .sorted()
               .findFirst();
       if (!attachmentInterfaceAddressThatAlsoHasLocalIp.isPresent()) {
-        warnings.redFlag(
-            String.format(
-                "ISP Modeling: The attachment interface %s[%s] cannot enable the BGP peering to"
-                    + " neighbor %s because it is Layer3 but does not own the BGP peer's local IP"
-                    + " %s",
-                attachmentHost,
-                attachmentIface.getName(),
-                snapshotBgpPeer.getPeerAddress(),
-                localInterfaceAddressForBgpPeering.getIp()));
+        warnings.redFlagf(
+            "ISP Modeling: The attachment interface %s[%s] cannot enable the BGP peering to"
+                + " neighbor %s because it is Layer3 but does not own the BGP peer's local IP"
+                + " %s",
+            attachmentHost,
+            attachmentIface.getName(),
+            snapshotBgpPeer.getPeerAddress(),
+            localInterfaceAddressForBgpPeering.getIp());
         return Optional.empty();
       }
       ispPrefixLength = attachmentInterfaceAddressThatAlsoHasLocalIp.get().getNetworkBits();

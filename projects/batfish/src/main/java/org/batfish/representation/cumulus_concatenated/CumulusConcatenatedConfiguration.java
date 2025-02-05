@@ -516,10 +516,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     Bridge mainBridge = getBridge();
     if (!mainBridge.getPorts().contains(iface.getName())) {
       if (access != null || ifacePvid != null || !ifaceVids.isEmpty()) {
-        _w.redFlag(
-            String.format(
-                "No support for VLAN switching options on non-'bridge bridge' port: '%s'",
-                iface.getName()));
+        _w.redFlagf(
+            "No support for VLAN switching options on non-'bridge bridge' port: '%s'",
+            iface.getName());
       }
       return;
     }
@@ -567,16 +566,14 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
   /** Sanity check user provided bandwidth values. */
   private static boolean validateBandwidth(Double value, String iface, Warnings w) {
     if (value <= 0) {
-      w.redFlag(
-          String.format(
-              "Ignoring provided runtime bandwidth value %f for interface %s: not positive",
-              value, iface));
+      w.redFlagf(
+          "Ignoring provided runtime bandwidth value %f for interface %s: not positive",
+          value, iface);
       return false;
     } else if (value > 1000e9) {
-      w.redFlag(
-          String.format(
-              "Ignoring provided runtime bandwidth value %f for interface %s: bigger than 1Tbps",
-              value, iface));
+      w.redFlagf(
+          "Ignoring provided runtime bandwidth value %f for interface %s: bigger than 1Tbps",
+          value, iface);
       return false;
     }
     return true;
@@ -625,10 +622,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
       return;
     }
     if (clagSourceInterfaces.size() > 1) {
-      w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.keySet()));
+      w.redFlagf(
+          "CLAG configuration on multiple peering interfaces is unsupported: %s",
+          clagSourceInterfaces.keySet());
       return;
     }
     Entry<String, InterfaceClagSettings> entry = clagSourceInterfaces.entrySet().iterator().next();
@@ -675,11 +671,9 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
             vxlan -> {
               if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
                 // Not a valid VNI configuration
-                w.redFlag(
-                    String.format(
-                        "Vxlan %s is not configured properly: %s is not defined",
-                        vxlan.getName(),
-                        vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
+                w.redFlagf(
+                    "Vxlan %s is not configured properly: %s is not defined",
+                    vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
                 return;
               }
               // Cumulus documents complex conditions for when clag-anycast address is a valid
@@ -696,9 +690,7 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
                       .findFirst()
                       .orElse(null);
               if (localIp == null) {
-                w.redFlag(
-                    String.format(
-                        "Local tunnel IP for vxlan %s is not configured", vxlan.getName()));
+                w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
                 return;
               }
               @Nullable String vrfName = vniToVrf.get(vxlan.getId());
@@ -835,13 +827,12 @@ public class CumulusConcatenatedConfiguration extends FrrVendorConfiguration {
     clagBondsById.forEach(
         (id, clagBonds) -> {
           if (clagBonds.size() > 1) {
-            _w.redFlag(
-                String.format(
-                    "clag-id %d is erroneously configured on more than one bond: %s",
-                    id,
-                    clagBonds.stream()
-                        .map(InterfacesInterface::getName)
-                        .collect(ImmutableList.toImmutableList())));
+            _w.redFlagf(
+                "clag-id %d is erroneously configured on more than one bond: %s",
+                id,
+                clagBonds.stream()
+                    .map(InterfacesInterface::getName)
+                    .collect(ImmutableList.toImmutableList()));
           }
         });
   }

@@ -32,10 +32,9 @@ public final class PsFromAsPath extends PsFrom {
     try {
       return AsPathMatchExprParser.convertToBooleanExpr(asPath.getRegex());
     } catch (Exception e) {
-      w.redFlag(
-          String.format(
-              "Error converting Juniper as-path regex %s, will assume no paths match instead: %s.",
-              asPath.getRegex(), e.getMessage()));
+      w.redFlagf(
+          "Error converting Juniper as-path regex %s, will assume no paths match instead: %s.",
+          asPath.getRegex(), e.getMessage());
       /* Handle error, return false instead. */
       return BooleanExprs.FALSE;
     }
