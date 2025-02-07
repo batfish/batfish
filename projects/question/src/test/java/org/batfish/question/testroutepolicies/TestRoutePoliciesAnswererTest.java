@@ -44,6 +44,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
@@ -58,11 +59,17 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.CommunitySet;
+import org.batfish.datamodel.routing_policy.communities.LiteralCommunitySet;
+import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
+import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
+import org.batfish.datamodel.routing_policy.expr.MatchTag;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
@@ -791,5 +798,35 @@ public class TestRoutePoliciesAnswererTest {
 
     assertThat(ref, not(equalTo(snap)));
     assertThat(toDiffRow(snap, ref), nullValue());
+  }
+
+  @Test
+  public void testStaticRouteAccept() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        new MatchProtocol(RoutingProtocol.STATIC),
+                        new MatchTag(IntComparator.EQ, new LiteralLong(100)))),
+                ImmutableList.of(
+                    new SetCommunities(
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(30, 40)))),
+                    new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+
+    StaticRoute inputRoute =
+        StaticRoute.builder()
+            .setAdministrativeCost(0)
+            .setNetwork(Prefix.ZERO)
+            .setMetric(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setTag(100)
+            .build();
+
+    Result<StaticRoute, Bgpv4Route> result =
+        TestRoutePoliciesAnswerer.simulatePolicyWithStaticRoute(
+            policy, inputRoute, Direction.IN, null, null);
+    assertEquals(inputRoute, result.getInputRoute());
   }
 }
