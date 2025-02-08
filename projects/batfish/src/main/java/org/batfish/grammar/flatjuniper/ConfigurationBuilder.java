@@ -5735,7 +5735,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                 + " allows longer matches such as "
                 + String.join(" and ", unintendedMatches));
       }
-      ;
       return new RegexCommunityMember(text);
     } else {
       assert ctx.sc_named() != null;
