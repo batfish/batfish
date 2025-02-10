@@ -204,6 +204,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   /**
    * Produce the results of simulating the given route policy on the given input route.
    *
+   * @param <I> the type of the input route
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the simulation
    * @param outputRoute the output route builder for the simulation
@@ -212,7 +213,6 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param successfulTrack a predicate that indicates which tracks are successful
    * @param sourceVrf an optional name of the source VRF
    * @return the results of the simulation
-   * @param <I> the type of the input route
    */
   private static <I extends AbstractRoute> Result<I, Bgpv4Route> processPolicy(
       RoutingPolicy policy,
