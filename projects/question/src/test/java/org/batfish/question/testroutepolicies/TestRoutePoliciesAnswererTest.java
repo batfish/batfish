@@ -1,5 +1,6 @@
 package org.batfish.question.testroutepolicies;
 
+import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -42,6 +43,7 @@ import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
+import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
@@ -827,6 +829,56 @@ public class TestRoutePoliciesAnswererTest {
     Result<StaticRoute, Bgpv4Route> result =
         TestRoutePoliciesAnswerer.simulatePolicyWithStaticRoute(
             policy, inputRoute, Direction.IN, null, null);
-    assertEquals(inputRoute, result.getInputRoute());
+
+    Bgpv4Route outputRoute =
+        Bgpv4Route.builder()
+            .setTag(100)
+            .setCommunities(CommunitySet.of(StandardCommunity.of(30, 40)))
+            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginMechanism(OriginMechanism.NETWORK)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .setSrcProtocol(RoutingProtocol.STATIC)
+            .setProtocol(RoutingProtocol.BGP)
+            .setReceivedFrom(ReceivedFromSelf.instance())
+            .build();
+
+    assertEquals(result.getInputRoute(), inputRoute);
+    assertEquals(result.getAction(), PERMIT);
+    assertEquals(result.getOutputRoute(), outputRoute);
+  }
+
+  @Test
+  public void testStaticRouteDeny() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new If(
+                new Conjunction(
+                    ImmutableList.of(
+                        new MatchProtocol(RoutingProtocol.STATIC),
+                        new MatchTag(IntComparator.EQ, new LiteralLong(100)))),
+                ImmutableList.of(
+                    new SetCommunities(
+                        new LiteralCommunitySet(CommunitySet.of(StandardCommunity.of(30, 40)))),
+                    new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+
+    StaticRoute inputRoute =
+        StaticRoute.builder()
+            .setAdministrativeCost(0)
+            .setNetwork(Prefix.ZERO)
+            .setMetric(0)
+            .setNextHopIp(Ip.parse("1.1.1.1"))
+            .build();
+
+    Result<StaticRoute, Bgpv4Route> result =
+        TestRoutePoliciesAnswerer.simulatePolicyWithStaticRoute(
+            policy, inputRoute, Direction.IN, null, null);
+
+    assertEquals(result.getInputRoute(), inputRoute);
+    assertEquals(result.getAction(), DENY);
+    assertThat(result.getOutputRoute(), nullValue());
   }
 }

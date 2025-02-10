@@ -125,7 +125,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Produce the difference of simulating the given route policy on the given input route.
+   * Produce the results of simulating the given route policy on the given BGP route.
    *
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
@@ -138,7 +138,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Produce the results of simulating the given route policy on the given input route.
+   * Produce the results of simulating the given route policy on the given BGP route.
    *
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
@@ -165,6 +165,16 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         sourceVrf);
   }
 
+  /**
+   * Produce the results of simulating the given route policy on the given static route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   */
   public static Result<StaticRoute, Bgpv4Route> simulatePolicyWithStaticRoute(
       RoutingPolicy policy,
       StaticRoute inputRoute,
@@ -172,7 +182,12 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
       @Nullable Predicate<String> successfulTrack,
       @Nullable String sourceVrf) {
 
-    // TODO: are these the right parameter values to use?
+    /*
+     * TODO: Using default values for these parameters; if the results of simulation depends on them
+     * then we may require additional information from the caller of our method.
+     * A few other notes: 1) We are using the static route's next hop IP as the next hop IP for the BGP route.
+     * 2) The local preference of the BGP route will be set to the default value of 100.
+     */
     Bgpv4Route.Builder outputRoute =
         BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
             inputRoute,
@@ -186,6 +201,19 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         policy, inputRoute, outputRoute, null, direction, successfulTrack, sourceVrf);
   }
 
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the simulation
+   * @param outputRoute the output route builder for the simulation
+   * @param properties the properties of the BGP session being simulated
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   * @param <I> the type of the input route
+   */
   private static <I extends AbstractRoute> Result<I, Bgpv4Route> processPolicy(
       RoutingPolicy policy,
       I inputRoute,
