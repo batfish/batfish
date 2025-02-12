@@ -507,10 +507,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
       if (myNetworkAcls.size() > 1) {
         List<String> aclIds =
             myNetworkAcls.stream().map(NetworkAcl::getId).collect(ImmutableList.toImmutableList());
-        warnings.redFlag(
-            String.format(
-                "Found multiple network ACLs %s for subnet %s. Using %s.",
-                aclIds, _subnetId, myNetworkAcls.get(0).getId()));
+        warnings.redFlagf(
+            "Found multiple network ACLs %s for subnet %s. Using %s.",
+            aclIds, _subnetId, myNetworkAcls.get(0).getId());
       }
       return Optional.of(myNetworkAcls.get(0));
     }
@@ -551,10 +550,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
       PrefixList prefixList =
           region.getPrefixLists().get(((RoutePrefixListId) route).getPrefixListId());
       if (prefixList == null) {
-        warnings.redFlag(
-            String.format(
-                "Prefix list %s mentioned in route %s not found in region %s",
-                ((RoutePrefixListId) route).getPrefixListId(), route, region.getName()));
+        warnings.redFlagf(
+            "Prefix list %s mentioned in route %s not found in region %s",
+            ((RoutePrefixListId) route).getPrefixListId(), route, region.getName());
         return;
       }
       networks = ImmutableList.copyOf(prefixList.getCidrs());
@@ -589,10 +587,9 @@ public class Subnet implements AwsVpcEntity, Serializable {
                     vpcNode,
                     Utils.interfaceNameToRemote(cfgNode, vrfNameForLink(route.getTarget())));
           } else {
-            warnings.redFlag(
-                String.format(
-                    "Unknown target %s specified in this route not accessible from this subnet",
-                    route.getTarget()));
+            warnings.redFlagf(
+                "Unknown target %s specified in this route not accessible from this subnet",
+                route.getTarget());
             return;
           }
           break;
@@ -612,11 +609,10 @@ public class Subnet implements AwsVpcEntity, Serializable {
           TransitGatewayVpcAttachment attachment =
               region.findTransitGatewayVpcAttachment(_vpcId, route.getTarget()).orElse(null);
           if (attachment == null) {
-            warnings.redFlag(
-                String.format(
-                    "Transit gateway VPC attachment between %s and %s not found. Needed for route:"
-                        + " %s",
-                    _vpcId, route.getTarget(), route));
+            warnings.redFlagf(
+                "Transit gateway VPC attachment between %s and %s not found. Needed for route:"
+                    + " %s",
+                _vpcId, route.getTarget(), route);
             return;
           }
           // this attachment is not reachable if it is not present in our availability zone
@@ -635,9 +631,8 @@ public class Subnet implements AwsVpcEntity, Serializable {
         case NatGateway:
           NatGateway natGateway = region.getNatGateways().get(route.getTarget());
           if (natGateway == null) {
-            warnings.redFlag(
-                String.format(
-                    "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route));
+            warnings.redFlagf(
+                "Nat gateway %s not found. Needed for route: %s", route.getTarget(), route);
             return;
           }
           // If the NAT is in our subnet, send it directly. Otherwise, send it via the VPC

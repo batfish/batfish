@@ -555,9 +555,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       missingItem = "destination addresses";
     }
     if (missingItem != null && fileWarnings) {
-      _w.redFlag(
-          String.format(
-              "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem));
+      _w.redFlagf(
+          "NAT rule %s ignored because it has no %s configured", rule.getName(), missingItem);
     }
     return missingItem == null;
   }
@@ -1271,11 +1270,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   @VisibleForTesting
   static boolean checkIntrazoneValidityAndWarn(SecurityRule rule, Warnings w) {
     if (rule.getRuleType() == RuleType.INTRAZONE && !rule.getFrom().equals(rule.getTo())) {
-      w.redFlag(
-          String.format(
-              "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
-                  + " %s vs %s",
-              rule.getName(), rule.getFrom(), rule.getTo()));
+      w.redFlagf(
+          "Skipping invalid intrazone security rule: %s. It has different From and To zones:"
+              + " %s vs %s",
+          rule.getName(), rule.getFrom(), rule.getTo());
       return false;
     }
     return true;
@@ -1809,10 +1807,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           .collect(ImmutableList.toImmutableList());
     }
     // Did not find in the right hierarchy, so stop and warn.
-    _w.redFlag(
-        String.format(
-            "Unable to identify application %s in vsys %s rule %s",
-            name, vsys.getName(), rule.getName()));
+    _w.redFlagf(
+        "Unable to identify application %s in vsys %s rule %s",
+        name, vsys.getName(), rule.getName());
     return ImmutableList.of();
   }
 
@@ -2488,11 +2485,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (pool.isEmpty()) {
       // Can't apply a source IP translation with empty IP pool
       // TODO: Check real behavior in this scenario
-      _w.redFlag(
-          String.format(
-              "NAT rule %s of VSYS %s will not apply source translation because its source"
-                  + " translation pool is empty",
-              rule.getName(), vsys.getName()));
+      _w.redFlagf(
+          "NAT rule %s of VSYS %s will not apply source translation because its source"
+              + " translation pool is empty",
+          rule.getName(), vsys.getName());
       return ImmutableList.of();
     }
 
@@ -2515,11 +2511,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     if (pool.isEmpty()) {
       // Can't apply a dest IP translation with empty IP pool
       // TODO: Check real behavior in this scenario
-      _w.redFlag(
-          String.format(
-              "NAT rule %s of VSYS %s will not apply destination translation because its"
-                  + " destination translation pool is empty",
-              rule.getName(), vsys.getName()));
+      _w.redFlagf(
+          "NAT rule %s of VSYS %s will not apply destination translation because its"
+              + " destination translation pool is empty",
+          rule.getName(), vsys.getName());
       return Optional.empty();
     }
     return Optional.of(
@@ -2589,11 +2584,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       peerAs = firstNonNull(peerAs, localAs);
       // Peer AS must be unset or equal to Local AS.
       if (localAs != peerAs) {
-        _w.redFlag(
-            String.format(
-                "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
-                    + " it",
-                peer.getName(), peerAs, localAs));
+        _w.redFlagf(
+            "iBGP peer %s has a mismatched peer-as %s which is not the local-as %s; replacing"
+                + " it",
+            peer.getName(), peerAs, localAs);
         peerAs = localAs;
       }
     } else if (pg.getTypeAndOptions() instanceof EbgpPeerGroupType) {
@@ -2603,10 +2597,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         return;
       }
       if (peerAs == localAs) {
-        _w.redFlag(
-            String.format(
-                "eBGP peer %s must have peer-as different from local-as; disabling it",
-                peer.getName()));
+        _w.redFlagf(
+            "eBGP peer %s must have peer-as different from local-as; disabling it", peer.getName());
         return;
       }
     } else {
@@ -2795,10 +2787,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             ospfVsIface -> {
               org.batfish.datamodel.Interface viIface = viInterfaces.get(ospfVsIface.getName());
               if (viIface == null) {
-                _w.redFlag(
-                    String.format(
-                        "OSPF area %s refers a non-existent interface %s",
-                        vsAreaId, ospfVsIface.getName()));
+                _w.redFlagf(
+                    "OSPF area %s refers a non-existent interface %s",
+                    vsAreaId, ospfVsIface.getName());
                 return;
               }
               ospfIfaceNames.add(viIface.getName());
@@ -2866,25 +2857,22 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // Can only construct a static route if it has a destination
       Prefix destination = sr.getDestination();
       if (destination == null) {
-        _w.redFlag(
-            String.format(
-                "Cannot convert static route %s, as it does not have a destination.", e.getKey()));
+        _w.redFlagf(
+            "Cannot convert static route %s, as it does not have a destination.", e.getKey());
         continue;
       }
       String nextVrf = sr.getNextVr();
       if (nextVrf != null) {
         if (nextVrf.equals(vrfName)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
-                  e.getKey(), nextVrf));
+          _w.redFlagf(
+              "Cannot convert static route %s, as its next-vr '%s' is its own virtual-router.",
+              e.getKey(), nextVrf);
           continue;
         }
         if (!_virtualRouters.containsKey(nextVrf)) {
-          _w.redFlag(
-              String.format(
-                  "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
-                  e.getKey(), nextVrf));
+          _w.redFlagf(
+              "Cannot convert static route %s, as its next-vr '%s' is not a virtual-router.",
+              e.getKey(), nextVrf);
           continue;
         }
       }
@@ -3077,10 +3065,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       return;
     }
     if (parent == null) {
-      _w.redFlag(
-          String.format(
-              "Device-group %s cannot inherit from unknown device-group %s.",
-              deviceGroup.getName(), parentName));
+      _w.redFlagf(
+          "Device-group %s cannot inherit from unknown device-group %s.",
+          deviceGroup.getName(), parentName);
       return;
     }
 
@@ -3200,12 +3187,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           if (managedConfigurations.containsKey(deviceId)) {
                             // If the device already has a config associated with it, it must
                             // already be associated with another device-group (should not happen)
-                            _w.redFlag(
-                                String.format(
-                                    "Managed device '%s' cannot be associated with more than one"
-                                        + " device-group. Ignoring association with device-group"
-                                        + " '%s'.",
-                                    deviceId, deviceGroupEntry.getKey()));
+                            _w.redFlagf(
+                                "Managed device '%s' cannot be associated with more than one"
+                                    + " device-group. Ignoring association with device-group"
+                                    + " '%s'.",
+                                deviceId, deviceGroupEntry.getKey());
                           } else {
                             PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
                             c.applyDeviceGroup(deviceGroupEntry.getValue(), _shared, _deviceGroups);
@@ -3224,13 +3210,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                         (deviceId, vsys) -> {
                           // Create new managed config if one doesn't already exist for this device
                           if (managedConfigurations.containsKey(deviceId)) {
-                            _w.redFlag(
-                                String.format(
-                                    "Associating vsys on a managed device with different"
-                                        + " device-groups is not yet supported. Ignoring"
-                                        + " association with device-group '%s' for managed device"
-                                        + " '%s'.",
-                                    deviceGroupEntry.getKey(), deviceId));
+                            _w.redFlagf(
+                                "Associating vsys on a managed device with different"
+                                    + " device-groups is not yet supported. Ignoring"
+                                    + " association with device-group '%s' for managed device"
+                                    + " '%s'.",
+                                deviceGroupEntry.getKey(), deviceId);
                             return;
                           }
                           PaloAltoConfiguration c = createManagedDeviceConfig(deviceId);
@@ -3361,10 +3346,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         if (iface.getDependencies().stream().anyMatch(d -> d.getType() == DependencyType.BIND)) {
           // This is a child interface. Just shut it down.
           iface.deactivate(INCOMPLETE);
-          _w.redFlag(
-              String.format(
-                  "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
-                  iface.getName(), nullVrf.getName()));
+          _w.redFlagf(
+              "Interface %s is not in a virtual-router, placing in %s and shutting it down.",
+              iface.getName(), nullVrf.getName());
         } else {
           // This is a parent interface. We can't shut it down, so instead we must just clear L2/L3
           // data.
@@ -3391,11 +3375,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           // Only warn if some L2/L3 data actually set.
           if (warn) {
-            _w.redFlag(
-                String.format(
-                    "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
-                        + " data.",
-                    iface.getName(), nullVrf.getName()));
+            _w.redFlagf(
+                "Interface %s is not in a virtual-router, placing in %s and clearing L2/L3"
+                    + " data.",
+                iface.getName(), nullVrf.getName());
           }
         }
       }

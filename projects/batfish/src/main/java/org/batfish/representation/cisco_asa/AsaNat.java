@@ -379,10 +379,9 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
             "Failed to determine if identity NAT but created Transformation");
       }
       if (!outgoing && !identity && !_insideInterface.equals(ANY_INTERFACE)) {
-        w.redFlag(
-            String.format(
-                "Possibly incorrect forwarding behavior for destination=%s, source interface=%s",
-                ((NetworkObjectAddressSpecifier) _realSource).getName(), _outsideInterface));
+        w.redFlagf(
+            "Possibly incorrect forwarding behavior for destination=%s, source interface=%s",
+            ((NetworkObjectAddressSpecifier) _realSource).getName(), _outsideInterface);
       }
     }
 

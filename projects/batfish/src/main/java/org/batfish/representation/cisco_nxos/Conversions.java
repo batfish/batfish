@@ -149,10 +149,8 @@ public final class Conversions {
             .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
-      w.redFlag(
-          String.format(
-              "%s. Unable to infer default router-id as no interfaces have IP addresses",
-              messageBase));
+      w.redFlagf(
+          "%s. Unable to infer default router-id as no interfaces have IP addresses", messageBase);
       // With no interfaces in the VRF that have IP addresses, show ip bgp vrf all reports 0.0.0.0
       // as the router ID. Of course, this is not really relevant as no routes will be exchanged.
       return Ip.ZERO;
@@ -352,10 +350,9 @@ public final class Conversions {
       }
       ConcreteInterfaceAddress address = iface.getConcreteAddress();
       if (address == null) {
-        warnings.redFlag(
-            String.format(
-                "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
-                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
+        warnings.redFlagf(
+            "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
+            dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface);
         return null;
       }
       return address.getIp();
@@ -585,10 +582,9 @@ public final class Conversions {
         // will be exported for hosts in this VNI. Assuming this to be an invalid EVPN
         // configuration
         // for lack of explicit doc from Cisco
-        warnings.redFlag(
-            String.format(
-                "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
-                l2Vni.getVni()));
+        warnings.redFlagf(
+            "No export route-target defined for L2 VNI '%s', no L2 routes will be exported",
+            l2Vni.getVni());
         continue;
       }
       ExtendedCommunityOrAuto importRtOrAuto = evpnVni.getImportRt();
@@ -598,10 +594,9 @@ public final class Conversions {
         // will be imported for this VNI. Assuming this to be an invalid EVPN configuration for
         // lack
         // of explicit doc from Cisco
-        warnings.redFlag(
-            String.format(
-                "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
-                l2Vni.getVni()));
+        warnings.redFlagf(
+            "No import route-target defined for L2 VNI '%s', no L2 routes will be imported",
+            l2Vni.getVni());
         continue;
       }
 
@@ -670,10 +665,9 @@ public final class Conversions {
           // (IP-routes)
           // will be exported from this VRF. Assuming this to be an invalid L3 VNI configuration
           // for lack of explicit doc from Cisco. (Cisco auto-generates it in common cases)
-          warnings.redFlag(
-              String.format(
-                  "No export route-target defined for L3 VNI '%s', no L3 routes will be exported",
-                  l3Vni.getVni()));
+          warnings.redFlagf(
+              "No export route-target defined for L3 VNI '%s', no L3 routes will be exported",
+              l3Vni.getVni());
           continue;
         }
         ExtendedCommunityOrAuto importRtOrAuto =
@@ -686,10 +680,9 @@ public final class Conversions {
           // (IP-routes)
           // will be imported into this VRF. Assuming this to be an invalid L3 VNI configuration
           // for lack of explicit doc from Cisco. (Cisco auto-generates it in common cases)
-          warnings.redFlag(
-              String.format(
-                  "No import route-target defined for L3 VNI '%s', no L3 routes will be imported",
-                  l3Vni.getVni()));
+          warnings.redFlagf(
+              "No import route-target defined for L3 VNI '%s', no L3 routes will be imported",
+              l3Vni.getVni());
           continue;
         }
         layer3Vnis.add(

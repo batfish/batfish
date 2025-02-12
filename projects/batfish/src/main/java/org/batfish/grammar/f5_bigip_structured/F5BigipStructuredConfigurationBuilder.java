@@ -2518,18 +2518,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLv_ip_forward(Lv_ip_forwardContext ctx) {
     if (_currentVirtual.getPool() != null) {
-      _w.redFlag(
-          String.format(
-              "'ip-forward' mode incompatible with pool '%s' already configured on virtual '%s'",
-              _currentVirtual.getPool(), _currentVirtual.getName()));
+      _w.redFlagf(
+          "'ip-forward' mode incompatible with pool '%s' already configured on virtual '%s'",
+          _currentVirtual.getPool(), _currentVirtual.getName());
       return;
     }
     if (_currentVirtual.getReject()) {
-      _w.redFlag(
-          String.format(
-              "'ip-forward' mode incompatible with 'reject' mode already configured on virtual"
-                  + " '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'ip-forward' mode incompatible with 'reject' mode already configured on virtual"
+              + " '%s'",
+          _currentVirtual.getName());
       return;
     }
     _currentVirtual.setIpForward(true);
@@ -2557,17 +2555,15 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = toName(ctx.name);
     _c.referenceStructure(POOL, name, VIRTUAL_POOL, ctx.name.getStart().getLine());
     if (_currentVirtual.getIpForward()) {
-      _w.redFlag(
-          String.format(
-              "'pool' incompatible with 'ip-forward' mode already configured on virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'pool' incompatible with 'ip-forward' mode already configured on virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     if (_currentVirtual.getReject()) {
-      _w.redFlag(
-          String.format(
-              "'pool' incompatible with 'reject' mode already configured on virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'pool' incompatible with 'reject' mode already configured on virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     _currentVirtual.setPool(name);
@@ -2582,18 +2578,16 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitLv_reject(Lv_rejectContext ctx) {
     if (_currentVirtual.getIpForward()) {
-      _w.redFlag(
-          String.format(
-              "'reject' mode incompatible with 'ip-forward' mode already configured on virtual"
-                  + " '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'reject' mode incompatible with 'ip-forward' mode already configured on virtual"
+              + " '%s'",
+          _currentVirtual.getName());
       return;
     }
     if (_currentVirtual.getPool() != null) {
-      _w.redFlag(
-          String.format(
-              "'reject' mode incompatible with pool '%s' already configured on virtual '%s'",
-              _currentVirtual.getPool(), _currentVirtual.getName()));
+      _w.redFlagf(
+          "'reject' mode incompatible with pool '%s' already configured on virtual '%s'",
+          _currentVirtual.getPool(), _currentVirtual.getName());
       return;
     }
     _currentVirtual.setReject(true);
@@ -2615,19 +2609,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitLv_translate_address(Lv_translate_addressContext ctx) {
     boolean enabled = ctx.ENABLED() != null;
     if (enabled && _currentVirtual.getIpForward()) {
-      _w.redFlag(
-          String.format(
-              "'translate-address enabled' incompatible with 'ip-forward' mode already configured"
-                  + " on virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'translate-address enabled' incompatible with 'ip-forward' mode already configured"
+              + " on virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     if (enabled && _currentVirtual.getReject()) {
-      _w.redFlag(
-          String.format(
-              "'translate-address enabled' incompatible with 'reject' mode already configured on"
-                  + " virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'translate-address enabled' incompatible with 'reject' mode already configured on"
+              + " virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     _currentVirtual.setTranslateAddress(enabled);
@@ -2637,19 +2629,17 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   public void exitLv_translate_port(Lv_translate_portContext ctx) {
     boolean enabled = ctx.ENABLED() != null;
     if (enabled && _currentVirtual.getIpForward()) {
-      _w.redFlag(
-          String.format(
-              "'translate-port enabled' incompatible with 'ip-forward' mode already configured on"
-                  + " virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'translate-port enabled' incompatible with 'ip-forward' mode already configured on"
+              + " virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     if (enabled && _currentVirtual.getReject()) {
-      _w.redFlag(
-          String.format(
-              "'translate-port enabled' incompatible with 'reject' mode already configured on"
-                  + " virtual '%s'",
-              _currentVirtual.getName()));
+      _w.redFlagf(
+          "'translate-port enabled' incompatible with 'reject' mode already configured on"
+              + " virtual '%s'",
+          _currentVirtual.getName());
       return;
     }
     _currentVirtual.setTranslatePort(enabled);
@@ -2904,11 +2894,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         .filter(Objects::nonNull)
         .map(ConcreteInterfaceAddress::getPrefix)
         .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
-      _w.redFlag(
-          String.format(
-              "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected"
-                  + " network in: %s",
-              ip, _currentRoute.getName(), getFullText(ctx)));
+      _w.redFlagf(
+          "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected"
+              + " network in: %s",
+          ip, _currentRoute.getName(), getFullText(ctx));
     }
     _currentRoute.setGw(ip);
   }

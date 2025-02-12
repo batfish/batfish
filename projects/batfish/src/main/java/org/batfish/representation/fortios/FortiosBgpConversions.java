@@ -71,11 +71,10 @@ public final class FortiosBgpConversions {
         return Optional.empty();
       } else if (!viUpdateSourceIface.getActive()) {
         // TODO Check behavior if BGP neighbor's configured update-source is an inactive interface
-        w.redFlag(
-            String.format(
-                "BGP neighbor %s has an inactive update-source interface %s. Attempting to infer"
-                    + " another update-source for this neighbor",
-                neighbor.getIp(), updateSource));
+        w.redFlagf(
+            "BGP neighbor %s has an inactive update-source interface %s. Attempting to infer"
+                + " another update-source for this neighbor",
+            neighbor.getIp(), updateSource);
       } else {
         // Configured update-source is viable
         return Optional.of(viUpdateSourceIface);
@@ -126,9 +125,7 @@ public final class FortiosBgpConversions {
     for (BgpNeighbor neighbor : bgpProcess.getNeighbors().values()) {
       Optional<Interface> updateSource = getUpdateSource(neighbor, c, w);
       if (!updateSource.isPresent()) {
-        w.redFlag(
-            String.format(
-                "Ignoring BGP neighbor %s: Unable to infer its update source", neighbor.getIp()));
+        w.redFlagf("Ignoring BGP neighbor %s: Unable to infer its update source", neighbor.getIp());
         continue;
       }
       updateSources.put(neighbor.getIp(), updateSource.get());
@@ -250,10 +247,9 @@ public final class FortiosBgpConversions {
               .map(ConcreteInterfaceAddress::getIp)
               .orElse(null);
       if (localIp == null) {
-        w.redFlag(
-            String.format(
-                "Ignoring BGP neighbor %s: Update-source %s has no address",
-                remoteIp, updateSource.getName()));
+        w.redFlagf(
+            "Ignoring BGP neighbor %s: Update-source %s has no address",
+            remoteIp, updateSource.getName());
         continue;
       }
       BgpActivePeerConfig.builder()
@@ -321,11 +317,10 @@ public final class FortiosBgpConversions {
                   Statement statement;
                   if (listName != null) {
                     if (!c.getRouteFilterLists().containsKey(listName)) {
-                      w.redFlag(
-                          String.format(
-                              "Ignoring rule %s in route-map %s: List %s does not exist or was not"
-                                  + " converted",
-                              rule.getNumber(), rmName, listName));
+                      w.redFlagf(
+                          "Ignoring rule %s in route-map %s: List %s does not exist or was not"
+                              + " converted",
+                          rule.getNumber(), rmName, listName);
                       return null;
                     }
                     BooleanExpr guard =

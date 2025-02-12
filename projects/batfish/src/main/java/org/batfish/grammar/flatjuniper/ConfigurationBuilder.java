@@ -2456,10 +2456,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
       if (!application.hasDefinition()) {
-        _w.redFlag(
-            String.format(
-                "unimplemented pre-defined junos application: '%s'",
-                ctx.junos_application().getText()));
+        _w.redFlagf(
+            "unimplemented pre-defined junos application: '%s'", ctx.junos_application().getText());
         return;
       }
       _currentApplicationSet.setMembers(
@@ -2486,10 +2484,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.junos_application_set() != null) {
       JunosApplicationSet junosApplicationSet = toJunosApplicationSet(ctx.junos_application_set());
       if (!junosApplicationSet.hasDefinition()) {
-        _w.redFlag(
-            String.format(
-                "unimplemented pre-defined junos application-set: '%s'",
-                ctx.junos_application_set().getText()));
+        _w.redFlagf(
+            "unimplemented pre-defined junos application-set: '%s'",
+            ctx.junos_application_set().getText());
         return;
       }
       _currentApplicationSet.setMembers(
@@ -3202,10 +3199,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                 _currentRouteFilterPrefix, toIp(ctx.ip_address()).inverted());
         _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
       } else {
-        _w.redFlag(
-            String.format(
-                "Route filter mask does not match version for prefix %s",
-                _currentRouteFilterPrefix));
+        _w.redFlagf(
+            "Route filter mask does not match version for prefix %s", _currentRouteFilterPrefix);
       }
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
       if (ctx.ipv6_address() != null) {
@@ -3214,10 +3209,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                 _currentRoute6FilterPrefix, toIp6(ctx.ipv6_address()).inverted());
         _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
       } else {
-        _w.redFlag(
-            String.format(
-                "Route filter mask does not match version for prefix %s",
-                _currentRouteFilterPrefix));
+        _w.redFlagf(
+            "Route filter mask does not match version for prefix %s", _currentRouteFilterPrefix);
       }
     }
   }
@@ -3766,10 +3759,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             getLine(ctx.name.getStart()));
         break;
       case ATTACHED:
-        _w.redFlag(
-            String.format(
-                "Two address books are attached to zone %s: %s and %s. Ignoring the first one",
-                zone.getName(), zone.getAddressBook().getName(), _currentAddressBook.getName()));
+        _w.redFlagf(
+            "Two address books are attached to zone %s: %s and %s. Ignoring the first one",
+            zone.getName(), zone.getAddressBook().getName(), _currentAddressBook.getName());
         zone.attachAddressBook(_currentAddressBook);
         _configuration.referenceStructure(
             ADDRESS_BOOK,
@@ -3778,11 +3770,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
             getLine(ctx.name.getStart()));
         break;
       case INLINED:
-        _w.redFlag(
-            String.format(
-                "Not attaching the address book %s to zone %s because an inline address book is"
-                    + " defined",
-                _currentAddressBook.getName(), zone.getName()));
+        _w.redFlagf(
+            "Not attaching the address book %s to zone %s because an inline address book is"
+                + " defined",
+            _currentAddressBook.getName(), zone.getName());
         break;
     }
   }
@@ -4012,11 +4003,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         _currentAddressBook = _currentZone.getAddressBook();
         return;
       case ATTACHED:
-        _w.redFlag(
-            String.format(
-                "Ignoring attached address book %s to zone %s because an inline address book is"
-                    + " defined",
-                _currentZone.getAddressBook().getName(), _currentZone.getName()));
+        _w.redFlagf(
+            "Ignoring attached address book %s to zone %s because an inline address book is"
+                + " defined",
+            _currentZone.getAddressBook().getName(), _currentZone.getName());
         _currentAddressBook =
             _currentZone.initInlinedAddressBook(_currentLogicalSystem.getGlobalAddressBook());
         break;
@@ -5311,10 +5301,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       InterfaceRangeMember mc = new InterfaceRangeMember(member);
       ((InterfaceRange) _currentInterfaceOrRange).getMembers().add(mc);
     } catch (IllegalArgumentException e) {
-      _w.redFlag(
-          String.format(
-              "Could not include member '%s' in interface range '%s': %s",
-              member, _currentInterfaceOrRange.getName(), e.getMessage()));
+      _w.redFlagf(
+          "Could not include member '%s' in interface range '%s': %s",
+          member, _currentInterfaceOrRange.getName(), e.getMessage());
     }
   }
 
@@ -5343,10 +5332,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       InterfaceRangeMemberRange range = new InterfaceRangeMemberRange(from, to);
       ((InterfaceRange) _currentInterfaceOrRange).getMemberRanges().add(range);
     } catch (IllegalArgumentException e) {
-      _w.redFlag(
-          String.format(
-              "Could not include member range '%s to %s' in interface-range '%s': %s",
-              from, to, _currentInterfaceOrRange.getName(), e.getMessage()));
+      _w.redFlagf(
+          "Could not include member range '%s to %s' in interface-range '%s': %s",
+          from, to, _currentInterfaceOrRange.getName(), e.getMessage());
     }
   }
 
@@ -5747,7 +5735,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
                 + " allows longer matches such as "
                 + String.join(" and ", unintendedMatches));
       }
-      ;
       return new RegexCommunityMember(text);
     } else {
       assert ctx.sc_named() != null;
@@ -5822,10 +5809,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (ctx.INET6() != null) {
       _currentPsTerm.getFroms().setFromFamily(new PsFromFamily(AddressFamily.IPV6));
     } else {
-      _w.redFlag(
-          String.format(
-              "unimplemented 'policy-options policy-statement term' from clause: %s",
-              getFullText(ctx)));
+      _w.redFlagf(
+          "unimplemented 'policy-options policy-statement term' from clause: %s", getFullText(ctx));
       _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
     }
   }
@@ -5947,10 +5932,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_rib(Popsf_ribContext ctx) {
-    _w.redFlag(
-        String.format(
-            "unimplemented 'policy-options policy-statement term' from clause: %s",
-            getFullText(ctx)));
+    _w.redFlagf(
+        "unimplemented 'policy-options policy-statement term' from clause: %s", getFullText(ctx));
     _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
@@ -7068,10 +7051,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.junos_application() != null) {
       JunosApplication application = toJunosApplication(ctx.junos_application());
       if (!application.hasDefinition()) {
-        _w.redFlag(
-            String.format(
-                "unimplemented pre-defined junos application: '%s'",
-                ctx.junos_application().getText()));
+        _w.redFlagf(
+            "unimplemented pre-defined junos application: '%s'", ctx.junos_application().getText());
         return;
       }
       if (application.getIpv6()) {
@@ -7083,10 +7064,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (ctx.junos_application_set() != null) {
       JunosApplicationSet applicationSet = toJunosApplicationSet(ctx.junos_application_set());
       if (!applicationSet.hasDefinition()) {
-        _w.redFlag(
-            String.format(
-                "unimplemented pre-defined junos application-set: '%s'",
-                ctx.junos_application_set().getText()));
+        _w.redFlagf(
+            "unimplemented pre-defined junos application-set: '%s'",
+            ctx.junos_application_set().getText());
         return;
       }
       FwFromJunosApplicationSet from = new FwFromJunosApplicationSet(applicationSet);

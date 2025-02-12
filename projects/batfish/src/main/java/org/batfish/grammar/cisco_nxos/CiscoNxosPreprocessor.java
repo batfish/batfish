@@ -387,11 +387,10 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
             _defaultLayer2EvidenceCount,
             _defaultLayer3EvidenceCount));
     if (_defaultLayer2EvidenceCount > 0 && _defaultLayer3EvidenceCount > 0) {
-      _w.redFlag(
-          String.format(
-              "Guessing Ethernet interfaces default to layer-%d mode based on statistical analysis"
-                  + " of configuration.",
-              _configuration.getSystemDefaultSwitchport() ? 2 : 3));
+      _w.redFlagf(
+          "Guessing Ethernet interfaces default to layer-%d mode based on statistical analysis"
+              + " of configuration.",
+          _configuration.getSystemDefaultSwitchport() ? 2 : 3);
     }
   }
 

@@ -158,6 +158,11 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
+    public boolean isConstant() {
+      return ISCONST(_index);
+    }
+
+    @Override
     public boolean isZero() {
       return _index == BDDZERO;
     }

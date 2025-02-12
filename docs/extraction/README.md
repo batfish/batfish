@@ -266,8 +266,9 @@ encounters an error node:
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
-      _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+      _w.redFlagf(
+          "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+          line, lineText);
     }
   }
 ```
@@ -293,8 +294,9 @@ parse tree nodes (subclasses of `ParserRuleContext`). This has multiple benefits
   for a test to fail, or worse - something to fail in production.
 
 ### Unimplemented warnings in extraction
-Sometimes there are cases where a line has been added to the grammar, but it still needs further implementation. 
-In these cases, we still want to leave a warning for this line. 
+
+Sometimes there are cases where a line has been added to the grammar, but it still needs further implementation.
+In these cases, we still want to leave a warning for this line.
 
 A generic `todo` in extraction automatically adds an unimplemented warning:
 

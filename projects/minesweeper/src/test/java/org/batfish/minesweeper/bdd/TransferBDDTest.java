@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
+import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -65,6 +66,7 @@ import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.AsSetsMatchingRanges;
+import org.batfish.datamodel.routing_policy.as_path.HasAsPathLength;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.AllStandardCommunities;
@@ -1926,6 +1928,51 @@ public class TransferBDDTest {
             new TransferReturn(anyRouteWithAPs, expectedBDD, true),
             new TransferReturn(anyRouteWithAPs, expectedBDD.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testMatchAsPathLengthAny() {
+    _policyBuilder.addStatement(
+        new If(
+            MatchAsPath.of(
+                InputAsPath.instance(),
+                HasAsPathLength.of(
+                    new IntComparison(
+                        IntComparator.LE, new LiteralInt(ASSUMED_MAX_AS_PATH_LENGTH)))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    assertEquals(1, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    BDDFactory factory = tbdd.getFactory();
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+    assertEquals(paths, ImmutableList.of(new TransferReturn(anyRouteWithAPs, factory.one(), true)));
+    assertTrue(validatePaths(policy, paths, factory));
+  }
+
+  @Test
+  public void testMatchAsPathLengthNone() {
+    _policyBuilder.addStatement(
+        new If(
+            MatchAsPath.of(
+                InputAsPath.instance(),
+                HasAsPathLength.of(new IntComparison(IntComparator.GT, new LiteralInt(3)))),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+    assertEquals(1, _configAPs.getAsPathRegexAtomicPredicates().getNumAtomicPredicates());
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    BDDFactory factory = tbdd.getFactory();
+    BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
+
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(anyRouteWithAPs, factory.one(), false)));
+    assertTrue(validatePaths(policy, paths, factory));
   }
 
   @Test

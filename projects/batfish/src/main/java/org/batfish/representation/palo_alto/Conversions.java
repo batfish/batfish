@@ -178,10 +178,9 @@ final class Conversions {
       RedistProfile redistProfile =
           vr.getRedistProfiles().get(redistRule.getKey().getRedistProfileName());
       if (redistProfile == null) {
-        w.redFlag(
-            String.format(
-                "redist-profile %s referred in %s: BGP does not exist",
-                redistRule.getKey().getRedistProfileName(), vr.getName()));
+        w.redFlagf(
+            "redist-profile %s referred in %s: BGP does not exist",
+            redistRule.getKey().getRedistProfileName(), vr.getName());
         continue;
       }
       If ifStatement = redistRuleToIfStatement(redistRule.getValue(), redistProfile);
