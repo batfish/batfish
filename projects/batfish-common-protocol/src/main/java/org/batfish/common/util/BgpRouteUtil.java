@@ -20,9 +20,6 @@ public class BgpRouteUtil {
    * Convert a route that is neither a {@link BgpRoute} nor a {@link GeneratedRoute} to a {@link
    * Bgpv4Route.Builder}.
    *
-   * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
-   * routeDecorator} to the export policy
-   *
    * <p>The builder returned will have default local preference, redistribute origin mechanism,
    * incomplete origin type, and most other fields unset.
    */
