@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
@@ -11,11 +12,11 @@ import static org.batfish.datamodel.OriginMechanism.GENERATED;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.NETWORK;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
-import static org.batfish.datamodel.bgp.BgpProtocolHelper.toBgpv4Route;
-import static org.batfish.datamodel.bgp.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.IN;
 import static org.batfish.datamodel.routing_policy.Environment.Direction.OUT;
 import static org.batfish.dataplane.ibdp.DataplaneUtil.messageQueueStream;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.toBgpv4Route;
+import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRouteOnImport;
 import static org.batfish.dataplane.rib.RibDelta.importDeltaToBuilder;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -91,7 +92,6 @@ import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.bgp.AddressFamily;
 import org.batfish.datamodel.bgp.AddressFamily.Type;
 import org.batfish.datamodel.bgp.BgpAggregate;
-import org.batfish.datamodel.bgp.BgpProtocolHelper;
 import org.batfish.datamodel.bgp.BgpTopology;
 import org.batfish.datamodel.bgp.BgpTopology.EdgeId;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
@@ -108,6 +108,7 @@ import org.batfish.datamodel.tracking.TrackMethodEvaluator;
 import org.batfish.datamodel.tracking.TrackMethodEvaluatorProvider;
 import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.vxlan.Layer2Vni;
+import org.batfish.dataplane.protocols.BgpProtocolHelper;
 import org.batfish.dataplane.protocols.GeneratedRouteHelper;
 import org.batfish.dataplane.rib.BgpRib;
 import org.batfish.dataplane.rib.Bgpv4Rib;
@@ -773,7 +774,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return;
     }
     Bgpv4Route.Builder bgpBuilder =
-        BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+        convertNonBgpRouteToBgpRoute(
                 route,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
@@ -1872,7 +1873,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 NextHopIp.of(ourSessionProperties.getLocalIp()),
                 false)
                 .toBuilder()
-            : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+            : convertNonBgpRouteToBgpRoute(
                 exportCandidate,
                 getRouterId(),
                 ourSessionProperties.getLocalIp(),

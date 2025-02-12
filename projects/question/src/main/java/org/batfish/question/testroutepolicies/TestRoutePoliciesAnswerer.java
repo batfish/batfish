@@ -2,6 +2,7 @@ package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -44,7 +45,6 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
-import org.batfish.datamodel.bgp.BgpProtocolHelper;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
@@ -189,7 +189,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
      * 2) The local preference of the BGP route will be set to the default value of 100.
      */
     Bgpv4Route.Builder outputRoute =
-        BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+        convertNonBgpRouteToBgpRoute(
             inputRoute,
             Ip.ZERO,
             inputRoute.getNextHopIp(),

@@ -9,6 +9,7 @@ import static org.batfish.common.matchers.WarningMatchers.hasText;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarning;
 import static org.batfish.common.matchers.WarningsMatchers.hasParseWarnings;
 import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
 import static org.batfish.datamodel.InactiveReason.ADMIN_DOWN;
@@ -269,7 +270,6 @@ import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.answers.ConvertConfigurationAnswerElement;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.bgp.BgpAggregate;
-import org.batfish.datamodel.bgp.BgpProtocolHelper;
 import org.batfish.datamodel.bgp.EvpnAddressFamily;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.Layer2VniConfig;
@@ -1114,7 +1114,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribute matching EIGRP route into EBGP
       Bgpv4Route.Builder rb =
-          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+          convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
@@ -1139,7 +1139,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribute nonmatching EIGRP route to EBGP
       Bgpv4Route.Builder rb =
-          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+          convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
@@ -1147,7 +1147,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
-          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+          convertNonBgpRouteToBgpRoute(
               matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
@@ -1172,7 +1172,7 @@ public final class CiscoNxosGrammarTest {
     {
       // Redistribute nonmatching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
-          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+          convertNonBgpRouteToBgpRoute(
               noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertFalse(
           bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
@@ -1191,7 +1191,7 @@ public final class CiscoNxosGrammarTest {
               .setNetwork(matchRm)
               .build();
       Bgpv4Route.Builder rb =
-          BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+          convertNonBgpRouteToBgpRoute(
               matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
           bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
