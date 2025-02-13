@@ -34,14 +34,14 @@ public final class ComparePeerGroupPoliciesUtils {
    *     policies that are different. See {@link CompareRoutePoliciesAnswerer} for more details on
    *     the comparison of two policies.
    */
-  public static Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> getDifferencesStream(
-      IBatfish batfish, NetworkSnapshot snapshot, NetworkSnapshot reference) {
+  public static Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>>
+      getDifferencesStream(IBatfish batfish, NetworkSnapshot snapshot, NetworkSnapshot reference) {
     // Find the candidate differences based on a syntactic check.
     Map<SyntacticDifference, SortedSet<String>> candidates =
         findDifferenceCandidates(batfish, snapshot, reference);
 
-    Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> answers =
-        Stream.<Tuple<Result<BgpRoute>, Result<BgpRoute>>>builder().build();
+    Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>> answers =
+        Stream.<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>>builder().build();
 
     for (Map.Entry<SyntacticDifference, SortedSet<String>> entry : candidates.entrySet()) {
       SyntacticDifference candidate = entry.getKey();

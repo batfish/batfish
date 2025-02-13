@@ -125,7 +125,7 @@ public final class CompareRoutePoliciesUtils {
    * difference (should be the same across both tuple components) and the action+output route+trace
    * in each case (will be different).
    */
-  public Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> getDifferencesStream(
+  public Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>> getDifferencesStream(
       NetworkSnapshot snapshot, NetworkSnapshot reference) {
 
     SpecifierContext currentContext = _batfish.specifierContext(snapshot);
@@ -177,13 +177,14 @@ public final class CompareRoutePoliciesUtils {
    * @param reference the reference snapshot
    * @return all results from analyzing those route policies
    */
-  private Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> comparePoliciesForNode(
-      String node,
-      Stream<RoutingPolicy> policies,
-      Stream<RoutingPolicy> referencePolicies,
-      boolean crossPolicies,
-      NetworkSnapshot snapshot,
-      NetworkSnapshot reference) {
+  private Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>>
+      comparePoliciesForNode(
+          String node,
+          Stream<RoutingPolicy> policies,
+          Stream<RoutingPolicy> referencePolicies,
+          boolean crossPolicies,
+          NetworkSnapshot snapshot,
+          NetworkSnapshot reference) {
     List<RoutingPolicy> referencePoliciesList = referencePolicies.collect(Collectors.toList());
     List<RoutingPolicy> currentPoliciesList = policies.collect(Collectors.toList());
 
@@ -383,7 +384,7 @@ public final class CompareRoutePoliciesUtils {
       BDD fullModel,
       ConfigAtomicPredicates configAPs,
       TransferReturn path,
-      Result<BgpRoute> result,
+      Result<BgpRoute, BgpRoute> result,
       Environment.Direction direction) {
     // update the atomic predicates to include any prepended ASes on this path
     ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(configAPs);
@@ -419,8 +420,8 @@ public final class CompareRoutePoliciesUtils {
       ConfigAtomicPredicates configAPs,
       TransferReturn path,
       TransferReturn otherPath,
-      Result<BgpRoute> result,
-      Result<BgpRoute> otherResult,
+      Result<BgpRoute, BgpRoute> result,
+      Result<BgpRoute, BgpRoute> otherResult,
       Environment.Direction direction) {
     BDD fullModel =
         org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel(constraints, configAPs);
@@ -432,12 +433,12 @@ public final class CompareRoutePoliciesUtils {
    * Compare two route policies for behavioral differences.
    *
    * @param referencePolicy the routing policy of the reference snapshot
-   * @param otherPolicy the routing policy of the current snapshot
+   * @param policy the routing policy of the current snapshot
    * @param configAPs an object providing the atomic predicates for the otherPolicy's owner
    *     configuration
    * @return a set of differences
    */
-  private Stream<Tuple<Result<BgpRoute>, Result<BgpRoute>>> comparePolicies(
+  private Stream<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>> comparePolicies(
       RoutingPolicy referencePolicy, RoutingPolicy policy, ConfigAtomicPredicates configAPs) {
     TransferBDD tBDD = new TransferBDD(configAPs);
 
@@ -453,7 +454,8 @@ public final class CompareRoutePoliciesUtils {
             .collect(ImmutableMap.toImmutableMap(t -> t.getInputConstraints(), t -> t));
 
     // The set of differences if any.
-    List<Tuple<Result<BgpRoute>, Result<BgpRoute>>> differences = new ArrayList<>();
+    List<Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>> differences =
+        new ArrayList<>();
 
     for (TransferReturn path : paths) {
       BDD inputRoutes = path.getInputConstraints();
@@ -465,7 +467,7 @@ public final class CompareRoutePoliciesUtils {
           (sameInputs != null) ? ImmutableList.of(sameInputs) : otherPaths;
 
       for (TransferReturn otherPath : iterationPaths) {
-        Tuple<Result<BgpRoute>, Result<BgpRoute>> difference =
+        Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> difference =
             findConcreteDifference(
                 path, otherPath, wf, configAPs, referencePolicy, policy, _direction);
         if (difference != null) {
@@ -478,14 +480,15 @@ public final class CompareRoutePoliciesUtils {
         .sorted(Comparator.comparing(t -> t.getFirst().getInputRoute().getNetwork()));
   }
 
-  public static @Nullable Tuple<Result<BgpRoute>, Result<BgpRoute>> findConcreteDifference(
-      TransferReturn path,
-      TransferReturn otherPath,
-      BDD wellFormedConstraints,
-      ConfigAtomicPredicates configAPs,
-      RoutingPolicy policy,
-      RoutingPolicy otherPolicy,
-      Environment.Direction direction) {
+  public static @Nullable Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>>
+      findConcreteDifference(
+          TransferReturn path,
+          TransferReturn otherPath,
+          BDD wellFormedConstraints,
+          ConfigAtomicPredicates configAPs,
+          RoutingPolicy policy,
+          RoutingPolicy otherPolicy,
+          Environment.Direction direction) {
     BDD inputRoutes = path.getInputConstraints();
     BDD inputRoutesOther = otherPath.getInputConstraints();
     // in the case that both paths are accepting, additional constraints will be computed later to
@@ -538,9 +541,9 @@ public final class CompareRoutePoliciesUtils {
     // we have found a difference, so let's get a concrete example of the difference
     Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
         constraintsToInputs(finalConstraints, configAPs);
-    Result<BgpRoute> refResult =
+    Result<BgpRoute, BgpRoute> refResult =
         simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
-    Result<BgpRoute> otherResult =
+    Result<BgpRoute, BgpRoute> otherResult =
         simulatePolicy(
             otherPolicy, t.getFirst(), direction, t.getSecond(), otherPath.getOutputRoute());
 

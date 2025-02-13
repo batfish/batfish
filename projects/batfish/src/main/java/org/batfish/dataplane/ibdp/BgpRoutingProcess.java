@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
@@ -773,7 +774,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return;
     }
     Bgpv4Route.Builder bgpBuilder =
-        BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+        convertNonBgpRouteToBgpRoute(
                 route,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
@@ -1872,7 +1873,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 NextHopIp.of(ourSessionProperties.getLocalIp()),
                 false)
                 .toBuilder()
-            : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+            : convertNonBgpRouteToBgpRoute(
                 exportCandidate,
                 getRouterId(),
                 ourSessionProperties.getLocalIp(),

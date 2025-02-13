@@ -2,6 +2,7 @@ package org.batfish.question.testroutepolicies;
 
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.datamodel.LineAction.DENY;
 import static org.batfish.datamodel.LineAction.PERMIT;
 import static org.batfish.datamodel.answers.Schema.BGP_ROUTE;
@@ -30,12 +31,17 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AnnotatedRoute;
 import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.Route;
+import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.answers.NextHopConcrete;
 import org.batfish.datamodel.answers.Schema;
@@ -110,7 +116,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         .collect(ImmutableSortedSet.toImmutableSortedSet(Ordering.natural()));
   }
 
-  public Result<Bgpv4Route> getResult(
+  public Result<Bgpv4Route, Bgpv4Route> getResult(
       SpecifierContext context, Result.Key<Bgpv4Route> key, Direction direction) {
     RoutingPolicyId policyId = key.getPolicyId();
     RoutingPolicy policy =
@@ -119,20 +125,20 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
   }
 
   /**
-   * Produce the difference of simulating the given route policy on the given input route.
+   * Produce the results of simulating the given route policy on the given BGP route.
    *
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return the results of the simulation
    */
-  private Result<Bgpv4Route> simulatePolicy(
+  private Result<Bgpv4Route, Bgpv4Route> simulatePolicy(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
     return simulatePolicy(policy, inputRoute, _bgpSessionProperties, direction, null, null);
   }
 
   /**
-   * Produce the results of simulating the given route policy on the given input route.
+   * Produce the results of simulating the given route policy on the given BGP route.
    *
    * @param policy the route policy to simulate
    * @param inputRoute the input route for the policy
@@ -142,15 +148,81 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param sourceVrf an optional name of the source VRF
    * @return the results of the simulation
    */
-  public static Result<Bgpv4Route> simulatePolicy(
+  public static Result<Bgpv4Route, Bgpv4Route> simulatePolicy(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
       @Nullable BgpSessionProperties properties,
       Direction direction,
       @Nullable Predicate<String> successfulTrack,
       @Nullable String sourceVrf) {
+    return processPolicy(
+        policy,
+        inputRoute,
+        inputRoute.toBuilder(),
+        properties,
+        direction,
+        successfulTrack,
+        sourceVrf);
+  }
 
-    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
+  /**
+   * Produce the results of simulating the given route policy on the given static route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   */
+  public static Result<StaticRoute, Bgpv4Route> simulatePolicyWithStaticRoute(
+      RoutingPolicy policy,
+      StaticRoute inputRoute,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+
+    /*
+     * TODO: Using default values for these parameters; if the results of simulation depends on them
+     * then we may require additional information from the caller of our method.
+     * A few other notes: 1) We are using the static route's next hop IP as the next hop IP for the BGP route.
+     * 2) The local preference of the BGP route will be set to the default value of 100.
+     */
+    Bgpv4Route.Builder outputRoute =
+        convertNonBgpRouteToBgpRoute(
+            inputRoute,
+            Ip.ZERO,
+            inputRoute.getNextHopIp(),
+            0,
+            RoutingProtocol.BGP,
+            OriginMechanism.NETWORK);
+
+    return processPolicy(
+        policy, inputRoute, outputRoute, null, direction, successfulTrack, sourceVrf);
+  }
+
+  /**
+   * Produce the results of simulating the given route policy on the given input route.
+   *
+   * @param <I> the type of the input route
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the simulation
+   * @param outputRoute the output route builder for the simulation
+   * @param properties the properties of the BGP session being simulated
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   */
+  private static <I extends AbstractRoute> Result<I, Bgpv4Route> processPolicy(
+      RoutingPolicy policy,
+      I inputRoute,
+      Bgpv4Route.Builder outputRoute,
+      @Nullable BgpSessionProperties properties,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+
     if (direction == Direction.OUT) {
       // when simulating a route policy in the OUT direction, the output route's next hop IP must be
       // unset by default (checked by Environment::build)
@@ -291,8 +363,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         tasks.parallelStream()
             .map(
                 key -> {
-                  Result<Bgpv4Route> snapshotResult = getResult(context, key, _direction);
-                  Result<Bgpv4Route> referenceResult = getResult(referenceCtx, key, _direction);
+                  Result<Bgpv4Route, Bgpv4Route> snapshotResult =
+                      getResult(context, key, _direction);
+                  Result<Bgpv4Route, Bgpv4Route> referenceResult =
+                      getResult(referenceCtx, key, _direction);
                   return toDiffRow(snapshotResult, referenceResult);
                 })
             .filter(Objects::nonNull)
@@ -441,7 +515,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param result the original simulation result
    * @return a version of the result suitable for output from this analysis
    */
-  public static Result<BgpRoute> toQuestionResult(Result<Bgpv4Route> result) {
+  public static Result<BgpRoute, BgpRoute> toQuestionResult(Result<Bgpv4Route, Bgpv4Route> result) {
     return new Result<>(
         result.getPolicyId(),
         toQuestionBgpRoute(result.getInputRoute()),
@@ -450,7 +524,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
         result.getTrace());
   }
 
-  public static Row toRow(Result<BgpRoute> result) {
+  public static Row toRow(Result<BgpRoute, BgpRoute> result) {
     org.batfish.datamodel.questions.BgpRoute inputRoute = result.getInputRoute();
     org.batfish.datamodel.questions.BgpRoute outputRoute = result.getOutputRoute();
     LineAction action = result.getAction();
@@ -476,7 +550,8 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    */
   @VisibleForTesting
   static @Nullable Row toDiffRow(
-      Result<Bgpv4Route> snapshotResult, Result<Bgpv4Route> referenceResult) {
+      Result<Bgpv4Route, Bgpv4Route> snapshotResult,
+      Result<Bgpv4Route, Bgpv4Route> referenceResult) {
     assert snapshotResult.getKey().equals(referenceResult.getKey());
 
     if (snapshotResult.equals(referenceResult)) {
@@ -517,7 +592,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @return A row that includes the comparison of the two results.
    */
   public static @Nullable Row toCompareRow(
-      Result<BgpRoute> snapshotResult, Result<BgpRoute> referenceResult) {
+      Result<BgpRoute, BgpRoute> snapshotResult, Result<BgpRoute, BgpRoute> referenceResult) {
 
     if (referenceResult.equals(snapshotResult)) {
       return null;

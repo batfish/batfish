@@ -254,7 +254,7 @@ public class ModelGeneration {
       ConfigAtomicPredicates configAPs,
       LineAction action,
       Environment.Direction direction,
-      Result<BgpRoute> expectedResult) {
+      Result<BgpRoute, BgpRoute> expectedResult) {
     if (!expectedResult.getAction().equals(action)) {
       LOGGER.warn(
           "Mismatched action for input {}: simulation {} model {}",
