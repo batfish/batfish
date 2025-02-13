@@ -11,9 +11,9 @@ import org.batfish.datamodel.trace.TraceTree;
 
 /**
  * A {@link TestRoutePoliciesQuestion} result for a single policy and input route. The class is
- * parameterized by the type used for the input and output routes.
+ * parameterized by the types used for the input and output routes.
  */
-public final class Result<R> {
+public class Result<I, O> {
   /** A key to relate results by policy and input route. */
   public static final class Key<R> {
     private final RoutingPolicyId _policyId;
@@ -72,7 +72,7 @@ public final class Result<R> {
   }
 
   private final RoutingPolicyId _policyId;
-  private final R _inputRoute;
+  private final I _inputRoute;
 
   /**
    * If non-null, this list contains the attributes of the input route that are relevant for the
@@ -82,14 +82,14 @@ public final class Result<R> {
   private @Nullable List<RouteAttributeType> _relevantInputAttributes;
 
   private final LineAction _action;
-  private final @Nullable R _outputRoute;
+  private final @Nullable O _outputRoute;
   private final List<TraceTree> _trace;
 
   Result(
       RoutingPolicyId policyId,
-      R inputRoute,
+      I inputRoute,
       LineAction action,
-      @Nullable R outputRoute,
+      @Nullable O outputRoute,
       List<TraceTree> traceTrees) {
     checkArgument(
         (action == LineAction.DENY) == (outputRoute == null),
@@ -106,10 +106,9 @@ public final class Result<R> {
     if (this == o) {
       return true;
     }
-    if (!(o instanceof Result<?>)) {
+    if (!(o instanceof Result<?, ?> result)) {
       return false;
     }
-    Result<?> result = (Result<?>) o;
     return Objects.equals(_policyId, result._policyId)
         && _action == result._action
         && Objects.equals(_inputRoute, result._inputRoute)
@@ -122,7 +121,7 @@ public final class Result<R> {
     return _action;
   }
 
-  public R getInputRoute() {
+  public I getInputRoute() {
     return _inputRoute;
   }
 
@@ -140,15 +139,15 @@ public final class Result<R> {
     _relevantInputAttributes = attributes;
   }
 
-  public Result<R> setOutputRoute(R outputRoute) {
+  public Result<I, O> setOutputRoute(O outputRoute) {
     return new Result<>(_policyId, _inputRoute, _action, outputRoute, _trace);
   }
 
-  public Key<R> getKey() {
+  public Key<I> getKey() {
     return new Key<>(_policyId, _inputRoute);
   }
 
-  public @Nullable R getOutputRoute() {
+  public @Nullable O getOutputRoute() {
     return _outputRoute;
   }
 

@@ -185,7 +185,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
       }
 
-      Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
+      Result<BgpRoute, BgpRoute> result =
+          simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
       // As a sanity check, compare the simulated result above with what the symbolic route
       // analysis predicts will happen.
@@ -206,13 +207,13 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *     name of the source VRF
    * @return the results of the simulation as a result for this question
    */
-  public static Result<BgpRoute> simulatePolicy(
+  public static Result<BgpRoute, BgpRoute> simulatePolicy(
       RoutingPolicy policy,
       Bgpv4Route inRoute,
       Environment.Direction direction,
       Tuple<Predicate<String>, String> env,
       BDDRoute bddRoute) {
-    Result<Bgpv4Route> simResult =
+    Result<Bgpv4Route, Bgpv4Route> simResult =
         TestRoutePoliciesAnswerer.simulatePolicy(
             policy,
             inRoute,
@@ -234,9 +235,9 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param result the original simulation result
    * @return a version of the result suitable for output from this analysis
    */
-  private static Result<BgpRoute> toQuestionResult(
-      Result<Bgpv4Route> result, BDDRoute outputRoute) {
-    Result<BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
+  private static Result<BgpRoute, BgpRoute> toQuestionResult(
+      Result<Bgpv4Route, Bgpv4Route> result, BDDRoute outputRoute) {
+    Result<BgpRoute, BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
 
     if (result.getAction() == PERMIT) {
       // update the output route's next-hop if it was set to the local or remote IP;

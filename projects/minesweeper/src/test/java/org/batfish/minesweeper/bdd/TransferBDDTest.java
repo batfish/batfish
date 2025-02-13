@@ -260,9 +260,9 @@ public class TransferBDDTest {
       // simulate the input route in that environment;
       // for good measure we simulate twice, with the policy respectively considered an import and
       // export policy
-      Result<BgpRoute> inResult =
+      Result<BgpRoute, BgpRoute> inResult =
           simulatePolicy(policy, inRoute, Environment.Direction.IN, env, path.getOutputRoute());
-      Result<BgpRoute> outResult =
+      Result<BgpRoute, BgpRoute> outResult =
           simulatePolicy(policy, inRoute, Environment.Direction.OUT, env, path.getOutputRoute());
 
       // update the atomic predicates to include any prepended ASes on this path

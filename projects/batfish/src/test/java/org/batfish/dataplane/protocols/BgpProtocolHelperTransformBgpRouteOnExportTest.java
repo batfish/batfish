@@ -1,12 +1,12 @@
 package org.batfish.dataplane.protocols;
 
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.matchers.AbstractRouteDecoratorMatchers.hasNextHop;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasAsPath;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasCommunities;
 import static org.batfish.datamodel.matchers.BgpRouteMatchers.hasOriginType;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertGeneratedRouteToBgp;
-import static org.batfish.dataplane.protocols.BgpProtocolHelper.convertNonBgpRouteToBgpRoute;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.setEvpnType5NhPostExport;
 import static org.batfish.dataplane.protocols.BgpProtocolHelper.transformBgpRoutePostExport;
 import static org.hamcrest.MatcherAssert.assertThat;
