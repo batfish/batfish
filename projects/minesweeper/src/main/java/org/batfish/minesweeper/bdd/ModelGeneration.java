@@ -20,14 +20,17 @@ import net.sf.javabdd.BDD;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginMechanism;
+import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromSelf;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.answers.NextHopBgpPeerAddress;
 import org.batfish.datamodel.answers.NextHopSelf;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
@@ -218,6 +221,21 @@ public class ModelGeneration {
     return new TunnelEncapsulationAttribute(Ip.create(1));
   }
 
+  public static AbstractRoute satAssignmentToInputRoute(
+      BDD model, ConfigAtomicPredicates configAPs) {
+    BDDRoute bddRoute = new BDDRoute(model.getFactory(), configAPs);
+    RoutingProtocol p = bddRoute.getProtocolHistory().satAssignmentToValue(model);
+    if (p == RoutingProtocol.STATIC) {
+      return satAssignmentToStaticInputRoute(model, configAPs);
+    } else if (ImmutableList.of(
+            RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP)
+        .contains(p)) {
+      return satAssignmentToBgpInputRoute(model, configAPs);
+    } else {
+      throw new IllegalArgumentException("Unexpected routing protocol " + p);
+    }
+  }
+
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
    * concrete input route that is consistent with the assignment.
@@ -226,8 +244,28 @@ public class ModelGeneration {
    * @param configAPs an object that provides information about the atomic predicates in the model
    * @return a route
    */
-  public static Bgpv4Route satAssignmentToInputRoute(BDD model, ConfigAtomicPredicates configAPs) {
-    return satAssignmentToRoute(model, new BDDRoute(model.getFactory(), configAPs), configAPs);
+  public static Bgpv4Route satAssignmentToBgpInputRoute(
+      BDD model, ConfigAtomicPredicates configAPs) {
+    return satAssignmentToBgpRoute(model, new BDDRoute(model.getFactory(), configAPs), configAPs)
+        .build();
+  }
+
+  private static StaticRoute satAssignmentToStaticInputRoute(
+      BDD model, ConfigAtomicPredicates configAPs) {
+
+    BDDRoute bddRoute = new BDDRoute(model.getFactory(), configAPs);
+
+    StaticRoute.Builder builder = StaticRoute.builder();
+    // dummy value
+    builder.setAdministrativeCost(0);
+
+    Ip ip = Ip.create(bddRoute.getPrefix().satAssignmentToLong(model));
+    long len = bddRoute.getPrefixLength().satAssignmentToLong(model);
+    builder.setNetwork(Prefix.create(ip, (int) len));
+    builder.setNextHop(satAssignmentToNextHop(model, bddRoute, configAPs));
+    builder.setTag(bddRoute.getTag().satAssignmentToLong(model));
+
+    return builder.build();
   }
 
   /**
@@ -254,7 +292,7 @@ public class ModelGeneration {
       ConfigAtomicPredicates configAPs,
       LineAction action,
       Environment.Direction direction,
-      Result<BgpRoute, BgpRoute> expectedResult) {
+      Result<?, BgpRoute> expectedResult) {
     if (!expectedResult.getAction().equals(action)) {
       LOGGER.warn(
           "Mismatched action for input {}: simulation {} model {}",
@@ -300,10 +338,15 @@ public class ModelGeneration {
       BDDRoute bddRoute,
       ConfigAtomicPredicates configAPs,
       Environment.Direction direction) {
+    Bgpv4Route.Builder v4Builder = satAssignmentToBgpRoute(model, bddRoute, configAPs);
+    if (v4Builder.getProtocol() == RoutingProtocol.STATIC) {
+      v4Builder.setProtocol(RoutingProtocol.BGP);
+      v4Builder.setSrcProtocol(RoutingProtocol.STATIC);
+      v4Builder.setOriginType(OriginType.INCOMPLETE);
+      v4Builder.setOriginMechanism(OriginMechanism.NETWORK);
+    }
     BgpRoute.Builder builder =
-        TestRoutePoliciesAnswerer.toQuestionBgpRoute(
-            satAssignmentToRoute(model, bddRoute, configAPs))
-            .toBuilder();
+        TestRoutePoliciesAnswerer.toQuestionBgpRoute(v4Builder.build()).toBuilder();
     if (direction == Environment.Direction.OUT && !bddRoute.getNextHopSet()) {
       // in the OUT direction the next hop is ignored unless explicitly set
       builder.setNextHopConcrete(NextHopDiscard.instance());
@@ -336,7 +379,7 @@ public class ModelGeneration {
    *     and bddRoute
    * @return a route
    */
-  private static Bgpv4Route satAssignmentToRoute(
+  private static Bgpv4Route.Builder satAssignmentToBgpRoute(
       BDD model, BDDRoute bddRoute, ConfigAtomicPredicates configAPs) {
 
     Bgpv4Route.Builder builder =
@@ -374,7 +417,7 @@ public class ModelGeneration {
     builder.setTunnelEncapsulationAttribute(
         satAssignmentToTunnelEncapsulationAttribute(model, bddRoute));
 
-    return builder.build();
+    return builder;
   }
 
   /**

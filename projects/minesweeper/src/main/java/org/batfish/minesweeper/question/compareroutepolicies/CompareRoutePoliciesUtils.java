@@ -2,8 +2,8 @@ package org.batfish.minesweeper.question.compareroutepolicies;
 
 import static org.batfish.minesweeper.bdd.BDDRouteDiff.computeDifferences;
 import static org.batfish.minesweeper.bdd.ModelGeneration.constraintsToModel;
+import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToBgpInputRoute;
 import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToEnvironment;
-import static org.batfish.minesweeper.bdd.ModelGeneration.satAssignmentToInputRoute;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.simulatePolicy;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.ADMINISTRATIVE_DISTANCE;
 import static org.batfish.question.testroutepolicies.Result.RouteAttributeType.AS_PATH;
@@ -282,7 +282,8 @@ public final class CompareRoutePoliciesUtils {
     assert (!constraints.isZero());
     BDD model = constraintsToModel(constraints, configAPs);
     return new Tuple<>(
-        satAssignmentToInputRoute(model, configAPs), satAssignmentToEnvironment(model, configAPs));
+        satAssignmentToBgpInputRoute(model, configAPs),
+        satAssignmentToEnvironment(model, configAPs));
   }
 
   /**

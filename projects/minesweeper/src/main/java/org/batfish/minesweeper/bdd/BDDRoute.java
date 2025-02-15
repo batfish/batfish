@@ -471,8 +471,6 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD nextHopInterfacesValid = _nextHopInterfaces.getIsValidConstraint();
     BDD originTypeValid = _originType.getIsValidConstraint();
     BDD ospfMetricValid = _ospfMetric.getIsValidConstraint();
-    // Protocol domain constraint is stronger: only one of the ones allowed in a BgpRoute.
-    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
     BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
     BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
     return _factory.andAllAndFree(
@@ -482,7 +480,6 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         nextHopInterfacesValid,
         originTypeValid,
         ospfMetricValid,
-        protocolConstraint,
         sourceVrfValid,
         tunnelEncapValid);
   }

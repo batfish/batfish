@@ -121,7 +121,28 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     RoutingPolicyId policyId = key.getPolicyId();
     RoutingPolicy policy =
         context.getConfigs().get(policyId.getNode()).getRoutingPolicies().get(policyId.getPolicy());
-    return simulatePolicy(policy, key.getInputRoute(), direction);
+    return simulatePolicyWithBgpRoute(policy, key.getInputRoute(), direction);
+  }
+
+  public static Result<? extends AbstractRoute, Bgpv4Route> simulatePolicy(
+      RoutingPolicy policy,
+      AbstractRoute inputRoute,
+      @Nullable BgpSessionProperties properties,
+      Direction direction,
+      @Nullable Predicate<String> successfulTrack,
+      @Nullable String sourceVrf) {
+    switch (inputRoute.getProtocol()) {
+      case STATIC:
+        return simulatePolicyWithStaticRoute(
+            policy, (StaticRoute) inputRoute, direction, successfulTrack, sourceVrf);
+      case AGGREGATE:
+      case BGP:
+      case IBGP:
+        return simulatePolicyWithBgpRoute(
+            policy, (Bgpv4Route) inputRoute, properties, direction, successfulTrack, sourceVrf);
+      default:
+        throw new IllegalArgumentException("Unexpected route protocol " + inputRoute.getProtocol());
+    }
   }
 
   /**
@@ -132,9 +153,10 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param direction whether the policy is used on import or export (IN or OUT)
    * @return the results of the simulation
    */
-  private Result<Bgpv4Route, Bgpv4Route> simulatePolicy(
+  private Result<Bgpv4Route, Bgpv4Route> simulatePolicyWithBgpRoute(
       RoutingPolicy policy, Bgpv4Route inputRoute, Direction direction) {
-    return simulatePolicy(policy, inputRoute, _bgpSessionProperties, direction, null, null);
+    return simulatePolicyWithBgpRoute(
+        policy, inputRoute, _bgpSessionProperties, direction, null, null);
   }
 
   /**
@@ -148,7 +170,7 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
    * @param sourceVrf an optional name of the source VRF
    * @return the results of the simulation
    */
-  public static Result<Bgpv4Route, Bgpv4Route> simulatePolicy(
+  public static Result<Bgpv4Route, Bgpv4Route> simulatePolicyWithBgpRoute(
       RoutingPolicy policy,
       Bgpv4Route inputRoute,
       @Nullable BgpSessionProperties properties,
