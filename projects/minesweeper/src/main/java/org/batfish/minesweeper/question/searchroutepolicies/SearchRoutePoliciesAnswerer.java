@@ -247,6 +247,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     return qResult;
   }
 
+  /**
+   * Converts a concrete {@link BgpRoute} output route that comes from route-policy simulation into
+   * a version of it that is a valid result from the symbolic route analysis questions. The symbolic
+   * analysis uses symbolic placeholders for data that comes from the environment, such as the IP
+   * address of the local BGP session.
+   *
+   * @param route a concrete BGP route
+   * @param bddRoute the results of symbolic analysis
+   * @return a BGP route that is a valid question result
+   */
   public static BgpRoute toSymbolicBgpOutputRoute(@Nullable BgpRoute route, BDDRoute bddRoute) {
 
     if (route == null) {
@@ -255,14 +265,12 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     // update the output route's next-hop if it was set to the local or remote IP;
     // rather than producing a concrete IP we use a special class that indicates that the
     // local (remote) IP is used
-    switch (bddRoute.getNextHopType()) {
-      case SELF:
-        return route.toBuilder().setNextHop(NextHopSelf.instance()).build();
-      case BGP_PEER_ADDRESS:
-        return route.toBuilder().setNextHop(NextHopBgpPeerAddress.instance()).build();
-      default:
-        return route;
-    }
+    return switch (bddRoute.getNextHopType()) {
+      case SELF -> route.toBuilder().setNextHop(NextHopSelf.instance()).build();
+      case BGP_PEER_ADDRESS ->
+          route.toBuilder().setNextHop(NextHopBgpPeerAddress.instance()).build();
+      default -> route;
+    };
   }
 
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
@@ -477,7 +485,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
 
     // make sure the model we end up getting corresponds to a valid route
-    BDD result = r.bgpWellFormednessConstraints();
+    BDD result = r.wellFormednessConstraints(true);
 
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));

@@ -444,7 +444,7 @@ public final class CompareRoutePoliciesUtils {
     TransferBDD tBDD = new TransferBDD(configAPs);
 
     // Generate well-formedness constraints
-    BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).bgpWellFormednessConstraints();
+    BDD wf = new BDDRoute(tBDD.getFactory(), configAPs).wellFormednessConstraints(true);
 
     // The set of paths for the current policy
     List<TransferReturn> paths = computePaths(tBDD, referencePolicy);

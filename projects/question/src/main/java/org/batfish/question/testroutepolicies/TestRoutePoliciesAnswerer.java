@@ -124,6 +124,17 @@ public final class TestRoutePoliciesAnswerer extends Answerer {
     return simulatePolicyWithBgpRoute(policy, key.getInputRoute(), direction);
   }
 
+  /**
+   * Produce the results of simulating the given route policy on the given route.
+   *
+   * @param policy the route policy to simulate
+   * @param inputRoute the input route for the policy
+   * @param properties the properties of the Bgp session being simulated
+   * @param direction whether the policy is used on import or export (IN or OUT)
+   * @param successfulTrack a predicate that indicates which tracks are successful
+   * @param sourceVrf an optional name of the source VRF
+   * @return the results of the simulation
+   */
   public static Result<? extends AbstractRoute, Bgpv4Route> simulatePolicy(
       RoutingPolicy policy,
       AbstractRoute inputRoute,

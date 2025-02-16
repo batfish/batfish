@@ -5,6 +5,7 @@ import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_A
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toSymbolicBgpOutputRoute;
+import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.simulatePolicy;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toQuestionBgpRoute;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
@@ -63,6 +64,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.ospf.OspfMetricType;
+import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.AsPathMatchAny;
@@ -158,7 +160,6 @@ import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
-import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
 import org.junit.Before;
@@ -254,7 +255,7 @@ public class TransferBDDTest {
       // solve for an input route and environment that causes execution to go down this path
       BDD fullConstraints =
           path.getInputConstraints()
-              .and(new BDDRoute(factory, _configAPs).bgpWellFormednessConstraints());
+              .and(new BDDRoute(factory, _configAPs).wellFormednessConstraints(false));
       BDD fullModel = ModelGeneration.constraintsToModel(fullConstraints, _configAPs);
       AbstractRoute inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, _configAPs);
       Tuple<Predicate<String>, String> env =
@@ -264,7 +265,7 @@ public class TransferBDDTest {
       // for good measure we simulate twice, with the policy respectively considered an import and
       // export policy
       Result<? extends AbstractRoute, Bgpv4Route> inResult =
-          TestRoutePoliciesAnswerer.simulatePolicy(
+          simulatePolicy(
               policy,
               inRoute,
               DUMMY_BGP_SESSION_PROPERTIES,
@@ -273,13 +274,24 @@ public class TransferBDDTest {
               env.getSecond());
 
       Result<? extends AbstractRoute, Bgpv4Route> outResult =
-          TestRoutePoliciesAnswerer.simulatePolicy(
+          simulatePolicy(
               policy,
               inRoute,
               DUMMY_BGP_SESSION_PROPERTIES,
               Environment.Direction.OUT,
               env.getFirst(),
               env.getSecond());
+
+      // convert the output route of each result to a form that can be compared against the results
+      // of symbolic analysis
+      Result<?, BgpRoute> inSymbolicResult =
+          inResult.setOutputRoute(
+              toSymbolicBgpOutputRoute(
+                  toQuestionBgpRoute(inResult.getOutputRoute()), path.getOutputRoute()));
+      Result<?, BgpRoute> outSymbolicResult =
+          outResult.setOutputRoute(
+              toSymbolicBgpOutputRoute(
+                  toQuestionBgpRoute(outResult.getOutputRoute()), path.getOutputRoute()));
 
       // update the atomic predicates to include any prepended ASes on this path
       ConfigAtomicPredicates configAPsCopy = new ConfigAtomicPredicates(_configAPs);
@@ -295,9 +307,7 @@ public class TransferBDDTest {
               configAPsCopy,
               action,
               Environment.Direction.IN,
-              inResult.setOutputRoute(
-                  toSymbolicBgpOutputRoute(
-                      toQuestionBgpRoute(inResult.getOutputRoute()), path.getOutputRoute())));
+              inSymbolicResult);
       boolean outValidate =
           ModelGeneration.validateModel(
               fullModel,
@@ -305,9 +315,7 @@ public class TransferBDDTest {
               configAPsCopy,
               action,
               Environment.Direction.OUT,
-              outResult.setOutputRoute(
-                  toSymbolicBgpOutputRoute(
-                      toQuestionBgpRoute(outResult.getOutputRoute()), path.getOutputRoute())));
+              outSymbolicResult);
       if (!inValidate || !outValidate) {
         return false;
       }

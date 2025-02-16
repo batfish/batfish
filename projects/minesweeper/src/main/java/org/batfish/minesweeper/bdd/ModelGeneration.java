@@ -221,6 +221,14 @@ public class ModelGeneration {
     return new TunnelEncapsulationAttribute(Ip.create(1));
   }
 
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete input route that is consistent with the assignment.
+   *
+   * @param model the (possibly partial) satisfying assignment
+   * @param configAPs an object that provides information about the atomic predicates in the model
+   * @return a route
+   */
   public static AbstractRoute satAssignmentToInputRoute(
       BDD model, ConfigAtomicPredicates configAPs) {
     BDDRoute bddRoute = new BDDRoute(model.getFactory(), configAPs);
@@ -238,11 +246,11 @@ public class ModelGeneration {
 
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete input route that is consistent with the assignment.
+   * concrete input BGP route that is consistent with the assignment.
    *
    * @param model the (possibly partial) satisfying assignment
    * @param configAPs an object that provides information about the atomic predicates in the model
-   * @return a route
+   * @return a BGP route
    */
   public static Bgpv4Route satAssignmentToBgpInputRoute(
       BDD model, ConfigAtomicPredicates configAPs) {
@@ -250,6 +258,14 @@ public class ModelGeneration {
         .build();
   }
 
+  /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
+   * concrete input static route that is consistent with the assignment.
+   *
+   * @param model the (possibly partial) satisfying assignment
+   * @param configAPs an object that provides information about the atomic predicates in the model
+   * @return a static route
+   */
   private static StaticRoute satAssignmentToStaticInputRoute(
       BDD model, ConfigAtomicPredicates configAPs) {
 
@@ -258,7 +274,6 @@ public class ModelGeneration {
     StaticRoute.Builder builder = StaticRoute.builder();
     // dummy value
     builder.setAdministrativeCost(0);
-
     Ip ip = Ip.create(bddRoute.getPrefix().satAssignmentToLong(model));
     long len = bddRoute.getPrefixLength().satAssignmentToLong(model);
     builder.setNetwork(Prefix.create(ip, (int) len));
@@ -319,8 +334,8 @@ public class ModelGeneration {
   }
 
   /**
-   * Produce the concrete output route that is represented by the given assignment of values to BDD
-   * variables as well as resulting {@link BDDRoute} from the symbolic route analysis.
+   * Produce the concrete output BGP route that is represented by the given assignment of values to
+   * BDD variables as well as resulting {@link BDDRoute} from the symbolic route analysis.
    *
    * <p>Note: This method assumes that any AS-prepending that happens along the given path has
    * already been accounted for through an update to the AS-path atomic predicates appropriately
@@ -331,7 +346,7 @@ public class ModelGeneration {
    * @param configAPs an object that provides information about the atomic predicates in the model
    *     and bddRoute
    * @param direction whether the route map is used as an import or export policy
-   * @return a route
+   * @return a BGP route
    */
   private static BgpRoute satAssignmentToOutputRoute(
       BDD model,
@@ -340,6 +355,9 @@ public class ModelGeneration {
       Environment.Direction direction) {
     Bgpv4Route.Builder v4Builder = satAssignmentToBgpRoute(model, bddRoute, configAPs);
     if (v4Builder.getProtocol() == RoutingProtocol.STATIC) {
+      // if the input route is a static route then set the output route's attributes consistently
+      // with what the concrete route simulation does (see
+      // TestRoutePoliciesAnswerer::simulatePolicyWithStaticRoute)
       v4Builder.setProtocol(RoutingProtocol.BGP);
       v4Builder.setSrcProtocol(RoutingProtocol.STATIC);
       v4Builder.setOriginType(OriginType.INCOMPLETE);
@@ -370,14 +388,14 @@ public class ModelGeneration {
   }
 
   /**
-   * Produce the concrete route that is represented by the given assignment of values to BDD
-   * variables and {@link BDDRoute} from the symbolic route analysis.
+   * Produce a builder for the concrete BGP route that is represented by the given assignment of
+   * values to BDD variables and {@link BDDRoute} from the symbolic route analysis.
    *
    * @param model the (possibly partial) satisfying assignment
    * @param bddRoute symbolic representation of the desired route
    * @param configAPs an object that provides information about the atomic predicates in the model
    *     and bddRoute
-   * @return a route
+   * @return a route builder
    */
   private static Bgpv4Route.Builder satAssignmentToBgpRoute(
       BDD model, BDDRoute bddRoute, ConfigAtomicPredicates configAPs) {
