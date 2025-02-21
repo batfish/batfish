@@ -214,21 +214,28 @@ final class Conversions {
     if (filter == null) {
       return null;
     }
-    // using conjunction since all conditions of the filter have to be met for a route to be
-    // redistributed
-    ImmutableList.Builder<BooleanExpr> conditionForConjunction = ImmutableList.builder();
 
-    // TODO: add support for protocols other than static
-    if (filter.getRoutingProtocols().contains(RoutingProtocol.STATIC)) {
-      conditionForConjunction.add(new MatchProtocol(RoutingProtocol.STATIC));
+    ImmutableList.Builder<BooleanExpr> redistConditions = ImmutableList.builder();
+
+    ImmutableList.Builder<RoutingProtocol> protocolConditions = ImmutableList.builder();
+    for (RoutingProtocol protocol : filter.getRoutingProtocols()) {
+      protocolConditions.add(protocol);
+      // BGP means both BGP and IBGP
+      if (protocol == RoutingProtocol.BGP) {
+        protocolConditions.add(RoutingProtocol.IBGP);
+      }
     }
+    redistConditions.add(new MatchProtocol(protocolConditions.build()));
+
+    // TODO: I believe the set of prefixes can be empty and it means universe prefix space, not
+    // empty set.
     PrefixSpace prefixSpace = new PrefixSpace();
     MatchPrefixSet matchPrefixSet =
         new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace));
     for (Prefix prefix : filter.getDestinationPrefixes()) {
       prefixSpace.addPrefix(prefix);
     }
-    conditionForConjunction.add(matchPrefixSet);
+    redistConditions.add(matchPrefixSet);
 
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     if (redistRule.getOrigin() != null) {
@@ -240,7 +247,7 @@ final class Conversions {
             : ROUTE_MAP_DENY_STATEMENT);
 
     return new If(
-        new Conjunction(conditionForConjunction.build()),
+        new Conjunction(redistConditions.build()),
         trueStatements.build(),
         // just fall through if the conditions are not matched
         ImmutableList.of());
