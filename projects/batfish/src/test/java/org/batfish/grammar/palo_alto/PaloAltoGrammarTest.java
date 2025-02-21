@@ -1088,6 +1088,38 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testBgpRedistributeConversion() {
+    Configuration c = parseConfig("bgp-redistribute");
+
+    // test process level common export policy
+    String bgpCommonExportPolicyName = "~BGP_COMMON_EXPORT_POLICY:vr1~";
+    RoutingPolicy bgpCommonExportPolicy = c.getRoutingPolicies().get(bgpCommonExportPolicyName);
+
+    {
+      org.batfish.datamodel.StaticRoute.Builder srb =
+          org.batfish.datamodel.StaticRoute.testBuilder()
+              .setNetwork(Prefix.parse("1.1.1.0/24"))
+              .setAdmin(5)
+              .setMetric(10L);
+
+      Bgpv4Route.Builder bgpBuilder = Bgpv4Route.testBuilder();
+      boolean accepted = bgpCommonExportPolicy.process(srb.build(), bgpBuilder, Direction.OUT);
+      assertTrue(accepted);
+    }
+
+    {
+      ConnectedRoute connectedRoute =
+          ConnectedRoute.builder()
+              .setNetwork(Prefix.parse("1.1.1.0/24"))
+              .setNextHopInterface("iface")
+              .build();
+      Bgpv4Route.Builder bgpBuilder = Bgpv4Route.testBuilder();
+      boolean accepted = bgpCommonExportPolicy.process(connectedRoute, bgpBuilder, Direction.OUT);
+      assertTrue(accepted);
+    }
+  }
+
+  @Test
   public void testOspfExtraction() {
     PaloAltoConfiguration c = parsePaloAltoConfig("ospf");
     VirtualRouter vr = c.getVirtualRouters().get("vr1");
