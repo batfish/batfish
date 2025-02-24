@@ -235,9 +235,7 @@ public class ModelGeneration {
     RoutingProtocol p = bddRoute.getProtocolHistory().satAssignmentToValue(model);
     if (p == RoutingProtocol.STATIC) {
       return satAssignmentToStaticInputRoute(model, configAPs);
-    } else if (ImmutableList.of(
-            RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP)
-        .contains(p)) {
+    } else if (BDDRoute.ALL_BGP_PROTOCOLS.contains(p)) {
       return satAssignmentToBgpInputRoute(model, configAPs);
     } else {
       throw new IllegalArgumentException("Unexpected routing protocol " + p);

@@ -455,7 +455,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    * obtaining models would be incorrect, because it would not ensure that the well-formedness
    * constraints hold.
    *
-   * @param onlyBGPRoutes whether to constrain the input routes to only BGP routes
+   * @param onlyBGPRoutes whether to constrain the input routes to be BGP routes
    * @return the constraints
    */
   public BDD wellFormednessConstraints(boolean onlyBGPRoutes) {
