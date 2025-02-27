@@ -1,0 +1,5 @@
+#
+set system host-name juniper-missing-prefix-condition
+#
+set policy-options condition c1 if-route-exists table inet.0
+#
