@@ -47,6 +47,8 @@ public class Warnings implements Serializable {
     }
   }
 
+  public static final String FATAL_FLAG = "FATAL: ";
+
   public static final String TAG_PEDANTIC = "MISCELLANEOUS";
 
   public static final String TAG_RED_FLAG = "MISCELLANEOUS";
@@ -184,10 +186,21 @@ public class Warnings implements Serializable {
     redFlag(String.format(format, args));
   }
 
-  /** Indicate that this is a fatal error */
+  /** Indicate that this red flag warning is a fatal error */
   @FormatMethod
   public void fatalRedFlag(String msg, Object... args) {
-    redFlag("FATAL: " + String.format(msg, args));
+    redFlag(FATAL_FLAG + String.format(msg, args));
+  }
+
+  /** Get all red flag warnings that are fatal error */
+  public SortedSet<Warning> getFatalRedFlagWarnings() {
+    SortedSet<Warning> fatalWarnings = new TreeSet<>();
+    for (Warning warning : _redFlagWarnings) {
+      if (warning.getText().startsWith(FATAL_FLAG)) {
+        fatalWarnings.add(warning);
+      }
+    }
+    return fatalWarnings;
   }
 
   /**
