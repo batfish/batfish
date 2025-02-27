@@ -8484,5 +8484,20 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(true));
   }
 
+  @Test
+  public void testIfRouteExistMissingPrefix() throws IOException {
+    String hostname = "juniper-missing-prefix-condition";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c1. Config will not"
+                    + " pass commit checks.")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
