@@ -443,10 +443,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
   }
 
   /**
-   * Not all assignments to the BDD variables that make up a BDDRoute represent valid BGP routes.
-   * This method produces constraints that well-formed BGP routes must satisfy, represented as a
-   * BDD. It is useful when the goal is to produce concrete example BGP routes from a BDDRoute, for
-   * instance.
+   * Not all assignments to the BDD variables that make up a BDDRoute represent valid routes. This
+   * method produces constraints that well-formed routes must satisfy, represented as a BDD. It is
+   * useful when the goal is to produce concrete example routes from a BDDRoute, for instance.
    *
    * <p>Note that it does not suffice to enforce these constraints as part of symbolic route
    * analysis (see {@link TransferBDD}). That analysis computes a BDD representing the input routes
@@ -456,9 +455,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
    * obtaining models would be incorrect, because it would not ensure that the well-formedness
    * constraints hold.
    *
+   * @param onlyBGPRoutes whether to constrain the input routes to be BGP routes
    * @return the constraints
    */
-  public BDD bgpWellFormednessConstraints() {
+  public BDD wellFormednessConstraints(boolean onlyBGPRoutes) {
 
     // the prefix length should be 32 or less
     BDD prefLenConstraint = _prefixLength.leq(32);
@@ -471,8 +471,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD nextHopInterfacesValid = _nextHopInterfaces.getIsValidConstraint();
     BDD originTypeValid = _originType.getIsValidConstraint();
     BDD ospfMetricValid = _ospfMetric.getIsValidConstraint();
-    // Protocol domain constraint is stronger: only one of the ones allowed in a BgpRoute.
-    BDD protocolConstraint = anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory());
+    BDD protocolConstraint =
+        onlyBGPRoutes ? anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory()) : _factory.one();
     BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
     BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
     return _factory.andAllAndFree(
