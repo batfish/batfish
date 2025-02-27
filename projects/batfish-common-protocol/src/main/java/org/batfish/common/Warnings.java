@@ -184,6 +184,11 @@ public class Warnings implements Serializable {
     redFlag(String.format(format, args));
   }
 
+  /** Prepend fatal error sentinel string to message */
+  public void fatalRedFlag(String msg) {
+    redFlag("FATAL: " + msg);
+  }
+
   /**
    * Adds a note that there is work to do to handle the given {@link ParserRuleContext}. The output
    * will include the text of the given {@code line} and, for debugging/implementation, the current
