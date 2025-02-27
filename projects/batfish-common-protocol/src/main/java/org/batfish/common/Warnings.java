@@ -184,9 +184,10 @@ public class Warnings implements Serializable {
     redFlag(String.format(format, args));
   }
 
-  /** Prepend fatal error sentinel string to message */
-  public void fatalRedFlag(String msg) {
-    redFlag("FATAL: " + msg);
+  /** Indicate that this is a fatal error */
+  @FormatMethod
+  public void fatalRedFlag(String msg, Object... args) {
+    redFlag("FATAL: " + String.format(msg, args));
   }
 
   /**

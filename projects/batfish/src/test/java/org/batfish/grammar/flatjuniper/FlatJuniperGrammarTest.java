@@ -8491,11 +8491,14 @@ public final class FlatJuniperGrammarTest {
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
-    // Should warn with sentinel string that if-route-exist needs a prefix
+    // Should warn with FATAL string that if-route-exist needs a prefix
     assertThat(
         ccae,
         hasRedFlagWarning(
-            hostname, equalTo("FATAL: Missing route address for if-route-exists condition")));
+            hostname,
+            equalTo(
+                "FATAL: Missing route address for if-route-exists condition c1. Config will not"
+                    + " pass commit checks.")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

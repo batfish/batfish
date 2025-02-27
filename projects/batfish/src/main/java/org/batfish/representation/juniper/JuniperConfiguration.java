@@ -3870,7 +3870,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ifr.getPrefix6() != null) {
         return TrackMethods.alwaysFalse();
       }
-      _w.fatalRedFlag("Missing route address for if-route-exists condition");
+      _w.fatalRedFlag(
+          "Missing route address for if-route-exists condition %s. Config will not pass commit"
+              + " checks.",
+          condition.getName());
       // TODO: verify missing prefix means true
       return TrackMethods.alwaysTrue();
     }
