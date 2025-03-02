@@ -16,6 +16,8 @@ public class Region implements Serializable {
     private final Map<String, Subnet> _subnets = new HashMap<>();
     private final Map<String, Instance> _instances = new HashMap<>();
     private final Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
+    private final Map<String, NatGateway> _natGateways = new HashMap<>();
+    private final Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
     private final String _regionName;
 
     public Region(String regionName) {
@@ -38,6 +40,12 @@ public class Region implements Serializable {
     }
     public Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
         return _networkSecurityGroups;
+    }
+    public Map<String, NatGateway> getNatGateways() {
+        return _natGateways;
+    }
+    public Map<String, PublicIpAddress> getPublicIpAddresses() {
+        return _publicIpAddresses;
     }
 
     public void addConfigElement(JsonNode node){
@@ -72,6 +80,14 @@ public class Region implements Serializable {
                 NetworkSecurityGroup nsg = BatfishObjectMapper.mapper().convertValue(node, NetworkSecurityGroup.class);
                 _networkSecurityGroups.put(nsg.getId(), nsg);
                 break;
+            case AzureEntities.JSON_TYPE_NAT_GATEWAY:
+                NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(node, NatGateway.class);
+                _natGateways.put(natGateway.getId(), natGateway);
+                break;
+            case AzureEntities.JSON_TYPE_PUBLIC_IP:
+                PublicIpAddress publicIp = BatfishObjectMapper.mapper().convertValue(node, PublicIpAddress.class);
+                _publicIpAddresses.put(publicIp.getId(), publicIp);
+                break;
             default:
                 return;
         }
@@ -93,6 +109,11 @@ public class Region implements Serializable {
         // VNet interacts with subnet nodes so subnets must be generated before
         for (VNet vnet : _vnets.values()) {
             Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
+            convertedConfiguration.addNode(cfgNode);
+        }
+
+        for (NatGateway natGateway : _natGateways.values()) {
+            Configuration cfgNode = natGateway.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
     }

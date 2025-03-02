@@ -34,8 +34,12 @@ public interface AzureEntities {
     String JSON_KEY_NSG_PRIORITY = "priority";
     String JSON_KEY_NSG_DIRECTION = "direction";
 
+    String JSON_KEY_PUBLIC_IP_ADDRESS = "ipAddress";
+
     String JSON_TYPE_VM = "Microsoft.Compute/virtualMachines";
     String JSON_TYPE_VNET = "Microsoft.Network/virtualNetworks";
     String JSON_TYPE_INTERFACE = "Microsoft.Network/networkInterfaces";
     String JSON_TYPE_NETWORK_SECURITY_GROUP = "Microsoft.Network/networkSecurityGroups";
+    String JSON_TYPE_NAT_GATEWAY = "Microsoft.Network/natGateways";
+    String JSON_TYPE_PUBLIC_IP = "Microsoft.Network/publicIPAddresses";
 }

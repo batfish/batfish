@@ -52,11 +52,15 @@ public class VNetTest {
 
         Subnet.SubnetProperties subnetProperties = new Subnet.SubnetProperties(
                 Prefix.parse("10.0.0.0/24"),
+                null,
+                null,
                 null
         );
 
         Subnet.SubnetProperties subnetProperties2 = new Subnet.SubnetProperties(
                 Prefix.parse("10.0.1.0/24"),
+                null,
+                null,
                 null
         );
 
