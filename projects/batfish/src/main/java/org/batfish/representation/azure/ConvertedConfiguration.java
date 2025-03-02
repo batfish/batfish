@@ -40,6 +40,7 @@ public class ConvertedConfiguration {
 
     public void addLayer1Edge(String nodeName1, String ifaceName1, String nodeName2, String ifaceName2) {
         _layer1Edges.add(new Layer1Edge(nodeName1, ifaceName1, nodeName2, ifaceName2));
+        _layer1Edges.add(new Layer1Edge(nodeName2, ifaceName2, nodeName1, ifaceName1));
     }
 
 

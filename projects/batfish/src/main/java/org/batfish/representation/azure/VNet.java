@@ -72,7 +72,7 @@ public class VNet extends Resource {
 
         @JsonCreator
         public static AddressSpace create(
-                @JsonProperty @Nullable List<Prefix> addressPrefixes
+                @JsonProperty(AzureEntities.JSON_KEY_VNET_ADDRESS_PREFIX) @Nullable List<Prefix> addressPrefixes
         ) {
             return new AddressSpace(addressPrefixes);
         }

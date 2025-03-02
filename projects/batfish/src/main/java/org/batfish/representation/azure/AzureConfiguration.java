@@ -4,11 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.BfConsts;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.vendor.VendorConfiguration;
 
+import javax.annotation.Nonnull;
 import java.util.List;
+import java.util.Set;
 
 public class AzureConfiguration extends VendorConfiguration {
 
@@ -57,5 +60,9 @@ public class AzureConfiguration extends VendorConfiguration {
             convertConfigurations();
         }
         return ImmutableList.copyOf(_convertedConfiguration.getAllNodes());
+    }
+
+    public @Nonnull Set<Layer1Edge> getLayer1Edges() {
+        return _convertedConfiguration.getLayer1Edges();
     }
 }
