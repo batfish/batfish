@@ -50,15 +50,15 @@ public class ResourceGroup {
         }
     }
 
-    public void toConfigurationNode(){
-        for (NetworkInterface iface : _interfaces.values()) {
-            iface.toConfigurationNode();
-            // add to Converted config
+    public void toConfigurationNode(ConvertedConfiguration convertedConfiguration) {
+
+        for (Subnet subnet : _subnets.values()) {
+            Configuration cfgNode = subnet.toConfigurationNode();
         }
 
         for (Instance instance : _instances.values()) {
-            instance.toConfigurationNode(this);
-            // add to Converted config
+            Configuration cfgNode = instance.toConfigurationNode(this);
+            convertedConfiguration.addNode(cfgNode);
         }
     }
 }
