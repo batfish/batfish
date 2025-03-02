@@ -25,6 +25,14 @@ import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents a Security Rule : part of NetworkSecurityGroups (NSG)
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/networksecuritygroups/securityrules?pivots=deployment-language-arm-template">Resource link</a>
+ * Partially implemented :
+ * <li>Do not support service tags</li>
+ *
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SecurityRule extends Resource implements Serializable {
 
@@ -40,6 +48,10 @@ public class SecurityRule extends Resource implements Serializable {
 
     private final @Nonnull Properties _properties;
 
+    /**
+     * Generates an AclLine from this {@link SecurityRule}
+     * @return ExprAclLine
+     */
     public ExprAclLine getAclLine(){
         HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
 
@@ -155,12 +167,18 @@ public class SecurityRule extends Resource implements Serializable {
                     .collect(Collectors.toSet());
         }
 
+        /**
+         * convert {@link String} to {@link IpProtocol}
+         */
         private static IpProtocol getProtocol(String protocol) {
             if(protocol.equals("*"))
                 return IpProtocol.ANY_0_HOP_PROTOCOL;
             return IpProtocol.fromString(protocol);
         }
 
+        /**
+         * convert {@link String} to {@link SubRange}
+         */
         private static SubRange getSubRange(String subRange){
             if(subRange == null || subRange.equals("*")) {
                 return new SubRange(0,65535);

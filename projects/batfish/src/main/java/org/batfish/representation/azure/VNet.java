@@ -25,6 +25,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an Azure VNet.
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks?pivots=deployment-language-arm-template">Resource link</a>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VNet extends Resource {
 
@@ -41,6 +46,11 @@ public class VNet extends Resource {
         _properties = properties;
     }
 
+    /**
+     * Returns the {@link Configuration} node for this VNet.
+     * <p>Creates each subnet {@link Interface} and connect it this node through
+     * {@link LinkLocalAddress}. Configure Static routes toward each subnet.</p>
+     */
     public Configuration toConfigurationNode(Region region, ConvertedConfiguration convertedConfiguration) {
         Configuration cfgNode = Configuration.builder()
                 .setHostname(getCleanId())

@@ -22,6 +22,14 @@ import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents PostgreSQL flexibleServers azure service.
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.dbforpostgresql/flexibleservers?pivots=deployment-language-arm-template">Resource link</a>
+ * <p>
+ * Partially implemented:
+ * <li> only private access (Virtual Network integration) </li> </p>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Postgres extends Instance implements Serializable {
 
@@ -39,6 +47,9 @@ public class Postgres extends Instance implements Serializable {
         _properties = properties;
     }
 
+    /**
+     * Generates Postgres {@link Configuration} node
+     */
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration) {
         Configuration cfgNode = Configuration.builder()
                 .setHostname(getCleanId())

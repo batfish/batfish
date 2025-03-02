@@ -11,6 +11,15 @@ import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents a Public Ip Address which can be used on several Azure services
+ * (Virtual Machines, Nat gateways, Load balancers, Azure firewall etc..)
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/publicipaddresses?pivots=deployment-language-arm-template">...</a>
+ * <p>
+ * Partially implemented :
+ *  - only ipv4 ip s supported
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PublicIpAddress extends Resource implements Serializable {
 

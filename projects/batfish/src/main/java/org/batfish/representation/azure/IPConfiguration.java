@@ -11,6 +11,11 @@ import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an ipConfiguration (part of {@link NetworkInterface} object).
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/networkinterfaces/ipconfigurations?pivots=deployment-language-arm-template">Link</a>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IPConfiguration extends Resource {
 

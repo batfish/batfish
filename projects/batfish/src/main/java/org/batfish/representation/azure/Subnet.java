@@ -25,6 +25,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an Azure subnet (part of VNet object).
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/virtualnetworks/subnets?pivots=deployment-language-arm-template">Resource link</a>
+ * Do not support UDR.
+ */
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Subnet extends Resource implements Serializable {
@@ -62,6 +67,14 @@ public class Subnet extends Resource implements Serializable {
         return "nat-gateway";
     }
 
+
+    /**
+     * Returns the {@link Configuration} node for this subnet.
+     * <p> Creates Interfaces (with layer1Edges) to connect to {@link VNet}, {@link NatGateway}
+     * and {@link Instance} objects. add StaticRoutes for VNet and Internet access.
+     * (If no natGateways exists, creates one for handling VM's public ips).
+     * </p>
+     */
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
 
         Configuration cfgNode = Configuration.builder()
@@ -143,7 +156,8 @@ public class Subnet extends Resource implements Serializable {
             Configuration natGatewayNode;
             String natGatewayId = getProperties().getNatGatewayId();
 
-            // if subnet doesn't have a nat gateway
+            // if subnet doesn't have a nat gateway.
+            // generates one for handling vm's public ips.
             if (natGatewayId == null) {
                 natGatewayId = getId() + "/internet-gateway";
 

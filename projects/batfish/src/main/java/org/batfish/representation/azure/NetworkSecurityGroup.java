@@ -17,6 +17,17 @@ import java.util.List;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an Azure Network Security Group (NSG)
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/networksecuritygroups?pivots=deployment-language-arm-template">Resource link</a>
+ * <p>
+ * Partially implemented :
+ * <li>
+ *     do not support service tags except "Internet"
+ * </li>
+ *  </p>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkSecurityGroup extends Resource implements Serializable {
 
@@ -40,6 +51,11 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
         generateAclLines();
     }
 
+    /**
+     * Apply to the specified interface, this nsg converted to an Acl.
+     *         GenerateAclLines must be called before.
+     * @param iface
+     */
     public void applyToInterface(Interface iface){
 
         Configuration configuration = iface.getOwner();
@@ -69,6 +85,9 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
         }
     }
 
+    /**
+     * Generates _inboundAclLines and _outboundAclLines from this NSG
+     */
     private void generateAclLines(){
         for(SecurityRule securityRule : _properties.getSecurityRules()){
             if(securityRule.getProperties().getDirection().equals("Inbound"))
@@ -96,7 +115,8 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
             if (securityRules == null) securityRules = new ArrayList<>();
             if (defaultSecurityRules != null) securityRules.addAll(defaultSecurityRules);
 
-            // sorting the rules according to priority so it is easier for the next steps
+            // sorting the rules according to priority so each security rule
+            // can be added to an acl as Line (first line is executed before second etc..)
             securityRules.sort(
                     Comparator.comparingInt(securityRule -> securityRule.getProperties().getPriority()));
             _securityRules = securityRules;
