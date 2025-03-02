@@ -23,6 +23,10 @@ public class ResourceGroup {
         return _interfaces;
     }
 
+    public Map<String, Subnet> getSubnets() {
+        return _subnets;
+    }
+
     public Map<String, Instance> getInstances() {
         return _instances;
     }
@@ -61,12 +65,14 @@ public class ResourceGroup {
 
     public void toConfigurationNode(ConvertedConfiguration convertedConfiguration) {
 
-        for (Subnet subnet : _subnets.values()) {
-            Configuration cfgNode = subnet.toConfigurationNode();
-        }
 
         for (Instance instance : _instances.values()) {
-            Configuration cfgNode = instance.toConfigurationNode(this);
+            Configuration cfgNode = instance.toConfigurationNode(this, convertedConfiguration);
+            convertedConfiguration.addNode(cfgNode);
+        }
+
+        for (Subnet subnet : _subnets.values()) {
+            Configuration cfgNode = subnet.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
     }
