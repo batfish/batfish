@@ -2,6 +2,7 @@ package org.batfish.representation.azure;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import org.batfish.common.util.BatfishObjectMapper;
+import org.batfish.datamodel.Configuration;
 
 import java.util.HashMap;
 import java.util.Map;
