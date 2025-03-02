@@ -26,7 +26,7 @@ public class Resource implements Serializable {
     }
 
     private static String convertId(String id){
-        return id.replace('/', '_');
+        return id.replace('/', '_').toLowerCase();
     }
 
     public String getName() {
