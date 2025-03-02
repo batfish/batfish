@@ -12,6 +12,7 @@ public class Region implements Serializable {
 
 
     private final Map<String, NetworkInterface> _interfaces = new HashMap<>();
+    private final Map<String, VNet> _vnets = new HashMap<>();
     private final Map<String, Subnet> _subnets = new HashMap<>();
     private final Map<String, Instance> _instances = new HashMap<>();
     private final Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
@@ -25,6 +26,9 @@ public class Region implements Serializable {
         return _interfaces;
     }
 
+    public Map<String, VNet> getVnets() {
+        return _vnets;
+    }
     public Map<String, Subnet> getSubnets() {
         return _subnets;
     }
@@ -55,6 +59,7 @@ public class Region implements Serializable {
                 break;
             case AzureEntities.JSON_TYPE_VNET:
                 VNet network = BatfishObjectMapper.mapper().convertValue(node, VNet.class);
+                _vnets.put(network.getId(), network);
                 for(Subnet subnet : network.getProperties().getSubnets()){
                     _subnets.put(subnet.getId(), subnet);
                 }
@@ -82,6 +87,12 @@ public class Region implements Serializable {
 
         for (Subnet subnet : _subnets.values()) {
             Configuration cfgNode = subnet.toConfigurationNode(this, convertedConfiguration);
+            convertedConfiguration.addNode(cfgNode);
+        }
+
+        // VNet interacts with subnet nodes so subnets must be generated before
+        for (VNet vnet : _vnets.values()) {
+            Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
     }
