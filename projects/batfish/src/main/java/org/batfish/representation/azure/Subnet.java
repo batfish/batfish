@@ -13,10 +13,13 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.route.nh.NextHop;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.List;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -114,7 +117,40 @@ public class Subnet extends Resource implements Serializable {
             // static route set from Vnet object
         }
 
+        { // Nat gateway
+            Interface toNat = Interface.builder()
+                    .setVrf(cfgNode.getDefaultVrf())
+                    .setOwner(cfgNode)
+                    .setName("nat-gateway")
+                    .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+                    .setDescription("to nat gateway")
+                    .build();
 
+            Configuration natGatewayNode;
+            String natGatewayId = getProperties().getNatGatewayId();
+            if (natGatewayId != null) {
+                natGatewayNode = convertedConfiguration.getNode(natGatewayId);
+
+                if (natGatewayNode == null) {
+                    throw new BatfishException("Gateway not found : " + natGatewayId);
+                }
+
+                convertedConfiguration.addLayer1Edge(
+                        cfgNode.getHostname(), toNat.getName(),
+                        natGatewayNode.getHostname(), "subnet"
+                );
+
+                StaticRoute st = StaticRoute.builder()
+                        .setNetwork(getProperties().getAddressPrefix())
+                        .setNonForwarding(false)
+                        .setNextHop(NextHop.legacyConverter("subnet", AzureConfiguration.LINK_LOCAL_IP))
+                        .setAdministrativeCost(0)
+                        .setMetric(0)
+                        .build();
+
+                natGatewayNode.getDefaultVrf().getStaticRoutes().add(st);
+            }
+        }
 
         return cfgNode;
     }
@@ -127,27 +163,41 @@ public class Subnet extends Resource implements Serializable {
     public static class SubnetProperties implements Serializable{
         final private Prefix _addressPrefix;
         final private NetworkSecurityGroupId _nsg;
+        final private String _natGatewayId;
+        final private List<IpConfiguration> _ipConfigurations;
 
         @JsonCreator
         public static SubnetProperties create(
                 @JsonProperty("addressPrefix") @Nullable Prefix addressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) NetworkSecurityGroupId nsg
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) NetworkSecurityGroupId nsg,
+                @JsonProperty("natGateway") String natGatewayId,
+                @JsonProperty("ipConfigurations") List<IpConfiguration> ipConfigurations
         ){
-            return new SubnetProperties(addressPrefix, nsg);
+            return new SubnetProperties(addressPrefix, nsg, natGatewayId, ipConfigurations);
         }
 
-        SubnetProperties(Prefix addressPrefix, NetworkSecurityGroupId nsg) {
+        SubnetProperties(Prefix addressPrefix, NetworkSecurityGroupId nsg, String natGatewayId, List<IpConfiguration> ipConfigurations) {
             _addressPrefix = addressPrefix;
             _nsg = nsg;
+            _natGatewayId = natGatewayId;
+            _ipConfigurations = ipConfigurations;
         }
 
-        Prefix getAddressPrefix() {
+        public Prefix getAddressPrefix() {
             return _addressPrefix;
         }
 
         public String getNetworkSecurityGroupId(){
             if (_nsg == null) return null;
             return _nsg.getId();
+        }
+
+        public String getNatGatewayId() {
+            return _natGatewayId;
+        }
+
+        public List<IpConfiguration> getIpConfigurations() {
+            return _ipConfigurations;
         }
     }
 
@@ -166,4 +216,20 @@ public class Subnet extends Resource implements Serializable {
             return _id;
         }
     }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class IpConfiguration implements Serializable{
+        private final String _id;
+
+        public IpConfiguration(
+                @JsonProperty(AzureEntities.JSON_KEY_ID) String id
+        ) {
+            _id = id;
+        }
+
+        public String getId() {
+            return _id;
+        }
+    }
+
 }

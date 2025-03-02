@@ -45,7 +45,7 @@ public class SubnetTest {
 
         Prefix addressPrefix = Prefix.parse("10.0.0.0/24");
 
-        Subnet.SubnetProperties subnetProperties = new Subnet.SubnetProperties(addressPrefix, null);
+        Subnet.SubnetProperties subnetProperties = new Subnet.SubnetProperties(addressPrefix, null, null, null);
 
         Subnet subnet = new Subnet (
                 "testId",
