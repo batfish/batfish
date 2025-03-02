@@ -41,47 +41,53 @@ public class VNet extends Resource {
         return _properties;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class VNetProperties {
+        final private AddressSpace _addressSpace;
+        final private Set<Subnet> _subnets;
+
+        @JsonCreator
+        public static VNetProperties create(
+                @JsonProperty(AzureEntities.JSON_KEY_VNET_ADDRESS_SPACE) AddressSpace addressSpace,
+                @JsonProperty(AzureEntities.JSON_KEY_VNET_SUBNETS) Set<Subnet> subnets
+        ) {
+            return new VNetProperties(addressSpace, subnets);
+        }
+
+        VNetProperties(AddressSpace addressSpace, Set<Subnet> subnets) {
+            _addressSpace = addressSpace;
+            _subnets = subnets;
+        }
+
+        public Set<Subnet> getSubnets() {
+            return _subnets;
+        }
+        public AddressSpace getAddressSpace() { return _addressSpace; }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class AddressSpace {
+        final private List<Prefix> _addressPrefixes;
+        // final private IpamPoolPrefixAllocations ipamPoolPrefixAllocations
+
+        @JsonCreator
+        public static AddressSpace create(
+                @JsonProperty @Nullable List<Prefix> addressPrefixes
+        ) {
+            return new AddressSpace(addressPrefixes);
+        }
+
+        AddressSpace(List<Prefix> addressPrefixes) {
+            _addressPrefixes = addressPrefixes;
+        }
+
+        public List<Prefix> getAddressPrefixes() {
+            return _addressPrefixes;
+        }
+    }
+
 }
 
-class AddressSpace {
-    final private List<Prefix> _addressPrefixes;
-    // final private IpamPoolPrefixAllocations ipamPoolPrefixAllocations
 
-    @JsonCreator
-    public static AddressSpace create(
-            @JsonProperty @Nullable List<Prefix> addressPrefixes
-    ) {
-        return new AddressSpace(addressPrefixes);
-    }
 
-    AddressSpace(List<Prefix> addressPrefixes) {
-        _addressPrefixes = addressPrefixes;
-    }
 
-    public List<Prefix> getAddressPrefixes() {
-        return _addressPrefixes;
-    }
-}
-
-class VNetProperties {
-    final private AddressSpace _addressSpace;
-    final private Set<Subnet> _subnets;
-
-    @JsonCreator
-    public static VNetProperties create(
-            @JsonProperty(AzureEntities.JSON_KEY_VNET_ADDRESS_SPACE) AddressSpace addressSpace,
-            @JsonProperty(AzureEntities.JSON_KEY_VNET_SUBNETS) Set<Subnet> subnets
-    ) {
-        return new VNetProperties(addressSpace, subnets);
-    }
-
-    VNetProperties(AddressSpace addressSpace, Set<Subnet> subnets) {
-        _addressSpace = addressSpace;
-        _subnets = subnets;
-    }
-
-    public Set<Subnet> getSubnets() {
-        return _subnets;
-    }
-    public AddressSpace getAddressSpace() { return _addressSpace; }
-}
