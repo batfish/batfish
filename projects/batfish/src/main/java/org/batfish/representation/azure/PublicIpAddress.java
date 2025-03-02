@@ -10,31 +10,31 @@ import java.io.Serializable;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class PublicIpAddress extends Resource implements Serializable {
 
-    private final PublicIpAddressProperties _properties;
+    private final Properties _properties;
 
     @JsonCreator
     public PublicIpAddress(
             @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
             @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
             @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) PublicIpAddressProperties properties
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
     ){
         super(name, id, type);
         _properties = properties;
     }
 
-    public PublicIpAddressProperties getProperties() {
+    public Properties getProperties() {
         return _properties;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PublicIpAddressProperties implements Serializable {
+    public static class Properties implements Serializable {
 
         private final Ip _ipAddress;
         // todo type : can be static or dynamic
 
         @JsonCreator
-        public PublicIpAddressProperties(
+        public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_PUBLIC_IP_ADDRESS) Ip ipAddress
         ){
             _ipAddress = ipAddress;
