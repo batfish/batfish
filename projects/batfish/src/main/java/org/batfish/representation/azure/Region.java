@@ -109,6 +109,7 @@ public class Region implements Serializable {
             case AzureEntities.JSON_TYPE_POSTGRES:
                 Instance db = BatfishObjectMapper.mapper().convertValue(node, Postgres.class);
                 _instances.put(db.getId(), db);
+                break;
             case AzureEntities.JSON_TYPE_CONTAINER_GROUP:
                 Instance containerGroup = BatfishObjectMapper.mapper().convertValue(node, ContainerGroup.class);
                 _instances.put(containerGroup.getId(), containerGroup);

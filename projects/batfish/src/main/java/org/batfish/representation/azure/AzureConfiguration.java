@@ -68,7 +68,11 @@ public class AzureConfiguration extends VendorConfiguration {
         throw new IllegalStateException("Setting the format is not allowed for Azure configs");
     }
 
-    private Region addOrGetRegion(String regionName) {
+    /**
+     * Creates a region if not created yet.
+     * else returns the region.
+     */
+    Region addOrGetRegion(String regionName) {
         Region region = _regions.get(regionName);
         if(region == null){
             region = new Region(regionName);
