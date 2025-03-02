@@ -1,6 +1,8 @@
 package org.batfish.representation.azure;
 
-public class Resource {
+import java.io.Serializable;
+
+public class Resource implements Serializable {
 
     private final String _name;
     private final String _id;

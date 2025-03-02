@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Ip;
 
+import java.io.Serializable;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class IPConfiguration extends Resource {
 
@@ -26,7 +28,7 @@ public class IPConfiguration extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class IPConfigurationProperties {
+    public static class IPConfigurationProperties implements Serializable {
         private final Ip _privateIpAddress;
         private final Subnet _subnet;
 
@@ -48,7 +50,7 @@ public class IPConfiguration extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    private static class Subnet{
+    private static class Subnet implements Serializable{
         private final String _id;
 
         @JsonCreator

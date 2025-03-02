@@ -10,14 +10,16 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.vendor.VendorConfiguration;
 
 import javax.annotation.Nonnull;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 public class AzureConfiguration extends VendorConfiguration {
 
     // only one resource group to start testing
     // next, we will be able to define multiple resource group based on folder structure (Batfish.java)
-    private static final ResourceGroup rgp = new ResourceGroup("test");
+    private final Map<String, Region> _regions = new HashMap<>();
 
     private ConvertedConfiguration _convertedConfiguration = null;
 
@@ -44,14 +46,33 @@ public class AzureConfiguration extends VendorConfiguration {
         throw new IllegalStateException("Setting the format is not allowed for AWS configs");
     }
 
+    private Region addOrGetRegion(String regionName) {
+        Region region = _regions.get(regionName);
+        if(region == null){
+            region = new Region(regionName);
+            _regions.put(regionName, region);
+        }
+        return region;
+    }
+
     /** Adds a config subtree */
     public void addConfigElement(JsonNode node){
-        rgp.addConfigElement(node);
+        JsonNode regionField = node.get(AzureEntities.JSON_KEY_LOCATION);
+        if(regionField == null){
+            return; // unable to parse
+        }
+
+        String regionName = regionField.asText();
+        addOrGetRegion(regionName).addConfigElement(node);
     }
 
     private void convertConfigurations(){
         _convertedConfiguration = new ConvertedConfiguration();
-        rgp.toConfigurationNode(_convertedConfiguration);
+
+        for(Region region : _regions.values()){
+            region.toConfigurationNode(_convertedConfiguration);
+        }
+        //rgp.toConfigurationNode(_convertedConfiguration);
     }
 
     @Override
