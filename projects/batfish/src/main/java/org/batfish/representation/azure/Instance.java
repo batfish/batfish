@@ -2,23 +2,45 @@ package org.batfish.representation.azure;
 
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Configuration;
 
+import java.util.HashSet;
 import java.util.Set;
 
+@JsonIgnoreProperties(ignoreUnknown = true)
 class NetworkProfile {
-    private final Set<Instance.NetworkInterfaceId> _networkInterfaces;
+    private final Set<NetworkInterfaceId> _networkInterfaces;
 
     @JsonCreator
     NetworkProfile(
-            @JsonProperty Set<Instance.NetworkInterfaceId> networkInterfaces
+            @JsonProperty(AzureEntities.JSON_KEY_NETWORK_INTERFACE_ID) Set<NetworkInterfaceId> networkInterfaces
     ) {
+
+        if(networkInterfaces == null) {
+            networkInterfaces = new HashSet<>();
+        }
         _networkInterfaces = networkInterfaces;
     }
 
-    Set<Instance.NetworkInterfaceId> getNetworkInterfaces() {
+    Set<NetworkInterfaceId> getNetworkInterfaces() {
         return _networkInterfaces;
+    }
+}
+
+@JsonIgnoreProperties(ignoreUnknown = true)
+class NetworkInterfaceId {
+    private final String _id;
+
+    @JsonCreator
+    NetworkInterfaceId(
+            @JsonProperty(AzureEntities.JSON_KEY_ID) String id) {
+        _id = id;
+    }
+
+    String getId() {
+        return _id;
     }
 }
 
@@ -28,19 +50,7 @@ public abstract class Instance extends Resource {
         super(name, id, type);
     }
 
-    static class NetworkInterfaceId {
-        private final String _id;
 
-        @JsonCreator
-        NetworkInterfaceId(
-                @JsonProperty String id) {
-            _id = id;
-        }
-
-        String getId() {
-            return _id;
-        }
-    }
 
     public abstract Configuration toConfigurationNode(ResourceGroup rgp);
 }
