@@ -12,6 +12,7 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.util.Resources.readResource;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class InterfaceTest {
 
@@ -33,13 +34,33 @@ public class InterfaceTest {
 
         Set<IPConfiguration> ipConfigurations = networkInterfaceProperties.getIPConfigurations();
 
-        // only 1 ipConfiguration supported
+        boolean found1 = false;
+        boolean found2 = false;
         for (IPConfiguration ipConfiguration : ipConfigurations) {
             assertNotNull(ipConfiguration);
-            IPConfiguration.Properties ipConfigurationProperties = ipConfiguration.getProperties();
-            assertEquals(Ip.parse("10.0.1.4"),ipConfigurationProperties.getPrivateIpAddress());
-            assertEquals("resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
-                    ipConfigurationProperties.getSubnetId());
+
+            if(ipConfiguration.getName().equals("ipconfig1")) {
+                found1 = true;
+                IPConfiguration.Properties ipConfigurationProperties = ipConfiguration.getProperties();
+                assertNotNull(ipConfigurationProperties);
+
+                assertEquals(Ip.parse("10.0.1.4"),ipConfigurationProperties.getPrivateIpAddress());
+                assertEquals("resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
+                        ipConfigurationProperties.getSubnetId());
+            }
+
+            if(ipConfiguration.getName().equals("ipconfig2")) {
+                found2 = true;
+                IPConfiguration.Properties ipConfigurationProperties = ipConfiguration.getProperties();
+                assertNotNull(ipConfigurationProperties);
+
+                assertEquals(Ip.parse("10.0.1.5"),ipConfigurationProperties.getPrivateIpAddress());
+                assertEquals("resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
+                        ipConfigurationProperties.getSubnetId());
+            }
         }
+
+        assertTrue(found1);
+        assertTrue(found2);
     }
 }

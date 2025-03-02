@@ -39,8 +39,8 @@ public class Subnet extends Resource implements Serializable {
     }
 
     public Ip computeInstancesIfaceIp(){
-        long generatedIp = _properties.getAddressPrefix().getStartIp().asLong() + 1L;
-        return Ip.create(generatedIp);
+        // first 3 ips are reserved in an azure subnet
+        return _properties.getAddressPrefix().getFirstHostIp();
     }
 
     public String getNodeName(){
