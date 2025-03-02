@@ -50,7 +50,7 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
         if(!_inboundAclLines.isEmpty()) {
             IpAccessList inboundAcl = IpAccessList.builder()
                     .setLines(_inboundAclLines)
-                    .setName(getName() + "-inbound")
+                    .setName(getCleanId() + "-inbound")
                     .setOwner(configuration)
                     .build();
 
@@ -61,7 +61,7 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
 
         if(!_outboundAclLines.isEmpty()) {
             IpAccessList outboundAcl = IpAccessList.builder()
-                    .setName(getName() + "-outbound")
+                    .setName(getCleanId() + "-outbound")
                     .setLines(_outboundAclLines)
                     .setOwner(configuration)
                     .build();

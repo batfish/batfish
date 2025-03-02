@@ -30,7 +30,7 @@ public class VNet extends Resource {
 
     public Configuration toConfigurationNode(){
         Configuration cfgNode = Configuration.builder()
-                .setHostname(getId())
+                .setHostname(getCleanId())
                 .setDeviceModel(DeviceModel.AZURE_VNET)
                 .setConfigurationFormat(ConfigurationFormat.AZURE)
                 .setHumanName(getName()).build();
