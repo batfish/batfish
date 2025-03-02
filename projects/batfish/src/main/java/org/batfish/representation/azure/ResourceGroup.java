@@ -27,20 +27,24 @@ public class ResourceGroup {
     }
 
     public void addConfigElement(JsonNode node){
-        String type = String.valueOf(node.get(AzureEntities.JSON_KEY_TYPE));
-        if(type == null){
+        if(!node.has(AzureEntities.JSON_KEY_TYPE) || !node.has(AzureEntities.JSON_KEY_PROPERTIES)){
+
             return; // throw an error because azure always specify the type -> not an azure config
         }
 
-        JsonNode content = node.get(AzureEntities.JSON_KEY_PROPERTIES);
+        if(!node.get(AzureEntities.JSON_KEY_TYPE).isTextual()) {
+            return;
+        }
+
+        String type = node.get(AzureEntities.JSON_KEY_TYPE).textValue();
 
         switch(type){
             case AzureEntities.JSON_TYPE_VM:
-                Instance vm = BatfishObjectMapper.mapper().convertValue(content, VirtualMachine.class);
+                Instance vm = BatfishObjectMapper.mapper().convertValue(node, VirtualMachine.class);
                 _instances.put(vm.getId(), vm);
                 break;
             case AzureEntities.JSON_TYPE_VNET:
-                VNet network = BatfishObjectMapper.mapper().convertValue(content, VNet.class);
+                VNet network = BatfishObjectMapper.mapper().convertValue(node, VNet.class);
                 for(Subnet subnet : network.getProperties().getSubnets()){
                     _subnets.put(subnet.getId(), subnet);
                 }
