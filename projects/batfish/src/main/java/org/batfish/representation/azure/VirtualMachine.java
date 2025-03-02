@@ -4,6 +4,7 @@ package org.batfish.representation.azure;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
@@ -72,7 +73,7 @@ public class VirtualMachine extends Instance{
             if (subnet == null) continue;
 
             // assign itself to this device through setOwner
-            Interface.builder()
+            Interface currentInterface = Interface.builder()
                     .setName(networkInterface.getName())
                     .setAddress(concreteInterfaceAddress)
                     .setHumanName(networkInterface.getName())
@@ -97,6 +98,21 @@ public class VirtualMachine extends Instance{
                     getName(), networkInterface.getName(),
                     subnet.getNodeName(), subnet.getInterfaceName());
 
+            // ACL
+            {
+                String nsgId = networkInterface.getProperties().getNetworkSecurityGroupID();
+                if(nsgId != null) {
+                    NetworkSecurityGroup nsg =
+                            rgp.getNetworkSecurityGroups().get(nsgId);
+
+                    if (nsg == null) {
+                        throw new BatfishException(String.format("Unable to apply the NSG %s on subnet %s.\n" +
+                                "Missing nsg file !", getName(), nsgId));
+                    }
+
+                    nsg.applyToInterface(currentInterface);
+                }
+            }
 
         }
 
