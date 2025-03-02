@@ -96,6 +96,10 @@ public class Region implements Serializable {
                 PublicIpAddress publicIp = BatfishObjectMapper.mapper().convertValue(node, PublicIpAddress.class);
                 _publicIpAddresses.put(publicIp.getId(), publicIp);
                 break;
+            case AzureEntities.JSON_TYPE_POSTGRES:
+                Instance db = BatfishObjectMapper.mapper().convertValue(node, Postgres.class);
+                _instances.put(db.getId(), db);
+                break;
             default:
                 return;
         }
