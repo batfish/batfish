@@ -32,16 +32,19 @@ public class IPConfiguration extends Resource {
         private final Ip _privateIpAddress;
         private final IdReference _subnet;
         private final IdReference _publicIpAddress;
+        private final boolean _primary;
 
         @JsonCreator
         public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
                 @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_SUBNET) IdReference subnet,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PUBLIC_IP_ADDRESS) IdReference publicIpAddress
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PUBLIC_IP_ADDRESS) IdReference publicIpAddress,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PRIMARY) boolean primary
         ) {
             _privateIpAddress = privateIpAddress;
             _subnet = subnet;
             _publicIpAddress = publicIpAddress;
+            _primary = primary;
         }
 
         public Ip getPrivateIpAddress() {
@@ -52,6 +55,9 @@ public class IPConfiguration extends Resource {
         }
         public String getSubnetId(){
             return _subnet.getId();
+        }
+        public boolean isPrimary() {
+            return _primary;
         }
     }
 }

@@ -25,6 +25,7 @@ public interface AzureEntities {
     String JSON_KEY_INTERFACE_SUBNET = "subnet";
     String JSON_KEY_INTERFACE_NGS = "networkSecurityGroup";
     String JSON_KEY_INTERFACE_PUBLIC_IP_ADDRESS = "publicIPAddress";
+    String JSON_KEY_INTERFACE_PRIMARY = "primary";
 
     String JSON_KEY_NSG_PROTOCOL = "protocol";
     String JSON_KEY_NSG_SRC_PORT = "sourcePortRange";
@@ -40,7 +41,6 @@ public interface AzureEntities {
     String JSON_KEY_NSG_DIRECTION = "direction";
 
     String JSON_KEY_PUBLIC_IP_ADDRESS = "ipAddress";
-
     String JSON_KEY_NAT_GATEWAY_PUBLIC_IP_ADDRESSES = "publicIpAddresses";
     String JSON_KEY_NAT_GATEWAY_PUBLIC_IP_PREFIXES = "publicIpPrefixes";
     String JSON_KEY_NAT_GATEWAY_SUBNETS = "subnets";

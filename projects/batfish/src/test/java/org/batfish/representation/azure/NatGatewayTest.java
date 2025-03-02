@@ -166,7 +166,8 @@ public class NatGatewayTest {
                 new IPConfiguration.Properties(
                         Ip.parse("192.168.0.1"),
                         new IdReference(subnetId),
-                        new IdReference(publicIpAddress.getId())
+                        new IdReference(publicIpAddress.getId()),
+                        true
         ));
         region.getIpConfigurations().put(ipConfiguration.getId().toLowerCase(), ipConfiguration);
 

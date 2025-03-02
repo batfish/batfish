@@ -17,6 +17,8 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -56,33 +58,42 @@ public class VirtualMachine extends Instance implements Serializable {
         for(IdReference idReference : _properties.getNetworkProfile().getNetworkInterfaces()){
             NetworkInterface networkInterface =  rgp.getInterfaces().get(idReference.getId());
 
-            // temporary (unclear information's about multi ips and subnet on a unique interface)
-            // only 1 IP per endpoint (instance) for now
+            Interface.Builder interfaceBuilder = Interface.builder();
             Subnet subnet = null;
-            ConcreteInterfaceAddress concreteInterfaceAddress = null;
+            List<ConcreteInterfaceAddress> secondaryInterfacesAddresses =
+                    new ArrayList<>(networkInterface.getProperties().getIPConfigurations().size()-1);
 
             for (IPConfiguration ipConfiguration : networkInterface.getProperties().getIPConfigurations()){
                 subnet = rgp.getSubnets().get(ipConfiguration.getProperties().getSubnetId());
-                // TODO: need to draw edge between subnet and interface ip
 
-                concreteInterfaceAddress = ConcreteInterfaceAddress.create(
+                ConcreteInterfaceAddress concreteInterfaceAddress = ConcreteInterfaceAddress.create(
                         ipConfiguration.getProperties().getPrivateIpAddress(),
                         subnet.getProperties().getAddressPrefix().getPrefixLength());
+
+                if (ipConfiguration.getProperties().isPrimary()) {
+                    interfaceBuilder.setAddress(concreteInterfaceAddress);
+                } else {
+                    secondaryInterfacesAddresses.add(concreteInterfaceAddress);
+                }
+
             }
+
+            if (!secondaryInterfacesAddresses.isEmpty())
+                interfaceBuilder.setSecondaryAddresses(secondaryInterfacesAddresses);
+
 
             // security check for the trick above
             if (subnet == null) continue;
 
             // assign itself to this device through setOwner
-            Interface currentInterface = Interface.builder()
+            Interface currentInterface = interfaceBuilder
                     .setName(networkInterface.getCleanId())
-                    .setAddress(concreteInterfaceAddress)
                     .setHumanName(networkInterface.getName())
                     .setOwner(cfgNode)
                     .setVrf(cfgNode.getDefaultVrf())
                     .build();
 
-            // default route to the subnet iface (to be clarified)
+            // default route to the subnet iface
             StaticRoute st = StaticRoute.builder()
                     .setNextHopIp(subnet.computeInstancesIfaceIp())
                     .setAdministrativeCost(0)
@@ -92,9 +103,7 @@ public class VirtualMachine extends Instance implements Serializable {
 
             cfgNode.getDefaultVrf().getStaticRoutes().add(st);
 
-            // draw edges toward other devices on the subnet
-            // gateway like aws or one edge between each device ?
-            // set a virtual switch ? (layer 2 node)
+            // draw edge toward the subnet node
             convertedConfiguration.addLayer1Edge(
                     cfgNode.getHostname(), networkInterface.getCleanId(),
                     subnet.getNodeName(), subnet.getToLanInterfaceName());
@@ -118,6 +127,10 @@ public class VirtualMachine extends Instance implements Serializable {
         }
 
         return cfgNode;
+    }
+
+    public Properties getProperties() {
+        return _properties;
     }
 
 
