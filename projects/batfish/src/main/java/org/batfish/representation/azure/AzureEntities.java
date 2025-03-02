@@ -9,6 +9,7 @@ public interface AzureEntities {
     String JSON_KEY_PROPERTIES = "properties";
 
     String JSON_KEY_NETWORK_INTERFACE_ID = "networkInterfaces";
+    String JSON_KEY_NETWORK_PROFILE = "networkProfile";
 
     String JSON_KEY_VNET_SUBNETS = "subnets";
     String JSON_KEY_VNET_ADDRESS_SPACE = "addressSpace";
