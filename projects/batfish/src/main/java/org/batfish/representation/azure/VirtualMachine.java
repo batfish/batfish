@@ -38,7 +38,7 @@ public class VirtualMachine extends Instance implements Serializable {
     @Override
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
         Configuration cfgNode = Configuration.builder()
-                .setHostname(getName())
+                .setHostname(getCleanId())
                 .setHumanName(getName())
                 .setDomainName("azure")
                 .setDeviceModel(DeviceModel.AZURE_VM)
@@ -76,7 +76,7 @@ public class VirtualMachine extends Instance implements Serializable {
 
             // assign itself to this device through setOwner
             Interface currentInterface = Interface.builder()
-                    .setName(networkInterface.getName())
+                    .setName(networkInterface.getCleanId())
                     .setAddress(concreteInterfaceAddress)
                     .setHumanName(networkInterface.getName())
                     .setOwner(cfgNode)
@@ -97,7 +97,7 @@ public class VirtualMachine extends Instance implements Serializable {
             // gateway like aws or one edge between each device ?
             // set a virtual switch ? (layer 2 node)
             convertedConfiguration.addLayer1Edge(
-                    getName(), networkInterface.getName(),
+                    cfgNode.getHostname(), networkInterface.getCleanId(),
                     subnet.getNodeName(), subnet.getInterfaceName());
 
             // ACL
@@ -109,7 +109,7 @@ public class VirtualMachine extends Instance implements Serializable {
 
                     if (nsg == null) {
                         throw new BatfishException(String.format("Unable to apply the NSG %s on subnet %s.\n" +
-                                "Missing nsg file !", getName(), nsgId));
+                                "Missing nsg file !", getCleanId(), nsgId));
                     }
 
                     nsg.applyToInterface(currentInterface);
