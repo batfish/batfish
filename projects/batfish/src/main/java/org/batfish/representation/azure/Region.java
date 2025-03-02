@@ -4,10 +4,11 @@ import com.fasterxml.jackson.databind.JsonNode;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ResourceGroup {
+public class Region implements Serializable {
 
 
     private final Map<String, NetworkInterface> _interfaces = new HashMap<>();
@@ -16,7 +17,7 @@ public class ResourceGroup {
     private final Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
     private final String _regionName;
 
-    public ResourceGroup(String regionName) {
+    public Region(String regionName) {
         this._regionName = regionName;
     }
 

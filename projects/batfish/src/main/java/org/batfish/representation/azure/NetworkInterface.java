@@ -3,10 +3,12 @@ package org.batfish.representation.azure;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.io.Serializable;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NetworkInterface extends Resource{
+public class NetworkInterface extends Resource implements Serializable {
 
     private final NetworkInterfaceProperties _properties;
 
@@ -21,7 +23,7 @@ public class NetworkInterface extends Resource{
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class NetworkInterfaceProperties {
+    public static class NetworkInterfaceProperties implements Serializable {
         private final Set<IPConfiguration> _ipConfigurations;
         private final String _macAddress;
         private final NetworkSecurityGroupId _nsg;
@@ -52,7 +54,7 @@ public class NetworkInterface extends Resource{
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class NetworkSecurityGroupId {
+    public static class NetworkSecurityGroupId implements Serializable{
 
         private final String _id;
 

@@ -6,11 +6,12 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Configuration;
 
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class NetworkProfile {
+class NetworkProfile implements Serializable {
     private final Set<NetworkInterfaceId> _networkInterfaces;
 
     @JsonCreator
@@ -30,7 +31,7 @@ class NetworkProfile {
 }
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class NetworkInterfaceId {
+class NetworkInterfaceId implements Serializable{
     private final String _id;
 
     @JsonCreator
@@ -44,7 +45,7 @@ class NetworkInterfaceId {
     }
 }
 
-public abstract class Instance extends Resource {
+public abstract class Instance extends Resource implements Serializable {
 
     public Instance(String name, String id, String type) {
         super(name, id, type);
@@ -52,5 +53,5 @@ public abstract class Instance extends Resource {
 
 
 
-    public abstract Configuration toConfigurationNode(ResourceGroup rgp, ConvertedConfiguration convertedConfiguration);
+    public abstract Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration);
 }
