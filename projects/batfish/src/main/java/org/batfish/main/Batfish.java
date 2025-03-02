@@ -2199,13 +2199,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       Map<String, String> azureConfigurationData;
       // Try to parse all accounts as one vendor configuration
-      try (Stream<String> keys = _storage.listInputAzureMultiAccountKeys(snapshot)) {
+      try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
         azureConfigurationData = readAllInputObjects(keys, snapshot);
-      }
-      if (azureConfigurationData.isEmpty()) {
-        try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
-          azureConfigurationData = readAllInputObjects(keys, snapshot);
-        }
       }
       found = !azureConfigurationData.isEmpty();
       azureConfiguration = parseAzureConfigurations(azureConfigurationData, pvcae);
