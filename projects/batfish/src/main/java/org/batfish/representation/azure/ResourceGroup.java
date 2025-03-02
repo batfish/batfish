@@ -50,6 +50,10 @@ public class ResourceGroup {
                     _subnets.put(subnet.getId(), subnet);
                 }
                 break;
+            case AzureEntities.JSON_TYPE_INTERFACE:
+                NetworkInterface networkInterface = BatfishObjectMapper.mapper().convertValue(node, NetworkInterface.class);
+                _interfaces.put(networkInterface.getId(), networkInterface);
+                break;
             default:
                 return;
         }
