@@ -13,6 +13,7 @@ public class ResourceGroup {
     private final Map<String, NetworkInterface> _interfaces = new HashMap<>();
     private final Map<String, Subnet> _subnets = new HashMap<>();
     private final Map<String, Instance> _instances = new HashMap<>();
+    private final Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
     private final String _regionName;
 
     public ResourceGroup(String regionName) {
@@ -29,6 +30,9 @@ public class ResourceGroup {
 
     public Map<String, Instance> getInstances() {
         return _instances;
+    }
+    public Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
+        return _networkSecurityGroups;
     }
 
     public void addConfigElement(JsonNode node){
@@ -57,6 +61,10 @@ public class ResourceGroup {
             case AzureEntities.JSON_TYPE_INTERFACE:
                 NetworkInterface networkInterface = BatfishObjectMapper.mapper().convertValue(node, NetworkInterface.class);
                 _interfaces.put(networkInterface.getId(), networkInterface);
+                break;
+            case AzureEntities.JSON_TYPE_NETWORK_SECURITY_GROUP:
+                NetworkSecurityGroup nsg = BatfishObjectMapper.mapper().convertValue(node, NetworkSecurityGroup.class);
+                _networkSecurityGroups.put(nsg.getId(), nsg);
                 break;
             default:
                 return;
