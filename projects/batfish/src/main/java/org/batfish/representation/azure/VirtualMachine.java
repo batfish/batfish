@@ -16,22 +16,6 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-class VirtualMachineProperties{
-    private final NetworkProfile _networkProfile;
-    
-    @JsonCreator
-    VirtualMachineProperties(
-            @JsonProperty(AzureEntities.JSON_KEY_NETWORK_PROFILE) NetworkProfile networkProfile
-    ){
-        _networkProfile = networkProfile;
-    }
-
-    NetworkProfile getNetworkProfile() {
-        return _networkProfile;
-    }
-}
-
-@JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualMachine extends Instance{
 
     private final VirtualMachineProperties _properties;
@@ -105,5 +89,21 @@ public class VirtualMachine extends Instance{
         return cfgNode;
     }
 
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class VirtualMachineProperties{
+        private final NetworkProfile _networkProfile;
+
+        @JsonCreator
+        VirtualMachineProperties(
+                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_PROFILE) NetworkProfile networkProfile
+        ){
+            _networkProfile = networkProfile;
+        }
+
+        NetworkProfile getNetworkProfile() {
+            return _networkProfile;
+        }
+    }
 
 }
