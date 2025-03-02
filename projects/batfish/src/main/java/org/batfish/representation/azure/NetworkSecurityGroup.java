@@ -89,14 +89,16 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SECURITY_RULES) @Nullable List<SecurityRule> securityRules)
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SECURITY_RULES) @Nullable List<SecurityRule> securityRules,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DEFAULT_SECURITY_RULES) @Nullable List<SecurityRule> defaultSecurityRules
+        )
         {
-            if (securityRules != null) securityRules = new ArrayList<>(securityRules);
-            else {
-                // sorting the rules according to priority so it is easier for the next steps
-                securityRules.sort(
-                        Comparator.comparingInt(securityRule -> securityRule.getProperties().getPriority()));
-            }
+            if (securityRules == null) securityRules = new ArrayList<>();
+            if (defaultSecurityRules != null) securityRules.addAll(defaultSecurityRules);
+
+            // sorting the rules according to priority so it is easier for the next steps
+            securityRules.sort(
+                    Comparator.comparingInt(securityRule -> securityRule.getProperties().getPriority()));
             _securityRules = securityRules;
         }
 

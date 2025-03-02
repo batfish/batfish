@@ -3,20 +3,24 @@ package org.batfish.representation.azure;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.batfish.common.BatfishException;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkArgument;
@@ -24,29 +28,23 @@ import static com.google.common.base.Preconditions.checkArgument;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SecurityRule extends Resource implements Serializable {
 
+    private static final IpSpace VirtualNetworkIpSpace = AclIpSpace.union(
+            Prefix.parse("10.0.0.0/8").toIpSpace(),
+            Prefix.parse("172.16.0.0/20").toIpSpace(),
+            Prefix.parse("192.168.0.0/16").toIpSpace()
+    );
+    private static final IpSpace InternetIpSpace = AclIpSpace.difference(
+            UniverseIpSpace.INSTANCE,
+            VirtualNetworkIpSpace
+    );
+
     private final @Nonnull Properties _properties;
 
     public ExprAclLine getAclLine(){
         HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
 
-        // if there are prefixes, then we ignore single prefix field
-        {
-            if (_properties.getSourceAddressPrefixes().isEmpty())
-                headerSpaceBuilder.addSrcIp(_properties.getSourceAddressPrefix().toIpSpace());
-
-            if (_properties.getDestinationAddressPrefixes().isEmpty())
-                headerSpaceBuilder.addDstIp(_properties.getDestinationAddressPrefix().toIpSpace());
-        }
-
-        // handle prefixes if there are
-        {
-            for (Prefix srcPrefix : _properties.getSourceAddressPrefixes())
-                headerSpaceBuilder.addSrcIp(srcPrefix.toIpSpace());
-
-
-            for (Prefix destPrefix : _properties.getDestinationAddressPrefixes())
-                headerSpaceBuilder.addDstIp(destPrefix.toIpSpace());
-        }
+        headerSpaceBuilder.setDstIps(_properties.getDestinationIpSpace());
+        headerSpaceBuilder.setSrcIps(_properties.getSourceIpSpace());
 
         headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
 
@@ -65,8 +63,7 @@ public class SecurityRule extends Resource implements Serializable {
             else headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRanges());
         }
         else if (_properties.getProtocol().equals(IpProtocol.ICMP)){
-            //todo: handle icmp type
-            throw new BatfishException("Unsupported protocol: " + _properties.getProtocol());
+            headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
         }
 
 
@@ -104,12 +101,12 @@ public class SecurityRule extends Resource implements Serializable {
         private final @Nonnull IpProtocol _protocol;
         private final @Nonnull SubRange _sourcePortRange;
         private final @Nonnull SubRange _destinationPortRange;
-        private final @Nonnull List<SubRange> _sourcePortRanges;
-        private final @Nonnull List<SubRange> _destinationPortRanges;
-        private final @Nonnull Prefix _sourceAddressPrefix;
-        private final @Nonnull Prefix _destinationAddressPrefix;
-        private final @Nonnull List<Prefix> _sourceAddressPrefixes;
-        private final @Nonnull List<Prefix> _destinationAddressPrefixes;
+        private final @Nullable String _sourceAddressPrefix;
+        private final @Nullable String _destinationAddressPrefix;
+        private final @Nonnull Set<String> _sourceAddressPrefixes;
+        private final @Nonnull Set<String> _destinationAddressPrefixes;
+        private final @Nonnull Set<SubRange> _sourcePortRanges;
+        private final @Nonnull Set<SubRange> _destinationPortRanges;
         private final @Nonnull String _access;
         private final int _priority;
         private final @Nonnull String _direction;
@@ -118,12 +115,12 @@ public class SecurityRule extends Resource implements Serializable {
         public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORT) @Nullable String sourcePortRange,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORT) @Nullable String destinationPortRange,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORTS) @Nullable List<String> sourcePortRanges,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORTS) @Nullable List<String> destinationPortRanges,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORTS) @Nullable Set<String> sourcePortRanges,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORTS) @Nullable Set<String> destinationPortRanges,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIX) @Nullable String sourceAddressPrefix,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIX) @Nullable String destinationAddressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIXES) @Nullable List<String> sourceAddressPrefixes,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIXES) @Nullable List<String> destinationAddressPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIXES) @Nullable Set<String> sourceAddressPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIXES) @Nullable Set<String> destinationAddressPrefixes,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_PROTOCOL) @Nullable String protocol,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_ACCESS) @Nullable String access,
                 @JsonProperty(AzureEntities.JSON_KEY_NSG_PRIORITY) @Nullable Integer priority,
@@ -133,52 +130,35 @@ public class SecurityRule extends Resource implements Serializable {
             checkArgument(access != null, "access must be provided");
             checkArgument(priority != null, "priority must be provided");
             checkArgument(direction != null, "direction must be provided");
-            if (sourcePortRanges == null) sourcePortRanges = new ArrayList<>();
-            if (destinationPortRanges == null) destinationPortRanges = new ArrayList<>();
-            if (sourceAddressPrefixes == null) sourceAddressPrefixes = new ArrayList<>();
-            if (destinationAddressPrefixes == null) destinationAddressPrefixes = new ArrayList<>();
+            if (sourcePortRanges == null) sourcePortRanges = new HashSet<>();
+            if (destinationPortRanges == null) destinationPortRanges = new HashSet<>();
+            if (sourceAddressPrefixes == null) sourceAddressPrefixes = new HashSet<>();
+            if (destinationAddressPrefixes == null) destinationAddressPrefixes = new HashSet<>();
 
             _protocol = getProtocol(protocol);
             _sourcePortRange = getSubRange(sourcePortRange);
             _destinationPortRange = getSubRange(destinationPortRange);
-            _sourceAddressPrefix = getPrefix(sourceAddressPrefix);
-            _destinationAddressPrefix = getPrefix(destinationAddressPrefix);
+            _sourceAddressPrefix = sourceAddressPrefix;
+            _destinationAddressPrefix = destinationAddressPrefix;
+            _sourceAddressPrefixes = sourceAddressPrefixes;
+            _destinationAddressPrefixes = destinationAddressPrefixes;
             _access = access;
             _priority = priority;
             _direction = direction;
 
-            _sourceAddressPrefixes = sourceAddressPrefixes.stream()
-                    .map(Properties::getPrefix)
-                    .collect(Collectors.toCollection(ArrayList::new));
-
-            _destinationAddressPrefixes = destinationAddressPrefixes.stream()
-                    .map(Properties::getPrefix)
-                    .collect(Collectors.toCollection(ArrayList::new));
-
             _sourcePortRanges = sourcePortRanges.stream()
                     .map(Properties::getSubRange)
-                    .collect(Collectors.toCollection(ArrayList::new));
+                    .collect(Collectors.toSet());
 
             _destinationPortRanges= destinationPortRanges.stream()
                     .map(Properties::getSubRange)
-                    .collect(Collectors.toCollection(ArrayList::new));
-
+                    .collect(Collectors.toSet());
         }
 
         private static IpProtocol getProtocol(String protocol) {
             if(protocol.equals("*"))
                 return IpProtocol.ANY_0_HOP_PROTOCOL;
             return IpProtocol.fromString(protocol);
-        }
-
-        private static Prefix getPrefix(String prefix){
-            if(prefix == null || prefix.equals("*"))
-                return Prefix.ZERO;
-
-            if(prefix.equals("Internet"))
-                return Prefix.ZERO;
-
-            return Prefix.parse(prefix);
         }
 
         private static SubRange getSubRange(String subRange){
@@ -190,6 +170,28 @@ public class SecurityRule extends Resource implements Serializable {
                 return new SubRange(Integer.parseInt(subRange));
             } catch (NumberFormatException e) {
                 return new SubRange(subRange);
+            }
+        }
+
+        /**
+         * Parse String prefix, and return appropriate IpSpace if found service tag.
+         * (Supported service tag : Internet, VirtualNetwork)
+         */
+        private static IpSpace parseIpSpace(String prefix) {
+            if(prefix == null || prefix.equals("*")) {
+                return UniverseIpSpace.INSTANCE;
+            }
+            if (prefix.equals("Internet"))
+                return InternetIpSpace;
+            if (prefix.equals("VirtualNetwork"))
+                return VirtualNetworkIpSpace;
+
+            try {
+                return Prefix.parse(prefix).toIpSpace();
+            } catch (IllegalArgumentException e) {
+                // no known service tag has been found
+                // nor regular prefix
+                return EmptyIpSpace.INSTANCE;
             }
         }
 
@@ -205,20 +207,47 @@ public class SecurityRule extends Resource implements Serializable {
             return _destinationPortRange;
         }
 
-        public Prefix getSourceAddressPrefix() {
+        public String getSourceAddressPrefix() {
             return _sourceAddressPrefix;
         }
 
-        public List<Prefix> getSourceAddressPrefixes() {
+        public Set<String> getSourceAddressPrefixes() {
             return _sourceAddressPrefixes;
         }
 
-        public Prefix getDestinationAddressPrefix() {
+        public String getDestinationAddressPrefix() {
             return _destinationAddressPrefix;
         }
 
-        public List<Prefix> getDestinationAddressPrefixes() {
+        public Set<String> getDestinationAddressPrefixes() {
             return _destinationAddressPrefixes;
+        }
+
+        /**
+         * Returns ipSpace of prefix and prefixes combined (handles null prefixes)
+         * @return {@link IpSpace}
+         */
+        private IpSpace ipSpaceFromPrefixes(String prefix, Set<String> prefixes) {
+            if(prefixes == null || prefixes.isEmpty()) {
+                return AclIpSpace.union(EmptyIpSpace.INSTANCE, parseIpSpace(prefix));
+            }
+
+            IpSpace collectedIpSpace = AclIpSpace.union(
+                        prefixes.stream()
+                        .filter(Objects::nonNull)
+                        .map(Properties::parseIpSpace)
+                        .collect(Collectors.toSet())
+            );
+
+            return AclIpSpace.union(collectedIpSpace, parseIpSpace(prefix));
+        }
+
+        public IpSpace getDestinationIpSpace(){
+            return ipSpaceFromPrefixes(_destinationAddressPrefix, _destinationAddressPrefixes);
+        }
+
+        public IpSpace getSourceIpSpace(){
+            return ipSpaceFromPrefixes(_sourceAddressPrefix, _sourceAddressPrefixes);
         }
 
         public String getAccess() {
@@ -233,11 +262,11 @@ public class SecurityRule extends Resource implements Serializable {
             return _direction;
         }
 
-        public List<SubRange> getSourcePortRanges() {
+        public Set<SubRange> getSourcePortRanges() {
             return _sourcePortRanges;
         }
 
-        public List<SubRange> getDestinationPortRanges() {
+        public Set<SubRange> getDestinationPortRanges() {
             return _destinationPortRanges;
         }
     }
