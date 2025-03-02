@@ -26,11 +26,14 @@ import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static org.batfish.common.util.isp.IspModelingUtils.installRoutingPolicyAdvertiseStatic;
 import static org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
 import static org.batfish.datamodel.IpProtocol.TCP;
@@ -42,35 +45,33 @@ import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NatGateway extends Resource implements Serializable {
 
-    static final List<IpProtocol> NAT_PROTOCOLS = ImmutableList.of(TCP, UDP, ICMP);
-    private final Properties _properties;
+    static final @Nonnull List<IpProtocol> NAT_PROTOCOLS = ImmutableList.of(TCP, UDP, ICMP);
+    private final @Nonnull Properties _properties;
 
+    @JsonCreator
     public NatGateway(
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
     )
     {
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
     public NatGateway(
-            String id,
-            String name,
-            String type,
-            String subnetId
+            @Nonnull String id,
+            @Nonnull String name,
+            @Nonnull String type,
+            @Nonnull String subnetId
     ) {
         super(name, id, type);
-
-        Set<IdReference> subnetReferences = new HashSet<>();
-        subnetReferences.add(new IdReference(subnetId));
-
         _properties = new Properties(
-                new HashSet<>(),
-                new HashSet<>(),
-                subnetReferences
+                null,
+                null,
+                Set.of(new IdReference(subnetId))
         );
     }
 
@@ -182,12 +183,6 @@ public class NatGateway extends Resource implements Serializable {
                 PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(id.getId());
                 if(publicIpAddress == null){
                     throw new BatfishException("PublicIpAddress not found (did you include it ?). id: " + id.getId());
-                }
-                if(publicIpAddress.getProperties() == null) {
-                    throw new BatfishException("Malformed publicIpAddress file. id: " + id.getId());
-                }
-                if(publicIpAddress.getProperties().getIpAddress() == null) {
-                    throw new BatfishException("No ip found in public ip file -> skipping. id: " + id.getId());
                 }
                 startIp = publicIpAddress.getProperties().getIpAddress();
                 endIp = startIp;
@@ -318,16 +313,20 @@ public class NatGateway extends Resource implements Serializable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable {
-        private final Set<IdReference> _publicIpAddresses;
-        private final Set<IdReference> _publicIpPrefixes;
-        private final Set<IdReference> _subnets;
+
+        private final @Nonnull Set<IdReference> _publicIpAddresses;
+        private final @Nonnull Set<IdReference> _publicIpPrefixes;
+        private final @Nonnull Set<IdReference> _subnets;
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_ADDRESSES) Set<IdReference> publicIpAddresses,
-                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_PREFIXES) Set<IdReference> publicIpPrefixes,
-                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_SUBNETS) Set<IdReference> subnets
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_ADDRESSES) @Nullable Set<IdReference> publicIpAddresses,
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_PREFIXES) @Nullable Set<IdReference> publicIpPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_SUBNETS) @Nullable Set<IdReference> subnets
         ) {
+            if (publicIpAddresses == null) publicIpAddresses = new HashSet<>();
+            if (publicIpPrefixes == null) publicIpPrefixes = new HashSet<>();
+            if (subnets == null) subnets = new HashSet<>();
             _publicIpAddresses = publicIpAddresses;
             _publicIpPrefixes = publicIpPrefixes;
             _subnets = subnets;

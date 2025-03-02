@@ -17,24 +17,29 @@ import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.route.nh.NextHop;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Subnet extends Resource implements Serializable {
 
-    final private Properties _properties;
+    final private @Nonnull Properties _properties;
 
     @JsonCreator
     public Subnet(
-         @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-         @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-         @JsonProperty(AzureEntities.JSON_KEY_TYPE)  String type,
-         @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
+         @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+         @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+         @JsonProperty(AzureEntities.JSON_KEY_TYPE)  @Nullable String type,
+         @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
     ){
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
@@ -58,6 +63,7 @@ public class Subnet extends Resource implements Serializable {
     }
 
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
+
         Configuration cfgNode = Configuration.builder()
                 .setHumanName(getName())
                 .setHostname(getNodeName())
@@ -92,12 +98,12 @@ public class Subnet extends Resource implements Serializable {
                     NetworkSecurityGroup nsg =
                             rgp.getNetworkSecurityGroups().get(nsgId);
 
-                if (nsg == null) {
-                    throw new BatfishException(String.format("Unable to apply the NSG %s on subnet %s.\n" +
-                            "Missing nsg file !", nsgId, getCleanId()));
-                }
+                    if (nsg == null) {
+                        throw new BatfishException(String.format("Unable to apply the NSG %s on subnet %s.\n" +
+                                "Missing nsg file !", nsgId, getCleanId()));
+                    }
 
-                    nsg.applyToInterface(lanInterface);
+                        nsg.applyToInterface(lanInterface);
                 }
             }
         }
@@ -112,7 +118,7 @@ public class Subnet extends Resource implements Serializable {
                     .setDescription("to vnet interface")
                     .build();
 
-            // static route set from Vnet object
+            // static route set from Vnet object (no knowledge of Vnet addressSpace nor Vnet peering s)
         }
 
         { // Nat gateway
@@ -163,20 +169,24 @@ public class Subnet extends Resource implements Serializable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable{
-        final private Prefix _addressPrefix;
-        final private IdReference _nsg;
+
+        final private @Nonnull Prefix _addressPrefix;
+        final private @Nullable IdReference _nsg;
         private String _natGatewayId;
-        final private Set<IdReference> _ipConfigurations;
+        final private @Nonnull Set<IdReference> _ipConfigurations;
         final private boolean _defaultOutboundAccess;
 
         @JsonCreator
         public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_SUBNET_ADDRESS_PREFIX) @Nullable Prefix addressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) IdReference nsg,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) @Nullable IdReference nsg,
                 @JsonProperty(AzureEntities.JSON_KEY_SUBNET_NAT_GATEWAY) @Nullable String natGatewayId,
-                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_IP_CONFIGURATIONS) Set<IdReference> ipConfigurations,
-                @JsonProperty("defaultOutboundAccess") boolean defaultOutboundAccess
+                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_IP_CONFIGURATIONS) @Nullable Set<IdReference> ipConfigurations,
+                @JsonProperty("defaultOutboundAccess") @Nullable Boolean defaultOutboundAccess
         ){
+            checkArgument(addressPrefix != null, "addressPrefix must be provided");
+            if (ipConfigurations == null) ipConfigurations = new HashSet<>();
+            if (defaultOutboundAccess == null) defaultOutboundAccess = false;
             _addressPrefix = addressPrefix;
             _nsg = nsg;
             _natGatewayId = natGatewayId;
@@ -205,7 +215,7 @@ public class Subnet extends Resource implements Serializable {
         }
 
         // todo: handle vm default outbound access if this parameter is true
-        // easy : insert a publicIp in every vm ipConfiguration (before node generation and after parsing)
+        // idea : insert a publicIp in every vm ipConfiguration (before node generation and after parsing)
         public boolean getDefaultOutboundAccess() {
             return _defaultOutboundAccess;
         }

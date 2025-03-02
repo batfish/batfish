@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.google.common.collect.ImmutableList;
 import org.batfish.common.BfConsts;
 import org.batfish.common.VendorConversionException;
+import org.batfish.common.Warning;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.isp_configuration.BorderInterfaceInfo;
 import org.batfish.datamodel.isp_configuration.IspAnnouncement;
@@ -25,23 +27,21 @@ import java.util.Set;
 
 public class AzureConfiguration extends VendorConfiguration {
 
-    // only one resource group to start testing
-    // next, we will be able to define multiple resource group based on folder structure (Batfish.java)
-    private final Map<String, Region> _regions = new HashMap<>();
+    private @Nonnull final Map<String, Region> _regions = new HashMap<>();
 
     /** Human name to use for AWS backbone */
-    static final String AZURE_BACKBONE_HUMAN_NAME = "azure-backbone";
+    static final @Nonnull String AZURE_BACKBONE_HUMAN_NAME = "azure-backbone";
 
     /** Name of the interface on nodes that faces the backbone (e.g., IGW, services gateway) */
-    static final String BACKBONE_FACING_INTERFACE_NAME = "backbone";
+    static final @Nonnull String BACKBONE_FACING_INTERFACE_NAME = "backbone";
 
-    static final String AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME = "~azure~asgw~to~backbone~export~policy~";
+    static final @Nonnull String AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME = "~azure~asgw~to~backbone~export~policy~";
 
-    public static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
+    public static final @Nonnull Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
 
     /** ASN to use for Azure backbone */
-    static final long AZURE_BACKBONE_ASN = 8075L;
-    public static final long AZURE_LOCAL_ASN = 65536;
+    static final @Nonnull long AZURE_BACKBONE_ASN = 8075L;
+    public static @Nonnull final long AZURE_LOCAL_ASN = 65536;
 
     private ConvertedConfiguration _convertedConfiguration = null;
 
@@ -78,14 +78,23 @@ public class AzureConfiguration extends VendorConfiguration {
     }
 
     /** Adds a config subtree */
-    public void addConfigElement(JsonNode node){
+    public void addConfigElement(JsonNode node, String filename, ParseVendorConfigurationAnswerElement pvcae){
         JsonNode regionField = node.get(AzureEntities.JSON_KEY_LOCATION);
         if(regionField == null){
+            pvcae.addRedFlagWarning(
+                    BfConsts.RELPATH_AZURE_CONFIGS_DIR,
+                    new Warning(
+                            String.format(
+                                    "Missing required key %s in file %s",
+                                    AzureEntities.JSON_KEY_LOCATION,
+                                    filename
+                            ), "AZURE")
+            );
             return; // unable to parse
         }
 
         String regionName = regionField.asText();
-        addOrGetRegion(regionName).addConfigElement(node);
+        addOrGetRegion(regionName).addConfigElement(node, filename, pvcae);
     }
 
     private void convertConfigurations(){
@@ -94,7 +103,6 @@ public class AzureConfiguration extends VendorConfiguration {
         for(Region region : _regions.values()){
             region.toConfigurationNode(_convertedConfiguration);
         }
-        //rgp.toConfigurationNode(_convertedConfiguration);
     }
 
     @Override
@@ -128,9 +136,6 @@ public class AzureConfiguration extends VendorConfiguration {
                 ispAnnouncements.add(new IspAnnouncement(publicIpAddress.getProperties().getIpAddress().toPrefix()));
             }
         }
-
-
-
 
         return new IspConfiguration(
                 borderInterfaceInfos,
