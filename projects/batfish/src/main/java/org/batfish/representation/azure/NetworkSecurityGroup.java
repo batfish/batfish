@@ -16,13 +16,14 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
-public class NetworkSecurityGroup extends Resource {
+public class NetworkSecurityGroup extends Resource implements Serializable {
 
     private final NetworkSecurityGroupProperties _properties;
     private final List<AclLine> _inboundAclLines;
@@ -85,7 +86,7 @@ public class NetworkSecurityGroup extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class NetworkSecurityGroupProperties {
+    public static class NetworkSecurityGroupProperties implements Serializable {
         private final List<SecurityRule> _securityRules;
 
         @JsonCreator
@@ -105,7 +106,7 @@ public class NetworkSecurityGroup extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class SecurityRule extends Resource {
+    public static class SecurityRule extends Resource implements Serializable{
 
         private final SecurityRuleProperties _properties;
 
@@ -182,7 +183,7 @@ public class NetworkSecurityGroup extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class SecurityRuleProperties {
+    public static class SecurityRuleProperties implements Serializable{
 
         private final IpProtocol _protocol;
         private final SubRange _sourcePortRange;
