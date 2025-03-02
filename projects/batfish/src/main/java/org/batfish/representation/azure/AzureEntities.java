@@ -28,6 +28,7 @@ public interface AzureEntities {
     String JSON_KEY_INTERFACE_PRIMARY = "primary";
 
     String JSON_KEY_NSG_SECURITY_RULES = "securityRules";
+    String JSON_KEY_NSG_DEFAULT_SECURITY_RULES = "defaultSecurityRules";
     String JSON_KEY_NSG_PROTOCOL = "protocol";
     String JSON_KEY_NSG_SRC_PORT = "sourcePortRange";
     String JSON_KEY_NSG_DST_PORT = "destinationPortRange";
