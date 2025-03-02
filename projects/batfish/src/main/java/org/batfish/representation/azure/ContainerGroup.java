@@ -28,9 +28,9 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
-/*
-    Represents Azure Container Group objects.
-    https://learn.microsoft.com/en-us/azure/templates/microsoft.containerinstance/containergroups?pivots=deployment-language-arm-template
+/**
+ * Represents Azure Container Group objects.
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.containerinstance/containergroups?pivots=deployment-language-arm-template">Resource link</a>
  */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContainerGroup extends Instance implements Serializable {
@@ -151,12 +151,11 @@ public class ContainerGroup extends Instance implements Serializable {
 
     }
 
-    /*
-    Generates Vendor Independent Configuration
-    Creates ContainerGroup node which is connected to subnet node : toSubnet
-    Creates ContainerInstance nodes which are connected to ContainerGroup node : toContainerInstances
-    Containers bridge network is "172.17.0.0/16"
-    Creates Transformations rules for handling container opened ports.
+    /**
+     * Returns the {@link Configuration} node for this ContainerGroup.
+     * <p>Creates ContainerGroup node which is connected to subnet node : toSubnet.
+     * Creates ContainerInstance nodes which are connected to ContainerGroup node : toContainerInstances.
+     * apply Transformations rules for handling container opened ports and source NAT.</p>
      */
     public Configuration toConfigurationNode(Region region, ConvertedConfiguration convertedConfiguration) {
 

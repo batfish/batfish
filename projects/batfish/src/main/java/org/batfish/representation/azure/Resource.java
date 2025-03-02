@@ -6,13 +6,16 @@ import java.io.Serializable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents every azure resource having name, id, and type attribute.
+ */
 public class Resource implements Serializable {
 
     private final @Nonnull String _name;
     private final @Nonnull String _id;
     private final @Nonnull String _type;
 
-    // Batfish doesn't accept '/' in hostnames
+    // Batfish doesn't handle '/' in Configuration hostnames (because of serializing)
     private final String _cleanId;
 
     public Resource(

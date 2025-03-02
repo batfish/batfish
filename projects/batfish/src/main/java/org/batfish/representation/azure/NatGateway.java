@@ -42,6 +42,13 @@ import static org.batfish.datamodel.IpProtocol.ICMP;
 
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP;
 
+/**
+ * Represents an Azure Nat Gateway
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/natgateways?pivots=deployment-language-arm-template">Resource link</a>
+ * <p>The nat gateway also perform vm public ip management from private ip.
+ * In case subnet doesn't have a nat gateway, it creates a default one, only for managing vm public ip s. </p>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NatGateway extends Resource implements Serializable {
 
@@ -83,6 +90,10 @@ public class NatGateway extends Resource implements Serializable {
         return AzureConfiguration.BACKBONE_FACING_INTERFACE_NAME;
     }
 
+    /**
+     * create new {@link Transformation} and apply it onto the transformationStack in order to add
+     * a new source nat rule (private ip -> public ip) with another source port.
+     */
     public Transformation applySnat(Transformation transformation, Ip privateIp, Ip publicIp) {
         return Transformation
                 .when(
@@ -99,6 +110,10 @@ public class NatGateway extends Resource implements Serializable {
 
     }
 
+    /**
+     * create new {@link Transformation} and apply it onto the transformationStack in order to add
+     * a new destination nat rule (public ip -> private ip).
+     */
     public Transformation applyDnat(Transformation elseTransformation, Ip privateIp, Ip publicIp) {
         return Transformation
                 .when(
@@ -116,6 +131,12 @@ public class NatGateway extends Resource implements Serializable {
 
 
 
+    /**
+     * Returns the {@link Configuration} node for this VNet.
+     * <p> Creates for each subnet one interface through {@link LinkLocalAddress}.
+     * Creates toInternet {@link Interface} which advertise through BGP the nat gateway's public ip and each
+     * {@link IPConfiguration} public ip from each {@link Subnet} connected to this nat gateway</p>
+     **/
     public Configuration toConfigurationNode(Region region, ConvertedConfiguration convertedConfiguration) {
 
         Configuration cfgNode = Configuration.builder()
@@ -179,7 +200,7 @@ public class NatGateway extends Resource implements Serializable {
 
 
             for(IdReference id : getProperties().getPublicIpAddresses()){
-                if(id == null || id.getId() == null) continue;
+                if(id == null) continue;
                 PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(id.getId());
                 if(publicIpAddress == null){
                     throw new BatfishException("PublicIpAddress not found (did you include it ?). id: " + id.getId());
