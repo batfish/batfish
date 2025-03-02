@@ -36,17 +36,17 @@ public class NetworkSecurityGroupTest {
         assertEquals("resourceGroups/test/providers/Microsoft.Network/networkSecurityGroups/NSG-3",
                 nsg.getId());
 
-        NetworkSecurityGroup.NetworkSecurityGroupProperties properties = nsg.getProperties();
+        NetworkSecurityGroup.Properties properties = nsg.getProperties();
         assertNotNull(properties);
 
-        List<NetworkSecurityGroup.SecurityRule> securityRules = properties.getSecurityRules();
+        List<SecurityRule> securityRules = properties.getSecurityRules();
         assertNotNull(securityRules);
 
 
 
         {
             // best priority should be first (lowest)
-            NetworkSecurityGroup.SecurityRule securityRule = securityRules.get(0);
+            SecurityRule securityRule = securityRules.get(0);
 
             assertNotNull(securityRule);
             assertEquals("AllowCidrBlockSSHInbound", securityRule.getName());
@@ -55,7 +55,7 @@ public class NetworkSecurityGroupTest {
                     securityRule.getId());
             assertEquals("Microsoft.Network/networkSecurityGroups/securityRules", securityRule.getType());
 
-            NetworkSecurityGroup.SecurityRuleProperties securityRuleProperties = securityRule.getProperties();
+            SecurityRule.Properties securityRuleProperties = securityRule.getProperties();
             assertNotNull(securityRuleProperties);
 
             assertEquals(IpProtocol.fromString("TCP"), securityRuleProperties.getProtocol());
@@ -70,7 +70,7 @@ public class NetworkSecurityGroupTest {
 
         // check order by priority (lowest first)
         int last = 0;
-        for(NetworkSecurityGroup.SecurityRule securityRule : securityRules) {
+        for(SecurityRule securityRule : securityRules) {
             assertTrue(last <= securityRule.getProperties().getPriority());
             last = securityRule.getProperties().getPriority();
         }
@@ -80,8 +80,8 @@ public class NetworkSecurityGroupTest {
     @Test
     public void testAcl(){
         {
-            NetworkSecurityGroup.SecurityRuleProperties properties
-                    = new NetworkSecurityGroup.SecurityRuleProperties(
+            SecurityRule.Properties properties
+                    = new SecurityRule.Properties(
                     "*",
                     "22-80",
                     new ArrayList<>(),
@@ -96,8 +96,8 @@ public class NetworkSecurityGroupTest {
                     "Outbound"
             );
 
-            NetworkSecurityGroup.SecurityRule securityRule =
-                    new NetworkSecurityGroup.SecurityRule(
+            SecurityRule securityRule =
+                    new SecurityRule(
                             "test",
                             "testId",
                             "testType",

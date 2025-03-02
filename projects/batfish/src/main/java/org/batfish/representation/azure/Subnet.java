@@ -25,38 +25,33 @@ import java.util.List;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Subnet extends Resource implements Serializable {
 
-    final private SubnetProperties _properties;
+    final private Properties _properties;
 
     @JsonCreator
-    private static Subnet create(
-         @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
-         @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
-         @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
-         @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable SubnetProperties properties
+    public Subnet(
+         @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
+         @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
+         @JsonProperty(AzureEntities.JSON_KEY_TYPE)  String type,
+         @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
     ){
-        return new Subnet(id, name, type, properties);
-    }
-
-    public Subnet(String id, String name, String type, SubnetProperties properties) {
         super(name, id, type);
         _properties = properties;
     }
 
     public Ip computeInstancesIfaceIp(){
-        // give first IP like a router ?
         long generatedIp = _properties.getAddressPrefix().getStartIp().asLong() + 1L;
         return Ip.create(generatedIp);
     }
 
     public String getNodeName(){
-        return "subnet-node-" + getName().toLowerCase();
+        return getCleanId();
     }
 
     public String getToLanInterfaceName(){
         return "to-lan";
     }
     public String getToVnetInterfaceName(){
-        return getName() + "-to-vnet" ;
+        return "to-vnet" ;
     }
 
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
@@ -121,7 +116,7 @@ public class Subnet extends Resource implements Serializable {
             Interface toNat = Interface.builder()
                     .setVrf(cfgNode.getDefaultVrf())
                     .setOwner(cfgNode)
-                    .setName("nat-gateway")
+                    .setName(getToLanInterfaceName())
                     .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
                     .setDescription("to nat gateway")
                     .build();
@@ -132,7 +127,7 @@ public class Subnet extends Resource implements Serializable {
                 natGatewayNode = convertedConfiguration.getNode(natGatewayId);
 
                 if (natGatewayNode == null) {
-                    throw new BatfishException("Gateway not found : " + natGatewayId);
+                    throw new BatfishException("Nat Gateway file not found !\nid : " + natGatewayId);
                 }
 
                 convertedConfiguration.addLayer1Edge(
@@ -155,28 +150,24 @@ public class Subnet extends Resource implements Serializable {
         return cfgNode;
     }
 
-    public SubnetProperties getProperties() {
+    public Properties getProperties() {
         return _properties;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class SubnetProperties implements Serializable{
+    public static class Properties implements Serializable{
         final private Prefix _addressPrefix;
-        final private NetworkSecurityGroupId _nsg;
+        final private IdReference _nsg;
         final private String _natGatewayId;
-        final private List<IpConfiguration> _ipConfigurations;
+        final private List<IdReference> _ipConfigurations;
 
         @JsonCreator
-        public static SubnetProperties create(
-                @JsonProperty("addressPrefix") @Nullable Prefix addressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) NetworkSecurityGroupId nsg,
-                @JsonProperty("natGateway") String natGatewayId,
-                @JsonProperty("ipConfigurations") List<IpConfiguration> ipConfigurations
+        public Properties(
+                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_ADDRESS_PREFIX) @Nullable Prefix addressPrefix,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) IdReference nsg,
+                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_NAT_GATEWAY) @Nullable String natGatewayId,
+                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_IP_CONFIGURATIONS) List<IdReference> ipConfigurations
         ){
-            return new SubnetProperties(addressPrefix, nsg, natGatewayId, ipConfigurations);
-        }
-
-        SubnetProperties(Prefix addressPrefix, NetworkSecurityGroupId nsg, String natGatewayId, List<IpConfiguration> ipConfigurations) {
             _addressPrefix = addressPrefix;
             _nsg = nsg;
             _natGatewayId = natGatewayId;
@@ -196,39 +187,8 @@ public class Subnet extends Resource implements Serializable {
             return _natGatewayId;
         }
 
-        public List<IpConfiguration> getIpConfigurations() {
+        public List<IdReference> getIpConfigurations() {
             return _ipConfigurations;
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class NetworkSecurityGroupId implements Serializable{
-        private final String _id;
-
-        @JsonCreator
-        public NetworkSecurityGroupId(
-                @JsonProperty(AzureEntities.JSON_KEY_ID) String id)
-        {
-            _id = id;
-        }
-
-        public String getId() {
-            return _id;
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class IpConfiguration implements Serializable{
-        private final String _id;
-
-        public IpConfiguration(
-                @JsonProperty(AzureEntities.JSON_KEY_ID) String id
-        ) {
-            _id = id;
-        }
-
-        public String getId() {
-            return _id;
         }
     }
 
