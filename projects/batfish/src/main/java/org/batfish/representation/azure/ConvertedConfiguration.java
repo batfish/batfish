@@ -1,0 +1,46 @@
+package org.batfish.representation.azure;
+
+import org.batfish.common.topology.Layer1Edge;
+import org.batfish.datamodel.Configuration;
+
+import javax.annotation.Nonnull;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.Collection;
+
+public class ConvertedConfiguration {
+
+    /** Map from hostname to Configuration. Hostname lookup is case-insensitive. */
+    private final @Nonnull Map<String, Configuration> _configurationNodes;
+
+    private final @Nonnull Set<Layer1Edge> _layer1Edges;
+
+    public ConvertedConfiguration(){
+        _configurationNodes = new HashMap<>();
+        _layer1Edges = new HashSet<>();
+    }
+
+    public @Nonnull Map<String, Configuration> getConfigurationNodes() {
+        return _configurationNodes;
+    }
+
+    public @Nonnull Set<Layer1Edge> getLayer1Edges() {
+        return _layer1Edges;
+    }
+
+    public void addNode(Configuration node) {
+        _configurationNodes.put(node.getHostname(), node);
+    }
+
+    public Collection<Configuration> getAllNodes() {
+        return _configurationNodes.values();
+    }
+
+    public void addLayer1Edge(String nodeName1, String ifaceName1, String nodeName2, String ifaceName2) {
+        _layer1Edges.add(new Layer1Edge(nodeName1, ifaceName1, nodeName2, ifaceName2));
+    }
+
+
+}
