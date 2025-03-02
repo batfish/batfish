@@ -1,16 +1,13 @@
 package org.batfish.representation.azure;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.Prefix;
 
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
-
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class VNet extends Resource {
 
     private final VNetProperties _properties;
