@@ -39,7 +39,7 @@ public class VNetTest {
         assertEquals("Microsoft.Network/virtualNetworks",
                 vnet.getType());
 
-        VNet.VNetProperties vNetProperties = vnet.getProperties();
+        VNet.Properties vNetProperties = vnet.getProperties();
         assertNotNull(vNetProperties);
 
         assertEquals(vNetProperties.getAddressSpace().getAddressPrefixes().get(0), Prefix.parse("10.0.0.0/16"));
@@ -50,14 +50,14 @@ public class VNetTest {
 
         ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
 
-        Subnet.SubnetProperties subnetProperties = new Subnet.SubnetProperties(
+        Subnet.Properties subnetProperties = new Subnet.Properties(
                 Prefix.parse("10.0.0.0/24"),
                 null,
                 null,
                 null
         );
 
-        Subnet.SubnetProperties subnetProperties2 = new Subnet.SubnetProperties(
+        Subnet.Properties subnetProperties2 = new Subnet.Properties(
                 Prefix.parse("10.0.1.0/24"),
                 null,
                 null,
@@ -74,7 +74,7 @@ public class VNetTest {
 
         List<Prefix> prefixes = new ArrayList<>();
         prefixes.add(Prefix.parse("10.0.0.0/16"));
-        VNet.VNetProperties vNetProperties = new VNet.VNetProperties(
+        VNet.Properties vNetProperties = new VNet.Properties(
                 new VNet.AddressSpace(prefixes),
                 subnets
         );

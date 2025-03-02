@@ -28,7 +28,7 @@ public class InterfaceTest {
         assertEquals("vm235", networkInterface.getName());
         assertEquals("Microsoft.Network/networkInterfaces", networkInterface.getType());
 
-        NetworkInterface.NetworkInterfaceProperties networkInterfaceProperties = networkInterface.getProperties();
+        NetworkInterface.Properties networkInterfaceProperties = networkInterface.getProperties();
         assertNotNull(networkInterfaceProperties);
 
         Set<IPConfiguration> ipConfigurations = networkInterfaceProperties.getIPConfigurations();
@@ -36,7 +36,7 @@ public class InterfaceTest {
         // only 1 ipConfiguration supported
         for (IPConfiguration ipConfiguration : ipConfigurations) {
             assertNotNull(ipConfiguration);
-            IPConfiguration.IPConfigurationProperties ipConfigurationProperties = ipConfiguration.getProperties();
+            IPConfiguration.Properties ipConfigurationProperties = ipConfiguration.getProperties();
             assertEquals(Ip.parse("10.0.1.4"),ipConfigurationProperties.getPrivateIpAddress());
             assertEquals("resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
                     ipConfigurationProperties.getSubnetId());

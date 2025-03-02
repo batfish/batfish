@@ -23,14 +23,14 @@ import java.util.Set;
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VNet extends Resource {
 
-    private final VNetProperties _properties;
+    private final Properties _properties;
 
     @JsonCreator
     public VNet(
             @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
             @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
             @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) VNetProperties properties) {
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties) {
         super(name, id, type);
         _properties = properties;
     }
@@ -92,7 +92,7 @@ public class VNet extends Resource {
             StaticRoute st = StaticRoute.builder()
                     .setAdministrativeCost(1)
                     .setNextHop(NextHop.legacyConverter(
-                            subnet.getNodeName(),//subnet.getName() + "-to-vnet",
+                            subnet.getNodeName(),
                             Ip.parse("169.254.0.1")))
                     .setNetwork(subnet.getProperties().getAddressPrefix())
                     .setNonForwarding(false)
@@ -106,24 +106,20 @@ public class VNet extends Resource {
         return cfgNode;
     }
 
-    public VNetProperties getProperties() {
+    public Properties getProperties() {
         return _properties;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class VNetProperties implements Serializable {
+    public static class Properties implements Serializable {
         final private AddressSpace _addressSpace;
         final private Set<Subnet> _subnets;
 
         @JsonCreator
-        public static VNetProperties create(
+        public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_VNET_ADDRESS_SPACE) AddressSpace addressSpace,
                 @JsonProperty(AzureEntities.JSON_KEY_VNET_SUBNETS) Set<Subnet> subnets
         ) {
-            return new VNetProperties(addressSpace, subnets);
-        }
-
-        VNetProperties(AddressSpace addressSpace, Set<Subnet> subnets) {
             _addressSpace = addressSpace;
             _subnets = subnets;
         }
@@ -136,17 +132,13 @@ public class VNet extends Resource {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class AddressSpace implements Serializable {
+
         final private List<Prefix> _addressPrefixes;
-        // final private IpamPoolPrefixAllocations ipamPoolPrefixAllocations
 
         @JsonCreator
-        public static AddressSpace create(
+        public AddressSpace(
                 @JsonProperty(AzureEntities.JSON_KEY_VNET_ADDRESS_PREFIX) @Nullable List<Prefix> addressPrefixes
         ) {
-            return new AddressSpace(addressPrefixes);
-        }
-
-        AddressSpace(List<Prefix> addressPrefixes) {
             _addressPrefixes = addressPrefixes;
         }
 

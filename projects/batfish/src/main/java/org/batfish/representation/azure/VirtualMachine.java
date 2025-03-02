@@ -17,23 +17,22 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 
 import java.io.Serializable;
+import java.util.Set;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualMachine extends Instance implements Serializable {
 
-    private final VirtualMachineProperties _properties;
-
+    private final Properties _properties;
 
     @JsonCreator
     public VirtualMachine(
             @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
             @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
             @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) VirtualMachineProperties properties) {
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties) {
         super(name, id, type);
         _properties = properties;
     }
-
 
     @Override
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
@@ -54,8 +53,8 @@ public class VirtualMachine extends Instance implements Serializable {
                 .setOwner(cfgNode)
                 .build();
 
-        for(NetworkInterfaceId networkInterfaceId : _properties.getNetworkProfile().getNetworkInterfaces()){
-            NetworkInterface networkInterface =  rgp.getInterfaces().get(networkInterfaceId.getId());
+        for(IdReference idReference : _properties.getNetworkProfile().getNetworkInterfaces()){
+            NetworkInterface networkInterface =  rgp.getInterfaces().get(idReference.getId());
 
             // temporary (unclear information's about multi ips and subnet on a unique interface)
             // only 1 IP per endpoint (instance) for now
@@ -123,18 +122,36 @@ public class VirtualMachine extends Instance implements Serializable {
 
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class VirtualMachineProperties implements Serializable{
+    public static class Properties implements Serializable{
+
         private final NetworkProfile _networkProfile;
 
         @JsonCreator
-        VirtualMachineProperties(
+        public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_NETWORK_PROFILE) NetworkProfile networkProfile
         ){
             _networkProfile = networkProfile;
         }
 
-        NetworkProfile getNetworkProfile() {
+        public NetworkProfile getNetworkProfile() {
             return _networkProfile;
+        }
+    }
+
+    @JsonIgnoreProperties(ignoreUnknown = true)
+    public static class NetworkProfile implements Serializable {
+
+        private final Set<IdReference> _networkInterfaces;
+
+        @JsonCreator
+        public NetworkProfile(
+                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_INTERFACE_ID) Set<IdReference> networkInterfaces
+        ) {
+            _networkInterfaces = networkInterfaces;
+        }
+
+        public Set<IdReference> getNetworkInterfaces() {
+            return _networkInterfaces;
         }
     }
 
