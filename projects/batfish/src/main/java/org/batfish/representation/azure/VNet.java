@@ -9,6 +9,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Prefix;
 
 import javax.annotation.Nullable;
+import java.io.Serializable;
 import java.util.List;
 import java.util.Set;
 
@@ -42,7 +43,7 @@ public class VNet extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class VNetProperties {
+    public static class VNetProperties implements Serializable {
         final private AddressSpace _addressSpace;
         final private Set<Subnet> _subnets;
 
@@ -66,7 +67,7 @@ public class VNet extends Resource {
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class AddressSpace {
+    public static class AddressSpace implements Serializable {
         final private List<Prefix> _addressPrefixes;
         // final private IpamPoolPrefixAllocations ipamPoolPrefixAllocations
 
