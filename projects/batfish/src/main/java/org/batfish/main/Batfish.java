@@ -1458,11 +1458,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
       try {
         JsonNode json = BatfishObjectMapper.mapper().readTree(configFile.getValue());
-        config.addConfigElement(json);
+        config.addConfigElement(json, fileName, pvcae);
       } catch (IOException e) {
         pvcae.addRedFlagWarning(
                 BfConsts.RELPATH_AWS_CONFIGS_FILE,
-                new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
+                new Warning(String.format("Unexpected content in Azure file %s", fileName), "Azure"));
       }
     }
     return config;
@@ -2199,8 +2199,13 @@ public class Batfish extends PluginConsumer implements IBatfish {
     try {
       Map<String, String> azureConfigurationData;
       // Try to parse all accounts as one vendor configuration
-      try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
+      try (Stream<String> keys = _storage.listInputAzureMultiAccountKeys(snapshot)) {
         azureConfigurationData = readAllInputObjects(keys, snapshot);
+      }
+      if (azureConfigurationData.isEmpty()) {
+        try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
+          azureConfigurationData = readAllInputObjects(keys, snapshot);
+        }
       }
       found = !azureConfigurationData.isEmpty();
       azureConfiguration = parseAzureConfigurations(azureConfigurationData, pvcae);

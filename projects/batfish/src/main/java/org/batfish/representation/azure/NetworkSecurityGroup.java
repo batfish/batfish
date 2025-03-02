@@ -8,25 +8,31 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkSecurityGroup extends Resource implements Serializable {
 
-    private final Properties _properties;
-    private final List<AclLine> _inboundAclLines;
-    private final List<AclLine> _outboundAclLines;
+    private final @Nonnull Properties _properties;
+    private final @Nonnull List<AclLine> _inboundAclLines;
+    private final @Nonnull List<AclLine> _outboundAclLines;
 
     @JsonCreator
     public NetworkSecurityGroup(
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties) {
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
+    ) {
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
 
         _inboundAclLines = new ArrayList<>();
@@ -78,17 +84,20 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable {
-        private final List<SecurityRule> _securityRules;
+
+        private final @Nonnull List<SecurityRule> _securityRules;
 
         @JsonCreator
         public Properties(
-                @JsonProperty("securityRules") List<SecurityRule> securityRules)
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SECURITY_RULES) @Nullable List<SecurityRule> securityRules)
         {
+            if (securityRules != null) securityRules = new ArrayList<>(securityRules);
+            else {
+                // sorting the rules according to priority so it is easier for the next steps
+                securityRules.sort(
+                        Comparator.comparingInt(securityRule -> securityRule.getProperties().getPriority()));
+            }
             _securityRules = securityRules;
-
-            // sorting the rules according to priority so it is easier for the next steps
-            _securityRules.sort(
-                    Comparator.comparingInt(securityRule -> securityRule.getProperties().getPriority()));
         }
 
         public List<SecurityRule> getSecurityRules() {

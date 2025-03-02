@@ -12,15 +12,19 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class SecurityRule extends Resource implements Serializable {
 
-    private final Properties _properties;
+    private final @Nonnull Properties _properties;
 
     public ExprAclLine getAclLine(){
         HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
@@ -79,13 +83,14 @@ public class SecurityRule extends Resource implements Serializable {
 
     @JsonCreator
     public SecurityRule(
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
     )
     {
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
@@ -96,34 +101,43 @@ public class SecurityRule extends Resource implements Serializable {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable{
 
-        private final IpProtocol _protocol;
-        private final SubRange _sourcePortRange;
-        private final SubRange _destinationPortRange;
-        private final List<SubRange> _sourcePortRanges;
-        private final List<SubRange> _destinationPortRanges;
-        private final Prefix _sourceAddressPrefix;
-        private final Prefix _destinationAddressPrefix;
-        private final List<Prefix> _sourceAddressPrefixes;
-        private final List<Prefix> _destinationAddressPrefixes;
-        private final String _access;
+        private final @Nonnull IpProtocol _protocol;
+        private final @Nonnull SubRange _sourcePortRange;
+        private final @Nonnull SubRange _destinationPortRange;
+        private final @Nonnull List<SubRange> _sourcePortRanges;
+        private final @Nonnull List<SubRange> _destinationPortRanges;
+        private final @Nonnull Prefix _sourceAddressPrefix;
+        private final @Nonnull Prefix _destinationAddressPrefix;
+        private final @Nonnull List<Prefix> _sourceAddressPrefixes;
+        private final @Nonnull List<Prefix> _destinationAddressPrefixes;
+        private final @Nonnull String _access;
         private final int _priority;
-        private final String _direction;
+        private final @Nonnull String _direction;
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORT) String sourcePortRange,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORT) String destinationPortRange,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORTS) List<String> sourcePortRanges,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORTS) List<String> destinationPortRanges,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIX) String sourceAddressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIX) String destinationAddressPrefix,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIXES) List<String> sourceAddressPrefixes,
-                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIXES) List<String> destinationAddressPrefixes,
-                @JsonProperty(value = AzureEntities.JSON_KEY_NSG_PROTOCOL, required = true) String protocol,
-                @JsonProperty(value = AzureEntities.JSON_KEY_NSG_ACCESS, required = true) String access,
-                @JsonProperty(value = AzureEntities.JSON_KEY_NSG_PRIORITY, required = true) int priority,
-                @JsonProperty(value = AzureEntities.JSON_KEY_NSG_DIRECTION, required = true) String direction
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORT) @Nullable String sourcePortRange,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORT) @Nullable String destinationPortRange,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PORTS) @Nullable List<String> sourcePortRanges,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PORTS) @Nullable List<String> destinationPortRanges,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIX) @Nullable String sourceAddressPrefix,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIX) @Nullable String destinationAddressPrefix,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_SRC_PREFIXES) @Nullable List<String> sourceAddressPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DST_PREFIXES) @Nullable List<String> destinationAddressPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_PROTOCOL) @Nullable String protocol,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_ACCESS) @Nullable String access,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_PRIORITY) @Nullable Integer priority,
+                @JsonProperty(AzureEntities.JSON_KEY_NSG_DIRECTION) @Nullable String direction
         ){
+            checkArgument(protocol != null, "protocol must be provided");
+            checkArgument(access != null, "access must be provided");
+            checkArgument(priority != null, "priority must be provided");
+            checkArgument(direction != null, "direction must be provided");
+            if (sourcePortRanges == null) sourcePortRanges = new ArrayList<>();
+            if (destinationPortRanges == null) destinationPortRanges = new ArrayList<>();
+            if (sourceAddressPrefixes == null) sourceAddressPrefixes = new ArrayList<>();
+            if (destinationAddressPrefixes == null) destinationAddressPrefixes = new ArrayList<>();
+
             _protocol = getProtocol(protocol);
             _sourcePortRange = getSubRange(sourcePortRange);
             _destinationPortRange = getSubRange(destinationPortRange);

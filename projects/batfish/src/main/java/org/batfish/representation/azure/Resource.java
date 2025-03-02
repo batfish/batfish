@@ -1,24 +1,28 @@
 package org.batfish.representation.azure;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 public class Resource implements Serializable {
 
-    private final String _name;
-    private final String _id;
-    private final String _type;
+    private final @Nonnull String _name;
+    private final @Nonnull String _id;
+    private final @Nonnull String _type;
 
     // Batfish doesn't accept '/' in hostnames
     private final String _cleanId;
 
-    public static Resource create(
-            String id,
-            String type,
-            String name) {
-        return new Resource(id, type, name);
-    }
-
-    public Resource(String name, String id, String type) {
+    public Resource(
+            @Nullable String name,
+            @Nullable String id,
+            @Nullable String type
+    ) {
+        checkArgument(name != null, "resource name must be provided");
+        checkArgument(id != null, "resource id must be provided");
+        checkArgument(type != null, "resource type must be provided");
         _name = name;
         _id = id;
         _type = type;

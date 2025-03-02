@@ -16,23 +16,30 @@ import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualMachine extends Instance implements Serializable {
 
-    private final Properties _properties;
+    private final @Nonnull Properties _properties;
 
     @JsonCreator
     public VirtualMachine(
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties) {
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
+    ) {
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
@@ -137,12 +144,13 @@ public class VirtualMachine extends Instance implements Serializable {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable{
 
-        private final NetworkProfile _networkProfile;
+        private final @Nonnull NetworkProfile _networkProfile;
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_PROFILE) NetworkProfile networkProfile
+                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_PROFILE) @Nullable NetworkProfile networkProfile
         ){
+            checkArgument(networkProfile != null, "networkProfile must be provided");
             _networkProfile = networkProfile;
         }
 
@@ -154,12 +162,13 @@ public class VirtualMachine extends Instance implements Serializable {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class NetworkProfile implements Serializable {
 
-        private final Set<IdReference> _networkInterfaces;
+        private final @Nonnull Set<IdReference> _networkInterfaces;
 
         @JsonCreator
         public NetworkProfile(
-                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_INTERFACE_ID) Set<IdReference> networkInterfaces
+                @JsonProperty(AzureEntities.JSON_KEY_NETWORK_INTERFACE_ID) @Nullable Set<IdReference> networkInterfaces
         ) {
+            if (networkInterfaces == null) networkInterfaces = new HashSet<>();
             _networkInterfaces = networkInterfaces;
         }
 
