@@ -2218,7 +2218,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Serializing Azure");
     try {
       _storage.storeVendorConfigurations(
-              ImmutableMap.of(BfConsts.RELPATH_AWS_CONFIGS_FILE, azureConfiguration), snapshot);
+              ImmutableMap.of(BfConsts.RELPATH_AZURE_CONFIGS_DIR, azureConfiguration), snapshot);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
