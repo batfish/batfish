@@ -88,7 +88,7 @@ public class Subnet extends Resource implements Serializable {
 
                 if (nsg == null) {
                     throw new BatfishException(String.format("Unable to apply the NSG %s on subnet %s.\n" +
-                            "Missing nsg file !", getName(), nsgId));
+                            "Missing nsg file !", nsgId, getCleanId()));
                 }
 
                 nsg.applyToInterface(lanInterface);
