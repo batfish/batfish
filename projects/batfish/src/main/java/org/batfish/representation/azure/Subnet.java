@@ -19,7 +19,7 @@ import org.batfish.datamodel.route.nh.NextHop;
 
 import javax.annotation.Nullable;
 import java.io.Serializable;
-import java.util.List;
+import java.util.Set;
 
 
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -52,6 +52,9 @@ public class Subnet extends Resource implements Serializable {
     }
     public String getToVnetInterfaceName(){
         return "to-vnet" ;
+    }
+    public String getToNatInterfaceName(){
+        return "nat-gateway";
     }
 
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
@@ -116,34 +119,38 @@ public class Subnet extends Resource implements Serializable {
             Interface toNat = Interface.builder()
                     .setVrf(cfgNode.getDefaultVrf())
                     .setOwner(cfgNode)
-                    .setName(getToLanInterfaceName())
+                    .setName(getToNatInterfaceName())
                     .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
                     .setDescription("to nat gateway")
                     .build();
 
+            StaticRoute st = StaticRoute.builder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNonForwarding(false)
+                    .setNextHop(NextHop.legacyConverter(toNat.getName(), AzureConfiguration.LINK_LOCAL_IP))
+                    .setAdministrativeCost(0)
+                    .setMetric(0)
+                    .build();
+
+            cfgNode.getDefaultVrf().getStaticRoutes().add(st);
+
             Configuration natGatewayNode;
             String natGatewayId = getProperties().getNatGatewayId();
-            if (natGatewayId != null) {
-                natGatewayNode = convertedConfiguration.getNode(natGatewayId);
 
-                if (natGatewayNode == null) {
-                    throw new BatfishException("Nat Gateway file not found !\nid : " + natGatewayId);
-                }
+            // if subnet doesn't have a nat gateway
+            if (natGatewayId == null) {
+                natGatewayId = getId() + "/internet-gateway";
 
-                convertedConfiguration.addLayer1Edge(
-                        cfgNode.getHostname(), toNat.getName(),
-                        natGatewayNode.getHostname(), "subnet"
-                );
+                NatGateway natGateway = new NatGateway(natGatewayId, getName() + "-internet-gateway",
+                        AzureEntities.JSON_TYPE_NAT_GATEWAY, getId());
 
-                StaticRoute st = StaticRoute.builder()
-                        .setNetwork(getProperties().getAddressPrefix())
-                        .setNonForwarding(false)
-                        .setNextHop(NextHop.legacyConverter("subnet", AzureConfiguration.LINK_LOCAL_IP))
-                        .setAdministrativeCost(0)
-                        .setMetric(0)
-                        .build();
+                rgp.getNatGateways().put(natGatewayId, natGateway);
 
-                natGatewayNode.getDefaultVrf().getStaticRoutes().add(st);
+                getProperties().setNatGatewayId(natGatewayId);
+                natGatewayNode = natGateway.toConfigurationNode(rgp, convertedConfiguration);
+                convertedConfiguration.addNode(natGatewayNode);
+
+                return cfgNode;
             }
         }
 
@@ -158,20 +165,23 @@ public class Subnet extends Resource implements Serializable {
     public static class Properties implements Serializable{
         final private Prefix _addressPrefix;
         final private IdReference _nsg;
-        final private String _natGatewayId;
-        final private List<IdReference> _ipConfigurations;
+        private String _natGatewayId;
+        final private Set<IdReference> _ipConfigurations;
+        final private boolean _defaultOutboundAccess;
 
         @JsonCreator
         public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_SUBNET_ADDRESS_PREFIX) @Nullable Prefix addressPrefix,
                 @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) IdReference nsg,
                 @JsonProperty(AzureEntities.JSON_KEY_SUBNET_NAT_GATEWAY) @Nullable String natGatewayId,
-                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_IP_CONFIGURATIONS) List<IdReference> ipConfigurations
+                @JsonProperty(AzureEntities.JSON_KEY_SUBNET_IP_CONFIGURATIONS) Set<IdReference> ipConfigurations,
+                @JsonProperty("defaultOutboundAccess") boolean defaultOutboundAccess
         ){
             _addressPrefix = addressPrefix;
             _nsg = nsg;
             _natGatewayId = natGatewayId;
             _ipConfigurations = ipConfigurations;
+            _defaultOutboundAccess = defaultOutboundAccess;
         }
 
         public Prefix getAddressPrefix() {
@@ -186,9 +196,18 @@ public class Subnet extends Resource implements Serializable {
         public String getNatGatewayId() {
             return _natGatewayId;
         }
+        public void setNatGatewayId(String natGatewayId) {
+            _natGatewayId = natGatewayId;
+        }
 
-        public List<IdReference> getIpConfigurations() {
+        public Set<IdReference> getIpConfigurations() {
             return _ipConfigurations;
+        }
+
+        // todo: handle vm default outbound access if this parameter is true
+        // easy : insert a publicIp in every vm ipConfiguration (before node generation and after parsing)
+        public boolean getDefaultOutboundAccess() {
+            return _defaultOutboundAccess;
         }
     }
 

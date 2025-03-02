@@ -31,18 +31,24 @@ public class IPConfiguration extends Resource {
     public static class Properties implements Serializable {
         private final Ip _privateIpAddress;
         private final IdReference _subnet;
+        private final IdReference _publicIpAddress;
 
         @JsonCreator
         public Properties(
                 @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PRIVATE_IP_ADDRESS) Ip privateIpAddress,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_SUBNET) IdReference subnet
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_SUBNET) IdReference subnet,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_PUBLIC_IP_ADDRESS) IdReference publicIpAddress
         ) {
             _privateIpAddress = privateIpAddress;
             _subnet = subnet;
+            _publicIpAddress = publicIpAddress;
         }
 
         public Ip getPrivateIpAddress() {
             return _privateIpAddress;
+        }
+        public String getPublicIpAddressId() {
+            return _publicIpAddress == null ? null : _publicIpAddress.getId();
         }
         public String getSubnetId(){
             return _subnet.getId();

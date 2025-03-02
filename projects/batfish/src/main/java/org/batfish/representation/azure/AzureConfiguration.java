@@ -35,7 +35,7 @@ public class AzureConfiguration extends VendorConfiguration {
     /** Name of the interface on nodes that faces the backbone (e.g., IGW, services gateway) */
     static final String BACKBONE_FACING_INTERFACE_NAME = "backbone";
 
-    static final String AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME = "~azure~asgw~to~backbone~export~policy~";
+    static final String AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME = "~azure~asgw~to~backbone~export~policy~";
 
     public static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
 

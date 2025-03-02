@@ -49,19 +49,22 @@ public class VNetTest {
     public void testToConfigurationNode(){
 
         ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
+        Region region = new Region("test");
 
         Subnet.Properties subnetProperties = new Subnet.Properties(
                 Prefix.parse("10.0.0.0/24"),
                 null,
                 null,
-                null
+                new HashSet<>(),
+                false
         );
 
         Subnet.Properties subnetProperties2 = new Subnet.Properties(
                 Prefix.parse("10.0.1.0/24"),
                 null,
                 null,
-                null
+                new HashSet<>(),
+                false
         );
 
         Set<Subnet> subnets = new HashSet<>();
@@ -69,7 +72,8 @@ public class VNetTest {
         subnets.add(new Subnet("testSubnet2","testSubnet2","testSubnet2",subnetProperties2));
 
         for(Subnet subnet : subnets){
-            convertedConfiguration.addNode(subnet.toConfigurationNode(null, convertedConfiguration));
+            region.getSubnets().put(subnet.getId(), subnet);
+            convertedConfiguration.addNode(subnet.toConfigurationNode(region, convertedConfiguration));
         }
 
         List<Prefix> prefixes = new ArrayList<>();
@@ -80,7 +84,7 @@ public class VNetTest {
         );
 
         VNet vnet = new VNet("testId", "testName", "testType", vNetProperties);
-        Configuration c = vnet.toConfigurationNode(null, convertedConfiguration);
+        Configuration c = vnet.toConfigurationNode(region, convertedConfiguration);
 
         // hostname is set to lowercase when Configuration.setHostname()
         assertEquals("testid", c.getHostname());

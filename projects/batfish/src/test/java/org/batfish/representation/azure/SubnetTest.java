@@ -8,6 +8,7 @@ import org.batfish.datamodel.Prefix;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.HashSet;
 import java.util.Map;
 
 import static java.nio.charset.StandardCharsets.UTF_8;
@@ -43,9 +44,19 @@ public class SubnetTest {
     @Test
     public void testToConfigurationNodes(){
 
+        Region region = new Region("test");
+        ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
+
         Prefix addressPrefix = Prefix.parse("10.0.0.0/24");
 
-        Subnet.Properties subnetProperties = new Subnet.Properties(addressPrefix, null, null, null);
+        Subnet.Properties subnetProperties =
+                new Subnet.Properties(
+                        addressPrefix,
+                        null,
+                        null,
+                        new HashSet<>(),
+                        false
+                );
 
         Subnet subnet = new Subnet (
                 "testId",
@@ -54,7 +65,8 @@ public class SubnetTest {
                 subnetProperties
         );
 
-        Configuration cfgNode = subnet.toConfigurationNode(null, null);
+        region.getSubnets().put(subnet.getId(), subnet);
+        Configuration cfgNode = subnet.toConfigurationNode(region, convertedConfiguration);
         assertNotNull(cfgNode);
 
         assertEquals(cfgNode.getHostname(), subnet.getNodeName().toLowerCase());
@@ -63,7 +75,7 @@ public class SubnetTest {
         assertNotNull(interfaces);
 
         // check 1 interface facing lan
-        assertEquals(2, interfaces.size());
+        assertEquals(3, interfaces.size());
         assertNotNull(interfaces.get(subnet.getToLanInterfaceName()));
 
     }
