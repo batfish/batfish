@@ -33,9 +33,9 @@ public class VirtualMachine extends Instance{
 
 
     @Override
-    public Configuration toConfigurationNode(ResourceGroup rgp){
+    public Configuration toConfigurationNode(ResourceGroup rgp, ConvertedConfiguration convertedConfiguration){
         Configuration cfgNode = Configuration.builder()
-                .setHostname(getId().replace('/', '_'))
+                .setHostname(getName())
                 .setHumanName(getName())
                 .setDomainName("azure")
                 .setDeviceModel(DeviceModel.AZURE_VM)
@@ -54,25 +54,35 @@ public class VirtualMachine extends Instance{
         for(NetworkInterfaceId networkInterfaceId : _properties.getNetworkProfile().getNetworkInterfaces()){
             NetworkInterface networkInterface =  rgp.getInterfaces().get(networkInterfaceId.getId());
 
-
+            // temporary (unclear information's about multi ips and subnet on a unique interface)
+            // only 1 IP per endpoint (instance) for now
+            Subnet subnet = null;
             ConcreteInterfaceAddress concreteInterfaceAddress = null;
+
             for (IPConfiguration ipConfiguration : networkInterface.getProperties().getIPConfigurations()){
+                subnet = rgp.getSubnets().get(ipConfiguration.getProperties().getSubnetId());
+                // TODO: need to draw edge between subnet and interface ip
+
                 concreteInterfaceAddress = ConcreteInterfaceAddress.create(
-                        ipConfiguration.getProperties().getPrivateIpAddress(), 24);
+                        ipConfiguration.getProperties().getPrivateIpAddress(),
+                        subnet.getProperties().getAddressPrefix().getPrefixLength());
             }
 
-            // assign itself to this device through cfgNode
+            // security check for the trick above
+            if (subnet == null) continue;
+
+            // assign itself to this device through setOwner
             Interface.builder()
-                    .setName(networkInterface.getId().replace('/', '_'))
+                    .setName(networkInterface.getName())
                     .setAddress(concreteInterfaceAddress)
                     .setHumanName(networkInterface.getName())
                     .setOwner(cfgNode)
                     .setVrf(cfgNode.getDefaultVrf())
                     .build();
 
-            // default route
+            // default route to the subnet iface (to be clarified)
             StaticRoute st = StaticRoute.builder()
-                    .setNextHopIp(concreteInterfaceAddress.getIp())
+                    .setNextHopIp(subnet.computeInstancesIfaceIp())
                     .setAdministrativeCost(0)
                     .setMetric(0)
                     .setNetwork(Prefix.ZERO)
@@ -83,6 +93,10 @@ public class VirtualMachine extends Instance{
             // draw edges toward other devices on the subnet
             // gateway like aws or one edge between each device ?
             // set a virtual switch ? (layer 2 node)
+            convertedConfiguration.addLayer1Edge(
+                    getName(), networkInterface.getName(),
+                    subnet.getNodeName(), subnet.getInterfaceName());
+
 
         }
 
