@@ -12,6 +12,7 @@ public class Region implements Serializable {
 
 
     private final Map<String, NetworkInterface> _interfaces = new HashMap<>();
+    private final Map<String, IPConfiguration> _ipConfigurations = new HashMap<>();
     private final Map<String, VNet> _vnets = new HashMap<>();
     private final Map<String, Subnet> _subnets = new HashMap<>();
     private final Map<String, Instance> _instances = new HashMap<>();
@@ -26,6 +27,9 @@ public class Region implements Serializable {
 
     public Map<String, NetworkInterface> getInterfaces() {
         return _interfaces;
+    }
+    public Map<String, IPConfiguration> getIpConfigurations() {
+        return _ipConfigurations;
     }
 
     public Map<String, VNet> getVnets() {
@@ -75,6 +79,10 @@ public class Region implements Serializable {
             case AzureEntities.JSON_TYPE_INTERFACE:
                 NetworkInterface networkInterface = BatfishObjectMapper.mapper().convertValue(node, NetworkInterface.class);
                 _interfaces.put(networkInterface.getId(), networkInterface);
+                for(IPConfiguration ipConfiguration : networkInterface.getProperties().getIPConfigurations()) {
+                    // broken azure features which stores ipConfigurationName uppercased in id
+                    _ipConfigurations.put(ipConfiguration.getId().toLowerCase(), ipConfiguration);
+                }
                 break;
             case AzureEntities.JSON_TYPE_NETWORK_SECURITY_GROUP:
                 NetworkSecurityGroup nsg = BatfishObjectMapper.mapper().convertValue(node, NetworkSecurityGroup.class);
@@ -95,9 +103,8 @@ public class Region implements Serializable {
 
     public void toConfigurationNode(ConvertedConfiguration convertedConfiguration) {
 
-
-        for (Instance instance : _instances.values()) {
-            Configuration cfgNode = instance.toConfigurationNode(this, convertedConfiguration);
+        for (NatGateway natGateway : _natGateways.values()) {
+            Configuration cfgNode = natGateway.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
 
@@ -106,14 +113,14 @@ public class Region implements Serializable {
             convertedConfiguration.addNode(cfgNode);
         }
 
-        // VNet interacts with subnet nodes so subnets must be generated before
-        for (VNet vnet : _vnets.values()) {
-            Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
+        for (Instance instance : _instances.values()) {
+            Configuration cfgNode = instance.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
 
-        for (NatGateway natGateway : _natGateways.values()) {
-            Configuration cfgNode = natGateway.toConfigurationNode(this, convertedConfiguration);
+        // VNet interacts with subnet nodes so subnets must be generated before
+        for (VNet vnet : _vnets.values()) {
+            Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
             convertedConfiguration.addNode(cfgNode);
         }
     }

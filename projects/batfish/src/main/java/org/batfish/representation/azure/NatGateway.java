@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableList;
+import org.batfish.common.BatfishException;
 import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
@@ -11,6 +12,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
@@ -20,10 +22,12 @@ import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -52,14 +56,69 @@ public class NatGateway extends Resource implements Serializable {
         _properties = properties;
     }
 
+    public NatGateway(
+            String id,
+            String name,
+            String type,
+            String subnetId
+    ) {
+        super(name, id, type);
+
+        Set<IdReference> subnetReferences = new HashSet<>();
+        subnetReferences.add(new IdReference(subnetId));
+
+        _properties = new Properties(
+                new HashSet<>(),
+                new HashSet<>(),
+                subnetReferences
+        );
+    }
+
     public String getNodeName() {
         return getCleanId();
     }
 
+    public String getBackboneIfaceName() {
+        return AzureConfiguration.BACKBONE_FACING_INTERFACE_NAME;
+    }
+
+    public Transformation applySnat(Transformation transformation, Ip privateIp, Ip publicIp) {
+        return Transformation
+                .when(
+                        new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                        .setIpProtocols(NatGateway.NAT_PROTOCOLS)
+                                        .setSrcIps(privateIp.toIpSpace())
+                                        .build())
+                ).apply(
+                        TransformationStep.assignSourceIp(publicIp, publicIp)
+                ).setOrElse(
+                        transformation
+                ).build();
+
+    }
+
+    public Transformation applyDnat(Transformation elseTransformation, Ip privateIp, Ip publicIp) {
+        return Transformation
+                .when(
+                        new MatchHeaderSpace(
+                                HeaderSpace.builder()
+                                        .setDstIps(publicIp.toIpSpace())
+                                        .setIpProtocols(NatGateway.NAT_PROTOCOLS)
+                                        .build())
+                ).apply(
+                        TransformationStep.assignDestinationIp(privateIp)
+                ).setOrElse(
+                        elseTransformation
+                ).build();
+    }
+
+
+
     public Configuration toConfigurationNode(Region region, ConvertedConfiguration convertedConfiguration) {
 
         Configuration cfgNode = Configuration.builder()
-                .setHostname(getCleanId())
+                .setHostname(getNodeName())
                 .setConfigurationFormat(ConfigurationFormat.AZURE)
                 .setDefaultCrossZoneAction(LineAction.PERMIT)
                 .setDefaultInboundAction(LineAction.PERMIT)
@@ -71,9 +130,12 @@ public class NatGateway extends Resource implements Serializable {
                 .setOwner(cfgNode)
                 .build();
 
+        Transformation snatTransformation = null;
+        Transformation dnatTransformation = null;
+
         {   // Internet
             Interface toInternet = Interface.builder()
-                    .setName(AzureConfiguration.BACKBONE_FACING_INTERFACE_NAME)
+                    .setName(getBackboneIfaceName())
                     .setVrf(cfgNode.getDefaultVrf())
                     .setOwner(cfgNode)
                     .setType(InterfaceType.PHYSICAL)
@@ -99,27 +161,56 @@ public class NatGateway extends Resource implements Serializable {
                     .setLocalAs(AzureConfiguration.AZURE_LOCAL_ASN)
                     .setBgpProcess(process)
                     .setIpv4UnicastAddressFamily(
-                        Ipv4UnicastAddressFamily.builder().setExportPolicy(
-                                AzureConfiguration.AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME).build())
+                            Ipv4UnicastAddressFamily.builder().setExportPolicy(
+                                    AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME).build())
                     .build();
 
-            for(PublicIpAddressId id : getProperties().getPublicIpAddresses()){
-                PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(id.getId());
+            PrefixSpace ps = new PrefixSpace();
 
-                // todo : handle multiple public ips not in the same range
-                toInternet.setOutgoingTransformation(
+            if(getProperties() == null) {
+                installRoutingPolicyAdvertiseStatic(AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME,
+                        cfgNode, ps);
+                return cfgNode;
+            }
+
+            Ip startIp = null;
+            Ip endIp = null;
+
+
+            for(IdReference id : getProperties().getPublicIpAddresses()){
+                if(id == null || id.getId() == null) continue;
+                PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(id.getId());
+                if(publicIpAddress == null){
+                    throw new BatfishException("PublicIpAddress not found (did you include it ?). id: " + id.getId());
+                }
+                if(publicIpAddress.getProperties() == null) {
+                    throw new BatfishException("Malformed publicIpAddress file. id: " + id.getId());
+                }
+                if(publicIpAddress.getProperties().getIpAddress() == null) {
+                    throw new BatfishException("No ip found in public ip file -> skipping. id: " + id.getId());
+                }
+                startIp = publicIpAddress.getProperties().getIpAddress();
+                endIp = startIp;
+            }
+
+            // todo : handle multiple public ips not in the same range
+            // todo : handle prefix
+            if(startIp != null) {
+
+                snatTransformation =
                         Transformation.when(
-                                new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build())
+                                new MatchHeaderSpace(HeaderSpace.builder()
+                                        .setIpProtocols(NAT_PROTOCOLS)
+                                        .build())
                         ).apply(
-                                TransformationStep.assignSourceIp(publicIpAddress.getProperties().getIpAddress()),
+                                TransformationStep.assignSourceIp(startIp, endIp),
                                 TransformationStep.assignSourcePort(1024,65525)
-                        ).build()
-                );
+                        ).build();
 
                 // need to create a null route so we can advertise the prefix before sending traffic to the right host
                 StaticRoute st = StaticRoute.builder()
                         .setNextHopInterface(NULL_INTERFACE_NAME)
-                        .setNetwork(publicIpAddress.getProperties().getIpAddress().toPrefix())
+                        .setNetwork(startIp.toPrefix())
                         .setAdministrativeCost(0)
                         .setMetric(0)
                         .setNonForwarding(true)
@@ -127,22 +218,96 @@ public class NatGateway extends Resource implements Serializable {
 
                 cfgNode.getDefaultVrf().getStaticRoutes().add(st);
 
-                PrefixSpace pf = new PrefixSpace();
-                pf.addPrefix(publicIpAddress.getProperties().getIpAddress().toPrefix());
-                installRoutingPolicyAdvertiseStatic(AzureConfiguration.AWS_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, pf);
+                ps.addPrefix(startIp.toPrefix());
             }
 
+            if(getProperties().getSubnets() == null) {
+                installRoutingPolicyAdvertiseStatic(AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME,
+                        cfgNode, ps);
+                return cfgNode;
+            }
 
-        }
-        {   // Subnet
-            Interface.builder()
-                    .setName("subnet")
-                    .setVrf(cfgNode.getDefaultVrf())
-                    .setOwner(cfgNode)
-                    .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
-                    .build();
-        }
+            for(IdReference subnetReference : getProperties().getSubnets() ) {
 
+                Subnet subnet = region.getSubnets().get(subnetReference.getId());
+
+                if(subnet == null) {
+                    throw new BatfishException("Subnet not found (did you include it ?). id : " + subnetReference.getId());
+                }
+
+                Transformation subnetSnatTransformation = snatTransformation;
+
+                for(IdReference ipConfigurationReference : subnet.getProperties().getIpConfigurations()) {
+                    IPConfiguration ipConfiguration = region.getIpConfigurations().get(ipConfigurationReference.getId().toLowerCase());
+
+                    if(ipConfiguration == null) {
+                        throw new BatfishException("referenced ipConfiguration not found (did you include it ?). id : "
+                                + ipConfigurationReference.getId());
+                    }
+
+                    String publicIpAddressId = ipConfiguration.getProperties().getPublicIpAddressId();
+                    if(publicIpAddressId == null) continue;
+
+                    PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(publicIpAddressId);
+                    if(publicIpAddress == null) {
+                        throw new BatfishException("Referenced Public Ip not found (did you include it ?). id : "
+                            + publicIpAddressId);
+                    }
+
+                    subnetSnatTransformation = applySnat(
+                            subnetSnatTransformation,
+                            ipConfiguration.getProperties().getPrivateIpAddress(),
+                            publicIpAddress.getProperties().getIpAddress()
+                    );
+
+                    dnatTransformation = applyDnat(
+                            dnatTransformation,
+                            ipConfiguration.getProperties().getPrivateIpAddress(),
+                            publicIpAddress.getProperties().getIpAddress()
+                    );
+
+                    StaticRoute st = StaticRoute.builder()
+                            .setNetwork(publicIpAddress.getProperties().getIpAddress().toPrefix())
+                            .setNextHopInterface(NULL_INTERFACE_NAME)
+                            .setAdministrativeCost(0)
+                            .setMetric(0)
+                            .build();
+
+                    cfgNode.getDefaultVrf().getStaticRoutes().add(st);
+
+                    ps.addPrefix(publicIpAddress.getProperties().getIpAddress().toPrefix());
+                }
+
+                Interface toSubnet = Interface.builder()
+                        .setName(subnet.getNodeName())
+                        .setVrf(cfgNode.getDefaultVrf())
+                        .setOwner(cfgNode)
+                        .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+                        .build();
+
+                StaticRoute st = StaticRoute.builder()
+                        .setNetwork(subnet.getProperties().getAddressPrefix())
+                        .setNextHop(NextHop.legacyConverter(toSubnet.getName(), AzureConfiguration.LINK_LOCAL_IP))
+                        .setMetric(0)
+                        .setAdministrativeCost(0)
+                        .setNonForwarding(false)
+                        .build();
+
+                cfgNode.getDefaultVrf().getStaticRoutes().add(st);
+
+                convertedConfiguration.addLayer1Edge(
+                        cfgNode.getHostname(), subnet.getNodeName(),
+                        subnet.getNodeName(), subnet.getToNatInterfaceName()
+                );
+
+                toSubnet.setIncomingTransformation(subnetSnatTransformation);
+
+            }
+
+            toInternet.setIncomingTransformation(dnatTransformation);
+
+            installRoutingPolicyAdvertiseStatic(AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, ps);
+        }
 
         return cfgNode;
     }
@@ -151,56 +316,33 @@ public class NatGateway extends Resource implements Serializable {
         return _properties;
     }
 
+    @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable {
-        private final Set<PublicIpAddressId> _publicIpAddresses;
-        private final Set<PublicIpPrefixId>  _publicIpPrefixes;
+        private final Set<IdReference> _publicIpAddresses;
+        private final Set<IdReference> _publicIpPrefixes;
+        private final Set<IdReference> _subnets;
 
         @JsonCreator
         public Properties(
-                @JsonProperty("publicIpAddresses") Set<PublicIpAddressId> publicIpAddresses,
-                @JsonProperty("publicIpPrefixes") Set<PublicIpPrefixId> publicIpPrefixes
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_ADDRESSES) Set<IdReference> publicIpAddresses,
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_PUBLIC_IP_PREFIXES) Set<IdReference> publicIpPrefixes,
+                @JsonProperty(AzureEntities.JSON_KEY_NAT_GATEWAY_SUBNETS) Set<IdReference> subnets
         ) {
             _publicIpAddresses = publicIpAddresses;
             _publicIpPrefixes = publicIpPrefixes;
+            _subnets = subnets;
         }
 
-        public Set<PublicIpAddressId> getPublicIpAddresses() {
+        public Set<IdReference> getPublicIpAddresses() {
             return _publicIpAddresses;
         }
 
-        public Set<PublicIpPrefixId> getPublicIpPrefixes() {
+        public Set<IdReference> getPublicIpPrefixes() {
             return _publicIpPrefixes;
         }
-    }
 
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PublicIpAddressId implements Serializable {
-        private final String _id;
-
-        @JsonCreator
-        public PublicIpAddressId(
-                @JsonProperty(AzureEntities.JSON_KEY_ID) String id) {
-            _id = id;
-        }
-
-        public String getId() {
-            return _id;
-        }
-    }
-
-    @JsonIgnoreProperties(ignoreUnknown = true)
-    public static class PublicIpPrefixId implements Serializable {
-        private final String _id;
-
-        @JsonCreator
-        public PublicIpPrefixId(
-                @JsonProperty(AzureEntities.JSON_KEY_ID) String id
-        ) {
-            _id = id;
-        }
-
-        public String getId() {
-            return _id;
+        public Set<IdReference> getSubnets() {
+            return _subnets;
         }
     }
 }
