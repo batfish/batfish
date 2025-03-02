@@ -932,6 +932,16 @@ public interface StorageProvider {
   Stream<String> listInputAwsSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
 
   /**
+   * Returns a list of snapshot input object keys corresponding to Azure single-account configuration
+   * data.
+   *
+   * @throws IOException if there is an error
+   */
+  @MustBeClosed
+  @Nonnull
+  Stream<String> listInputAzureSingleAccountKeys(NetworkSnapshot snapshot) throws IOException;
+
+  /**
    * Run implementation-specific garbage collection.
    *
    * <p>Expunge stored data for networks and snapshot that have been deleted by the users. An
