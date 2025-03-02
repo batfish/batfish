@@ -45,10 +45,15 @@ public interface AzureEntities {
     String JSON_KEY_NAT_GATEWAY_PUBLIC_IP_PREFIXES = "publicIpPrefixes";
     String JSON_KEY_NAT_GATEWAY_SUBNETS = "subnets";
 
+    String JSON_KEY_POSTGRES_NETWORK = "network";
+    String JSON_KEY_POSTGRES_NETWORK_DELEGATED_SUBNET_ID = "delegatedSubnetResourceId";
+
+
     String JSON_TYPE_VM = "Microsoft.Compute/virtualMachines";
     String JSON_TYPE_VNET = "Microsoft.Network/virtualNetworks";
     String JSON_TYPE_INTERFACE = "Microsoft.Network/networkInterfaces";
     String JSON_TYPE_NETWORK_SECURITY_GROUP = "Microsoft.Network/networkSecurityGroups";
+    String JSON_TYPE_POSTGRES = "Microsoft.DBforPostgreSQL/flexibleServers";
     String JSON_TYPE_NAT_GATEWAY = "Microsoft.Network/natGateways";
     String JSON_TYPE_PUBLIC_IP = "Microsoft.Network/publicIPAddresses";
 }
