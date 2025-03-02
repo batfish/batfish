@@ -13,7 +13,7 @@ public interface AzureEntities {
     String JSON_KEY_VNET_SUBNETS = "subnets";
     String JSON_KEY_VNET_ADDRESS_SPACE = "addressSpace";
 
-    String JSON_TYPE_VM = "microsoft.compute/virtualmachines";
-    String JSON_TYPE_VNET = "microsoft.net/virtualmachines";
+    String JSON_TYPE_VM = "Microsoft.Compute/virtualMachines";
+    String JSON_TYPE_VNET = "Microsoft.Network/virtualNetworks";
 
 }
