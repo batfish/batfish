@@ -48,6 +48,13 @@ public interface AzureEntities {
     String JSON_KEY_POSTGRES_NETWORK = "network";
     String JSON_KEY_POSTGRES_NETWORK_DELEGATED_SUBNET_ID = "delegatedSubnetResourceId";
 
+    String JSON_KEY_CONTAINER_GROUP_CONTAINERS = "containers";
+    String JSON_KEY_CONTAINER_INSTANCE_PORTS = "ports";
+    String JSON_KEY_CONTAINER_INSTANCE_PORT_NUMBER = "port";
+    String JSON_KEY_CONTAINER_INSTANCE_PORT_PROTOCOL = "protocol";
+    String JSON_KEY_CONTAINER_INSTANCE_IP_ADDRESS = "ipAddress";
+    String JSON_KEY_CONTAINER_INSTANCE_IP = "ip";
+    String JSON_KEY_CONTAINER_INSTANCE_SUBNET_IDS = "subnetIds";
 
     String JSON_TYPE_VM = "Microsoft.Compute/virtualMachines";
     String JSON_TYPE_VNET = "Microsoft.Network/virtualNetworks";
@@ -56,4 +63,5 @@ public interface AzureEntities {
     String JSON_TYPE_POSTGRES = "Microsoft.DBforPostgreSQL/flexibleServers";
     String JSON_TYPE_NAT_GATEWAY = "Microsoft.Network/natGateways";
     String JSON_TYPE_PUBLIC_IP = "Microsoft.Network/publicIPAddresses";
+    String JSON_TYPE_CONTAINER_GROUP = "Microsoft.ContainerInstance/containerGroups";
 }
