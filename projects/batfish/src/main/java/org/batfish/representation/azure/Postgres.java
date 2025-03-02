@@ -16,7 +16,11 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class Postgres extends Instance implements Serializable {
@@ -25,12 +29,13 @@ public class Postgres extends Instance implements Serializable {
 
     @JsonCreator
     public Postgres(
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties
     ){
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
@@ -53,11 +58,6 @@ public class Postgres extends Instance implements Serializable {
                 .build();
 
         // assume db is in delegated mode
-        if(getProperties() == null || getProperties().getNetwork() == null) {
-            throw new UnsupportedOperationException("Missing required attribute in Postgre resource. \nid : "
-            + getId());
-        }
-
         String subnetId = getProperties().getNetwork().getDelegatedSubnetResourceId();
         if(subnetId == null) {
             throw new BatfishException("Postgres are only supported with a Delegated Subnet (Vnet integration).");
@@ -109,8 +109,10 @@ public class Postgres extends Instance implements Serializable {
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_POSTGRES_NETWORK) Network network)
+                @JsonProperty(AzureEntities.JSON_KEY_POSTGRES_NETWORK) @Nullable Network network
+        )
         {
+            checkArgument(network != null, "network must be provided");
             _network = network;
         }
 
@@ -124,12 +126,13 @@ public class Postgres extends Instance implements Serializable {
         // when db is in delegated subnet, we need to provide one exclusive subnet for this particular db
         // (network isolation and firewall)
 
-        private final String _delegatedSubnetResourceId;
+        private final @Nonnull String _delegatedSubnetResourceId;
 
         @JsonCreator
         public Network(
-                @JsonProperty(AzureEntities.JSON_KEY_POSTGRES_NETWORK_DELEGATED_SUBNET_ID) String delegatedSubnetResourceId
+                @JsonProperty(AzureEntities.JSON_KEY_POSTGRES_NETWORK_DELEGATED_SUBNET_ID) @Nullable String delegatedSubnetResourceId
         ) {
+            checkArgument(delegatedSubnetResourceId != null, "delegatedSubnetResourceId must be provided");
             _delegatedSubnetResourceId = delegatedSubnetResourceId;
         }
 

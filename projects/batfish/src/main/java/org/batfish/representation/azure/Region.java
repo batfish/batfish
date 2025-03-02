@@ -1,9 +1,13 @@
 package org.batfish.representation.azure;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import org.batfish.common.BfConsts;
+import org.batfish.common.Warning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 
+import javax.annotation.Nonnull;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -11,55 +15,61 @@ import java.util.Map;
 public class Region implements Serializable {
 
 
-    private final Map<String, NetworkInterface> _interfaces = new HashMap<>();
-    private final Map<String, IPConfiguration> _ipConfigurations = new HashMap<>();
-    private final Map<String, VNet> _vnets = new HashMap<>();
-    private final Map<String, Subnet> _subnets = new HashMap<>();
-    private final Map<String, Instance> _instances = new HashMap<>();
-    private final Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
-    private final Map<String, NatGateway> _natGateways = new HashMap<>();
-    private final Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
-    private final String _regionName;
+    private final @Nonnull Map<String, NetworkInterface> _interfaces = new HashMap<>();
+    private final @Nonnull Map<String, IPConfiguration> _ipConfigurations = new HashMap<>();
+    private final @Nonnull Map<String, VNet> _vnets = new HashMap<>();
+    private final @Nonnull Map<String, Subnet> _subnets = new HashMap<>();
+    private final @Nonnull Map<String, Instance> _instances = new HashMap<>();
+    private final @Nonnull Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
+    private final @Nonnull Map<String, NatGateway> _natGateways = new HashMap<>();
+    private final @Nonnull Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
+    private final @Nonnull String _regionName;
 
     public Region(String regionName) {
-        this._regionName = regionName;
+        _regionName = regionName;
     }
 
-    public Map<String, NetworkInterface> getInterfaces() {
+    public @Nonnull Map<String, NetworkInterface> getInterfaces() {
         return _interfaces;
     }
-    public Map<String, IPConfiguration> getIpConfigurations() {
+    public @Nonnull Map<String, IPConfiguration> getIpConfigurations() {
         return _ipConfigurations;
     }
-
-    public Map<String, VNet> getVnets() {
+    public @Nonnull Map<String, VNet> getVnets() {
         return _vnets;
     }
-    public Map<String, Subnet> getSubnets() {
+    public @Nonnull Map<String, Subnet> getSubnets() {
         return _subnets;
     }
-
-    public Map<String, Instance> getInstances() {
+    public @Nonnull Map<String, Instance> getInstances() {
         return _instances;
     }
-    public Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
+    public @Nonnull Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
         return _networkSecurityGroups;
     }
-    public Map<String, NatGateway> getNatGateways() {
+    public @Nonnull Map<String, NatGateway> getNatGateways() {
         return _natGateways;
     }
-    public Map<String, PublicIpAddress> getPublicIpAddresses() {
+    public @Nonnull Map<String, PublicIpAddress> getPublicIpAddresses() {
         return _publicIpAddresses;
     }
 
-    public void addConfigElement(JsonNode node){
-        if(!node.has(AzureEntities.JSON_KEY_TYPE) || !node.has(AzureEntities.JSON_KEY_PROPERTIES)){
-
-            return; // throw an error because azure always specify the type -> not an azure config
-        }
-
-        if(!node.get(AzureEntities.JSON_KEY_TYPE).isTextual()) {
-            return;
+    public void addConfigElement(
+            JsonNode node,
+            String filename,
+            ParseVendorConfigurationAnswerElement pvcae
+    ){
+        if(!node.has(AzureEntities.JSON_KEY_TYPE)){
+            pvcae.addRedFlagWarning(
+                    BfConsts.RELPATH_AZURE_CONFIGS_DIR,
+                    new Warning(
+                            String.format("Missing required key \"%s\" in file \"%s\"",
+                            AzureEntities.JSON_KEY_TYPE,
+                            filename),
+                            "Azure"
+                    )
+            );
+            return; // do not parse because it's unlikely an azure resource file
         }
 
         String type = node.get(AzureEntities.JSON_KEY_TYPE).textValue();
@@ -104,6 +114,13 @@ public class Region implements Serializable {
                 _instances.put(containerGroup.getId(), containerGroup);
                 break;
             default:
+                pvcae.addUnimplementedWarning(
+                        BfConsts.RELPATH_AZURE_CONFIGS_DIR,
+                        new Warning(
+                                String.format("Unknown type \"%s\" in file \"%s\"", type, filename),
+                                "AZURE"
+                        )
+                );
                 return;
         }
     }

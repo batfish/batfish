@@ -4,36 +4,44 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.io.Serializable;
+import java.util.HashSet;
 import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkArgument;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkInterface extends Resource implements Serializable {
 
-    private final Properties _properties;
+    private final @Nonnull Properties _properties;
 
     @JsonCreator
     public NetworkInterface(
-            @JsonProperty(AzureEntities.JSON_KEY_NAME) String name,
-            @JsonProperty(AzureEntities.JSON_KEY_ID) String id,
-            @JsonProperty(AzureEntities.JSON_KEY_TYPE) String type,
-            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) Properties properties) {
+            @JsonProperty(AzureEntities.JSON_KEY_NAME) @Nullable String name,
+            @JsonProperty(AzureEntities.JSON_KEY_ID) @Nullable String id,
+            @JsonProperty(AzureEntities.JSON_KEY_TYPE) @Nullable String type,
+            @JsonProperty(AzureEntities.JSON_KEY_PROPERTIES) @Nullable Properties properties) {
         super(name, id, type);
+        checkArgument(properties != null, "properties must be provided");
         _properties = properties;
     }
 
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Properties implements Serializable {
-        private final Set<IPConfiguration> _ipConfigurations;
-        private final String _macAddress;
-        private final IdReference _nsg;
+
+        private final @Nonnull Set<IPConfiguration> _ipConfigurations;
+        private final @Nullable String _macAddress;
+        private final @Nullable IdReference _nsg;
 
         @JsonCreator
         public Properties(
-                @JsonProperty(AzureEntities.JSON_KEY_VNET_IP_CONFIGURATIONS) Set<IPConfiguration> ipConfigurations,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_MAC_ADDRESS) String macAddress,
-                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) IdReference nsg
+                @JsonProperty(AzureEntities.JSON_KEY_VNET_IP_CONFIGURATIONS) @Nullable Set<IPConfiguration> ipConfigurations,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_MAC_ADDRESS) @Nullable String macAddress,
+                @JsonProperty(AzureEntities.JSON_KEY_INTERFACE_NGS) @Nullable IdReference nsg
         ) {
+            if (ipConfigurations == null) ipConfigurations = new HashSet<>();
             _ipConfigurations = ipConfigurations;
             _macAddress = macAddress;
             _nsg = nsg;
