@@ -213,6 +213,7 @@ import org.batfish.question.differentialreachability.DifferentialReachabilityRes
 import org.batfish.question.multipath.MultipathConsistencyParameters;
 import org.batfish.referencelibrary.ReferenceLibrary;
 import org.batfish.representation.aws.AwsConfiguration;
+import org.batfish.representation.azure.AzureConfiguration;
 import org.batfish.representation.host.HostConfiguration;
 import org.batfish.representation.iptables.IptablesVendorConfiguration;
 import org.batfish.role.InferRoles;
@@ -1433,6 +1434,40 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return config;
   }
 
+  /** Parse Azure configurations for a single account (possibly with multiple regions) */
+  @VisibleForTesting
+  public static @Nonnull AzureConfiguration parseAzureConfigurations(
+          Map<String, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
+    AzureConfiguration config = new AzureConfiguration();
+    for (Entry<String, String> configFile : configurationData.entrySet()) {
+      // Using path for convenience for now to handle separators and key hierarchcially gracefully
+      Path path = Paths.get(configFile.getKey());
+
+      // Find the place in the path where "azure_configs" starts
+      int azureRootIndex = 0;
+      for (Path value : path) {
+        if (value.toString().equals(BfConsts.RELPATH_AZURE_CONFIGS_DIR)) {
+          break;
+        }
+        azureRootIndex++;
+      }
+      int pathLength = path.getNameCount();
+
+      String fileName = path.subpath(azureRootIndex, pathLength).toString();
+      pvcae.getFileMap().put(BfConsts.RELPATH_AZURE_CONFIGS_DIR, fileName);
+
+      try {
+        JsonNode json = BatfishObjectMapper.mapper().readTree(configFile.getValue());
+        config.addConfigElement(json);
+      } catch (IOException e) {
+        pvcae.addRedFlagWarning(
+                BfConsts.RELPATH_AWS_CONFIGS_FILE,
+                new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
+      }
+    }
+    return config;
+  }
+
   private SortedMap<String, BgpAdvertisementsByVrf> parseEnvironmentBgpTables(
       NetworkSnapshot snapshot,
       SortedMap<String, String> inputData,
@@ -2153,6 +2188,45 @@ public class Batfish extends PluginConsumer implements IBatfish {
     return found;
   }
 
+  /** Returns {@code true} iff Azure configuration data is found. */
+  private boolean serializeAzureConfigs(
+          NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+    _logger.info("\n*** READING AZURE CONFIGS ***\n");
+
+
+    AzureConfiguration azureConfiguration;
+    boolean found = false;
+    try {
+      Map<String, String> azureConfigurationData;
+      // Try to parse all accounts as one vendor configuration
+      try (Stream<String> keys = _storage.listInputAzureSingleAccountKeys(snapshot)) {
+        azureConfigurationData = readAllInputObjects(keys, snapshot);
+      }
+      found = !azureConfigurationData.isEmpty();
+      azureConfiguration = parseAzureConfigurations(azureConfigurationData, pvcae);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+
+    if (!found) {
+      // nothing to serialize.
+      return found;
+    }
+
+    _logger.info("\n*** SERIALIZING AWS CONFIGURATION STRUCTURES ***\n");
+    _logger.resetTimer();
+    _logger.debugf("Serializing Azure");
+    try {
+      _storage.storeVendorConfigurations(
+              ImmutableMap.of(BfConsts.RELPATH_AWS_CONFIGS_FILE, azureConfiguration), snapshot);
+    } catch (IOException e) {
+      throw new UncheckedIOException(e);
+    }
+    _logger.debug("OK\n");
+    _logger.printElapsedTime();
+    return found;
+  }
+
   private void serializeConversionContext(
       NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
     ConversionContext conversionContext = new ConversionContext();
@@ -2794,6 +2868,11 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
     // look for AWS VPC configs in the `aws_configs/` subfolder of the upload.
     if (serializeAwsConfigs(snapshot, answerElement)) {
+      configsFound = true;
+    }
+
+    // look for Azure configs in the 'azure_configs/' subfolder of the upload
+    if (serializeAzureConfigs(snapshot, answerElement)) {
       configsFound = true;
     }
 
