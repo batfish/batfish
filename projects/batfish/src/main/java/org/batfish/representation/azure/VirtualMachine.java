@@ -26,6 +26,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an Azure Virtual Machine.
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines?pivots=deployment-language-arm-template">Resource link</a>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class VirtualMachine extends Instance implements Serializable {
 
@@ -43,6 +48,11 @@ public class VirtualMachine extends Instance implements Serializable {
         _properties = properties;
     }
 
+    /**
+     * Returns the {@link Configuration} node for this Virtual Machine.
+     * <p>Creates {@link Interface}s attached to this VM. Connects each interfaces to its subnet node.
+     * default StaticRoute to subnet node. {@link NetworkSecurityGroup} applied onto the interface if any.</p>
+     */
     @Override
     public Configuration toConfigurationNode(Region rgp, ConvertedConfiguration convertedConfiguration){
         Configuration cfgNode = Configuration.builder()

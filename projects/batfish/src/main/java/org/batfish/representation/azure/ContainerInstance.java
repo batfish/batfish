@@ -12,6 +12,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents ContainerInstance azure services.
+ * (Part of {@link ContainerGroup}).
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.containerinstance/containergroups?pivots=deployment-language-arm-template">Resource link</a>.
+ */
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class ContainerInstance implements Serializable {
 

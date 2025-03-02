@@ -12,6 +12,15 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
+/**
+ * Represents an Azure Network Interface which is used for {@link VirtualMachine} objects.
+ * <a href="https://learn.microsoft.com/en-us/azure/templates/microsoft.network/networkinterfaces?pivots=deployment-language-arm-template">Resource Link</a>.
+ * <p>
+ * Partially implemented:
+ * <li>ipv6 ipConfigurations not implemented</li>
+ * </p>
+ */
+
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class NetworkInterface extends Resource implements Serializable {
 
