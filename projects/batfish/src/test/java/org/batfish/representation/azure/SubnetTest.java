@@ -34,7 +34,7 @@ public class SubnetTest {
         assertEquals("Microsoft.Network/virtualNetworks/subnets",
                 subnet.getType());
 
-        Subnet.SubnetProperties subnetProperties = subnet.getProperties();
+        Subnet.Properties subnetProperties = subnet.getProperties();
         assertNotNull(subnetProperties);
 
         assertEquals(subnetProperties.getAddressPrefix(), Prefix.parse("10.0.0.0/24"));
@@ -45,7 +45,7 @@ public class SubnetTest {
 
         Prefix addressPrefix = Prefix.parse("10.0.0.0/24");
 
-        Subnet.SubnetProperties subnetProperties = new Subnet.SubnetProperties(addressPrefix, null, null, null);
+        Subnet.Properties subnetProperties = new Subnet.Properties(addressPrefix, null, null, null);
 
         Subnet subnet = new Subnet (
                 "testId",
