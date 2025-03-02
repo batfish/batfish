@@ -7,6 +7,7 @@ import org.batfish.common.VendorConversionException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.vendor.VendorConfiguration;
 
 import javax.annotation.Nonnull;
@@ -20,6 +21,7 @@ public class AzureConfiguration extends VendorConfiguration {
     // only one resource group to start testing
     // next, we will be able to define multiple resource group based on folder structure (Batfish.java)
     private final Map<String, Region> _regions = new HashMap<>();
+    public static final Ip LINK_LOCAL_IP = Ip.parse("169.254.0.1");
 
     private ConvertedConfiguration _convertedConfiguration = null;
 

@@ -63,8 +63,8 @@ public class SubnetTest {
         assertNotNull(interfaces);
 
         // check 1 interface facing lan
-        assertEquals(1, interfaces.size());
-        assertNotNull(interfaces.get(subnet.getInterfaceName()));
+        assertEquals(2, interfaces.size());
+        assertNotNull(interfaces.get(subnet.getToLanInterfaceName()));
 
     }
 
