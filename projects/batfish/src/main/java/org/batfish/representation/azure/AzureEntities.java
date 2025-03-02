@@ -19,9 +19,23 @@ public interface AzureEntities {
     String JSON_KEY_INTERFACE_PRIVATE_IP_ADDRESS = "privateIPAddress";
     String JSON_KEY_INTERFACE_MAC_ADDRESS = "macAddress";
     String JSON_KEY_INTERFACE_SUBNET = "subnet";
+    String JSON_KEY_INTERFACE_NGS = "networkSecurityGroup";
+
+    String JSON_KEY_NSG_PROTOCOL = "protocol";
+    String JSON_KEY_NSG_SRC_PORT = "sourcePortRange";
+    String JSON_KEY_NSG_DST_PORT = "destinationPortRange";
+    String JSON_KEY_NSG_SRC_PORTS = "sourcePortRanges";
+    String JSON_KEY_NSG_DST_PORTS = "destinationPortRanges";
+    String JSON_KEY_NSG_SRC_PREFIX = "sourceAddressPrefix";
+    String JSON_KEY_NSG_DST_PREFIX = "destinationAddressPrefix";
+    String JSON_KEY_NSG_SRC_PREFIXES = "sourceAddressPrefixes";
+    String JSON_KEY_NSG_DST_PREFIXES = "destinationAddressPrefixes";
+    String JSON_KEY_NSG_ACCESS = "access";
+    String JSON_KEY_NSG_PRIORITY = "priority";
+    String JSON_KEY_NSG_DIRECTION = "direction";
 
     String JSON_TYPE_VM = "Microsoft.Compute/virtualMachines";
     String JSON_TYPE_VNET = "Microsoft.Network/virtualNetworks";
     String JSON_TYPE_INTERFACE = "Microsoft.Network/networkInterfaces";
-
+    String JSON_TYPE_NETWORK_SECURITY_GROUP = "Microsoft.Network/networkSecurityGroups";
 }
