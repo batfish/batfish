@@ -34,6 +34,9 @@ public class ConvertedConfiguration {
         _configurationNodes.put(node.getHostname(), node);
     }
 
+    public Configuration getNode(String hostname) {
+        return _configurationNodes.get(hostname);
+    }
     public Collection<Configuration> getAllNodes() {
         return _configurationNodes.values();
     }

@@ -98,7 +98,7 @@ public class VirtualMachine extends Instance implements Serializable {
             // set a virtual switch ? (layer 2 node)
             convertedConfiguration.addLayer1Edge(
                     cfgNode.getHostname(), networkInterface.getCleanId(),
-                    subnet.getNodeName(), subnet.getInterfaceName());
+                    subnet.getNodeName(), subnet.getToLanInterfaceName());
 
             // ACL
             {
