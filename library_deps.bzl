@@ -63,7 +63,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     maven.artifact(group = "org.glassfish.jersey.test-framework.providers", artifact = "jersey-test-framework-provider-grizzly2", version = "2.46", exclusions = [maven.exclusion(group = "junit", artifact = "junit")]),
     "org.hamcrest:hamcrest:3.0",
     "org.lz4:lz4-java:1.8.0",
-    "org.mockito:mockito-core:5.15.2",
+    "org.mockito:mockito-core:5.16.0",
     "org.mockito:mockito-inline:5.2.0",
     "org.jgrapht:jgrapht-core:1.5.2",
     "org.jline:jline:3.29.0",
