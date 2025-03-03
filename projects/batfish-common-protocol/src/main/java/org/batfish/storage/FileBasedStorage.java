@@ -1949,7 +1949,7 @@ public class FileBasedStorage implements StorageProvider {
   public @Nonnull Stream<String> listInputAzureSingleAccountKeys(NetworkSnapshot snapshot)
       throws IOException {
     return listSnapshotInputObjectKeys(snapshot)
-            .filter(key -> keyInDir(key, BfConsts.RELPATH_AZURE_CONFIGS_DIR));
+        .filter(key -> keyInDir(key, BfConsts.RELPATH_AZURE_CONFIGS_DIR));
   }
 
   @MustBeClosed

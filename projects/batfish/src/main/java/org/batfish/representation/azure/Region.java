@@ -1,152 +1,154 @@
 package org.batfish.representation.azure;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
+import javax.annotation.Nonnull;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
 
-import javax.annotation.Nonnull;
-import java.io.Serializable;
-import java.util.HashMap;
-import java.util.Map;
-
 public class Region implements Serializable {
 
+  private final @Nonnull Map<String, NetworkInterface> _interfaces = new HashMap<>();
+  private final @Nonnull Map<String, IPConfiguration> _ipConfigurations = new HashMap<>();
+  private final @Nonnull Map<String, VNet> _vnets = new HashMap<>();
+  private final @Nonnull Map<String, Subnet> _subnets = new HashMap<>();
+  private final @Nonnull Map<String, Instance> _instances = new HashMap<>();
+  private final @Nonnull Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
+  private final @Nonnull Map<String, NatGateway> _natGateways = new HashMap<>();
+  private final @Nonnull Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
+  private final @Nonnull String _regionName;
 
-    private final @Nonnull Map<String, NetworkInterface> _interfaces = new HashMap<>();
-    private final @Nonnull Map<String, IPConfiguration> _ipConfigurations = new HashMap<>();
-    private final @Nonnull Map<String, VNet> _vnets = new HashMap<>();
-    private final @Nonnull Map<String, Subnet> _subnets = new HashMap<>();
-    private final @Nonnull Map<String, Instance> _instances = new HashMap<>();
-    private final @Nonnull Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
-    private final @Nonnull Map<String, NatGateway> _natGateways = new HashMap<>();
-    private final @Nonnull Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
-    private final @Nonnull String _regionName;
+  public Region(String regionName) {
+    _regionName = regionName;
+  }
 
-    public Region(String regionName) {
-        _regionName = regionName;
+  public @Nonnull Map<String, NetworkInterface> getInterfaces() {
+    return _interfaces;
+  }
+
+  public @Nonnull Map<String, IPConfiguration> getIpConfigurations() {
+    return _ipConfigurations;
+  }
+
+  public @Nonnull Map<String, VNet> getVnets() {
+    return _vnets;
+  }
+
+  public @Nonnull Map<String, Subnet> getSubnets() {
+    return _subnets;
+  }
+
+  public @Nonnull Map<String, Instance> getInstances() {
+    return _instances;
+  }
+
+  public @Nonnull Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
+    return _networkSecurityGroups;
+  }
+
+  public @Nonnull Map<String, NatGateway> getNatGateways() {
+    return _natGateways;
+  }
+
+  public @Nonnull Map<String, PublicIpAddress> getPublicIpAddresses() {
+    return _publicIpAddresses;
+  }
+
+  public void addConfigElement(
+      JsonNode node, String filename, ParseVendorConfigurationAnswerElement pvcae) {
+    if (!node.has(AzureEntities.JSON_KEY_TYPE)) {
+      pvcae.addRedFlagWarning(
+          BfConsts.RELPATH_AZURE_CONFIGS_DIR,
+          new Warning(
+              String.format(
+                  "Missing required key \"%s\" in file \"%s\"",
+                  AzureEntities.JSON_KEY_TYPE, filename),
+              "Azure"));
+      return; // do not parse because it's unlikely an azure resource file
     }
 
-    public @Nonnull Map<String, NetworkInterface> getInterfaces() {
-        return _interfaces;
-    }
-    public @Nonnull Map<String, IPConfiguration> getIpConfigurations() {
-        return _ipConfigurations;
-    }
-    public @Nonnull Map<String, VNet> getVnets() {
-        return _vnets;
-    }
-    public @Nonnull Map<String, Subnet> getSubnets() {
-        return _subnets;
-    }
-    public @Nonnull Map<String, Instance> getInstances() {
-        return _instances;
-    }
-    public @Nonnull Map<String, NetworkSecurityGroup> getNetworkSecurityGroups() {
-        return _networkSecurityGroups;
-    }
-    public @Nonnull Map<String, NatGateway> getNatGateways() {
-        return _natGateways;
-    }
-    public @Nonnull Map<String, PublicIpAddress> getPublicIpAddresses() {
-        return _publicIpAddresses;
-    }
+    String type = node.get(AzureEntities.JSON_KEY_TYPE).textValue();
 
-    public void addConfigElement(
-            JsonNode node,
-            String filename,
-            ParseVendorConfigurationAnswerElement pvcae
-    ){
-        if(!node.has(AzureEntities.JSON_KEY_TYPE)){
-            pvcae.addRedFlagWarning(
-                    BfConsts.RELPATH_AZURE_CONFIGS_DIR,
-                    new Warning(
-                            String.format("Missing required key \"%s\" in file \"%s\"",
-                            AzureEntities.JSON_KEY_TYPE,
-                            filename),
-                            "Azure"
-                    )
-            );
-            return; // do not parse because it's unlikely an azure resource file
+    switch (type) {
+      case AzureEntities.JSON_TYPE_VM:
+        Instance vm = BatfishObjectMapper.mapper().convertValue(node, VirtualMachine.class);
+        _instances.put(vm.getId(), vm);
+        break;
+      case AzureEntities.JSON_TYPE_VNET:
+        VNet network = BatfishObjectMapper.mapper().convertValue(node, VNet.class);
+        _vnets.put(network.getId(), network);
+        for (Subnet subnet : network.getProperties().getSubnets()) {
+          _subnets.put(subnet.getId(), subnet);
         }
-
-        String type = node.get(AzureEntities.JSON_KEY_TYPE).textValue();
-
-        switch(type){
-            case AzureEntities.JSON_TYPE_VM:
-                Instance vm = BatfishObjectMapper.mapper().convertValue(node, VirtualMachine.class);
-                _instances.put(vm.getId(), vm);
-                break;
-            case AzureEntities.JSON_TYPE_VNET:
-                VNet network = BatfishObjectMapper.mapper().convertValue(node, VNet.class);
-                _vnets.put(network.getId(), network);
-                for(Subnet subnet : network.getProperties().getSubnets()){
-                    _subnets.put(subnet.getId(), subnet);
-                }
-                break;
-            case AzureEntities.JSON_TYPE_INTERFACE:
-                NetworkInterface networkInterface = BatfishObjectMapper.mapper().convertValue(node, NetworkInterface.class);
-                _interfaces.put(networkInterface.getId(), networkInterface);
-                for(IPConfiguration ipConfiguration : networkInterface.getProperties().getIPConfigurations()) {
-                    // broken azure features which stores ipConfigurationName uppercased in id
-                    _ipConfigurations.put(ipConfiguration.getId().toLowerCase(), ipConfiguration);
-                }
-                break;
-            case AzureEntities.JSON_TYPE_NETWORK_SECURITY_GROUP:
-                NetworkSecurityGroup nsg = BatfishObjectMapper.mapper().convertValue(node, NetworkSecurityGroup.class);
-                _networkSecurityGroups.put(nsg.getId(), nsg);
-                break;
-            case AzureEntities.JSON_TYPE_NAT_GATEWAY:
-                NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(node, NatGateway.class);
-                _natGateways.put(natGateway.getId(), natGateway);
-                break;
-            case AzureEntities.JSON_TYPE_PUBLIC_IP:
-                PublicIpAddress publicIp = BatfishObjectMapper.mapper().convertValue(node, PublicIpAddress.class);
-                _publicIpAddresses.put(publicIp.getId(), publicIp);
-                break;
-            case AzureEntities.JSON_TYPE_POSTGRES:
-                Instance db = BatfishObjectMapper.mapper().convertValue(node, Postgres.class);
-                _instances.put(db.getId(), db);
-                break;
-            case AzureEntities.JSON_TYPE_CONTAINER_GROUP:
-                Instance containerGroup = BatfishObjectMapper.mapper().convertValue(node, ContainerGroup.class);
-                _instances.put(containerGroup.getId(), containerGroup);
-                break;
-            default:
-                pvcae.addUnimplementedWarning(
-                        BfConsts.RELPATH_AZURE_CONFIGS_DIR,
-                        new Warning(
-                                String.format("Unknown type \"%s\" in file \"%s\"", type, filename),
-                                "AZURE"
-                        )
-                );
-                return;
+        break;
+      case AzureEntities.JSON_TYPE_INTERFACE:
+        NetworkInterface networkInterface =
+            BatfishObjectMapper.mapper().convertValue(node, NetworkInterface.class);
+        _interfaces.put(networkInterface.getId(), networkInterface);
+        for (IPConfiguration ipConfiguration :
+            networkInterface.getProperties().getIPConfigurations()) {
+          // broken azure features which stores ipConfigurationName uppercased in id
+          _ipConfigurations.put(ipConfiguration.getId().toLowerCase(), ipConfiguration);
         }
+        break;
+      case AzureEntities.JSON_TYPE_NETWORK_SECURITY_GROUP:
+        NetworkSecurityGroup nsg =
+            BatfishObjectMapper.mapper().convertValue(node, NetworkSecurityGroup.class);
+        _networkSecurityGroups.put(nsg.getId(), nsg);
+        break;
+      case AzureEntities.JSON_TYPE_NAT_GATEWAY:
+        NatGateway natGateway = BatfishObjectMapper.mapper().convertValue(node, NatGateway.class);
+        _natGateways.put(natGateway.getId(), natGateway);
+        break;
+      case AzureEntities.JSON_TYPE_PUBLIC_IP:
+        PublicIpAddress publicIp =
+            BatfishObjectMapper.mapper().convertValue(node, PublicIpAddress.class);
+        _publicIpAddresses.put(publicIp.getId(), publicIp);
+        break;
+      case AzureEntities.JSON_TYPE_POSTGRES:
+        Instance db = BatfishObjectMapper.mapper().convertValue(node, Postgres.class);
+        _instances.put(db.getId(), db);
+        break;
+      case AzureEntities.JSON_TYPE_CONTAINER_GROUP:
+        Instance containerGroup =
+            BatfishObjectMapper.mapper().convertValue(node, ContainerGroup.class);
+        _instances.put(containerGroup.getId(), containerGroup);
+        break;
+      default:
+        pvcae.addUnimplementedWarning(
+            BfConsts.RELPATH_AZURE_CONFIGS_DIR,
+            new Warning(
+                String.format("Unknown type \"%s\" in file \"%s\"", type, filename), "AZURE"));
+        return;
+    }
+  }
+
+  public void toConfigurationNode(ConvertedConfiguration convertedConfiguration) {
+
+    for (NatGateway natGateway : _natGateways.values()) {
+      Configuration cfgNode = natGateway.toConfigurationNode(this, convertedConfiguration);
+      convertedConfiguration.addNode(cfgNode);
     }
 
-    public void toConfigurationNode(ConvertedConfiguration convertedConfiguration) {
-
-        for (NatGateway natGateway : _natGateways.values()) {
-            Configuration cfgNode = natGateway.toConfigurationNode(this, convertedConfiguration);
-            convertedConfiguration.addNode(cfgNode);
-        }
-
-        for (Subnet subnet : _subnets.values()) {
-            Configuration cfgNode = subnet.toConfigurationNode(this, convertedConfiguration);
-            convertedConfiguration.addNode(cfgNode);
-        }
-
-        for (Instance instance : _instances.values()) {
-            Configuration cfgNode = instance.toConfigurationNode(this, convertedConfiguration);
-            convertedConfiguration.addNode(cfgNode);
-        }
-
-        // VNet interacts with subnet nodes so subnets must be generated before
-        for (VNet vnet : _vnets.values()) {
-            Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
-            convertedConfiguration.addNode(cfgNode);
-        }
+    for (Subnet subnet : _subnets.values()) {
+      Configuration cfgNode = subnet.toConfigurationNode(this, convertedConfiguration);
+      convertedConfiguration.addNode(cfgNode);
     }
+
+    for (Instance instance : _instances.values()) {
+      Configuration cfgNode = instance.toConfigurationNode(this, convertedConfiguration);
+      convertedConfiguration.addNode(cfgNode);
+    }
+
+    // VNet interacts with subnet nodes so subnets must be generated before
+    for (VNet vnet : _vnets.values()) {
+      Configuration cfgNode = vnet.toConfigurationNode(this, convertedConfiguration);
+      convertedConfiguration.addNode(cfgNode);
+    }
+  }
 }
