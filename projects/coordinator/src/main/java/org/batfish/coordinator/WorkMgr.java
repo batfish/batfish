@@ -918,7 +918,7 @@ public class WorkMgr extends AbstractCoordinator {
             subDir.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR),
             subDir.resolve(BfConsts.RELPATH_AWS_CONFIGS_DIR),
             subDir.resolve(BfConsts.RELPATH_SONIC_CONFIGS_DIR),
-            subDir.resolve(BfConsts.RELPATH_AZURE_CONFIGS_DIR)                                                                                                                                                                                                  );
+            subDir.resolve(BfConsts.RELPATH_AZURE_CONFIGS_DIR));
     if (configPaths.stream().noneMatch(Files::exists)) {
       Path srcDir = subDir.getParent();
       throw new BatfishException(
