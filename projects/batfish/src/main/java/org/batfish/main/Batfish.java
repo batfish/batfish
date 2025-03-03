@@ -1437,7 +1437,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
   /** Parse Azure configurations for a single account (possibly with multiple regions) */
   @VisibleForTesting
   public static @Nonnull AzureConfiguration parseAzureConfigurations(
-          Map<String, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
+      Map<String, String> configurationData, ParseVendorConfigurationAnswerElement pvcae) {
     AzureConfiguration config = new AzureConfiguration();
     for (Entry<String, String> configFile : configurationData.entrySet()) {
       // Using path for convenience for now to handle separators and key hierarchcially gracefully
@@ -1461,8 +1461,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
         config.addConfigElement(json, fileName, pvcae);
       } catch (IOException e) {
         pvcae.addRedFlagWarning(
-                BfConsts.RELPATH_AWS_CONFIGS_FILE,
-                new Warning(String.format("Unexpected content in Azure file %s", fileName), "Azure"));
+            BfConsts.RELPATH_AWS_CONFIGS_FILE,
+            new Warning(String.format("Unexpected content in Azure file %s", fileName), "Azure"));
       }
     }
     return config;
@@ -2190,9 +2190,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
 
   /** Returns {@code true} iff Azure configuration data is found. */
   private boolean serializeAzureConfigs(
-          NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
+      NetworkSnapshot snapshot, ParseVendorConfigurationAnswerElement pvcae) {
     _logger.info("\n*** READING AZURE CONFIGS ***\n");
-
 
     AzureConfiguration azureConfiguration;
     boolean found = false;
@@ -2218,7 +2217,7 @@ public class Batfish extends PluginConsumer implements IBatfish {
     _logger.debugf("Serializing Azure");
     try {
       _storage.storeVendorConfigurations(
-              ImmutableMap.of(BfConsts.RELPATH_AZURE_CONFIGS_DIR, azureConfiguration), snapshot);
+          ImmutableMap.of(BfConsts.RELPATH_AZURE_CONFIGS_DIR, azureConfiguration), snapshot);
     } catch (IOException e) {
       throw new UncheckedIOException(e);
     }
