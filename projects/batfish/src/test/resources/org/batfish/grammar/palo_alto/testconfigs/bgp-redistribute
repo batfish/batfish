@@ -7,7 +7,6 @@ set network virtual-router vr1 interface ethernet1/3.5
 
 set network virtual-router vr1 protocol redist-profile rdp1 filter type connect
 set network virtual-router vr1 protocol redist-profile rdp1 filter type static
-set network virtual-router vr1 protocol redist-profile rdp1 filter destination [ 1.1.1.0/24 ]
 set network virtual-router vr1 protocol redist-profile rdp1 priority 1
 set network virtual-router vr1 protocol redist-profile rdp1 action redist
 
