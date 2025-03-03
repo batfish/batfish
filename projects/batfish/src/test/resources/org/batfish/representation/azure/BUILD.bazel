@@ -1,12 +1,12 @@
 package(
-  default_testonly = True,
-  default_visibility = ["//visibility:public"],
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
 )
 
 filegroup(
-  name = "azure",
-  srcs = glob(
-      ["**"],
-      exclude = ["BUILD.bazel"],
-  ),
+    name = "azure",
+    srcs = glob(
+        ["**"],
+        exclude = ["BUILD.bazel"],
+    ),
 )
