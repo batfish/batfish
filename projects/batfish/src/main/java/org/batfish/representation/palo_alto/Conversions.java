@@ -227,15 +227,16 @@ final class Conversions {
     }
     redistConditions.add(new MatchProtocol(protocolConditions.build()));
 
-    // TODO: I believe the set of prefixes can be empty and it means universe prefix space, not
-    // empty set.
-    PrefixSpace prefixSpace = new PrefixSpace();
-    MatchPrefixSet matchPrefixSet =
-        new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace));
-    for (Prefix prefix : filter.getDestinationPrefixes()) {
-      prefixSpace.addPrefix(prefix);
+    // If prefixes are specified, match them. If not, any prefix is allowed.
+    if (!filter.getDestinationPrefixes().isEmpty()) {
+      PrefixSpace prefixSpace = new PrefixSpace();
+      for (Prefix prefix : filter.getDestinationPrefixes()) {
+        prefixSpace.addPrefix(prefix);
+      }
+      MatchPrefixSet matchPrefixSet =
+          new MatchPrefixSet(DestinationNetwork.instance(), new ExplicitPrefixSet(prefixSpace));
+      redistConditions.add(matchPrefixSet);
     }
-    redistConditions.add(matchPrefixSet);
 
     ImmutableList.Builder<Statement> trueStatements = ImmutableList.builder();
     if (redistRule.getOrigin() != null) {
