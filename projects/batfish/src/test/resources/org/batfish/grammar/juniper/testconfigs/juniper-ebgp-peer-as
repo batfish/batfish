@@ -1,0 +1,8 @@
+#
+set system host-name juniper-ebgp-peer-as
+#
+set protocols bgp group G type external
+set protocols bgp group G neighbor 3.3.3.3 description D
+set protocols bgp group G neighbor 3.3.3.3 peer-as 1
+
+

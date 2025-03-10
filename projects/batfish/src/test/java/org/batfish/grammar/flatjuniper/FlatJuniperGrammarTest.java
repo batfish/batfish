@@ -8499,5 +8499,30 @@ public final class FlatJuniperGrammarTest {
                     + " pass commit checks.")));
   }
 
+  @Test
+  public void testEbgpPeerAsConfigurations() throws IOException {
+    String hostnameNoPeerAs = "juniper-ebgp-no-peer-as";
+    Batfish batfishNoPeerAs = getBatfishForConfigurationNames(hostnameNoPeerAs);
+    ConvertConfigurationAnswerElement ccaeNoPeerAs =
+        batfishNoPeerAs.loadConvertConfigurationAnswerElementOrReparse(
+            batfishNoPeerAs.getSnapshot());
+
+    assertThat(
+        ccaeNoPeerAs.getWarnings().get(hostnameNoPeerAs).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 2.2.2.2 of group G. Peer AS number must be configured for"
+                    + " an external peer")));
+
+    String hostnameWithPeerAs = "juniper-ebgp-peer-as";
+    Batfish batfishWithPeerAs = getBatfishForConfigurationNames(hostnameWithPeerAs);
+    ConvertConfigurationAnswerElement ccaeWithPeerAs =
+        batfishWithPeerAs.loadConvertConfigurationAnswerElementOrReparse(
+            batfishWithPeerAs.getSnapshot());
+
+    assertThat(
+        ccaeWithPeerAs.getWarnings().get(hostnameWithPeerAs).getFatalRedFlagWarnings(), empty());
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

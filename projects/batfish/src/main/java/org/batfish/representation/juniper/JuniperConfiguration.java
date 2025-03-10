@@ -548,6 +548,14 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Builder<?, ?> neighbor;
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
       Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
+
+      if (ig.getType() == BgpGroupType.EXTERNAL && ig.getPeerAs() == null) {
+        _w.fatalRedFlag(
+            "Error in neighbor %s of group %s. Peer AS number must be configured for an external"
+                + " peer",
+            prefix.getStartIp(), ig.getGroupName());
+      }
+
       if (ig.getDynamic()) {
         neighbor =
             BgpPassivePeerConfig.builder()
