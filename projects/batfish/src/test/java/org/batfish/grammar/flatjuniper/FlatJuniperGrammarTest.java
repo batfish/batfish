@@ -8551,5 +8551,23 @@ public final class FlatJuniperGrammarTest {
                     + " an external peer")));
   }
 
+  @Test
+  public void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
+    String hostname = "juniper-community";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in"
+                    + " an add action"),
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in a"
+                    + " set action")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
