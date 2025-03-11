@@ -1,7 +1,0 @@
-#
-set system host-name juniper-ebgp-no-peer-as
-#
-set protocols bgp group G type external
-set protocols bgp group G neighbor 2.2.2.2 description D
-
-

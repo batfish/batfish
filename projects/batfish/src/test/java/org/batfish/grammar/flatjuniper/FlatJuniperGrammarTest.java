@@ -8500,28 +8500,18 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testEbgpPeerAsConfigurations() throws IOException {
-    String hostnameNoPeerAs = "juniper-ebgp-no-peer-as";
-    Batfish batfishNoPeerAs = getBatfishForConfigurationNames(hostnameNoPeerAs);
-    ConvertConfigurationAnswerElement ccaeNoPeerAs =
-        batfishNoPeerAs.loadConvertConfigurationAnswerElementOrReparse(
-            batfishNoPeerAs.getSnapshot());
+  public void testBbpPeerAs() throws IOException {
+    String hostname = "juniper-bgp-peer-as";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(
-        ccaeNoPeerAs.getWarnings().get(hostnameNoPeerAs).getFatalRedFlagWarnings(),
-        hasItem(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
             WarningMatchers.hasText(
-                "FATAL: Error in neighbor 2.2.2.2 of group G. Peer AS number must be configured for"
+                "FATAL: Error in neighbor 3.3.3.3 of group G. Peer AS number must be configured for"
                     + " an external peer")));
-
-    String hostnameWithPeerAs = "juniper-ebgp-peer-as";
-    Batfish batfishWithPeerAs = getBatfishForConfigurationNames(hostnameWithPeerAs);
-    ConvertConfigurationAnswerElement ccaeWithPeerAs =
-        batfishWithPeerAs.loadConvertConfigurationAnswerElementOrReparse(
-            batfishWithPeerAs.getSnapshot());
-
-    assertThat(
-        ccaeWithPeerAs.getWarnings().get(hostnameWithPeerAs).getFatalRedFlagWarnings(), empty());
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
