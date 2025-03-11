@@ -8,7 +8,7 @@ or can be [set up separately](https://github.com/batfish/pybatfish#how-do-i-get-
 
 ## Prerequisites
 
-- Java 11 JDK
+- Java 17 JDK
 - git
 - [bazelisk](https://github.com/bazelbuild/bazelisk#installation)
 
@@ -30,10 +30,10 @@ Do the following before doing anything
 
 1. Open a fresh terminal to ensure the utilities are correctly picked up.
 
-1. If you don't already have the Java 11 JDK installed, first install homebrew cask and then Java 11
+1. If you don't already have the Java 17 JDK installed, first install homebrew cask and then Java 17
    using the following commands.
     - `brew tap homebrew/cask-versions`
-    - `brew install --cask temurin11`
+    - `brew install --cask temurin17`
 
 1. If you don't already have it, install Bazelisk.
     - `brew install bazelisk`
@@ -42,8 +42,8 @@ Do the following before doing anything
 
 Do the following before doing anything
 
-1. Install Java 11 and corresponding debug symbols
-    - `sudo apt install openjdk-11-jdk openjdk-11-dbg`
+1. Install Java 17 and corresponding debug symbols
+    - `sudo apt install openjdk-17-jdk openjdk-17-dbg`
 
 1. If you don't already have it, install `wget`:
     - `sudo apt-get install wget`
@@ -65,20 +65,20 @@ Do the following before doing anything
 ### Note: multiple versions of Java
 
 If you have multiple versions of Java installed on your machine, the default `java`/`javac` commands may still not be
-using JVM 11. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
+using JVM 17. In that case, you can force the version of Java in use by setting `JAVA_HOME`. @dhalperi has these aliases
 in his `.zshrc` to control which Java is running in a given shell on macOS:
 
 ```sh
 # Java options
 # j8q switches to Java 8, quietly. Could make a loud version that runs `java -version` after.
-function j8q() {
-    export JAVA_HOME=`/usr/libexec/java_home -v 1.8`
-}
 function j11q() {
     export JAVA_HOME=`/usr/libexec/java_home -v 11`
 }
-# Default to Java 11.
-j11q
+function j17q() {
+    export JAVA_HOME=`/usr/libexec/java_home -v 17`
+}
+# Default to Java 17.
+j17q
 ```
 
 ## Installation steps
