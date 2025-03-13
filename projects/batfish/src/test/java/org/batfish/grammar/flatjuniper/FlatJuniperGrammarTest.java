@@ -8493,7 +8493,10 @@ public final class FlatJuniperGrammarTest {
 
     assertThat(
         ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
-        hasItem(
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c0. Config will not"
+                    + " pass commit checks."),
             WarningMatchers.hasText(
                 "FATAL: Missing route address for if-route-exists condition c1. Config will not"
                     + " pass commit checks.")));
