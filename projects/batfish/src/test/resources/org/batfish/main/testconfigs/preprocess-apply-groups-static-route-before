@@ -1,0 +1,12 @@
+####BATFISH PRE-PROCESSED JUNIPER CONFIG####
+set system host-name preprocess-apply-groups-static-route
+
+set routing-options static route 0.0.0.0/0 preference 100
+set routing-options rib inet6.0 static route ::/0 preference 200
+
+set groups MYGROUP routing-options rib inet6.0 static route <*> discard
+set groups MYGROUP routing-options rib inet6.0 static route <*> no-install
+set groups MYGROUP routing-options static route <*> discard
+set groups MYGROUP routing-options static route <*> no-install
+
+set apply-groups MYGROUP

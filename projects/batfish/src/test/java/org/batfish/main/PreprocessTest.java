@@ -74,6 +74,13 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testApplyGroupsStaticRoute() throws IOException {
+    assertValidPair(
+        "preprocess-apply-groups-static-route-before",
+        "preprocess-apply-groups-static-route-after");
+  }
+
+  @Test
   public void testFlatPaloAlto() throws IOException {
     assertValidPair("preprocess-flat-pa-before", "preprocess-flat-pa-after");
   }
