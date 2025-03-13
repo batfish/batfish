@@ -663,7 +663,7 @@ ros_rib_group
 
 ros_route4
 :
-    ROUTE prefix = ip_prefix_default_32
+    ROUTE (wildcard | prefix = ip_prefix_default_32)
    (
       rosr_common
       | rosr_qualified_next_hop
@@ -672,7 +672,7 @@ ros_route4
 
 ros_route6
 :
-    ROUTE prefix = ipv6_prefix_default_128
+    ROUTE (wildcard | prefix = ipv6_prefix_default_128)
    (
       rosr_common
       | rosr_qualified_next_hop6
