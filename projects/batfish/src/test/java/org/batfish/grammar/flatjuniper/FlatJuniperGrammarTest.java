@@ -7738,7 +7738,9 @@ public final class FlatJuniperGrammarTest {
             .getFroms()
             .getFromConditions(),
         contains(new PsFromCondition("c1")));
-    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2", "c3", "c4", "c5"));
+    assertThat(
+        jc.getMasterLogicalSystem().getConditions(),
+        hasKeys("c1", "c2", "c3", "c4", "c5", "c6", "c7"));
     {
       Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
       assertThat(c.getIfRouteExists(), notNullValue());
@@ -7769,6 +7771,18 @@ public final class FlatJuniperGrammarTest {
       assertThat(c.getIfRouteExists(), notNullValue());
       assertThat(c.getIfRouteExists().getPrefix6(), equalTo(Prefix6.parse("::1.2.3.4/127")));
     }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c6");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.parse("192.0.2.1/32")));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c7");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(
+          c.getIfRouteExists().getPrefix6(),
+          equalTo(Prefix6.parse("2001:db8:1234:5678:abc1:2345:6789:abcd/128")));
+    }
   }
 
   @Test
@@ -7779,12 +7793,21 @@ public final class FlatJuniperGrammarTest {
     String c3TrackName = computeConditionTrackName("c3");
     String c4TrackName = computeConditionTrackName("c4");
     String c5TrackName = computeConditionTrackName("c5");
+    String c6TrackName = computeConditionTrackName("c6");
+    String c7TrackName = computeConditionTrackName("c7");
     Configuration c = parseConfig(hostname);
 
     // Conditions should be converted to tracks
     assertThat(
         c.getTrackingGroups(),
-        hasKeys(c1TrackName, c2TrackName, c3TrackName, c4TrackName, c5TrackName));
+        hasKeys(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
     assertThat(
         c.getTrackingGroups().get(c1TrackName),
         equalTo(
@@ -7797,11 +7820,22 @@ public final class FlatJuniperGrammarTest {
         equalTo(TrackMethods.route(Prefix.strict("3.0.0.0/24"), ImmutableSet.of(), "ri3")));
     assertThat(c.getTrackingGroups().get(c4TrackName), equalTo(TrackMethods.alwaysTrue()));
     assertThat(c.getTrackingGroups().get(c5TrackName), equalTo(TrackMethods.alwaysFalse()));
+    assertThat(
+        c.getTrackingGroups().get(c6TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(), "default")));
+    assertThat(c.getTrackingGroups().get(c7TrackName), equalTo(TrackMethods.alwaysFalse()));
 
     // BGP process should watch tracks for conditions
     assertThat(
         c.getDefaultVrf().getBgpProcess().getTracks(),
-        containsInAnyOrder(c1TrackName, c2TrackName, c3TrackName, c4TrackName, c5TrackName));
+        containsInAnyOrder(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
   }
 
   @Test
