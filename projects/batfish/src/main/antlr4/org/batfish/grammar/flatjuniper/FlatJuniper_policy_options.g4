@@ -56,9 +56,9 @@ pocond_if_route_exists
   )
 ;
 
-pocondiafi_prefix: prefix = ip_prefix;
+pocondiafi_prefix: prefix = ip_prefix_default_32;
 
-pocondiafi_prefix6: prefix = ipv6_prefix;
+pocondiafi_prefix6: prefix = ipv6_prefix_default_128;
 
 pocondiafi_table: TABLE name = junos_name;
 
