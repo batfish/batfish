@@ -24,6 +24,9 @@ public final class PsThenCommunitySet extends PsThen {
       Warnings warnings) {
     if (!c.getCommunitySets().containsKey(_name)) {
       // undefined reference; or not converted because it contains only regexes
+      juniperVendorConfiguration
+          .getWarnings()
+          .fatalRedFlag("'%s' community contains no non-wildcard members in a set action", _name);
       return;
     }
     juniperVendorConfiguration.getOrCreateNamedCommunitiesUsedForSet().add(_name);
