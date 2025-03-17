@@ -1,0 +1,7 @@
+#
+set system host-name juniper-local-address
+
+#
+set protocols bgp group NO_ADDRESS_GROUP local-address
+set protocols bgp group IP4_GROUP local-address 192.0.2.1
+set protocols bgp group IP6_GROUP local-address 2001:db8:1234:5678:abc1:2345:6789:abcd

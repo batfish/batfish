@@ -4403,6 +4403,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.ip_address() != null) {
       Ip localAddress = toIp(ctx.ip_address());
       _currentBgpGroup.setLocalAddress(localAddress);
+    } else if (ctx.ipv6_address() != null) {
+      // TODO: Extract ipv6 local address
+    } else {
+      _w.fatalRedFlag(
+          "Statement 'local-address' for group '%s' requires an IP address",
+          _currentBgpGroup.getGroupName());
     }
   }
 

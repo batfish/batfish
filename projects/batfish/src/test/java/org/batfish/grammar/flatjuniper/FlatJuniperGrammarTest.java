@@ -8551,5 +8551,21 @@ public final class FlatJuniperGrammarTest {
                     + " an external peer")));
   }
 
+  @Test
+  public void testEmptyLocalAddressHasFatalWarning() throws IOException {
+    String hostname = "juniper-local-address";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(filename).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Statement 'local-address' for group 'NO_ADDRESS_GROUP' requires an IP"
+                    + " address")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
