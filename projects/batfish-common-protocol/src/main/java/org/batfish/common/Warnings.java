@@ -193,7 +193,6 @@ public class Warnings implements Serializable {
   }
 
   /** Get all red flag warnings that are fatal error */
-  @JsonIgnore
   public SortedSet<Warning> getFatalRedFlagWarnings() {
     SortedSet<Warning> fatalWarnings = new TreeSet<>();
     for (Warning warning : _redFlagWarnings) {
