@@ -87521,6 +87521,10 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.2.3.5 of group someinternalipv4group. Internal peer's AS (54321) must be the same as local AS (null)."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -87593,12 +87597,20 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             }
           ]
         },
         "juniper_rib_groups~logical_system~logicalsystem" : {
           "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
