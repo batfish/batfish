@@ -1156,7 +1156,7 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
-        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
 
     assertThat(
         parseConfig("bgp-multipath-internal").getDefaultVrf(),
@@ -8537,8 +8537,8 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testBbpPeerAs() throws IOException {
-    String hostname = "juniper-bgp-peer-as";
+  public void testBgpPeerAsWarnings() throws IOException {
+    String hostname = "bgp-peer-as-warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
@@ -8547,8 +8547,17 @@ public final class FlatJuniperGrammarTest {
         ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
         contains(
             WarningMatchers.hasText(
-                "FATAL: Error in neighbor 3.3.3.3 of group G. Peer AS number must be configured for"
-                    + " an external peer")));
+                "FATAL: Error in neighbor 192.0.2.2 of group EBGP_GROUP. External peer's AS (1111)"
+                    + " must not be the same as the local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.3 of group EBGP_GROUP. Peer AS number must be"
+                    + " configured for an external peer."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.5 of group IBGP_GROUP. Internal peer's AS (2222)"
+                    + " must be the same as local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.9 of group DEFAULT_GROUP. Peer AS number must be"
+                    + " configured for an external peer.")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

@@ -1,0 +1,35 @@
+#
+set system host-name bgp-peer-as-warnings
+
+# Set local router's AS number
+set routing-options autonomous-system 1111
+set protocols bgp group EBGP_GROUP type external
+set protocols bgp group IBGP_GROUP type internal
+
+# Valid - EBGP peer with different AS number
+set protocols bgp group EBGP_GROUP neighbor 192.0.2.1 peer-as 2222
+
+# Invalid - EBGP peer with same AS number
+set protocols bgp group EBGP_GROUP neighbor 192.0.2.2 peer-as 1111
+
+# Invalid - EBGP peer with no AS
+set protocols bgp group EBGP_GROUP neighbor 192.0.2.3
+
+# Valid - IBGP peer with same AS number
+set protocols bgp group IBGP_GROUP neighbor 192.0.2.4  peer-as 1111
+
+# Invalid - IBGP peer with different AS number
+set protocols bgp group IBGP_GROUP neighbor 192.0.2.5  peer-as 2222
+
+# Valid - IBGP peer with no AS
+set protocols bgp group IBGP_GROUP neighbor 192.0.2.6
+
+# Valid - Null type group with different AS
+set protocols bgp group DEFAULT_GROUP neighbor 192.0.2.7 peer-as 2222
+
+# Valid - Null type group with same AS
+set protocols bgp group DEFAULT_GROUP neighbor 192.0.2.8 peer-as 1111
+
+# Invalid - Null type group with no AS
+set protocols bgp group DEFAULT_GROUP neighbor 192.0.2.9
+

@@ -547,14 +547,41 @@ public final class JuniperConfiguration extends VendorConfiguration {
       IpBgpGroup ig = e.getValue();
       Builder<?, ?> neighbor;
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
-      Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
 
-      if (ig.getType() == BgpGroupType.EXTERNAL && ig.getPeerAs() == null) {
+      boolean ibgp;
+      if (ig.getType() == BgpGroupType.EXTERNAL) {
+        ibgp = false;
+        if (ig.getPeerAs() != null && ig.getPeerAs().equals(ig.getLocalAs())) {
+          _w.fatalRedFlag(
+              "Error in neighbor %s of group %s. External peer's AS (%s) must not be the same as"
+                  + " the local AS (%s).",
+              prefix.getStartIp(), ig.getGroupName(), ig.getPeerAs(), ig.getLocalAs());
+        }
+      } else if (ig.getType() == BgpGroupType.INTERNAL) {
+        ibgp = true;
+        if (ig.getPeerAs() != null && !ig.getPeerAs().equals(ig.getLocalAs())) {
+          _w.fatalRedFlag(
+              "Error in neighbor %s of group %s. Internal peer's AS (%s) must be the same as local"
+                  + " AS (%s).",
+              prefix.getStartIp(), ig.getGroupName(), ig.getPeerAs(), ig.getLocalAs());
+        }
+      } else {
+        if (ig.getPeerAs() == null) {
+          // type is external by default unless a peer-as is defined
+          ibgp = false;
+        } else {
+          ibgp = ig.getPeerAs().equals(ig.getLocalAs());
+        }
+      }
+
+      if (!ibgp && ig.getPeerAs() == null) {
         _w.fatalRedFlag(
             "Error in neighbor %s of group %s. Peer AS number must be configured for an external"
-                + " peer",
+                + " peer.",
             prefix.getStartIp(), ig.getGroupName());
       }
+
+      Long remoteAs = ibgp ? ig.getLocalAs() : ig.getPeerAs();
 
       if (ig.getDynamic()) {
         neighbor =
@@ -581,8 +608,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       neighbor.setConfederation(routingInstance.getConfederation());
-
-      boolean ibgp = Objects.equals(remoteAs, ig.getLocalAs());
 
       // multipath multiple-as
       if (!ibgp) {
@@ -725,7 +750,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
         neighbor.setAppliedRibGroup(
             toRibGroup(
                 _masterLogicalSystem.getRibGroups().get(ig.getRibGroup()),
-                ig.getType() == BgpGroupType.INTERNAL ? RoutingProtocol.IBGP : RoutingProtocol.BGP,
+                ibgp ? RoutingProtocol.IBGP : RoutingProtocol.BGP,
                 _c,
                 routingInstance.getName(),
                 _w));
@@ -782,7 +807,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       }
 
       /* Inherit multipath */
-      if (ig.getType() == BgpGroupType.INTERNAL || ig.getType() == null) {
+      if (ibgp) {
         boolean currentGroupMultipathIbgp = ig.getMultipath();
         if (multipathIbgpSet && currentGroupMultipathIbgp != multipathIbgp) {
           _w.redFlag(
@@ -793,8 +818,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
           multipathIbgp = currentGroupMultipathIbgp;
           multipathIbgpSet = true;
         }
-      }
-      if (ig.getType() == BgpGroupType.EXTERNAL || ig.getType() == null) {
+      } else {
         boolean currentGroupMultipathEbgp = ig.getMultipath();
         if (multipathEbgpSet && currentGroupMultipathEbgp != multipathEbgp) {
           _w.redFlag(
