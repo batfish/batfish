@@ -1156,7 +1156,7 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
-        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
 
     assertThat(
         parseConfig("bgp-multipath-internal").getDefaultVrf(),
