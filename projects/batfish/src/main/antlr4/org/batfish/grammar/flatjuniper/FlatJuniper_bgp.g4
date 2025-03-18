@@ -201,7 +201,7 @@ b_local_address
    (
       ip_address
       | ipv6_address
-   )?
+   )
 ;
 
 b_local_as
