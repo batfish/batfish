@@ -549,11 +549,29 @@ public final class JuniperConfiguration extends VendorConfiguration {
       Ipv4UnicastAddressFamily.Builder ipv4AfBuilder = Ipv4UnicastAddressFamily.builder();
       Long remoteAs = ig.getType() == BgpGroupType.INTERNAL ? ig.getLocalAs() : ig.getPeerAs();
 
-      if (ig.getType() == BgpGroupType.EXTERNAL && ig.getPeerAs() == null) {
-        _w.fatalRedFlag(
-            "Error in neighbor %s of group %s. Peer AS number must be configured for an external"
-                + " peer",
-            prefix.getStartIp(), ig.getGroupName());
+      // Undefined type defaults to external
+      if (ig.getType() == BgpGroupType.EXTERNAL || ig.getType() == null) {
+        // EBGP will fail to commit without a peer-as set
+        if (ig.getPeerAs() == null) {
+          _w.fatalRedFlag(
+              "Error in neighbor %s of group %s. Peer AS number must be configured for an external"
+                  + " peer.",
+              prefix.getStartIp(), ig.getGroupName());
+        } else if (ig.getType() == BgpGroupType.EXTERNAL
+            && ig.getPeerAs().equals(ig.getLocalAs())) {
+          // Only explicit external type cannot have the same AS as local AS
+          _w.fatalRedFlag(
+              "Error in neighbor %s of group %s. External peer's AS (%s) must not be the same as"
+                  + " the local AS (%s).",
+              prefix.getStartIp(), ig.getGroupName(), ig.getPeerAs(), ig.getLocalAs());
+        }
+      } else if (ig.getType() == BgpGroupType.INTERNAL) {
+        if (ig.getPeerAs() != null && !ig.getPeerAs().equals(ig.getLocalAs())) {
+          _w.fatalRedFlag(
+              "Error in neighbor %s of group %s. Internal peer's AS (%s) must be the same as local"
+                  + " AS (%s).",
+              prefix.getStartIp(), ig.getGroupName(), ig.getPeerAs(), ig.getLocalAs());
+        }
       }
 
       if (ig.getDynamic()) {
