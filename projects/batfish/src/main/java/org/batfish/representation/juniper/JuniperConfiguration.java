@@ -1008,8 +1008,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
               @Nullable CommunitySet communitySet = toCommunitySet(namedCommunity);
               if (communitySet != null) {
                 _c.getCommunitySets().put(name, communitySet);
-              } else {
-                _c.getWildcardCommunitySets().add(name);
               }
               _c.getCommunityMatchExprs().put(name, toCommunityMatchExpr(namedCommunity));
               _c.getCommunitySetMatchExprs().put(name, toCommunitySetMatchExpr(namedCommunity));

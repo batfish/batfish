@@ -159,7 +159,6 @@ public final class Configuration implements Serializable {
   private static final String PROP_COMMUNITY_SET_EXPRS = "communitySetExprs";
   private static final String PROP_COMMUNITY_SET_MATCH_EXPRS = "communitySetMatchExprs";
   private static final String PROP_COMMUNITY_SETS = "communitySets";
-  private static final String PROP_WILDCARD_COMMUNITY_SETS = "wildcardCommunitySets";
   private static final String PROP_CONFIGURATION_FORMAT = "configurationFormat";
   private static final String PROP_DEFAULT_CROSS_ZONE_ACTION = "defaultCrossZoneAction";
   private static final String PROP_DEFAULT_INBOUND_ACTION = "defaultInboundAction";
@@ -220,7 +219,6 @@ public final class Configuration implements Serializable {
   private Map<String, CommunitySetExpr> _communitySetExprs;
   private Map<String, CommunitySetMatchExpr> _communitySetMatchExprs;
   private Map<String, CommunitySet> _communitySets;
-  private Set<String> _wildcardCommunitySets;
 
   private final ConfigurationFormat _configurationFormat;
 
@@ -343,7 +341,6 @@ public final class Configuration implements Serializable {
     _communitySetExprs = new HashMap<>();
     _communitySetMatchExprs = new HashMap<>();
     _communitySets = new HashMap<>();
-    _wildcardCommunitySets = new TreeSet<>();
     _configurationFormat = configurationFormat;
     _disconnectAdminDownInterfaces = true;
     _dnsServers = new TreeSet<>();
@@ -488,11 +485,6 @@ public final class Configuration implements Serializable {
   @JsonIgnore
   public @Nonnull Map<String, CommunitySet> getCommunitySets() {
     return _communitySets;
-  }
-
-  @JsonIgnore
-  public @Nonnull Set<String> getWildcardCommunitySets() {
-    return _wildcardCommunitySets;
   }
 
   @JsonProperty(PROP_COMMUNITY_SETS)
@@ -875,11 +867,6 @@ public final class Configuration implements Serializable {
   @JsonProperty(PROP_COMMUNITY_SETS)
   public void setCommunitySets(@Nonnull Map<String, CommunitySet> communitySets) {
     _communitySets = communitySets;
-  }
-
-  @JsonProperty(PROP_WILDCARD_COMMUNITY_SETS)
-  public void setWildcardCommunitySets(@Nonnull Set<String> wildcardCommunitySets) {
-    _wildcardCommunitySets = wildcardCommunitySets;
   }
 
   public void setDefaultCrossZoneAction(LineAction defaultCrossZoneAction) {

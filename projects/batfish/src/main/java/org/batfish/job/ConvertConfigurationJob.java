@@ -537,7 +537,6 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setCommunitySetExprs(toImmutableMap(c.getCommunitySetExprs()));
     c.setCommunitySetMatchExprs(toImmutableMap(c.getCommunitySetMatchExprs()));
     c.setCommunitySets(toImmutableMap(c.getCommunitySets()));
-    c.setWildcardCommunitySets(toImmutableSet(c.getWildcardCommunitySets()));
     c.setDnsServers(toImmutableSet(c.getDnsServers()));
     c.setGeneratedReferenceBooks(toImmutableMap(c.getGeneratedReferenceBooks()));
     c.setIkePhase1Keys(toImmutableMap(c.getIkePhase1Keys()));
