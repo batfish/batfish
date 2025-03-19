@@ -1,0 +1,21 @@
+#
+set system host-name community-literals-warnings
+set policy-options community COMMUNITY_WITH_NO_LITERAL members 10000:.*
+set policy-options community COMMUNITY_WITH_LITERAL members 10000:100
+set policy-options community COMMUNITY_WITH_LITERAL members 10000:.*
+
+# Legal - using community with no literal member for matching
+set policy-options policy-statement LEGAL_MATCH from community COMMUNITY_WITH_NO_LITERAL
+
+# Legal - using community with a literal member for set/add
+set policy-options policy-statement LEGAL_ADD then community add COMMUNITY_WITH_LITERAL
+set policy-options policy-statement LEGAL_SET then community set COMMUNITY_WITH_LITERAL
+
+# Legal - using community with no literal member for deleting
+set policy-options policy-statement LEGAL_DELETE then community delete COMMUNITY_WITH_NO_LITERAL
+
+# Illegal - using community with no literal member for set/add
+set policy-options policy-statement ILLEGAL_ADD then community add COMMUNITY_WITH_NO_LITERAL
+set policy-options policy-statement ILLEGAL_SET then community set COMMUNITY_WITH_NO_LITERAL
+
+set policy-options policy-statement UNDEFINED_ADD then community add UNDEFINED_COMMUNITY
