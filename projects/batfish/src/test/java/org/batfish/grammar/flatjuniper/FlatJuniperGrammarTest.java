@@ -8553,7 +8553,7 @@ public final class FlatJuniperGrammarTest {
 
   @Test
   public void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
-    String hostname = "juniper-community";
+    String hostname = "community-literals-warnings";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
         batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
