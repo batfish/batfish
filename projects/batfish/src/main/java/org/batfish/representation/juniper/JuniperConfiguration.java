@@ -25,7 +25,6 @@ import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 
 import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -3881,7 +3880,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     JuniperStructureType.ABSTRACT_STRUCTURES.asMap().forEach(this::markAbstractStructureAllUsages);
 
     warnEmptyPrefixLists();
-    warnIllegalNamedCommunitiesUsedForSet();
 
     _c.computeRoutingPolicySources(_w);
 
@@ -4135,17 +4133,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     _masterLogicalSystem.getFirewallFilters().put(filter.getName(), filter);
     return filter.getName();
-  }
-
-  private void warnIllegalNamedCommunitiesUsedForSet() {
-    getOrCreateNamedCommunitiesUsedForSet().stream()
-        .filter(Predicates.not(_c.getCommunitySets()::containsKey))
-        .forEach(
-            name ->
-                _w.redFlagf(
-                    "community '%s' contains no literal communities, but is illegally used in"
-                        + " 'then community' statement",
-                    name));
   }
 
   /** Initialize default protocol-specific import policies */
