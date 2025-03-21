@@ -103,6 +103,10 @@ public final class ExtendedCommunity extends Community {
       subTypeByte = 0x02;
     } else if (subType.equals("origin")) {
       subTypeByte = 0x03;
+    } else if (subType.equals("encapsulation")) {
+      // RFC 9012: Encapsulation Extended Community
+      typeByte = 0x03; // Transitive opaque
+      subTypeByte = 0x0C; // Encapsulation sub-type
     } else {
       // They type/subtype is a literal integer
       Integer intVal = Ints.tryParse(subType);
@@ -221,6 +225,15 @@ public final class ExtendedCommunity extends Community {
     return new ExtendedCommunity(type, subtype, value);
   }
 
+  /** Return an encapsulation extended community. See https://www.rfc-editor.org/rfc/rfc9012 */
+  public static ExtendedCommunity encapsulation(long tunnelType) {
+    checkArgument(
+        tunnelType >= 0 && tunnelType <= 0xFFFFL,
+        "Tunnel type %s is not within the allowed range",
+        tunnelType);
+    return new ExtendedCommunity(0x03, 0x0C, tunnelType);
+  }
+
   @Override
   public <T> T accept(CommunityVisitor<T> visitor) {
     return visitor.visitExtendedCommunity(this);
@@ -255,6 +268,12 @@ public final class ExtendedCommunity extends Community {
   public boolean isOpaque() {
     // https://tools.ietf.org/html/rfc4360
     return _type == 0x03 || _type == 0x43;
+  }
+
+  /** Check whether this community is an encapsulation community */
+  public boolean isEncapsulation() {
+    // https://www.rfc-editor.org/rfc/rfc9012
+    return _type == 0x03 && _subType == 0x0C;
   }
 
   /**
