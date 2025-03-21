@@ -3566,6 +3566,33 @@ public class SearchRoutePoliciesAnswererTest {
   }
 
   @Test
+  public void testMatchStaticRoute() {
+    _policyBuilder.addStatement(
+        new If(
+            new MatchProtocol(RoutingProtocol.STATIC),
+            ImmutableList.of(
+                new SetLocalPreference(new LiteralLong(300)),
+                new StaticStatement(Statements.ExitAccept))));
+    RoutingPolicy policy = _policyBuilder.build();
+
+    SearchRoutePoliciesQuestion question =
+        new SearchRoutePoliciesQuestion(
+            DEFAULT_DIRECTION,
+            EMPTY_CONSTRAINTS,
+            EMPTY_CONSTRAINTS,
+            HOSTNAME,
+            policy.getName(),
+            PERMIT,
+            DEFAULT_PATH_OPTION);
+    SearchRoutePoliciesAnswerer answerer = new SearchRoutePoliciesAnswerer(question, _batfish);
+
+    TableAnswerElement answer = (TableAnswerElement) answerer.answer(_batfish.getSnapshot());
+
+    // paths that are only taken by non-BGP input routes are ignored
+    assertEquals(answer.getRows().size(), 0);
+  }
+
+  @Test
   public void testPermitPerPathNonOverlap() {
     String regex1 = "^2[0-9]:30$";
     String regex2 = "^2[0-9]:40$";
