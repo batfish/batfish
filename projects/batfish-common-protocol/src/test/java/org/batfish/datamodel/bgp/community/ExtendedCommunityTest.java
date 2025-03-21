@@ -62,6 +62,8 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.parse("0x43:0x4:0x5"), equalTo(ExtendedCommunity.opaque(false, 4, 5L)));
     assertThat(
         ExtendedCommunity.parse("0x3:0x4:0x5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
+    assertThat(
+        ExtendedCommunity.parse("0X3:0X4:0X5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
   }
 
   @Test

@@ -74,7 +74,7 @@ public final class ExtendedCommunity extends Community {
   public static @Nonnull ExtendedCommunity parse(String communityStr) {
     // TODO: move vendor-specific parsing into vendor-specific context, remove redundant validation.
 
-    String[] parts = communityStr.trim().split(":");
+    String[] parts = communityStr.trim().toLowerCase().split(":");
     checkArgument(parts.length == 3, "Invalid extended community string: %s", communityStr);
     if (parts[0].startsWith("0x") && parts[1].startsWith("0x") && parts[2].startsWith("0x")) {
       // Not custom printed like the kind of extcomms that have gaLong.
@@ -91,9 +91,9 @@ public final class ExtendedCommunity extends Community {
     }
     long gaLong;
     long laLong;
-    String subType = parts[0].toLowerCase();
-    String globalAdministrator = parts[1].toLowerCase();
-    String localAdministrator = parts[2].toLowerCase();
+    String subType = parts[0];
+    String globalAdministrator = parts[1];
+    String localAdministrator = parts[2];
 
     // Try to figure out type/subtype first
     Byte typeByte = null;
