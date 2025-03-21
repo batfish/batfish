@@ -120,6 +120,7 @@ public class BfConsts {
   public static final String PROP_VARIABLES = "variables";
 
   public static final String RELPATH_AWS_CONFIGS_DIR = "aws_configs";
+  public static final String RELPATH_AZURE_CONFIGS_DIR = "azure_configs";
   public static final String RELPATH_AWS_CONFIGS_FILE = "aws_configs";
   public static final String RELPATH_BATFISH = "batfish";
   public static final String RELPATH_CHECKPOINT_MANAGEMENT_DIR = "checkpoint_management";
