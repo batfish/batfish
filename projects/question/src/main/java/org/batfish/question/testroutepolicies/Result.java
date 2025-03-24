@@ -139,7 +139,7 @@ public class Result<I, O> {
     _relevantInputAttributes = attributes;
   }
 
-  public Result<I, O> setOutputRoute(O outputRoute) {
+  public <NewT> Result<I, NewT> setOutputRoute(NewT outputRoute) {
     return new Result<>(_policyId, _inputRoute, _action, outputRoute, _trace);
   }
 

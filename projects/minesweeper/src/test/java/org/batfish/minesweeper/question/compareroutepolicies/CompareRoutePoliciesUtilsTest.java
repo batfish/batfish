@@ -121,7 +121,7 @@ public class CompareRoutePoliciesUtilsTest {
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -146,7 +146,7 @@ public class CompareRoutePoliciesUtilsTest {
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -174,7 +174,7 @@ public class CompareRoutePoliciesUtilsTest {
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -197,7 +197,7 @@ public class CompareRoutePoliciesUtilsTest {
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(

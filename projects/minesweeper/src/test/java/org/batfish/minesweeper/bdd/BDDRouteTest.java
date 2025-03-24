@@ -111,6 +111,6 @@ public class BDDRouteTest {
             () -> route.getOriginType().satAssignmentToValue(anyOriginType.not()));
     assertThat(
         thrown, ThrowableMessageMatcher.hasMessage(containsString("is not valid in this domain")));
-    assertThat(route.bgpWellFormednessConstraints().and(anyOriginType.not()), isZero());
+    assertThat(route.wellFormednessConstraints(true).and(anyOriginType.not()), isZero());
   }
 }
