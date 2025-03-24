@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -168,7 +169,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
           ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
@@ -214,7 +215,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       Tuple<Predicate<String>, String> env,
       BDDRoute bddRoute) {
     Result<Bgpv4Route, Bgpv4Route> simResult =
-        TestRoutePoliciesAnswerer.simulatePolicy(
+        TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(
             policy,
             inRoute,
             DUMMY_BGP_SESSION_PROPERTIES,
@@ -236,31 +237,40 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @return a version of the result suitable for output from this analysis
    */
   private static Result<BgpRoute, BgpRoute> toQuestionResult(
-      Result<Bgpv4Route, Bgpv4Route> result, BDDRoute outputRoute) {
+      Result<Bgpv4Route, Bgpv4Route> result, BDDRoute bddRoute) {
     Result<BgpRoute, BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
 
     if (result.getAction() == PERMIT) {
-      // update the output route's next-hop if it was set to the local or remote IP;
-      // rather than producing a concrete IP we use a special class that indicates that the
-      // local (remote) IP is used
-      switch (outputRoute.getNextHopType()) {
-        case SELF:
-          BgpRoute outRouteSelf =
-              qResult.getOutputRoute().toBuilder().setNextHop(NextHopSelf.instance()).build();
-          qResult = qResult.setOutputRoute(outRouteSelf);
-          break;
-        case BGP_PEER_ADDRESS:
-          BgpRoute outRoutePeer =
-              qResult.getOutputRoute().toBuilder()
-                  .setNextHop(NextHopBgpPeerAddress.instance())
-                  .build();
-          qResult = qResult.setOutputRoute(outRoutePeer);
-          break;
-        default:
-          break;
-      }
+      qResult =
+          qResult.setOutputRoute(toSymbolicBgpOutputRoute(qResult.getOutputRoute(), bddRoute));
     }
     return qResult;
+  }
+
+  /**
+   * Converts a concrete {@link BgpRoute} output route that comes from route-policy simulation into
+   * a version of it that is a valid result from the symbolic route analysis questions. The symbolic
+   * analysis uses symbolic placeholders for data that comes from the environment, such as the IP
+   * address of the local BGP session.
+   *
+   * @param route a concrete BGP route
+   * @param bddRoute the results of symbolic analysis
+   * @return a BGP route that is a valid question result
+   */
+  public static BgpRoute toSymbolicBgpOutputRoute(@Nullable BgpRoute route, BDDRoute bddRoute) {
+
+    if (route == null) {
+      return null;
+    }
+    // update the output route's next-hop if it was set to the local or remote IP;
+    // rather than producing a concrete IP we use a special class that indicates that the
+    // local (remote) IP is used
+    return switch (bddRoute.getNextHopType()) {
+      case SELF -> route.toBuilder().setNextHop(NextHopSelf.instance()).build();
+      case BGP_PEER_ADDRESS ->
+          route.toBuilder().setNextHop(NextHopBgpPeerAddress.instance()).build();
+      default -> route;
+    };
   }
 
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
@@ -475,7 +485,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
 
     // make sure the model we end up getting corresponds to a valid route
-    BDD result = r.bgpWellFormednessConstraints();
+    BDD result = r.wellFormednessConstraints(true);
 
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
