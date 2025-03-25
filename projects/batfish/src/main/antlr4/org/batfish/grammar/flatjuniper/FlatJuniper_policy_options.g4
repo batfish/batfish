@@ -141,7 +141,7 @@ poplt_network
 
 poplt_network6
 :
-   network = ipv6_prefix
+   network = ipv6_prefix_default_128
 ;
 
 pops_common
@@ -362,7 +362,7 @@ popsf_route_filter
    ROUTE_FILTER
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    ) popsfrf_common then = popsfrf_then?
 ;
 
@@ -459,7 +459,7 @@ popsfrf_through
    THROUGH
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    )
 ;
 
