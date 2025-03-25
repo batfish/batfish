@@ -477,7 +477,7 @@ roa_route
   ROUTE
   (
     prefix = ip_prefix_default_32
-    | prefix6 = ipv6_prefix
+    | prefix6 = ipv6_prefix_default_128
   )
   (
     apply
@@ -590,7 +590,7 @@ rog_route
   ROUTE
   (
     prefix = ip_prefix_default_32
-    | ipv6_prefix
+    | prefix6 = ipv6_prefix_default_128
   ) rog_common
 ;
 
