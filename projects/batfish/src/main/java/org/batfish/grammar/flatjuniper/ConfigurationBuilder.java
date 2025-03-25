@@ -3184,8 +3184,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.prefix != null) {
       _currentRouteFilterPrefix = toPrefix(ctx.prefix);
       _currentRouteFilter.setIpv4(true);
-    } else if (ctx.ipv6_prefix() != null) {
-      _currentRoute6FilterPrefix = toPrefix6(ctx.ipv6_prefix());
+    } else if (ctx.prefix6 != null) {
+      _currentRoute6FilterPrefix = toPrefix6(ctx.prefix6);
       _currentRouteFilter.setIpv6(true);
     }
   }
@@ -3283,7 +3283,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Route4FilterLine line = new Route4FilterLineThrough(_currentRouteFilterPrefix, throughPrefix);
       _currentRouteFilterLine = _currentRouteFilter.insertLine(line, Route4FilterLine.class);
     } else if (_currentRoute6FilterPrefix != null) { // ipv6
-      Prefix6 throughPrefix6 = toPrefix6(ctx.ipv6_prefix());
+      Prefix6 throughPrefix6 = toPrefix6(ctx.prefix6);
       Route6FilterLine line =
           new Route6FilterLineThrough(_currentRoute6FilterPrefix, throughPrefix6);
       _currentRoute6FilterLine = _currentRouteFilter.insertLine(line, Route6FilterLine.class);
@@ -3370,7 +3370,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Prefix prefix = toPrefix(ctx.prefix);
       Map<Prefix, GeneratedRoute> generatedRoutes = _currentRib.getGeneratedRoutes();
       _currentGeneratedRoute = generatedRoutes.computeIfAbsent(prefix, GeneratedRoute::new);
-    } else if (ctx.ipv6_prefix() != null) {
+    } else if (ctx.prefix6 != null) {
       // dummy generated route not added to configuration
       _currentGeneratedRoute = new GeneratedRoute(null);
       todo(ctx);

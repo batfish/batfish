@@ -113,7 +113,7 @@ oa_area_range
    AREA_RANGE
    (
       prefix = ip_prefix_default_32
-      | ipv6_prefix
+      | prefix6 = ipv6_prefix_default_128
    )
    (
       apply
