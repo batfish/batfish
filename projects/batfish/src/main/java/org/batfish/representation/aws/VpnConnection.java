@@ -19,16 +19,20 @@ import com.google.common.collect.ImmutableSortedSet;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
+import com.google.common.collect.Lists;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -64,8 +68,6 @@ import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
@@ -93,8 +95,32 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static DiffieHellmanGroup toDiffieHellmanGroup(String perfectForwardSecrecy) {
     switch (perfectForwardSecrecy) {
-      case "group2":
+      case "2":
         return DiffieHellmanGroup.GROUP2;
+      case "5":
+        return DiffieHellmanGroup.GROUP5;
+      case "14":
+        return DiffieHellmanGroup.GROUP14;
+      case "15":
+        return DiffieHellmanGroup.GROUP15;
+      case "16":
+        return DiffieHellmanGroup.GROUP16;
+      case "17":
+        return DiffieHellmanGroup.GROUP17;
+      case "18":
+        return DiffieHellmanGroup.GROUP18;
+      case "19":
+        return DiffieHellmanGroup.GROUP19;
+      case "20":
+        return DiffieHellmanGroup.GROUP20;
+      case "21":
+        return DiffieHellmanGroup.GROUP21;
+      case "22":
+        return DiffieHellmanGroup.GROUP22;
+      case "23":
+        return DiffieHellmanGroup.GROUP23;
+      case "24":
+        return DiffieHellmanGroup.GROUP24;
       default:
         throw new BatfishException(
             "No conversion to Diffie-Hellman group for string: \"" + perfectForwardSecrecy + "\"");
@@ -103,8 +129,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static EncryptionAlgorithm toEncryptionAlgorithm(String encryptionProtocol) {
     switch (encryptionProtocol) {
-      case "aes-128-cbc":
+      case "AES128":
         return EncryptionAlgorithm.AES_128_CBC;
+      case "AES256":
+        return EncryptionAlgorithm.AES_256_CBC;
+      case "AES128-GCM-16":
+        return EncryptionAlgorithm.AES_128_GCM;
+      case "AES256-GCM-16":
+        return EncryptionAlgorithm.AES_256_GCM;
       default:
         throw new BatfishException(
             "No conversion to encryption algorithm for string: \"" + encryptionProtocol + "\"");
@@ -113,9 +145,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private static IkeHashingAlgorithm toIkeAuthenticationAlgorithm(String ikeAuthProtocol) {
     switch (ikeAuthProtocol) {
-      case "sha1":
+      case "SHA1":
         return IkeHashingAlgorithm.SHA1;
-
+      case "SHA2-256":
+        return IkeHashingAlgorithm.SHA_256;
+      case "SHA2-384":
+        return IkeHashingAlgorithm.SHA_384;
+      case "SHA2-512":
+        return IkeHashingAlgorithm.SHA_512;
       default:
         throw new BatfishException(
             "No conversion to ike authentication algorithm for string: \""
@@ -127,8 +164,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   private static IpsecAuthenticationAlgorithm toIpsecAuthenticationAlgorithm(
       String ipsecAuthProtocol) {
     switch (ipsecAuthProtocol) {
-      case "hmac-sha1-96":
+      case "SHA1":
         return IpsecAuthenticationAlgorithm.HMAC_SHA1_96;
+      case "SHA2-256":
+        return IpsecAuthenticationAlgorithm.HMAC_SHA_256_128;
+      case "SHA2-384":
+        return IpsecAuthenticationAlgorithm.HMAC_SHA_384;
+      case "SHA2-512":
+        return IpsecAuthenticationAlgorithm.HMAC_SHA_512;
       default:
         throw new BatfishException(
             "No conversion to ipsec authentication algorithm for string: \""
@@ -184,50 +227,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static class Options {
-
-    @JsonCreator
-    private static Options create(
-        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
-      return new Options(firstNonNull(staticRoutesOnly, false));
-    }
-
-    private final boolean _staticRoutesOnly;
-
-    private Options(boolean staticRoutesOnly) {
-      _staticRoutesOnly = staticRoutesOnly;
-    }
-
-    boolean getStaticRoutesOnly() {
-      return _staticRoutesOnly;
-    }
-  }
-
-  enum GatewayType {
-    TRANSIT,
-    VPN
-  }
-
-  private final @Nonnull String _customerGatewayId;
-
-  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
-
-  private final boolean _isBgpConnection;
-
-  private final @Nonnull List<Prefix> _routes;
-
-  private final boolean _staticRoutesOnly;
-
-  private final @Nonnull List<VgwTelemetry> _vgwTelemetrys;
-
-  private final @Nonnull String _vpnConnectionId;
-
-  private final @Nonnull GatewayType _awsGatewayType;
-
-  private final @Nonnull String _awsGatewayId;
-
   @JsonCreator
   private static VpnConnection create(
       @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
@@ -272,23 +271,18 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
     ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
 
-    Element vpnConnection = (Element) document.getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
-
     // the field is absent for BGP connections and is "NoBGPVPNConnection" for static connections
-    boolean isBgpConnection =
-        vpnConnection
-                    .getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
-                    .getLength()
-                == 0
-            || !Utils.textOfFirstXmlElementWithTag(
-                    vpnConnection, AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
-                .contains("NoBGP");
+    boolean isBgpConnection = !options.getStaticRoutesOnly();
 
-    NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);
-
-    for (int index = 0; index < nodeList.getLength(); index++) {
-      Element ipsecTunnel = (Element) nodeList.item(index);
-      ipsecTunnels.add(IpsecTunnel.create(ipsecTunnel, isBgpConnection));
+    for (int index = 0; index < options.getTunnelOptions().size(); index++) {
+      TunnelOptions ipsecTunnel = options.getTunnelOptionAtIndex(index);
+      IpsecTunnel ipt =
+          IpsecTunnel.create(
+              ipsecTunnel,
+              isBgpConnection,
+              options.getTunnelOptionAtIndex(index),
+              customerGatewayId);
+      ipsecTunnels.add(ipt);
     }
 
     return new VpnConnection(
@@ -303,6 +297,56 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
             .collect(ImmutableList.toImmutableList()),
         vgwTelemetrys,
         options.getStaticRoutesOnly());
+  }
+
+  enum GatewayType {
+    TRANSIT,
+    VPN
+  }
+
+  private final @Nonnull String _customerGatewayId;
+
+  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
+
+  private final boolean _isBgpConnection;
+
+  private final @Nonnull List<Prefix> _routes;
+
+  private final boolean _staticRoutesOnly;
+
+  private final @Nonnull List<VgwTelemetry> _vgwTelemetrys;
+
+  private final @Nonnull String _vpnConnectionId;
+
+  private final @Nonnull GatewayType _awsGatewayType;
+
+  private final @Nonnull String _awsGatewayId;
+
+  /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */
+  private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
+    List<IkePhase1Proposal> proposals = new ArrayList<>();
+    for (Value ikePfs : ipsecTunnel.getIkePerfectForwardSecrecy()) {
+      for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
+        for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
+          IkePhase1Proposal ikePhase1Proposal =
+              new IkePhase1Proposal(
+                  "ike_proposal_"
+                      + ikePfs.getValue()
+                      + "_"
+                      + authAlgorithm.getValue()
+                      + "_"
+                      + encryptionAlgorithm.getValue());
+          ikePhase1Proposal.setHashingAlgorithm(
+              toIkeAuthenticationAlgorithm(authAlgorithm.getValue()));
+          ikePhase1Proposal.setEncryptionAlgorithm(
+              toEncryptionAlgorithm(encryptionAlgorithm.getValue()));
+          ikePhase1Proposal.setDiffieHellmanGroup(toDiffieHellmanGroup(ikePfs.getValue()));
+          ikePhase1Proposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+          proposals.add(ikePhase1Proposal);
+        }
+      }
+    }
+    return proposals;
   }
 
   VpnConnection(
@@ -326,19 +370,18 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     _staticRoutesOnly = staticRoutesOnly;
   }
 
-  private static @Nonnull IkePhase1Proposal toIkePhase1Proposal(
-      String proposalName, IpsecTunnel ipsecTunnel) {
-    IkePhase1Proposal ikePhase1Proposal = new IkePhase1Proposal(proposalName);
-    if (ipsecTunnel.getIkePreSharedKeyHash() != null) {
-      ikePhase1Proposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-    }
-    ikePhase1Proposal.setHashingAlgorithm(
-        toIkeAuthenticationAlgorithm(ipsecTunnel.getIkeAuthProtocol()));
-    ikePhase1Proposal.setDiffieHellmanGroup(
-        toDiffieHellmanGroup(ipsecTunnel.getIkePerfectForwardSecrecy()));
-    ikePhase1Proposal.setEncryptionAlgorithm(
-        toEncryptionAlgorithm(ipsecTunnel.getIkeEncryptionProtocol()));
-    return ikePhase1Proposal;
+  private static @Nonnull IkePhase1Policy toIkePhase1Policy(
+      String vpnId,
+      List<String> ikePhase1Proposals,
+      IkePhase1Key ikePhase1Key,
+      Ip remoteIdentity,
+      String localInterface) {
+    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(vpnId);
+    ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
+    ikePhase1Policy.setIkePhase1Proposals(ikePhase1Proposals);
+    ikePhase1Policy.setRemoteIdentity(remoteIdentity.toIpSpace());
+    ikePhase1Policy.setLocalInterface(localInterface);
+    return ikePhase1Policy;
   }
 
   private static @Nonnull IkePhase1Key toIkePhase1PreSharedKey(
@@ -351,57 +394,36 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return ikePhase1Key;
   }
 
-  private static @Nonnull IkePhase1Policy toIkePhase1Policy(
-      String vpnId,
-      String ikePhase1ProposalName,
-      IkePhase1Key ikePhase1Key,
-      Ip remoteIdentity,
-      String localInterface) {
-    IkePhase1Policy ikePhase1Policy = new IkePhase1Policy(vpnId);
-    ikePhase1Policy.setIkePhase1Key(ikePhase1Key);
-    ikePhase1Policy.setIkePhase1Proposals(ImmutableList.of(ikePhase1ProposalName));
-    ikePhase1Policy.setRemoteIdentity(remoteIdentity.toIpSpace());
-    ikePhase1Policy.setLocalInterface(localInterface);
-    return ikePhase1Policy;
-  }
-
-  private static @Nonnull IpsecPhase2Proposal toIpsecPhase2Proposal(
+  private static @Nonnull List<IpsecPhase2Proposal> toIpsecPhase2Proposals(
       IpsecTunnel ipsecTunnel, Warnings warnings) {
+    List<IpsecPhase2Proposal> proposals = new ArrayList<>();
+
     IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
-    ipsecPhase2Proposal.setAuthenticationAlgorithm(
-        toIpsecAuthenticationAlgorithm(ipsecTunnel.getIpsecAuthProtocol()));
-    ipsecPhase2Proposal.setEncryptionAlgorithm(
-        toEncryptionAlgorithm(ipsecTunnel.getIpsecEncryptionProtocol()));
-    ipsecPhase2Proposal.setProtocols(
-        ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
-    ipsecPhase2Proposal.setIpsecEncapsulationMode(
-        toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
-    return ipsecPhase2Proposal;
+    for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
+      for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
+        ipsecPhase2Proposal.setAuthenticationAlgorithm(
+            toIpsecAuthenticationAlgorithm(authAlgorithm.getValue()));
+        ipsecPhase2Proposal.setEncryptionAlgorithm(
+            toEncryptionAlgorithm(encryptionAlgorithm.getValue()));
+        ipsecPhase2Proposal.setProtocols(
+            ImmutableSortedSet.of(toIpsecProtocol(ipsecTunnel.getIpsecProtocol())));
+        ipsecPhase2Proposal.setIpsecEncapsulationMode(
+            toIpsecEncapdulationMode(ipsecTunnel.getIpsecMode(), warnings));
+        proposals.add(ipsecPhase2Proposal);
+      }
+    }
+    return proposals;
   }
 
   private static @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
-      IpsecTunnel ipsecTunnel, String ipsecPhase2Proposal) {
+      IpsecTunnel ipsecTunnel,
+      String ipsecPhase2Proposal,
+      List<String> proposals,
+      Value perfectForwardSecrecy) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
-    ipsecPhase2Policy.setPfsKeyGroup(
-        toDiffieHellmanGroup(ipsecTunnel.getIpsecPerfectForwardSecrecy()));
-    ipsecPhase2Policy.setProposals(ImmutableList.of(ipsecPhase2Proposal));
+    ipsecPhase2Policy.setPfsKeyGroup(toDiffieHellmanGroup(perfectForwardSecrecy.getValue()));
+    ipsecPhase2Policy.setProposals(proposals);
     return ipsecPhase2Policy;
-  }
-
-  /**
-   * Sets up what is what needed to establish VPN connections to remote nodes: the underlay VRF,
-   * routing export policy to backbone, and the connection to backbone.
-   */
-  static void initVpnConnectionsInfrastructure(Configuration gwCfg) {
-    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(VPN_UNDERLAY_VRF_NAME).build();
-
-    RoutingPolicy.builder()
-        .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
-        .setOwner(gwCfg)
-        .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
-        .build();
-
-    createBackboneConnection(gwCfg, underlayVrf, VPN_TO_BACKBONE_EXPORT_POLICY_NAME);
   }
 
   /**
@@ -439,6 +461,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       warnings.redFlagf("Tunnel VRF does not exist on gateway %s", gwCfg.getHostname());
       return;
     }
+    List<String> seenIkePhase1Proposals = new ArrayList<>();
+    List<String> seenIpsecPhase2Proposals = new ArrayList<>();
 
     for (int i = 0; i < _ipsecTunnels.size(); i++) {
       String tunnelId = vpnTunnelId(_vpnConnectionId, i + 1);
@@ -463,8 +487,15 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       Utils.newInterface(
           vpnIfaceName, gwCfg, tunnelVrf.getName(), vpnInterfaceAddress, "VPN " + tunnelId);
 
-      // configure Ipsec
-      ikePhase1ProposalMapBuilder.put(tunnelId, toIkePhase1Proposal(tunnelId, ipsecTunnel));
+      // configure Ike
+      List<IkePhase1Proposal> ikeProposals = toIkePhase1Proposals(ipsecTunnel);
+      for (IkePhase1Proposal ikePhase1Proposal : ikeProposals) {
+        if (!seenIkePhase1Proposals.contains(ikePhase1Proposal.getName())) {
+          ikePhase1ProposalMapBuilder.put(ikePhase1Proposal.getName(), ikePhase1Proposal);
+          seenIkePhase1Proposals.add(ikePhase1Proposal.getName());
+        }
+      }
+
       IkePhase1Key ikePhase1Key =
           toIkePhase1PreSharedKey(
               ipsecTunnel, ipsecTunnel.getCgwOutsideAddress(), externalInterfaceName);
@@ -473,22 +504,41 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
           tunnelId,
           toIkePhase1Policy(
               tunnelId,
-              tunnelId,
+              ikeProposals.stream().map(IkePhase1Proposal::getName).toList(),
               ikePhase1Key,
               ipsecTunnel.getCgwOutsideAddress(),
               externalInterfaceName));
-      ipsecPhase2ProposalMapBuilder.put(tunnelId, toIpsecPhase2Proposal(ipsecTunnel, warnings));
-      ipsecPhase2PolicyMapBuilder.put(tunnelId, toIpsecPhase2Policy(ipsecTunnel, tunnelId));
-      ipsecPeerConfigMapBuilder.put(
-          tunnelId,
-          IpsecStaticPeerConfig.builder()
-              .setTunnelInterface(vpnIfaceName)
-              .setIkePhase1Policy(tunnelId)
-              .setIpsecPolicy(tunnelId)
-              .setSourceInterface(externalInterfaceName)
-              .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
-              .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
-              .build());
+
+      // configure Ipsec
+      List<IpsecPhase2Proposal> ipsecProposals = toIpsecPhase2Proposals(ipsecTunnel, warnings);
+      List<String> ipsecProposalNames = Lists.newArrayList();
+      for (IpsecPhase2Proposal ipsecPhase2Proposal : ipsecProposals) {
+        String name =
+            "ipsec_proposal-"
+                + ipsecPhase2Proposal.getAuthenticationAlgorithm()
+                + "-"
+                + ipsecPhase2Proposal.getEncryptionAlgorithm();
+        if (!seenIpsecPhase2Proposals.contains(name)) {
+          ipsecProposalNames.add(name);
+          ipsecPhase2ProposalMapBuilder.put(name, ipsecPhase2Proposal);
+          seenIpsecPhase2Proposals.add(name);
+        }
+      }
+      for (Value pfs : ipsecTunnel.getIpsecPerfectForwardSecrecy()) {
+        String ipsecPolicyName = tunnelId + "-" + toDiffieHellmanGroup(pfs.getValue());
+        ipsecPhase2PolicyMapBuilder.put(
+            ipsecPolicyName, toIpsecPhase2Policy(ipsecTunnel, tunnelId, ipsecProposalNames, pfs));
+        ipsecPeerConfigMapBuilder.put(
+            ipsecPolicyName,
+            IpsecStaticPeerConfig.builder()
+                .setTunnelInterface(vpnIfaceName)
+                .setIkePhase1Policy(tunnelId)
+                .setIpsecPolicy(ipsecPolicyName)
+                .setSourceInterface(externalInterfaceName)
+                .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
+                .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
+                .build());
+      }
 
       // configure BGP peering
       if (_isBgpConnection) {
@@ -520,6 +570,260 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     gwCfg.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
     gwCfg.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
     gwCfg.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
+  }
+
+  /**
+   * Sets up what is what needed to establish VPN connections to remote nodes: the underlay VRF,
+   * routing export policy to backbone, and the connection to backbone.
+   */
+  static void initVpnConnectionsInfrastructure(Configuration gwCfg) {
+    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(VPN_UNDERLAY_VRF_NAME).build();
+
+    RoutingPolicy.builder()
+        .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
+        .setOwner(gwCfg)
+        .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
+        .build();
+
+    createBackboneConnection(gwCfg, underlayVrf, VPN_TO_BACKBONE_EXPORT_POLICY_NAME);
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Options {
+
+    private final List<TunnelOptions> _tunnelOptions;
+
+    private final boolean _staticRoutesOnly;
+
+    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
+      _tunnelOptions = tunnelOptions;
+      _staticRoutesOnly = staticRoutesOnly;
+    }
+
+    @Nonnull
+    @JsonCreator
+    private static Options create(
+        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
+        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
+      return new Options(
+          firstNonNull(tunnelOptions, Collections.emptyList()),
+          firstNonNull(staticRoutesOnly, false));
+    }
+
+    TunnelOptions getTunnelOptionAtIndex(int index) {
+      if (index < 0 || index >= _tunnelOptions.size()) {
+        throw new IndexOutOfBoundsException(
+            "Index " + index + " is out of bounds for length " + _tunnelOptions.size());
+      }
+      return _tunnelOptions.get(index);
+    }
+
+    @Nonnull
+    List<TunnelOptions> getTunnelOptions() {
+      return _tunnelOptions;
+    }
+
+    boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+    }
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  public static class TunnelOptions implements Serializable {
+    @Nullable private final List<Value> _ikeVersions;
+    @Nullable private final List<Value> _phase1EncryptionAlgorithm;
+    @Nullable private final List<Value> _phase1IntegrityAlgorithm;
+    @Nullable private final List<Value> _phase1DHGroupNumbers;
+    @Nullable private final List<Value> _phase2EncryptionAlgorithm;
+    @Nullable private final List<Value> _phase2IntegrityAlgorithms;
+    @Nullable private final List<Value> _phase2DHGroupNumbers;
+    @Nullable private final Ip _outsideIpAddress;
+    @Nullable private final String _tunnelInsideCidr;
+    @Nullable private final Integer _replayWindowSize;
+    @Nullable private final String _presharedKey;
+    @Nullable private final Integer _phase2LifetimeSeconds;
+
+    private TunnelOptions(
+        @Nullable List<Value> ikeVersions,
+        @Nullable List<Value> phase1EncryptionAlgorithm,
+        @Nullable List<Value> phase1IntegrityAlgorithm,
+        @Nullable List<Value> phase1DHGroupNumbers,
+        @Nullable List<Value> phase2EncryptionAlgorithm,
+        @Nullable List<Value> phase2IntegrityAlgorithms,
+        @Nullable List<Value> phase2DHGroupNumbers,
+        @Nullable Ip outsideIpAddress,
+        @Nullable String tunnelInsideCidr,
+        @Nullable Integer replayWindowSize,
+        @Nullable String presharedKey,
+        @Nullable Integer phase2LifetimeSeconds) {
+      _ikeVersions = ikeVersions;
+      _phase1EncryptionAlgorithm = phase1EncryptionAlgorithm;
+      _phase1IntegrityAlgorithm = phase1IntegrityAlgorithm;
+      _phase1DHGroupNumbers = phase1DHGroupNumbers;
+      _phase2EncryptionAlgorithm = phase2EncryptionAlgorithm;
+      _phase2IntegrityAlgorithms = phase2IntegrityAlgorithms;
+      _phase2DHGroupNumbers = phase2DHGroupNumbers;
+      _outsideIpAddress = outsideIpAddress;
+      _tunnelInsideCidr = tunnelInsideCidr;
+      _replayWindowSize = replayWindowSize;
+      _presharedKey = presharedKey;
+      _phase2LifetimeSeconds = phase2LifetimeSeconds;
+    }
+
+    @Nonnull
+    @JsonCreator
+    private static TunnelOptions create(
+        @JsonProperty(JSON_KEY_IKE_VERSIONS) @Nullable List<Value> ikeVersions,
+        @JsonProperty(JSON_KEY_PHASE1_ENCRYPTION_ALGORITHMS) @Nullable
+            List<Value> phase1EncryptionAlgorithm,
+        @JsonProperty(JSON_KEY_PHASE1_INTEGRITY_ALGORITHMS) @Nullable
+            List<Value> phase1IntegrityAlgorithm,
+        @JsonProperty(JSON_KEY_PHASE1_DH_GROUP_NUMBERS) @Nullable List<Value> phase1DHGroupNumbers,
+        @JsonProperty(JSON_KEY_PHASE2_ENCRYPTION_ALGORITHMS) @Nullable
+            List<Value> phase2EncryptionAlgorithm,
+        @JsonProperty(JSON_KEY_PHASE2_INTEGRITY_ALGORITHMS) @Nullable
+            List<Value> phase2IntegrityAlgorithms,
+        @JsonProperty(JSON_KEY_PHASE2_DH_GROUP_NUMBERS) @Nullable List<Value> phase2DHGroupNumbers,
+        @JsonProperty(JSON_KEY_OUTSIDE_IP_ADDRESS) @Nullable String outsideIpAddress,
+        @JsonProperty(JSON_KEY_TUNNEL_INSIDE_CIDR) @Nullable String tunnelInsideCidr,
+        @JsonProperty(JSON_KEY_REPLAY_WINDOW_SIZE) @Nullable Integer replayWindowSize,
+        @JsonProperty(JSON_KEY_PRESHARED_KEY) @Nullable String presharedKey,
+        @JsonProperty(JSON_KEY_PHASE2_LIFETIME_SECONDS) @Nullable Integer phase2LifetimeSeconds) {
+      checkArgument(outsideIpAddress != null, "Out");
+      return new TunnelOptions(
+          ikeVersions,
+          firstNonNull(
+              phase1EncryptionAlgorithm,
+              List.of(
+                  new Value("AES128"),
+                  new Value("AES256"),
+                  new Value("AES128-GCM-16"),
+                  new Value("AES256-GCM-16"))),
+          firstNonNull(
+              phase1IntegrityAlgorithm,
+              List.of(
+                  new Value("SHA1"),
+                  new Value("SHA2-256"),
+                  new Value("SHA2-384"),
+                  new Value("SHA2-512"))),
+          firstNonNull(
+              phase1DHGroupNumbers,
+              List.of(
+                  new Value("2"),
+                  new Value("14"),
+                  new Value("15"),
+                  new Value("16"),
+                  new Value("17"),
+                  new Value("18"),
+                  new Value("19"),
+                  new Value("20"),
+                  new Value("21"),
+                  new Value("22"),
+                  new Value("23"),
+                  new Value("24"))),
+          firstNonNull(
+              phase2EncryptionAlgorithm,
+              List.of(
+                  new Value("AES128"),
+                  new Value("AES256"),
+                  new Value("AES128-GCM-16"),
+                  new Value("AES256-GCM-16"))),
+          firstNonNull(
+              phase2IntegrityAlgorithms,
+              List.of(
+                  new Value("SHA1"),
+                  new Value("SHA2-256"),
+                  new Value("SHA2-384"),
+                  new Value("SHA2-512"))),
+          firstNonNull(
+              phase2DHGroupNumbers,
+              List.of(
+                  new Value("2"),
+                  new Value("5"),
+                  new Value("14"),
+                  new Value("15"),
+                  new Value("16"),
+                  new Value("17"),
+                  new Value("18"),
+                  new Value("19"),
+                  new Value("20"),
+                  new Value("21"),
+                  new Value("22"),
+                  new Value("23"),
+                  new Value("24"))),
+          Ip.parse(outsideIpAddress),
+          tunnelInsideCidr,
+          firstNonNull(replayWindowSize, 28800),
+          presharedKey,
+          firstNonNull(phase2LifetimeSeconds, 3600));
+    }
+
+    @Nullable
+    List<Value> getIkeVersion() {
+      return _ikeVersions;
+    }
+
+    @Nullable
+    List<Value> getPhase1EncryptionAlgorithm() {
+      return _phase1EncryptionAlgorithm;
+    }
+
+    @Nullable
+    List<Value> getPhase1IntegrityAlgorithm() {
+      return _phase1IntegrityAlgorithm;
+    }
+
+    @Nullable
+    List<Value> getPhase1DHGroupNumbers() {
+      return _phase1DHGroupNumbers;
+    }
+
+    @Nullable
+    List<Value> getPhase2EncryptionAlgorithm() {
+      return _phase2EncryptionAlgorithm;
+    }
+
+    @Nullable
+    List<Value> getPhase2IntegrityAlgorithm() {
+      return _phase2IntegrityAlgorithms;
+    }
+
+    @Nullable
+    List<Value> getPhase2DHGroupNumbers() {
+      return _phase2DHGroupNumbers;
+    }
+
+    @Nullable
+    Ip getOutsideIpAddress() {
+      return _outsideIpAddress;
+    }
+    ;
+
+    @Nullable
+    String getTunnelInsideCidr() {
+      return _tunnelInsideCidr;
+    }
+    ;
+
+    @Nullable
+    Integer getReplayWindowSize() {
+      return _replayWindowSize;
+    }
+    ;
+
+    @Nullable
+    String getPresharedKey() {
+      return _presharedKey;
+    }
+    ;
+
+    @Nullable
+    Integer getPhase2LifetimeSeconds() {
+      return _phase2LifetimeSeconds;
+    }
+    ;
   }
 
   @Nonnull
