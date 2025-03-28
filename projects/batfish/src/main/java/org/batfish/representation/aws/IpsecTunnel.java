@@ -120,8 +120,7 @@ final class IpsecTunnel implements Serializable {
     builder.setIkeLifetime(28800);
     builder.setIpsecLifetime(3600);
     builder.setIkeMode("main"); // Not optional
-    builder.setIkePreSharedKeyHash(
-        CommonUtil.sha256Digest(ipsecTunnel.getPresharedKey()) + CommonUtil.salt());
+    builder.setIkePreSharedKeyHash(CommonUtil.sha256Digest(ipsecTunnel.getPresharedKey()+ CommonUtil.salt()) );
     // esp is default
     builder.setIpsecProtocol("esp");
     builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
