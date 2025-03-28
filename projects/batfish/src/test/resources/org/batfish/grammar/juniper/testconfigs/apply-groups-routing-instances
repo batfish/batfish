@@ -1,7 +1,7 @@
 # RANCID-CONTENT-TYPE: juniper
 set system host-name apply-groups-routing-instances
 
-set groups RI_GROUP routing-instances <F*> routing-options static route 1.1.1.0/24 discard
+set groups RI_GROUP routing-instances <*> routing-options static route 1.1.1.0/24 discard
 set routing-instances FOO instance-type vrf
 
 # make sure we handle apply-groups immediately after "routing-instances"
