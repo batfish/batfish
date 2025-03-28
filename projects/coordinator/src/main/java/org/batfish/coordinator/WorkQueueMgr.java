@@ -22,7 +22,6 @@ import org.batfish.common.util.WorkItemBuilder;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.queues.MemoryQueue;
 import org.batfish.coordinator.queues.WorkQueue;
-import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.identifiers.NetworkId;
@@ -51,21 +50,11 @@ public class WorkQueueMgr {
   private WorkQueue _queueIncompleteWork;
 
   WorkQueueMgr(BatfishLogger logger, SnapshotMetadataMgr snapshotMetadataManager) {
-    this(Main.getSettings().getQueueType(), logger, snapshotMetadataManager);
-  }
-
-  WorkQueueMgr(Type wqType, BatfishLogger logger, SnapshotMetadataMgr snapshotMetadataManager) {
     _blockingWork = new HashSet<>();
     _logger = logger;
     _snapshotMetadataManager = snapshotMetadataManager;
-    switch (wqType) {
-      case memory:
-        _queueCompletedWork = new MemoryQueue();
-        _queueIncompleteWork = new MemoryQueue();
-        break;
-      default:
-        throw new BatfishException("Unsupported queue type: " + wqType);
-    }
+    _queueCompletedWork = new MemoryQueue();
+    _queueIncompleteWork = new MemoryQueue();
   }
 
   private void cleanUpInitMetaDataIfNeeded(NetworkId networkId, SnapshotId snapshotId)
@@ -253,7 +242,7 @@ public class WorkQueueMgr {
     return null;
   }
 
-  public synchronized long getLength(QueueType qType) {
+  public synchronized long getLength(WorkQueueMgr.QueueType qType) {
     return switch (qType) {
       case COMPLETED -> _queueCompletedWork.getLength();
       case INCOMPLETE -> _queueIncompleteWork.getLength();
