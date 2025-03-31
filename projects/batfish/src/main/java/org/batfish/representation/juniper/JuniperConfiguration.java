@@ -3082,8 +3082,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // A term will become an If statement. If (matchCondition) -> execute "then" statements
       builder.add(
           new org.batfish.datamodel.packet_policy.If(
-              new PacketMatchExpr(matchFwFroms),
-              TermFwThenToPacketPolicyStatement.convert(term, Configuration.DEFAULT_VRF_NAME)));
+              new PacketMatchExpr(matchFwFroms), TermFwThenToPacketPolicyStatement.convert(term)));
     }
 
     // Make the policy, with an implicit deny all at the end as the default action
