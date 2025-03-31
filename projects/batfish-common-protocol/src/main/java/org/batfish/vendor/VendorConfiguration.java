@@ -264,7 +264,7 @@ public abstract class VendorConfiguration implements Serializable {
     IntSet lines = new IntHashSet();
     collectLines(ctx, parser, _extraLines, lines::add);
     ImmutableRangeSet.Builder<Integer> ranges = ImmutableRangeSet.builder();
-    lines.iterator().forEachRemaining(c -> ranges.add(Range.singleton(c.value)));
+    lines.iterator().forEachRemaining(c -> ranges.add(Range.closedOpen(c.value, c.value + 1)));
     _structureManager.getOrDefine(type, name).addDefinitionLines(ranges.build());
   }
 
