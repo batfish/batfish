@@ -123,6 +123,9 @@ public class GroupWildcard extends BaseParser<String> {
   }
 
   public static String toJavaRegex(String wildcard) {
+    if (wildcard.isEmpty()) {
+      return "";
+    }
     GroupWildcard parser = Parboiled.createParser(GroupWildcard.class);
     BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
     ParsingResult<String> result = runner.run(wildcard);
