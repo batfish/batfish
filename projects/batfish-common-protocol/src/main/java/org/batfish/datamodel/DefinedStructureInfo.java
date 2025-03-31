@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.DiscreteDomain;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import com.google.common.collect.TreeRangeSet;
@@ -41,7 +42,7 @@ public class DefinedStructureInfo implements Serializable {
   }
 
   public void addDefinitionLines(int line) {
-    _definitionLines.add(Range.singleton(line));
+    _definitionLines.add(Range.closedOpen(line, line + 1));
   }
 
   public void addDefinitionLines(RangeSet<Integer> lines) {
@@ -49,7 +50,7 @@ public class DefinedStructureInfo implements Serializable {
   }
 
   public void addDefinitionLines(Range<Integer> lines) {
-    _definitionLines.add(lines);
+    _definitionLines.add(lines.canonical(DiscreteDomain.integers()));
   }
 
   @JsonProperty(PROP_NUM_REFERRERS)
