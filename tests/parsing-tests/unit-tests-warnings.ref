@@ -1402,9 +1402,86 @@
       },
       {
         "Filename" : "configs/juniper_policy_statement",
+        "Line" : 5,
+        "Text" : "family evpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 7,
+        "Text" : "family inet-mdt",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 8,
+        "Text" : "family inet-mvpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 9,
+        "Text" : "family inet-vpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 11,
+        "Text" : "family inet6-mvpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 12,
+        "Text" : "family inet6-vpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 13,
+        "Text" : "family iso",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 14,
+        "Text" : "family iso-vpn",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 15,
+        "Text" : "family route-target",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 16,
+        "Text" : "family traffic-engineering",
+        "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
         "Line" : 18,
         "Text" : "protocol access-internal",
         "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+        "Comment" : "This feature is not currently supported"
+      },
+      {
+        "Filename" : "configs/juniper_policy_statement",
+        "Line" : 20,
+        "Text" : "rib inet6.0",
+        "Parser_Context" : "[popsf_rib pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
@@ -1500,10 +1577,10 @@
       }
     ],
     "summary" : {
-      "notes" : "Found 208 results",
+      "notes" : "Found 219 results",
       "numFailed" : 0,
       "numPassed" : 0,
-      "numResults" : 208
+      "numResults" : 219
     }
   }
 ]
