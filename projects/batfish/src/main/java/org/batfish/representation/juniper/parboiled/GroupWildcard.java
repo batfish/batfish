@@ -1,5 +1,7 @@
 package org.batfish.representation.juniper.parboiled;
 
+import static com.google.common.base.Preconditions.checkArgument;
+
 import javax.annotation.Nonnull;
 import org.parboiled.BaseParser;
 import org.parboiled.Parboiled;
@@ -129,9 +131,7 @@ public class GroupWildcard extends BaseParser<String> {
     GroupWildcard parser = Parboiled.createParser(GroupWildcard.class);
     BasicParseRunner<String> runner = new BasicParseRunner<>(parser.TopLevel());
     ParsingResult<String> result = runner.run(wildcard);
-    if (!result.matched) {
-      throw new IllegalArgumentException("Unhandled input: " + wildcard);
-    }
+    checkArgument(result.matched, "Unhandled input: <%s>", wildcard);
     return result.resultValue;
   }
 
