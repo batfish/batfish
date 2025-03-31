@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.packet_policy.Drop;
 import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.LiteralVrfName;
 import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.packet_policy.Statement;
@@ -24,17 +25,12 @@ import org.batfish.datamodel.packet_policy.Statement;
 @ParametersAreNonnullByDefault
 public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<Statement> {
 
-  private final String _vrfToUse;
   private boolean _skipRest;
-
-  /** Create a new converter, with a default VRF to be used for FIB lookups */
-  private TermFwThenToPacketPolicyStatement(String vrfToUse) {
-    _vrfToUse = vrfToUse;
-  }
 
   @Override
   public @Nullable Statement visitFwThenAccept(FwThenAccept accept) {
-    return _skipRest ? null : new Return(new FibLookup(new LiteralVrfName(_vrfToUse)));
+    // Stay in the ingress VRF for routing.
+    return _skipRest ? null : new Return(new FibLookup(IngressInterfaceVrf.instance()));
   }
 
   @Override
@@ -67,9 +63,8 @@ public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<St
   }
 
   /** Convert all "then" statements in the {@code term} to a list of packet policy statements */
-  public static List<Statement> convert(FwTerm term, String vrfName) {
-    TermFwThenToPacketPolicyStatement thenConverter =
-        new TermFwThenToPacketPolicyStatement(vrfName);
+  public static List<Statement> convert(FwTerm term) {
+    TermFwThenToPacketPolicyStatement thenConverter = new TermFwThenToPacketPolicyStatement();
 
     // Convert "then"s to action statements.
     return term.getThens().stream()
