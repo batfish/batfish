@@ -6,3 +6,7 @@ set routing-instances FOO instance-type vrf
 
 # make sure we handle apply-groups immediately after "routing-instances"
 set routing-instances apply-groups RI_GROUP
+
+# empty wildcard is valid syntax
+set groups EMPTY_WILDCARD_GROUP routing-instances <> routing-options router-id 1.1.1.1
+set routing-instances apply-groups EMPTY_WILDCARD_GROUP
