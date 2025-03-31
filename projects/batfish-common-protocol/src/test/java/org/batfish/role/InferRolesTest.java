@@ -93,7 +93,7 @@ public class InferRolesTest {
 
     RoleMapping roleMapping = roleMappingOpt.get();
 
-    assertThat(roleMapping.getRegex(), equalTo("(\\p{Alpha}+)\\p{Digit}+(\\p{Alpha}+)\\p{Digit}+"));
+    assertThat(roleMapping.getRegex(), equalTo("([a-zA-Z]+)[0-9]+([a-zA-Z]+)[0-9]+"));
 
     assertThat(roleMapping.getRoleDimensionsGroups().entrySet(), hasSize(2));
 
