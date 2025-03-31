@@ -14,7 +14,7 @@
               }
             },
             "OutsideIpAddress": "3.130.56.250",
-            "PreSharedKey": "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+            "PreSharedKey": "F1FSxIuYp.FGxnxYj8TqertJLjdYiAwO",
             "TunnelInsideCidr": "169.254.195.141/30"
           },
           {
@@ -23,9 +23,9 @@
                 "LogEnabled": false
               }
             },
-            "OutsideIpAddress": "3.130.56.250",
-            "PreSharedKey": "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
-            "TunnelInsideCidr": "169.254.195.141/30"
+            "OutsideIpAddress": "3.133.183.196",
+            "PreSharedKey": "aZtzTiVz.ki9J0lkio_l1tTYTa8fij3Y",
+            "TunnelInsideCidr": "169.254.70.161/30"
           }
         ]
       },

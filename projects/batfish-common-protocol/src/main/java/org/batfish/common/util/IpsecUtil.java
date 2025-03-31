@@ -131,9 +131,6 @@ public class IpsecUtil {
                 IpsecSession ipsecSession =
                     getIpsecSession(
                         initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
-                //                if (!ipsecSession.isNegotiatedSession()) {
-                //                  return;
-                //                }
                 graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
               });
     }

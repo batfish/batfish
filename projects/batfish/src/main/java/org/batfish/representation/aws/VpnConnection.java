@@ -16,9 +16,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-import java.io.IOException;
 import java.io.Serializable;
-import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,9 +26,6 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
 
 import com.google.common.collect.Lists;
 import org.batfish.common.BatfishException;
@@ -67,9 +62,6 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
-import org.w3c.dom.Document;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
 
 /** Represents an AWS VPN connection */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -253,21 +245,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     checkArgument(vgwTelemetrys != null, "VGW telemetry cannot be null for VPN connection");
     checkArgument(options != null, "Options cannot be null for VPN connection");
 
-    Document document;
-    try {
-      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-      // safe parser configuration -- disallows doctypes
-      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
-      DocumentBuilder builder = factory.newDocumentBuilder();
-      InputSource is = new InputSource(new StringReader(cgwConfiguration));
-      document = builder.parse(is);
-    } catch (ParserConfigurationException | SAXException | IOException e) {
-      throw new IllegalArgumentException(
-          "Could not parse XML for CustomerGatewayConfiguration for vpn connection "
-              + vpnConnectionId
-              + " "
-              + e);
-    }
 
     ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
 
@@ -398,9 +375,9 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       IpsecTunnel ipsecTunnel, Warnings warnings) {
     List<IpsecPhase2Proposal> proposals = new ArrayList<>();
 
-    IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
     for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
       for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
+        IpsecPhase2Proposal ipsecPhase2Proposal = new IpsecPhase2Proposal();
         ipsecPhase2Proposal.setAuthenticationAlgorithm(
             toIpsecAuthenticationAlgorithm(authAlgorithm.getValue()));
         ipsecPhase2Proposal.setEncryptionAlgorithm(
@@ -519,10 +496,10 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
                 + "-"
                 + ipsecPhase2Proposal.getEncryptionAlgorithm();
         if (!seenIpsecPhase2Proposals.contains(name)) {
-          ipsecProposalNames.add(name);
           ipsecPhase2ProposalMapBuilder.put(name, ipsecPhase2Proposal);
           seenIpsecPhase2Proposals.add(name);
         }
+        ipsecProposalNames.add(name);
       }
       for (Value pfs : ipsecTunnel.getIpsecPerfectForwardSecrecy()) {
         String ipsecPolicyName = tunnelId + "-" + toDiffieHellmanGroup(pfs.getValue());
@@ -563,13 +540,12 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       _routes.forEach(
           pfx -> addStaticRoute(gwCfg, toStaticRoute(pfx, ipsecTunnel.getCgwInsideAddress())));
     }
-
-    gwCfg.setIkePhase1Proposals(ikePhase1ProposalMapBuilder.build());
-    gwCfg.setIkePhase1Keys(ikePhase1KeyMapBuilder.build());
-    gwCfg.setIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
-    gwCfg.setIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
-    gwCfg.setIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
-    gwCfg.setIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
+    gwCfg.extendIkePhase1Proposls(ikePhase1ProposalMapBuilder.build());
+    gwCfg.extendIkePhase1Keys(ikePhase1KeyMapBuilder.build());
+    gwCfg.extendIkePhase1Policies(ikePhase1PolicyMapBuilder.build());
+    gwCfg.extendIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
+    gwCfg.extendIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
+    gwCfg.extendIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
   /**

@@ -112,8 +112,6 @@ final class IpsecTunnel implements Serializable {
     builder.setVgwInsidePrefixLength(insidePrefix.getPrefixLength());
 
     builder.setVgwBgpAsn(64512L); // This is the default, it can be modified for vpg
-    // phase1 is ike
-    // phase2 is ipsec
     builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
     builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
     builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
