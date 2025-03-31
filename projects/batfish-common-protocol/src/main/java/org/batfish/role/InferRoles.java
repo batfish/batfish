@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
+import com.google.re2j.PatternSyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,9 +19,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -96,9 +96,9 @@ public final class InferRoles {
   // the base for determining roles
   private static final double REGEX_THRESHOLD = 0.5;
 
-  private static final String ALPHABETIC_REGEX = "\\p{Alpha}";
-  private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
-  private static final String DIGIT_REGEX = "\\p{Digit}";
+  private static final String ALPHABETIC_REGEX = "[a-zA-Z]";
+  private static final String ALPHANUMERIC_REGEX = "[a-zA-Z0-9]";
+  private static final String DIGIT_REGEX = "[0-9]";
 
   public InferRoles(Collection<String> nodes, Topology topology) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
