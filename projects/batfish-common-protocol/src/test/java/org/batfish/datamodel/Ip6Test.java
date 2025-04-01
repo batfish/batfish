@@ -28,5 +28,6 @@ public class Ip6Test {
     assertThat("longest zeros", Ip6.parse("4:0:0:5:0:0:0:0").toString(), equalTo("4:0:0:5::"));
     assertThat("longest zeros", Ip6.parse("4:0:0:5:6:0:0:0").toString(), equalTo("4:0:0:5:6::"));
     assertThat("tie-break left", Ip6.parse("4:0:0:5:6:7:0:0").toString(), equalTo("4::5:6:7:0:0"));
+    assertThat("localhost", Ip6.parse("::1").toString(), equalTo("::1"));
   }
 }
