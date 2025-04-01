@@ -4916,6 +4916,27 @@ public final class FlatJuniperGrammarTest {
                     ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 28), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    {
+      /*
+      ROUTE_TYPE should accept routes with IBGP protocol
+        set policy-options policy-statement ROUTE_TYPE term T1 from protocol bgp
+        set policy-options policy-statement ROUTE_TYPE term T1 from route-type internal
+      */
+      RoutingPolicy policy = c.getRoutingPolicies().get("ROUTE_TYPE");
+      // Permit IBGP
+      assertTrue(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.IBGP).build()))
+              .getBooleanValue());
+      // Reject EBGP
+      assertFalse(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.BGP).build()))
+              .getBooleanValue());
+      // Reject static
+      assertFalse(policy.call(envWithRoute(c, srb.build())).getBooleanValue());
+    }
+
     /*
     TAG_POLICY should accept routes with either set tag, but not from other tags
       set policy-options policy-statement TAG_POLICY term T1 from tag 1
