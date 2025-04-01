@@ -8,3 +8,11 @@ set policy-options policy-statement POLICY-NAME term TERM1 from interface ge-0/0
 set policy-options policy-statement POLICY-NAME term TERM1 then accept
 set policy-options policy-statement POLICY-NAME term TERM2 from interface ge-0/0/0.99
 set policy-options policy-statement POLICY-NAME term TERM2 then accept
+#
+set policy-options policy-statement POLICY-NAME term INTERNAL from protocol bgp
+set policy-options policy-statement POLICY-NAME term INTERNAL from route-type internal
+set policy-options policy-statement POLICY-NAME term INTERNAL then accept
+set policy-options policy-statement POLICY-NAME term EXTERNAL from protocol bgp
+set policy-options policy-statement POLICY-NAME term EXTERNAL from route-type external
+set policy-options policy-statement POLICY-NAME term EXTERNAL then accept
+#
