@@ -71281,9 +71281,75 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family evpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mdt"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 8,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 11,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 15,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family route-target"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family traffic-engineering"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 20,
+              "Parser_Context" : "[popsf_rib pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "rib inet6.0"
             },
             {
               "Comment" : "Overwriting existing then as-path-prepend",
@@ -71308,52 +71374,6 @@
               "Line" : 32,
               "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family evpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mdt"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family route-target"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
             }
           ]
         },
