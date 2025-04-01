@@ -1,6 +1,13 @@
 package org.batfish.datamodel;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.net.InetAddresses.fromIPv4BigInteger;
+import static com.google.common.net.InetAddresses.fromIPv6BigInteger;
+import static com.google.common.net.InetAddresses.getCompatIPv4Address;
+import static com.google.common.net.InetAddresses.isCompatIPv4Address;
+import static com.google.common.net.InetAddresses.isMappedIPv4Address;
+import static com.google.common.net.InetAddresses.toAddrString;
+import static com.google.common.net.InetAddresses.toBigInteger;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
@@ -9,6 +16,8 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.net.InetAddresses;
 import java.io.Serializable;
 import java.math.BigInteger;
+import java.net.Inet4Address;
+import java.net.Inet6Address;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -28,68 +37,7 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   public static final Ip6 ZERO = create(BigInteger.ZERO);
 
-  private static String asIpv6AddressString(BigInteger ipv6AddressAsBigInteger) {
-    // Cut the address into the 8 /16s that are used for strings.
-    int[] segments = new int[8];
-    BigInteger remainder = ipv6AddressAsBigInteger;
-    for (int i = 0; i < 8; i++) {
-      segments[7 - i] = remainder.shortValue() & 0xFFFF;
-      remainder = remainder.shiftRight(16);
-    }
-
-    /* **********************************************************************************
-     * ZERO compression: The left-most, longest string of 2+ consecutive zeros should be
-     * compressed to :: from 0:...:0
-     * **********************************************************************************/
-    // Find the longest sequence of consecutive zeros
-    int longestStart = -1;
-    int longestLength = 0;
-    int currentStart = -1;
-    int currentLength = 0;
-
-    for (int i = 0; i < segments.length; i++) {
-      if (segments[i] == 0) {
-        if (currentStart == -1) {
-          currentStart = i;
-        }
-        currentLength++;
-        if (currentLength >= 2 && currentLength > longestLength) {
-          // Only collapse at least 2 zeros in a row in ::
-          longestStart = currentStart;
-          longestLength = currentLength;
-        }
-      } else {
-        currentStart = -1;
-        currentLength = 0;
-      }
-    }
-
-    /* **********************************************************
-     * Compute the final String by skipping zeros as appropriate.
-     * **********************************************************/
-    StringBuilder sb = new StringBuilder();
-    if (longestStart == 0) {
-      // Edge case: need a preceding ':' since no prior segment put one in.
-      sb.append(':');
-    }
-    // Core: put in <Segment><:>, skipping last segment's :
-    for (int i = 0; i < segments.length; i++) {
-      if (i >= longestStart && i < longestStart + longestLength) {
-        // Skip this zero, putting in a single : which will go with the preceding one to make ::
-        assert segments[i] == 0;
-        if (i == longestStart) {
-          sb.append(':');
-        }
-      } else {
-        sb.append(Integer.toHexString(segments[i]));
-        if (i != 7) {
-          sb.append(':');
-        }
-      }
-    }
-
-    return sb.toString();
-  }
+  private static final BigInteger MAPPED_IPV4_OFFSET = BigInteger.valueOf(0xffff).shiftLeft(32);
 
   private static BigInteger numSubnetBitsToSubnetBigInteger(int numBits) {
     BigInteger val = BigInteger.ZERO;
@@ -118,8 +66,14 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
 
   public static @Nonnull Ip6 parse(@Nonnull String ipAsString) {
     checkArgument(ipAsString.contains(":"), "Invalid IPv6 address literal '%s'", ipAsString);
-    byte[] ip6AsByteArray = InetAddresses.forString(ipAsString).getAddress();
-    return create(new BigInteger(ip6AsByteArray));
+    // Note we need to special case mapped addresses because Java's InetAddress loses this info and
+    // only keeps the v4 bits
+    // https://guava.dev/releases/snapshot-jre/api/docs/com/google/common/net/InetAddresses.html#isMappedIPv4Address(java.lang.String)
+    // explains it in more detail
+    if (isMappedIPv4Address(ipAsString)) {
+      return create(MAPPED_IPV4_OFFSET.or(toBigInteger(InetAddresses.forString(ipAsString))));
+    }
+    return create(toBigInteger(InetAddresses.forString(ipAsString)));
   }
 
   public BigInteger asBigInteger() {
@@ -167,10 +121,31 @@ public class Ip6 implements Comparable<Ip6>, Serializable {
     }
   }
 
+  /** Returns true if this is an IPv4-mapped IPv6 address */
+  private boolean isMappedIpV4() {
+    // keep 96 of most significant bits and check that we get 0xffff
+    return new BigInteger("+FFFFFFFFFFFFFFFFFFFFFFFF", 16)
+        .shiftLeft(32)
+        .and(_ip6)
+        .equals(MAPPED_IPV4_OFFSET);
+  }
+
   @Override
   @JsonValue
   public String toString() {
-    return asIpv6AddressString(_ip6);
+    if (isMappedIpV4()) {
+      // leave only lowest 32 bits
+      Inet4Address inet4 = fromIPv4BigInteger(_ip6.and(new BigInteger("+FFFFFFFF", 16)));
+      return "::ffff:" + toAddrString(inet4);
+    } else {
+      Inet6Address inetAddr = fromIPv6BigInteger(_ip6);
+      if (isCompatIPv4Address(inetAddr)) {
+        return "::" + toAddrString(getCompatIPv4Address(inetAddr));
+      } else {
+        // Fall back to regular hex representation
+        return toAddrString(inetAddr);
+      }
+    }
   }
 
   public Prefix6 toPrefix6() {
