@@ -86,6 +86,10 @@ set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol dir
 set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol static
 set policy-options policy-statement PROTOCOL_POLICY term TERM1 then accept
 #
+set policy-options policy-statement ROUTE_TYPE term T1 from protocol bgp
+set policy-options policy-statement ROUTE_TYPE term T1 from route-type internal
+set policy-options policy-statement ROUTE_TYPE term T1 then accept
+#
 set policy-options policy-statement TAG_POLICY term T1 from tag 1
 set policy-options policy-statement TAG_POLICY term T1 from tag 2
 set policy-options policy-statement TAG_POLICY term T1 then accept
