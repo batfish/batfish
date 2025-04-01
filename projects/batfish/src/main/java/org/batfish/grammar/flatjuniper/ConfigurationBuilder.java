@@ -500,25 +500,29 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_network6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poplt_networkContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_commonContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Pops_termContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_areaContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_community_countContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_next_hopContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_prefix_list_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_source_address_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_address_maskContext;
@@ -5760,6 +5764,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopsf_area(Popsf_areaContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
   public void exitPopsf_as_path(Popsf_as_pathContext ctx) {
     String name = toString(ctx.name);
     _currentPsTerm.getFroms().addFromAsPath(new PsFromAsPath(name));
@@ -5803,14 +5813,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopsf_condition(FlatJuniperParser.Popsf_conditionContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));
+    _currentPsTerm.getFroms().addFromCondition(new PsFromCondition(name));
+  }
+
+  @Override
   public void exitPopsf_family(Popsf_familyContext ctx) {
     if (ctx.INET() != null) {
       _currentPsTerm.getFroms().setFromFamily(new PsFromFamily(AddressFamily.IPV4));
     } else if (ctx.INET6() != null) {
       _currentPsTerm.getFroms().setFromFamily(new PsFromFamily(AddressFamily.IPV6));
     } else {
-      _w.redFlagf(
-          "unimplemented 'policy-options policy-statement term' from clause: %s", getFullText(ctx));
+      todo(ctx);
       _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
     }
   }
@@ -5832,6 +5849,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentPsTerm.getFroms().addFromInterface(new PsFromInterface(ifaceName));
     _configuration.referenceStructure(
         INTERFACE, ifaceName, POLICY_STATEMENT_FROM_INTERFACE, getLine(ctx.id.getStop()));
+  }
+
+  @Override
+  public void exitPopsf_level(Popsf_levelContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
   @Override
@@ -5864,6 +5887,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       hop = Hop.of(toIp6(ctx.v6));
     }
     _currentPsTerm.getFroms().addFromNextHop(new PsFromNextHop(hop));
+  }
+
+  @Override
+  public void exitPopsf_origin(Popsf_originContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
   @Override
@@ -5932,8 +5961,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_rib(Popsf_ribContext ctx) {
-    _w.redFlagf(
-        "unimplemented 'policy-options policy-statement term' from clause: %s", getFullText(ctx));
+    todo(ctx);
     _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
@@ -5947,6 +5975,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitPopsf_route_type(Popsf_route_typeContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
+  public void exitPopsf_source_address_filter(Popsf_source_address_filterContext ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
   public void exitPopsf_tag(Popsf_tagContext ctx) {
     long tag = toLong(ctx.uint32());
     _currentPsTerm.getFroms().addFromTag(new PsFromTag(tag));
@@ -5955,6 +5995,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsf_tag2(Popsf_tag2Context ctx) {
     todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
   @Override
@@ -7528,14 +7569,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     }
     assert ctx.IPV6_ADDRESS() != null;
     return Ip6.parse(ctx.getText()).toPrefix6();
-  }
-
-  @Override
-  public void exitPopsf_condition(Popsf_conditionContext ctx) {
-    String name = toString(ctx.name);
-    _configuration.referenceStructure(
-        CONDITION, name, POLICY_STATEMENT_FROM_CONDITION, getLine(ctx.getStart()));
-    _currentPsTerm.getFroms().addFromCondition(new PsFromCondition(name));
   }
 
   @Override
