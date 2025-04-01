@@ -966,6 +966,7 @@ import org.batfish.representation.juniper.PsFromPrefixListFilterLonger;
 import org.batfish.representation.juniper.PsFromPrefixListFilterOrLonger;
 import org.batfish.representation.juniper.PsFromProtocol;
 import org.batfish.representation.juniper.PsFromRouteFilter;
+import org.batfish.representation.juniper.PsFromRouteType;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsFroms;
@@ -5976,8 +5977,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_route_type(Popsf_route_typeContext ctx) {
-    todo(ctx);
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    if (ctx.EXTERNAL() != null) {
+      _currentPsTerm
+          .getFroms()
+          .setFromRouteType(new PsFromRouteType(PsFromRouteType.Type.EXTERNAL));
+    } else {
+      assert ctx.INTERNAL() != null;
+      _currentPsTerm
+          .getFroms()
+          .setFromRouteType(new PsFromRouteType(PsFromRouteType.Type.INTERNAL));
+    }
   }
 
   @Override
