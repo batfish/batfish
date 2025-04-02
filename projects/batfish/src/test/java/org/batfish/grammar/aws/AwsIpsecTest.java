@@ -106,13 +106,13 @@ public class AwsIpsecTest {
                         CommonUtil.sha256Digest("abcdefghijklmnop" + CommonUtil.salt()))),
                 hasRemoteIdentity(containsIp(Ip.parse("4.4.4.27"))),
                 hasLocalInterface(equalTo("external-vpn-ba2e34a8-1")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("vpn-ba2e34a8-1"))))));
+                hasIkePhase1Proposals(equalTo(ImmutableList.of("ike_proposal_2_SHA1_AES128"))))));
 
     // test for IKE phase1 proposals
     assertThat(
         vgwConfiguration,
         hasIkePhase1Proposal(
-            "vpn-ba2e34a8-1",
+            "ike_proposal_2_SHA1_AES128",
             allOf(
                 IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
                 IkePhase1ProposalMatchers.hasAuthenticationMethod(
@@ -135,7 +135,7 @@ public class AwsIpsecTest {
     assertThat(
         vgwConfiguration,
         hasIpsecPhase2Proposal(
-            "vpn-ba2e34a8-1",
+            "ipsec_proposal-HMAC_SHA1_96-AES_128_CBC",
             allOf(
                 IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
                     IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
@@ -148,22 +148,22 @@ public class AwsIpsecTest {
     assertThat(
         vgwConfiguration,
         hasIpsecPhase2Policy(
-            "vpn-ba2e34a8-1",
+            "vpn-ba2e34a8-2-GROUP2",
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(
-                    equalTo(ImmutableList.of("vpn-ba2e34a8-1"))),
+                    equalTo(ImmutableList.of("ipsec_proposal-HMAC_SHA1_96-AES_128_CBC"))),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
 
     // test for IPsec peer config
     assertThat(
         vgwConfiguration,
         hasIpsecPeerConfig(
-            "vpn-ba2e34a8-1",
+            "vpn-ba2e34a8-1-GROUP2",
             isIpsecStaticPeerConfigThat(
                 allOf(
                     hasDestinationAddress(Ip.parse("4.4.4.27")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("vpn-ba2e34a8-1"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1-GROUP2"),
                     hasSourceInterface(vpnExternalInterfaceName(vpnTunnelId("vpn-ba2e34a8", 1))),
                     hasLocalAddress(Ip.parse("1.2.3.4")),
                     hasTunnelInterface(

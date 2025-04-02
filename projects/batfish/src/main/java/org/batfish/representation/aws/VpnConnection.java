@@ -393,8 +393,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   private static @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
-      IpsecTunnel ipsecTunnel,
-      String ipsecPhase2Proposal,
       List<String> proposals,
       Value perfectForwardSecrecy) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
@@ -504,7 +502,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       for (Value pfs : ipsecTunnel.getIpsecPerfectForwardSecrecy()) {
         String ipsecPolicyName = tunnelId + "-" + toDiffieHellmanGroup(pfs.getValue());
         ipsecPhase2PolicyMapBuilder.put(
-            ipsecPolicyName, toIpsecPhase2Policy(ipsecTunnel, tunnelId, ipsecProposalNames, pfs));
+            ipsecPolicyName, toIpsecPhase2Policy(ipsecProposalNames, pfs));
         ipsecPeerConfigMapBuilder.put(
             ipsecPolicyName,
             IpsecStaticPeerConfig.builder()

@@ -96,7 +96,7 @@ class IpsecSessionStatusAnswerer extends Answerer {
   }
 
   @VisibleForTesting
-  static Multiset<IpsecSessionInfo> rawAnswer(
+  public static Multiset<IpsecSessionInfo> rawAnswer(
       NetworkConfigurations networkConfigurations,
       ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology,
       Set<String> initiatorNodes,
