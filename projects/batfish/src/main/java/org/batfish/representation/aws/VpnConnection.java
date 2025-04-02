@@ -324,12 +324,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
     for (int index = 0; index < options.getTunnelOptions().size(); index++) {
       TunnelOptions ipsecTunnel = options.getTunnelOptionAtIndex(index);
-      IpsecTunnel ipt =
-          IpsecTunnel.create(
-              ipsecTunnel,
-              isBgpConnection,
-              options.getTunnelOptionAtIndex(index),
-              customerGatewayId);
+      IpsecTunnel ipt = IpsecTunnel.create(ipsecTunnel);
       ipsecTunnels.add(ipt);
     }
 
