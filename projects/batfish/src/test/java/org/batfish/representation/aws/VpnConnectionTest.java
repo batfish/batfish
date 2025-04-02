@@ -47,8 +47,7 @@ public class VpnConnectionTest {
 
   @Test
   public void testDeserialization() throws IOException {
-    String s = "g/batfish/representation/aws/VpnConnectionTest.json";
-    String text = readResource("or" + s, UTF_8);
+    String text = readResource("org/batfish/representation/aws/VpnConnectionTest.json", UTF_8);
 
     JsonNode json = BatfishObjectMapper.mapper().readTree(text);
     Region region = new Region("r1");

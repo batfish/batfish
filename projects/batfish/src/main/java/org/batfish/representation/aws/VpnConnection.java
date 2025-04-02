@@ -219,62 +219,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  @JsonCreator
-  private static VpnConnection create(
-      @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
-      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
-      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
-      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
-      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) @Nullable String cgwConfiguration,
-      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<VpnRoute> routes,
-      @JsonProperty(JSON_KEY_VGW_TELEMETRY) @Nullable List<VgwTelemetry> vgwTelemetrys,
-      @JsonProperty(JSON_KEY_OPTIONS) @Nullable Options options) {
-    checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
-    checkArgument(
-        customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
-    checkArgument(
-        transitGatewayId != null || vpnGatewayId != null,
-        "At least one of Transit or VPN gateway must be non-null for VPN connection");
-    checkArgument(
-        transitGatewayId == null || vpnGatewayId == null,
-        "At least one of Transit or VPN gateway must be null for VPN connection");
-    checkArgument(
-        cgwConfiguration != null,
-        "Customer gateway configuration cannot be null for VPN connection");
-    checkArgument(routes != null, "Route list cannot be null for VPN connection");
-    checkArgument(vgwTelemetrys != null, "VGW telemetry cannot be null for VPN connection");
-    checkArgument(options != null, "Options cannot be null for VPN connection");
-
-
-    ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
-
-    // the field is absent for BGP connections and is "NoBGPVPNConnection" for static connections
-    boolean isBgpConnection = !options.getStaticRoutesOnly();
-
-    for (int index = 0; index < options.getTunnelOptions().size(); index++) {
-      TunnelOptions ipsecTunnel = options.getTunnelOptionAtIndex(index);
-      IpsecTunnel ipt =
-          IpsecTunnel.create(
-              ipsecTunnel,
-              isBgpConnection,
-              options.getTunnelOptionAtIndex(index),
-              customerGatewayId);
-      ipsecTunnels.add(ipt);
-    }
-
-    return new VpnConnection(
-        isBgpConnection,
-        vpnConnectionId,
-        customerGatewayId,
-        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
-        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
-        ipsecTunnels.build(),
-        routes.stream()
-            .map(VpnRoute::getDestinationCidrBlock)
-            .collect(ImmutableList.toImmutableList()),
-        vgwTelemetrys,
-        options.getStaticRoutesOnly());
-  }
+  private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
   enum GatewayType {
     TRANSIT,
@@ -291,7 +236,26 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final boolean _staticRoutesOnly;
 
-  private final @Nonnull List<VgwTelemetry> _vgwTelemetrys;
+  VpnConnection(
+      boolean isBgpConnection,
+      String vpnConnectionId,
+      String customerGatewayId,
+      GatewayType awsGatewayType,
+      String awsGatewayId,
+      List<IpsecTunnel> ipsecTunnels,
+      List<Prefix> routes,
+      List<VgwTelemetry> vgwTelemetries,
+      boolean staticRoutesOnly) {
+    _isBgpConnection = isBgpConnection;
+    _vpnConnectionId = vpnConnectionId;
+    _customerGatewayId = customerGatewayId;
+    _awsGatewayType = awsGatewayType;
+    _awsGatewayId = awsGatewayId;
+    _ipsecTunnels = ipsecTunnels;
+    _routes = routes;
+    _vgwTelemetries = vgwTelemetries;
+    _staticRoutesOnly = staticRoutesOnly;
+  }
 
   private final @Nonnull String _vpnConnectionId;
 
@@ -326,25 +290,61 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return proposals;
   }
 
-  VpnConnection(
-      boolean isBgpConnection,
-      String vpnConnectionId,
-      String customerGatewayId,
-      GatewayType awsGatewayType,
-      String awsGatewayId,
-      List<IpsecTunnel> ipsecTunnels,
-      List<Prefix> routes,
-      List<VgwTelemetry> vgwTelemetrys,
-      boolean staticRoutesOnly) {
-    _isBgpConnection = isBgpConnection;
-    _vpnConnectionId = vpnConnectionId;
-    _customerGatewayId = customerGatewayId;
-    _awsGatewayType = awsGatewayType;
-    _awsGatewayId = awsGatewayId;
-    _ipsecTunnels = ipsecTunnels;
-    _routes = routes;
-    _vgwTelemetrys = vgwTelemetrys;
-    _staticRoutesOnly = staticRoutesOnly;
+  @JsonCreator
+  private static VpnConnection create(
+      @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
+      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) @Nullable String cgwConfiguration,
+      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<VpnRoute> routes,
+      @JsonProperty(JSON_KEY_VGW_TELEMETRY) @Nullable List<VgwTelemetry> vgwTelemetries,
+      @JsonProperty(JSON_KEY_OPTIONS) @Nullable Options options) {
+    checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
+    checkArgument(
+        customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
+    checkArgument(
+        transitGatewayId != null || vpnGatewayId != null,
+        "At least one of Transit or VPN gateway must be non-null for VPN connection");
+    checkArgument(
+        transitGatewayId == null || vpnGatewayId == null,
+        "At least one of Transit or VPN gateway must be null for VPN connection");
+    checkArgument(
+        cgwConfiguration != null,
+        "Customer gateway configuration cannot be null for VPN connection");
+    checkArgument(routes != null, "Route list cannot be null for VPN connection");
+    checkArgument(vgwTelemetries != null, "VGW telemetry cannot be null for VPN connection");
+    checkArgument(options != null, "Options cannot be null for VPN connection");
+
+
+    ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
+
+    // the field is absent for BGP connections and is "NoBGPVPNConnection" for static connections
+    boolean isBgpConnection = !options.getStaticRoutesOnly();
+
+    for (int index = 0; index < options.getTunnelOptions().size(); index++) {
+      TunnelOptions ipsecTunnel = options.getTunnelOptionAtIndex(index);
+      IpsecTunnel ipt =
+          IpsecTunnel.create(
+              ipsecTunnel,
+              isBgpConnection,
+              options.getTunnelOptionAtIndex(index),
+              customerGatewayId);
+      ipsecTunnels.add(ipt);
+    }
+
+    return new VpnConnection(
+        isBgpConnection,
+        vpnConnectionId,
+        customerGatewayId,
+        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
+        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
+        ipsecTunnels.build(),
+        routes.stream()
+            .map(VpnRoute::getDestinationCidrBlock)
+            .collect(ImmutableList.toImmutableList()),
+        vgwTelemetries,
+        options.getStaticRoutesOnly());
   }
 
   private static @Nonnull IkePhase1Policy toIkePhase1Policy(
@@ -489,9 +489,9 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       List<String> ipsecProposalNames = Lists.newArrayList();
       for (IpsecPhase2Proposal ipsecPhase2Proposal : ipsecProposals) {
         String name =
-            "ipsec_proposal-"
+            "ipsec_proposal_"
                 + ipsecPhase2Proposal.getAuthenticationAlgorithm()
-                + "-"
+                + "_"
                 + ipsecPhase2Proposal.getEncryptionAlgorithm();
         if (!seenIpsecPhase2Proposals.contains(name)) {
           ipsecPhase2ProposalMapBuilder.put(name, ipsecPhase2Proposal);
@@ -603,6 +603,103 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  @Nonnull
+  List<VgwTelemetry> getVgwTelemetries() {
+    return _vgwTelemetries;
+  }
+
+  @Nonnull
+  String getCustomerGatewayId() {
+    return _customerGatewayId;
+  }
+
+  @Override
+  public String getId() {
+    return _vpnConnectionId;
+  }
+
+  @Nonnull
+  List<IpsecTunnel> getIpsecTunnels() {
+    return _ipsecTunnels;
+  }
+
+  @Nonnull
+  List<Prefix> getRoutes() {
+    return _routes;
+  }
+
+  boolean getStaticRoutesOnly() {
+    return _staticRoutesOnly;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof VpnConnection)) {
+      return false;
+    }
+    VpnConnection that = (VpnConnection) o;
+    return _staticRoutesOnly == that._staticRoutesOnly
+        && Objects.equals(_customerGatewayId, that._customerGatewayId)
+        && Objects.equals(_ipsecTunnels, that._ipsecTunnels)
+        && Objects.equals(_isBgpConnection, that._isBgpConnection)
+        && Objects.equals(_routes, that._routes)
+        && Objects.equals(_vgwTelemetries, that._vgwTelemetries)
+        && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
+        && Objects.equals(_awsGatewayType, that._awsGatewayType)
+        && Objects.equals(_awsGatewayId, that._awsGatewayId);
+  }
+
+  boolean isBgpConnection() {
+    return _isBgpConnection;
+  }
+
+  @Nonnull
+  String getVpnConnectionId() {
+    return _vpnConnectionId;
+  }
+
+  @Nonnull
+  GatewayType getAwsGatewayType() {
+    return _awsGatewayType;
+  }
+
+  @Nonnull
+  String getAwsGatewayId() {
+    return _awsGatewayId;
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(
+        _customerGatewayId,
+        _ipsecTunnels,
+        _isBgpConnection,
+        _routes,
+        _staticRoutesOnly,
+        _vgwTelemetries,
+        _vpnConnectionId,
+        _awsGatewayType.ordinal(),
+        _awsGatewayId);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .add("_customerGatewayId", _customerGatewayId)
+        .add("_ipsecTunnels", _ipsecTunnels)
+        .add("_isBgpConnection", _isBgpConnection)
+        .add("_routes", _routes)
+        .add("_staticRoutesOnly", _staticRoutesOnly)
+        .add("_vgwTelemetries", _vgwTelemetries)
+        .add("_vpnConnectionId", _vpnConnectionId)
+        .add("_awsGatewayType", _awsGatewayType)
+        .add("_awsGatewayId", _awsGatewayId)
+        .toString();
+  }
+
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   public static class TunnelOptions implements Serializable {
@@ -665,7 +762,9 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         @JsonProperty(JSON_KEY_REPLAY_WINDOW_SIZE) @Nullable Integer replayWindowSize,
         @JsonProperty(JSON_KEY_PRESHARED_KEY) @Nullable String presharedKey,
         @JsonProperty(JSON_KEY_PHASE2_LIFETIME_SECONDS) @Nullable Integer phase2LifetimeSeconds) {
-      checkArgument(outsideIpAddress != null, "Out");
+      checkArgument(outsideIpAddress != null, "OutsideIpAddress cannot be null");
+      checkArgument(presharedKey != null, "PreSharedKey cannot be null");
+      checkArgument(tunnelInsideCidr != null, "TunnelInsideCidr cannot be null");
       return new TunnelOptions(
           ikeVersions,
           firstNonNull(
@@ -798,102 +897,5 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       return _phase2LifetimeSeconds;
     }
     ;
-  }
-
-  @Nonnull
-  String getCustomerGatewayId() {
-    return _customerGatewayId;
-  }
-
-  @Override
-  public String getId() {
-    return _vpnConnectionId;
-  }
-
-  @Nonnull
-  List<IpsecTunnel> getIpsecTunnels() {
-    return _ipsecTunnels;
-  }
-
-  @Nonnull
-  List<Prefix> getRoutes() {
-    return _routes;
-  }
-
-  boolean getStaticRoutesOnly() {
-    return _staticRoutesOnly;
-  }
-
-  @Nonnull
-  List<VgwTelemetry> getVgwTelemetrys() {
-    return _vgwTelemetrys;
-  }
-
-  boolean isBgpConnection() {
-    return _isBgpConnection;
-  }
-
-  @Nonnull
-  String getVpnConnectionId() {
-    return _vpnConnectionId;
-  }
-
-  @Nonnull
-  GatewayType getAwsGatewayType() {
-    return _awsGatewayType;
-  }
-
-  @Nonnull
-  String getAwsGatewayId() {
-    return _awsGatewayId;
-  }
-
-  @Override
-  public boolean equals(Object o) {
-    if (this == o) {
-      return true;
-    }
-    if (!(o instanceof VpnConnection)) {
-      return false;
-    }
-    VpnConnection that = (VpnConnection) o;
-    return _staticRoutesOnly == that._staticRoutesOnly
-        && Objects.equals(_customerGatewayId, that._customerGatewayId)
-        && Objects.equals(_ipsecTunnels, that._ipsecTunnels)
-        && Objects.equals(_isBgpConnection, that._isBgpConnection)
-        && Objects.equals(_routes, that._routes)
-        && Objects.equals(_vgwTelemetrys, that._vgwTelemetrys)
-        && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
-        && Objects.equals(_awsGatewayType, that._awsGatewayType)
-        && Objects.equals(_awsGatewayId, that._awsGatewayId);
-  }
-
-  @Override
-  public int hashCode() {
-    return Objects.hash(
-        _customerGatewayId,
-        _ipsecTunnels,
-        _isBgpConnection,
-        _routes,
-        _staticRoutesOnly,
-        _vgwTelemetrys,
-        _vpnConnectionId,
-        _awsGatewayType.ordinal(),
-        _awsGatewayId);
-  }
-
-  @Override
-  public String toString() {
-    return MoreObjects.toStringHelper(this)
-        .add("_customerGatewayId", _customerGatewayId)
-        .add("_ipsecTunnels", _ipsecTunnels)
-        .add("_isBgpConnection", _isBgpConnection)
-        .add("_routes", _routes)
-        .add("_staticRoutesOnly", _staticRoutesOnly)
-        .add("_vgwTelemetrys", _vgwTelemetrys)
-        .add("_vpnConnectionId", _vpnConnectionId)
-        .add("_awsGatewayType", _awsGatewayType)
-        .add("_awsGatewayId", _awsGatewayId)
-        .toString();
   }
 }

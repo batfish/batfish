@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableSet;
-import org.apache.commons.lang3.ObjectUtils;
 
 import java.util.Set;
 import javax.annotation.Nullable;
@@ -212,10 +211,5 @@ public class IpsecSession {
    */
   public static boolean isCloudConfig(Configuration configuration) {
     return CLOUD_CONFIGURATION_FORMATS.contains(configuration.getConfigurationFormat());
-  }
-
-  public boolean isNegotiatedSession() {
-    return !ObjectUtils.anyNotNull(
-        _negotiatedIpsecP2Proposal, _negotiatedIkeP1Proposal, _negotiatedIkeP1Key);
   }
 }

@@ -135,7 +135,7 @@ public class AwsIpsecTest {
     assertThat(
         vgwConfiguration,
         hasIpsecPhase2Proposal(
-            "ipsec_proposal-HMAC_SHA1_96-AES_128_CBC",
+            "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
             allOf(
                 IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
                     IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
@@ -151,7 +151,7 @@ public class AwsIpsecTest {
             "vpn-ba2e34a8-2-GROUP2",
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(
-                    equalTo(ImmutableList.of("ipsec_proposal-HMAC_SHA1_96-AES_128_CBC"))),
+                    equalTo(ImmutableList.of("ipsec_proposal_HMAC_SHA1_96_AES_128_CBC"))),
                 IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
 
     // test for IPsec peer config
