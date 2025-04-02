@@ -632,6 +632,25 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     return _staticRoutesOnly;
   }
 
+  boolean isBgpConnection() {
+    return _isBgpConnection;
+  }
+
+  @Nonnull
+  String getVpnConnectionId() {
+    return _vpnConnectionId;
+  }
+
+  @Nonnull
+  GatewayType getAwsGatewayType() {
+    return _awsGatewayType;
+  }
+
+  @Nonnull
+  String getAwsGatewayId() {
+    return _awsGatewayId;
+  }
+
   @Override
   public boolean equals(Object o) {
     if (this == o) {
@@ -650,25 +669,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         && Objects.equals(_vpnConnectionId, that._vpnConnectionId)
         && Objects.equals(_awsGatewayType, that._awsGatewayType)
         && Objects.equals(_awsGatewayId, that._awsGatewayId);
-  }
-
-  boolean isBgpConnection() {
-    return _isBgpConnection;
-  }
-
-  @Nonnull
-  String getVpnConnectionId() {
-    return _vpnConnectionId;
-  }
-
-  @Nonnull
-  GatewayType getAwsGatewayType() {
-    return _awsGatewayType;
-  }
-
-  @Nonnull
-  String getAwsGatewayId() {
-    return _awsGatewayId;
   }
 
   @Override
