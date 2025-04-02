@@ -5043,6 +5043,10 @@ public final class FlatJuniperGrammarTest {
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborIp)))));
+
+    /* prefix-list p5 with trailing semicolon in apply-path should exist but be empty */
+    assertThat(c, hasRouteFilterLists(hasKey("p5")));
+    assertThat(c.getRouteFilterLists().get("p5").getLines(), empty());
   }
 
   @Test
