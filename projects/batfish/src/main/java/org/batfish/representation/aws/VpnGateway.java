@@ -70,17 +70,6 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
 
   private final long _amazonSideAsn;
 
-  VpnGateway(
-      String vpnGatewayId,
-      List<String> attachmentVpcIds,
-      Map<String, String> tags,
-      Long amazonSideAsn) {
-    _vpnGatewayId = vpnGatewayId;
-    _attachmentVpcIds = attachmentVpcIds;
-    _tags = tags;
-    _amazonSideAsn = amazonSideAsn;
-  }
-
   @JsonCreator
   private static VpnGateway create(
       @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
@@ -99,6 +88,17 @@ final class VpnGateway implements AwsVpcEntity, Serializable {
         firstNonNull(tags, ImmutableList.<Tag>of()).stream()
             .collect(ImmutableMap.toImmutableMap(Tag::getKey, Tag::getValue)),
         amazonSideAsn);
+  }
+
+  VpnGateway(
+      String vpnGatewayId,
+      List<String> attachmentVpcIds,
+      Map<String, String> tags,
+      Long amazonSideAsn) {
+    _vpnGatewayId = vpnGatewayId;
+    _attachmentVpcIds = attachmentVpcIds;
+    _tags = tags;
+    _amazonSideAsn = amazonSideAsn;
   }
 
   @Nonnull
