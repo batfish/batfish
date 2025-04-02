@@ -5047,6 +5047,8 @@ public final class FlatJuniperGrammarTest {
     /* prefix-list p5 with trailing semicolon in apply-path should exist but be empty */
     assertThat(c, hasRouteFilterLists(hasKey("p5")));
     assertThat(c.getRouteFilterLists().get("p5").getLines(), empty());
+    assertThat(c, hasIpAccessList("FILTER"));
+    assertThat(c, hasInterface("em0.0", hasIncomingFilter(hasName("FILTER"))));
   }
 
   @Test
@@ -5065,7 +5067,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10, 27)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
