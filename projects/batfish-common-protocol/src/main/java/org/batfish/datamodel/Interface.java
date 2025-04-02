@@ -726,6 +726,10 @@ public final class Interface extends ComparableStructure<String> {
     }
   }
 
+  private static InterfaceType computeAzureInterfaceType(String name) {
+    return InterfaceType.PHYSICAL;
+  }
+
   @VisibleForTesting
   static InterfaceType computeCiscoInterfaceType(String name) {
     if (name.startsWith("Async")) {
@@ -831,6 +835,9 @@ public final class Interface extends ComparableStructure<String> {
 
       case AWS:
         return computeAwsInterfaceType(name);
+
+      case AZURE:
+        return computeAzureInterfaceType(name);
 
       case ARISTA:
       case ARUBAOS:
