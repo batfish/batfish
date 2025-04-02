@@ -48,6 +48,48 @@ final class IpsecTunnel implements Serializable {
 
   private final @Nonnull Ip _vgwOutsideAddress;
 
+  static IpsecTunnel create(
+      VpnConnection.TunnelOptions ipsecTunnel,
+      boolean isBgpConnection,
+      VpnConnection.TunnelOptions tunnelOption,
+      String customerGatewayId) {
+
+    Builder builder = new Builder();
+
+    assert ipsecTunnel.getOutsideIpAddress() != null;
+    builder.setVgwOutsideAddress(ipsecTunnel.getOutsideIpAddress());
+
+    // AWS configs give the subnet address, they will always use the first host.
+    Prefix insidePrefix = Prefix.parse(ipsecTunnel.getTunnelInsideCidr());
+    builder.setcgwInsideAddress(insidePrefix.getLastHostIp());
+    builder.setCgwInsidePrefixLength(insidePrefix.getPrefixLength());
+    builder.setVgwInsideAddress(insidePrefix.getFirstHostIp());
+    builder.setVgwInsidePrefixLength(insidePrefix.getPrefixLength());
+
+    builder.setVgwBgpAsn(64512L); // This is the default, it can be modified for vpg
+    assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
+    builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
+    assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
+    builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
+    assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
+    builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
+    builder.setIkeLifetime(28800);
+    builder.setIpsecLifetime(3600);
+    builder.setIkeMode("main"); // Not optional
+    builder.setIkePreSharedKeyHash(
+        CommonUtil.sha256Digest(ipsecTunnel.getPresharedKey() + CommonUtil.salt()));
+    // esp is default
+    builder.setIpsecProtocol("esp");
+    assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
+    builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
+    assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
+    builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
+    assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
+    builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
+    builder.setIpsecMode("tunnel"); // Not optional
+    return builder.build();
+  }
+
   IpsecTunnel(
       @Nullable Long cgwBgpAsn,
       @Nullable Ip cgwInsideAddress,
@@ -92,48 +134,6 @@ final class IpsecTunnel implements Serializable {
     _vgwInsidePrefixLength = vgwInsidePrefixLength;
     _vgwInsideAddress = vgwInsideAddress;
     _vgwOutsideAddress = vgwOutsideAddress;
-  }
-
-  static IpsecTunnel create(
-      VpnConnection.TunnelOptions ipsecTunnel,
-      boolean isBgpConnection,
-      VpnConnection.TunnelOptions tunnelOption,
-      String customerGatewayId) {
-
-    Builder builder = new Builder();
-
-    assert ipsecTunnel.getOutsideIpAddress() != null;
-    builder.setVgwOutsideAddress(ipsecTunnel.getOutsideIpAddress());
-
-    // AWS configs give the subnet address, they will always use the first host.
-    Prefix insidePrefix = Prefix.parse(ipsecTunnel.getTunnelInsideCidr());
-    builder.setcgwInsideAddress(insidePrefix.getLastHostIp());
-    builder.setCgwInsidePrefixLength(insidePrefix.getPrefixLength());
-    builder.setVgwInsideAddress(insidePrefix.getFirstHostIp());
-    builder.setVgwInsidePrefixLength(insidePrefix.getPrefixLength());
-
-    builder.setVgwBgpAsn(64512L); // This is the default, it can be modified for vpg
-    assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
-    builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
-    assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
-    builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
-    assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
-    builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
-    builder.setIkeLifetime(28800);
-    builder.setIpsecLifetime(3600);
-    builder.setIkeMode("main"); // Not optional
-    builder.setIkePreSharedKeyHash(
-        CommonUtil.sha256Digest(ipsecTunnel.getPresharedKey() + CommonUtil.salt()));
-    // esp is default
-    builder.setIpsecProtocol("esp");
-    assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
-    builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
-    assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
-    builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
-    assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
-    builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
-    builder.setIpsecMode("tunnel"); // Not optional
-    return builder.build();
   }
 
   @Nullable

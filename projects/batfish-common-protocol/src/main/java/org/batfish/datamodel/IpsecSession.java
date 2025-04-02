@@ -1,7 +1,6 @@
 package org.batfish.datamodel;
 
 import com.google.common.collect.ImmutableSet;
-
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNullableByDefault;
