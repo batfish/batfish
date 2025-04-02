@@ -6389,6 +6389,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _currentIpv6PeerGroup.setGroupName(groupName);
     } else if (_currentNamedPeerGroup != null) {
       _currentNamedPeerGroup.setGroupName(groupName);
+    } else if (_currentDynamicIpPeerGroup != null) {
+      _currentDynamicIpPeerGroup.setGroupName(groupName);
     } else {
       throw new BatfishException("Unexpected context for use neighbor group");
     }
