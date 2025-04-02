@@ -21,4 +21,9 @@ set snmp community "foo" clients 4.4.4.4/32
 set snmp community "<removed>" clients 5.5.5.5/32
 ## p5 should have no addresses because of the invalid wildcard
 set policy-options prefix-list p5 apply-path "protocols bgp group <*> neighbor <*>;"
+set firewall family inet filter FILTER term PERMIT-ALL from protocol tcp
+set firewall family inet filter FILTER term PERMIT-ALL then accept
+set groups g4 interfaces "<em[0,1]>" unit <*> family inet filter input FILTER
+set interfaces em0 unit 0 family inet address 10.0.0.1/24
+set apply-groups g4
 #
