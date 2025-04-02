@@ -68,7 +68,8 @@ public class GroupWildcard extends BaseParser<String> {
                 Ch('-'),
                 Ch('_'),
                 Ch(':'),
-                Ch('/'))),
+                Ch('/'),
+                Ch(','))),
         push(match()));
   }
 
