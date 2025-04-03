@@ -263,33 +263,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull String _awsGatewayId;
 
-  /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */
-  private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
-    List<IkePhase1Proposal> proposals = new ArrayList<>();
-    for (Value ikePfs : ipsecTunnel.getIkePerfectForwardSecrecy()) {
-      for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
-        for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
-          IkePhase1Proposal ikePhase1Proposal =
-              new IkePhase1Proposal(
-                  "ike_proposal_"
-                      + ikePfs.getValue()
-                      + "_"
-                      + authAlgorithm.getValue()
-                      + "_"
-                      + encryptionAlgorithm.getValue());
-          ikePhase1Proposal.setHashingAlgorithm(
-              toIkeAuthenticationAlgorithm(authAlgorithm.getValue()));
-          ikePhase1Proposal.setEncryptionAlgorithm(
-              toEncryptionAlgorithm(encryptionAlgorithm.getValue()));
-          ikePhase1Proposal.setDiffieHellmanGroup(toDiffieHellmanGroup(ikePfs.getValue()));
-          ikePhase1Proposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
-          proposals.add(ikePhase1Proposal);
-        }
-      }
-    }
-    return proposals;
-  }
-
   @JsonCreator
   private static VpnConnection create(
       @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
