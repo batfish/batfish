@@ -397,6 +397,22 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   /**
+   * Sets up what is what needed to establish VPN connections to remote nodes: the underlay VRF,
+   * routing export policy to backbone, and the connection to backbone.
+   */
+  static void initVpnConnectionsInfrastructure(Configuration gwCfg) {
+    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(VPN_UNDERLAY_VRF_NAME).build();
+
+    RoutingPolicy.builder()
+        .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
+        .setOwner(gwCfg)
+        .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
+        .build();
+
+    createBackboneConnection(gwCfg, underlayVrf, VPN_TO_BACKBONE_EXPORT_POLICY_NAME);
+  }
+
+  /**
    * Creates the infrastructure for this VPN connection on the gateway. This includes created
    * underlay and IPSec tunnel interfaces, configuring IPSec, and running BGP on the tunnel
    * interfaces.
@@ -539,22 +555,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     gwCfg.extendIpsecPhase2Proposals(ipsecPhase2ProposalMapBuilder.build());
     gwCfg.extendIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
     gwCfg.extendIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
-  }
-
-  /**
-   * Sets up what is what needed to establish VPN connections to remote nodes: the underlay VRF,
-   * routing export policy to backbone, and the connection to backbone.
-   */
-  static void initVpnConnectionsInfrastructure(Configuration gwCfg) {
-    Vrf underlayVrf = Vrf.builder().setOwner(gwCfg).setName(VPN_UNDERLAY_VRF_NAME).build();
-
-    RoutingPolicy.builder()
-        .setName(VPN_TO_BACKBONE_EXPORT_POLICY_NAME)
-        .setOwner(gwCfg)
-        .setStatements(Collections.singletonList(EXPORT_CONNECTED_STATEMENT))
-        .build();
-
-    createBackboneConnection(gwCfg, underlayVrf, VPN_TO_BACKBONE_EXPORT_POLICY_NAME);
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
