@@ -221,6 +221,47 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Options {
+
+    private final List<TunnelOptions> _tunnelOptions;
+
+    private final boolean _staticRoutesOnly;
+
+    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
+      _tunnelOptions = tunnelOptions;
+      _staticRoutesOnly = staticRoutesOnly;
+    }
+
+    @Nonnull
+    @JsonCreator
+    private static Options create(
+        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
+        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
+      return new Options(
+          firstNonNull(tunnelOptions, Collections.emptyList()),
+          firstNonNull(staticRoutesOnly, false));
+    }
+
+    TunnelOptions getTunnelOptionAtIndex(int index) {
+      if (index < 0 || index >= _tunnelOptions.size()) {
+        throw new IndexOutOfBoundsException(
+            "Index " + index + " is out of bounds for length " + _tunnelOptions.size());
+      }
+      return _tunnelOptions.get(index);
+    }
+
+    @Nonnull
+    List<TunnelOptions> getTunnelOptions() {
+      return _tunnelOptions;
+    }
+
+    boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+    }
+  }
+
   enum GatewayType {
     TRANSIT,
     VPN
@@ -557,46 +598,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     gwCfg.extendIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static class Options {
 
-    private final List<TunnelOptions> _tunnelOptions;
-
-    private final boolean _staticRoutesOnly;
-
-    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
-      _tunnelOptions = tunnelOptions;
-      _staticRoutesOnly = staticRoutesOnly;
-    }
-
-    @Nonnull
-    @JsonCreator
-    private static Options create(
-        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
-        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
-      return new Options(
-          firstNonNull(tunnelOptions, Collections.emptyList()),
-          firstNonNull(staticRoutesOnly, false));
-    }
-
-    TunnelOptions getTunnelOptionAtIndex(int index) {
-      if (index < 0 || index >= _tunnelOptions.size()) {
-        throw new IndexOutOfBoundsException(
-            "Index " + index + " is out of bounds for length " + _tunnelOptions.size());
-      }
-      return _tunnelOptions.get(index);
-    }
-
-    @Nonnull
-    List<TunnelOptions> getTunnelOptions() {
-      return _tunnelOptions;
-    }
-
-    boolean getStaticRoutesOnly() {
-      return _staticRoutesOnly;
-    }
-  }
 
   @Nonnull
   List<VgwTelemetry> getVgwTelemetries() {
