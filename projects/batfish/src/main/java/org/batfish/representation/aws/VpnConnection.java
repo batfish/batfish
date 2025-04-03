@@ -342,6 +342,33 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         options.getStaticRoutesOnly());
   }
 
+  /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */
+  private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
+    List<IkePhase1Proposal> proposals = new ArrayList<>();
+    for (Value ikePfs : ipsecTunnel.getIkePerfectForwardSecrecy()) {
+      for (Value authAlgorithm : ipsecTunnel.getIpsecAuthProtocol()) {
+        for (Value encryptionAlgorithm : ipsecTunnel.getIpsecEncryptionProtocol()) {
+          IkePhase1Proposal ikePhase1Proposal =
+              new IkePhase1Proposal(
+                  "ike_proposal_"
+                      + ikePfs.getValue()
+                      + "_"
+                      + authAlgorithm.getValue()
+                      + "_"
+                      + encryptionAlgorithm.getValue());
+          ikePhase1Proposal.setHashingAlgorithm(
+              toIkeAuthenticationAlgorithm(authAlgorithm.getValue()));
+          ikePhase1Proposal.setEncryptionAlgorithm(
+              toEncryptionAlgorithm(encryptionAlgorithm.getValue()));
+          ikePhase1Proposal.setDiffieHellmanGroup(toDiffieHellmanGroup(ikePfs.getValue()));
+          ikePhase1Proposal.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
+          proposals.add(ikePhase1Proposal);
+        }
+      }
+    }
+    return proposals;
+  }
+
   private static @Nonnull IkePhase1Policy toIkePhase1Policy(
       String vpnId,
       List<String> ikePhase1Proposals,
