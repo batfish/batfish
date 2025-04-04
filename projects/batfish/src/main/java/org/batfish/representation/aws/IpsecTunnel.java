@@ -17,29 +17,36 @@ final class IpsecTunnel implements Serializable {
 
   private @Nullable Long _cgwBgpAsn;
 
-  private final Ip _cgwInsideAddress;
+  private final @Nonnull Ip _cgwInsideAddress;
 
   private final int _cgwInsidePrefixLength;
 
+  private final Ip _cgwOutsideAddress;
+
   private final @Nonnull List<Value> _ikeAuthProtocol;
+
   private final @Nonnull List<Value> _ikeEncryptionProtocol;
-  private final @Nonnull List<Value> _ikePerfectForwardSecrecy;
 
   private final int _ikeLifetime;
 
   private final @Nonnull String _ikeMode;
-  private final @Nonnull List<Value> _ipsecAuthProtocol;
+
+  private final @Nonnull List<Value> _ikePerfectForwardSecrecy;
 
   private final @Nonnull String _ikePreSharedKeyHash;
-  private final @Nonnull List<Value> _ipsecEncryptionProtocol;
-  private final @Nonnull List<Value> _ipsecPerfectForwardSecrecy;
+
+  private final @Nonnull List<Value> _ipsecAuthProtocol;
 
   private final int _ipsecLifetime;
 
   private final @Nonnull String _ipsecMode;
-  private final Ip _cgwOutsideAddress;
+
+  private final @Nonnull List<Value> _ipsecPerfectForwardSecrecy;
 
   private final @Nonnull String _ipsecProtocol;
+
+  private final @Nonnull List<Value> _ipsecEncryptionProtocol;
+
   private final @Nullable Long _vgwBgpAsn;
 
   private final @Nonnull Ip _vgwInsideAddress;

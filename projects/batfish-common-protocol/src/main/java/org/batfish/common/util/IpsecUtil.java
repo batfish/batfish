@@ -128,7 +128,6 @@ public class IpsecUtil {
                 Configuration candidateOwner =
                     configurations.get(candidateIpsecPeerConfigId.getHostName());
 
-
                 IpsecSession ipsecSession =
                     getIpsecSession(
                         initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
