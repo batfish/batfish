@@ -37,10 +37,10 @@ final class IpsecTunnel implements Serializable {
   private final int _ipsecLifetime;
 
   private final @Nonnull String _ipsecMode;
-  private Ip _cgwOutsideAddress;
+  private final Ip _cgwOutsideAddress;
 
   private final @Nonnull String _ipsecProtocol;
-  private @Nullable Long _vgwBgpAsn;
+  private final @Nullable Long _vgwBgpAsn;
 
   private final @Nonnull Ip _vgwInsideAddress;
 
@@ -284,15 +284,6 @@ final class IpsecTunnel implements Serializable {
 
   void setCgwBgpAsn(@Nullable Long cgwBgpAsn) {
     _cgwBgpAsn = cgwBgpAsn;
-  }
-  ;
-
-  void setVgwBgpAsn(@Nullable Long vgwBgpAsn) {
-    _vgwBgpAsn = vgwBgpAsn;
-  }
-
-  void setcgwOutsideAddress(@Nullable Ip cgwOutsideAddress) {
-    _cgwOutsideAddress = cgwOutsideAddress;
   }
 
   int getIkeLifetime() {
