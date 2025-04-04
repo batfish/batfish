@@ -200,6 +200,75 @@ public class VpnConnectionTest {
   }
 
   @Test
+  public void testDeserializationWithTunnelOptions() throws IOException {
+    String text2 =
+        readResource("org/batfish/representation/aws/VpnConnectionWithTunnelOptions.json", UTF_8);
+
+    JsonNode json2 = BatfishObjectMapper.mapper().readTree(text2);
+    Region region = new Region("r1");
+    region.addConfigElement(json2, null, null);
+    assertThat(
+        region.getVpnConnections(),
+        equalTo(
+            ImmutableMap.of(
+                "vpn-ba2e34a8",
+                new VpnConnection(
+                    true,
+                    "vpn-ba2e34a8",
+                    "cgw-fb76ace5",
+                    GatewayType.VPN,
+                    "vgw-81fd279f",
+                    ImmutableList.of(
+                        new IpsecTunnel(
+                            65301L,
+                            Ip.parse("169.254.15.194"),
+                            30,
+                            Ip.parse("147.75.69.27"),
+                            List.of(new Value("SHA1"), new Value("SHA2-512")),
+                            List.of(new Value("AES128"), new Value("AES128-GCM-16")),
+                            28800,
+                            "main",
+                            List.of(new Value("2")),
+                            "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
+                            List.of(new Value("SHA2-512")),
+                            List.of(new Value("AES128"), new Value("AES128-GCM-16")),
+                            3600,
+                            "tunnel",
+                            List.of(new Value("15"), new Value("16")),
+                            "esp",
+                            65401L,
+                            Ip.parse("169.254.15.193"),
+                            30,
+                            Ip.parse("52.27.166.152")),
+                        new IpsecTunnel(
+                            65301L,
+                            Ip.parse("169.254.13.238"),
+                            30,
+                            Ip.parse("147.75.69.27"),
+                            List.of(new Value("SHA1"), new Value("SHA2-512")),
+                            List.of(new Value("AES256"), new Value("AES128-GCM-16")),
+                            28800,
+                            "main",
+                            List.of(new Value("22"), new Value("23")),
+                            "84d71e5f49cce153c80a1f13b47989d25f2aa29d9bbc75624ab73435db792f87",
+                            List.of(new Value("SHA2-512")),
+                            List.of(new Value("AES128-GCM-16")),
+                            3600,
+                            "tunnel",
+                            List.of(new Value("14"), new Value("15"), new Value("16")),
+                            "esp",
+                            65401L,
+                            Ip.parse("169.254.13.237"),
+                            30,
+                            Ip.parse("52.39.121.126"))),
+                    ImmutableList.of(),
+                    ImmutableList.of(
+                        new VgwTelemetry(5, Ip.parse("52.27.166.152"), "UP", "5 BGP ROUTES"),
+                        new VgwTelemetry(5, Ip.parse("52.39.121.126"), "UP", "5 BGP ROUTES")),
+                    false))));
+  }
+
+  @Test
   public void testDeserializationTransitGateway() throws IOException {
     String text =
         readResource("org/batfish/representation/aws/VpnConnectionTransitGatewayTest.json", UTF_8);
