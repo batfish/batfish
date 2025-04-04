@@ -127,8 +127,12 @@ public class IpsecUtil {
                 }
                 Configuration candidateOwner =
                     configurations.get(candidateIpsecPeerConfigId.getHostName());
-                IpsecStaticPeerConfig candidateStaticPeerConfig = (IpsecStaticPeerConfig) candidateIpsecPeer;
-                if (candidateStaticPeerConfig.getLocalAddress() != ipsecStaticPeerConfig.getDestinationAddress() || candidateStaticPeerConfig.getDestinationAddress() != ipsecStaticPeerConfig.getLocalAddress()) {
+                IpsecStaticPeerConfig candidateStaticPeerConfig =
+                    (IpsecStaticPeerConfig) candidateIpsecPeer;
+                if (candidateStaticPeerConfig.getLocalAddress()
+                        != ipsecStaticPeerConfig.getDestinationAddress()
+                    || candidateStaticPeerConfig.getDestinationAddress()
+                        != ipsecStaticPeerConfig.getLocalAddress()) {
                   return;
                 }
 
