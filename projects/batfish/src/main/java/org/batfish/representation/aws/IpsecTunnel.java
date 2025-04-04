@@ -37,6 +37,8 @@ final class IpsecTunnel implements Serializable {
 
   private final @Nonnull List<Value> _ipsecAuthProtocol;
 
+  private final @Nonnull List<Value> _ipsecEncryptionProtocol;
+
   private final int _ipsecLifetime;
 
   private final @Nonnull String _ipsecMode;
@@ -44,8 +46,6 @@ final class IpsecTunnel implements Serializable {
   private final @Nonnull List<Value> _ipsecPerfectForwardSecrecy;
 
   private final @Nonnull String _ipsecProtocol;
-
-  private final @Nonnull List<Value> _ipsecEncryptionProtocol;
 
   private final @Nullable Long _vgwBgpAsn;
 
