@@ -69,7 +69,7 @@ public class VpnConnectionTest {
                     "vgw-81fd279f",
                     ImmutableList.of(
                         new IpsecTunnel(
-                            6503L,
+                            65301L,
                             Ip.parse("169.254.15.194"),
                             30,
                             Ip.parse("147.75.69.27"),
@@ -191,7 +191,7 @@ public class VpnConnectionTest {
                             65401L,
                             Ip.parse("169.254.13.237"),
                             30,
-                            Ip.parse("147.75.69.27"))),
+                            Ip.parse("52.39.121.126"))),
                     ImmutableList.of(),
                     ImmutableList.of(
                         new VgwTelemetry(5, Ip.parse("52.27.166.152"), "UP", "5 BGP ROUTES"),
@@ -227,10 +227,10 @@ public class VpnConnectionTest {
                     "tgw-044be4464fcc69aff",
                     ImmutableList.of(
                         new IpsecTunnel(
-                            null,
+                            65000L,
                             Ip.parse("169.254.195.142"),
                             30,
-                            null,
+                            Ip.parse("2.2.2.2"),
                             List.of(
                                 new Value("SHA1"),
                                 new Value("SHA2-256"),
@@ -284,15 +284,15 @@ public class VpnConnectionTest {
                                 new Value("23"),
                                 new Value("24")),
                             "esp",
-                            null,
+                            64512L,
                             Ip.parse("169.254.195.141"),
                             30,
                             Ip.parse("3.130.56.250")),
                         new IpsecTunnel(
-                            null,
+                            65000L,
                             Ip.parse("169.254.70.162"),
                             30,
-                            null,
+                            Ip.parse("2.2.2.2"),
                             List.of(
                                 new Value("SHA1"),
                                 new Value("SHA2-256"),
@@ -346,7 +346,7 @@ public class VpnConnectionTest {
                                 new Value("23"),
                                 new Value("24")),
                             "esp",
-                            null,
+                            64512L,
                             Ip.parse("169.254.70.161"),
                             30,
                             Ip.parse("3.133.183.196"))),

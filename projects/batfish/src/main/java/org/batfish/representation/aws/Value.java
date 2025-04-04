@@ -35,4 +35,9 @@ public class Value implements Serializable {
   public int hashCode() {
     return Objects.hash(_value);
   }
+
+  @Override
+  public String toString() {
+    return _value;
+  }
 }

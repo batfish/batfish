@@ -148,10 +148,10 @@ final class IpsecTunnel implements Serializable {
     } else {
       builder.setIkeAuthProtocol(
           List.of(
-              new Value("AES128"),
-              new Value("AES256"),
-              new Value("AES128-GCM-16"),
-              new Value("AES256-GCM-16")));
+              new Value("SHA1"),
+              new Value("SHA2-256"),
+              new Value("SHA2-384"),
+              new Value("SHA2-512")));
       builder.setIkeEncryptionProtocol(
           List.of(
               new Value("AES128"),
