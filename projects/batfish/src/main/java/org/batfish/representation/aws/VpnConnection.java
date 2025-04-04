@@ -16,7 +16,10 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+
+import java.io.IOException;
 import java.io.Serializable;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -26,6 +29,9 @@ import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 
 import com.google.common.collect.Lists;
 import org.batfish.common.BatfishException;
@@ -62,6 +68,11 @@ import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetOrigin;
 import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.routing_policy.statement.Statements;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
+import org.xml.sax.SAXException;
 
 /** Represents an AWS VPN connection */
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -221,45 +232,88 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static class Options {
+  @JsonCreator
+  private static VpnConnection create(
+      @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
+      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
+      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
+      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) @Nullable String cgwConfiguration,
+      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<VpnRoute> routes,
+      @JsonProperty(JSON_KEY_VGW_TELEMETRY) @Nullable List<VgwTelemetry> vgwTelemetries,
+      @JsonProperty(JSON_KEY_OPTIONS) @Nullable Options options) {
+    checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
+    checkArgument(
+        customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
+    checkArgument(
+        transitGatewayId != null || vpnGatewayId != null,
+        "At least one of Transit or VPN gateway must be non-null for VPN connection");
+    checkArgument(
+        transitGatewayId == null || vpnGatewayId == null,
+        "At least one of Transit or VPN gateway must be null for VPN connection");
+    checkArgument(
+        cgwConfiguration != null,
+        "Customer gateway configuration cannot be null for VPN connection");
+    checkArgument(routes != null, "Route list cannot be null for VPN connection");
+    checkArgument(vgwTelemetries != null, "VGW telemetry cannot be null for VPN connection");
+    checkArgument(options != null, "Options cannot be null for VPN connection");
 
-    private final List<TunnelOptions> _tunnelOptions;
-
-    private final boolean _staticRoutesOnly;
-
-    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
-      _tunnelOptions = tunnelOptions;
-      _staticRoutesOnly = staticRoutesOnly;
+    Document document;
+    try {
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      // safe parser configuration -- disallows doctypes
+      factory.setFeature("http://apache.org/xml/features/disallow-doctype-decl", true);
+      DocumentBuilder builder = factory.newDocumentBuilder();
+      InputSource is = new InputSource(new StringReader(cgwConfiguration));
+      document = builder.parse(is);
+    } catch (ParserConfigurationException | SAXException | IOException e) {
+      throw new IllegalArgumentException(
+          "Could not parse XML for CustomerGatewayConfiguration for vpn connection "
+              + vpnConnectionId
+              + " "
+              + e);
     }
 
-    @Nonnull
-    @JsonCreator
-    private static Options create(
-        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
-        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
-      return new Options(
-          firstNonNull(tunnelOptions, Collections.emptyList()),
-          firstNonNull(staticRoutesOnly, false));
-    }
+    ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
+    Element vpnConnection = (Element) document.getElementsByTagName(XML_KEY_VPN_CONNECTION).item(0);
 
-    TunnelOptions getTunnelOptionAtIndex(int index) {
-      if (index < 0 || index >= _tunnelOptions.size()) {
-        throw new IndexOutOfBoundsException(
-            "Index " + index + " is out of bounds for length " + _tunnelOptions.size());
+    // the field is absent for BGP connections and is "NoBGPVPNConnection" for static connections
+    boolean isBgpConnection =
+        vpnConnection
+                    .getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
+                    .getLength()
+                == 0
+            || !Utils.textOfFirstXmlElementWithTag(
+                    vpnConnection, AwsVpcEntity.XML_KEY_VPN_CONNECTION_ATTRIBUTES)
+                .contains("NoBGP");
+    NodeList nodeList = document.getElementsByTagName(XML_KEY_IPSEC_TUNNEL);
+
+    for (int index = 0; index < nodeList.getLength(); index++) {
+      Element xmlConfig = (Element) nodeList.item(index);
+
+      Optional<TunnelOptions> ipsecTunnelOptional = options.getTunnelOptionAtIndex(index);
+      IpsecTunnel ipt;
+      if (ipsecTunnelOptional.isPresent()) {
+        TunnelOptions ipsecTunnel = ipsecTunnelOptional.get();
+        ipt = IpsecTunnel.create(xmlConfig, isBgpConnection, ipsecTunnel);
+      } else {
+        ipt = IpsecTunnel.create(xmlConfig, isBgpConnection, null);
       }
-      return _tunnelOptions.get(index);
+      ipsecTunnels.add(ipt);
     }
 
-    @Nonnull
-    List<TunnelOptions> getTunnelOptions() {
-      return _tunnelOptions;
-    }
-
-    boolean getStaticRoutesOnly() {
-      return _staticRoutesOnly;
-    }
+    return new VpnConnection(
+        isBgpConnection,
+        vpnConnectionId,
+        customerGatewayId,
+        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
+        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
+        ipsecTunnels.build(),
+        routes.stream()
+            .map(VpnRoute::getDestinationCidrBlock)
+            .collect(ImmutableList.toImmutableList()),
+        vgwTelemetries,
+        options.getStaticRoutesOnly());
   }
 
   enum GatewayType {
@@ -304,56 +358,45 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull String _awsGatewayId;
 
-  @JsonCreator
-  private static VpnConnection create(
-      @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
-      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_ID) @Nullable String customerGatewayId,
-      @JsonProperty(JSON_KEY_TRANSIT_GATEWAY_ID) @Nullable String transitGatewayId,
-      @JsonProperty(JSON_KEY_VPN_GATEWAY_ID) @Nullable String vpnGatewayId,
-      @JsonProperty(JSON_KEY_CUSTOMER_GATEWAY_CONFIGURATION) @Nullable String cgwConfiguration,
-      @JsonProperty(JSON_KEY_ROUTES) @Nullable List<VpnRoute> routes,
-      @JsonProperty(JSON_KEY_VGW_TELEMETRY) @Nullable List<VgwTelemetry> vgwTelemetries,
-      @JsonProperty(JSON_KEY_OPTIONS) @Nullable Options options) {
-    checkArgument(vpnConnectionId != null, "VPN connection Id cannot be null");
-    checkArgument(
-        customerGatewayId != null, "Customer gateway Id cannot be null for VPN connection");
-    checkArgument(
-        transitGatewayId != null || vpnGatewayId != null,
-        "At least one of Transit or VPN gateway must be non-null for VPN connection");
-    checkArgument(
-        transitGatewayId == null || vpnGatewayId == null,
-        "At least one of Transit or VPN gateway must be null for VPN connection");
-    checkArgument(
-        cgwConfiguration != null,
-        "Customer gateway configuration cannot be null for VPN connection");
-    checkArgument(routes != null, "Route list cannot be null for VPN connection");
-    checkArgument(vgwTelemetries != null, "VGW telemetry cannot be null for VPN connection");
-    checkArgument(options != null, "Options cannot be null for VPN connection");
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Options {
 
+    private final List<TunnelOptions> _tunnelOptions;
 
-    ImmutableList.Builder<IpsecTunnel> ipsecTunnels = new ImmutableList.Builder<>();
+    private final boolean _staticRoutesOnly;
 
-    // the field is absent for BGP connections and is "NoBGPVPNConnection" for static connections
-    boolean isBgpConnection = !options.getStaticRoutesOnly();
-
-    for (int index = 0; index < options.getTunnelOptions().size(); index++) {
-      TunnelOptions ipsecTunnel = options.getTunnelOptionAtIndex(index);
-      IpsecTunnel ipt = IpsecTunnel.create(ipsecTunnel);
-      ipsecTunnels.add(ipt);
+    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
+      _tunnelOptions = tunnelOptions;
+      _staticRoutesOnly = staticRoutesOnly;
     }
 
-    return new VpnConnection(
-        isBgpConnection,
-        vpnConnectionId,
-        customerGatewayId,
-        transitGatewayId != null ? GatewayType.TRANSIT : GatewayType.VPN,
-        transitGatewayId != null ? transitGatewayId : vpnGatewayId,
-        ipsecTunnels.build(),
-        routes.stream()
-            .map(VpnRoute::getDestinationCidrBlock)
-            .collect(ImmutableList.toImmutableList()),
-        vgwTelemetries,
-        options.getStaticRoutesOnly());
+    @Nonnull
+    @JsonCreator
+    private static Options create(
+        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
+        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
+      return new Options(
+          firstNonNull(tunnelOptions, Collections.emptyList()),
+          firstNonNull(staticRoutesOnly, false));
+    }
+
+    Optional<TunnelOptions> getTunnelOptionAtIndex(int index) {
+      if (index >= 0 && index < _tunnelOptions.size()) {
+        return Optional.of(_tunnelOptions.get(index));
+      } else {
+        return Optional.empty();
+      }
+    }
+
+    @Nonnull
+    List<TunnelOptions> getTunnelOptions() {
+      return _tunnelOptions;
+    }
+
+    boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+    }
   }
 
   /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */

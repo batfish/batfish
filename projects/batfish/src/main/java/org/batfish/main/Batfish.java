@@ -1430,7 +1430,6 @@ public class Batfish extends PluginConsumer implements IBatfish {
             new Warning(String.format("Unexpected content in AWS file %s", fileName), "AWS"));
       }
     }
-    config.postProcess();
     return config;
   }
 

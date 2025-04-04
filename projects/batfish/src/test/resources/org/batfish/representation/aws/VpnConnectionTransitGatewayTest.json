@@ -6,28 +6,6 @@
       "CustomerGatewayId": "cgw-09e5ca92b2f2d71cc",
       "Options": {
         "StaticRoutesOnly": false,
-        "TunnelOptions": [
-          {
-            "LogOptions": {
-              "CloudWatchLogOptions": {
-                "LogEnabled": false
-              }
-            },
-            "OutsideIpAddress": "3.130.56.250",
-            "PreSharedKey": "F1FSxIuYp.FGxnxYj8TqertJLjdYiAwO",
-            "TunnelInsideCidr": "169.254.195.141/30"
-          },
-          {
-            "LogOptions": {
-              "CloudWatchLogOptions": {
-                "LogEnabled": false
-              }
-            },
-            "OutsideIpAddress": "3.133.183.196",
-            "PreSharedKey": "aZtzTiVz.ki9J0lkio_l1tTYTa8fij3Y",
-            "TunnelInsideCidr": "169.254.70.161/30"
-          }
-        ]
       },
       "Routes": [],
       "State": "available",

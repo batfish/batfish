@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
+import org.w3c.dom.Element;
 
 /** Represents an AWs IPSec tunnel */
 @ParametersAreNonnullByDefault
@@ -48,34 +48,162 @@ final class IpsecTunnel implements Serializable {
 
   private final @Nonnull Ip _vgwOutsideAddress;
 
-  static IpsecTunnel create(VpnConnection.TunnelOptions ipsecTunnel) {
+  static IpsecTunnel create(
+      Element xmlConfig, boolean isBgpConnection, VpnConnection.TunnelOptions ipsecTunnel) {
     Builder builder = new Builder();
-    assert ipsecTunnel.getOutsideIpAddress() != null;
-    builder.setVgwOutsideAddress(ipsecTunnel.getOutsideIpAddress());
-    // AWS configs give the subnet address, they will always use the first host.
-    Prefix insidePrefix = Prefix.parse(ipsecTunnel.getTunnelInsideCidr());
-    builder.setcgwInsideAddress(insidePrefix.getLastHostIp());
-    builder.setCgwInsidePrefixLength(insidePrefix.getPrefixLength());
-    builder.setVgwInsideAddress(insidePrefix.getFirstHostIp());
-    builder.setVgwInsidePrefixLength(insidePrefix.getPrefixLength());
-    assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
-    builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
-    assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
-    builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
-    assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
-    builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
+    Element cgwElement =
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
+
+    builder.setcgwOutsideAddress(
+        Ip.parse(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                cgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_IP_ADDRESS)));
+
+    builder.setcgwInsideAddress(
+        Ip.parse(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                cgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_IP_ADDRESS)));
+
+    builder.setCgwInsidePrefixLength(
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                cgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
+
+    // we see asn configured only for BGP connections
+    if (isBgpConnection) {
+      builder.setCgwBgpAsn(
+          Long.parseLong(
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+    }
+    Element vgwElement =
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
+
+    builder.setVgwOutsideAddress(
+        Ip.parse(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                vgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_OUTSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_IP_ADDRESS)));
+
+    builder.setVgwInsideAddress(
+        Ip.parse(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                vgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_IP_ADDRESS)));
+
+    builder.setVgwInsidePrefixLength(
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithInnerTag(
+                vgwElement,
+                AwsVpcEntity.XML_KEY_TUNNEL_INSIDE_ADDRESS,
+                AwsVpcEntity.XML_KEY_NETWORK_CIDR)));
+
+    // we see asn configured only for BGP connections
+    if (isBgpConnection) {
+      builder.setVgwBgpAsn(
+          Long.parseLong(
+              Utils.textOfFirstXmlElementWithInnerTag(
+                  vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
+    }
+    Element ikeElement = (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
+
+    builder.setIkeMode(Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_MODE));
+    builder.setIkePreSharedKeyHash(
+        CommonUtil.sha256Digest(
+            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_PRE_SHARED_KEY)
+                + CommonUtil.salt()));
+
+    Element ipsecElement =
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
+
+    builder.setIpsecProtocol(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
+    builder.setIpsecLifetime(
+        Integer.parseInt(
+            Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
+    builder.setIpsecMode(
+        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
+    if (ipsecTunnel != null) {
+      // AWS configs give the subnet address, they will always use the first host.
+      assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
+      builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
+      assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
+      builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
+      assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
+      builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
+      assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
+      builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
+      assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
+      builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
+      assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
+      builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
+    } else {
+      builder.setIkeAuthProtocol(
+          List.of(
+              new Value("AES128"),
+              new Value("AES256"),
+              new Value("AES128-GCM-16"),
+              new Value("AES256-GCM-16")));
+      builder.setIkeEncryptionProtocol(
+          List.of(
+              new Value("AES128"),
+              new Value("AES256"),
+              new Value("AES128-GCM-16"),
+              new Value("AES256-GCM-16")));
+      builder.setIkePerfectForwardSecrecy(
+          List.of(
+              new Value("2"),
+              new Value("14"),
+              new Value("15"),
+              new Value("16"),
+              new Value("17"),
+              new Value("18"),
+              new Value("19"),
+              new Value("20"),
+              new Value("21"),
+              new Value("22"),
+              new Value("23"),
+              new Value("24")));
+      builder.setIpsecAuthProtocol(
+          List.of(
+              new Value("SHA1"),
+              new Value("SHA2-256"),
+              new Value("SHA2-384"),
+              new Value("SHA2-512")));
+      builder.setIpsecEncryptionProtocol(
+          List.of(
+              new Value("AES128"),
+              new Value("AES256"),
+              new Value("AES128-GCM-16"),
+              new Value("AES256-GCM-16")));
+      builder.setIpsecPerfectForwardSecrecy(
+          List.of(
+              new Value("2"),
+              new Value("5"),
+              new Value("14"),
+              new Value("15"),
+              new Value("16"),
+              new Value("17"),
+              new Value("18"),
+              new Value("19"),
+              new Value("20"),
+              new Value("21"),
+              new Value("22"),
+              new Value("23"),
+              new Value("24")));
+    }
     builder.setIkeLifetime(28800);
     builder.setIpsecLifetime(3600);
     builder.setIkeMode("main");
-    builder.setIkePreSharedKeyHash(
-        CommonUtil.sha256Digest(ipsecTunnel.getPresharedKey() + CommonUtil.salt()));
     builder.setIpsecProtocol("esp");
-    assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
-    builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
-    assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
-    builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
-    assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
-    builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
     builder.setIpsecMode("tunnel");
     return builder.build();
   }
