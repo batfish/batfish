@@ -268,7 +268,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  private final @Nonnull String _vpnConnectionId;
+  private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
   private final @Nonnull String _customerGatewayId;
 
@@ -279,15 +279,17 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   private final @Nonnull List<Prefix> _routes;
 
   private final boolean _staticRoutesOnly;
-  private final @Nonnull GatewayType _awsGatewayType;
-  private final @Nonnull String _awsGatewayId;
+  private final @Nonnull String _vpnConnectionId;
 
   enum GatewayType {
     TRANSIT,
     VPN
   }
 
-  private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
+  private final @Nonnull GatewayType _awsGatewayType;
+
+  private final @Nonnull String _awsGatewayId;
+
 
   @JsonCreator
   private static VpnConnection create(
