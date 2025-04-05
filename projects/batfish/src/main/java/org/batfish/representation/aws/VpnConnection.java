@@ -16,7 +16,6 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
-
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -25,14 +24,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-
 import com.google.common.collect.Lists;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
@@ -230,6 +227,58 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  private final @Nonnull String _customerGatewayId;
+  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
+  private final boolean _isBgpConnection;
+  private final @Nonnull List<Prefix> _routes;
+  private final boolean _staticRoutesOnly;
+
+  enum GatewayType {
+    TRANSIT,
+    VPN
+  }
+
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  @ParametersAreNonnullByDefault
+  private static class Options {
+
+    private final List<TunnelOptions> _tunnelOptions;
+
+    private final boolean _staticRoutesOnly;
+
+    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
+      _tunnelOptions = tunnelOptions;
+      _staticRoutesOnly = staticRoutesOnly;
+    }
+
+    @Nonnull
+    @JsonCreator
+    private static Options create(
+        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
+        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
+      return new Options(
+          firstNonNull(tunnelOptions, Collections.emptyList()),
+          firstNonNull(staticRoutesOnly, false));
+    }
+
+    Optional<TunnelOptions> getTunnelOptionAtIndex(int index) {
+      if (index >= 0 && index < _tunnelOptions.size()) {
+        return Optional.of(_tunnelOptions.get(index));
+      } else {
+        return Optional.empty();
+      }
+    }
+
+    @Nonnull
+    List<TunnelOptions> getTunnelOptions() {
+      return _tunnelOptions;
+    }
+
+    boolean getStaticRoutesOnly() {
+      return _staticRoutesOnly;
+    }
+  }
+
   private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
   @JsonCreator
@@ -316,20 +365,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         options.getStaticRoutesOnly());
   }
 
-  enum GatewayType {
-    TRANSIT,
-    VPN
-  }
 
-  private final @Nonnull String _customerGatewayId;
-
-  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
-
-  private final boolean _isBgpConnection;
-
-  private final @Nonnull List<Prefix> _routes;
-
-  private final boolean _staticRoutesOnly;
 
   VpnConnection(
       boolean isBgpConnection,
@@ -358,46 +394,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull String _awsGatewayId;
 
-  @JsonIgnoreProperties(ignoreUnknown = true)
-  @ParametersAreNonnullByDefault
-  private static class Options {
 
-    private final List<TunnelOptions> _tunnelOptions;
-
-    private final boolean _staticRoutesOnly;
-
-    private Options(List<TunnelOptions> tunnelOptions, boolean staticRoutesOnly) {
-      _tunnelOptions = tunnelOptions;
-      _staticRoutesOnly = staticRoutesOnly;
-    }
-
-    @Nonnull
-    @JsonCreator
-    private static Options create(
-        @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
-        @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
-      return new Options(
-          firstNonNull(tunnelOptions, Collections.emptyList()),
-          firstNonNull(staticRoutesOnly, false));
-    }
-
-    Optional<TunnelOptions> getTunnelOptionAtIndex(int index) {
-      if (index >= 0 && index < _tunnelOptions.size()) {
-        return Optional.of(_tunnelOptions.get(index));
-      } else {
-        return Optional.empty();
-      }
-    }
-
-    @Nonnull
-    List<TunnelOptions> getTunnelOptions() {
-      return _tunnelOptions;
-    }
-
-    boolean getStaticRoutesOnly() {
-      return _staticRoutesOnly;
-    }
-  }
 
   /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */
   private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
