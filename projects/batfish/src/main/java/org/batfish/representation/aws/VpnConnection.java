@@ -227,17 +227,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  private final @Nonnull String _customerGatewayId;
-  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
-  private final boolean _isBgpConnection;
-  private final @Nonnull List<Prefix> _routes;
-  private final boolean _staticRoutesOnly;
-
-  enum GatewayType {
-    TRANSIT,
-    VPN
-  }
-
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class Options {
@@ -277,6 +266,17 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     boolean getStaticRoutesOnly() {
       return _staticRoutesOnly;
     }
+  }
+
+  private final @Nonnull String _customerGatewayId;
+  private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
+  private final boolean _isBgpConnection;
+  private final @Nonnull List<Prefix> _routes;
+  private final boolean _staticRoutesOnly;
+
+  enum GatewayType {
+    TRANSIT,
+    VPN
   }
 
   private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
