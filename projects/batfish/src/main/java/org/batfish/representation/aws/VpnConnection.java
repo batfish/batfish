@@ -227,11 +227,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
-  enum GatewayType {
-    TRANSIT,
-    VPN
-  }
-
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   private static class Options {
@@ -273,6 +268,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     }
   }
 
+  private final @Nonnull String _vpnConnectionId;
+
   private final @Nonnull String _customerGatewayId;
 
   private final @Nonnull List<IpsecTunnel> _ipsecTunnels;
@@ -282,8 +279,13 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   private final @Nonnull List<Prefix> _routes;
 
   private final boolean _staticRoutesOnly;
+  private final @Nonnull GatewayType _awsGatewayType;
+  private final @Nonnull String _awsGatewayId;
 
-
+  enum GatewayType {
+    TRANSIT,
+    VPN
+  }
 
   private final @Nonnull List<VgwTelemetry> _vgwTelemetries;
 
@@ -393,14 +395,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     _vgwTelemetries = vgwTelemetries;
     _staticRoutesOnly = staticRoutesOnly;
   }
-
-  private final @Nonnull String _vpnConnectionId;
-
-  private final @Nonnull GatewayType _awsGatewayType;
-
-  private final @Nonnull String _awsGatewayId;
-
-
 
   /** Converts AWS IKE Phase 1 proposals into Batfish's internal model. */
   private static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(IpsecTunnel ipsecTunnel) {
