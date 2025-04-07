@@ -108,10 +108,10 @@ public class ImmutableBDDInteger extends BDDInteger implements Serializable {
   public int satAssignmentToInt(BitSet bits) {
     checkArgument(
         _bitvec.length <= 31, "Only BDDInteger of 31 or fewer bits can be converted to int");
-    return satAssignmentToLong(bits).intValue();
+    return (int) satAssignmentToLong(bits);
   }
 
-  public Long satAssignmentToLong(BitSet bits) {
+  public long satAssignmentToLong(BitSet bits) {
     long value = 0;
     for (int i = 0; i < _bitvec.length; i++) {
       BDD bitBDD = _bitvec[_bitvec.length - i - 1];
