@@ -5727,6 +5727,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull CommunityMember toCommunityMember(Poc_members_memberContext ctx) {
     String text = ctx.getText();
     if (ctx.literal_or_regex_community() != null) {
+      text = preprocessCommunityString(text);
       Community literalCommunity = tryParseLiteralCommunity(text);
       if (literalCommunity != null) {
         return new LiteralCommunityMember(literalCommunity);
@@ -5745,6 +5746,34 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       assert ctx.sc_named() != null;
       return new LiteralCommunityMember(toStandardCommunity(ctx.sc_named()));
     }
+  }
+
+  /**
+   * Processes a community string for incomplete cases. Plain numbers (e.g., "1") are converted to
+   * regex patterns (".*1.*") If there is a semicolon with empty ASN or value (e.g., "1:",":1",
+   * ":"), fill with '0'
+   */
+  private String preprocessCommunityString(String text) {
+    // If the text is just digits with no colon, treat it as a regex pattern
+    if (text.matches("^\\d+$")) {
+      return ".*" + text + ".*";
+    }
+    if (text.contains(":")) {
+      int colonIndex = text.indexOf(':');
+      // Check if it's a case like "1:", ":1", or ":"
+      if (colonIndex == 0 || colonIndex == text.length() - 1) {
+        String highStr = colonIndex > 0 ? text.substring(0, colonIndex) : "0";
+        String lowStr = colonIndex < text.length() - 1 ? text.substring(colonIndex + 1) : "0";
+        try {
+          Integer.parseUnsignedInt(highStr);
+          Integer.parseUnsignedInt(lowStr);
+          return highStr + ":" + lowStr;
+        } catch (NumberFormatException e) {
+          return text;
+        }
+      }
+    }
+    return text;
   }
 
   @Override

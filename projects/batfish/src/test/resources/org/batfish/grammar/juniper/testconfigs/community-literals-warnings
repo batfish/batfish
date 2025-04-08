@@ -1,21 +1,42 @@
 #
 set system host-name community-literals-warnings
+
+# Member without semicolon should be treated as regex
+set policy-options community COMMUNITY_WITH_NO_LITERAL members 3333
 set policy-options community COMMUNITY_WITH_NO_LITERAL members 10000:.*
+
+# Members with semicolon should be treated as a literal member
+set policy-options community ASN_ONLY members 1111:
+set policy-options community VALUE_ONLY members :2222
+set policy-options community SEMI_COLON members :
 set policy-options community COMMUNITY_WITH_LITERAL members 10000:100
 set policy-options community COMMUNITY_WITH_LITERAL members 10000:.*
 
-# Legal - using community with no literal member for matching
-set policy-options policy-statement LEGAL_MATCH from community COMMUNITY_WITH_NO_LITERAL
+# Legal - using any community for matching/deleting
+set policy-options policy-statement LEGAL_MATCH1 from community COMMUNITY_WITH_LITERAL
+set policy-options policy-statement LEGAL_MATCH2 from community COMMUNITY_WITH_NO_LITERAL
+set policy-options policy-statement LEGAL_MATCH3 from community ASN_ONLY
+set policy-options policy-statement LEGAL_MATCH4 from community VALUE_ONLY
+set policy-options policy-statement LEGAL_MATCH5 from community SEMI_COLON
+set policy-options policy-statement LEGAL_DELETE1 then community delete COMMUNITY_WITH_LITERAL
+set policy-options policy-statement LEGAL_DELETE2 then community delete COMMUNITY_WITH_NO_LITERAL
+set policy-options policy-statement LEGAL_DELETE3 then community delete ASN_ONLY
+set policy-options policy-statement LEGAL_DELETE4 then community delete VALUE_ONLY
+set policy-options policy-statement LEGAL_DELETE5 then community delete SEMI_COLON
 
 # Legal - using community with a literal member for set/add
-set policy-options policy-statement LEGAL_ADD then community add COMMUNITY_WITH_LITERAL
-set policy-options policy-statement LEGAL_SET then community set COMMUNITY_WITH_LITERAL
-
-# Legal - using community with no literal member for deleting
-set policy-options policy-statement LEGAL_DELETE then community delete COMMUNITY_WITH_NO_LITERAL
+set policy-options policy-statement LEGAL_ADD1 then community add COMMUNITY_WITH_LITERAL
+set policy-options policy-statement LEGAL_ADD2 then community add ASN_ONLY
+set policy-options policy-statement LEGAL_ADD3 then community add VALUE_ONLY
+set policy-options policy-statement LEGAL_ADD4 then community add SEMI_COLON
+set policy-options policy-statement LEGAL_SET1 then community set COMMUNITY_WITH_LITERAL
+set policy-options policy-statement LEGAL_SET2 then community set ASN_ONLY
+set policy-options policy-statement LEGAL_SET3 then community set VALUE_ONLY
+set policy-options policy-statement LEGAL_SET4 then community set SEMI_COLON
 
 # Illegal - using community with no literal member for set/add
 set policy-options policy-statement ILLEGAL_ADD then community add COMMUNITY_WITH_NO_LITERAL
 set policy-options policy-statement ILLEGAL_SET then community set COMMUNITY_WITH_NO_LITERAL
 
+# Undefined community case is not considered
 set policy-options policy-statement UNDEFINED_ADD then community add UNDEFINED_COMMUNITY
