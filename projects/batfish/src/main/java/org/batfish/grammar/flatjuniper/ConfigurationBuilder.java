@@ -5727,21 +5727,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull CommunityMember toCommunityMember(Poc_members_memberContext ctx) {
     String text = ctx.getText();
     if (ctx.literal_or_regex_community() != null) {
-      text = preprocessCommunityString(text);
-      Community literalCommunity = tryParseLiteralCommunity(text);
-      if (literalCommunity != null) {
-        return new LiteralCommunityMember(literalCommunity);
-      }
-      List<String> unintendedMatches = RegexCommunityMember.getUnintendedCommunityMatches(text);
-      if (!unintendedMatches.isEmpty()) {
-        warn(
-            ctx,
-            "RISK: Community regex "
-                + text
-                + " allows longer matches such as "
-                + String.join(" and ", unintendedMatches));
-      }
-      return new RegexCommunityMember(text);
+      return createCommunityMember(text, ctx, this);
     } else {
       assert ctx.sc_named() != null;
       return new LiteralCommunityMember(toStandardCommunity(ctx.sc_named()));
@@ -5749,31 +5735,56 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   /**
-   * Processes a community string for incomplete cases. Plain numbers (e.g., "1") are converted to
+   * Create a community member. Plain numbers (e.g., "1") are converted to
    * regex patterns (".*1.*") If there is a semicolon with empty ASN or value (e.g., "1:",":1",
    * ":"), fill with '0'
    */
-  private String preprocessCommunityString(String text) {
-    // If the text is just digits with no colon, treat it as a regex pattern
-    if (text.matches("^\\d+$")) {
-      return ".*" + text + ".*";
-    }
-    if (text.contains(":")) {
-      int colonIndex = text.indexOf(':');
-      // Check if it's a case like "1:", ":1", or ":"
-      if (colonIndex == 0 || colonIndex == text.length() - 1) {
-        String highStr = colonIndex > 0 ? text.substring(0, colonIndex) : "0";
-        String lowStr = colonIndex < text.length() - 1 ? text.substring(colonIndex + 1) : "0";
-        try {
-          Integer.parseUnsignedInt(highStr);
-          Integer.parseUnsignedInt(lowStr);
-          return highStr + ":" + lowStr;
-        } catch (NumberFormatException e) {
-          return text;
-        }
+  public static CommunityMember createCommunityMember(String text, Poc_members_memberContext ctx, ConfigurationBuilder builder){
+      if (text.equals(":")) {
+          builder.warn(ctx, String.format("RISKY: Community string '%s' is interpreted as '0:0'", text));
+          return new LiteralCommunityMember(StandardCommunity.of(0, 0));
       }
-    }
-    return text;
+      if (text.endsWith(":")) {
+          try {
+              String asStr = text.substring(0, text.length() - 1);
+              int asNum = Integer.parseUnsignedInt(asStr);
+              builder.warn(ctx, String.format("RISKY: Community string '%s' is interpreted as '%s:0'", text, asStr));
+              return new LiteralCommunityMember(StandardCommunity.of(asNum, 0));
+          } catch (NumberFormatException e) {
+              // Not a valid number format, continue to other checks
+          }
+      }
+      if (text.startsWith(":")) {
+          try {
+              String valueStr = text.substring(1);
+              int value = Integer.parseUnsignedInt(valueStr);
+              builder.warn(ctx, String.format("RISKY: Community string '%s' is interpreted as '0:%s'", text, valueStr));
+              return new LiteralCommunityMember(StandardCommunity.of(0, value));
+          } catch (NumberFormatException e) {
+              // Not a valid number format, continue to other checks
+          }
+      }
+      if (text.matches("^\\d+$")) {
+          String regexPattern = ".*" + text + ".*";
+          builder.warn(ctx, String.format("RISKY: Community string '%s' is interpreted as regex pattern '%s'",
+                  text, regexPattern));
+          return new RegexCommunityMember(regexPattern);
+      }
+
+      Community literalCommunity = tryParseLiteralCommunity(text);
+      if (literalCommunity != null) {
+          return new LiteralCommunityMember(literalCommunity);
+      }
+      List<String> unintendedMatches = RegexCommunityMember.getUnintendedCommunityMatches(text);
+      if (!unintendedMatches.isEmpty()) {
+          builder.warn(
+                  ctx,
+                  "RISK: Community regex "
+                          + text
+                          + " allows longer matches such as "
+                          + String.join(" and ", unintendedMatches));
+      }
+      return new RegexCommunityMember(text);
   }
 
   @Override
