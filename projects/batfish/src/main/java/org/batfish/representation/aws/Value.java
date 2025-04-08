@@ -8,7 +8,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class Value implements Serializable {
-  @Nonnull private final String _value;
+  private final @Nonnull String _value;
 
   @JsonCreator
   public Value(@JsonProperty("Value") @Nullable String value) {

@@ -235,9 +235,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
     private final boolean _staticRoutesOnly;
 
-    @Nonnull
     @JsonCreator
-    private static Options create(
+    private static @Nonnull Options create(
         @JsonProperty(JSON_KEY_TUNNEL_OPTIONS) @Nullable List<TunnelOptions> tunnelOptions,
         @JsonProperty(JSON_KEY_STATIC_ROUTES_ONLY) @Nullable Boolean staticRoutesOnly) {
       return new Options(
@@ -736,18 +735,18 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   @JsonIgnoreProperties(ignoreUnknown = true)
   @ParametersAreNonnullByDefault
   public static class TunnelOptions implements Serializable {
-    @Nullable private final List<Value> _ikeVersions;
-    @Nullable private final List<Value> _phase1EncryptionAlgorithm;
-    @Nullable private final List<Value> _phase1IntegrityAlgorithm;
-    @Nullable private final List<Value> _phase1DHGroupNumbers;
-    @Nullable private final List<Value> _phase2EncryptionAlgorithm;
-    @Nullable private final List<Value> _phase2IntegrityAlgorithms;
-    @Nullable private final List<Value> _phase2DHGroupNumbers;
-    @Nullable private final Ip _outsideIpAddress;
-    @Nullable private final String _tunnelInsideCidr;
-    @Nullable private final Integer _replayWindowSize;
-    @Nullable private final String _presharedKey;
-    @Nullable private final Integer _phase2LifetimeSeconds;
+    private final @Nullable List<Value> _ikeVersions;
+    private final @Nullable List<Value> _phase1EncryptionAlgorithm;
+    private final @Nullable List<Value> _phase1IntegrityAlgorithm;
+    private final @Nullable List<Value> _phase1DHGroupNumbers;
+    private final @Nullable List<Value> _phase2EncryptionAlgorithm;
+    private final @Nullable List<Value> _phase2IntegrityAlgorithms;
+    private final @Nullable List<Value> _phase2DHGroupNumbers;
+    private final @Nullable Ip _outsideIpAddress;
+    private final @Nullable String _tunnelInsideCidr;
+    private final @Nullable Integer _replayWindowSize;
+    private final @Nullable String _presharedKey;
+    private final @Nullable Integer _phase2LifetimeSeconds;
 
     private TunnelOptions(
         @Nullable List<Value> ikeVersions,
@@ -776,9 +775,8 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
       _phase2LifetimeSeconds = phase2LifetimeSeconds;
     }
 
-    @Nonnull
     @JsonCreator
-    private static TunnelOptions create(
+    private static @Nonnull TunnelOptions create(
         @JsonProperty(JSON_KEY_IKE_VERSIONS) @Nullable List<Value> ikeVersions,
         @JsonProperty(JSON_KEY_PHASE1_ENCRYPTION_ALGORITHMS) @Nullable
             List<Value> phase1EncryptionAlgorithm,
@@ -905,30 +903,25 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     Ip getOutsideIpAddress() {
       return _outsideIpAddress;
     }
-    ;
 
     @Nullable
     String getTunnelInsideCidr() {
       return _tunnelInsideCidr;
     }
-    ;
 
     @Nullable
     Integer getReplayWindowSize() {
       return _replayWindowSize;
     }
-    ;
 
     @Nullable
     String getPresharedKey() {
       return _presharedKey;
     }
-    ;
 
     @Nullable
     Integer getPhase2LifetimeSeconds() {
       return _phase2LifetimeSeconds;
     }
-    ;
   }
 }
