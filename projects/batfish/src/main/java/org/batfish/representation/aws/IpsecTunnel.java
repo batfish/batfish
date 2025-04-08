@@ -56,7 +56,9 @@ final class IpsecTunnel implements Serializable {
   private final @Nonnull Ip _vgwOutsideAddress;
 
   static IpsecTunnel create(
-      Element xmlConfig, boolean isBgpConnection, @Nullable VpnConnection.TunnelOptions ipsecTunnel) {
+      Element xmlConfig,
+      boolean isBgpConnection,
+      @Nullable VpnConnection.TunnelOptions ipsecTunnel) {
     Builder builder = new Builder();
     Element cgwElement =
         (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
