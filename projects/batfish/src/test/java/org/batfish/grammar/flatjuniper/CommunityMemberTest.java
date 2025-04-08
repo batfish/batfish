@@ -1,39 +1,77 @@
 package org.batfish.grammar.flatjuniper;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.instanceOf;
-import java.util.HashMap;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 
-import org.antlr.v4.runtime.Token;
-import org.batfish.common.Warnings;
-
-import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
+import org.batfish.representation.juniper.CommunityMemberParseResult;
 import org.batfish.representation.juniper.LiteralCommunityMember;
+import org.batfish.representation.juniper.RegexCommunityMember;
 import org.junit.Test;
 
 public class CommunityMemberTest {
-    // Create a simple subclass of ConfigurationBuilder for testing
-    private static class TestConfigurationBuilder extends ConfigurationBuilder {
-        public TestConfigurationBuilder() {
 
-            super(
-                    null,
-                    "",
-                    new Warnings(),
-                    new HashMap<Token, String>(),
-                    new SilentSyntaxCollection());
-        }
+  @Test
+  public void testParseEmptyColon() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember(":");
+    assertThat(result.getMember(), instanceOf(LiteralCommunityMember.class));
+    LiteralCommunityMember member = (LiteralCommunityMember) result.getMember();
+    assertThat(member.getCommunity(), equalTo(StandardCommunity.of(0, 0)));
+    assertThat(result.getWarning(), equalTo("RISKY: Community string ':' is interpreted as '0:0'"));
+  }
 
-        @Override
-        public void warn(org.antlr.v4.runtime.ParserRuleContext ctx, String message) {
-            // Do nothing in tests
-        }
-    }
+  @Test
+  public void testParseColonWithAsn() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember("123:");
+    assertThat(result.getMember(), instanceOf(LiteralCommunityMember.class));
+    LiteralCommunityMember member = (LiteralCommunityMember) result.getMember();
+    assertThat(member.getCommunity(), equalTo(StandardCommunity.of(123, 0)));
+    assertThat(
+        result.getWarning(), equalTo("RISKY: Community string '123:' is interpreted as '123:0'"));
+  }
 
-    private static final CommunityMemberTest.TestConfigurationBuilder TEST_BUILDER = new CommunityMemberTest.TestConfigurationBuilder();
+  @Test
+  public void testParseColonWithValue() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember(":123");
+    assertThat(result, notNullValue());
+    assertThat(result.getMember(), instanceOf(LiteralCommunityMember.class));
+    LiteralCommunityMember member = (LiteralCommunityMember) result.getMember();
+    assertThat(member.getCommunity(), equalTo(StandardCommunity.of(0, 123)));
+    assertThat(result.getWarning(), notNullValue());
+    assertThat(
+        result.getWarning(), equalTo("RISKY: Community string ':123' is interpreted as '0:123'"));
+  }
 
-    @Test
-    public void testCreateCommunityMemberWithJustColon() {
-        assertThat(ConfigurationBuilder.createCommunityMember(":", null, TEST_BUILDER), instanceOf(LiteralCommunityMember.class));
-    }
+  @Test
+  public void testParseDigitOnly() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember("123");
+    assertThat(result, notNullValue());
+    assertThat(result.getMember(), instanceOf(RegexCommunityMember.class));
+    RegexCommunityMember member = (RegexCommunityMember) result.getMember();
+    assertThat(member.getRegex(), equalTo(".*123.*"));
+    assertThat(result.getWarning(), nullValue());
+  }
+
+  @Test
+  public void testParseStandardCommunity() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember("123:456");
+    assertThat(result, notNullValue());
+    assertThat(result.getMember(), instanceOf(LiteralCommunityMember.class));
+    LiteralCommunityMember member = (LiteralCommunityMember) result.getMember();
+    assertThat(member.getCommunity(), equalTo(StandardCommunity.of(123, 456)));
+    assertThat(result.getWarning(), nullValue());
+  }
+
+  @Test
+  public void testParseRegexWithUnintendedMatches() {
+    CommunityMemberParseResult result = ConfigurationBuilder.parseCommunityMember("123:.*");
+    assertThat(result, notNullValue());
+    assertThat(result.getMember(), instanceOf(RegexCommunityMember.class));
+    RegexCommunityMember member = (RegexCommunityMember) result.getMember();
+    assertThat(member.getRegex(), equalTo("123:.*"));
+    assertThat(result.getWarning(), notNullValue());
+  }
 }
