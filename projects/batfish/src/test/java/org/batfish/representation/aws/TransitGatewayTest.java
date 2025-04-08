@@ -34,7 +34,6 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
 import java.util.List;
-
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;

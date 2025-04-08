@@ -16,6 +16,7 @@ import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Lists;
 import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -30,7 +31,6 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
-import com.google.common.collect.Lists;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -290,7 +290,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
 
   private final @Nonnull String _awsGatewayId;
 
-
   @JsonCreator
   private static VpnConnection create(
       @JsonProperty(JSON_KEY_VPN_CONNECTION_ID) @Nullable String vpnConnectionId,
@@ -374,8 +373,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         vgwTelemetries,
         options.getStaticRoutesOnly());
   }
-
-
 
   VpnConnection(
       boolean isBgpConnection,
@@ -471,8 +468,7 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   private static @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
-      List<String> proposals,
-      Value perfectForwardSecrecy) {
+      List<String> proposals, Value perfectForwardSecrecy) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
     ipsecPhase2Policy.setPfsKeyGroup(toDiffieHellmanGroup(perfectForwardSecrecy.getValue()));
     ipsecPhase2Policy.setProposals(proposals);
@@ -639,8 +635,6 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
     gwCfg.extendIpsecPhase2Policies(ipsecPhase2PolicyMapBuilder.build());
     gwCfg.extendIpsecPeerConfigs(ipsecPeerConfigMapBuilder.build());
   }
-
-
 
   @Nonnull
   List<VgwTelemetry> getVgwTelemetries() {
