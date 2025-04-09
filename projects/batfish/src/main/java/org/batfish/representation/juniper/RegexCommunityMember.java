@@ -134,4 +134,21 @@ public final class RegexCommunityMember implements CommunityMember {
   }
 
   private final @Nonnull String _regex;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RegexCommunityMember)) {
+      return false;
+    }
+    RegexCommunityMember rcm = (RegexCommunityMember) o;
+    return _regex.equals(rcm._regex);
+  }
+
+  @Override
+  public int hashCode() {
+    return _regex.hashCode();
+  }
 }

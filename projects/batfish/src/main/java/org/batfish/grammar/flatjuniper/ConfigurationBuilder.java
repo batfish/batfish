@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.representation.juniper.CommunityMemberParseResult.parseCommunityMember;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
@@ -207,9 +208,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -831,6 +829,7 @@ import org.batfish.representation.juniper.BridgeDomainVlanIdAll;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNone;
 import org.batfish.representation.juniper.BridgeDomainVlanIdNumber;
 import org.batfish.representation.juniper.CommunityMember;
+import org.batfish.representation.juniper.CommunityMemberParseResult;
 import org.batfish.representation.juniper.ConcreteFirewallFilter;
 import org.batfish.representation.juniper.Condition;
 import org.batfish.representation.juniper.DhcpRelayGroup;
@@ -1000,7 +999,6 @@ import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThens;
 import org.batfish.representation.juniper.QualifiedNextHop;
-import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.Resolution;
 import org.batfish.representation.juniper.ResolutionRib;
 import org.batfish.representation.juniper.RibGroup;
@@ -1934,24 +1932,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       return convProblem(OspfInterfaceType.class, ctx, null);
     }
-  }
-
-  /** Returns a {@link Community} if {@code text} can be parsed as one, or else {@code null}. */
-  private static @Nullable Community tryParseLiteralCommunity(String text) {
-    Optional<StandardCommunity> standard = StandardCommunity.tryParse(text);
-    if (standard.isPresent()) {
-      return standard.get();
-    }
-    // TODO: decouple extended community parsing for vendors
-    Optional<ExtendedCommunity> extended = ExtendedCommunity.tryParse(text);
-    if (extended.isPresent()) {
-      return extended.get();
-    }
-    Optional<LargeCommunity> large = LargeCommunity.tryParse(text);
-    if (large.isPresent()) {
-      return large.get();
-    }
-    return null;
   }
 
   private long toAsNum(Bgp_asnContext ctx) {
@@ -5727,20 +5707,11 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull CommunityMember toCommunityMember(Poc_members_memberContext ctx) {
     String text = ctx.getText();
     if (ctx.literal_or_regex_community() != null) {
-      Community literalCommunity = tryParseLiteralCommunity(text);
-      if (literalCommunity != null) {
-        return new LiteralCommunityMember(literalCommunity);
+      CommunityMemberParseResult result = parseCommunityMember(text);
+      if (result.getWarning() != null) {
+        warn(ctx, result.getWarning());
       }
-      List<String> unintendedMatches = RegexCommunityMember.getUnintendedCommunityMatches(text);
-      if (!unintendedMatches.isEmpty()) {
-        warn(
-            ctx,
-            "RISK: Community regex "
-                + text
-                + " allows longer matches such as "
-                + String.join(" and ", unintendedMatches));
-      }
-      return new RegexCommunityMember(text);
+      return result.getMember();
     } else {
       assert ctx.sc_named() != null;
       return new LiteralCommunityMember(toStandardCommunity(ctx.sc_named()));

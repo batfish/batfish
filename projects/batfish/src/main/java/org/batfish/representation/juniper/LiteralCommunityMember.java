@@ -22,4 +22,21 @@ public final class LiteralCommunityMember implements CommunityMember {
   }
 
   private final @Nonnull Community _community;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof LiteralCommunityMember)) {
+      return false;
+    }
+    LiteralCommunityMember lcm = (LiteralCommunityMember) o;
+    return _community.equals(lcm._community);
+  }
+
+  @Override
+  public int hashCode() {
+    return _community.hashCode();
+  }
 }
