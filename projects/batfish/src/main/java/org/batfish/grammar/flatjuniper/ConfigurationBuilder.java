@@ -3,6 +3,7 @@ package org.batfish.grammar.flatjuniper;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.datamodel.Names.bgpNeighborStructureName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
+import static org.batfish.representation.juniper.CommunityMemberParseResult.parseCommunityMember;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeFirewallFilterTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
@@ -207,9 +208,6 @@ import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TcpFlags;
 import org.batfish.datamodel.TcpFlagsMatchConditions;
 import org.batfish.datamodel.bgp.RouteDistinguisher;
-import org.batfish.datamodel.bgp.community.Community;
-import org.batfish.datamodel.bgp.community.ExtendedCommunity;
-import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.isis.IsisAuthenticationAlgorithm;
 import org.batfish.datamodel.isis.IsisHelloAuthenticationType;
@@ -1001,7 +999,6 @@ import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThens;
 import org.batfish.representation.juniper.QualifiedNextHop;
-import org.batfish.representation.juniper.RegexCommunityMember;
 import org.batfish.representation.juniper.Resolution;
 import org.batfish.representation.juniper.ResolutionRib;
 import org.batfish.representation.juniper.RibGroup;
@@ -1935,24 +1932,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else {
       return convProblem(OspfInterfaceType.class, ctx, null);
     }
-  }
-
-  /** Returns a {@link Community} if {@code text} can be parsed as one, or else {@code null}. */
-  private static @Nullable Community tryParseLiteralCommunity(String text) {
-    Optional<StandardCommunity> standard = StandardCommunity.tryParse(text);
-    if (standard.isPresent()) {
-      return standard.get();
-    }
-    // TODO: decouple extended community parsing for vendors
-    Optional<ExtendedCommunity> extended = ExtendedCommunity.tryParse(text);
-    if (extended.isPresent()) {
-      return extended.get();
-    }
-    Optional<LargeCommunity> large = LargeCommunity.tryParse(text);
-    if (large.isPresent()) {
-      return large.get();
-    }
-    return null;
   }
 
   private long toAsNum(Bgp_asnContext ctx) {
@@ -5737,59 +5716,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       assert ctx.sc_named() != null;
       return new LiteralCommunityMember(toStandardCommunity(ctx.sc_named()));
     }
-  }
-
-  /**
-   * Create a community member. Plain numbers (e.g., "1") are converted to regex patterns (".*1.*")
-   * If there is a semicolon with empty ASN or value (e.g., "1:",":1", ":"), fill with '0'
-   */
-  public static CommunityMemberParseResult parseCommunityMember(String text) {
-    if (text.equals(":")) {
-      return new CommunityMemberParseResult(
-          new LiteralCommunityMember(StandardCommunity.of(0, 0)),
-          String.format("RISKY: Community string '%s' is interpreted as '0:0'", text));
-    }
-    if (text.endsWith(":")) {
-      try {
-        String asStr = text.substring(0, text.length() - 1);
-        int asNum = Integer.parseUnsignedInt(asStr);
-        return new CommunityMemberParseResult(
-            new LiteralCommunityMember(StandardCommunity.of(asNum, 0)),
-            String.format("RISKY: Community string '%s' is interpreted as '%s:0'", text, asStr));
-      } catch (NumberFormatException e) {
-        // Not a valid number format, continue to other checks
-      }
-    }
-    if (text.startsWith(":")) {
-      try {
-        String valueStr = text.substring(1);
-        int value = Integer.parseUnsignedInt(valueStr);
-        return new CommunityMemberParseResult(
-            new LiteralCommunityMember(StandardCommunity.of(0, value)),
-            String.format("RISKY: Community string '%s' is interpreted as '0:%s'", text, value));
-      } catch (NumberFormatException e) {
-        // Not a valid number format, continue to other checks
-      }
-    }
-    if (text.matches("^\\d+$")) {
-      String regexPattern = ".*" + text + ".*";
-      return new CommunityMemberParseResult(new RegexCommunityMember(regexPattern), null);
-    }
-
-    Community literalCommunity = tryParseLiteralCommunity(text);
-    if (literalCommunity != null) {
-      return new CommunityMemberParseResult(new LiteralCommunityMember(literalCommunity), null);
-    }
-    List<String> unintendedMatches = RegexCommunityMember.getUnintendedCommunityMatches(text);
-    String warning = null;
-    if (!unintendedMatches.isEmpty()) {
-      warning =
-          "RISK: Community regex "
-              + text
-              + " allows longer matches such as "
-              + String.join(" and ", unintendedMatches);
-    }
-    return new CommunityMemberParseResult(new RegexCommunityMember(text), warning);
   }
 
   @Override
