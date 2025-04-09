@@ -1,6 +1,5 @@
 package org.batfish.representation.juniper;
 
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
@@ -33,11 +32,11 @@ public final class LiteralCommunityMember implements CommunityMember {
       return false;
     }
     LiteralCommunityMember lcm = (LiteralCommunityMember) o;
-    return Objects.equals(_community, lcm._community);
+    return _community.equals(lcm._community);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_community);
+    return _community.hashCode();
   }
 }

@@ -11,6 +11,7 @@ import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 
+/** Class for parsing a community value into a {@link CommunityMember} */
 public class CommunityMemberParseResult {
 
   private final CommunityMember _member;
@@ -31,6 +32,7 @@ public class CommunityMemberParseResult {
     return _warning;
   }
 
+  /** Converts a community value into a {@link CommunityMember} and stores any warnings */
   public static CommunityMemberParseResult parseCommunityMember(String text) {
     Optional<CommunityMemberParseResult> specialCase = handleSpecialStandardCommunity(text);
     if (specialCase.isPresent()) {
@@ -123,7 +125,7 @@ public class CommunityMemberParseResult {
       return false;
     }
     CommunityMemberParseResult cmpr = (CommunityMemberParseResult) o;
-    return Objects.equals(_member, cmpr._member) && Objects.equals(_warning, cmpr._warning);
+    return _member.equals(cmpr._member) && Objects.equals(_warning, cmpr._warning);
   }
 
   @Override

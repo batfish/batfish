@@ -7,7 +7,6 @@ import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
@@ -145,11 +144,11 @@ public final class RegexCommunityMember implements CommunityMember {
       return false;
     }
     RegexCommunityMember rcm = (RegexCommunityMember) o;
-    return Objects.equals(_regex, rcm._regex);
+    return _regex.equals(rcm._regex);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(_regex);
+    return _regex.hashCode();
   }
 }
