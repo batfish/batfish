@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.base.MoreObjects;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.bgp.community.Community;
@@ -38,5 +39,10 @@ public final class LiteralCommunityMember implements CommunityMember {
   @Override
   public int hashCode() {
     return _community.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("community", _community).toString();
   }
 }
