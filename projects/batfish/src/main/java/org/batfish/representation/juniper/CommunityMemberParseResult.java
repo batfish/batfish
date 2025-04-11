@@ -38,7 +38,7 @@ public class CommunityMemberParseResult {
       return new CommunityMemberParseResult(new RegexCommunityMember(text), null);
     }
 
-    Optional<CommunityMemberParseResult> specialCase = handleSpecialStandardCommunity(text);
+    Optional<CommunityMemberParseResult> specialCase = tryParseJuniperIncompleteLiteral(text);
     if (specialCase.isPresent()) {
       return specialCase.get();
     }
@@ -60,7 +60,8 @@ public class CommunityMemberParseResult {
   }
 
   /** Create community string from incomplete cases and try to parse */
-  private static Optional<CommunityMemberParseResult> handleSpecialStandardCommunity(String text) {
+  private static Optional<CommunityMemberParseResult> tryParseJuniperIncompleteLiteral(
+      String text) {
     if (STANDARD_PATTERN.matcher(text).matches()) {
       // For a standard community, admin and value can be empty
       int colonIndex = text.indexOf(':');
@@ -71,7 +72,7 @@ public class CommunityMemberParseResult {
         Optional<StandardCommunity> standardCommunity =
             StandardCommunity.tryParse(highStr + ":" + lowStr);
         if (standardCommunity.isPresent()) {
-          return createSpecialCommunityResult(standardCommunity.get(), text, normalizedText);
+          return createLiteralCommunityWithWarning(standardCommunity.get(), text, normalizedText);
         }
       }
     } else if (text.toLowerCase().startsWith("large")) {
@@ -92,7 +93,7 @@ public class CommunityMemberParseResult {
         String normalizedText = String.join(":", normalizedParts);
         Optional<LargeCommunity> largeCommunity = LargeCommunity.tryParse(normalizedText);
         if (largeCommunity.isPresent()) {
-          return createSpecialCommunityResult(largeCommunity.get(), text, normalizedText);
+          return createLiteralCommunityWithWarning(largeCommunity.get(), text, normalizedText);
         }
       }
     } else if (EXTENDED_PATTERN.matcher(text).matches()) {
@@ -100,13 +101,13 @@ public class CommunityMemberParseResult {
       String normalizedText = text + "0";
       Optional<ExtendedCommunity> extendedCommunity = ExtendedCommunity.tryParse(normalizedText);
       if (extendedCommunity.isPresent()) {
-        return createSpecialCommunityResult(extendedCommunity.get(), text, normalizedText);
+        return createLiteralCommunityWithWarning(extendedCommunity.get(), text, normalizedText);
       }
     }
     return Optional.empty();
   }
 
-  private static Optional<CommunityMemberParseResult> createSpecialCommunityResult(
+  private static Optional<CommunityMemberParseResult> createLiteralCommunityWithWarning(
       Community community, String originalText, String normalizedText) {
     return Optional.of(
         new CommunityMemberParseResult(
