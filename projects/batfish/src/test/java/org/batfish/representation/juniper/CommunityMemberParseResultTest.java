@@ -4,6 +4,8 @@ import static org.batfish.representation.juniper.CommunityMemberParseResult.pars
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 
+import org.batfish.datamodel.bgp.community.ExtendedCommunity;
+import org.batfish.datamodel.bgp.community.LargeCommunity;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.junit.Test;
 
@@ -13,6 +15,11 @@ public class CommunityMemberParseResultTest {
   @Test
   public void testParseCommunityMember() {
     // Literal cases
+    assertThat(
+        parseCommunityMember("123:456"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(StandardCommunity.of(123, 456)), null)));
     assertThat(
         parseCommunityMember(":"),
         equalTo(
@@ -30,6 +37,40 @@ public class CommunityMemberParseResultTest {
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(StandardCommunity.of(123, 456)), null)));
+    assertThat(
+        parseCommunityMember("origin:111:222"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(ExtendedCommunity.of(0x03, 111, 222)), null)));
+    assertThat(
+        parseCommunityMember("origin:111:"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(ExtendedCommunity.of(0x03, 111, 0)),
+                "RISK: Community string 'origin:111:' is interpreted as 'origin:111:0'")));
+    assertThat(
+        parseCommunityMember("large:111:222:333"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(LargeCommunity.of(111, 222, 333)), null)));
+    assertThat(
+        parseCommunityMember("large:111:222:"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(LargeCommunity.of(111, 222, 0)),
+                "RISK: Community string 'large:111:222:' is interpreted as 'large:111:222:0'")));
+    assertThat(
+        parseCommunityMember("large:111::"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(LargeCommunity.of(111, 0, 0)),
+                "RISK: Community string 'large:111::' is interpreted as 'large:111:0:0'")));
+    assertThat(
+        parseCommunityMember("large:::"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(LargeCommunity.of(0, 0, 0)),
+                "RISK: Community string 'large:::' is interpreted as 'large:0:0:0'")));
     // Regex cases
     assertThat(
         parseCommunityMember("123"),
