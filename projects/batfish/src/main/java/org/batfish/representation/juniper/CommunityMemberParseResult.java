@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.base.MoreObjects;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -150,5 +151,14 @@ public class CommunityMemberParseResult {
   @Override
   public int hashCode() {
     return Objects.hash(_member, _warning);
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this)
+        .omitNullValues()
+        .add("member", _member)
+        .add("warning", _warning)
+        .toString();
   }
 }
