@@ -140,8 +140,8 @@ public class AwsHostTest {
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
-    IpsecPeerConfigId awsVpn1 = new IpsecPeerConfigId("vpn-ba2e34a8-1", "vgw-81fd279f");
-    IpsecPeerConfigId awsVpn2 = new IpsecPeerConfigId("vpn-ba2e34a8-2", "vgw-81fd279f");
+    IpsecPeerConfigId awsVpn1 = new IpsecPeerConfigId("vpn-ba2e34a8-1-GROUP2", "vgw-81fd279f");
+    IpsecPeerConfigId awsVpn2 = new IpsecPeerConfigId("vpn-ba2e34a8-2-GROUP2", "vgw-81fd279f");
 
     //  NAT settings on host1 (not-shared version) should result in one directional edges in the
     // topology since cisco_host's interface will not be mapped to the public IP
@@ -187,8 +187,8 @@ public class AwsHostTest {
 
     IpsecPeerConfigId tunnel1 = new IpsecPeerConfigId("Tunnel1", "cisco_host");
     IpsecPeerConfigId tunnel2 = new IpsecPeerConfigId("Tunnel2", "cisco_host");
-    IpsecPeerConfigId awsVpn1 = new IpsecPeerConfigId("vpn-ba2e34a8-1", "vgw-81fd279f");
-    IpsecPeerConfigId awsVpn2 = new IpsecPeerConfigId("vpn-ba2e34a8-2", "vgw-81fd279f");
+    IpsecPeerConfigId awsVpn1 = new IpsecPeerConfigId("vpn-ba2e34a8-1-GROUP2", "vgw-81fd279f");
+    IpsecPeerConfigId awsVpn2 = new IpsecPeerConfigId("vpn-ba2e34a8-2-GROUP2", "vgw-81fd279f");
 
     //  In the shared version, now the public IP 4.4.4.27 will be mapped to the private IPs owned by
     // cisco_host, so edges will exist in both directions

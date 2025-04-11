@@ -2,6 +2,7 @@ package org.batfish.representation.aws;
 
 import com.google.common.base.MoreObjects;
 import java.io.Serializable;
+import java.util.List;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -20,29 +21,29 @@ final class IpsecTunnel implements Serializable {
 
   private final int _cgwInsidePrefixLength;
 
-  private final @Nonnull Ip _cgwOutsideAddress;
+  private final Ip _cgwOutsideAddress;
 
-  private final @Nonnull String _ikeAuthProtocol;
+  private final @Nonnull List<Value> _ikeAuthProtocol;
 
-  private final @Nonnull String _ikeEncryptionProtocol;
+  private final @Nonnull List<Value> _ikeEncryptionProtocol;
 
   private final int _ikeLifetime;
 
   private final @Nonnull String _ikeMode;
 
-  private final @Nonnull String _ikePerfectForwardSecrecy;
+  private final @Nonnull List<Value> _ikePerfectForwardSecrecy;
 
   private final @Nonnull String _ikePreSharedKeyHash;
 
-  private final @Nonnull String _ipsecAuthProtocol;
+  private final @Nonnull List<Value> _ipsecAuthProtocol;
 
-  private final @Nonnull String _ipsecEncryptionProtocol;
+  private final @Nonnull List<Value> _ipsecEncryptionProtocol;
 
   private final int _ipsecLifetime;
 
   private final @Nonnull String _ipsecMode;
 
-  private final @Nonnull String _ipsecPerfectForwardSecrecy;
+  private final @Nonnull List<Value> _ipsecPerfectForwardSecrecy;
 
   private final @Nonnull String _ipsecProtocol;
 
@@ -54,12 +55,13 @@ final class IpsecTunnel implements Serializable {
 
   private final @Nonnull Ip _vgwOutsideAddress;
 
-  static IpsecTunnel create(Element ipsecTunnel, boolean isBgpConnection) {
-
+  static IpsecTunnel create(
+      Element xmlConfig,
+      boolean isBgpConnection,
+      @Nullable VpnConnection.TunnelOptions ipsecTunnel) {
     Builder builder = new Builder();
-
     Element cgwElement =
-        (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_CUSTOMER_GATEWAY).item(0);
 
     builder.setcgwOutsideAddress(
         Ip.parse(
@@ -90,7 +92,7 @@ final class IpsecTunnel implements Serializable {
                   cgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
     Element vgwElement =
-        (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_VPN_GATEWAY).item(0);
 
     builder.setVgwOutsideAddress(
         Ip.parse(
@@ -120,20 +122,8 @@ final class IpsecTunnel implements Serializable {
               Utils.textOfFirstXmlElementWithInnerTag(
                   vgwElement, AwsVpcEntity.XML_KEY_BGP, AwsVpcEntity.XML_KEY_ASN)));
     }
-    Element ikeElement =
-        (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
+    Element ikeElement = (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_IKE).item(0);
 
-    builder.setIkeAuthProtocol(
-        Utils.textOfFirstXmlElementWithTag(
-            ikeElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
-    builder.setIkeEncryptionProtocol(
-        Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
-    builder.setIkeLifetime(
-        Integer.parseInt(
-            Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_LIFETIME)));
-    builder.setIkePerfectForwardSecrecy(
-        Utils.textOfFirstXmlElementWithTag(
-            ikeElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
     builder.setIkeMode(Utils.textOfFirstXmlElementWithTag(ikeElement, AwsVpcEntity.XML_KEY_MODE));
     builder.setIkePreSharedKeyHash(
         CommonUtil.sha256Digest(
@@ -141,43 +131,108 @@ final class IpsecTunnel implements Serializable {
                 + CommonUtil.salt()));
 
     Element ipsecElement =
-        (Element) ipsecTunnel.getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
+        (Element) xmlConfig.getElementsByTagName(AwsVpcEntity.XML_KEY_IPSEC).item(0);
 
     builder.setIpsecProtocol(
         Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_PROTOCOL));
-    builder.setIpsecAuthProtocol(
-        Utils.textOfFirstXmlElementWithTag(
-            ipsecElement, AwsVpcEntity.XML_KEY_AUTHENTICATION_PROTOCOL));
-    builder.setIpsecEncryptionProtocol(
-        Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_ENCRYPTION_PROTOCOL));
     builder.setIpsecLifetime(
         Integer.parseInt(
             Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_LIFETIME)));
-    builder.setIpsecPerfectForwardSecrecy(
-        Utils.textOfFirstXmlElementWithTag(
-            ipsecElement, AwsVpcEntity.XML_KEY_PERFECT_FORWARD_SECRECY));
     builder.setIpsecMode(
         Utils.textOfFirstXmlElementWithTag(ipsecElement, AwsVpcEntity.XML_KEY_MODE));
-
+    if (ipsecTunnel != null) {
+      // AWS configs give the subnet address, they will always use the first host.
+      assert ipsecTunnel.getPhase1IntegrityAlgorithm() != null;
+      builder.setIkeAuthProtocol(ipsecTunnel.getPhase1IntegrityAlgorithm());
+      assert ipsecTunnel.getPhase1EncryptionAlgorithm() != null;
+      builder.setIkeEncryptionProtocol(ipsecTunnel.getPhase1EncryptionAlgorithm());
+      assert ipsecTunnel.getPhase1DHGroupNumbers() != null;
+      builder.setIkePerfectForwardSecrecy(ipsecTunnel.getPhase1DHGroupNumbers());
+      assert ipsecTunnel.getPhase2IntegrityAlgorithm() != null;
+      builder.setIpsecAuthProtocol(ipsecTunnel.getPhase2IntegrityAlgorithm());
+      assert ipsecTunnel.getPhase2EncryptionAlgorithm() != null;
+      builder.setIpsecEncryptionProtocol(ipsecTunnel.getPhase2EncryptionAlgorithm());
+      assert ipsecTunnel.getPhase2DHGroupNumbers() != null;
+      builder.setIpsecPerfectForwardSecrecy(ipsecTunnel.getPhase2DHGroupNumbers());
+    } else {
+      builder.setIkeAuthProtocol(
+          List.of(
+              new Value("SHA1"),
+              new Value("SHA2-256"),
+              new Value("SHA2-384"),
+              new Value("SHA2-512")));
+      builder.setIkeEncryptionProtocol(
+          List.of(
+              new Value("AES128"),
+              new Value("AES256"),
+              new Value("AES128-GCM-16"),
+              new Value("AES256-GCM-16")));
+      builder.setIkePerfectForwardSecrecy(
+          List.of(
+              new Value("2"),
+              new Value("14"),
+              new Value("15"),
+              new Value("16"),
+              new Value("17"),
+              new Value("18"),
+              new Value("19"),
+              new Value("20"),
+              new Value("21"),
+              new Value("22"),
+              new Value("23"),
+              new Value("24")));
+      builder.setIpsecAuthProtocol(
+          List.of(
+              new Value("SHA1"),
+              new Value("SHA2-256"),
+              new Value("SHA2-384"),
+              new Value("SHA2-512")));
+      builder.setIpsecEncryptionProtocol(
+          List.of(
+              new Value("AES128"),
+              new Value("AES256"),
+              new Value("AES128-GCM-16"),
+              new Value("AES256-GCM-16")));
+      builder.setIpsecPerfectForwardSecrecy(
+          List.of(
+              new Value("2"),
+              new Value("5"),
+              new Value("14"),
+              new Value("15"),
+              new Value("16"),
+              new Value("17"),
+              new Value("18"),
+              new Value("19"),
+              new Value("20"),
+              new Value("21"),
+              new Value("22"),
+              new Value("23"),
+              new Value("24")));
+    }
+    builder.setIkeLifetime(28800);
+    builder.setIpsecLifetime(3600);
+    builder.setIkeMode("main");
+    builder.setIpsecProtocol("esp");
+    builder.setIpsecMode("tunnel");
     return builder.build();
   }
 
   IpsecTunnel(
       @Nullable Long cgwBgpAsn,
-      Ip cgwInsideAddress,
+      @Nullable Ip cgwInsideAddress,
       int cgwInsidePrefixLength,
-      Ip cgwOutsideAddress,
-      String ikeAuthProtocol,
-      String ikeEncryptionProtocol,
+      @Nullable Ip cgwOutsideAddress,
+      List<Value> ikeAuthProtocol,
+      List<Value> ikeEncryptionProtocol,
       int ikeLifetime,
       String ikeMode,
-      String ikePerfectForwardSecrecy,
+      List<Value> ikePerfectForwardSecrecy,
       String ikePreSharedKeyHash,
-      String ipsecAuthProtocol,
-      String ipsecEncryptionProtocol,
+      List<Value> ipsecAuthProtocol,
+      List<Value> ipsecEncryptionProtocol,
       int ipsecLifetime,
       String ipsecMode,
-      String ipsecPerfectForwardSecrecy,
+      List<Value> ipsecPerfectForwardSecrecy,
       String ipsecProtocol,
       @Nullable Long vgwBgpAsn,
       Ip vgwInsideAddress,
@@ -213,7 +268,6 @@ final class IpsecTunnel implements Serializable {
     return _cgwBgpAsn;
   }
 
-  @Nonnull
   Ip getCgwInsideAddress() {
     return _cgwInsideAddress;
   }
@@ -228,13 +282,17 @@ final class IpsecTunnel implements Serializable {
   }
 
   @Nonnull
-  String getIkeAuthProtocol() {
+  List<Value> getIkeAuthProtocol() {
     return _ikeAuthProtocol;
   }
 
   @Nonnull
-  String getIkeEncryptionProtocol() {
+  List<Value> getIkeEncryptionProtocol() {
     return _ikeEncryptionProtocol;
+  }
+
+  void setCgwBgpAsn(@Nullable Long cgwBgpAsn) {
+    _cgwBgpAsn = cgwBgpAsn;
   }
 
   int getIkeLifetime() {
@@ -247,7 +305,7 @@ final class IpsecTunnel implements Serializable {
   }
 
   @Nonnull
-  String getIkePerfectForwardSecrecy() {
+  List<Value> getIkePerfectForwardSecrecy() {
     return _ikePerfectForwardSecrecy;
   }
 
@@ -257,12 +315,12 @@ final class IpsecTunnel implements Serializable {
   }
 
   @Nonnull
-  String getIpsecAuthProtocol() {
+  List<Value> getIpsecAuthProtocol() {
     return _ipsecAuthProtocol;
   }
 
   @Nonnull
-  String getIpsecEncryptionProtocol() {
+  List<Value> getIpsecEncryptionProtocol() {
     return _ipsecEncryptionProtocol;
   }
 
@@ -276,7 +334,7 @@ final class IpsecTunnel implements Serializable {
   }
 
   @Nonnull
-  String getIpsecPerfectForwardSecrecy() {
+  List<Value> getIpsecPerfectForwardSecrecy() {
     return _ipsecPerfectForwardSecrecy;
   }
 
@@ -391,17 +449,17 @@ final class IpsecTunnel implements Serializable {
     private Ip _cgwInsideAddress;
     private int _cgwInsidePrefixLength;
     private Ip _cgwOutsideAddress;
-    private String _ikeAuthProtocol;
-    private String _ikeEncryptionProtocol;
+    private List<Value> _ikeAuthProtocol;
+    private List<Value> _ikeEncryptionProtocol;
     private int _ikeLifetime;
     private String _ikeMode;
-    private String _ikePerfectForwardSecrecy;
+    private List<Value> _ikePerfectForwardSecrecy;
     private String _ikePreSharedKeyHash;
-    private String _ipsecAuthProtocol;
-    private String _ipsecEncryptionProtocol;
+    private List<Value> _ipsecAuthProtocol;
+    private List<Value> _ipsecEncryptionProtocol;
     private int _ipsecLifetime;
     private String _ipsecMode;
-    private String _ipsecPerfectForwardSecrecy;
+    private List<Value> _ipsecPerfectForwardSecrecy;
     private String _ipsecProtocol;
     private Long _vgwBgpAsn;
     private Ip _vgwInsideAddress;
@@ -430,12 +488,12 @@ final class IpsecTunnel implements Serializable {
       return this;
     }
 
-    Builder setIkeAuthProtocol(String ikeAuthProtocol) {
+    Builder setIkeAuthProtocol(List<Value> ikeAuthProtocol) {
       _ikeAuthProtocol = ikeAuthProtocol;
       return this;
     }
 
-    Builder setIkeEncryptionProtocol(String ikeEncryptionProtocol) {
+    Builder setIkeEncryptionProtocol(List<Value> ikeEncryptionProtocol) {
       _ikeEncryptionProtocol = ikeEncryptionProtocol;
       return this;
     }
@@ -450,7 +508,7 @@ final class IpsecTunnel implements Serializable {
       return this;
     }
 
-    Builder setIkePerfectForwardSecrecy(String ikePerfectForwardSecrecy) {
+    Builder setIkePerfectForwardSecrecy(List<Value> ikePerfectForwardSecrecy) {
       _ikePerfectForwardSecrecy = ikePerfectForwardSecrecy;
       return this;
     }
@@ -460,12 +518,12 @@ final class IpsecTunnel implements Serializable {
       return this;
     }
 
-    Builder setIpsecAuthProtocol(String ipsecAuthProtocol) {
+    Builder setIpsecAuthProtocol(List<Value> ipsecAuthProtocol) {
       _ipsecAuthProtocol = ipsecAuthProtocol;
       return this;
     }
 
-    Builder setIpsecEncryptionProtocol(String ipsecEncryptionProtocol) {
+    Builder setIpsecEncryptionProtocol(List<Value> ipsecEncryptionProtocol) {
       _ipsecEncryptionProtocol = ipsecEncryptionProtocol;
       return this;
     }
@@ -480,7 +538,7 @@ final class IpsecTunnel implements Serializable {
       return this;
     }
 
-    Builder setIpsecPerfectForwardSecrecy(String ipsecPerfectForwardSecrecy) {
+    Builder setIpsecPerfectForwardSecrecy(List<Value> ipsecPerfectForwardSecrecy) {
       _ipsecPerfectForwardSecrecy = ipsecPerfectForwardSecrecy;
       return this;
     }

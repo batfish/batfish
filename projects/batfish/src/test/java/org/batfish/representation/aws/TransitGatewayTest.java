@@ -33,6 +33,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.testing.EqualsTester;
 import java.io.IOException;
+import java.util.List;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.batfish.datamodel.Configuration;
@@ -59,17 +60,17 @@ public class TransitGatewayTest {
           Ip.parse("169.254.15.194"),
           30,
           Ip.parse("147.75.69.27"),
-          "sha1",
-          "aes-128-cbc",
+          List.of(new Value("SHA1")),
+          List.of(new Value("AES128")),
           28800,
           "main",
-          "group2",
+          List.of(new Value("2")),
           "7db2fd6e9dcffcf826743b57bc0518cfcbca8f4db0b80a7a2c3f0c3b09deb49a",
-          "hmac-sha1-96",
-          "aes-128-cbc",
+          List.of(new Value("SHA1")),
+          List.of(new Value("AES128")),
           3600,
           "tunnel",
-          "group2",
+          List.of(new Value("2")),
           "esp",
           65401L,
           Ip.parse("169.254.15.193"),
