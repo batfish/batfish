@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
+import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
 import dk.brics.automaton.Automaton;
 import dk.brics.automaton.RegExp;
@@ -134,4 +135,26 @@ public final class RegexCommunityMember implements CommunityMember {
   }
 
   private final @Nonnull String _regex;
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof RegexCommunityMember)) {
+      return false;
+    }
+    RegexCommunityMember rcm = (RegexCommunityMember) o;
+    return _regex.equals(rcm._regex);
+  }
+
+  @Override
+  public int hashCode() {
+    return _regex.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return MoreObjects.toStringHelper(this).add("regex", _regex).toString();
+  }
 }

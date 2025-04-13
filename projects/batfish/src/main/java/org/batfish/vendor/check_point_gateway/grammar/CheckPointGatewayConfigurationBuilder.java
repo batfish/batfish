@@ -121,10 +121,9 @@ public class CheckPointGatewayConfigurationBuilder extends CheckPointGatewayPars
               new ParseWarning(
                   line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
     } else {
-      _w.redFlag(
-          String.format(
-              "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
-              line, lineText));
+      _w.redFlagf(
+          "Unrecognized Line: %d: %s SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY",
+          line, lineText);
     }
   }
 

@@ -55966,7 +55966,7 @@
             "                    IP_ADDRESS:'0.1.2.3')",
             "                  (oa_area_range",
             "                    AREA_RANGE:'area-range'",
-            "                    (ipv6_prefix*",
+            "                    prefix6 = (ipv6_prefix_default_128*",
             "                      IPV6_PREFIX:'dead:beef::/56')",
             "                    (oaa_override_metric",
             "                      OVERRIDE_METRIC:'override-metric'",
@@ -58392,7 +58392,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1234::/48')",
             "                      (popsfrf_common*",
             "                        (popsfrf_exact",
@@ -58418,7 +58418,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1235::/58')",
             "                      (popsfrf_common*",
             "                        (popsfrf_longer",
@@ -58444,7 +58444,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1236::/68')",
             "                      (popsfrf_common*",
             "                        (popsfrf_orlonger",
@@ -58470,7 +58470,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1237::/78')",
             "                      (popsfrf_common*",
             "                        (popsfrf_upto",
@@ -58499,7 +58499,7 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1238::/88')",
             "                      (popsfrf_common*",
             "                        (popsfrf_prefix_length_range",
@@ -58532,12 +58532,12 @@
             "                    FROM:'from'",
             "                    (popsf_route_filter",
             "                      ROUTE_FILTER:'route-filter'",
-            "                      (ipv6_prefix*",
+            "                      prefix6 = (ipv6_prefix_default_128*",
             "                        IPV6_PREFIX:'2001:db8:1239::/98')",
             "                      (popsfrf_common*",
             "                        (popsfrf_through",
             "                          THROUGH:'through'",
-            "                          (ipv6_prefix*",
+            "                          prefix6 = (ipv6_prefix_default_128*",
             "                            IPV6_PREFIX:'2001:db8:1239::/109'))))))))))))",
             "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
@@ -58918,7 +58918,139 @@
             "                    (popst_common*",
             "                      (popst_accept",
             "                        ACCEPT:'accept'))))))))))",
-            "    NEWLINE:'\\n\\n')",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      BGP:'bgp')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_route_type",
+            "                      ROUTE_TYPE:'route-type'",
+            "                      INTERNAL:'internal')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'INTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_protocol",
+            "                      PROTOCOL:'protocol'",
+            "                      BGP:'bgp')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_from*",
+            "                    FROM:'from'",
+            "                    (popsf_route_type",
+            "                      ROUTE_TYPE:'route-type'",
+            "                      EXTERNAL:'external')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (statement*",
+            "        (s_common*",
+            "          (s_policy_options*",
+            "            POLICY_OPTIONS:'policy-options'",
+            "            (po_policy_statement",
+            "              POLICY_STATEMENT:'policy-statement'",
+            "              name = (junos_name*",
+            "                NAME:'POLICY-NAME'  <== mode:M_Name)",
+            "              (pops_term",
+            "                TERM:'term'",
+            "                name = (junos_name*",
+            "                  NAME:'EXTERNAL'  <== mode:M_Name)",
+            "                (pops_common",
+            "                  (pops_then*",
+            "                    THEN:'then'",
+            "                    (popst_common*",
+            "                      (popst_accept",
+            "                        ACCEPT:'accept'))))))))))",
+            "    NEWLINE:'\\n')",
             "  EOF:<EOF>)"
           ]
         },
@@ -71281,61 +71413,99 @@
           "Parse warnings" : [
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 5,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family evpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 7,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mdt"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 8,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 9,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 11,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-mvpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 12,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family inet6-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 13,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 14,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family iso-vpn"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 15,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family route-target"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 16,
+              "Parser_Context" : "[popsf_family pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "family traffic-engineering"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 18,
               "Parser_Context" : "[popsf_protocol pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "protocol access-internal"
             },
             {
               "Comment" : "This feature is not currently supported",
+              "Line" : 20,
+              "Parser_Context" : "[popsf_rib pops_from pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "rib inet6.0"
+            },
+            {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 23,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend 123.456"
+            },
+            {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 24,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 789"
+            },
+            {
+              "Comment" : "Overwriting existing then as-path-prepend",
+              "Line" : 25,
+              "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
+              "Text" : "as-path-prepend \"456 123.1 789"
+            },
+            {
+              "Comment" : "This feature is not currently supported",
               "Line" : 32,
               "Parser_Context" : "[popstnh_ipv6 popst_next_hop popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
               "Text" : "2001:0db8:85a3:0000:0000:8a2e:0370:7334"
-            }
-          ],
-          "Red flags" : [
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family evpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mdt"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-mvpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family inet6-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family iso-vpn"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family route-target"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: family traffic-engineering"
-            },
-            {
-              "tag" : "MISCELLANEOUS",
-              "text" : "unimplemented 'policy-options policy-statement term' from clause: rib inet6.0"
             }
           ]
         },
@@ -75468,11 +75638,19 @@
           },
           "policy-statement" : {
             "POLICY-NAME" : {
-              "definitionLines" : "7-10",
+              "definitionLines" : "7-10,12-17",
               "numReferrers" : 0
             }
           },
           "policy-statement term" : {
+            "POLICY-NAME term EXTERNAL" : {
+              "definitionLines" : "15-17",
+              "numReferrers" : 3
+            },
+            "POLICY-NAME term INTERNAL" : {
+              "definitionLines" : "12-14",
+              "numReferrers" : 3
+            },
             "POLICY-NAME term TERM1" : {
               "definitionLines" : "7-8",
               "numReferrers" : 2
@@ -83006,6 +83184,20 @@
             }
           },
           "policy-statement term" : {
+            "POLICY-NAME term EXTERNAL" : {
+              "policy-statement term" : [
+                15,
+                16,
+                17
+              ]
+            },
+            "POLICY-NAME term INTERNAL" : {
+              "policy-statement term" : [
+                12,
+                13,
+                14
+              ]
+            },
             "POLICY-NAME term TERM1" : {
               "policy-statement term" : [
                 7,
@@ -87503,6 +87695,10 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.2.3.5 of group someinternalipv4group. Internal peer's AS (54321) must be the same as local AS (null)."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.2.3.5/32"
             },
             {
@@ -87575,12 +87771,20 @@
           "Red flags" : [
             {
               "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"
             }
           ]
         },
         "juniper_rib_groups~logical_system~logicalsystem" : {
           "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "FATAL: Error in neighbor 1.1.1.1 of group BGP_GROUP. Peer AS number must be configured for an external peer."
+            },
             {
               "tag" : "MISCELLANEOUS",
               "text" : "Missing local-as for neighbor: 1.1.1.1/32"

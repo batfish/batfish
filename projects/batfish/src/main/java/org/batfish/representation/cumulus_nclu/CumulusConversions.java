@@ -450,11 +450,10 @@ public final class CumulusConversions {
 
     // if this interface is not defined warn and move on
     if (viIface == null) {
-      w.redFlag(
-          String.format(
-              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
-                  + " device",
-              neighbor.getName()));
+      w.redFlagf(
+          "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+              + " device",
+          neighbor.getName());
       return;
     }
 
@@ -765,19 +764,17 @@ public final class CumulusConversions {
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());
 
             if (iface == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
             ConcreteInterfaceAddress concreteAddress = iface.getConcreteAddress();
             if (concreteAddress == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find an address for interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find an address for interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
@@ -1273,7 +1270,7 @@ public final class CumulusConversions {
                       Optional.ofNullable(ospfInterface.getPassive())
                           .orElse(vsConfig.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                   .setDeadInterval(
                       Optional.ofNullable(ospfInterface.getDeadInterval())
                           .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
@@ -1308,22 +1305,14 @@ public final class CumulusConversions {
   }
 
   private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      @Nullable OspfNetworkType type, Warnings w) {
+      @Nullable OspfNetworkType type) {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        w.redFlag(
-            String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.",
-                type.toString()));
-        return null;
-    }
+    return switch (type) {
+      case BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT -> org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    };
   }
 
   static void convertIpCommunityLists(
@@ -1509,10 +1498,9 @@ public final class CumulusConversions {
       return;
     }
     if (clagSourceInterfaces.size() > 1) {
-      w.redFlag(
-          String.format(
-              "CLAG configuration on multiple peering interfaces is unsupported: %s",
-              clagSourceInterfaces.keySet()));
+      w.redFlagf(
+          "CLAG configuration on multiple peering interfaces is unsupported: %s",
+          clagSourceInterfaces.keySet());
       return;
     }
     // Interface clagSourceInterface = clagSourceInterfaces.get(0);
@@ -1561,11 +1549,9 @@ public final class CumulusConversions {
             vxlan -> {
               if (vxlan.getId() == null || vxlan.getBridgeAccessVlan() == null) {
                 // Not a valid VNI configuration
-                w.redFlag(
-                    String.format(
-                        "Vxlan %s is not configured properly: %s is not defined",
-                        vxlan.getName(),
-                        vxlan.getId() == null ? "vxlan id" : "bridge access vlan"));
+                w.redFlagf(
+                    "Vxlan %s is not configured properly: %s is not defined",
+                    vxlan.getName(), vxlan.getId() == null ? "vxlan id" : "bridge access vlan");
                 return;
               }
               // Cumulus documents complex conditions for when clag-anycast address is a valid
@@ -1582,9 +1568,7 @@ public final class CumulusConversions {
                       .findFirst()
                       .orElse(null);
               if (localIp == null) {
-                w.redFlag(
-                    String.format(
-                        "Local tunnel IP for vxlan %s is not configured", vxlan.getName()));
+                w.redFlagf("Local tunnel IP for vxlan %s is not configured", vxlan.getName());
                 return;
               }
               @Nullable String vrfName = vniToVrf.get(vxlan.getId());

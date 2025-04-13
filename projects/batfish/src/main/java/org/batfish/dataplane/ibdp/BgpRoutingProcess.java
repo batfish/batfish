@@ -3,6 +3,7 @@ package org.batfish.dataplane.ibdp;
 import static com.google.common.base.MoreObjects.firstNonNull;
 import static com.google.common.base.Preconditions.checkArgument;
 import static java.util.Objects.requireNonNull;
+import static org.batfish.common.util.BgpRouteUtil.convertNonBgpRouteToBgpRoute;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.common.util.CollectionUtil.toOrderedHashCode;
 import static org.batfish.datamodel.BgpRoute.DEFAULT_LOCAL_PREFERENCE;
@@ -773,7 +774,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return;
     }
     Bgpv4Route.Builder bgpBuilder =
-        BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+        convertNonBgpRouteToBgpRoute(
                 route,
                 getRouterId(),
                 route.getAbstractRoute().getNextHopIp(),
@@ -1872,7 +1873,7 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
                 NextHopIp.of(ourSessionProperties.getLocalIp()),
                 false)
                 .toBuilder()
-            : BgpProtocolHelper.convertNonBgpRouteToBgpRoute(
+            : convertNonBgpRouteToBgpRoute(
                 exportCandidate,
                 getRouterId(),
                 ourSessionProperties.getLocalIp(),
@@ -2762,27 +2763,17 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private <B extends BgpRoute.Builder<B, R>, R extends EvpnRoute<B, R>, T extends EvpnMasterRib<R>>
       T getRib(Class<R> clazz, RibType type) {
     if (clazz.equals(EvpnType3Route.class)) {
-      switch (type) {
-        case EBGP:
-          return (T) _ebgpType3EvpnRib;
-        case IBGP:
-          return (T) _ibgpType3EvpnRib;
-        case COMBINED:
-          return (T) _evpnType3Rib;
-        default:
-          throw new IllegalArgumentException("Unsupported RIB type: " + type);
-      }
+      return switch (type) {
+        case EBGP -> (T) _ebgpType3EvpnRib;
+        case IBGP -> (T) _ibgpType3EvpnRib;
+        case COMBINED -> (T) _evpnType3Rib;
+      };
     } else if (clazz.equals(EvpnType5Route.class)) {
-      switch (type) {
-        case EBGP:
-          return (T) _ebgpType5EvpnRib;
-        case IBGP:
-          return (T) _ibgpType5EvpnRib;
-        case COMBINED:
-          return (T) _evpnType5Rib;
-        default:
-          throw new IllegalArgumentException("Unsupported RIB type: " + type);
-      }
+      return switch (type) {
+        case EBGP -> (T) _ebgpType5EvpnRib;
+        case IBGP -> (T) _ibgpType5EvpnRib;
+        case COMBINED -> (T) _evpnType5Rib;
+      };
     } else {
       throw new IllegalArgumentException("Unsupported BGP route type: " + clazz.getCanonicalName());
     }

@@ -297,7 +297,11 @@ public final class AclLineMatchExprs {
   }
 
   public static @Nonnull AclLineMatchExpr matchIpProtocols(IpProtocol... ipProtocol) {
-    return matchIpProtocols(Arrays.asList(ipProtocol), null);
+    return matchIpProtocols(Arrays.asList(ipProtocol));
+  }
+
+  public static @Nonnull AclLineMatchExpr matchIpProtocols(Collection<IpProtocol> ipProtocols) {
+    return matchIpProtocols(ipProtocols, null);
   }
 
   public static @Nonnull AclLineMatchExpr matchIpProtocols(

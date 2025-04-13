@@ -117,11 +117,11 @@ public class CompareRoutePoliciesUtilsTest {
   public void testRelevantInputAttributesForDifferenceNone() {
     TransferReturn path = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
-    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+    Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> res =
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -142,11 +142,11 @@ public class CompareRoutePoliciesUtilsTest {
             _bddRoute.getLocalPref().value(300).or(_bddRoute.getMed().value(20)),
             true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), false);
-    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+    Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> res =
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -170,11 +170,11 @@ public class CompareRoutePoliciesUtilsTest {
             true);
     TransferReturn otherPath =
         new TransferReturn(new BDDRoute(_bddRoute), _bddRoute.getLocalPref().value(300), false);
-    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+    Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> res =
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(ImmutableList.of(Statements.ExitAccept.toStaticStatement()))
@@ -193,11 +193,11 @@ public class CompareRoutePoliciesUtilsTest {
     pathRoute.getLocalPref().setValue(300);
     TransferReturn path = new TransferReturn(pathRoute, _factory.one(), true);
     TransferReturn otherPath = new TransferReturn(new BDDRoute(_bddRoute), _factory.one(), true);
-    Tuple<Result<BgpRoute>, Result<BgpRoute>> res =
+    Tuple<Result<BgpRoute, BgpRoute>, Result<BgpRoute, BgpRoute>> res =
         findConcreteDifference(
             path,
             otherPath,
-            _bddRoute.bgpWellFormednessConstraints(),
+            _bddRoute.wellFormednessConstraints(true),
             _configAPs,
             _policyBuilderRef
                 .setStatements(

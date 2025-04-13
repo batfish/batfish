@@ -76,29 +76,14 @@ public class Link extends BfObject {
       return LinkType.UNKNOWN;
     }
 
-    switch (iface1type) {
-      case PHYSICAL:
-      case LOGICAL:
-        return LinkType.PHYSICAL;
-
-      case AGGREGATED:
-      case AGGREGATE_CHILD:
-      case REDUNDANT:
-      case REDUNDANT_CHILD:
-      case TUNNEL:
-      case VLAN:
-      case VPN:
-        return LinkType.VIRTUAL;
+    return switch (iface1type) {
+      case PHYSICAL, LOGICAL -> LinkType.PHYSICAL;
+      case AGGREGATED, AGGREGATE_CHILD, REDUNDANT, REDUNDANT_CHILD, TUNNEL, VLAN, VPN ->
+          LinkType.VIRTUAL;
 
       // loopback and null shouldn't really happen; lets call it unknown
-      case LOOPBACK:
-      case NULL:
-      case UNKNOWN:
-        return LinkType.UNKNOWN;
-
-      default:
-        throw new IllegalArgumentException(String.format("Unknown InterfaceType: %s", iface1type));
-    }
+      case LOOPBACK, NULL, UNKNOWN -> LinkType.UNKNOWN;
+    };
   }
 
   @JsonProperty(PROP_TYPE)

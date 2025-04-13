@@ -50,7 +50,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AclLine;
@@ -1126,24 +1125,20 @@ public class CiscoXrConversions {
     IkePhase1Key ikePhase1Key = null;
     String isakmpProfileName = isakmpProfile.getName();
     if (isakmpProfile.getLocalInterfaceName().equals(INVALID_LOCAL_INTERFACE)) {
-      w.redFlag(
-          String.format(
-              "Invalid local address interface configured for ISAKMP profile %s",
-              isakmpProfileName));
+      w.redFlagf(
+          "Invalid local address interface configured for ISAKMP profile %s", isakmpProfileName);
     } else if (isakmpProfile.getKeyring() == null) {
       w.redFlagf("Keyring not set for ISAKMP profile %s", isakmpProfileName);
     } else if (!ikePhase1Keys.containsKey(isakmpProfile.getKeyring())) {
-      w.redFlag(
-          String.format(
-              "Cannot find keyring %s for ISAKMP profile %s",
-              isakmpProfile.getKeyring(), isakmpProfileName));
+      w.redFlagf(
+          "Cannot find keyring %s for ISAKMP profile %s",
+          isakmpProfile.getKeyring(), isakmpProfileName);
     } else {
       IkePhase1Key tempIkePhase1Key = ikePhase1Keys.get(isakmpProfile.getKeyring());
       if (tempIkePhase1Key.getLocalInterface().equals(INVALID_LOCAL_INTERFACE)) {
-        w.redFlag(
-            String.format(
-                "Invalid local address interface configured for keyring %s",
-                isakmpProfile.getKeyring()));
+        w.redFlagf(
+            "Invalid local address interface configured for keyring %s",
+            isakmpProfile.getKeyring());
       } else if (tempIkePhase1Key.match(
           isakmpProfile.getLocalInterfaceName(), isakmpProfile.getMatchIdentity())) {
         // found a matching keyring
@@ -1198,10 +1193,9 @@ public class CiscoXrConversions {
       Warnings w) {
     Ip localAddress = tunnel.getSourceAddress();
     if (localAddress == null || !localAddress.valid()) {
-      w.redFlag(
-          String.format(
-              "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
-              tunnelIfaceName));
+      w.redFlagf(
+          "Cannot create IPsec peer on tunnel %s: cannot determine tunnel source address",
+          tunnelIfaceName);
       return Optional.empty();
     }
 
@@ -1254,10 +1248,9 @@ public class CiscoXrConversions {
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
       if (iface.getConcreteAddress() == null) {
-        w.redFlag(
-            String.format(
-                "Interface %s with declared crypto-map %s has no ip-address",
-                iface.getName(), cryptoMapName));
+        w.redFlagf(
+            "Interface %s with declared crypto-map %s has no ip-address",
+            iface.getName(), cryptoMapName);
         continue;
       }
       // add one IPSec peer config per interface for the crypto map entry
@@ -1280,9 +1273,8 @@ public class CiscoXrConversions {
             .map(ConcreteInterfaceAddress::getIp)
             .orElse(null);
     if (localAddress == null || !localAddress.valid()) {
-      w.redFlag(
-          String.format(
-              "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName()));
+      w.redFlagf(
+          "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName());
       return Optional.empty();
     }
 
@@ -1336,10 +1328,9 @@ public class CiscoXrConversions {
           ipsecPeerConfigBuilder.setPolicyAccessList(symmetricCryptoAcl);
         } else {
           // log a warning if the ACL was not made symmetrical successfully
-          w.redFlag(
-              String.format(
-                  "Cannot process the Access List for crypto map %s:%s",
-                  cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber()));
+          w.redFlagf(
+              "Cannot process the Access List for crypto map %s:%s",
+              cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
         }
       }
     }
@@ -1428,13 +1419,12 @@ public class CiscoXrConversions {
         }
         return rpName;
       } else {
-        w.redFlag(
-            String.format(
-                "Ignoring OSPF distribute-list %s: %s is not defined or failed to convert",
-                filterName,
-                distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
-                    ? "access-list"
-                    : "prefix-list"));
+        w.redFlagf(
+            "Ignoring OSPF distribute-list %s: %s is not defined or failed to convert",
+            filterName,
+            distributeList.getFilterType() == DistributeListFilterType.ACCESS_LIST
+                ? "access-list"
+                : "prefix-list");
         return null;
       }
     } else {
@@ -1442,11 +1432,10 @@ public class CiscoXrConversions {
       if (c.getRoutingPolicies().containsKey(filterName)) {
         return filterName;
       } else {
-        w.redFlag(
-            String.format(
-                "Ignoring OSPF distribute-list %s: route-policy is not defined or failed to"
-                    + " convert",
-                filterName));
+        w.redFlagf(
+            "Ignoring OSPF distribute-list %s: route-policy is not defined or failed to"
+                + " convert",
+            filterName);
         return null;
       }
     }
@@ -1604,10 +1593,9 @@ public class CiscoXrConversions {
       if (otherAsn == null) {
         oldConfig
             .getWarnings()
-            .redFlag(
-                String.format(
-                    "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
-                    protocol, proc.getAsn()));
+            .redFlagf(
+                "Unable to redistribute %s into EIGRP proc %s - policy has no ASN",
+                protocol, proc.getAsn());
         return null;
       }
       eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
@@ -1645,10 +1633,8 @@ public class CiscoXrConversions {
        */
       oldConfig
           .getWarnings()
-          .redFlag(
-              String.format(
-                  "Unable to redistribute %s into EIGRP proc %s - no metric",
-                  protocol, proc.getAsn()));
+          .redFlagf(
+              "Unable to redistribute %s into EIGRP proc %s - no metric", protocol, proc.getAsn());
       return null;
     }
 
@@ -1678,18 +1664,12 @@ public class CiscoXrConversions {
     newProcess.setNetAddress(proc.getNetAddress());
     IsisLevelSettings settings = IsisLevelSettings.builder().build();
     switch (proc.getLevel()) {
-      case LEVEL_1:
-        newProcess.setLevel1(settings);
-        break;
-      case LEVEL_1_2:
+      case LEVEL_1 -> newProcess.setLevel1(settings);
+      case LEVEL_2 -> newProcess.setLevel2(settings);
+      case LEVEL_1_2 -> {
         newProcess.setLevel1(settings);
         newProcess.setLevel2(settings);
-        break;
-      case LEVEL_2:
-        newProcess.setLevel2(settings);
-        break;
-      default:
-        throw new BatfishException("Unhandled IS-IS level.");
+      }
     }
     return newProcess.build();
   }
@@ -1746,11 +1726,10 @@ public class CiscoXrConversions {
     String vrf2 = line.getNexthop2() == null ? vrf1 : line.getNexthop2().getVrf();
     String vrf3 = line.getNexthop3() == null ? vrf1 : line.getNexthop3().getVrf();
     if (!Objects.equals(vrf1, vrf2) || !Objects.equals(vrf1, vrf3)) {
-      warnings.redFlag(
-          String.format(
-              "Access-list lines with different nexthop VRFs are not yet supported. Line '%s' in"
-                  + " ACL %s will be ignored.",
-              line.getName(), aclName));
+      warnings.redFlagf(
+          "Access-list lines with different nexthop VRFs are not yet supported. Line '%s' in"
+              + " ACL %s will be ignored.",
+          line.getName(), aclName);
       return false;
     }
 

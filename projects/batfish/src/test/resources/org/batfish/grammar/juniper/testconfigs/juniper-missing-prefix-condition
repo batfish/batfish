@@ -1,0 +1,30 @@
+#
+set system host-name juniper-missing-prefix-condition
+
+# No IP address or prefix
+set policy-options condition c0 if-route-exists table TABLE-NAME.inet.0
+set policy-options condition c1 if-route-exists table TABLE-NAME.inet6.0
+
+# IPv4
+set policy-options condition c2 if-route-exists 192.0.2.1
+set policy-options condition c2 if-route-exists table TABLE-NAME.inet.0
+
+# IPv6
+set policy-options condition c3 if-route-exists 2001:db8:1234:5678:abc1:2345:6789:abcd
+set policy-options condition c3 if-route-exists table TABLE-NAME.inet6.0
+
+# IPv4 prefix
+set policy-options condition c4 if-route-exists 192.0.2.0/24
+set policy-options condition c4 if-route-exists table TABLE-NAME.inet.0
+
+# IPv6 prefix
+set policy-options condition c5 if-route-exists 2001:db8::/32
+set policy-options condition c5 if-route-exists table TABLE-NAME.inet6.0
+
+# IPv4MappedToIpv6
+set policy-options condition c6 if-route-exists ::ffff:192.0.2.1
+set policy-options condition c6 if-route-exists table TABLE-NAME.inet6.0
+
+
+
+

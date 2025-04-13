@@ -225,8 +225,6 @@ public abstract class IpAccessListToBdd {
             lineBddsWithCurrentAction.add(linePermitBdd);
           }
           break;
-        default:
-          throw new IllegalStateException("Unexpected LineAction " + currentAction);
       }
     }
 
@@ -238,8 +236,6 @@ public abstract class IpAccessListToBdd {
       case DENY:
         finalizeBlock.apply(denyBdd, permitBdd);
         break;
-      default:
-        throw new IllegalStateException("Unexpected LineAction " + currentAction);
     }
 
     return new PermitAndDenyBdds(permitBdd, denyBdd);

@@ -119,14 +119,11 @@ public final class TableAnswerElement extends AnswerElement {
     if (assertion == null) {
       throw new IllegalArgumentException("Provided assertion object cannot be null");
     }
-    switch (assertion.getType()) {
-      case countequals:
-        return _rows.size() == assertion.getExpect().asInt();
-      case countlessthan:
-        return _rows.size() < assertion.getExpect().asInt();
-      case countmorethan:
-        return _rows.size() > assertion.getExpect().asInt();
-      case equals:
+    return switch (assertion.getType()) {
+      case countequals -> _rows.size() == assertion.getExpect().asInt();
+      case countlessthan -> _rows.size() < assertion.getExpect().asInt();
+      case countmorethan -> _rows.size() > assertion.getExpect().asInt();
+      case equals -> {
         Rows expectedEntries;
         try {
           expectedEntries =
@@ -134,10 +131,9 @@ public final class TableAnswerElement extends AnswerElement {
         } catch (IOException e) {
           throw new BatfishException("Could not recover Rows object from expect", e);
         }
-        return _rows.equals(expectedEntries);
-      default:
-        throw new BatfishException("Unhandled assertion type: " + assertion.getType());
-    }
+        yield _rows.equals(expectedEntries);
+      }
+    };
   }
 
   @JsonProperty(PROP_EXCLUDED_ROWS)

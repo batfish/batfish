@@ -285,10 +285,8 @@ public final class Instance implements AwsVpcEntity, Serializable {
 
       NetworkInterface netInterface = region.getNetworkInterfaces().get(interfaceId);
       if (netInterface == null) {
-        warnings.redFlag(
-            String.format(
-                "Network interface \"%s\" for instance \"%s\" not found",
-                interfaceId, _instanceId));
+        warnings.redFlagf(
+            "Network interface \"%s\" for instance \"%s\" not found", interfaceId, _instanceId);
         continue;
       }
       Subnet subnet = region.getSubnets().get(netInterface.getSubnetId());

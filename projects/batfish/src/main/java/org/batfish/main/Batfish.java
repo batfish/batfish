@@ -2429,11 +2429,10 @@ public class Batfish extends PluginConsumer implements IBatfish {
     Map<String, Configuration> modeledConfigs = modeledNodes.getConfigurations();
     Set<String> commonNodes = Sets.intersection(configurations.keySet(), modeledConfigs.keySet());
     if (!commonNodes.isEmpty()) {
-      internetWarnings.redFlag(
-          String.format(
-              "Cannot add internet and ISP nodes because nodes with the following names already"
-                  + " exist in the snapshot: %s",
-              commonNodes));
+      internetWarnings.redFlagf(
+          "Cannot add internet and ISP nodes because nodes with the following names already"
+              + " exist in the snapshot: %s",
+          commonNodes);
       return;
     }
     configurations.putAll(modeledConfigs);
@@ -2998,18 +2997,12 @@ public class Batfish extends PluginConsumer implements IBatfish {
                           IngressLocation loc = entry.getKey();
                           fb.setIngressNode(loc.getNode());
                           switch (loc.getType()) {
-                            case INTERFACE_LINK:
-                              fb.setIngressInterface(loc.getInterface());
-                              break;
-                            case VRF:
-                              fb.setIngressVrf(loc.getVrf());
-                              break;
-                            default:
-                              throw new BatfishException("Unknown Location Type: " + loc.getType());
+                            case INTERFACE_LINK -> fb.setIngressInterface(loc.getInterface());
+                            case VRF -> fb.setIngressVrf(loc.getVrf());
                           }
                           return fb.build();
                         }))
-        .flatMap(optional -> optional.map(Stream::of).orElse(Stream.empty()))
+        .flatMap(Optional::stream)
         .collect(ImmutableSet.toImmutableSet());
   }
 
@@ -3181,14 +3174,8 @@ public class Batfish extends PluginConsumer implements IBatfish {
               // set flow parameters
               flow.setIngressNode(source.getNode());
               switch (source.getType()) {
-                case VRF:
-                  flow.setIngressVrf(source.getVrf());
-                  break;
-                case INTERFACE_LINK:
-                  flow.setIngressInterface(source.getInterface());
-                  break;
-                default:
-                  throw new BatfishException("Unexpected IngressLocationType: " + source.getType());
+                case VRF -> flow.setIngressVrf(source.getVrf());
+                case INTERFACE_LINK -> flow.setIngressInterface(source.getInterface());
               }
               return Stream.of(flow.build());
             })

@@ -201,11 +201,6 @@ public class SonicConversions {
             memberInterface.setSwitchportMode(SwitchportMode.ACCESS);
             memberInterface.setAccessVlan(vlanId);
             break;
-          default:
-            w.redFlag(
-                String.format(
-                    "Unhandled tagging_mode %s for vlan member %s",
-                    vlanMember.getTaggingMode().get(), memberKey));
         }
       }
     }
@@ -237,9 +232,8 @@ public class SonicConversions {
   private static void warnMissingVlans(Set<String> vlans, Set<String> vlanInterfaces, Warnings w) {
     Set<String> missingVlans = Sets.difference(vlanInterfaces, vlans);
     if (!missingVlans.isEmpty()) {
-      w.redFlag(
-          String.format(
-              "Ignoring VLAN_INTERFACEs %s because they don't have VLANs defined.", missingVlans));
+      w.redFlagf(
+          "Ignoring VLAN_INTERFACEs %s because they don't have VLANs defined.", missingVlans);
     }
   }
 
@@ -250,27 +244,24 @@ public class SonicConversions {
       return false;
     }
     if (vlanId < 1 || vlanId > 4094) {
-      w.redFlag(
-          String.format(
-              "%s ignored: It has invalid vlan id %d. Vlan ids should be between 1 and 4094.",
-              vlanName, vlanId));
+      w.redFlagf(
+          "%s ignored: It has invalid vlan id %d. Vlan ids should be between 1 and 4094.",
+          vlanName, vlanId);
       return false;
     }
     try {
       int vlanIdFromName = Integer.parseInt(vlanName.replaceFirst("^Vlan", ""));
       if (vlanIdFromName != vlanId) {
-        w.redFlag(
-            String.format(
-                "%s ignored: Vlan id in the name does not match configured vlan id %d",
-                vlanName, vlanId));
+        w.redFlagf(
+            "%s ignored: Vlan id in the name does not match configured vlan id %d",
+            vlanName, vlanId);
         return false;
       }
     } catch (NumberFormatException e) {
-      w.redFlag(
-          String.format(
-              "%s ignored: Unexpected name format. Vlan names should be like 'Vlan1', with 'Vlan'"
-                  + " followed by its numerical id.",
-              vlanName));
+      w.redFlagf(
+          "%s ignored: Unexpected name format. Vlan names should be like 'Vlan1', with 'Vlan'"
+              + " followed by its numerical id.",
+          vlanName);
       return false;
     }
     return true;
@@ -397,10 +388,9 @@ public class SonicConversions {
                     .get(aclName)
                     .forEach(
                         aclRuleWithName ->
-                            w.redFlag(
-                                String.format(
-                                    "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
-                                    aclName, aclRuleWithName._name, aclName))));
+                            w.redFlagf(
+                                "Ignored ACL_RULE %s|%s: Missing ACL_TABLE '%s'",
+                                aclName, aclRuleWithName._name, aclName)));
   }
 
   /**
@@ -420,8 +410,7 @@ public class SonicConversions {
               c,
               aclName,
               // if an Acl is in ACL_TABLE but not in ACL_RULE, we create an empty Acl
-              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()),
-              w);
+              Optional.ofNullable(aclNameToRules.get(aclName)).orElse(ImmutableSortedSet.of()));
       AclTable aclTable = aclTables.get(aclName);
       attachAcl(c, ipAccessList, aclTable, w);
     }
@@ -448,10 +437,9 @@ public class SonicConversions {
       Interface viIface = c.getAllInterfaces().get(port);
       if (viIface == null) {
         if (!aclTable.isControlPlanePort(port)) {
-          w.redFlag(
-              String.format(
-                  "Port '%s' referenced in ACL_TABLE '%s' does not exist.",
-                  port, ipAccessList.getName()));
+          w.redFlagf(
+              "Port '%s' referenced in ACL_TABLE '%s' does not exist.",
+              port, ipAccessList.getName());
         }
         continue;
       }
@@ -468,21 +456,20 @@ public class SonicConversions {
    * device configuration {@code c}.
    */
   private static IpAccessList convertAcl(
-      Configuration c, String aclName, SortedSet<AclRuleWithName> aclRules, Warnings w) {
+      Configuration c, String aclName, SortedSet<AclRuleWithName> aclRules) {
     return IpAccessList.builder()
         .setOwner(c)
         .setName(aclName)
         .setLines(
             aclRules.stream()
-                .map(rule -> convertAclRule(aclName, rule, w))
+                .map(SonicConversions::convertAclRule)
                 .filter(Optional::isPresent)
                 .map(Optional::get)
                 .collect(ImmutableList.toImmutableList()))
         .build();
   }
 
-  private static Optional<AclLine> convertAclRule(
-      String aclName, AclRuleWithName aclRuleWithName, Warnings w) {
+  private static Optional<AclLine> convertAclRule(AclRuleWithName aclRuleWithName) {
     AclRule aclRule = aclRuleWithName._rule;
 
     List<AclLineMatchExpr> conjuncts = new LinkedList<>();
@@ -503,19 +490,10 @@ public class SonicConversions {
     }
     AclLineMatchExpr matchExpr = and(conjuncts);
 
-    switch (aclRuleWithName.getPacketAction()) {
-      case ACCEPT:
-      case FORWARD:
-        return Optional.of(ExprAclLine.accepting(aclRuleWithName._name, matchExpr));
-      case DROP:
-        return Optional.of(ExprAclLine.rejecting(aclRuleWithName._name, matchExpr));
-      default:
-        w.redFlag(
-            String.format(
-                "Ignored ACL_RULE %s|%s: PACKET_ACTION %s is unimplemented",
-                aclName, aclRuleWithName._name, aclRuleWithName.getPacketAction()));
-        return Optional.empty();
-    }
+    return switch (aclRuleWithName.getPacketAction()) {
+      case ACCEPT, FORWARD -> Optional.of(ExprAclLine.accepting(aclRuleWithName._name, matchExpr));
+      case DROP -> Optional.of(ExprAclLine.rejecting(aclRuleWithName._name, matchExpr));
+    };
   }
 
   /**

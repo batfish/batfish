@@ -88,7 +88,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import org.batfish.common.BatfishException;
-import org.batfish.common.VendorConversionException;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.BDDSourceManager;
 import org.batfish.common.bdd.IpAccessListToBdd;
@@ -1196,18 +1195,12 @@ public final class AristaConfiguration extends VendorConfiguration {
     IsisProcess isisProcess = vrf.getIsisProcess();
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
-        case LEVEL_1:
-          level1 = true;
-          break;
-        case LEVEL_1_2:
+        case LEVEL_1 -> level1 = true;
+        case LEVEL_2 -> level2 = true;
+        case LEVEL_1_2 -> {
           level1 = true;
           level2 = true;
-          break;
-        case LEVEL_2:
-          level2 = true;
-          break;
-        default:
-          throw new VendorConversionException("Invalid IS-IS level");
+        }
       }
       IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       IsisInterfaceLevelSettings levelSettings =
@@ -1362,11 +1355,10 @@ public final class AristaConfiguration extends VendorConfiguration {
           // https://www.arista.com/en/um-eos/eos-data-plane-security#xx1143262
           // Commands referencing nonexistent ACLs are accepted by the CLI but not installed in
           // hardware until the ACL is created.
-          _w.redFlag(
-              String.format(
-                  "ip nat source commands referencing nonexistent ACL %s are not installed until"
-                      + " the ACL is created",
-                  aclName));
+          _w.redFlagf(
+              "ip nat source commands referencing nonexistent ACL %s are not installed until"
+                  + " the ACL is created",
+              aclName);
           continue;
         }
         String ipSpaceName = nameOfSourceNatIpSpaceFromAcl(aclName);
@@ -1402,11 +1394,10 @@ public final class AristaConfiguration extends VendorConfiguration {
         // https://www.arista.com/en/um-eos/eos-data-plane-security#xx1143262
         // Commands referencing nonexistent ACLs are accepted by the CLI but not installed in
         // hardware until the ACL is created.
-        _w.redFlag(
-            String.format(
-                "ip nat source commands referencing nonexistent ACL %s are not installed until"
-                    + " the ACL is created",
-                nat.getNatAclName()));
+        _w.redFlagf(
+            "ip nat source commands referencing nonexistent ACL %s are not installed until"
+                + " the ACL is created",
+            nat.getNatAclName());
         continue;
       }
       next = nat.toTransformation(interfaceIp, _natPools, next).orElse(next);
@@ -1935,10 +1926,9 @@ public final class AristaConfiguration extends VendorConfiguration {
                   }
                   if (!routeMap.getClauses().containsKey(effectiveTarget)) {
                     // On Arista, an undefined continue target is just treated as not a continue.
-                    _w.redFlag(
-                        String.format(
-                            "route-map %s entry %d: ignoring continue to missing entry %d",
-                            routeMap.getName(), clause.getSeqNum(), effectiveTarget));
+                    _w.redFlagf(
+                        "route-map %s entry %d: ignoring continue to missing entry %d",
+                        routeMap.getName(), clause.getSeqNum(), effectiveTarget);
                     return null;
                   }
                   return new SimpleEntry<>(clause.getSeqNum(), effectiveTarget);
@@ -2361,9 +2351,7 @@ public final class AristaConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }

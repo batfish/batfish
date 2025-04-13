@@ -77,14 +77,10 @@ public final class ClassicMetric implements EigrpMetric {
 
   @Override
   public UnsignedLong cost(EigrpMetricVersion version) {
-    switch (version) {
-      case V1:
-        return costV1();
-      case V2:
-        return costV2();
-      default:
-        throw new IllegalArgumentException("Unsupported version " + version);
-    }
+    return switch (version) {
+      case V1 -> costV1();
+      case V2 -> costV2();
+    };
   }
 
   private UnsignedLong costV1() {

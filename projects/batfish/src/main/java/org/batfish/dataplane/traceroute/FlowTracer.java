@@ -1291,18 +1291,14 @@ class FlowTracer {
       Action action,
       @Nullable String ingressInterface,
       @Nullable NodeInterfacePair lastHopNodeAndOutgoingInterface) {
-    switch (action) {
-      case FORWARD_OUT_IFACE:
-        return ingressInterface != null
-            ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
-            : Accept.INSTANCE;
-      case POST_NAT_FIB_LOOKUP:
-        return PostNatFibLookup.INSTANCE;
-      case PRE_NAT_FIB_LOOKUP:
-        return PreNatFibLookup.INSTANCE;
-      default:
-        throw new UnsupportedOperationException("Unrecognized action " + action);
-    }
+    return switch (action) {
+      case FORWARD_OUT_IFACE ->
+          ingressInterface != null
+              ? new ForwardOutInterface(ingressInterface, lastHopNodeAndOutgoingInterface)
+              : Accept.INSTANCE;
+      case POST_NAT_FIB_LOOKUP -> PostNatFibLookup.INSTANCE;
+      case PRE_NAT_FIB_LOOKUP -> PreNatFibLookup.INSTANCE;
+    };
   }
 
   @VisibleForTesting

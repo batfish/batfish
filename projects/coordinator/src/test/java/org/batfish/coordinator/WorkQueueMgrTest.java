@@ -25,7 +25,6 @@ import org.batfish.common.WorkItem;
 import org.batfish.coordinator.WorkDetails.WorkType;
 import org.batfish.coordinator.WorkQueueMgr.QueueType;
 import org.batfish.coordinator.id.IdManager;
-import org.batfish.coordinator.queues.WorkQueue.Type;
 import org.batfish.datamodel.InitializationMetadata.ProcessingStatus;
 import org.batfish.datamodel.SnapshotMetadata;
 import org.batfish.identifiers.NetworkId;
@@ -122,8 +121,6 @@ public final class WorkQueueMgrTest {
           _workQueueMgr.processTaskCheckResult(action.work, task);
         }
         break;
-      default:
-        throw new BatfishException("Unhandled action type " + action.action);
     }
     return null;
   }
@@ -143,7 +140,7 @@ public final class WorkQueueMgrTest {
     _idManager = Main.getWorkMgr().getIdManager();
     _snapshotMetadataManager = Main.getWorkMgr().getSnapshotMetadataManager();
     _networkId = _idManager.getNetworkId(NETWORK).get();
-    _workQueueMgr = new WorkQueueMgr(Type.memory, Main.getLogger(), _snapshotMetadataManager);
+    _workQueueMgr = new WorkQueueMgr(Main.getLogger(), _snapshotMetadataManager);
   }
 
   private void initSnapshotMetadata(String snapshot, ProcessingStatus status) throws IOException {

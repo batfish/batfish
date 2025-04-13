@@ -91,6 +91,10 @@ router bgp 65500
   use neighbor-group ng1
   shutdown
  !
+ neighbor 10.0.0.0/24
+  use neighbor-group ng1
+  shutdown
+ !
  vrf v1
   rd 10.0.0.1:1
   address-family ipv4 unicast

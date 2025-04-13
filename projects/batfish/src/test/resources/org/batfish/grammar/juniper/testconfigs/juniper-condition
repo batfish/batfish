@@ -9,6 +9,8 @@ set policy-options condition c3 if-route-exists address-family inet 3.0.0.0/24
 set policy-options condition c3 if-route-exists address-family inet table ri3.inet.0
 set policy-options condition c4 if-route-exists address-family ccc ignored ignored
 set policy-options condition c5 if-route-exists ::1.2.3.4/127
+set policy-options condition c6 if-route-exists 192.0.2.1
+set policy-options condition c7 if-route-exists 2001:db8:1234:5678:abc1:2345:6789:abcd
 #
 set routing-instances ri2 instance-type vrf
 set policy-options policy-statement p1 term t1 from condition c1

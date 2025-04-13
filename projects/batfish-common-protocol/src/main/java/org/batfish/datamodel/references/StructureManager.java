@@ -56,10 +56,8 @@ public final class StructureManager implements Serializable {
     // handle other references (e.g. are they undefined references now? do they disappear?)
     DefinedStructureInfo info = _definitions.get(type.getDescription(), name);
     if (info == null) {
-      warnings.redFlag(
-          String.format(
-              "Cannot delete structure %s (%s): %s is undefined.",
-              name, type.getDescription(), name));
+      warnings.redFlagf(
+          "Cannot delete structure %s (%s): %s is undefined.", name, type.getDescription(), name);
       return false;
     }
 
@@ -241,10 +239,9 @@ public final class StructureManager implements Serializable {
       Collection<StructureType> sameNamespaceTypes,
       Warnings warnings) {
     if (!_definitions.contains(type.getDescription(), origName)) {
-      warnings.redFlag(
-          String.format(
-              "Cannot rename structure %s (%s) to %s: %s is undefined.",
-              origName, type.getDescription(), newName, origName));
+      warnings.redFlagf(
+          "Cannot rename structure %s (%s) to %s: %s is undefined.",
+          origName, type.getDescription(), newName, origName);
       return false;
     }
 

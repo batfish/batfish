@@ -166,10 +166,9 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
     for (IptablesRule rule : chain.getRules()) {
       if (rule.getActionType() != IptablesActionType.ACCEPT
           && rule.getActionType() != IptablesActionType.DROP) {
-        warnings.redFlag(
-            String.format(
-                "IpTables action type '%s' is not supported. Skipped '%s'",
-                rule.getActionType(), rule.getName()));
+        warnings.redFlagf(
+            "IpTables action type '%s' is not supported. Skipped '%s'",
+            rule.getActionType(), rule.getName());
         continue;
       }
       HeaderSpace.Builder headerSpaceBuilder = HeaderSpace.builder();
@@ -208,8 +207,6 @@ public class IptablesVendorConfiguration extends IptablesConfiguration {
             headerSpaceBuilder.setSrcPorts(
                 Iterables.concat(headerSpaceBuilder.getSrcPorts(), match.toPortRanges()));
             break;
-          default:
-            throw new BatfishException("Unknown match type: " + match.getMatchType());
         }
       }
       ExprAclLine aclLine =

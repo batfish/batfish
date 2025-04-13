@@ -22,8 +22,15 @@ public final class PsThenCommunitySet extends PsThen {
       JuniperConfiguration juniperVendorConfiguration,
       Configuration c,
       Warnings warnings) {
+    // undefined reference; or not converted because it contains only regexes
     if (!c.getCommunitySets().containsKey(_name)) {
-      // undefined reference; or not converted because it contains only regexes
+      if (juniperVendorConfiguration
+          .getMasterLogicalSystem()
+          .getNamedCommunities()
+          .containsKey(_name)) {
+        warnings.fatalRedFlag(
+            "'%s' community contains no non-wildcard members in a set action", _name);
+      }
       return;
     }
     juniperVendorConfiguration.getOrCreateNamedCommunitiesUsedForSet().add(_name);
@@ -35,4 +42,17 @@ public final class PsThenCommunitySet extends PsThen {
   }
 
   private final String _name;
+
+  @Override
+  public boolean equals(Object o) {
+    if (!(o instanceof PsThenCommunitySet that)) {
+      return false;
+    }
+    return _name.equals(that._name);
+  }
+
+  @Override
+  public int hashCode() {
+    return _name.hashCode();
+  }
 }

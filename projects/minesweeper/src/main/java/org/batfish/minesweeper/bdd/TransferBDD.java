@@ -383,14 +383,14 @@ public class TransferBDD {
                                     new Arg(this, currRoute, context))
                                 .stream())
                 .collect(ImmutableSet.toImmutableSet());
-        finalResults.add(
-            result
-                .setReturnValueBDD(
-                    asPathRegexesToBDD(
-                        ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
-                        _asPathRegexAtomicPredicates,
-                        routeForMatching(p, context)))
-                .setReturnValueAccepted(true));
+        BDD asPathRegexBDD =
+            asPathRegexes.isEmpty()
+                ? _factory.zero()
+                : asPathRegexesToBDD(
+                    ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
+                    _asPathRegexAtomicPredicates,
+                    routeForMatching(p, context));
+        finalResults.add(result.setReturnValueBDD(asPathRegexBDD).setReturnValueAccepted(true));
       } else {
         List<TransferResult> currResults = new ArrayList<>();
         // the default result is false
@@ -627,8 +627,6 @@ public class TransferBDD {
           p.debug("False");
           finalResults.add(result.setReturnValueBDD(_factory.one()).setReturnValueAccepted(false));
           break;
-        default:
-          throw new IllegalArgumentException("Unexpected boolean expression " + b.getType());
       }
 
     } else if (expr instanceof LegacyMatchAsPath) {
@@ -1294,21 +1292,13 @@ public class TransferBDD {
   // integer equality constraint represented by the given IntComparator and long value
   private BDD matchLongValueComparison(IntComparator comp, long val, MutableBDDInteger bddInt)
       throws UnsupportedOperationException {
-    switch (comp) {
-      case EQ:
-        return bddInt.value(val);
-      case GE:
-        return bddInt.geq(val);
-      case GT:
-        return bddInt.geq(val).andEq(bddInt.value(val).notEq());
-      case LE:
-        return bddInt.leq(val);
-      case LT:
-        return bddInt.leq(val).andEq(bddInt.value(val).notEq());
-      default:
-        throw new IllegalArgumentException(
-            "Unexpected int comparison " + comp.getClass().getSimpleName());
-    }
+    return switch (comp) {
+      case EQ -> bddInt.value(val);
+      case GE -> bddInt.geq(val);
+      case GT -> bddInt.geq(val).andEq(bddInt.value(val).notEq());
+      case LE -> bddInt.leq(val);
+      case LT -> bddInt.leq(val).andEq(bddInt.value(val).notEq());
+    };
   }
 
   // Produce a BDD representing a constraint on the given MutableBDDInteger that enforces the

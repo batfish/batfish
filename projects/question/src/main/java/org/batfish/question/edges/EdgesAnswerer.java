@@ -141,64 +141,67 @@ public class EdgesAnswerer extends Answerer {
       Set<String> includeRemoteNodes,
       EdgeType edgeType,
       boolean initial) {
-    switch (edgeType) {
-      case BGP:
+    return switch (edgeType) {
+      case BGP -> {
         BgpTopology bgpTopology = topologyProvider.getBgpTopology(snapshot);
-        return getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
-      case EIGRP:
+        yield getBgpEdges(configurations, includeNodes, includeRemoteNodes, bgpTopology);
+      }
+      case EIGRP -> {
         EigrpTopology eigrpTopology =
             EigrpTopologyUtils.initEigrpTopology(configurations, topology);
-        return getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
-      case IPSEC:
+        yield getEigrpEdges(includeNodes, includeRemoteNodes, eigrpTopology);
+      }
+      case IPSEC -> {
         ValueGraph<IpsecPeerConfigId, IpsecSession> ipsecTopology =
             IpsecUtil.initIpsecTopology(configurations).getGraph();
-        return getIpsecEdges(ipsecTopology, configurations);
-      case ISIS:
+        yield getIpsecEdges(ipsecTopology, configurations);
+      }
+      case ISIS -> {
         IsisTopology isisTopology = IsisTopology.initIsisTopology(configurations, topology);
-        return getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
-      case OSPF:
-        return getOspfEdges(
-            includeNodes,
-            includeRemoteNodes,
-            initial
-                ? topologyProvider.getInitialOspfTopology(snapshot)
-                : topologyProvider.getOspfTopology(snapshot));
-      case VXLAN:
+        yield getIsisEdges(includeNodes, includeRemoteNodes, isisTopology);
+      }
+      case OSPF ->
+          getOspfEdges(
+              includeNodes,
+              includeRemoteNodes,
+              initial
+                  ? topologyProvider.getInitialOspfTopology(snapshot)
+                  : topologyProvider.getOspfTopology(snapshot));
+      case VXLAN -> {
         VxlanTopology vxlanTopology =
             initial
                 ? topologyProvider.getInitialVxlanTopology(snapshot)
                 : topologyProvider.getVxlanTopology(snapshot);
-        return getVxlanEdges(
+        yield getVxlanEdges(
             NetworkConfigurations.of(configurations),
             includeNodes,
             includeRemoteNodes,
             vxlanTopology);
-      case LAYER1:
-        return topologyProvider
-            .getLayer1LogicalTopology(snapshot)
-            .map(
-                layer1LogicalTopology ->
-                    getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
-            .orElse(ImmutableList.of());
-      case USER_PROVIDED_LAYER1:
-        // user-provided layer1 edges do not support filtering by node.
-        // the only use case we care about is getting the entire (canonicalized) layer1 topology,
-        // which can include non-existent nodes. we don't want to filter them out, so the simplest
-        // thing to do is disable filtering.
-        return topologyProvider
-            .getUserProvidedLayer1Topology(snapshot)
-            .map(
-                userProvidedLayer1Topology ->
-                    (Multiset<Row>)
-                        userProvidedLayer1Topology
-                            .edgeStream()
-                            .map(EdgesAnswerer::layer1EdgeToRow)
-                            .collect(Collectors.toCollection(HashMultiset::create)))
-            .orElse(ImmutableMultiset.of());
-      case LAYER3:
-      default:
-        return getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
-    }
+      }
+      case LAYER1 ->
+          topologyProvider
+              .getLayer1LogicalTopology(snapshot)
+              .map(
+                  layer1LogicalTopology ->
+                      getLayer1Edges(includeNodes, includeRemoteNodes, layer1LogicalTopology))
+              .orElse(ImmutableList.of());
+      case USER_PROVIDED_LAYER1 ->
+          // user-provided layer1 edges do not support filtering by node.
+          // the only use case we care about is getting the entire (canonicalized) layer1 topology,
+          // which can include non-existent nodes. we don't want to filter them out, so the simplest
+          // thing to do is disable filtering.
+          topologyProvider
+              .getUserProvidedLayer1Topology(snapshot)
+              .map(
+                  userProvidedLayer1Topology ->
+                      (Multiset<Row>)
+                          userProvidedLayer1Topology
+                              .edgeStream()
+                              .map(EdgesAnswerer::layer1EdgeToRow)
+                              .collect(Collectors.toCollection(HashMultiset::create)))
+              .orElse(ImmutableMultiset.of());
+      case LAYER3 -> getLayer3Edges(configurations, includeNodes, includeRemoteNodes, topology);
+    };
   }
 
   @VisibleForTesting

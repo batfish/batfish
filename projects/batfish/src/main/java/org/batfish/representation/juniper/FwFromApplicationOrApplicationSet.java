@@ -44,10 +44,9 @@ public final class FwFromApplicationOrApplicationSet implements FwFromApplicatio
                 .get(_applicationOrApplicationSetName);
 
     if (application == null) {
-      w.redFlag(
-          String.format(
-              "Reference to undefined application/application-set: %s",
-              _applicationOrApplicationSetName));
+      w.redFlagf(
+          "Reference to undefined application/application-set: %s",
+          _applicationOrApplicationSetName);
 
       // match nothing
       return FalseExpr.INSTANCE;

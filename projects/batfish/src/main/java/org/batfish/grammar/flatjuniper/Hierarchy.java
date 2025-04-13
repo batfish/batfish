@@ -725,7 +725,9 @@ final class Hierarchy {
       }
 
       public boolean matches(String text) {
-        return _wildcardPattern.matcher(text).matches();
+        return !text.equals("apply-groups")
+            && !text.equals("apply-path")
+            && _wildcardPattern.matcher(text).matches();
       }
 
       @Override

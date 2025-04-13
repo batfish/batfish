@@ -4,6 +4,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
+import com.google.re2j.Matcher;
+import com.google.re2j.Pattern;
+import com.google.re2j.PatternSyntaxException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Comparator;
@@ -16,9 +19,6 @@ import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.regex.PatternSyntaxException;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
@@ -96,9 +96,9 @@ public final class InferRoles {
   // the base for determining roles
   private static final double REGEX_THRESHOLD = 0.5;
 
-  private static final String ALPHABETIC_REGEX = "\\p{Alpha}";
-  private static final String ALPHANUMERIC_REGEX = "\\p{Alnum}";
-  private static final String DIGIT_REGEX = "\\p{Digit}";
+  private static final String ALPHABETIC_REGEX = "[a-zA-Z]";
+  private static final String ALPHANUMERIC_REGEX = "[a-zA-Z0-9]";
+  private static final String DIGIT_REGEX = "[0-9]";
 
   public InferRoles(Collection<String> nodes, Topology topology) {
     _nodes = ImmutableSortedSet.copyOf(nodes);
@@ -131,20 +131,13 @@ public final class InferRoles {
     DIGIT_PLUS;
 
     public String tokenToRegex(String s) {
-      switch (this) {
-        case ALPHA_PLUS:
-          return plus(ALPHABETIC_REGEX);
-        case ALPHA_PLUS_DIGIT_PLUS:
-          return plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
-        case ALNUM_PLUS:
-          return plus(ALPHANUMERIC_REGEX);
-        case DELIMITER:
-          return Pattern.quote(s);
-        case DIGIT_PLUS:
-          return plus(DIGIT_REGEX);
-        default:
-          throw new BatfishException("this case should be unreachable");
-      }
+      return switch (this) {
+        case ALPHA_PLUS -> plus(ALPHABETIC_REGEX);
+        case ALPHA_PLUS_DIGIT_PLUS -> plus(ALPHABETIC_REGEX) + plus(DIGIT_REGEX);
+        case ALNUM_PLUS -> plus(ALPHANUMERIC_REGEX);
+        case DELIMITER -> Pattern.quote(s);
+        case DIGIT_PLUS -> plus(DIGIT_REGEX);
+      };
     }
   }
 
@@ -248,8 +241,6 @@ public final class InferRoles {
         case DIGIT_PLUS:
           tokens.add(new TokenizedString(chars.toString(), Token.DIGIT_PLUS));
           break;
-        default:
-          throw new BatfishException("Unknown pretoken " + pt);
       }
       i++;
     }

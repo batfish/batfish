@@ -7,7 +7,6 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.IpAccessList;
@@ -143,22 +142,20 @@ public abstract class CiscoIosNat implements Comparable<CiscoIosNat>, Serializab
     DESTINATION_INSIDE;
 
     IpField whatChanges(boolean outgoing) {
-      switch (this) {
-        case SOURCE_INSIDE:
-          // Match and transform source for outgoing (inside-to-outside)
-          // Match and transform destination for incoming (outside-to-inside)
-          return outgoing ? IpField.SOURCE : IpField.DESTINATION;
-        case SOURCE_OUTSIDE:
-          // Match and transform destination for outgoing (inside-to-outside)
-          // Match and transform source for incoming (outside-to-inside)
-          return outgoing ? IpField.DESTINATION : IpField.SOURCE;
-        case DESTINATION_INSIDE:
-          // Match and transform destination for outgoing (inside-to-outside)
-          // Match and transform source for incoming (outside-to-inside)
-          return outgoing ? IpField.DESTINATION : IpField.SOURCE;
-        default:
-          throw new BatfishException("Unsupported RuleAction");
-      }
+      return switch (this) {
+        case SOURCE_INSIDE ->
+            // Match and transform source for outgoing (inside-to-outside)
+            // Match and transform destination for incoming (outside-to-inside)
+            outgoing ? IpField.SOURCE : IpField.DESTINATION;
+        case SOURCE_OUTSIDE ->
+            // Match and transform destination for outgoing (inside-to-outside)
+            // Match and transform source for incoming (outside-to-inside)
+            outgoing ? IpField.DESTINATION : IpField.SOURCE;
+        case DESTINATION_INSIDE ->
+            // Match and transform destination for outgoing (inside-to-outside)
+            // Match and transform source for incoming (outside-to-inside)
+            outgoing ? IpField.DESTINATION : IpField.SOURCE;
+      };
     }
   }
 

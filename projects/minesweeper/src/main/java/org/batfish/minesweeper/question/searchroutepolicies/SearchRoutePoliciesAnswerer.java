@@ -22,6 +22,7 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -168,7 +169,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     } else {
       BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
-      Bgpv4Route inRoute = ModelGeneration.satAssignmentToInputRoute(model, configAPs);
+      Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(model, configAPs);
       Tuple<Predicate<String>, String> env =
           ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
@@ -185,7 +186,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         inRoute = inRoute.toBuilder().setAsPath(newAspath).build();
       }
 
-      Result<BgpRoute> result = simulatePolicy(policy, inRoute, _direction, env, outputRoute);
+      Result<BgpRoute, BgpRoute> result =
+          simulatePolicy(policy, inRoute, _direction, env, outputRoute);
 
       // As a sanity check, compare the simulated result above with what the symbolic route
       // analysis predicts will happen.
@@ -206,14 +208,14 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    *     name of the source VRF
    * @return the results of the simulation as a result for this question
    */
-  public static Result<BgpRoute> simulatePolicy(
+  public static Result<BgpRoute, BgpRoute> simulatePolicy(
       RoutingPolicy policy,
       Bgpv4Route inRoute,
       Environment.Direction direction,
       Tuple<Predicate<String>, String> env,
       BDDRoute bddRoute) {
-    Result<Bgpv4Route> simResult =
-        TestRoutePoliciesAnswerer.simulatePolicy(
+    Result<Bgpv4Route, Bgpv4Route> simResult =
+        TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(
             policy,
             inRoute,
             DUMMY_BGP_SESSION_PROPERTIES,
@@ -234,32 +236,41 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    * @param result the original simulation result
    * @return a version of the result suitable for output from this analysis
    */
-  private static Result<BgpRoute> toQuestionResult(
-      Result<Bgpv4Route> result, BDDRoute outputRoute) {
-    Result<BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
+  private static Result<BgpRoute, BgpRoute> toQuestionResult(
+      Result<Bgpv4Route, Bgpv4Route> result, BDDRoute bddRoute) {
+    Result<BgpRoute, BgpRoute> qResult = TestRoutePoliciesAnswerer.toQuestionResult(result);
 
     if (result.getAction() == PERMIT) {
-      // update the output route's next-hop if it was set to the local or remote IP;
-      // rather than producing a concrete IP we use a special class that indicates that the
-      // local (remote) IP is used
-      switch (outputRoute.getNextHopType()) {
-        case SELF:
-          BgpRoute outRouteSelf =
-              qResult.getOutputRoute().toBuilder().setNextHop(NextHopSelf.instance()).build();
-          qResult = qResult.setOutputRoute(outRouteSelf);
-          break;
-        case BGP_PEER_ADDRESS:
-          BgpRoute outRoutePeer =
-              qResult.getOutputRoute().toBuilder()
-                  .setNextHop(NextHopBgpPeerAddress.instance())
-                  .build();
-          qResult = qResult.setOutputRoute(outRoutePeer);
-          break;
-        default:
-          break;
-      }
+      qResult =
+          qResult.setOutputRoute(toSymbolicBgpOutputRoute(qResult.getOutputRoute(), bddRoute));
     }
     return qResult;
+  }
+
+  /**
+   * Converts a concrete {@link BgpRoute} output route that comes from route-policy simulation into
+   * a version of it that is a valid result from the symbolic route analysis questions. The symbolic
+   * analysis uses symbolic placeholders for data that comes from the environment, such as the IP
+   * address of the local BGP session.
+   *
+   * @param route a concrete BGP route
+   * @param bddRoute the results of symbolic analysis
+   * @return a BGP route that is a valid question result
+   */
+  public static BgpRoute toSymbolicBgpOutputRoute(@Nullable BgpRoute route, BDDRoute bddRoute) {
+
+    if (route == null) {
+      return null;
+    }
+    // update the output route's next-hop if it was set to the local or remote IP;
+    // rather than producing a concrete IP we use a special class that indicates that the
+    // local (remote) IP is used
+    return switch (bddRoute.getNextHopType()) {
+      case SELF -> route.toBuilder().setNextHop(NextHopSelf.instance()).build();
+      case BGP_PEER_ADDRESS ->
+          route.toBuilder().setNextHop(NextHopBgpPeerAddress.instance()).build();
+      default -> route;
+    };
   }
 
   private BDD prefixSpaceToBDD(PrefixSpace space, BDDRoute r, boolean complementPrefixes) {
@@ -365,27 +376,25 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
    */
   private BDD communityRegexConstraintToBDD(
       RegexConstraint regex, TransferBDD tbdd, BDDRoute route, TransferBDD.Context context) {
-    switch (regex.getRegexType()) {
-      case REGEX:
-        return tbdd.getFactory()
-            .orAll(
-                tbdd
-                    .getConfigAtomicPredicates()
-                    .getStandardCommunityAtomicPredicates()
-                    .getRegexAtomicPredicates()
-                    .get(CommunityVar.from(regex.getRegex()))
-                    .stream()
-                    .map(i -> route.getCommunityAtomicPredicates()[i])
-                    .collect(ImmutableSet.toImmutableSet()));
-      case STRUCTURE_NAME:
+    return switch (regex.getRegexType()) {
+      case REGEX ->
+          tbdd.getFactory()
+              .orAll(
+                  tbdd
+                      .getConfigAtomicPredicates()
+                      .getStandardCommunityAtomicPredicates()
+                      .getRegexAtomicPredicates()
+                      .get(CommunityVar.from(regex.getRegex()))
+                      .stream()
+                      .map(i -> route.getCommunityAtomicPredicates()[i])
+                      .collect(ImmutableSet.toImmutableSet()));
+      case STRUCTURE_NAME -> {
         CommunityMatchExpr cme = context.config().getCommunityMatchExprs().get(regex.getRegex());
-        return cme.accept(
+        yield cme.accept(
             new CommunityMatchExprToBDD(),
             new CommunitySetMatchExprToBDD.Arg(tbdd, route, context));
-      default:
-        throw new UnsupportedOperationException(
-            "Unknown regex constraint type: " + regex.getRegexType());
-    }
+      }
+    };
   }
 
   /**
@@ -476,7 +485,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     ConfigAtomicPredicates configAPs = tbdd.getConfigAtomicPredicates();
 
     // make sure the model we end up getting corresponds to a valid route
-    BDD result = r.bgpWellFormednessConstraints();
+    BDD result = r.wellFormednessConstraints(true);
 
     result.andWith(prefixSpaceToBDD(constraints.getPrefix(), r, constraints.getComplementPrefix()));
     result.andWith(longSpaceToBDD(constraints.getLocalPreference(), r.getLocalPref()));
@@ -593,19 +602,15 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 .flatMap(
                     rc -> {
                       String regex = rc.getRegex();
-                      switch (rc.getRegexType()) {
-                        case REGEX:
-                          return ImmutableList.of(CommunityVar.from(regex)).stream();
-                        case STRUCTURE_NAME:
-                          return config
-                              .getCommunityMatchExprs()
-                              .get(regex)
-                              .accept(new CommunityMatchExprVarCollector(), config)
-                              .stream();
-                        default:
-                          throw new UnsupportedOperationException(
-                              "Unknown regex constraint type: " + rc.getRegexType());
-                      }
+                      return switch (rc.getRegexType()) {
+                        case REGEX -> ImmutableList.of(CommunityVar.from(regex)).stream();
+                        case STRUCTURE_NAME ->
+                            config
+                                .getCommunityMatchExprs()
+                                .get(regex)
+                                .accept(new CommunityMatchExprVarCollector(), config)
+                                .stream();
+                      };
                     })
                 .collect(ImmutableSet.toImmutableSet()),
             _asPathRegexes.stream()

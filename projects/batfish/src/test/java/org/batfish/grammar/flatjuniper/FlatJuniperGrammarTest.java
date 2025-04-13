@@ -465,6 +465,8 @@ import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
+import org.batfish.representation.juniper.PsThenCommunityAdd;
+import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenTag;
@@ -1154,7 +1156,7 @@ public final class FlatJuniperGrammarTest {
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
-        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(true))));
+        hasBgpProcess(allOf(hasMultipathEbgp(true), hasMultipathIbgp(false))));
 
     assertThat(
         parseConfig("bgp-multipath-internal").getDefaultVrf(),
@@ -4596,6 +4598,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testJuniperPolicyStatementThenCommunity() {
+    JuniperConfiguration c = parseJuniperConfig("juniper-ps-then-community");
+    Map<String, PsTerm> pses =
+        c.getMasterLogicalSystem().getPolicyStatements().get("PS").getTerms();
+    assertThat(
+        pses.get("MULTI_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+    assertThat(
+        pses.get("SET_ADD").getThens().getAllThens(),
+        contains(new PsThenCommunitySet("COMM1"), new PsThenCommunityAdd("COMM2")));
+    assertThat(
+        pses.get("ADD_SET").getThens().getAllThens(), contains(new PsThenCommunitySet("COMM2")));
+  }
+
+  @Test
   public void testJuniperPolicyStatementTermThenExtraction() {
     JuniperConfiguration c = parseJuniperConfig("juniper-policy-statement-then");
     {
@@ -4610,30 +4626,32 @@ public final class FlatJuniperGrammarTest {
           c.getMasterLogicalSystem().getPolicyStatements().get("LOCAL_PREFERENCE_POLICY");
       assertThat(policy.getTerms(), hasKeys("TSETMIN", "TADDMAX", "TSUB3"));
       assertThat(
-          policy.getTerms().get("TSETMIN").getThens(),
+          policy.getTerms().get("TSETMIN").getThens().getAllThens(),
           contains(new PsThenLocalPreference(0, Operator.SET)));
       assertThat(
-          policy.getTerms().get("TADDMAX").getThens(),
+          policy.getTerms().get("TADDMAX").getThens().getAllThens(),
           contains(new PsThenLocalPreference(MAX_LOCAL_PREFERENCE, Operator.ADD)));
       assertThat(
-          policy.getTerms().get("TSUB3").getThens(),
+          policy.getTerms().get("TSUB3").getThens().getAllThens(),
           contains(new PsThenLocalPreference(3, Operator.SUBTRACT)));
     }
     {
       PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("TAG_POLICY");
       assertThat(policy.getTerms(), hasKeys("TMIN", "TMAX"));
-      assertThat(policy.getTerms().get("TMIN").getThens(), contains(new PsThenTag(0)));
-      assertThat(policy.getTerms().get("TMAX").getThens(), contains(new PsThenTag(MAX_TAG)));
+      assertThat(
+          policy.getTerms().get("TMIN").getThens().getAllThens(), contains(new PsThenTag(0)));
+      assertThat(
+          policy.getTerms().get("TMAX").getThens().getAllThens(), contains(new PsThenTag(MAX_TAG)));
     }
     {
       PolicyStatement policy =
           c.getMasterLogicalSystem().getPolicyStatements().get("TUNNEL_ATTR_POLICY");
       assertThat(policy.getTerms(), hasKeys("SET_TUNNEL_ATTR", "REMOVE_TUNNEL_ATTR"));
       assertThat(
-          policy.getTerms().get("SET_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("SET_TUNNEL_ATTR").getThens().getAllThens(),
           contains(new PsThenTunnelAttributeSet("TA")));
       assertThat(
-          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens(),
+          policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens().getAllThens(),
           contains(PsThenTunnelAttributeRemove.INSTANCE));
     }
   }
@@ -4898,6 +4916,27 @@ public final class FlatJuniperGrammarTest {
                     ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 28), "nextHop")));
     assertThat(result.getBooleanValue(), equalTo(false));
 
+    {
+      /*
+      ROUTE_TYPE should accept routes with IBGP protocol
+        set policy-options policy-statement ROUTE_TYPE term T1 from protocol bgp
+        set policy-options policy-statement ROUTE_TYPE term T1 from route-type internal
+      */
+      RoutingPolicy policy = c.getRoutingPolicies().get("ROUTE_TYPE");
+      // Permit IBGP
+      assertTrue(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.IBGP).build()))
+              .getBooleanValue());
+      // Reject EBGP
+      assertFalse(
+          policy
+              .call(envWithRoute(c, brb.setProtocol(RoutingProtocol.BGP).build()))
+              .getBooleanValue());
+      // Reject static
+      assertFalse(policy.call(envWithRoute(c, srb.build())).getBooleanValue());
+    }
+
     /*
     TAG_POLICY should accept routes with either set tag, but not from other tags
       set policy-options policy-statement TAG_POLICY term T1 from tag 1
@@ -5004,6 +5043,12 @@ public final class FlatJuniperGrammarTest {
 
     /* The wildcard-looking BGP group name should not be pruned since its parse-tree node was not created via preprocessor. */
     assertThat(c, hasDefaultVrf(hasBgpProcess(hasNeighbors(hasKey(neighborIp)))));
+
+    /* prefix-list p5 with trailing semicolon in apply-path should exist but be empty */
+    assertThat(c, hasRouteFilterLists(hasKey("p5")));
+    assertThat(c.getRouteFilterLists().get("p5").getLines(), empty());
+    assertThat(c, hasIpAccessList("FILTER"));
+    assertThat(c, hasInterface("em0.0", hasIncomingFilter(hasName("FILTER"))));
   }
 
   @Test
@@ -5022,7 +5067,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10, 27)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
@@ -7720,7 +7765,9 @@ public final class FlatJuniperGrammarTest {
             .getFroms()
             .getFromConditions(),
         contains(new PsFromCondition("c1")));
-    assertThat(jc.getMasterLogicalSystem().getConditions(), hasKeys("c1", "c2", "c3", "c4", "c5"));
+    assertThat(
+        jc.getMasterLogicalSystem().getConditions(),
+        hasKeys("c1", "c2", "c3", "c4", "c5", "c6", "c7"));
     {
       Condition c = jc.getMasterLogicalSystem().getConditions().get("c1");
       assertThat(c.getIfRouteExists(), notNullValue());
@@ -7751,6 +7798,18 @@ public final class FlatJuniperGrammarTest {
       assertThat(c.getIfRouteExists(), notNullValue());
       assertThat(c.getIfRouteExists().getPrefix6(), equalTo(Prefix6.parse("::1.2.3.4/127")));
     }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c6");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(c.getIfRouteExists().getPrefix(), equalTo(Prefix.parse("192.0.2.1/32")));
+    }
+    {
+      Condition c = jc.getMasterLogicalSystem().getConditions().get("c7");
+      assertThat(c.getIfRouteExists(), notNullValue());
+      assertThat(
+          c.getIfRouteExists().getPrefix6(),
+          equalTo(Prefix6.parse("2001:db8:1234:5678:abc1:2345:6789:abcd/128")));
+    }
   }
 
   @Test
@@ -7761,12 +7820,21 @@ public final class FlatJuniperGrammarTest {
     String c3TrackName = computeConditionTrackName("c3");
     String c4TrackName = computeConditionTrackName("c4");
     String c5TrackName = computeConditionTrackName("c5");
+    String c6TrackName = computeConditionTrackName("c6");
+    String c7TrackName = computeConditionTrackName("c7");
     Configuration c = parseConfig(hostname);
 
     // Conditions should be converted to tracks
     assertThat(
         c.getTrackingGroups(),
-        hasKeys(c1TrackName, c2TrackName, c3TrackName, c4TrackName, c5TrackName));
+        hasKeys(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
     assertThat(
         c.getTrackingGroups().get(c1TrackName),
         equalTo(
@@ -7779,11 +7847,22 @@ public final class FlatJuniperGrammarTest {
         equalTo(TrackMethods.route(Prefix.strict("3.0.0.0/24"), ImmutableSet.of(), "ri3")));
     assertThat(c.getTrackingGroups().get(c4TrackName), equalTo(TrackMethods.alwaysTrue()));
     assertThat(c.getTrackingGroups().get(c5TrackName), equalTo(TrackMethods.alwaysFalse()));
+    assertThat(
+        c.getTrackingGroups().get(c6TrackName),
+        equalTo(TrackMethods.route(Prefix.strict("192.0.2.1/32"), ImmutableSet.of(), "default")));
+    assertThat(c.getTrackingGroups().get(c7TrackName), equalTo(TrackMethods.alwaysFalse()));
 
     // BGP process should watch tracks for conditions
     assertThat(
         c.getDefaultVrf().getBgpProcess().getTracks(),
-        containsInAnyOrder(c1TrackName, c2TrackName, c3TrackName, c4TrackName, c5TrackName));
+        containsInAnyOrder(
+            c1TrackName,
+            c2TrackName,
+            c3TrackName,
+            c4TrackName,
+            c5TrackName,
+            c6TrackName,
+            c7TrackName));
   }
 
   @Test
@@ -8089,27 +8168,30 @@ public final class FlatJuniperGrammarTest {
           vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-no-count");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(1));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("last-as-count-2");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandLastAs.class)));
       PsThenAsPathExpandLastAs then =
-          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandLastAs) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getCount(), equalTo(2));
     }
     {
       PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("as-list");
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
-      assertThat(term.getThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
+      assertThat(
+          term.getThens().getAllThens(), contains(instanceOf(PsThenAsPathExpandAsList.class)));
       PsThenAsPathExpandAsList then =
-          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens());
+          (PsThenAsPathExpandAsList) Iterables.getOnlyElement(term.getThens().getAllThens());
       assertThat(then.getAsList(), contains(123L, (456L << 16) + 789L));
     }
     {
@@ -8118,16 +8200,17 @@ public final class FlatJuniperGrammarTest {
       assertThat(ps.getTerms(), aMapWithSize(1));
       PsTerm term = Iterables.getOnlyElement(ps.getTerms().values());
       assertThat(
-          term.getThens(),
+          term.getThens().getAllThens(),
           contains(
               // reverse of declared order is expected
               instanceOf(PsThenAsPathPrepend.class), instanceOf(PsThenAsPathExpandAsList.class)));
 
-      PsThenAsPathPrepend prepend = (PsThenAsPathPrepend) Iterables.get(term.getThens(), 0);
+      PsThenAsPathPrepend prepend =
+          (PsThenAsPathPrepend) Iterables.get(term.getThens().getAllThens(), 0);
       assertThat(prepend.getAsList(), contains(456L));
 
       PsThenAsPathExpandAsList expand =
-          (PsThenAsPathExpandAsList) Iterables.get(term.getThens(), 1);
+          (PsThenAsPathExpandAsList) Iterables.get(term.getThens().getAllThens(), 1);
       assertThat(expand.getAsList(), contains(123L));
     }
   }
@@ -8460,6 +8543,66 @@ public final class FlatJuniperGrammarTest {
         asPathGroupPolicy2.call(
             envWithRoute(c, test.setAsPath(AsPath.ofSingletonAsSets(2L)).build()));
     assertThat(result.getBooleanValue(), equalTo(true));
+  }
+
+  @Test
+  public void testIfRouteExistMissingPrefix() throws IOException {
+    String hostname = "juniper-missing-prefix-condition";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c0. Config will not"
+                    + " pass commit checks."),
+            WarningMatchers.hasText(
+                "FATAL: Missing route address for if-route-exists condition c1. Config will not"
+                    + " pass commit checks.")));
+  }
+
+  @Test
+  public void testBgpPeerAsWarnings() throws IOException {
+    String hostname = "bgp-peer-as-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.2 of group EBGP_GROUP. External peer's AS (1111)"
+                    + " must not be the same as the local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.3 of group EBGP_GROUP. Peer AS number must be"
+                    + " configured for an external peer."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.5 of group IBGP_GROUP. Internal peer's AS (2222)"
+                    + " must be the same as local AS (1111)."),
+            WarningMatchers.hasText(
+                "FATAL: Error in neighbor 192.0.2.9 of group DEFAULT_GROUP. Peer AS number must be"
+                    + " configured for an external peer.")));
+  }
+
+  @Test
+  public void testSettingCommunityWithNoLiteralMemberHasFatalWarning() throws IOException {
+    String hostname = "community-literals-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    assertThat(
+        ccae.getWarnings().get(hostname).getFatalRedFlagWarnings(),
+        containsInAnyOrder(
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in"
+                    + " an add action"),
+            WarningMatchers.hasText(
+                "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in a"
+                    + " set action")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

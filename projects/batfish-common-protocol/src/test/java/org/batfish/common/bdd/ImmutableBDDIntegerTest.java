@@ -2,8 +2,10 @@ package org.batfish.common.bdd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
 import static org.junit.Assert.assertEquals;
 
+import java.util.BitSet;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import org.batfish.datamodel.Ip;
@@ -41,5 +43,29 @@ public class ImmutableBDDIntegerTest {
             Ip.parse("1.2.3.65").asLong(),
             Ip.parse("1.2.3.66").asLong(),
             Ip.parse("1.2.3.67").asLong()));
+  }
+
+  @Test
+  public void testSatAssignmentToInt() {
+    BDDFactory factory = BDDUtils.bddFactory(64);
+    ImmutableBDDInteger i = ImmutableBDDInteger.makeFromIndex(factory, 31, 7);
+    // Ensure we read exactly the right bits, and all of them.
+    assertThat(
+        i.satAssignmentToInt(BitSet.valueOf(new long[] {0x7FFFFFFFL << 7})),
+        equalTo(Integer.MAX_VALUE));
+    // Ensure that zeroing out the lower order 4 bits is equivalent to having the 4 MSBs of the BDD
+    // zero. (Since we use most-significant closest to top in BDDs).
+    assertThat(
+        i.satAssignmentToInt(BitSet.valueOf(new long[] {0x7FFFFFF0L << 7})),
+        equalTo(Integer.MAX_VALUE >> 4));
+    // Ensure that zeroing out the higher order 3 bits is equivalent to having the 3 LSBs of the BDD
+    // zero. (Since we use most-significant closest to top in BDDs).
+    assertThat(
+        i.satAssignmentToInt(BitSet.valueOf(new long[] {0x0FFFFFFFL << 7})),
+        equalTo(Integer.MAX_VALUE - 7));
+    // Surround our bits with 1s to ensure we don't have any weird overflows.
+    assertThat(
+        i.satAssignmentToInt(BitSet.valueOf(new long[] {0xFFFFFFFFFFFFFFFFL})),
+        equalTo(Integer.MAX_VALUE));
   }
 }

@@ -16,7 +16,6 @@ import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.AbstractRouteDecorator;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
@@ -30,7 +29,6 @@ import org.batfish.datamodel.EvpnRoute;
 import org.batfish.datamodel.EvpnType5Route;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFrom;
@@ -229,17 +227,11 @@ public final class BgpProtocolHelper {
     if (asPath.getAsSets().isEmpty()) {
       return true;
     }
-    switch (mode) {
-      case ALWAYS:
-        return true;
-      case NEVER:
-        return asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
-      case EXCEPT_FIRST:
-        return !asSets.get(0).containsAs(peerAs);
-      default:
-        throw new IllegalArgumentException(
-            String.format("Unsupported AllowsRemoteAsOutMode: %s", mode));
-    }
+    return switch (mode) {
+      case ALWAYS -> true;
+      case NEVER -> asSets.stream().noneMatch(asSet -> asSet.containsAs(peerAs));
+      case EXCEPT_FIRST -> !asSets.get(0).containsAs(peerAs);
+    };
   }
 
   /**
@@ -366,43 +358,6 @@ public final class BgpProtocolHelper {
     boolean accepted = attributePolicy.process(builder.build(), builder, Direction.OUT);
     assert accepted;
     return builder.build();
-  }
-
-  /**
-   * Convert a route that is neither a {@link BgpRoute} nor a {@link GeneratedRoute} to a {@link
-   * Bgpv4Route.Builder}.
-   *
-   * <p>Intended for converting main RIB routes into their BGP equivalents before passing {@code
-   * routeDecorator} to the export policy
-   *
-   * <p>The builder returned will have default local preference, redistribute origin mechanism,
-   * incomplete origin type, and most other fields unset.
-   */
-  public static @Nonnull Bgpv4Route.Builder convertNonBgpRouteToBgpRoute(
-      AbstractRouteDecorator routeDecorator,
-      Ip routerId,
-      Ip nextHopIp,
-      int adminDistance,
-      RoutingProtocol protocol,
-      OriginMechanism originMechanism) {
-    assert protocol == RoutingProtocol.BGP || protocol == RoutingProtocol.IBGP;
-    assert !(routeDecorator.getAbstractRoute() instanceof BgpRoute);
-    AbstractRoute route = routeDecorator.getAbstractRoute();
-    return Bgpv4Route.builder()
-        .setNetwork(route.getNetwork())
-        .setAdmin(adminDistance)
-        .setOriginatorIp(routerId)
-        .setProtocol(protocol)
-        .setSrcProtocol(route.getProtocol())
-        .setOriginMechanism(originMechanism)
-        .setOriginType(OriginType.INCOMPLETE)
-        // TODO: support customization of route preference
-        .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-        .setReceivedFrom(/* Originated locally. */ ReceivedFromSelf.instance())
-        .setNextHopIp(nextHopIp)
-        .setMetric(route.getMetric())
-        .setTag(routeDecorator.getAbstractRoute().getTag());
-    // Let everything else default to unset/empty/etc.
   }
 
   /**

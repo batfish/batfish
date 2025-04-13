@@ -349,10 +349,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
               region.findTransitGatewayVpcAttachment(
                   attachment.getResourceId(), tgwCfg.getHostname());
           if (!vpcAttachment.isPresent()) {
-            warnings.redFlag(
-                String.format(
-                    "VPC attachment %s not found for transit gateway %s",
-                    attachment.getResourceId(), tgwCfg.getHostname()));
+            warnings.redFlagf(
+                "VPC attachment %s not found for transit gateway %s",
+                attachment.getResourceId(), tgwCfg.getHostname());
             return;
           }
           connectVpc(tgwCfg, attachment, vsConfiguration, awsConfiguration, region, warnings);
@@ -364,10 +363,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
               region.findTransitGatewayVpnConnection(
                   attachment.getResourceId(), tgwCfg.getHostname());
           if (!vpnConnection.isPresent()) {
-            warnings.redFlag(
-                String.format(
-                    "VPN connection %s for transit gateway %s not found",
-                    attachment.getResourceId(), tgwCfg.getHostname()));
+            warnings.redFlagf(
+                "VPN connection %s for transit gateway %s not found",
+                attachment.getResourceId(), tgwCfg.getHostname());
             return;
           }
           connectVpn(tgwCfg, attachment, vpnConnection.get(), awsConfiguration, region, warnings);
@@ -401,10 +399,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     // different accounts
     Vpc vpc = vsConfiguration.getVpc(attachment.getResourceId());
     if (vpc == null) {
-      warnings.redFlag(
-          String.format(
-              "VPC %s for attachment %s not found in region %s",
-              attachment.getResourceId(), attachment.getId(), region.getName()));
+      warnings.redFlagf(
+          "VPC %s for attachment %s not found in region %s",
+          attachment.getResourceId(), attachment.getId(), region.getName());
       return;
     }
 
@@ -490,10 +487,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
 
     if (attachment.getAssociation() == null
         || !attachment.getAssociation().getState().equals(STATE_ASSOCIATED)) {
-      warnings.redFlag(
-          String.format(
-              "Skipped VPN %s as attachment because it is not associated",
-              attachment.getResourceId()));
+      warnings.redFlagf(
+          "Skipped VPN %s as attachment because it is not associated", attachment.getResourceId());
       return;
     }
 
@@ -602,10 +597,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         // need to look across all VPCs (accross accounts)
         Vpc vpc = vsConfig.getVpc(propagation.getResourceId());
         if (vpc == null) {
-          warnings.redFlag(
-              String.format(
-                  "VPC %s for propagating attachment %s not found in region %s",
-                  propagation.getResourceId(), propagation.getAttachmentId(), region.getName()));
+          warnings.redFlagf(
+              "VPC %s for propagating attachment %s not found in region %s",
+              propagation.getResourceId(), propagation.getAttachmentId(), region.getName());
           return;
         }
         propagateRoutesVpc(tgwCfg, table, vpc, awsConfiguration, warnings);
@@ -617,10 +611,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
         */
         return;
       default:
-        warnings.redFlag(
-            String.format(
-                "Resource type %s for transit gateway route propagation",
-                propagation.getResourceType()));
+        warnings.redFlagf(
+            "Resource type %s for transit gateway route propagation",
+            propagation.getResourceType());
     }
   }
 
@@ -659,9 +652,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     }
 
     if (!localIface.getVrfName().equals(vrfName)) {
-      warnings.redFlag(
-          String.format(
-              "Unexpected interface VRF %s. Expected %s", localIface.getVrfName(), vrfName));
+      warnings.redFlagf(
+          "Unexpected interface VRF %s. Expected %s", localIface.getVrfName(), vrfName);
       return;
     }
 
@@ -715,9 +707,8 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
     TransitGatewayAttachment tgwAttachment =
         region.findTransitGatewayAttachment(attachmentId, _gatewayId).orElse(null);
     if (tgwAttachment == null) {
-      warnings.redFlag(
-          String.format(
-              "Transit gateway attachment %s not found for route %s", attachmentId, route));
+      warnings.redFlagf(
+          "Transit gateway attachment %s not found for route %s", attachmentId, route);
       return;
     }
     switch (tgwAttachment.getResourceType()) {
@@ -736,26 +727,24 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           Configuration vpcCfg =
               awsConfiguration.getNode(Vpc.nodeName(tgwAttachment.getResourceId()));
           if (vpcCfg == null) {
-            warnings.redFlag(
-                String.format(
-                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
-                        + " configuration was not found",
-                    route.getDestinationCidrBlock(),
-                    routeTableId,
-                    tgwCfg.getHostname(),
-                    Vpc.nodeName(tgwAttachment.getResourceId())));
+            warnings.redFlagf(
+                "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
+                    + " configuration was not found",
+                route.getDestinationCidrBlock(),
+                routeTableId,
+                tgwCfg.getHostname(),
+                Vpc.nodeName(tgwAttachment.getResourceId()));
             return;
           }
           String ifaceNameOnVpc = interfaceNameToRemote(tgwCfg, routeTableId);
           if (!vpcCfg.getAllInterfaces().containsKey(ifaceNameOnVpc)) {
-            warnings.redFlag(
-                String.format(
-                    "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
-                        + " is not propagating to that table",
-                    route.getDestinationCidrBlock(),
-                    routeTableId,
-                    tgwCfg.getHostname(),
-                    vpcCfg.getHostname()));
+            warnings.redFlagf(
+                "Static route to %s in route table %s on TGW %s points to VPC %s, but the VPC"
+                    + " is not propagating to that table",
+                route.getDestinationCidrBlock(),
+                routeTableId,
+                tgwCfg.getHostname(),
+                vpcCfg.getHostname());
             return;
           }
           addStaticRoute(
@@ -771,10 +760,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           Optional<VpnConnection> vpnConnection =
               region.findTransitGatewayVpnConnection(tgwAttachment.getResourceId(), _gatewayId);
           if (!vpnConnection.isPresent()) {
-            warnings.redFlag(
-                String.format(
-                    "VPN connection %s for transit gateway %s",
-                    tgwAttachment.getResourceId(), _gatewayId));
+            warnings.redFlagf(
+                "VPN connection %s for transit gateway %s",
+                tgwAttachment.getResourceId(), _gatewayId);
             return;
           }
           vpnConnection
@@ -789,10 +777,9 @@ final class TransitGateway implements AwsVpcEntity, Serializable {
           return;
         }
       default:
-        warnings.redFlag(
-            String.format(
-                "Transit gateway attachment type %s not handled in addRoute",
-                tgwAttachment.getResourceType()));
+        warnings.redFlagf(
+            "Transit gateway attachment type %s not handled in addRoute",
+            tgwAttachment.getResourceType());
     }
   }
 

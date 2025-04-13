@@ -872,9 +872,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportStaticConditions.getConjuncts().add(new CallExpr(mapName));
         } else {
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName));
+          _w.redFlagf(
+              "Ignoring undefined route-policy %s in static -> BGP redistribution", mapName);
         }
       }
       redistributionPolicy.addStatement(
@@ -893,10 +892,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
         if (convertedRoutePolicyNames.contains(mapName)) {
           exportConnectedConditions.getConjuncts().add(new CallExpr(mapName));
         } else {
-          _w.redFlag(
-              String.format(
-                  "Ignoring undefined route-policy %s in connected -> BGP redistribution",
-                  mapName));
+          _w.redFlagf(
+              "Ignoring undefined route-policy %s in connected -> BGP redistribution", mapName);
         }
       }
       redistributionPolicy.addStatement(
@@ -1286,18 +1283,12 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     IsisProcess isisProcess = vrf.getIsisProcess();
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
-        case LEVEL_1:
-          level1 = true;
-          break;
-        case LEVEL_1_2:
+        case LEVEL_1 -> level1 = true;
+        case LEVEL_2 -> level2 = true;
+        case LEVEL_1_2 -> {
           level1 = true;
           level2 = true;
-          break;
-        case LEVEL_2:
-          level2 = true;
-          break;
-        default:
-          throw new VendorConversionException("Invalid IS-IS level");
+        }
       }
       IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       IsisInterfaceLevelSettings levelSettings =
@@ -1329,10 +1320,9 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     if (outgoingFilterName != null) {
       Ipv4AccessList outgoingFilter = _ipv4Acls.get(outgoingFilterName);
       if (outgoingFilter != null && isIpv4AclUsedForAbf(outgoingFilter)) {
-        _w.redFlag(
-            String.format(
-                "ACL based forwarding rule %s cannot be applied to an egress interface.",
-                outgoingFilterName));
+        _w.redFlagf(
+            "ACL based forwarding rule %s cannot be applied to an egress interface.",
+            outgoingFilterName);
       } else {
         newIface.setOutgoingFilter(ipAccessLists.get(outgoingFilterName));
       }
@@ -1408,9 +1398,8 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       } else {
         // Undefined route-policy. This is only possible in a manually edited config; CLI rejects
         // references to undefined route-policies and removal of route-policies that are in use.
-        _w.redFlag(
-            String.format(
-                "Ignoring undefined route-policy %s in OSPF redistribution", exportRouteMapName));
+        _w.redFlagf(
+            "Ignoring undefined route-policy %s in OSPF redistribution", exportRouteMapName);
       }
     }
 
@@ -2035,9 +2024,7 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }

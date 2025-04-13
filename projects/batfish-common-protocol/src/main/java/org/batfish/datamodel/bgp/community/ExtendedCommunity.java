@@ -28,6 +28,18 @@ public final class ExtendedCommunity extends Community {
   private static final Set<Integer> VALID_TYPES =
       ImmutableSet.of(0x00, 0x01, 0x02, 0x03, 0x40, 0x41, 0x43);
 
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_VALID =
+      ExtendedCommunity.opaque(false, 0, 0);
+
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_NOT_FOUND =
+      ExtendedCommunity.opaque(false, 0, 1);
+
+  /** See: https://datatracker.ietf.org/doc/html/rfc8097.html#section-2 */
+  public static final ExtendedCommunity ORIGIN_VALIDATION_STATE_INVALID =
+      ExtendedCommunity.opaque(false, 0, 2);
+
   /** 1 byte. */
   private final int _type;
 
@@ -62,7 +74,7 @@ public final class ExtendedCommunity extends Community {
   public static @Nonnull ExtendedCommunity parse(String communityStr) {
     // TODO: move vendor-specific parsing into vendor-specific context, remove redundant validation.
 
-    String[] parts = communityStr.trim().split(":");
+    String[] parts = communityStr.trim().toLowerCase().split(":");
     checkArgument(parts.length == 3, "Invalid extended community string: %s", communityStr);
     if (parts[0].startsWith("0x") && parts[1].startsWith("0x") && parts[2].startsWith("0x")) {
       // Not custom printed like the kind of extcomms that have gaLong.
@@ -79,9 +91,9 @@ public final class ExtendedCommunity extends Community {
     }
     long gaLong;
     long laLong;
-    String subType = parts[0].toLowerCase();
-    String globalAdministrator = parts[1].toLowerCase();
-    String localAdministrator = parts[2].toLowerCase();
+    String subType = parts[0];
+    String globalAdministrator = parts[1];
+    String localAdministrator = parts[2];
 
     // Try to figure out type/subtype first
     Byte typeByte = null;
@@ -91,6 +103,10 @@ public final class ExtendedCommunity extends Community {
       subTypeByte = 0x02;
     } else if (subType.equals("origin")) {
       subTypeByte = 0x03;
+    } else if (subType.equals("encapsulation")) {
+      // RFC 9012: Encapsulation Extended Community
+      typeByte = 0x03; // Transitive opaque
+      subTypeByte = 0x0C; // Encapsulation sub-type
     } else {
       // They type/subtype is a literal integer
       Integer intVal = Ints.tryParse(subType);
@@ -209,6 +225,15 @@ public final class ExtendedCommunity extends Community {
     return new ExtendedCommunity(type, subtype, value);
   }
 
+  /** Return an encapsulation extended community. See https://www.rfc-editor.org/rfc/rfc9012 */
+  public static ExtendedCommunity encapsulation(long tunnelType) {
+    checkArgument(
+        tunnelType >= 0 && tunnelType <= 0xFFFFL,
+        "Tunnel type %s is not within the allowed range",
+        tunnelType);
+    return new ExtendedCommunity(0x03, 0x0C, tunnelType);
+  }
+
   @Override
   public <T> T accept(CommunityVisitor<T> visitor) {
     return visitor.visitExtendedCommunity(this);
@@ -243,6 +268,12 @@ public final class ExtendedCommunity extends Community {
   public boolean isOpaque() {
     // https://tools.ietf.org/html/rfc4360
     return _type == 0x03 || _type == 0x43;
+  }
+
+  /** Check whether this community is an encapsulation community */
+  public boolean isEncapsulation() {
+    // https://www.rfc-editor.org/rfc/rfc9012
+    return _type == 0x03 && _subType == 0x0C;
   }
 
   /**

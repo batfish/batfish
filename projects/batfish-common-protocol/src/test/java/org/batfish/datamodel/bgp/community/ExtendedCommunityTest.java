@@ -33,6 +33,8 @@ public final class ExtendedCommunityTest {
         .addEqualityGroup(ExtendedCommunity.opaque(false, 1, 2))
         .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 2))
         .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 4))
+        .addEqualityGroup(ExtendedCommunity.encapsulation(7))
+        .addEqualityGroup(ExtendedCommunity.encapsulation(8))
         .testEquals();
   }
 
@@ -42,7 +44,8 @@ public final class ExtendedCommunityTest {
         ImmutableList.of(
             ExtendedCommunity.of(1, 2L, 123L),
             ExtendedCommunity.opaque(true, 1, 2),
-            ExtendedCommunity.opaque(false, 255, 0xFFFFFFFFFFFFL))) {
+            ExtendedCommunity.opaque(false, 255, 0xFFFFFFFFFFFFL),
+            ExtendedCommunity.encapsulation(7))) {
       assertThat(SerializationUtils.clone(ec), equalTo(ec));
       assertThat(BatfishObjectMapper.clone(ec, Community.class), equalTo(ec));
     }
@@ -59,9 +62,14 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.parse("target:1L:1"), equalTo(ExtendedCommunity.of(514, 1L, 1L)));
     assertThat(ExtendedCommunity.parse("origin:1L:1"), equalTo(ExtendedCommunity.of(515, 1L, 1L)));
     assertThat(
+        ExtendedCommunity.parse("encapsulation:0L:7"),
+        equalTo(ExtendedCommunity.encapsulation(7L)));
+    assertThat(
         ExtendedCommunity.parse("0x43:0x4:0x5"), equalTo(ExtendedCommunity.opaque(false, 4, 5L)));
     assertThat(
         ExtendedCommunity.parse("0x3:0x4:0x5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
+    assertThat(
+        ExtendedCommunity.parse("0X3:0X4:0X5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
   }
 
   @Test
@@ -300,5 +308,47 @@ public final class ExtendedCommunityTest {
     assertThat(ExtendedCommunity.of(0x0201, 2, 3).getSubtype(), equalTo(0x01));
     assertThat(ExtendedCommunity.opaque(true, 0x04, 3).getSubtype(), equalTo(0x04));
     assertThat(ExtendedCommunity.target(1, 3).getSubtype(), equalTo(0x02));
+  }
+
+  @Test
+  public void testWellKnownCommunities() {
+    /*
+     * The following byte arrays are copied directly out of RFC's level bit representation. Would not recommend using
+     * this type of test otherwise.
+     */
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_VALID.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 0}));
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_NOT_FOUND.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 1}));
+    assertThat(
+        ExtendedCommunity.ORIGIN_VALIDATION_STATE_INVALID.asBigInt().toByteArray(),
+        equalTo(new byte[] {0x43, 0, 0, 0, 0, 0, 0, 2}));
+  }
+
+  @Test
+  public void testEncapsulationCreation() {
+    ExtendedCommunity community = ExtendedCommunity.encapsulation(7);
+    assertThat(community.getValue(), equalTo(7L));
+    assertThat(community.getSubtype(), equalTo(0x0C));
+    assertTrue(community.isTransitive());
+    assertTrue(community.isOpaque());
+  }
+
+  @Test
+  public void testEncapsulationInvalidTunnelType() {
+    thrown.expect(IllegalArgumentException.class);
+    ExtendedCommunity.encapsulation(0x10000L); // Exceeds 16-bit limit
+  }
+
+  @Test
+  public void testIsEncapsulation() {
+    assertTrue(ExtendedCommunity.encapsulation(7).isEncapsulation());
+    assertTrue(ExtendedCommunity.of(0x030C, 0, 7).isEncapsulation());
+    assertFalse(ExtendedCommunity.of(0x030D, 0, 7).isEncapsulation()); // Wrong subtype
+    assertFalse(ExtendedCommunity.of(0x430C, 0, 7).isEncapsulation()); // Wrong type
+    assertFalse(ExtendedCommunity.opaque(true, 0x0D, 7).isEncapsulation());
+    assertFalse(ExtendedCommunity.target(1, 1).isEncapsulation());
   }
 }

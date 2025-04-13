@@ -173,8 +173,6 @@ public final class BDDOps implements Serializable {
             lineBddsWithCurrentAction.add(linePermitBdd);
           }
           break;
-        default:
-          throw new IllegalStateException("Unexpected LineAction " + currentAction);
       }
     }
 
@@ -186,8 +184,6 @@ public final class BDDOps implements Serializable {
       case DENY:
         finalizeBlock.apply(denyBdd, permitBdd);
         break;
-      default:
-        throw new IllegalStateException("Unexpected LineAction " + currentAction);
     }
 
     return new PermitAndDenyBdds(permitBdd, denyBdd);

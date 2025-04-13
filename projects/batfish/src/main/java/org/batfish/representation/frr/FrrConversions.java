@@ -606,11 +606,10 @@ public final class FrrConversions {
 
     // if this interface is not defined warn and move on
     if (viIface == null) {
-      w.redFlag(
-          String.format(
-              "BGP interface neighbor is defined on %s, but the interface does not exist on the"
-                  + " device",
-              neighbor.getName()));
+      w.redFlagf(
+          "BGP interface neighbor is defined on %s, but the interface does not exist on the"
+              + " device",
+          neighbor.getName());
       return;
     }
 
@@ -968,19 +967,17 @@ public final class FrrConversions {
                 c.getAllInterfaces().get(updateSourceInterface.getInterface());
 
             if (iface == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
             ConcreteInterfaceAddress concreteAddress = iface.getConcreteAddress();
             if (concreteAddress == null) {
-              warnings.redFlag(
-                  String.format(
-                      "cannot find an address for interface named %s for update-source",
-                      updateSourceInterface.getInterface()));
+              warnings.redFlagf(
+                  "cannot find an address for interface named %s for update-source",
+                  updateSourceInterface.getInterface());
               return null;
             }
 
@@ -1535,7 +1532,7 @@ public final class FrrConversions {
                       Optional.ofNullable(ospfInterface.getPassive())
                           .orElse(frr.getOspfProcess().getDefaultPassiveInterface()))
                   .setAreaName(ospfInterface.getOspfArea())
-                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork(), w))
+                  .setNetworkType(toOspfNetworkType(ospfInterface.getNetwork()))
                   .setDeadInterval(
                       Optional.ofNullable(ospfInterface.getDeadInterval())
                           .orElse(DEFAULT_OSPF_DEAD_INTERVAL))
@@ -1638,21 +1635,14 @@ public final class FrrConversions {
   }
 
   private static @Nullable org.batfish.datamodel.ospf.OspfNetworkType toOspfNetworkType(
-      @Nullable OspfNetworkType type, Warnings w) {
+      @Nullable OspfNetworkType type) {
     if (type == null) {
       return null;
     }
-    switch (type) {
-      case BROADCAST:
-        return org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
-      case POINT_TO_POINT:
-        return org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
-      default:
-        w.redFlag(
-            String.format(
-                "Conversion of Cumulus FRR OSPF network type '%s' is not handled.", type));
-        return null;
-    }
+    return switch (type) {
+      case BROADCAST -> org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST;
+      case POINT_TO_POINT -> org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT;
+    };
   }
 
   public static void convertBgpCommunityLists(

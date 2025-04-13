@@ -23,6 +23,7 @@
         <exclude name="CheckResultSet"/>
         <exclude name="ForLoopCanBeForeach"/>
         <exclude name="GuardLogStatement"/>
+        <exclude name="ImplicitFunctionalInterface"/>
         <exclude name="LiteralsFirstInComparisons"/>
         <exclude name="LooseCoupling"/>
         <exclude name="MethodReturnsInternalArray"/>

@@ -136,10 +136,8 @@ final class AristaConversions {
             .filter(e -> e.getValue().getConcreteAddress() != null)
             .collect(Collectors.toMap(Entry::getKey, Entry::getValue));
     if (interfaceMap.isEmpty()) {
-      w.redFlag(
-          String.format(
-              "%s. Unable to infer default router-id as no interfaces have IP addresses",
-              messageBase));
+      w.redFlagf(
+          "%s. Unable to infer default router-id as no interfaces have IP addresses", messageBase);
       // With no interfaces in the VRF that have IP addresses, show ip bgp vrf all reports 0.0.0.0
       // as the router ID. Of course, this is not really relevant as no routes will be exchanged.
       return Ip.ZERO;
@@ -321,10 +319,9 @@ final class AristaConversions {
       }
       ConcreteInterfaceAddress address = iface.getConcreteAddress();
       if (address == null) {
-        warnings.redFlag(
-            String.format(
-                "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
-                dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface));
+        warnings.redFlagf(
+            "BGP neighbor %s in vrf %s: configured update-source %s has no IP address",
+            dynamic ? prefix : prefix.getStartIp(), vrfName, updateSourceInterface);
         return null;
       }
       return address.getIp();
@@ -384,10 +381,9 @@ final class AristaConversions {
       assert neighbor instanceof AristaBgpV4DynamicNeighbor;
       LongSpace remoteAsns = getAsnSpace((AristaBgpV4DynamicNeighbor) neighbor, peerFilters);
       if (remoteAsns.isEmpty()) {
-        warnings.redFlag(
-            String.format(
-                "No acceptable remote-as for %s",
-                getTextDesc(((AristaBgpV4DynamicNeighbor) neighbor).getRange(), vrf)));
+        warnings.redFlagf(
+            "No acceptable remote-as for %s",
+            getTextDesc(((AristaBgpV4DynamicNeighbor) neighbor).getRange(), vrf));
       }
       newNeighborBuilder =
           BgpPassivePeerConfig.builder().setRemoteAsns(remoteAsns).setPeerPrefix(prefix);
@@ -396,10 +392,9 @@ final class AristaConversions {
       LongSpace remoteAsns =
           Optional.ofNullable(neighbor.getRemoteAs()).map(LongSpace::of).orElse(LongSpace.EMPTY);
       if (remoteAsns.isEmpty()) {
-        warnings.redFlag(
-            String.format(
-                "No remote-as configured for %s",
-                getTextDesc(((AristaBgpV4Neighbor) neighbor).getIp(), vrf)));
+        warnings.redFlagf(
+            "No remote-as configured for %s",
+            getTextDesc(((AristaBgpV4Neighbor) neighbor).getIp(), vrf));
       }
       newNeighborBuilder =
           BgpActivePeerConfig.builder()
@@ -469,11 +464,10 @@ final class AristaConversions {
           && inboundPrefixList != null
           && c.getRoutingPolicies().containsKey(inboundMap)
           && c.getRouteFilterLists().containsKey(inboundPrefixList)) {
-        warnings.redFlag(
-            String.format(
-                "Inbound prefix list %s + route map %s not supported for neighbor %s. Preferring"
-                    + " route map.",
-                inboundPrefixList, inboundMap, peerStrRepr));
+        warnings.redFlagf(
+            "Inbound prefix list %s + route map %s not supported for neighbor %s. Preferring"
+                + " route map.",
+            inboundPrefixList, inboundMap, peerStrRepr);
         policy = inboundMap;
       } else if (inboundMap != null && c.getRoutingPolicies().containsKey(inboundMap)) {
         policy = inboundMap;
@@ -592,11 +586,10 @@ final class AristaConversions {
           && outboundPrefixList != null
           && c.getRoutingPolicies().containsKey(outboundMap)
           && c.getRouteFilterLists().containsKey(outboundPrefixList)) {
-        warnings.redFlag(
-            String.format(
-                "Outbound prefix list %s + route map %s not supported for neighbor %s. Preferring"
-                    + " route map.",
-                outboundPrefixList, outboundMap, peerStrRepr));
+        warnings.redFlagf(
+            "Outbound prefix list %s + route map %s not supported for neighbor %s. Preferring"
+                + " route map.",
+            outboundPrefixList, outboundMap, peerStrRepr);
         peerExportConditions.add(new CallExpr(outboundMap));
       } else if (outboundMap != null && c.getRoutingPolicies().containsKey(outboundMap)) {
         peerExportConditions.add(new CallExpr(outboundMap));
@@ -892,25 +885,21 @@ final class AristaConversions {
 
   static @Nonnull Collection<RoutingProtocol> toOspfRedistributionProtocols(
       RedistributionSourceProtocol protocol) {
-    switch (protocol) {
-      case BGP_ANY:
-        return ImmutableList.of(
-            RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
-      case CONNECTED:
-        return ImmutableList.of(RoutingProtocol.CONNECTED);
-      case ISIS_ANY:
-        return ImmutableList.of(
-            RoutingProtocol.ISIS_EL1,
-            RoutingProtocol.ISIS_EL2,
-            RoutingProtocol.ISIS_L1,
-            RoutingProtocol.ISIS_L2);
-      case STATIC:
-        return ImmutableList.of(RoutingProtocol.STATIC);
-      case ISIS_L1:
-      default:
-        throw new IllegalArgumentException(
-            "Unknown/invalid redistribution source protocol for OSPF" + protocol);
-    }
+    return switch (protocol) {
+      case BGP_ANY ->
+          ImmutableList.of(RoutingProtocol.AGGREGATE, RoutingProtocol.BGP, RoutingProtocol.IBGP);
+      case CONNECTED -> ImmutableList.of(RoutingProtocol.CONNECTED);
+      case ISIS_ANY ->
+          ImmutableList.of(
+              RoutingProtocol.ISIS_EL1,
+              RoutingProtocol.ISIS_EL2,
+              RoutingProtocol.ISIS_L1,
+              RoutingProtocol.ISIS_L2);
+      case STATIC -> ImmutableList.of(RoutingProtocol.STATIC);
+      case ISIS_L1 ->
+          throw new IllegalArgumentException(
+              "Unknown/invalid redistribution source protocol for OSPF" + protocol);
+    };
   }
 
   private AristaConversions() {} // prevent instantiation of utility class.

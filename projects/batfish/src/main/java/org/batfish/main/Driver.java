@@ -80,15 +80,8 @@ public class Driver {
     System.setOut(_mainLogger.getPrintStream());
     _mainSettings.setLogger(_mainLogger);
     switch (_mainSettings.getRunMode()) {
-      case WORKER:
-        mainRunWorker();
-        break;
-      case WORKSERVICE:
-        break;
-      default:
-        System.err.println(
-            "batfish: Initialization failed. Unknown runmode: " + _mainSettings.getRunMode());
-        System.exit(1);
+      case WORKER -> mainRunWorker();
+      case WORKSERVICE -> {}
     }
     _initialized = true;
   }

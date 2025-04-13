@@ -22,6 +22,8 @@ set policy-options prefix-list PL4 4.4.4.0/24
 set policy-options prefix-list PL5 5.5.5.0/24
 set policy-options prefix-list PL6 6.6.6.0/24
 set policy-options prefix-list PL7 7.7.7.0
+set policy-options prefix-list PL8 1::1/127
+set policy-options prefix-list PL9 2::2
 #
 set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 from as-path-group AS_PATH_GROUP
 set policy-options policy-statement AS_PATH_GROUP_POLICY term T1 then accept
@@ -76,9 +78,17 @@ set policy-options policy-statement NETWORK_POLICY term T1 from route-filter 8.8
 set policy-options policy-statement NETWORK_POLICY term T1 from route-filter 9.9.9.9 exact
 set policy-options policy-statement NETWORK_POLICY term T1 then accept
 #
+set policy-options policy-statement NETWORK_POLICY_V6 term T1 from route-filter 3::3/127 exact
+set policy-options policy-statement NETWORK_POLICY_V6 term T1 from route-filter 4::4 exact
+set policy-options policy-statement NETWORK_POLICY_V6 term T1 then accept
+#
 set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol direct
 set policy-options policy-statement PROTOCOL_POLICY term TERM1 from protocol static
 set policy-options policy-statement PROTOCOL_POLICY term TERM1 then accept
+#
+set policy-options policy-statement ROUTE_TYPE term T1 from protocol bgp
+set policy-options policy-statement ROUTE_TYPE term T1 from route-type internal
+set policy-options policy-statement ROUTE_TYPE term T1 then accept
 #
 set policy-options policy-statement TAG_POLICY term T1 from tag 1
 set policy-options policy-statement TAG_POLICY term T1 from tag 2

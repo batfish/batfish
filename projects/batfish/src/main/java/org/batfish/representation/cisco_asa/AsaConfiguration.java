@@ -995,18 +995,16 @@ public final class AsaConfiguration extends VendorConfiguration {
     Interface commIface = _interfaces.get(_failoverCommunicationInterface);
     Interface sigIface = _interfaces.get(_failoverStatefulSignalingInterface);
     if (commIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: communication interface %s is not present",
-              _failoverCommunicationInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: communication interface %s is not present",
+          _failoverCommunicationInterface);
       return;
     }
     if (sigIface == null) {
-      _w.redFlag(
-          String.format(
-              "Unable to process failover configuration: stateful signaling interface %s is not"
-                  + " present",
-              _failoverStatefulSignalingInterface));
+      _w.redFlagf(
+          "Unable to process failover configuration: stateful signaling interface %s is not"
+              + " present",
+          _failoverStatefulSignalingInterface);
       return;
     }
 
@@ -1629,18 +1627,12 @@ public final class AsaConfiguration extends VendorConfiguration {
     IsisProcess isisProcess = vrf.getIsisProcess();
     if (isisProcess != null && iface.getIsisInterfaceMode() != IsisInterfaceMode.UNSET) {
       switch (isisProcess.getLevel()) {
-        case LEVEL_1:
-          level1 = true;
-          break;
-        case LEVEL_1_2:
+        case LEVEL_1 -> level1 = true;
+        case LEVEL_2 -> level2 = true;
+        case LEVEL_1_2 -> {
           level1 = true;
           level2 = true;
-          break;
-        case LEVEL_2:
-          level2 = true;
-          break;
-        default:
-          throw new VendorConversionException("Invalid IS-IS level");
+        }
       }
       IsisInterfaceSettings.Builder isisInterfaceSettingsBuilder = IsisInterfaceSettings.builder();
       IsisInterfaceLevelSettings levelSettings =
@@ -2490,16 +2482,8 @@ public final class AsaConfiguration extends VendorConfiguration {
         rmSet.applyTo(matchStatements, this, c, _w);
       }
       switch (rmClause.getAction()) {
-        case PERMIT:
-          matchStatements.add(Statements.ReturnTrue.toStaticStatement());
-          break;
-
-        case DENY:
-          matchStatements.add(Statements.ReturnFalse.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
+        case PERMIT -> matchStatements.add(Statements.ReturnTrue.toStaticStatement());
+        case DENY -> matchStatements.add(Statements.ReturnFalse.toStaticStatement());
       }
       if (followingClause != null) {
         ifExpr.getFalseStatements().add(followingClause);
@@ -2578,21 +2562,15 @@ public final class AsaConfiguration extends VendorConfiguration {
         }
       }
       switch (rmClause.getAction()) {
-        case PERMIT:
+        case PERMIT -> {
           if (continueStatement == null) {
             onMatchStatements.add(Statements.ExitAccept.toStaticStatement());
           } else {
             onMatchStatements.add(Statements.SetDefaultActionAccept.toStaticStatement());
             onMatchStatements.add(new CallStatement(continueTargetPolicy.getName()));
           }
-          break;
-
-        case DENY:
-          onMatchStatements.add(Statements.ExitReject.toStaticStatement());
-          break;
-
-        default:
-          throw new BatfishException("Invalid action");
+        }
+        case DENY -> onMatchStatements.add(Statements.ExitReject.toStaticStatement());
       }
       if (followingClause != null) {
         ifStatement.getFalseStatements().add(new CallStatement(followingClause.getName()));
@@ -2946,9 +2924,7 @@ public final class AsaConfiguration extends VendorConfiguration {
                             .setDestinationAddress(tunnel.getDestination())
                             .build());
                   } else {
-                    _w.redFlag(
-                        String.format(
-                            "Could not determine src/dst IPs for tunnel %s", iface.getName()));
+                    _w.redFlagf("Could not determine src/dst IPs for tunnel %s", iface.getName());
                   }
                 }
               }
@@ -3455,19 +3431,11 @@ public final class AsaConfiguration extends VendorConfiguration {
                       inspectClassMapMatch ->
                           inspectClassMapMatch.toAclLineMatchExpr(this, c, matchSemantics, _w))
                   .collect(ImmutableList.toImmutableList());
-          AclLineMatchExpr matchClassMap;
-          switch (matchSemantics) {
-            case MATCH_ALL:
-              matchClassMap = and(matchConditions);
-              break;
-            case MATCH_ANY:
-              matchClassMap = or(matchConditions);
-              break;
-            default:
-              throw new BatfishException(
-                  String.format(
-                      "Unsupported %s: %s", MatchSemantics.class.getSimpleName(), matchSemantics));
-          }
+          AclLineMatchExpr matchClassMap =
+              switch (matchSemantics) {
+                case MATCH_ALL -> and(matchConditions);
+                case MATCH_ANY -> or(matchConditions);
+              };
           IpAccessList.builder()
               .setOwner(c)
               .setName(inspectClassMapAclName)
@@ -3499,39 +3467,31 @@ public final class AsaConfiguration extends VendorConfiguration {
                     }
                     AclLineMatchExpr matchCondition = new PermittedByAcl(inspectClassMapAclName);
                     switch (action) {
-                      case DROP:
-                        policyMapAclLines.add(
-                            ExprAclLine.rejecting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Drop if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case INSPECT:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Inspect if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      case PASS:
-                        policyMapAclLines.add(
-                            ExprAclLine.accepting()
-                                .setMatchCondition(matchCondition)
-                                .setName(
-                                    String.format(
-                                        "Pass if matched by class-map: '%s'", inspectClassName))
-                                .build());
-                        break;
-
-                      default:
-                        _w.unimplemented("Unimplemented policy-map class action: " + action);
-                        return;
+                      case DROP ->
+                          policyMapAclLines.add(
+                              ExprAclLine.rejecting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Drop if matched by class-map: '%s'", inspectClassName))
+                                  .build());
+                      case INSPECT ->
+                          policyMapAclLines.add(
+                              ExprAclLine.accepting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Inspect if matched by class-map: '%s'",
+                                          inspectClassName))
+                                  .build());
+                      case PASS ->
+                          policyMapAclLines.add(
+                              ExprAclLine.accepting()
+                                  .setMatchCondition(matchCondition)
+                                  .setName(
+                                      String.format(
+                                          "Pass if matched by class-map: '%s'", inspectClassName))
+                                  .build());
                     }
                   });
           policyMapAclLines.add(

@@ -285,10 +285,9 @@ public final class FortiosPolicyConversions {
         line = ExprAclLine.rejecting();
         break;
       default: // TODO: Support policies with action IPSEC
-        w.redFlag(
-            String.format(
-                "Ignoring policy %s: Action %s is not supported",
-                numAndName, policy.getActionEffective()));
+        w.redFlagf(
+            "Ignoring policy %s: Action %s is not supported",
+            numAndName, policy.getActionEffective());
         return Optional.empty();
     }
 
@@ -335,11 +334,10 @@ public final class FortiosPolicyConversions {
           srcAddrExprs.isEmpty()
               ? "source addresses"
               : dstAddrExprs.isEmpty() ? "destination addresses" : "services";
-      w.redFlag(
-          String.format(
-              "Policy %s will not match any packets because none of its %s were successfully"
-                  + " converted",
-              numAndName, emptyField));
+      w.redFlagf(
+          "Policy %s will not match any packets because none of its %s were successfully"
+              + " converted",
+          numAndName, emptyField);
     }
     matchConjuncts.add(or(srcAddrExprs));
     matchConjuncts.add(or(dstAddrExprs));
@@ -401,41 +399,39 @@ public final class FortiosPolicyConversions {
   }
 
   private static @Nonnull Stream<AclLineMatchExpr> toServiceMatchExprs(Service service) {
-    switch (service.getProtocolEffective()) {
-      case TCP_UDP_SCTP:
-        return Stream.of(
-                buildMatchExprWithPorts(
-                    IpProtocol.TCP,
-                    service.getTcpPortRangeSrcEffective(),
-                    service.getTcpPortRangeDst()),
-                buildMatchExprWithPorts(
-                    IpProtocol.UDP,
-                    service.getUdpPortRangeSrcEffective(),
-                    service.getUdpPortRangeDst()),
-                buildMatchExprWithPorts(
-                    IpProtocol.SCTP,
-                    service.getSctpPortRangeSrcEffective(),
-                    service.getSctpPortRangeDst()))
-            .filter(Objects::nonNull);
-      case ICMP:
-        return Stream.of(
-            buildIcmpMatchExpr(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
-      case IP:
+    return switch (service.getProtocolEffective()) {
+      case TCP_UDP_SCTP ->
+          Stream.of(
+                  buildMatchExprWithPorts(
+                      IpProtocol.TCP,
+                      service.getTcpPortRangeSrcEffective(),
+                      service.getTcpPortRangeDst()),
+                  buildMatchExprWithPorts(
+                      IpProtocol.UDP,
+                      service.getUdpPortRangeSrcEffective(),
+                      service.getUdpPortRangeDst()),
+                  buildMatchExprWithPorts(
+                      IpProtocol.SCTP,
+                      service.getSctpPortRangeSrcEffective(),
+                      service.getSctpPortRangeDst()))
+              .filter(Objects::nonNull);
+      case ICMP ->
+          Stream.of(
+              buildIcmpMatchExpr(IpProtocol.ICMP, service.getIcmpCode(), service.getIcmpType()));
+      case IP -> {
         // Note that tcp/udp/sctp/icmp fields can't be configured for protocol IP, even if the
         // protocol number specifies one of those protocols
         int protocolNumber = service.getProtocolNumberEffective();
         if (protocolNumber == 0) {
           // Protocol number 0 indicates all protocols.
           // TODO Figure out how one would define a service to specify protocol 0 (HOPOPT)
-          return Stream.of(TRUE);
+          yield Stream.of(TRUE);
         }
-        return Stream.of(matchIpProtocol(protocolNumber));
-      case ICMP6:
-        throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
-      default:
-        throw new UnsupportedOperationException(
-            String.format("Unrecognized service protocol %s", service.getProtocolEffective()));
-    }
+        yield Stream.of(matchIpProtocol(protocolNumber));
+      }
+      case ICMP6 ->
+          throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
+    };
   }
 
   /**
@@ -487,10 +483,9 @@ public final class FortiosPolicyConversions {
   public static IpSpace toIpSpace(Address a, Warnings w) {
     // TODO Investigate & support _allowRouting, _associatedInterface, _fabricObject
     if (a.getAssociatedInterface() != null || a.getAssociatedInterfaceZone() != null) {
-      w.redFlag(
-          String.format(
-              "Address associated-interface is not yet supported and will be ignored for %s",
-              a.getName()));
+      w.redFlagf(
+          "Address associated-interface is not yet supported and will be ignored for %s",
+          a.getName());
     }
     switch (a.getTypeEffective()) {
       case IPMASK:
@@ -527,14 +522,12 @@ public final class FortiosPolicyConversions {
       case GEOGRAPHY: // Based on countries
       case MAC: // Based on MAC addresses
         // Unsupported address types.
-        w.redFlag(
-            String.format(
-                "Addresses of type %s are unsupported and will be considered unmatchable.",
-                a.getType()));
+        w.redFlagf(
+            "Addresses of type %s are unsupported and will be considered unmatchable.",
+            a.getType());
         return EmptyIpSpace.INSTANCE;
-      default:
-        throw new IllegalStateException("Unrecognized address type " + a.getTypeEffective());
     }
+    throw new IllegalArgumentException("Should be unreachable");
   }
 
   public static IpSpaceMetadata toIpSpaceMetadata(Address a, String filename) {
