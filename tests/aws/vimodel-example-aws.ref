@@ -85618,7 +85618,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "TUNNEL",
             "vrf" : "default"
           },
           "vpn-vpn-ba2e34a8-2" : {
@@ -85646,7 +85646,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "TUNNEL",
             "vrf" : "default"
           }
         },

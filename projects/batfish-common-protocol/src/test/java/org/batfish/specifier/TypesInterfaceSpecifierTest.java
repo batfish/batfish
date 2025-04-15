@@ -29,7 +29,6 @@ public class TypesInterfaceSpecifierTest {
   private static final Interface TUNNEL;
   private static final Interface UNKNOWN;
   private static final Interface VLAN;
-  private static final Interface VPN;
 
   private static final String HOSTNAME = "hostname";
   private static final MockSpecifierContext CTXT;
@@ -68,9 +67,6 @@ public class TypesInterfaceSpecifierTest {
     VLAN = ib.build();
     VLAN.updateInterfaceType(InterfaceType.VLAN);
 
-    VPN = ib.build();
-    VPN.updateInterfaceType(InterfaceType.VPN);
-
     CTXT =
         MockSpecifierContext.builder()
             .setConfigs(ImmutableMap.of(config.getHostname(), config))
@@ -102,7 +98,6 @@ public class TypesInterfaceSpecifierTest {
     assertThat(specifiedInterfaces("t.*"), equalTo(ImmutableSet.of(NodeInterfacePair.of(TUNNEL))));
     assertThat(specifiedInterfaces("u.*"), equalTo(ImmutableSet.of(NodeInterfacePair.of(UNKNOWN))));
     assertThat(specifiedInterfaces("vlan"), equalTo(ImmutableSet.of(NodeInterfacePair.of(VLAN))));
-    assertThat(specifiedInterfaces("vpn"), equalTo(ImmutableSet.of(NodeInterfacePair.of(VPN))));
     assertThat(
         specifiedInterfaces(".*"),
         equalTo(
@@ -114,7 +109,6 @@ public class TypesInterfaceSpecifierTest {
                 NodeInterfacePair.of(REDUNDANT),
                 NodeInterfacePair.of(TUNNEL),
                 NodeInterfacePair.of(UNKNOWN),
-                NodeInterfacePair.of(VLAN),
-                NodeInterfacePair.of(VPN))));
+                NodeInterfacePair.of(VLAN))));
   }
 }

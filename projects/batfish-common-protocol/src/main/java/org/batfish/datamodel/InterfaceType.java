@@ -24,6 +24,4 @@ public enum InterfaceType {
   UNKNOWN, // for use as sentinel value
   /** Logical VLAN/irb interface */
   VLAN,
-  /** Logical VPN interface, (i.e., IPSec tunnel) */
-  VPN,
 }
