@@ -21,6 +21,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_IN
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.batfish.representation.juniper.PsFromNeighbor.toBooleanExprMany;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 
@@ -3210,6 +3211,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
     if (froms.getFromMetric() != null) {
       conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
+    }
+    if (!froms.getFromNeighbor().isEmpty()) {
+      conj.getConjuncts().add(toBooleanExprMany(froms.getFromNeighbor()));
     }
     for (PsFromNextHop from : froms.getFromNextHops()) {
       subroutines.add(from.toBooleanExpr(this, _c, _w));

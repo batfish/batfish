@@ -269,6 +269,7 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -1763,6 +1764,47 @@ public final class FlatJuniperGrammarTest {
       assertTrue(
           routingPolicyPermitsRoute(
               rp, base.toBuilder().setCommunities(ImmutableSet.of(other)).build()));
+    }
+  }
+
+  @Test
+  public void testPsFromNeighbor() {
+    Configuration c = parseConfig("bgp-policy-from-neighbor");
+
+    Bgpv4Route base =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
+    {
+      // Allowed from a specific neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.0.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertTrue(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
+    }
+    {
+      // Rejected from wrong neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.1.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertFalse(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
     }
   }
 
