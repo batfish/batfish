@@ -957,6 +957,7 @@ import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromMetric;
+import org.batfish.representation.juniper.PsFromNeighbor;
 import org.batfish.representation.juniper.PsFromNextHop;
 import org.batfish.representation.juniper.PsFromNextHop.Hop;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
@@ -5853,8 +5854,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_neighbor(Popsf_neighborContext ctx) {
-    todo(ctx);
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    PsFromNeighbor.Neighbor neighbor;
+    if (ctx.v4 != null) {
+      neighbor = PsFromNeighbor.Neighbor.of(toIp(ctx.v4));
+    } else {
+      assert ctx.v6 != null;
+      neighbor = PsFromNeighbor.Neighbor.of(toIp6(ctx.v6));
+    }
+    _currentPsTerm.getFroms().addFromNeighbor(new PsFromNeighbor(neighbor));
   }
 
   @Override

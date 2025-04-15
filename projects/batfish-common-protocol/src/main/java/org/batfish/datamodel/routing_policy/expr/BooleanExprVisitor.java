@@ -46,6 +46,8 @@ public interface BooleanExprVisitor<T, U> {
 
   T visitMatchMetric(MatchMetric matchMetric, U arg);
 
+  T visitMatchPeerAddress(MatchPeerAddress matchPeerAddress, U arg);
+
   T visitMatchPrefixSet(MatchPrefixSet matchPrefixSet, U arg);
 
   T visitMatchProcessAsn(MatchProcessAsn matchProcessAsn, U arg);
