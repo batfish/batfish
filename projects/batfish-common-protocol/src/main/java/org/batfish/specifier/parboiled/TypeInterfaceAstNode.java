@@ -10,8 +10,8 @@ final class TypeInterfaceAstNode implements InterfaceAstNode {
     this(((StringAstNode) interfaceType).getStr());
   }
 
-  TypeInterfaceAstNode(String interfaceTyeStr) {
-    _interfaceType = Enum.valueOf(InterfaceType.class, interfaceTyeStr.toUpperCase());
+  TypeInterfaceAstNode(String interfaceTypeStr) {
+    _interfaceType = Enum.valueOf(InterfaceType.class, interfaceTypeStr.toUpperCase());
   }
 
   @Override
