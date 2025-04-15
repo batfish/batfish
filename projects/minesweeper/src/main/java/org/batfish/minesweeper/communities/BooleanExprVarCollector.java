@@ -25,6 +25,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -176,6 +177,12 @@ public class BooleanExprVarCollector
   @Override
   public Set<CommunityVar> visitMatchMetric(
       MatchMetric matchMetric, Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<CommunityVar> visitMatchPeerAddress(
+      MatchPeerAddress matchPeerAddress, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 
