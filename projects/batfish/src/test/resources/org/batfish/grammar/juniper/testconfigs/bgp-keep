@@ -1,0 +1,6 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name bgp-keep
+#
+set protocols bgp group G1 keep none
+set protocols bgp group G2 keep all
+set protocols bgp group G3

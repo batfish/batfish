@@ -1153,6 +1153,15 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpKeepExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-keep");
+    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
+    assertTrue(ri.getNamedBgpGroups().get("G1").getKeepNone());
+    assertFalse(ri.getNamedBgpGroups().get("G2").getKeepNone());
+    assertFalse(ri.getNamedBgpGroups().get("G3").getKeepNone());
+  }
+
+  @Test
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),

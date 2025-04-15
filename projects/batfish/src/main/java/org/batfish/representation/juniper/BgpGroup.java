@@ -33,6 +33,7 @@ public class BgpGroup implements Serializable {
   private final List<String> _importPolicies;
   protected transient boolean _inherited;
   private boolean _ipv6;
+  private boolean _keepNone;
   private Ip _localAddress;
   private Long _localAs;
   private Integer _loops;
@@ -210,6 +211,10 @@ public class BgpGroup implements Serializable {
     return _ipv6;
   }
 
+  public boolean getKeepNone() {
+    return _keepNone;
+  }
+
   public final Ip getLocalAddress() {
     return _localAddress;
   }
@@ -308,6 +313,10 @@ public class BgpGroup implements Serializable {
 
   public void setIpv6(boolean ipv6) {
     _ipv6 = ipv6;
+  }
+
+  public void setKeepNone(boolean keepNone) {
+    _keepNone = keepNone;
   }
 
   public final void setLocalAddress(Ip localAddress) {

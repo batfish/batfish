@@ -252,6 +252,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_keepContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
@@ -2584,6 +2585,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           BGP_NEIGHBOR_SELF_REFERENCE,
           getLine(ctx.start));
     }
+  }
+
+  @Override
+  public void enterB_keep(B_keepContext ctx) {
+    boolean keepNone = ctx.NONE() != null;
+    _currentBgpGroup.setKeepNone(keepNone);
   }
 
   @Override

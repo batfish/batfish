@@ -113,6 +113,7 @@ b_common
    | b_export
    | b_family
    | b_import
+   | b_keep
    | b_local_address
    | b_local_as
    | b_multihop
@@ -193,6 +194,11 @@ b_group
 b_import
 :
    IMPORT expr = policy_expression
+;
+
+b_keep
+:
+   KEEP (ALL | NONE)
 ;
 
 b_local_address
