@@ -25,6 +25,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromInterface> _fromInterfaces;
   private PsFromLocalPreference _fromLocalPreference;
   private PsFromMetric _fromMetric;
+  private final Set<PsFromNeighbor> _fromNeighbor;
   private final List<PsFromNextHop> _fromNextHops;
   private final Set<PsFromPolicyStatement> _fromPolicyStatements;
   private final Set<PsFromPolicyStatementConjunction> _fromPolicyStatementConjunctions;
@@ -43,6 +44,7 @@ public final class PsFroms implements Serializable {
     _fromCommunities = new LinkedHashSet<>();
     _fromConditions = new LinkedHashSet<>();
     _fromInterfaces = new LinkedHashSet<>();
+    _fromNeighbor = new LinkedHashSet<>();
     _fromNextHops = new LinkedList<>();
     _fromPolicyStatements = new LinkedHashSet<>();
     _fromPolicyStatementConjunctions = new LinkedHashSet<>();
@@ -77,6 +79,11 @@ public final class PsFroms implements Serializable {
   public void addFromInterface(@Nonnull PsFromInterface fromInterface) {
     _atLeastOneFrom = true;
     _fromInterfaces.add(fromInterface);
+  }
+
+  public void addFromNeighbor(@Nonnull PsFromNeighbor fromNeighbor) {
+    _atLeastOneFrom = true;
+    _fromNeighbor.add(fromNeighbor);
   }
 
   public void addFromNextHop(@Nonnull PsFromNextHop fromNextHop) {
@@ -184,6 +191,10 @@ public final class PsFroms implements Serializable {
   @Nullable
   PsFromMetric getFromMetric() {
     return _fromMetric;
+  }
+
+  public @Nonnull Set<PsFromNeighbor> getFromNeighbor() {
+    return _fromNeighbor;
   }
 
   @Nonnull
