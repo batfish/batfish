@@ -1173,7 +1173,7 @@ public final class FlatJuniperGrammarTest {
     n2.cascadeInheritance();
     assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from group
 
-    // Routing instance R1 does set keep
+    // Routing instance R2 does set keep
     RoutingInstance r2 = c.getMasterLogicalSystem().getRoutingInstances().get("R2");
     assertEquals(r2.getMasterBgpGroup().getKeep(), BgpGroup.BgpKeepType.NONE);
     assertEquals(r2.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
