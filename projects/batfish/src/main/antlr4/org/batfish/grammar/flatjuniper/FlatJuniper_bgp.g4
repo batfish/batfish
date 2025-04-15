@@ -113,6 +113,7 @@ b_common
    | b_export
    | b_family
    | b_import
+   | b_keep
    | b_local_address
    | b_local_as
    | b_multihop
@@ -195,6 +196,11 @@ b_import
    IMPORT expr = policy_expression
 ;
 
+b_keep
+:
+   KEEP (ALL | NONE)
+;
+
 b_local_address
 :
    LOCAL_ADDRESS
@@ -258,7 +264,6 @@ b_null
       | BFD_LIVENESS_DETECTION
       | GRACEFUL_RESTART
       | HOLD_TIME
-      | KEEP
       | LOG_UPDOWN
       | MTU_DISCOVERY
       | OUT_DELAY
