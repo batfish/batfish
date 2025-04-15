@@ -78,7 +78,7 @@ public class Link extends BfObject {
 
     return switch (iface1type) {
       case PHYSICAL, LOGICAL -> LinkType.PHYSICAL;
-      case AGGREGATED, AGGREGATE_CHILD, REDUNDANT, REDUNDANT_CHILD, TUNNEL, VLAN, VPN ->
+      case AGGREGATED, AGGREGATE_CHILD, REDUNDANT, REDUNDANT_CHILD, TUNNEL, VLAN ->
           LinkType.VIRTUAL;
 
       // loopback and null shouldn't really happen; lets call it unknown

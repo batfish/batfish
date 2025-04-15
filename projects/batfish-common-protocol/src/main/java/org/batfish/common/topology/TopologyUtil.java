@@ -3,7 +3,6 @@ package org.batfish.common.topology;
 import static org.batfish.common.util.CollectionUtil.toImmutableMap;
 import static org.batfish.common.util.IpsecUtil.initIpsecTopology;
 import static org.batfish.common.util.IpsecUtil.retainCompatibleTunnelEdges;
-import static org.batfish.datamodel.Interface.TUNNEL_INTERFACE_TYPES;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.DiscreteDomain;
@@ -596,10 +595,9 @@ public final class TopologyUtil {
           if (!isValidLayer3Adjacency(iface1, iface2)) {
             continue;
           }
-          // Additionally, don't connect if any of the two endpoint interfaces have Tunnel or VPN
-          // interfaceTypes
-          if (TUNNEL_INTERFACE_TYPES.contains(iface1.getInterfaceType())
-              || TUNNEL_INTERFACE_TYPES.contains(iface2.getInterfaceType())) {
+          // Additionally, don't connect if any of the two endpoint interfaces are tunnels
+          if (iface1.getInterfaceType() == InterfaceType.TUNNEL
+              || iface2.getInterfaceType() == InterfaceType.TUNNEL) {
             continue;
           }
           edges.add(new Edge(iface1, iface2));

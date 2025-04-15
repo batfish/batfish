@@ -585,8 +585,6 @@ public final class Interface extends ComparableStructure<String> {
   public static final int DEFAULT_MTU = 1500;
   public static final String DYNAMIC_INTERFACE_NAME = "dynamic";
   public static final String NULL_INTERFACE_NAME = "null_interface";
-  public static final Set<InterfaceType> TUNNEL_INTERFACE_TYPES =
-      ImmutableSet.of(InterfaceType.TUNNEL, InterfaceType.VPN);
   public static final String UNSET_LOCAL_INTERFACE = "unset_local_interface";
   public static final String INVALID_LOCAL_INTERFACE = "invalid_local_interface";
   private static final String PROP_ACCESS_VLAN = "accessVlan";
@@ -720,7 +718,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeAwsInterfaceType(String name) {
     if (name.startsWith("vpn")) {
-      return InterfaceType.VPN;
+      return InterfaceType.TUNNEL;
     } else {
       return InterfaceType.PHYSICAL;
     }
@@ -742,7 +740,7 @@ public final class Interface extends ComparableStructure<String> {
     } else if (name.startsWith("cmp-mgmt")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Crypto-Engine")) {
-      return InterfaceType.VPN; // IPSec VPN
+      return InterfaceType.TUNNEL; // IPSec VPN
     } else if (name.startsWith("Dialer")) {
       return InterfaceType.PHYSICAL;
     } else if (name.startsWith("Dot11Radio")) {
@@ -890,7 +888,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeJuniperInterfaceType(String name) {
     if (name.startsWith("st")) {
-      return InterfaceType.VPN;
+      return InterfaceType.TUNNEL;
     } else if (name.startsWith("reth") && name.contains(".")) {
       return InterfaceType.REDUNDANT_CHILD;
     } else if (name.startsWith("reth")) {
@@ -912,7 +910,7 @@ public final class Interface extends ComparableStructure<String> {
 
   private static InterfaceType computeVyosInterfaceType(String name) {
     if (name.startsWith("vti")) {
-      return InterfaceType.VPN;
+      return InterfaceType.TUNNEL;
     } else if (name.startsWith("lo")) {
       return InterfaceType.LOOPBACK;
     } else {
