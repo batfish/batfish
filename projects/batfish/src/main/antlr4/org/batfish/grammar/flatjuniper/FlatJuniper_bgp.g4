@@ -264,7 +264,6 @@ b_null
       | BFD_LIVENESS_DETECTION
       | GRACEFUL_RESTART
       | HOLD_TIME
-      | KEEP
       | LOG_UPDOWN
       | MTU_DISCOVERY
       | OUT_DELAY

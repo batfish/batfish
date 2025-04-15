@@ -15,6 +15,11 @@ public class BgpGroup implements Serializable {
     INTERNAL
   }
 
+  public enum BgpKeepType {
+    ALL,
+    NONE
+  }
+
   private @Nullable AddPath _addPath;
   private Boolean _advertiseExternal;
   private Boolean _advertiseInactive;
@@ -33,7 +38,7 @@ public class BgpGroup implements Serializable {
   private final List<String> _importPolicies;
   protected transient boolean _inherited;
   private boolean _ipv6;
-  private boolean _keepNone;
+  private @Nullable BgpKeepType _keep;
   private Ip _localAddress;
   private Long _localAs;
   private Integer _loops;
@@ -101,6 +106,9 @@ public class BgpGroup implements Serializable {
       }
       if (_importPolicies.isEmpty()) {
         _importPolicies.addAll(_parent._importPolicies);
+      }
+      if (_keep == null) {
+        _keep = _parent._keep;
       }
       if (_localAs == null) {
         _localAs = _parent._localAs;
@@ -211,8 +219,8 @@ public class BgpGroup implements Serializable {
     return _ipv6;
   }
 
-  public boolean getKeepNone() {
-    return _keepNone;
+  public BgpKeepType getKeep() {
+    return _keep;
   }
 
   public final Ip getLocalAddress() {
@@ -315,8 +323,8 @@ public class BgpGroup implements Serializable {
     _ipv6 = ipv6;
   }
 
-  public void setKeepNone(boolean keepNone) {
-    _keepNone = keepNone;
+  public void setKeep(@Nullable BgpKeepType keep) {
+    _keep = keep;
   }
 
   public final void setLocalAddress(Ip localAddress) {

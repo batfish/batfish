@@ -433,6 +433,7 @@ import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
+import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -1155,10 +1156,41 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
-    RoutingInstance ri = c.getMasterLogicalSystem().getDefaultRoutingInstance();
-    assertTrue(ri.getNamedBgpGroups().get("G1").getKeepNone());
-    assertFalse(ri.getNamedBgpGroups().get("G2").getKeepNone());
-    assertFalse(ri.getNamedBgpGroups().get("G3").getKeepNone());
+
+    // Routing instance R1 does not set keep
+    RoutingInstance r1 = c.getMasterLogicalSystem().getRoutingInstances().get("R1");
+    assertNull(r1.getMasterBgpGroup().getKeep());
+    assertEquals(r1.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r1.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+    assertNull(r1.getNamedBgpGroups().get("G3").getKeep());
+
+    // group --> neighbor inheritance
+    IpBgpGroup n1 = r1.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    IpBgpGroup n2 = r1.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from group
+
+    // Routing instance R1 does set keep
+    RoutingInstance r2 = c.getMasterLogicalSystem().getRoutingInstances().get("R2");
+    assertEquals(r2.getMasterBgpGroup().getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+
+    NamedBgpGroup g3 = r2.getNamedBgpGroups().get("G3");
+    g3.cascadeInheritance();
+    assertEquals(g3.getKeep(), BgpGroup.BgpKeepType.NONE);
+
+    // routing-instance --> neighbor inheritance
+    n1 = r2.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    n2 = r2.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from routing instance
   }
 
   @Test

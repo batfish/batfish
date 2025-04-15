@@ -2589,8 +2589,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterB_keep(B_keepContext ctx) {
-    boolean keepNone = ctx.NONE() != null;
-    _currentBgpGroup.setKeepNone(keepNone);
+    BgpGroup.BgpKeepType keep =
+        ctx.NONE() != null ? BgpGroup.BgpKeepType.NONE : BgpGroup.BgpKeepType.ALL;
+    _currentBgpGroup.setKeep(keep);
   }
 
   @Override
