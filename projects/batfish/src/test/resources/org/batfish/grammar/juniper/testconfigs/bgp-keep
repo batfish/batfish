@@ -1,0 +1,17 @@
+#RANCID-CONTENT-TYPE: juniper
+set system host-name bgp-keep
+#
+# R1 does not have keep set at protocol-level
+set routing-instances R1 protocols bgp group G1 keep none
+set routing-instances R1 protocols bgp group G1 neighbor 1.1.1.1 keep all
+set routing-instances R1 protocols bgp group G1 neighbor 2.2.2.2
+set routing-instances R1 protocols bgp group G2 keep all
+set routing-instances R1 protocols bgp group G3
+#
+# R2 has keep set at protocol-level
+set routing-instances R2 protocols bgp keep none
+set routing-instances R2 protocols bgp group G1 keep none
+set routing-instances R2 protocols bgp group G2 keep all
+set routing-instances R2 protocols bgp group G3
+set routing-instances R2 protocols bgp group G3 neighbor 1.1.1.1 keep all
+set routing-instances R2 protocols bgp group G3 neighbor 2.2.2.2
