@@ -6406,7 +6406,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentAggregateRoute
         .getPolicies()
         .add(toComplexPolicyStatement(ctx.expr, AGGREGATE_ROUTE_POLICY));
-    todo(ctx);
   }
 
   @Override
