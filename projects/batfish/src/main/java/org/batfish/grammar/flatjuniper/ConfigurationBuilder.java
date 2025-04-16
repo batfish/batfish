@@ -3714,7 +3714,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else {
-      assert ctx.DESCRIPTION() != null;
+      assert ctx.description() != null;
       /* TODO - data model doesn't have a place to put this yet. */
     }
   }
