@@ -209,7 +209,7 @@ natp_port
 
 natp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 natp_routing_instance
@@ -264,7 +264,7 @@ rs_zone
 
 rsr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 rsr_match
@@ -474,6 +474,7 @@ se_address_book
        | sead_address
        | sead_address_set
        | sead_attach
+       | sead_description
    )
 ;
 
@@ -589,7 +590,7 @@ sead_address
 :
    ADDRESS name = junos_name
    (
-      DESCRIPTION null_filler
+      description
       | address = ip_address
       | prefix = ip_prefix
       | RANGE_ADDRESS lower_limit = ip_address TO upper_limit = ip_address
@@ -613,6 +614,8 @@ sead_attach
    ATTACH ZONE name = junos_name
 ;
 
+sead_description: description;
+
 seada_address
 :
    ADDRESS name = junos_name
@@ -625,7 +628,7 @@ seada_address_set
 
 seada_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 sec_local
@@ -811,7 +814,7 @@ seikgl_inet
 
 seikp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seikp_mode
@@ -855,7 +858,7 @@ seikpr_authentication_method
 
 seikpr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seikpr_dh_group
@@ -931,7 +934,7 @@ seippr_authentication_algorithm
 
 seippr_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 seippr_encryption_algorithm
@@ -1151,7 +1154,7 @@ sepctx_policy
 
 sepctxp_description
 :
-   DESCRIPTION null_filler
+   description
 ;
 
 sepctxp_match
