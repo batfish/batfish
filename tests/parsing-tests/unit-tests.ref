@@ -71519,16 +71519,6 @@
             }
           ]
         },
-        "configs/juniper_routing_options" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 9,
-              "Parser_Context" : "[roa_policy roa_common roa_route ro_aggregate s_routing_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-              "Text" : "policy AGGREGATE_ROUTE_POLICY"
-            }
-          ]
-        },
         "configs/juniper_security" : {
           "Parse warnings" : [
             {
