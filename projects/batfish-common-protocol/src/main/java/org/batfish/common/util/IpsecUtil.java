@@ -131,7 +131,6 @@ public class IpsecUtil {
                 IpsecSession ipsecSession =
                     getIpsecSession(
                         initiatorOwner, candidateOwner, ipsecStaticPeerConfig, candidateIpsecPeer);
-
                 graph.putEdgeValue(ipsecPeerConfigId, candidateIpsecPeerConfigId, ipsecSession);
               });
     }
@@ -301,6 +300,9 @@ public class IpsecUtil {
     // if initiator or responder don't have an Ipsec phase 2 policy, further negotiation can't
     // happen
     if (initiatorIpsecP2policy == null || responderIpsecP2Policy == null) {
+      return;
+    }
+    if (initiatorIpsecP2policy.getPfsKeyGroup() != responderIpsecP2Policy.getPfsKeyGroup()) {
       return;
     }
 
