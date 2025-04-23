@@ -710,7 +710,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       neighbor.setGroup(ig.getGroupName());
 
       // import policies
-      String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress() + "~";
+      String peerImportPolicyName = computePeerImportPolicyName(ig.getRemoteAddress());
       ipv4AfBuilder.setImportPolicy(peerImportPolicyName);
       RoutingPolicy peerImportPolicy = new RoutingPolicy(peerImportPolicyName, _c);
       _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
@@ -1016,6 +1016,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
     return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
+  }
+
+  public static String computePeerImportPolicyName(Prefix remoteAddress) {
+    return "~PEER_IMPORT_POLICY:" + remoteAddress + "~";
   }
 
   private void convertNamedCommunities() {
