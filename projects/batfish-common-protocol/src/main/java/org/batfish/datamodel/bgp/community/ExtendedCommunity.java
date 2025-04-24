@@ -6,6 +6,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.primitives.Floats;
 import com.google.common.primitives.Ints;
 import com.google.common.primitives.Longs;
 import java.math.BigInteger;
@@ -94,7 +95,7 @@ public final class ExtendedCommunity extends Community {
     String subType = parts[0];
     String globalAdministrator = parts[1];
     String localAdministrator = parts[2];
-
+    boolean isBandwidth = false;
     // Try to figure out type/subtype first
     Byte typeByte = null;
     byte subTypeByte;
@@ -103,6 +104,14 @@ public final class ExtendedCommunity extends Community {
       subTypeByte = 0x02;
     } else if (subType.equals("origin")) {
       subTypeByte = 0x03;
+    } else if (subType.equals("bandwidth") || subType.equals("bandwidth-transitive")) {
+      typeByte = 0x00; // Transitive
+      subTypeByte = 0x04;
+      isBandwidth = true;
+    } else if (subType.equals("bandwidth-non-transitive")) {
+      typeByte = 0x40; // Non-transitive
+      subTypeByte = 0x04;
+      isBandwidth = true;
     } else if (subType.equals("encapsulation")) {
       // RFC 9012: Encapsulation Extended Community
       typeByte = 0x03; // Transitive opaque
@@ -169,6 +178,12 @@ public final class ExtendedCommunity extends Community {
         }
       }
     }
+    if (isBandwidth) {
+      Float bytesPerSecond = Floats.tryParse(localAdministrator);
+      checkArgument(bytesPerSecond != null, "Invalid bandwidth value: %s", localAdministrator);
+      laLong = floatToIeeeLong(bytesPerSecond);
+    }
+
     return of((int) typeByte << 8 | (int) subTypeByte, gaLong, laLong);
   }
 
@@ -234,6 +249,27 @@ public final class ExtendedCommunity extends Community {
     return new ExtendedCommunity(0x03, 0x0C, tunnelType);
   }
 
+  /**
+   * Return a link bandwidth extended community See
+   * https://tools.ietf.org/html/draft-ietf-idr-link-bandwidth-11
+   */
+  public static ExtendedCommunity bandwidth(boolean transitive, long asn, float bytesPerSecond) {
+    long ieeeBitsLong = floatToIeeeLong(bytesPerSecond);
+    long value = (asn << 32) | ieeeBitsLong;
+    int type = transitive ? 0x00 : 0x40;
+    return new ExtendedCommunity(type, 0x04, value);
+  }
+
+  /**
+   * Helper method to convert a float value to its IEEE 754 representation as a long. This is used
+   * for encoding the bandwidth value in bandwidth extended communities.
+   */
+  private static long floatToIeeeLong(float floatValue) {
+    int ieeeBits = Float.floatToIntBits(floatValue);
+    // Mask ieeeBits to remove 1s from upper 32 bits due to sign extension
+    return ieeeBits & 0xFFFFFFFFL;
+  }
+
   @Override
   public <T> T accept(CommunityVisitor<T> visitor) {
     return visitor.visitExtendedCommunity(this);
@@ -274,6 +310,12 @@ public final class ExtendedCommunity extends Community {
   public boolean isEncapsulation() {
     // https://www.rfc-editor.org/rfc/rfc9012
     return _type == 0x03 && _subType == 0x0C;
+  }
+
+  /** Check whether this community is a link bandwidth community */
+  public boolean isBandwidth() {
+    // https://tools.ietf.org/html/draft-ietf-idr-link-bandwidth-11
+    return (_type == 0x00 || _type == 0x40) && _subType == 0x04;
   }
 
   /**

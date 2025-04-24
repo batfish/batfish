@@ -35,6 +35,9 @@ public final class ExtendedCommunityTest {
         .addEqualityGroup(ExtendedCommunity.opaque(false, 3, 4))
         .addEqualityGroup(ExtendedCommunity.encapsulation(7))
         .addEqualityGroup(ExtendedCommunity.encapsulation(8))
+        .addEqualityGroup(ExtendedCommunity.bandwidth(false, 65535, 20000))
+        .addEqualityGroup(ExtendedCommunity.bandwidth(true, 65535, 20000))
+        .addEqualityGroup(ExtendedCommunity.bandwidth(false, 65535, 10000))
         .testEquals();
   }
 
@@ -45,7 +48,9 @@ public final class ExtendedCommunityTest {
             ExtendedCommunity.of(1, 2L, 123L),
             ExtendedCommunity.opaque(true, 1, 2),
             ExtendedCommunity.opaque(false, 255, 0xFFFFFFFFFFFFL),
-            ExtendedCommunity.encapsulation(7))) {
+            ExtendedCommunity.encapsulation(7),
+            ExtendedCommunity.bandwidth(false, 65535, 20000),
+            ExtendedCommunity.bandwidth(true, 65535, 20000))) {
       assertThat(SerializationUtils.clone(ec), equalTo(ec));
       assertThat(BatfishObjectMapper.clone(ec, Community.class), equalTo(ec));
     }
@@ -70,6 +75,15 @@ public final class ExtendedCommunityTest {
         ExtendedCommunity.parse("0x3:0x4:0x5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
     assertThat(
         ExtendedCommunity.parse("0X3:0X4:0X5"), equalTo(ExtendedCommunity.opaque(true, 4, 5L)));
+    assertThat(
+        ExtendedCommunity.parse("bandwidth:65535:10000"),
+        equalTo(ExtendedCommunity.bandwidth(true, 65535, 10000)));
+    assertThat(
+        ExtendedCommunity.parse("bandwidth-transitive:65535:10000"),
+        equalTo(ExtendedCommunity.bandwidth(true, 65535, 10000)));
+    assertThat(
+        ExtendedCommunity.parse("bandwidth-non-transitive:65535:10000"),
+        equalTo(ExtendedCommunity.bandwidth(false, 65535, 10000)));
   }
 
   @Test
@@ -350,5 +364,17 @@ public final class ExtendedCommunityTest {
     assertFalse(ExtendedCommunity.of(0x430C, 0, 7).isEncapsulation()); // Wrong type
     assertFalse(ExtendedCommunity.opaque(true, 0x0D, 7).isEncapsulation());
     assertFalse(ExtendedCommunity.target(1, 1).isEncapsulation());
+  }
+
+  @Test
+  public void testIsBandwidth() {
+    assertTrue(ExtendedCommunity.bandwidth(false, 65535, 20000).isBandwidth());
+    assertTrue(ExtendedCommunity.bandwidth(true, 65535, 20000).isBandwidth());
+    assertTrue(ExtendedCommunity.of(0x4004, 65535, 20000).isBandwidth());
+    assertTrue(ExtendedCommunity.of(0x0004, 65535, 20000).isBandwidth());
+    assertFalse(ExtendedCommunity.of(0x4005, 65535, 20000).isBandwidth()); // Wrong subtype
+    assertFalse(ExtendedCommunity.of(0x0304, 65535, 20000).isBandwidth()); // Wrong type
+    assertFalse(ExtendedCommunity.opaque(true, 0x04, 20000).isBandwidth());
+    assertFalse(ExtendedCommunity.target(65535, 20000).isBandwidth());
   }
 }
