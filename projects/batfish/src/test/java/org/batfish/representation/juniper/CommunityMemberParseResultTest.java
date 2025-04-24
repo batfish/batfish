@@ -49,6 +49,24 @@ public class CommunityMemberParseResultTest {
                 new LiteralCommunityMember(ExtendedCommunity.of(0x03, 111, 0)),
                 "RISK: Community string 'origin:111:' is interpreted as 'origin:111:0'")));
     assertThat(
+        parseCommunityMember("bandwidth:65535:10000"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(ExtendedCommunity.bandwidth(true, 65535, 10000)),
+                null)));
+    assertThat(
+        parseCommunityMember("bandwidth-transitive:65535:10000"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(ExtendedCommunity.bandwidth(true, 65535, 10000)),
+                null)));
+    assertThat(
+        parseCommunityMember("bandwidth-non-transitive:65535:10000"),
+        equalTo(
+            new CommunityMemberParseResult(
+                new LiteralCommunityMember(ExtendedCommunity.bandwidth(false, 65535, 10000)),
+                null)));
+    assertThat(
         parseCommunityMember("large:111:222:333"),
         equalTo(
             new CommunityMemberParseResult(
