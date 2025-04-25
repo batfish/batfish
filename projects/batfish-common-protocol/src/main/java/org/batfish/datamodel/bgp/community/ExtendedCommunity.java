@@ -94,7 +94,6 @@ public final class ExtendedCommunity extends Community {
     String subType = parts[0];
     String globalAdministrator = parts[1];
     String localAdministrator = parts[2];
-
     // Try to figure out type/subtype first
     Byte typeByte = null;
     byte subTypeByte;
@@ -103,6 +102,12 @@ public final class ExtendedCommunity extends Community {
       subTypeByte = 0x02;
     } else if (subType.equals("origin")) {
       subTypeByte = 0x03;
+    } else if (subType.equals("bandwidth") || subType.equals("bandwidth-transitive")) {
+      typeByte = 0x00; // Transitive
+      subTypeByte = 0x04;
+    } else if (subType.equals("bandwidth-non-transitive")) {
+      typeByte = 0x40; // Non-transitive
+      subTypeByte = 0x04;
     } else if (subType.equals("encapsulation")) {
       // RFC 9012: Encapsulation Extended Community
       typeByte = 0x03; // Transitive opaque
@@ -234,6 +239,16 @@ public final class ExtendedCommunity extends Community {
     return new ExtendedCommunity(0x03, 0x0C, tunnelType);
   }
 
+  /**
+   * Return a link bandwidth extended community. See
+   * https://tools.ietf.org/html/draft-ietf-idr-link-bandwidth-11
+   */
+  public static ExtendedCommunity bandwidth(boolean transitive, long asn, long bytesPerSecond) {
+    long value = (asn << 32) | bytesPerSecond;
+    int type = transitive ? 0x00 : 0x40;
+    return new ExtendedCommunity(type, 0x04, value);
+  }
+
   @Override
   public <T> T accept(CommunityVisitor<T> visitor) {
     return visitor.visitExtendedCommunity(this);
@@ -274,6 +289,12 @@ public final class ExtendedCommunity extends Community {
   public boolean isEncapsulation() {
     // https://www.rfc-editor.org/rfc/rfc9012
     return _type == 0x03 && _subType == 0x0C;
+  }
+
+  /** Check whether this community is a link bandwidth community */
+  public boolean isBandwidth() {
+    // https://tools.ietf.org/html/draft-ietf-idr-link-bandwidth-11
+    return (_type == 0x00 || _type == 0x40) && _subType == 0x04;
   }
 
   /**
