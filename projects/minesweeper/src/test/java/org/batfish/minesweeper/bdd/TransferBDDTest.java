@@ -230,7 +230,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1, 0, 0, 0, ImmutableList.of());
+    return new BDDRoute(factory, 1, 1, 0, 0, 0, 0, ImmutableList.of());
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {

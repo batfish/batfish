@@ -137,6 +137,12 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
   private final BDDDomain<Integer> _nextHopInterfaces;
 
   /**
+   * Represents the address of the peer in the current BGP session. See {@link
+   * org.batfish.datamodel.routing_policy.expr.MatchPeerAddress}.
+   */
+  private final BDDDomain<Integer> _peerAddress;
+
+  /**
    * Represents the optional source VRF from which the route was sent. See {@link
    * org.batfish.datamodel.routing_policy.expr.MatchSourceVrf}.
    */
@@ -180,6 +186,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
             + aps.getNonStandardCommunityLiterals().size(),
         aps.getAsPathRegexAtomicPredicates().getNumAtomicPredicates(),
         aps.getNextHopInterfaces().size(),
+        aps.getPeerAddresses().size(),
         aps.getSourceVrfs().size(),
         aps.getTracks().size(),
         aps.getTunnelEncapsulationAttributes());
@@ -197,6 +204,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       int numCommAtomicPredicates,
       int numAsPathRegexAtomicPredicates,
       int numNextHopInterfaces,
+      int numPeerAddresses,
       int numSourceVrfs,
       int numTracks,
       List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
@@ -217,6 +225,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
             // "none", since these are optional parts of a route
             + numBits(numNextHopInterfaces + 1)
             + numBits(numSourceVrfs + 1)
+            + numBits(numPeerAddresses)
             + numTracks
             + BDDTunnelEncapsulationAttribute.numBitsFor(tunnelEncapsulationAttributes)
             + numBits(OriginType.values().length)
@@ -305,6 +314,15 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("source VRFs", len, idx, false);
     idx += len;
 
+    _peerAddress =
+        new BDDDomain<>(
+            factory,
+            IntStream.range(0, numPeerAddresses).boxed().collect(Collectors.toList()),
+            idx);
+    len = _peerAddress.getInteger().size();
+    addBitNames("peer address", len, idx, false);
+    idx += len;
+
     // Initialize one BDD per tracked name, each of which has a corresponding BDD variable
     _tracks = new BDD[numTracks];
     for (int i = 0; i < numTracks; i++) {
@@ -360,6 +378,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _bitNames = other._bitNames;
     _prependedASes = new ArrayList<>(other._prependedASes);
     _nextHopInterfaces = new BDDDomain<>(other._nextHopInterfaces);
+    _peerAddress = new BDDDomain<>(other._peerAddress);
     _sourceVrfs = new BDDDomain<>(other._sourceVrfs);
     _tracks = other._tracks.clone();
     _tunnelEncapsulationAttribute =
@@ -403,6 +422,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _unsupported = route.getUnsupported();
     _prependedASes = new ArrayList<>(route.getPrependedASes());
     _nextHopInterfaces = new BDDDomain<>(pred, route._nextHopInterfaces);
+    _peerAddress = new BDDDomain<>(pred, route._peerAddress);
     _sourceVrfs = new BDDDomain<>(pred, route._sourceVrfs);
     _tracks = route.getTracks();
     _tunnelEncapsulationAttribute = route._tunnelEncapsulationAttribute.and(pred);
@@ -473,6 +493,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     BDD ospfMetricValid = _ospfMetric.getIsValidConstraint();
     BDD protocolConstraint =
         onlyBGPRoutes ? anyElementOf(ALL_BGP_PROTOCOLS, this.getProtocolHistory()) : _factory.one();
+    BDD peerAddressValid = _peerAddress.getIsValidConstraint();
     BDD sourceVrfValid = _sourceVrfs.getIsValidConstraint();
     BDD tunnelEncapValid = _tunnelEncapsulationAttribute.getIsValidConstraint();
     return _factory.andAllAndFree(
@@ -483,6 +504,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         originTypeValid,
         ospfMetricValid,
         protocolConstraint,
+        peerAddressValid,
         sourceVrfValid,
         tunnelEncapValid);
   }
@@ -662,6 +684,10 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     return _nextHopInterfaces;
   }
 
+  public BDDDomain<Integer> getPeerAddress() {
+    return _peerAddress;
+  }
+
   public BDDDomain<Integer> getSourceVrfs() {
     return _sourceVrfs;
   }
@@ -720,6 +746,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         && Objects.equals(_asPathRegexAtomicPredicates, other._asPathRegexAtomicPredicates)
         && Objects.equals(_prependedASes, other._prependedASes)
         && Objects.equals(_nextHopInterfaces, other._nextHopInterfaces)
+        && Objects.equals(_peerAddress, other._peerAddress)
         && Objects.equals(_sourceVrfs, other._sourceVrfs)
         && Arrays.equals(_tracks, other._tracks)
         && _tunnelEncapsulationAttribute.equals(other._tunnelEncapsulationAttribute)
