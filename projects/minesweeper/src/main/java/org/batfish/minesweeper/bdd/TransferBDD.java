@@ -82,6 +82,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -684,6 +685,17 @@ public class TransferBDD {
                   })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchPeerAddress) {
+      MatchPeerAddress mp = (MatchPeerAddress) expr;
+      Set<Ip> ips = mp.getPeers();
+      BDD matchPABDD =
+          _originalRoute.anyElementOf(
+              ips.stream()
+                  .map(ip -> _configAtomicPredicates.getPeerAddresses().indexOf(ip))
+                  .collect(Collectors.toSet()),
+              p.getData().getPeerAddress());
+      finalResults.add(result.setReturnValueBDD(matchPABDD).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedOperationException(expr.toString());

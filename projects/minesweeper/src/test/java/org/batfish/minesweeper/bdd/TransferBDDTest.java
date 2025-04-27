@@ -117,6 +117,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -1535,6 +1536,37 @@ public class TransferBDDTest {
         ImmutableList.of(
             new TransferReturn(any, intPred, true), new TransferReturn(any, intPred.not(), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testMatchPeerAddress() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchPeerAddress(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(
+                        new If(
+                            new MatchPeerAddress(ImmutableSet.of(Ip.parse("3.3.3.3"))),
+                            ImmutableList.of(new StaticStatement(Statements.ExitReject))))))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD peerPred1 = any.getPeerAddress().value(0).or(any.getPeerAddress().value(1));
+    BDD peerPred2 = any.getPeerAddress().value(2);
+
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, peerPred1, true),
+            new TransferReturn(any, peerPred2, false),
+            new TransferReturn(any, peerPred1.not().and(peerPred2.not()), false)));
+    //    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
