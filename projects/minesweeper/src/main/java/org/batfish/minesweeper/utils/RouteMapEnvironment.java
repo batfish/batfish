@@ -7,13 +7,18 @@ import java.util.function.Predicate;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-public class RoutingEnvironment {
+/**
+ * Information about the environment that is needed to evaluate a route map. Ultimately this can
+ * include anything that a route map's behavior may depend upon, other than the route being
+ * processed.
+ */
+public class RouteMapEnvironment {
 
   private final @Nonnull Predicate<String> _successfulTracks;
 
   private final @Nullable String _sourceVrf;
 
-  public RoutingEnvironment(
+  public RouteMapEnvironment(
       @Nullable Predicate<String> successfulTracks, @Nullable String sourceVrf) {
     _successfulTracks = firstNonNull(successfulTracks, s -> false);
     _sourceVrf = sourceVrf;
@@ -29,10 +34,10 @@ public class RoutingEnvironment {
 
   @Override
   public boolean equals(Object o) {
-    if (!(o instanceof RoutingEnvironment)) {
+    if (!(o instanceof RouteMapEnvironment)) {
       return false;
     }
-    RoutingEnvironment other = (RoutingEnvironment) o;
+    RouteMapEnvironment other = (RouteMapEnvironment) o;
     return Objects.equals(_successfulTracks, other._successfulTracks)
         && Objects.equals(_sourceVrf, other._sourceVrf);
   }

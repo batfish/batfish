@@ -47,7 +47,7 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value.Type;
-import org.batfish.minesweeper.utils.RoutingEnvironment;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
@@ -437,13 +437,13 @@ public class ModelGeneration {
 
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete routing environment that is consistent with the assignment.
+   * concrete environment that is consistent with the assignment.
    *
    * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
-   * @return a routing environment that is consistent with the given model
+   * @return a environment that is consistent with the given model
    */
-  public static RoutingEnvironment satAssignmentToEnvironment(
+  public static RouteMapEnvironment satAssignmentToEnvironment(
       BDD model, ConfigAtomicPredicates configAPs) {
 
     BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
@@ -453,7 +453,7 @@ public class ModelGeneration {
     // get the optional (and hence possibly null) source VRF
     String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
 
-    return new RoutingEnvironment(successfulTracks::contains, sourceVrf);
+    return new RouteMapEnvironment(successfulTracks::contains, sourceVrf);
   }
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable

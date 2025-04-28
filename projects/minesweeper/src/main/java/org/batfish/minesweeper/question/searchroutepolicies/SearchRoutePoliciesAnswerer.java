@@ -64,7 +64,7 @@ import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
-import org.batfish.minesweeper.utils.RoutingEnvironment;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -169,7 +169,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(model, configAPs);
-      RoutingEnvironment env = ModelGeneration.satAssignmentToEnvironment(model, configAPs);
+      RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -210,7 +210,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy,
       Bgpv4Route inRoute,
       Environment.Direction direction,
-      RoutingEnvironment env,
+      RouteMapEnvironment env,
       BDDRoute bddRoute) {
     Result<Bgpv4Route, Bgpv4Route> simResult =
         TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(

@@ -158,7 +158,7 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.batfish.minesweeper.utils.RoutingEnvironment;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -258,7 +258,7 @@ public class TransferBDDTest {
               .and(new BDDRoute(factory, _configAPs).wellFormednessConstraints(false));
       BDD fullModel = ModelGeneration.constraintsToModel(fullConstraints, _configAPs);
       AbstractRoute inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, _configAPs);
-      RoutingEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
+      RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
 
       // simulate the input route in that environment;
       // for good measure we simulate twice, with the policy respectively considered an import and
