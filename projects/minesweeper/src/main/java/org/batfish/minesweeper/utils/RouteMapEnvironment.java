@@ -10,8 +10,8 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Ip;
 
 /**
- * Information about the environment that may be needed to evaluate a route map. Ultimately this can
- * include anything that a route map's behavior may depend upon, other than the route being
+ * Information about the environment that may be needed to evaluate a route map. Ultimately this
+ * should include anything that a route map's behavior may depend upon, other than the route being
  * processed.
  */
 public class RouteMapEnvironment {

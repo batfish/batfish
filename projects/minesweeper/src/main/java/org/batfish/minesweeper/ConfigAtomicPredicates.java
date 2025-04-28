@@ -60,7 +60,7 @@ public final class ConfigAtomicPredicates {
   /** The list of next-hop interface names that appear in the given configuration. */
   private final List<String> _nextHopInterfaces;
 
-  /** The list of peer IP addresses that appear in the given configuration. */
+  /** The list of peer IP addresses that appear in the given configuration's route policies. */
   private final List<Ip> _peerAddresses;
 
   /** The list of "tracks" that appear in the given configuration. */
