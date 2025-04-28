@@ -11,7 +11,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
@@ -48,7 +47,7 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value.Type;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RoutingEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
@@ -438,14 +437,13 @@ public class ModelGeneration {
 
   /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
-   * consistent with the assignment.
+   * concrete routing environment that is consistent with the assignment.
    *
    * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
-   * @return a pair of a predicate on tracks and an optional source VRF
+   * @return a routing environment that is consistent with the given model
    */
-  public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
+  public static RoutingEnvironment satAssignmentToEnvironment(
       BDD model, ConfigAtomicPredicates configAPs) {
 
     BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
@@ -455,7 +453,7 @@ public class ModelGeneration {
     // get the optional (and hence possibly null) source VRF
     String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
 
-    return new Tuple<>(successfulTracks::contains, sourceVrf);
+    return new RoutingEnvironment(successfulTracks::contains, sourceVrf);
   }
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable

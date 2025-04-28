@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -65,7 +64,7 @@ import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RoutingEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -170,8 +169,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(model, configAPs);
-      Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
+      RoutingEnvironment env = ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -212,7 +210,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy,
       Bgpv4Route inRoute,
       Environment.Direction direction,
-      Tuple<Predicate<String>, String> env,
+      RoutingEnvironment env,
       BDDRoute bddRoute) {
     Result<Bgpv4Route, Bgpv4Route> simResult =
         TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(
@@ -220,8 +218,8 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
             inRoute,
             DUMMY_BGP_SESSION_PROPERTIES,
             direction,
-            env.getFirst(),
-            env.getSecond());
+            env.getSuccessfulTracks(),
+            env.getSourceVrf());
     return toQuestionResult(simResult, bddRoute);
   }
 

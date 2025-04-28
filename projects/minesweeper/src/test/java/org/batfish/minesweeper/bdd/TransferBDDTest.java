@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -159,7 +158,7 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RoutingEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -259,8 +258,7 @@ public class TransferBDDTest {
               .and(new BDDRoute(factory, _configAPs).wellFormednessConstraints(false));
       BDD fullModel = ModelGeneration.constraintsToModel(fullConstraints, _configAPs);
       AbstractRoute inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, _configAPs);
-      Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
+      RoutingEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
 
       // simulate the input route in that environment;
       // for good measure we simulate twice, with the policy respectively considered an import and
@@ -271,8 +269,8 @@ public class TransferBDDTest {
               inRoute,
               DUMMY_BGP_SESSION_PROPERTIES,
               Environment.Direction.IN,
-              env.getFirst(),
-              env.getSecond());
+              env.getSuccessfulTracks(),
+              env.getSourceVrf());
 
       Result<? extends AbstractRoute, Bgpv4Route> outResult =
           simulatePolicy(
@@ -280,8 +278,8 @@ public class TransferBDDTest {
               inRoute,
               DUMMY_BGP_SESSION_PROPERTIES,
               Environment.Direction.OUT,
-              env.getFirst(),
-              env.getSecond());
+              env.getSuccessfulTracks(),
+              env.getSourceVrf());
 
       // convert the output route of each result to a form that can be compared against the results
       // of symbolic analysis
