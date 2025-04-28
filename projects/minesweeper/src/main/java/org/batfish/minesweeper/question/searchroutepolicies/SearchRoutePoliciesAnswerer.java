@@ -32,10 +32,8 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -88,20 +86,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private final @Nonnull Set<RegexConstraint> _communityRegexes;
   private final @Nonnull Set<RegexConstraint> _asPathRegexes;
-
-  /**
-   * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
-   * only be simulated by Batfish if a {@link BgpSessionProperties} object exists in the {@link
-   * Environment}. For our purposes the specific property values can be anything, so we use this
-   * dummy object.
-   */
-  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
-      BgpSessionProperties.builder()
-          .setLocalAs(1)
-          .setLocalIp(Ip.parse("1.1.1.1"))
-          .setRemoteAs(2)
-          .setRemoteIp(Ip.parse("2.2.2.2"))
-          .build();
 
   /** Helper class that contains both a row and and Bgpv4Route for a result */
   private static class RowAndRoute {
@@ -216,7 +200,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(
             policy,
             inRoute,
-            DUMMY_BGP_SESSION_PROPERTIES,
+            env.getSessionProperties(),
             direction,
             env.getSuccessfulTracks(),
             env.getSourceVrf());

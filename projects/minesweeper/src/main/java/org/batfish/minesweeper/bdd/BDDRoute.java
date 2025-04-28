@@ -225,7 +225,9 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
             // "none", since these are optional parts of a route
             + numBits(numNextHopInterfaces + 1)
             + numBits(numSourceVrfs + 1)
-            + numBits(numPeerAddresses)
+            // we track one extra value for the peer address to represent the case where the address
+            // is something other than the ones that are specifically matched upon in route policies
+            + numBits(numPeerAddresses + 1)
             + numTracks
             + BDDTunnelEncapsulationAttribute.numBitsFor(tunnelEncapsulationAttributes)
             + numBits(OriginType.values().length)
@@ -295,21 +297,19 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     addBitNames("as-path atomic predicates", len, idx, false);
     idx += len;
 
-    // we track one extra value for the next-hop interfaces and source VRFs, to represent
-    // "none", since these are optional parts of a route
+    // we use the value -1 below to denote that an optional value is not there, or (in the case of
+    // peer addresses) that the address is something other than one of the ones being tracked
     _nextHopInterfaces =
         new BDDDomain<>(
             factory,
-            IntStream.range(0, numNextHopInterfaces + 1).boxed().collect(Collectors.toList()),
+            IntStream.range(-1, numNextHopInterfaces).boxed().collect(Collectors.toList()),
             idx);
     len = _nextHopInterfaces.getInteger().size();
     addBitNames("next-hop interfaces", len, idx, false);
     idx += len;
     _sourceVrfs =
         new BDDDomain<>(
-            factory,
-            IntStream.range(0, numSourceVrfs + 1).boxed().collect(Collectors.toList()),
-            idx);
+            factory, IntStream.range(-1, numSourceVrfs).boxed().collect(Collectors.toList()), idx);
     len = _sourceVrfs.getInteger().size();
     addBitNames("source VRFs", len, idx, false);
     idx += len;
@@ -317,7 +317,7 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
     _peerAddress =
         new BDDDomain<>(
             factory,
-            IntStream.range(0, numPeerAddresses).boxed().collect(Collectors.toList()),
+            IntStream.range(-1, numPeerAddresses).boxed().collect(Collectors.toList()),
             idx);
     len = _peerAddress.getInteger().size();
     addBitNames("peer address", len, idx, false);

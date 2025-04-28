@@ -3,7 +3,6 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
 import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
-import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toSymbolicBgpOutputRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.simulatePolicy;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toQuestionBgpRoute;
@@ -267,7 +266,7 @@ public class TransferBDDTest {
           simulatePolicy(
               policy,
               inRoute,
-              DUMMY_BGP_SESSION_PROPERTIES,
+              env.getSessionProperties(),
               Environment.Direction.IN,
               env.getSuccessfulTracks(),
               env.getSourceVrf());
@@ -276,7 +275,7 @@ public class TransferBDDTest {
           simulatePolicy(
               policy,
               inRoute,
-              DUMMY_BGP_SESSION_PROPERTIES,
+              env.getSessionProperties(),
               Environment.Direction.OUT,
               env.getSuccessfulTracks(),
               env.getSourceVrf());
@@ -1502,7 +1501,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(policy);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD sourcePred = any.getSourceVrfs().value(1);
+    BDD sourcePred = any.getSourceVrfs().value(0);
 
     assertEquals(
         paths,
@@ -1527,7 +1526,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(policy);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD intPred = any.getNextHopInterfaces().value(1).or(any.getNextHopInterfaces().value(2));
+    BDD intPred = any.getNextHopInterfaces().value(0).or(any.getNextHopInterfaces().value(1));
 
     assertEquals(
         paths,
@@ -1564,7 +1563,7 @@ public class TransferBDDTest {
             new TransferReturn(any, peerPred1, true),
             new TransferReturn(any, peerPred2, false),
             new TransferReturn(any, peerPred1.not().and(peerPred2.not()), false)));
-    //    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 
   @Test
