@@ -2092,9 +2092,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         (vrid, vrrpGroup) -> {
           Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
           if (virtualAddresses.isEmpty()) {
-            _w.redFlagf(
-                "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
-                    + " on interface '%s' because no virtual-address is assigned.",
+            _w.fatalRedFlag(
+                "Cannot create VRRP group for vrid %d on interface '%s' because no virtual-address"
+                    + " is assigned.",
                 vrid, ifaceName);
             return;
           }
