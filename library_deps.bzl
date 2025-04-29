@@ -41,7 +41,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "net.sourceforge.pmd:pmd-java:7.13.0",
     "org.antlr:antlr4-runtime:4.13.2",
     "org.apache.commons:commons-collections4:4.5.0",
-    "org.apache.commons:commons-configuration2:2.11.0",
+    "org.apache.commons:commons-configuration2:2.12.0",
     "org.apache.commons:commons-lang3:3.17.0",
     "org.apache.commons:commons-text:1.13.1",
     "org.apache.httpcomponents:httpclient:4.5.14",  # managed up 2021-06-04 for CVE-2020-13956
