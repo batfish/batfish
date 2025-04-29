@@ -168,7 +168,6 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -2781,13 +2780,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
       // Note that we are keeping the VRRP configuration for the first source-address we encounter
       // using this VRID.
-      warn(
-          ctx,
-          String.format(
-              "Configuration will not commit. Multiple inet addresses with the same VRRP VRID %d on"
-                  + " interface '%s'",
-              vrid, _currentInterfaceOrRange.getName()));
-      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
+      _w.fatalRedFlag(
+          "Multiple inet addresses with the same VRRP VRID %d on interface '%s'",
+          vrid, _currentInterfaceOrRange.getName());
+      currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
     }
     _currentVrrpGroup = currentVrrpGroup;
   }
@@ -2996,8 +2992,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Ip currentArea = Ip.create(_currentArea.getName());
     Ip currentInterfaceArea = _currentOspfSettings.getOspfArea();
     if (!currentArea.equals(currentInterfaceArea)) {
-      throw new WillNotCommitException(
-          "Interface \"" + ospfInterfaceName + "\" assigned to multiple areas");
+      _w.fatalRedFlag("Interface \"%s\" assigned to multiple areas", ospfInterfaceName);
+      return;
     }
   }
 
@@ -3709,7 +3705,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Ip upper = toIp(ctx.upper_limit);
       if (lower.compareTo(upper) > 0) {
         // Lower is bigger, Juniper will reject this.
-        throw new WillNotCommitException("Range must be from low to high: " + getFullText(ctx));
+        _w.fatalRedFlag("Range must be from low to high: %s", getFullText(ctx));
+        return;
       }
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
@@ -5258,12 +5255,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = toIp(ctx.ip_address());
     if (!_currentInterfaceAddress.getPrefix().containsIp(virtualAddress)) {
-      warn(
-          ctx,
-          String.format(
-              "Will not commit. Cannot assign virtual-address %s outside of subnet for inet address"
-                  + " %s",
-              virtualAddress, _currentInterfaceAddress));
+      _w.fatalRedFlag(
+          "Cannot assign virtual-address %s outside of subnet for inet address %s",
+          virtualAddress, _currentInterfaceAddress);
       return;
     }
     _currentVrrpGroup.addVirtualAddress(virtualAddress);

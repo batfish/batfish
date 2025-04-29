@@ -4,7 +4,6 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
-import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -248,11 +247,11 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
+import org.batfish.common.matchers.WarningsMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
@@ -2418,16 +2417,21 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBookRangeError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testFirewallGlobalAddressBookRangeError() throws IOException {
+    String hostname = "firewall-global-address-book-range-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString(
                     "Range must be from low to high: address INVALID range-address 5.5.5.7 to"
                         + " 5.5.5.5"))));
-    parseConfig("firewall-global-address-book-range-error");
   }
 
   @Test
@@ -7814,25 +7818,35 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceAllDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceAllDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-all-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"all\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-all-duplicate-error");
   }
 
   @Test
-  public void testOspfAreaInterfaceDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"ge-0/0/0.0\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-duplicate-error");
   }
 
   @Test
@@ -8028,34 +8042,32 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
     String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'")));
-    parseJuniperConfig(hostname);
+        pvcae.getWarnings().get(fileKey),
+        WarningsMatchers.hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Multiple inet addresses with the same VRRP VRID 1 on interface"
+                    + " 'xe-0/0/0.0'")));
   }
 
   @Test
   public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
     String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
+        pvcae.getWarnings().get(fileKey),
+        WarningsMatchers.hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
                     + " 10.0.0.1/24")));
-    parseJuniperConfig(hostname);
   }
 
   @Test
@@ -8070,8 +8082,8 @@ public final class FlatJuniperGrammarTest {
         hasRedFlagWarning(
             hostname,
             equalTo(
-                "Configuration will not actually commit. Cannot create VRRP group for vrid 1 on"
-                    + " interface 'xe-0/0/0.0' because no virtual-address is assigned.")));
+                "FATAL: Cannot create VRRP group for vrid 1 on interface 'xe-0/0/0.0' because no"
+                    + " virtual-address is assigned.")));
   }
 
   @Test
