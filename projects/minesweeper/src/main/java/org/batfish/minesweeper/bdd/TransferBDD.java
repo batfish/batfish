@@ -82,6 +82,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchClusterListLength;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -654,8 +655,7 @@ public class TransferBDD {
 
     } else if (expr instanceof MatchSourceVrf) {
       MatchSourceVrf msv = (MatchSourceVrf) expr;
-      // we add 1 to the index since 0 in the BDDDomain is used to represent the absence of a value
-      int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf()) + 1;
+      int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf());
       BDD sourceVrfPred = p.getData().getSourceVrfs().value(index);
       finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
 
@@ -677,13 +677,22 @@ public class TransferBDD {
           mi.getInterfaces().stream()
               .map(
                   nhi -> {
-                    // we add 1 to the index since 0 in the BDDDomain is used to represent the
-                    // absence of a value
-                    int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi) + 1;
+                    int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi);
                     return p.getData().getNextHopInterfaces().value(index);
                   })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
+
+    } else if (expr instanceof MatchPeerAddress) {
+      MatchPeerAddress mp = (MatchPeerAddress) expr;
+      Set<Ip> ips = mp.getPeers();
+      BDD matchPABDD =
+          _originalRoute.anyElementOf(
+              ips.stream()
+                  .map(ip -> _configAtomicPredicates.getPeerAddresses().indexOf(ip))
+                  .collect(Collectors.toSet()),
+              p.getData().getPeerAddress());
+      finalResults.add(result.setReturnValueBDD(matchPABDD).setReturnValueAccepted(true));
 
     } else {
       throw new UnsupportedOperationException(expr.toString());

@@ -15,6 +15,7 @@ import java.util.TreeSet;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
@@ -23,6 +24,7 @@ import org.batfish.minesweeper.aspath.AsPathRegexCollector;
 import org.batfish.minesweeper.aspath.RoutingPolicyCollector;
 import org.batfish.minesweeper.aspath.TunnelEncapsulationAttributeCollector;
 import org.batfish.minesweeper.communities.RoutePolicyStatementVarCollector;
+import org.batfish.minesweeper.env.PeerAddressCollector;
 import org.batfish.minesweeper.env.SourceVrfCollector;
 import org.batfish.minesweeper.env.TrackCollector;
 import org.batfish.minesweeper.utils.Tuple;
@@ -58,6 +60,9 @@ public final class ConfigAtomicPredicates {
   /** The list of next-hop interface names that appear in the given configuration. */
   private final List<String> _nextHopInterfaces;
 
+  /** The list of peer IP addresses that appear in the given configuration's route policies. */
+  private final List<Ip> _peerAddresses;
+
   /** The list of "tracks" that appear in the given configuration. */
   private final List<String> _tracks;
 
@@ -90,6 +95,7 @@ public final class ConfigAtomicPredicates {
     ImmutableSet.Builder<SymbolicAsPathRegex> allAsPathRegexesB = ImmutableSet.builder();
     Set<String> allTrackNames = new TreeSet<>();
     Set<String> allNextHopInterfaceNames = new TreeSet<>();
+    Set<Ip> allPeerAddresses = new TreeSet<>();
     Set<String> allSourceVrfNames = new TreeSet<>();
     ImmutableSet.Builder<TunnelEncapsulationAttribute> allTunnelEncapsulationAttributes =
         ImmutableSet.builder();
@@ -103,6 +109,7 @@ public final class ConfigAtomicPredicates {
       allAsPathRegexesB.addAll(findAllAsPathRegexes(ImmutableSet.of(), policies, config));
       allTrackNames.addAll(findAllTracks(policies, config));
       allNextHopInterfaceNames.addAll(findAllNextHopInterfaces(policies, config));
+      allPeerAddresses.addAll(findAllPeerAddresses(policies, config));
       allSourceVrfNames.addAll(findAllSourceVrfs(policies, config));
       allTunnelEncapsulationAttributes.addAll(findAllTunnelAttributes(policies, config));
     }
@@ -130,6 +137,7 @@ public final class ConfigAtomicPredicates {
     _nonStandardCommunityLiterals = ImmutableMap.copyOf(nonStandardCommunityLiterals);
     _asPathRegexAtomicPredicates = new AsPathRegexAtomicPredicates(allAsPathRegexesB.build());
     _nextHopInterfaces = ImmutableList.copyOf(allNextHopInterfaceNames);
+    _peerAddresses = ImmutableList.copyOf(allPeerAddresses);
     _tracks = ImmutableList.copyOf(allTrackNames);
     _sourceVrfs = ImmutableList.copyOf(allSourceVrfNames);
     _tunnelEncapsulationAttributes = ImmutableList.copyOf(allTunnelEncapsulationAttributes.build());
@@ -142,6 +150,7 @@ public final class ConfigAtomicPredicates {
     _asPathRegexAtomicPredicates =
         new AsPathRegexAtomicPredicates(other._asPathRegexAtomicPredicates);
     _nextHopInterfaces = other._nextHopInterfaces;
+    _peerAddresses = other._peerAddresses;
     _tracks = other._tracks;
     _sourceVrfs = other._sourceVrfs;
     _tunnelEncapsulationAttributes = other._tunnelEncapsulationAttributes;
@@ -254,6 +263,19 @@ public final class ConfigAtomicPredicates {
   }
 
   /**
+   * Collect up all peer IP addresses names that appear in the given policies.
+   *
+   * @param policies the set of policies to collect interface names from.
+   * @param configuration the batfish configuration
+   * @return a set of all peer IP addresses that appear
+   */
+  private static Set<Ip> findAllPeerAddresses(
+      Collection<RoutingPolicy> policies, Configuration configuration) {
+    return findAllMatchItems(
+        ImmutableSet.of(), policies, configuration, new PeerAddressCollector());
+  }
+
+  /**
    * Collect up all tracks that appear in the given policies.
    *
    * @param policies the set of policies to collect tracks from.
@@ -303,6 +325,10 @@ public final class ConfigAtomicPredicates {
 
   public List<String> getNextHopInterfaces() {
     return _nextHopInterfaces;
+  }
+
+  public List<Ip> getPeerAddresses() {
+    return _peerAddresses;
   }
 
   public List<String> getTracks() {
