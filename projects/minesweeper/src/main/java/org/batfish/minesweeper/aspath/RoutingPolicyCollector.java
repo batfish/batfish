@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
@@ -273,9 +274,12 @@ public class RoutingPolicyCollector<T>
     // Otherwise update the set of seen policies and recurse.
     arg.getFirst().add(callExpr.getCalledPolicyName());
 
-    return visitAll(
-        arg.getSecond().getRoutingPolicies().get(callExpr.getCalledPolicyName()).getStatements(),
-        arg);
+    RoutingPolicy routingPolicy =
+        arg.getSecond().getRoutingPolicies().get(callExpr.getCalledPolicyName());
+    if (routingPolicy == null) {
+      return ImmutableSet.of();
+    }
+    return visitAll(routingPolicy.getStatements(), arg);
   }
 
   @Override

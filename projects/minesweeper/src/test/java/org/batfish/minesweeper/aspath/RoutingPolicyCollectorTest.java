@@ -1,5 +1,7 @@
 package org.batfish.minesweeper.aspath;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
 import static org.junit.Assert.assertEquals;
 
 import com.google.common.collect.ImmutableList;
@@ -19,6 +21,7 @@ import org.batfish.datamodel.routing_policy.as_path.AsPathMatchRegex;
 import org.batfish.datamodel.routing_policy.as_path.InputAsPath;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.NextHopIp;
@@ -151,5 +154,13 @@ public class RoutingPolicyCollectorTest {
         _asPathCollector.visitAll(
             policy.getStatements(), new Tuple<>(new HashSet<>(), _baseConfig));
     assertEquals(ifResult, callStmtResult);
+  }
+
+  @Test
+  public void testVisitCallMissingPolicy() {
+    assertThat(
+        _asPathCollector.visitCallExpr(
+            new CallExpr("foo"), new Tuple<>(new HashSet<>(), _baseConfig)),
+        empty());
   }
 }
