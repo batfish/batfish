@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
@@ -33,10 +32,8 @@ import org.batfish.common.bdd.BDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.AsSet;
-import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.Prefix;
@@ -65,7 +62,7 @@ import org.batfish.minesweeper.bdd.TransferBDD.Context;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.minesweeper.communities.CommunityMatchExprVarCollector;
 import org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesQuestion.PathOption;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -89,20 +86,6 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
 
   private final @Nonnull Set<RegexConstraint> _communityRegexes;
   private final @Nonnull Set<RegexConstraint> _asPathRegexes;
-
-  /**
-   * Some route-map statements, notably setting the next hop to the address of the BGP peer, can
-   * only be simulated by Batfish if a {@link BgpSessionProperties} object exists in the {@link
-   * Environment}. For our purposes the specific property values can be anything, so we use this
-   * dummy object.
-   */
-  public static @Nonnull BgpSessionProperties DUMMY_BGP_SESSION_PROPERTIES =
-      BgpSessionProperties.builder()
-          .setLocalAs(1)
-          .setLocalIp(Ip.parse("1.1.1.1"))
-          .setRemoteAs(2)
-          .setRemoteIp(Ip.parse("2.2.2.2"))
-          .build();
 
   /** Helper class that contains both a row and and Bgpv4Route for a result */
   private static class RowAndRoute {
@@ -170,8 +153,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       BDD model = ModelGeneration.constraintsToModel(constraints, configAPs);
 
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(model, configAPs);
-      Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(model, configAPs);
+      RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(model, configAPs);
 
       if (_action == PERMIT) {
         // the AS path on the produced route represents the AS path that will result after
@@ -212,16 +194,16 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
       RoutingPolicy policy,
       Bgpv4Route inRoute,
       Environment.Direction direction,
-      Tuple<Predicate<String>, String> env,
+      RouteMapEnvironment env,
       BDDRoute bddRoute) {
     Result<Bgpv4Route, Bgpv4Route> simResult =
         TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute(
             policy,
             inRoute,
-            DUMMY_BGP_SESSION_PROPERTIES,
+            env.getSessionProperties(),
             direction,
-            env.getFirst(),
-            env.getSecond());
+            env.getSuccessfulTracks(),
+            env.getSourceVrf());
     return toQuestionResult(simResult, bddRoute);
   }
 

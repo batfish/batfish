@@ -29,7 +29,6 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
@@ -52,6 +51,7 @@ import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.BDDRouteDiff;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.minesweeper.utils.Tuple;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.AllNodesNodeSpecifier;
@@ -277,7 +277,7 @@ public final class CompareRoutePoliciesUtils {
    * @return An input route, a predicate on tracks, and a (possibly null) source VRF that conform to
    *     the given constraints.
    */
-  private static @Nonnull Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> constraintsToInputs(
+  private static @Nonnull Tuple<Bgpv4Route, RouteMapEnvironment> constraintsToInputs(
       BDD constraints, ConfigAtomicPredicates configAPs) {
     assert (!constraints.isZero());
     BDD model = constraintsToModel(constraints, configAPs);
@@ -540,8 +540,7 @@ public final class CompareRoutePoliciesUtils {
     }
 
     // we have found a difference, so let's get a concrete example of the difference
-    Tuple<Bgpv4Route, Tuple<Predicate<String>, String>> t =
-        constraintsToInputs(finalConstraints, configAPs);
+    Tuple<Bgpv4Route, RouteMapEnvironment> t = constraintsToInputs(finalConstraints, configAPs);
     Result<BgpRoute, BgpRoute> refResult =
         simulatePolicy(policy, t.getFirst(), direction, t.getSecond(), path.getOutputRoute());
     Result<BgpRoute, BgpRoute> otherResult =
