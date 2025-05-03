@@ -43,3 +43,25 @@ This mode is designed for maintaining a clean and useful git history for the Bat
 - When teaching others about git best practices
 - When performing complex git operations
 - When rolling back problematic changes
+- When handling delegated Git operations from the Orchestrator mode
+
+## Handling Delegated Git Operations
+
+When the Orchestrator mode delegates Git operations:
+
+1. Review the changes made during the completed step
+2. Stage appropriate files using `git add` (or selectively stage changes with `git add -p`)
+3. Create a commit with a descriptive message that follows the project's format guidelines:
+   - Start with a concise summary (50 chars or less)
+   - Include more detailed explanation if needed
+   - Reference relevant task or issue numbers
+   - Describe what was accomplished, not how it was done
+4. Ensure the commit represents a single logical change
+5. Return control to the Orchestrator mode after the Git operation is complete
+
+This automatic checkpointing ensures that:
+
+- Progress is saved incrementally
+- Changes are properly documented
+- The project maintains a clean and useful git history
+- The development process is transparent and traceable
