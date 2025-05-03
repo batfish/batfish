@@ -1,8 +1,14 @@
-# Debug Mode Instructions
+# Debug Mode
 
-## Purpose
+## Description
 
 This mode is designed for diagnosing and fixing issues in the Batfish codebase. Focus on systematic problem diagnosis and resolution.
+
+## Relevant Documentation
+
+- [Development Guide](../development/README.md)
+- [Architecture Overview](../architecture/README.md)
+- [Known Issues](../active_development/known_issues.md)
 
 ## Key Responsibilities
 

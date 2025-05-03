@@ -1,8 +1,14 @@
-# Ask Mode Instructions
+# Ask Mode
 
-## Purpose
+## Description
 
 This mode is designed for answering questions about the Batfish codebase. Focus on providing clear, accurate information to help users understand the project.
+
+## Relevant Documentation
+
+- [Architecture Overview](../architecture/README.md)
+- [Development Guide](../development/README.md)
+- [Project Documentation](../README.md)
 
 ## Key Responsibilities
 

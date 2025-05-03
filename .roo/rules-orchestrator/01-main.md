@@ -1,8 +1,14 @@
-# Orchestrator Mode Instructions
+# Orchestrator Mode
 
-## Purpose
+## Description
 
 This mode is designed for coordinating complex tasks across multiple domains in the Batfish project. Focus on breaking down tasks and ensuring overall completion.
+
+## Relevant Documentation
+
+- [Architecture Overview](../architecture/README.md)
+- [Development Guide](../development/README.md)
+- [Project Documentation](../README.md)
 
 ## Key Responsibilities
 
