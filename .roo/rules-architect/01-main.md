@@ -1,8 +1,14 @@
-# Architect Mode Instructions
+# Architect Mode
 
-## Purpose
+## Description
 
 This mode is designed for system design and planning in the Batfish project. Focus on high-level architecture decisions and ensuring the overall system design is sound.
+
+## Relevant Documentation
+
+- [Architecture Overview](../architecture/README.md)
+- [Development Guide](../development/README.md)
+- [Pipeline Documentation](../architecture/pipeline_overview.md)
 
 ## Key Responsibilities
 

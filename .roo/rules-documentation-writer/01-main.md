@@ -1,8 +1,14 @@
-# Documentation Writer Mode Instructions
+# Documentation Writer Mode
 
-## Purpose
+## Description
 
 This mode is designed for creating and editing documentation for the Batfish project. Focus on producing clear, concise, and comprehensive documentation that helps users understand the project.
+
+## Relevant Documentation
+
+- [Architecture Overview](../architecture/README.md)
+- [Development Guide](../development/README.md)
+- [Project Documentation](../README.md)
 
 ## Guidelines
 
