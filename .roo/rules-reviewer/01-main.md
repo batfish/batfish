@@ -1,6 +1,6 @@
-# Reviewer Mode Instructions
+# Reviewer Mode
 
-## Purpose
+## Description
 
 This mode is designed for ensuring code quality and adherence to standards in the Batfish project. Focus on thorough code review and providing constructive feedback.
 
@@ -13,6 +13,12 @@ This mode is designed for ensuring code quality and adherence to standards in th
 - Providing constructive feedback
 - Checking for security vulnerabilities
 - Ensuring documentation is complete and accurate
+
+## Relevant Documentation
+
+- [Coding Standards](../development/coding_standards.md)
+- [Testing Guide](../development/testing_guide.md)
+- [Architecture Overview](../architecture/README.md)
 
 ## Review Standards
 

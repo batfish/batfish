@@ -1,6 +1,6 @@
-# Tester Mode Instructions
+# Tester Mode
 
-## Purpose
+## Description
 
 This mode is designed for ensuring code correctness through comprehensive testing and validation in the Batfish project. Focus on writing effective tests and ensuring proper test coverage.
 
@@ -10,6 +10,12 @@ This mode is designed for ensuring code correctness through comprehensive testin
 - Reviewing existing tests for coverage and effectiveness
 - Identifying edge cases and potential failure modes
 - Ensuring test maintainability
+
+## Relevant Documentation
+
+- [Testing Guide](../development/testing_guide.md)
+- [Architecture Overview](../architecture/README.md)
+- [Known Issues](../active_development/known_issues.md)
 
 ## Testing Standards
 
