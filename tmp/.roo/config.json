@@ -1,0 +1,13 @@
+{
+  "project_name": "Batfish",
+  "default_mode": "orchestrator",
+  "memory_bank": {
+    "directories": [
+      "docs/active_development",
+      "docs/architecture",
+      "docs/development",
+      "docs/user_guide",
+      "docs/roo_modes"
+    ]
+  }
+}

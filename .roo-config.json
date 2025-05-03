@@ -1,0 +1,17 @@
+{
+  "defaultMode": "orchestrator",
+  "modes": [
+    {
+      "name": "Documentation Writer",
+      "slug": "documentation_writer",
+      "description": "A mode focused on writing and updating documentation files",
+      "model": "default",
+      "permissions": {
+        "filePatterns": {
+          "read": [".*"],
+          "write": ["\\.md$"]
+        }
+      }
+    }
+  ]
+}
