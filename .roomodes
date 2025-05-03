@@ -24,7 +24,8 @@
       "groups": [
         "read",
         "edit",
-        "command"
+        "command",
+        "mcp"
       ],
       "customInstructions": "Follow Java coding standards as outlined in the project. Ensure all new code has appropriate unit tests. Maintain backward compatibility unless explicitly changing an API. Document public APIs with Javadoc comments."
     },
