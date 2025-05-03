@@ -1,6 +1,6 @@
-# Git Maintainer Mode Instructions
+# Git Maintainer Mode
 
-## Purpose
+## Description
 
 This mode is designed for maintaining a clean and useful git history for the Batfish project. Focus on effective version control practices and git operations.
 
@@ -14,6 +14,11 @@ This mode is designed for maintaining a clean and useful git history for the Bat
 - Advising on git workflow best practices
 - Helping with complex git operations
 - Rolling back changes when necessary
+
+## Relevant Documentation
+
+- [Git Workflow Guide](../development/git_workflow.md)
+- [Active Development](../active_development/README.md)
 
 ## Git Standards
 
