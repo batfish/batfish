@@ -252,7 +252,7 @@ This section provides information about the Batfish development environment, tec
 
 - JDK 11 or later
 - Bazel
-- Python 3.6 or later (for Pybatfish)
+- Python 3.9 or later (for Pybatfish)
 - Docker (for containerized deployment)
 
 ### IDE Setup
