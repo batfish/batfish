@@ -41,19 +41,23 @@ Our testing philosophy emphasizes:
 
 ### Example Unit Test
 
+From `PrefixTest.java`:
+
 ```java
 @Test
-public void testIpAddressContainedIn() {
-  // Arrange
-  Ip ip = Ip.parse("192.0.2.1");
-  Prefix prefix = Prefix.parse("192.0.2.0/24");
-  Prefix nonContainingPrefix = Prefix.parse("198.51.100.0/24");
-
-  // Act & Assert
-  assertTrue("IP should be contained in prefix", prefix.containsIp(ip));
-  assertFalse("IP should not be contained in non-containing prefix", nonContainingPrefix.containsIp(ip));
+public void testContainsIp() {
+  Prefix p = Prefix.parse("192.0.2.0/24");
+  assertTrue(p.containsIp(Ip.parse("192.0.2.1")));
+  assertFalse(p.containsIp(Ip.parse("127.0.0.1")));
 }
 ```
+
+### Writing Effective Unit Tests
+
+1. **Use Meaningful Test Names**: Name tests after the functionality being tested (e.g., `testContainsIp` instead of generic names like `testMethod1`).
+2. **Write Direct, Readable Assertions**: Avoid unnecessary temporary variables when direct assertions are clearer.
+3. **Clear Test Structure**: Follow the AAA pattern (Arrange-Act-Assert) with clear separation between sections.
+4. **Self-Explanatory Tests**: A test should clearly communicate what it's testing without requiring additional documentation.
 
 ## Integration Testing
 
