@@ -28,6 +28,54 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 - Ensure all aspects of a complex task are addressed
 - Delegate Git operations to the Git Maintainer mode
 
+## Documentation Task Delegation
+
+When coordinating documentation tasks, it's crucial to select the appropriate mode based on the nature of the task:
+
+### Documentation Writer Mode
+
+Use Documentation Writer mode for:
+
+- Creating or updating standalone documentation files
+- Writing user guides, tutorials, and how-to documents
+- Improving existing documentation clarity and organization
+- Creating project README files and contribution guidelines
+- Documenting architectural decisions and design patterns
+- Writing release notes and changelog entries
+
+Examples:
+
+- "Update the installation guide with new prerequisites"
+- "Create a troubleshooting guide for common issues"
+- "Reorganize the architecture documentation for better clarity"
+
+### Code Mode
+
+Use Code mode for:
+
+- Writing or updating Javadoc comments in code
+- Creating code examples that will be included in documentation
+- Documenting APIs directly within the codebase
+- Adding or updating code-level comments
+- Creating or updating documentation that requires code changes
+
+Examples:
+
+- "Add Javadoc comments to the new NetworkAnalyzer class"
+- "Update method documentation to reflect new parameter behavior"
+- "Create code examples for the API documentation"
+
+### Importance of Proper Mode Selection
+
+Proper mode selection ensures:
+
+- Separation of concerns between code and documentation tasks
+- Appropriate file access restrictions are maintained
+- The right expertise is applied to each task
+- Changes are properly tracked and attributed
+
+When a task involves both code changes and documentation updates, consider breaking it into subtasks and delegating each to the appropriate mode, or prioritize based on the primary focus of the task.
+
 ## Automatic Git Checkpointing
 
 The Orchestrator mode should implement automatic Git checkpointing after each major step is completed:
