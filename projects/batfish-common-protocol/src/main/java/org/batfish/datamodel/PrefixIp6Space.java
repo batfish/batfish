@@ -6,6 +6,9 @@ import com.google.common.base.MoreObjects;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
+import java.io.ObjectStreamException;
+import java.io.Serial;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIp6SpaceVisitor;
@@ -56,7 +59,13 @@ public class PrefixIp6Space extends Ip6Space {
   }
 
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     return MoreObjects.toStringHelper(PrefixIp6Space.class).add(PROP_PREFIX, _prefix6).toString();
+  }
+
+  /** Cache after deserialization. */
+  @Serial
+  private Object readResolve() throws ObjectStreamException {
+    return CACHE.getUnchecked(_prefix6);
   }
 }
