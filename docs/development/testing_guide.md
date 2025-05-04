@@ -68,6 +68,54 @@ Reference tests compare the output of a function (like parsing or conversion) ag
 3. **Test Logic**: Code that processes inputs and compares to reference outputs
 4. **Update Mechanism**: Way to update reference files when behavior changes
 
+### Reference Test Structure
+
+Reference tests are located in the `//tests` directory, with subdirectories for different types of tests:
+
+- `parsing-tests`: Tests for parsing various network configurations
+- `parsing-errors-tests`: Tests for handling parsing errors
+- `aws`: Tests for AWS-specific functionality
+- `basic`: Basic functionality tests
+- `questions`: Tests for Batfish questions
+
+Each test directory typically contains:
+
+- A `commands` file: Contains the test commands to execute
+- `.ref` files: Reference output files that tests are compared against
+- A `networks` directory: Contains input network configurations
+- A `BUILD.bazel` file: Defines the tests using the `ref_tests` rule
+
+### Running Reference Tests
+
+To run all reference tests:
+
+```bash
+bazel test //tests/...
+```
+
+To run a specific reference test:
+
+```bash
+bazel test //tests/parsing-tests:ref_tests
+```
+
+### Updating Reference Tests
+
+When you make changes that intentionally modify the expected output of tests, you need to update the reference files. Batfish provides a script to automate this process:
+
+```bash
+./tools/update_refs.sh
+```
+
+This script:
+
+1. Runs all tests in the `//tests` directory
+2. If tests fail, patches the reference files using the test logs
+3. Runs the tests again to verify they now pass
+4. Warns if tests are non-deterministic
+
+Always carefully review the changes to reference files after running this script to ensure they match your expectations.
+
 ### Reference Test Best Practices
 
 1. **Version Control**: Store reference files in version control
