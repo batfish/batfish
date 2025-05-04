@@ -7,9 +7,7 @@ This document provides guidelines and best practices for testing Batfish code.
 Batfish follows a comprehensive testing approach that includes:
 
 1. **Unit Tests**: Testing individual components in isolation
-2. **Integration Tests**: Testing interactions between components
-3. **Reference Tests**: Testing parsing and conversion against known-good outputs
-4. **End-to-End Tests**: Testing the complete system workflow
+2. **Reference Tests**: Testing parsing and conversion against known-good outputs
 
 Our testing philosophy emphasizes:
 
@@ -59,23 +57,6 @@ public void testContainsIp() {
 3. **Clear Test Structure**: Follow the AAA pattern (Arrange-Act-Assert) with clear separation between sections.
 4. **Self-Explanatory Tests**: A test should clearly communicate what it's testing without requiring additional documentation.
 
-## Integration Testing
-
-### When to Write Integration Tests
-
-- When testing interactions between multiple components
-- When testing database access
-- When testing file I/O
-- When testing network communication
-
-### Integration Test Best Practices
-
-1. **Minimize External Dependencies**: Use in-memory databases or mock servers when possible
-2. **Clean Up After Tests**: Ensure tests clean up any resources they create
-3. **Use Appropriate Fixtures**: Create reusable test fixtures for common setup
-4. **Test Realistic Scenarios**: Design tests that reflect real-world usage
-5. **Document Setup Requirements**: Clearly document any external setup needed
-
 ## Reference Testing
 
 ### How Reference Tests Work
@@ -94,16 +75,6 @@ Reference tests compare the output of a function (like parsing or conversion) ag
 3. **Meaningful Diffs**: Structure reference files to produce meaningful diffs
 4. **Selective Updates**: Update reference files only when behavior intentionally changes
 5. **Review Changes**: Carefully review changes to reference files
-
-## End-to-End Testing
-
-### End-to-End Test Best Practices
-
-1. **Test Complete Workflows**: Test entire features from start to finish
-2. **Minimize Number**: Keep the number of end-to-end tests manageable
-3. **Focus on Critical Paths**: Test the most important user workflows
-4. **Handle Asynchronous Operations**: Account for timing issues in tests
-5. **Clean Up Resources**: Ensure tests clean up after themselves
 
 ## Test Coverage
 
