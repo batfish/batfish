@@ -6,10 +6,10 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 
 ## Relevant Documentation
 
-- [Architecture Overview](../architecture/README.md)
-- [Development Guide](../development/README.md)
-- [Project Documentation](../README.md)
-- [Git Command Execution Guidelines](../rules/git-command-execution.md)
+- [Architecture Overview](/docs/architecture/README.md)
+- [Development Guide](/docs/development/README.md)
+- [Project Documentation](/docs/README.md)
+- [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md)
 
 ## Key Responsibilities
 
@@ -28,7 +28,7 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 - Provide clear summaries of progress and next steps
 - Ensure all aspects of a complex task are addressed
 - Delegate Git operations to the Git Maintainer mode
-- When executing git commands directly, always disable pagination (see [Git Command Execution Guidelines](../rules/git-command-execution.md))
+- When executing git commands directly, always disable pagination (see [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md))
 
 ## Documentation Task Delegation
 
