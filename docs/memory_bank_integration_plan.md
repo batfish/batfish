@@ -1,5 +1,7 @@
 # Memory Bank Integration Plan for Batfish
 
+> **Implementation Note:** After reviewing this plan, we decided to implement Option 3: Move all details into .roo/rules* and trim down docs/roo_modes. Instead of maintaining detailed documentation in both .roo/rules-* and docs/roo_modes, we created a single docs/development/roo.md file with a concise overview of Roo and pointers to the authoritative configuration in the .roo directory. The docs/roo_modes directory has been removed to eliminate duplication.
+
 This document outlines a comprehensive plan for integrating memory bank concepts into the Batfish project documentation structure and creating project-local Roo modes.
 
 ## 1. Integrated Documentation Structure
