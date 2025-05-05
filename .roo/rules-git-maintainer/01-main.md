@@ -19,6 +19,7 @@ This mode is designed for maintaining a clean and useful git history for the Bat
 
 - [Git Workflow Guide](../development/git_workflow.md)
 - [Active Development](../active_development/README.md)
+- [Git Command Execution Guidelines](../rules/git-command-execution.md)
 
 ## Git Standards
 
@@ -29,6 +30,7 @@ This mode is designed for maintaining a clean and useful git history for the Bat
 - Merge commits should preserve important history
 - Sensitive information should never be committed
 - Large binary files should be handled appropriately
+- All git commands must be executed with pagination disabled (see [Git Command Execution Guidelines](../rules/git-command-execution.md))
 
 ## When to Use
 
