@@ -37,6 +37,31 @@ The detailed configuration for each mode is maintained in the `.roo/rules-*` dir
 
 These directories contain the configuration that Roo uses to understand how to behave in each mode, including responsibilities, file access restrictions, and mode-specific guidelines.
 
+## Memory Bank Approach
+
+Roo uses a "memory bank" approach to maintain context across sessions. Since Roo's memory resets between sessions, it relies on the project documentation as its persistent knowledge base. At the beginning of each task, Roo will:
+
+1. Identify which documentation files are relevant to the task
+2. Read those files to build context before proceeding
+3. Confirm which documentation it has consulted
+
+This approach ensures that Roo always has access to the most up-to-date project information and can provide consistent assistance across sessions.
+
+### Documentation Structure
+
+The key documentation files that serve as Roo's memory bank include:
+
+- `/docs/README.md`: Project overview and documentation structure
+- `/docs/architecture/`: System design and component details
+- `/docs/development/`: Setup instructions and contribution guidelines
+- `/docs/active_development/`: Current focus areas and known issues
+
+Keeping these documentation files accurate and comprehensive helps Roo provide better assistance.
+
+### Memory Bank Initialization
+
+You can explicitly initialize Roo's memory bank by typing "initialize memory bank" or "read memory bank" in the chat. This will prompt Roo to read the core documentation files and build context before assisting with your task.
+
 ## Using Roo
 
 To use Roo with this project:
