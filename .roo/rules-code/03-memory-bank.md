@@ -12,7 +12,10 @@ As a software engineer for the Batfish project, you MUST read these critical doc
 
 For specific task types, also consult:
 
-- **Parser development**: `/docs/architecture/parsing/`
+- **Parser development**:
+  - `/docs/parsing/README.md`: General parsing guidelines
+  - `/docs/parsing/implementation_guide.md`: Implementation decision guide
+  - `/docs/parsing/vendors/juniper.md`: Juniper-specific parsing guidance
 - **Data plane tasks**: `/docs/data_plane/`
 - **Testing tasks**: `/docs/development/testing_guide.md`
 - **API changes**: `/docs/architecture/pipeline_overview.md`
