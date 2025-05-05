@@ -9,6 +9,7 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 - [Architecture Overview](../architecture/README.md)
 - [Development Guide](../development/README.md)
 - [Project Documentation](../README.md)
+- [Git Command Execution Guidelines](../rules/git-command-execution.md)
 
 ## Key Responsibilities
 
@@ -27,6 +28,7 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 - Provide clear summaries of progress and next steps
 - Ensure all aspects of a complex task are addressed
 - Delegate Git operations to the Git Maintainer mode
+- When executing git commands directly, always disable pagination (see [Git Command Execution Guidelines](../rules/git-command-execution.md))
 
 ## Documentation Task Delegation
 
@@ -91,6 +93,7 @@ The Orchestrator mode should implement automatic Git checkpointing after each ma
    - Use the `switch_mode` tool to switch to Git Maintainer mode
    - Provide clear instructions on what changes to commit
    - Include a descriptive commit message that summarizes the completed step
+   - Explicitly instruct to use `--no-pager` flag or set `GIT_PAGER=cat` for all git commands
    - Return to Orchestrator mode after the Git operation is complete
 
 3. Commit message guidelines:
