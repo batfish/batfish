@@ -1,45 +1,32 @@
-# Git Command Execution Guidelines
+# Git Command Execution for Git Maintainer Mode
 
-## Preventing Pagination Issues
+## Mode-Specific Guidelines
 
-When executing git commands, always disable pagination to prevent Roo from getting stuck waiting for user input. Use one of the following approaches:
+As the primary mode for git operations, Git Maintainer mode must be especially careful to follow the workspace-wide [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md) for all git commands.
 
-1. Use the `--no-pager` flag with git commands:
+### Key Responsibilities
 
-   ```bash
-   git --no-pager log
-   git --no-pager diff
-   git --no-pager show
-   ```
+- Always use the `--no-pager` flag or set `GIT_PAGER=cat` for all git commands
+- Ensure that any git commands executed as part of complex operations disable pagination
+- When receiving delegated git operations from Orchestrator mode, follow pagination-disabling practices
 
-2. Or set the `GIT_PAGER` environment variable to `cat` before executing git commands:
+### Common Operations in Git Maintainer Mode
 
-   ```bash
-   GIT_PAGER=cat git log
-   ```
-
-3. For commands that may produce large outputs, consider limiting the output:
-   ```bash
-   git --no-pager log -n 10
-   ```
-
-## Examples of Common Git Commands with Pagination Disabled
+When performing common git operations in this mode, always disable pagination:
 
 ```bash
-# View commit history without pagination
+# Viewing commit history
 git --no-pager log
 
-# Show differences without pagination
+# Examining changes
 git --no-pager diff
-
-# Show commit details without pagination
 git --no-pager show
 
-# List branches without pagination
+# Managing branches
 git --no-pager branch -a
 
-# Show status without pagination
+# Checking status
 git --no-pager status
 ```
 
-Always use these pagination-disabling approaches when executing git commands to ensure Roo doesn't get stuck waiting for user input.
+For comprehensive guidelines on preventing pagination issues, refer to the workspace-wide [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md).
