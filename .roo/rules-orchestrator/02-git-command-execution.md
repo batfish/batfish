@@ -1,17 +1,22 @@
-# Git Command Execution Guidelines for Orchestrator Mode
+# Git Command Execution for Orchestrator Mode
 
-## Preventing Pagination Issues
+## Mode-Specific Guidelines for Orchestrator
 
-When delegating to Git Maintainer mode or executing git commands directly, ensure that pagination is disabled to prevent Roo from getting stuck waiting for user input. This is especially important when viewing git output or when git commands might produce large outputs.
+Orchestrator mode has two key responsibilities regarding git command execution:
 
-## Guidelines for Git Command Delegation
+1. Properly delegating git operations to Git Maintainer mode
+2. Following pagination-disabling practices for any direct git commands
+
+For comprehensive guidelines on preventing pagination issues, refer to the workspace-wide [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md).
+
+## Delegation Best Practices
 
 When delegating Git operations to Git Maintainer mode:
 
 1. Explicitly mention that all git commands should be executed with pagination disabled
 2. Include specific instructions to use the `--no-pager` flag or set the `GIT_PAGER=cat` environment variable
 
-Example delegation instruction:
+### Example Delegation Instruction
 
 ```
 Please switch to Git Maintainer mode to commit these changes. When executing git commands, remember to use the --no-pager flag (e.g., git --no-pager log) or set GIT_PAGER=cat to prevent pagination issues.
@@ -19,25 +24,14 @@ Please switch to Git Maintainer mode to commit these changes. When executing git
 
 ## Direct Git Command Execution
 
-If you need to execute git commands directly (which should be rare in Orchestrator mode), always:
+While direct git command execution should be rare in Orchestrator mode, if needed, always follow the workspace-wide [Git Command Execution Guidelines](/.roo/rules/git-command-execution.md) to prevent pagination issues.
 
-1. Use the `--no-pager` flag with git commands:
+The most common git commands you might need in Orchestrator mode:
 
-   ```bash
-   git --no-pager log
-   git --no-pager diff
-   git --no-pager show
-   ```
+```bash
+# Checking status
+git --no-pager status
 
-2. Or set the `GIT_PAGER` environment variable to `cat`:
-
-   ```bash
-   GIT_PAGER=cat git log
-   ```
-
-3. For commands that may produce large outputs, consider limiting the output:
-   ```bash
-   git --no-pager log -n 10
-   ```
-
-Always use these pagination-disabling approaches when executing git commands to ensure Roo doesn't get stuck waiting for user input.
+# Viewing recent commits
+git --no-pager log --oneline -n 5
+```
