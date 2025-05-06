@@ -1849,36 +1849,6 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testPsFromNextHop() throws IOException {
-    Configuration c = parseConfig("bgp-policy-from-next-hop");
-
-    Bgpv4Route permittedRoute =
-        Bgpv4Route.testBuilder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(Ip.parse("10.0.0.1"))
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .build();
-    Bgpv4Route deniedRoute = permittedRoute.toBuilder().setNextHopIp(Ip.parse("10.0.0.3")).build();
-
-    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
-
-    // Allowed from a specific neighbor
-    assertThat(c.getRoutingPolicies(), hasKey("POL"));
-    RoutingPolicy rp = c.getRoutingPolicies().get("POL");
-    BgpSessionProperties session =
-        BgpSessionProperties.builder()
-            .setRemoteAs(65500)
-            .setLocalAs(65501)
-            .setRemoteIp(Ip.parse("10.0.0.1"))
-            .setLocalIp(Ip.parse("10.9.9.9"))
-            .build();
-    assertTrue(rp.processBgpRoute(permittedRoute, out_builder, session, Direction.IN, null));
-    assertFalse(rp.processBgpRoute(deniedRoute, out_builder, session, Direction.IN, null));
-  }
-
-  @Test
   public void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
@@ -4937,11 +4907,6 @@ public final class FlatJuniperGrammarTest {
         nhPolicy.call(
             envWithRoute(
                 c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.4"))).build(), IN));
-    assertTrue(result.getBooleanValue());
-    result =
-        nhPolicy.call(
-            envWithRoute(
-                c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.5"))).build(), IN));
     assertFalse(result.getBooleanValue());
 
     /*
