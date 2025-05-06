@@ -3219,8 +3219,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (!froms.getFromNeighbor().isEmpty()) {
       conj.getConjuncts().add(toBooleanExprMany(froms.getFromNeighbor()));
     }
-    for (PsFromNextHop from : froms.getFromNextHops()) {
-      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    if (!froms.getFromNextHops().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromNextHops())));
     }
     for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
       subroutines.add(from.toBooleanExpr(this, _c, _w));
@@ -3261,7 +3261,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return conj.simplify();
   }
 
-  private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
+  private List<BooleanExpr> toBooleanExprs(Collection<? extends PsFrom> froms) {
     return froms.stream()
         .map(f -> f.toBooleanExpr(this, _c, _w))
         .collect(ImmutableList.toImmutableList());
