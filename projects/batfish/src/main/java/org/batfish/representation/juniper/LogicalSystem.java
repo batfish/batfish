@@ -23,6 +23,8 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, AddressBook> _addressBooks;
 
+  private final Map<String, AdminGroup> _adminGroups;
+
   private final Map<String, BaseApplication> _applications;
 
   private final Map<String, ApplicationSet> _applicationSets;
@@ -118,6 +120,7 @@ public class LogicalSystem implements Serializable {
     _addressBooks = new TreeMap<>();
     // insert the implicit global address book
     _addressBooks.put(GLOBAL_ADDRESS_BOOK_NAME, new AddressBook(GLOBAL_ADDRESS_BOOK_NAME, null));
+    _adminGroups = new TreeMap<>();
     _applications = new TreeMap<>();
     _applicationSets = new TreeMap<>();
     _asPaths = new TreeMap<>();
@@ -179,6 +182,10 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, AddressBook> getAddressBooks() {
     return _addressBooks;
+  }
+
+  public Map<String, AdminGroup> getAdminGroups() {
+    return _adminGroups;
   }
 
   public Map<String, BaseApplication> getApplications() {

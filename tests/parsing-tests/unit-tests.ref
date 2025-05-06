@@ -59898,7 +59898,7 @@
             "                UNRECOGNIZED_WORD:'myviewname1'",
             "                UNRECOGNIZED_WORD:'oid'",
             "                UNRECOGNIZED_WORD:'myoidname1'",
-            "                UNRECOGNIZED_WORD:'exclude'))))))",
+            "                EXCLUDE:'exclude'))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
             "    SET:'set'",
