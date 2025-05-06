@@ -6,12 +6,12 @@ This document provides an overview of Batfish's architecture and key design deci
 
 Batfish follows a pipeline architecture with distinct stages:
 
-1. **[Parsing](parsing/README.md)**: Convert vendor-specific configurations into parse trees
-2. **[Extraction](extraction/README.md)**: Extract data from parse trees into vendor-specific models
-3. **[Conversion](conversion/README.md)**: Convert vendor-specific models into vendor-independent models
-4. **[Post-processing](post_processing/README.md)**: Finalize and clean up the vendor-independent model
-5. **[Data Plane Generation](data_plane/README.md)**: Compute routing information bases and forwarding tables
-6. **[Forwarding Analysis](forwarding_analysis/README.md)**: Analyze forwarding behavior
+1. **[Parsing](../parsing/README.md)**: Convert vendor-specific configurations into parse trees
+2. **[Extraction](../extraction/README.md)**: Extract data from parse trees into vendor-specific models
+3. **[Conversion](../conversion/README.md)**: Convert vendor-specific models into vendor-independent models
+4. **[Post-processing](../post_processing/README.md)**: Finalize and clean up the vendor-independent model
+5. **[Data Plane Generation](../data_plane/README.md)**: Compute routing information bases and forwarding tables
+6. **[Forwarding Analysis](../forwarding_analysis/README.md)**: Analyze forwarding behavior
 
 ## Key Design Decisions
 
@@ -74,9 +74,9 @@ Batfish is designed to be extensible in several ways:
 For detailed information on each pipeline stage, see the corresponding documentation:
 
 - [Pipeline Overview](pipeline_overview.md)
-- [Parsing](parsing/README.md)
-- [Extraction](extraction/README.md)
-- [Conversion](conversion/README.md)
-- [Post-processing](post_processing/README.md)
-- [Data Plane Generation](data_plane/README.md)
-- [Forwarding Analysis](forwarding_analysis/README.md)
+- [Parsing](../parsing/README.md)
+- [Extraction](../extraction/README.md)
+- [Conversion](../conversion/README.md)
+- [Post-processing](../post_processing/README.md)
+- [Data Plane Generation](../data_plane/README.md)
+- [Forwarding Analysis](../forwarding_analysis/README.md)
