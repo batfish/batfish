@@ -352,8 +352,14 @@ if_ethernet_switching
       | ife_interface_mode
       | ife_native_vlan_id
       | ife_port_mode
+      | ife_recovery_timeout_null
       | ife_vlan
    )
+;
+
+ife_recovery_timeout_null
+:
+   RECOVERY_TIMEOUT uint16 null_filler
 ;
 
 if_inet

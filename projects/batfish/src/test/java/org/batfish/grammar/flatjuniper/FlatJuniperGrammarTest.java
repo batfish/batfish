@@ -8608,6 +8608,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRecoveryTimeout() {
+    // Should not crash.
+    parseConfig("recovery-timeout-test");
+  }
+
+  @Test
   public void testJuniperAsPathExclamationRegex() {
     Configuration c = parseConfig("juniper-as-path-exclamation-regex");
     RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
