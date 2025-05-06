@@ -41,9 +41,11 @@ Batfish uses Bazel as its build system. Key commands:
 - `bazel test //...`: Run all tests
 - `bazel run //projects/batfish:batfish`: Run the Batfish server
 
+**IMPORTANT**: Batfish uses Bazel, NOT Maven. All build and test operations must use Bazel commands.
+
 ## Getting Started
 
-- [Building and Running](building_and_running/README.md): Instructions for building and running Batfish
+- [Building and Running](../building_and_running/README.md): Instructions for building and running Batfish
 - [Contributing](contributing/README.md): Guidelines for contributing to Batfish
 - [Roo](roo.md): Overview of the Roo AI coding assistant used in this project
 
