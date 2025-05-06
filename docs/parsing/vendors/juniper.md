@@ -73,6 +73,27 @@ set interfaces ge-0/0/0 family ethernet-switching recovery-timeout 180
 
 In the grammar, these are represented by rules like `if_ethernet_switching`, `if_inet`, etc.
 
+### Lexer Modes for Name Handling
+
+Juniper configurations often require complex name handling with special keywords. The FlatJuniperLexer uses several lexer modes to handle this:
+
+- **M_Name**: Basic mode for handling names
+- **M_NameList**: For handling lists of names
+- **M_AdminGroup**: For MPLS admin-group configurations with special keywords
+
+For example, the MPLS admin-group mode handles both simple names and complex expressions with keywords:
+
+```antlr
+mode M_AdminGroup;
+M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_Name);
+M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_Name);
+M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_Name);
+M_AdminGroup_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_AdminGroup_NAME: F_Name -> type(NAME), popMode;
+```
+
+For detailed information on lexer mode patterns in Juniper parsing, see the [Lexer Mode Patterns](../lexer_mode_patterns.md) documentation.
+
 ## Implementation Decision Guide for Juniper
 
 When implementing a new Juniper command, consider:
