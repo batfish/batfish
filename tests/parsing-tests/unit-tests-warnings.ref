@@ -1489,21 +1489,21 @@
         "Line" : 23,
         "Text" : "as-path-prepend 123.456",
         "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "Overwriting existing then as-path-prepend"
+        "Comment" : "RISK: Overwriting existing then as-path-prepend"
       },
       {
         "Filename" : "configs/juniper_policy_statement",
         "Line" : 24,
         "Text" : "as-path-prepend \"456 789",
         "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "Overwriting existing then as-path-prepend"
+        "Comment" : "RISK: Overwriting existing then as-path-prepend"
       },
       {
         "Filename" : "configs/juniper_policy_statement",
         "Line" : 25,
         "Text" : "as-path-prepend \"456 123.1 789",
         "Parser_Context" : "[popst_as_path_prepend popst_common pops_then pops_common pops_term po_policy_statement s_policy_options s_common statement set_line_tail set_line flat_juniper_configuration]",
-        "Comment" : "Overwriting existing then as-path-prepend"
+        "Comment" : "RISK: Overwriting existing then as-path-prepend"
       },
       {
         "Filename" : "configs/juniper_policy_statement",

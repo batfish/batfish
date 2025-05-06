@@ -2325,8 +2325,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       warn(
           ctx,
           String.format(
-              "Overwriting existing %s %s",
-              cleared.size() > 1 ? "thens" : "then", String.join(", ", cleared)));
+              Warnings.RISKY_FLAG + "Overwriting existing %s %s",
+              cleared.size() > 1 ? "thens" : "then",
+              String.join(", ", cleared)));
     }
   }
 

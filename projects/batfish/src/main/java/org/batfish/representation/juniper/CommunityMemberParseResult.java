@@ -6,6 +6,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.regex.Pattern;
 import javax.annotation.Nullable;
+import org.batfish.common.Warnings;
 import org.batfish.datamodel.bgp.community.Community;
 import org.batfish.datamodel.bgp.community.ExtendedCommunity;
 import org.batfish.datamodel.bgp.community.LargeCommunity;
@@ -52,7 +53,8 @@ public class CommunityMemberParseResult {
     String warning = null;
     if (!unintendedMatches.isEmpty()) {
       warning =
-          "RISK: Community regex "
+          Warnings.RISKY_FLAG
+              + "Community regex "
               + text
               + " allows longer matches such as "
               + String.join(" and ", unintendedMatches);
@@ -114,8 +116,9 @@ public class CommunityMemberParseResult {
         new CommunityMemberParseResult(
             new LiteralCommunityMember(community),
             String.format(
-                "RISK: Community string '%s' is interpreted as '%s'",
-                originalText, normalizedText)));
+                Warnings.RISKY_FLAG + "Community string '%s' is interpreted as '%s'",
+                originalText,
+                normalizedText)));
   }
 
   /** Returns a {@link Community} if {@code text} can be parsed as one, or else {@code null}. */

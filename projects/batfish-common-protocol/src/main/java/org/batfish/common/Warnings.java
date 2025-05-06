@@ -11,6 +11,7 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
+import com.google.common.collect.ImmutableList;
 import com.google.errorprone.annotations.FormatMethod;
 import java.io.Serializable;
 import java.util.Arrays;
@@ -47,7 +48,11 @@ public class Warnings implements Serializable {
     }
   }
 
+  // Indicates that this warning will cause the config to not successfully commit onto the device
   public static final String FATAL_FLAG = "FATAL: ";
+  // Indicates that this warning is for a construct on the device that may result in unexpected
+  // undesired behavior
+  public static final String RISKY_FLAG = "RISK: ";
 
   public static final String TAG_PEDANTIC = "MISCELLANEOUS";
 
@@ -202,6 +207,14 @@ public class Warnings implements Serializable {
       }
     }
     return fatalWarnings;
+  }
+
+  /** Get all red flag warnings that are fatal error */
+  @JsonIgnore
+  public List<ParseWarning> getRiskyParseWarnings() {
+    return _parseWarnings.stream()
+        .filter(warning -> warning.getComment().startsWith(RISKY_FLAG))
+        .collect(ImmutableList.toImmutableList());
   }
 
   /**
