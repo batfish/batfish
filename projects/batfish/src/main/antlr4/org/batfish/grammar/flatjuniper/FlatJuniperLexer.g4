@@ -2326,6 +2326,8 @@ RECEIVE: 'receive';
 RECORD_LIFETIME: 'record-lifetime';
 RECORD_ROUTE_OPTION: 'record-route-option';
 
+RECOVERY_TIMEOUT: 'recovery-timeout';
+
 REDIRECT: 'redirect';
 
 REDIRECT_FOR_HOST: 'redirect-for-host';
