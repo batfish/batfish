@@ -407,6 +407,10 @@ There are several things to note here:
     polluting the mode stack. So Batfish lexers in general (and line-based grammars in particular)
     only use `pushMode` from the DEFAULT mode.
 
+For more advanced lexing patterns, see:
+
+- [Lexer Mode Patterns](lexer_mode_patterns.md) - Patterns for handling complex name structures and mode transitions
+
 #### Lexer predicates
 
 Sometimes it is necessary to selectively enable a token in a given mode based on some predicate on
