@@ -58,15 +58,13 @@ ACCESS_INTERNAL: 'access-internal';
 
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 
-ADMIN_GROUP: 'admin-group' -> pushMode(M_AdminGroup);
-
-ADMIN_GROUPS: 'admin-groups' -> pushMode(M_Name);
-
 ACCOUNTING: 'accounting';
 ACTIVATE: 'activate';
 ACTIVE: 'active';
 
 ACTIVE_SERVER_GROUP: 'active-server-group' -> pushMode(M_Name);
+
+ADAPTIVE: 'adaptive';
 
 ADAPTIVE_SHAPERS: 'adaptive-shapers';
 
@@ -109,6 +107,22 @@ ADDRESS_FAMILY: 'address-family';
 ADDRESS_MASK: 'address-mask';
 
 ADDRESS_SET: 'address-set' -> pushMode(M_Name);
+
+ADJUST_INTERVAL: 'adjust-interval';
+
+ADJUST_THRESHOLD: 'adjust-threshold';
+
+ADJUST_THRESHOLD_ABSOLUTE: 'adjust-threshold-absolute';
+
+ADJUST_THRESHOLD_ACTIVATE_BANDWIDTH: 'adjust-threshold-activate-bandwidth';
+
+ADJUST_THRESHOLD_OVERFLOW_LIMIT: 'adjust-threshold-overflow-limit';
+
+ADJUST_THRESHOLD_UNDERFLOW_LIMIT: 'adjust-threshold-underflow-limit';
+
+ADMIN_GROUP: 'admin-group' -> pushMode(M_AdminGroup);
+
+ADMIN_GROUPS: 'admin-groups' -> pushMode(M_Name);
 
 ADVERTISE_EXTERNAL: 'advertise-external';
 ADVERTISE_FROM_MAIN_VPN_TABLES: 'advertise-from-main-vpn-tables';
@@ -295,6 +309,8 @@ AUTO_EXPORT: 'auto-export';
 
 AUTO_NEGOTIATION: 'auto-negotiation';
 
+AUTO_BANDWIDTH: 'auto-bandwidth';
+
 AUTO_SNAPSHOT: 'auto-snapshot';
 
 AUTONOMOUS_SYSTEM: 'autonomous-system' -> pushMode(M_BgpAsn);
@@ -429,6 +445,8 @@ CONDITION
 :
    'condition' -> pushMode(M_Name)
 ;
+
+CONDITIONAL_METRIC: 'conditional-metric';
 
 CONFEDERATION: 'confederation';
 
@@ -959,6 +977,10 @@ IGNORE_L3_INCOMPLETES: 'ignore-l3-incompletes';
 
 IGP: 'igp';
 
+IGP_METRIC: 'igp-metric';
+
+IGP_METRIC_THRESHOLD: 'igp-metric-threshold';
+
 IKE: 'ike';
 
 IKE_ESP_NAT: 'ike-esp-nat';
@@ -985,6 +1007,8 @@ IMPORT
 ;
 
 IMPORT_POLICY: 'import-policy' -> pushMode(M_PolicyExpression);
+
+IN_PLACE_LSP_BANDWIDTH_UPDATE: 'in-place-lsp-bandwidth-update';
 
 IMPORT_RIB: 'import-rib' -> pushMode(M_Name);
 
@@ -1778,6 +1802,8 @@ MAX_SUPPRESS: 'max-suppress';
 
 MAXIMUM: 'maximum';
 
+MAXIMUM_BANDWIDTH: 'maximum-bandwidth';
+
 MAXIMUM_LABELS: 'maximum-labels';
 
 MAXIMUM_PREFIXES: 'maximum-prefixes';
@@ -1836,6 +1862,8 @@ MGCP_CA: 'mgcp-ca';
 
 MGCP_UA: 'mgcp-ua';
 
+MINIMUM_BANDWIDTH: 'minimum-bandwidth';
+
 MINIMUM_INTERVAL: 'minimum-interval';
 
 MS_RPC: 'ms-rpc';
@@ -1851,6 +1879,7 @@ MOBILITY_HEADER: 'mobility-header';
 MODE: 'mode';
 
 MPLS: 'mpls';
+
 
 MSDP: 'msdp';
 
@@ -1976,8 +2005,14 @@ NO_EXPORT_SUBCONFED: 'no-export-subconfed';
 NO_FLOW_CONTROL: 'no-flow-control';
 
 NO_GATEWAY_COMMUNITY: 'no-gateway-community';
+NO_DECREMENT_TTL: 'no-decrement-ttl';
 
 NO_INSTALL: 'no-install';
+NO_SELF_PING: 'no-self-ping';
+
+SELF_PING_DURATION: 'self-ping-duration';
+
+
 
 NO_IPV4_ROUTING: 'no-ipv4-routing';
 
@@ -2063,6 +2098,8 @@ OUTBOUND_SSH: 'outbound-ssh';
 OUTPUT: 'output' -> pushMode(M_Name);
 
 OUTPUT_LIST: 'output-list' -> pushMode(M_Name);
+
+OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
 
 OUTPUT_QUEUE_PRIORITY: 'output-queue-priority';
 
@@ -2200,6 +2237,8 @@ PORT_OVERLOADING: 'port-overloading';
 PORT_OVERLOADING_FACTOR: 'port-overloading-factor';
 
 PORT_RANDOMIZATION: 'port-randomization';
+
+RANDOM: 'random';
 
 PORT_SCAN
 :
@@ -2383,6 +2422,8 @@ REQUIRED_OPTION_MISSING: 'required-option-missing';
 
 RESOLUTION: 'resolution';
 
+RETRY_TIMER: 'retry-timer';
+
 RESOLVE: 'resolve';
 
 RESOURCES: 'resources';
@@ -2516,6 +2557,8 @@ SAVED_CORE_CONTEXT: 'saved-core-context';
 SAVED_CORE_FILES: 'saved-core-files';
 
 SCCP: 'sccp';
+
+SOFT_PREEMPTION: 'soft-preemption';
 
 SCHEDULER: 'scheduler';
 SCHEDULER_MAP: 'scheduler-map' -> pushMode(M_Name);
