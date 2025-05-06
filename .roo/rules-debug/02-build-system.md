@@ -6,24 +6,39 @@
 
 All build, test, and debugging operations must use Bazel commands, not Maven (`mvn`) commands. Maven commands will not work with this project.
 
+## Preferred Debugging Workflow
+
+When debugging issues, follow this testing workflow:
+
+1. **ALWAYS run the specific test first** with debug output enabled:
+
+   ```bash
+   # Run a specific test with debug output
+   bazel test --test_output=all //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+
+   # Run a specific test method with debug output
+   bazel test --test_output=all --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest#testAdminGroupDefinitions //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+   ```
+
+2. **Only after debugging the specific test**, run related tests if necessary:
+   ```bash
+   # Run all tests in a package with debug output
+   bazel test --test_output=all //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper/...
+   ```
+
 ## Running Tests for Debugging
 
 ### Correct Way (Using Bazel)
 
-To run tests in Batfish for debugging purposes, always use Bazel commands:
-
 ```bash
-# Run all tests with debug output
-bazel test --test_output=all //...
+# Run a specific test with debug output (PREFERRED FIRST STEP)
+bazel test --test_output=all //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
 
-# Run a specific test with debug output
-bazel test --test_output=all //projects/batfish:pmd
-
-# Run a specific test method with debug output
-bazel test --test_output=all --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
+# Run a specific test method with debug output (PREFERRED FIRST STEP)
+bazel test --test_output=all --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest#testAdminGroupDefinitions //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
 
 # Run tests with Java assertions enabled
-bazel test --jvmopt=-ea //...
+bazel test --jvmopt=-ea //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
 ```
 
 ### Incorrect Way (DO NOT USE)
@@ -36,6 +51,9 @@ mvn test
 
 # DO NOT USE - cd + mvn pattern is not applicable
 cd some/directory && mvn test
+
+# DO NOT USE - Running all tests first is inefficient
+bazel test --test_output=all //... && bazel test --test_output=all //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
 ```
 
 ## Debugging the Service
@@ -52,10 +70,12 @@ bazel run --jvmopt=-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address
 
 ## Debugging Guidelines
 
-1. **Always use Bazel commands** for building, testing, and debugging the project
-2. **Never use Maven commands** as they will not work
-3. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
-4. **Use appropriate debug flags** with Bazel commands for effective debugging
+1. **ALWAYS debug specific tests first** before running broader test suites
+2. **Always use Bazel commands** for building, testing, and debugging the project
+3. **Never use Maven commands** as they will not work
+4. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
+5. **Use appropriate debug flags** with Bazel commands for effective debugging
+6. **Reference the [Roo Tools Guide](../docs/development/roo_tools_guide.md)** when unsure about the correct debug command
 
 ## Additional Resources
 

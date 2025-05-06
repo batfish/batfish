@@ -1,4 +1,6 @@
-# Batfish Build System Guidelines
+# Roo Tools Guide for Batfish
+
+This document provides guidance for Roo AI assistant tools when working with the Batfish project, particularly focusing on build and test operations.
 
 ## Build System
 
@@ -6,11 +8,13 @@
 
 All build and test operations must use Bazel commands, not Maven (`mvn`) commands. Maven commands will not work with this project.
 
-## Preferred Testing Workflow
+## Running Tests
+
+### Preferred Testing Workflow
 
 When implementing new features or fixing bugs, follow this testing workflow:
 
-1. **ALWAYS run the specific test first** that directly verifies your changes:
+1. **First, run the specific test** that verifies your changes:
 
    ```bash
    # Run a specific test
@@ -30,6 +34,34 @@ When implementing new features or fixing bugs, follow this testing workflow:
    bazel test //...
    ```
 
+### Bazel Test Commands
+
+```bash
+# Run a specific test
+bazel test //projects/coordinator:coordinator_tests
+
+# Run a specific test method
+bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
+
+# Run tests in a specific package
+bazel test //projects/coordinator/...
+
+# Run all tests
+bazel test //...
+```
+
+### Incorrect Way (DO NOT USE)
+
+The following approaches will not work and should never be used:
+
+```bash
+# DO NOT USE - Maven is not used in this project
+mvn test
+
+# DO NOT USE - cd + mvn pattern is not applicable
+cd some/directory && mvn test
+```
+
 ## Building the Project
 
 ### Correct Way (Using Bazel)
@@ -44,42 +76,7 @@ bazel build //...
 bazel build //projects/allinone:allinone_main
 ```
 
-## Running Tests
-
-### Correct Way (Using Bazel)
-
-```bash
-# Run a specific test (PREFERRED FIRST STEP)
-bazel test //projects/coordinator:coordinator_tests
-
-# Run a specific test method (PREFERRED FIRST STEP)
-bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistNetwork$ -- //projects/coordinator:coordinator_tests
-
-# Run tests in a specific package (AFTER specific tests pass)
-bazel test //projects/coordinator/...
-
-# Run all tests (ONLY AFTER specific tests pass)
-bazel test //...
-```
-
-### Incorrect Way (DO NOT USE)
-
-The following approaches will not work and should never be used:
-
-```bash
-# DO NOT USE - Maven is not used in this project
-mvn test
-mvn compile
-mvn package
-
-# DO NOT USE - cd + mvn pattern is not applicable
-cd some/directory && mvn test
-
-# DO NOT USE - Running all tests first is inefficient
-bazel test //... && bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
-```
-
-## Running the Service
+### Running the Service
 
 To run the Batfish service:
 
@@ -91,17 +88,19 @@ tools/bazel_run.sh
 bazel run //projects/allinone:allinone_main -- -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions -containerslocation $(git rev-parse --show-toplevel)/containers"
 ```
 
-## Implementation Guidelines
+## Guidelines for Roo Tools
 
-1. **ALWAYS run specific tests first** before running broader test suites
-2. **Always use Bazel commands** for building, testing, and running the project
-3. **Never suggest Maven commands** as they will not work
-4. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
-5. **Reference the [Roo Tools Guide](../docs/development/roo_tools_guide.md)** when unsure about the correct build or test command
+When using Roo tools with Batfish:
+
+1. **Always use Bazel commands** for building, testing, and running the project
+2. **Never suggest Maven commands** as they will not work
+3. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
+4. **Always run specific tests first** before running broader test suites
+5. **Reference this guide** when unsure about the correct build or test command
 
 ## Additional Resources
 
 For more detailed information about building and testing Batfish, refer to:
 
-- [Building and Running Guide](../docs/building_and_running/README.md)
-- [Testing Guide](../docs/development/testing_guide.md)
+- [Building and Running Guide](../building_and_running/README.md)
+- [Testing Guide](testing_guide.md)
