@@ -9,6 +9,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.computeFir
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
+import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -95,7 +96,14 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
@@ -441,8 +449,16 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_admin_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_srlgContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_excludeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_allContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_anyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_excludeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_allContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_anyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
@@ -812,6 +828,7 @@ import org.batfish.representation.juniper.AddressFamily;
 import org.batfish.representation.juniper.AddressRangeAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
+import org.batfish.representation.juniper.AdminGroup;
 import org.batfish.representation.juniper.AggregateRoute;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
@@ -1059,6 +1076,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
+
+  private static final IntegerSpace ADMIN_GROUP_RANGE = IntegerSpace.of(new SubRange(0, 31));
 
   private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
 
@@ -5488,6 +5507,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitMplsi_admin_group(Mplsi_admin_groupContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_INTERFACE_ADMIN_GROUP, getLine(ctx.name.getStart()));
+  }
+
+  @Override
   public void exitMplsi_srlg(Mplsi_srlgContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
@@ -7673,6 +7699,70 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vlan_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "vlan number");
+  }
+
+  @Override
+  public void exitMpls_admin_groups(Mpls_admin_groupsContext ctx) {
+    String name = toString(ctx.name);
+
+    // Validate admin-group value (0-31)
+    Optional<Integer> maybeValue =
+        toIntegerInSpace(ctx, ctx.number, ADMIN_GROUP_RANGE, "admin-group");
+    if (!maybeValue.isPresent()) {
+      return;
+    }
+
+    int value = maybeValue.get();
+    _currentLogicalSystem.getAdminGroups().put(name, new AdminGroup(name, value));
+    _configuration.defineFlattenedStructure(ADMIN_GROUP, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitMplslspag_exclude(Mplslspag_excludeContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_EXCLUDE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspag_include_all(Mplslspag_include_allContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspag_include_any(Mplslspag_include_anyContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_exclude(Mplslspsag_excludeContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_include_all(Mplslspsag_include_allContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP,
+        name,
+        MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL,
+        getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_include_any(Mplslspsag_include_anyContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP,
+        name,
+        MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY,
+        getLine(ctx.name.getStart()));
   }
 
   private @Nonnull Optional<String> toString(

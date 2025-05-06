@@ -58,6 +58,10 @@ ACCESS_INTERNAL: 'access-internal';
 
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
 
+ADMIN_GROUP: 'admin-group' -> pushMode(M_AdminGroup);
+
+ADMIN_GROUPS: 'admin-groups' -> pushMode(M_Name);
+
 ACCOUNTING: 'accounting';
 ACTIVATE: 'activate';
 ACTIVE: 'active';
@@ -661,6 +665,8 @@ EXACT: 'exact';
 
 EXCEPT: 'except';
 
+EXCLUDE: 'exclude';
+
 EXCLUDE_NON_ELIGIBLE: 'exclude-non-eligible';
 
 EXCLUDE_NON_FEASIBLE: 'exclude-non-feasible';
@@ -985,6 +991,10 @@ IMPORT_RIB: 'import-rib' -> pushMode(M_Name);
 INACTIVE: 'inactive';
 
 INACTIVITY_TIMEOUT: 'inactivity-timeout';
+
+INCLUDE_ALL: 'include-all';
+
+INCLUDE_ANY: 'include-any';
 
 INCLUDE_MP_NEXT_HOP: 'include-mp-next-hop';
 
@@ -2529,6 +2539,8 @@ SCTP: 'sctp';
 SCRUBBED: F_Scrubbed;
 
 SECRET: 'secret' -> pushMode(M_SecretString);
+
+SECONDARY: 'secondary' -> pushMode(M_Name);
 
 SECURITY: 'security';
 
@@ -5001,3 +5013,12 @@ M_RibName_BGP: BGP PERIOD ( L2VPN | L3VPN | L3VPN_INET6 ) PERIOD UINT8 -> type(B
 M_RibName_VXLAN: COLON VXLAN PERIOD INET PERIOD UINT8 -> type(VXLAN_RIB_NAME), popMode;
 M_RibName_WS: F_WhitespaceChar+ -> skip;
 M_RibName_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_AdminGroup;
+M_AdminGroup_EXCLUDE: 'exclude' -> type(EXCLUDE), mode(M_Name);
+M_AdminGroup_INCLUDE_ALL: 'include-all' -> type(INCLUDE_ALL), mode(M_Name);
+M_AdminGroup_INCLUDE_ANY: 'include-any' -> type(INCLUDE_ANY), mode(M_Name);
+M_AdminGroup_WILDCARD: F_Wildcard {setWildcard();} -> popMode;
+M_AdminGroup_NAME: F_Name -> type(NAME), popMode;
+M_AdminGroup_WS: F_WhitespaceChar+ -> skip;
+M_AdminGroup_NEWLINE: F_NewlineChar+ -> type(NEWLINE), popMode;
