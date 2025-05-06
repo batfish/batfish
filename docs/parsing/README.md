@@ -685,6 +685,52 @@ This makes the parser more fragile and can break recovery in the event that a ch
 If a rule is added with no current plans for further implementation (use in extraction or conversion), the rule should end in `_null`.
 This allows it to be captured by the SilentSyntaxListener and prevents unnecessary parse warnings.
 
+##### Important Naming Convention for `_null` Rules
+
+When implementing rules with the `_null` suffix, follow these guidelines:
+
+1. **Leaf Rules**: Rules that don't call other rules (terminal rules) **SHOULD** have the `_null` suffix if they're not extracted
+2. **Non-Leaf Rules**: Rules that call other rules **SHOULD NOT** have the `_null` suffix, even if none of their child rules are extracted
+
+For example:
+
+```
+// Correct: Non-leaf rule without _null suffix
+mpls_label_switched_path
+:
+   LABEL_SWITCHED_PATH name = junos_name
+   (
+      mplslsp_to_null
+      | mplslsp_random_null
+      | ...
+   )*
+;
+
+// Correct: Leaf rule with _null suffix
+mplslsp_random_null
+:
+   RANDOM null_filler
+;
+
+// Incorrect: Non-leaf rule with _null suffix
+mpls_label_switched_path_null  // DON'T DO THIS
+:
+   LABEL_SWITCHED_PATH name = junos_name
+   (
+      mplslsp_to_null
+      | ...
+   )*
+;
+
+// Incorrect: Leaf rule without _null suffix
+mplslsp_random  // DON'T DO THIS
+:
+   RANDOM null_filler
+;
+```
+
+This naming convention helps distinguish between rules that are meant to be extracted (non-null rules) and rules that are only meant for parsing but not extraction (null rules). It also maintains a clear hierarchy in the grammar structure.
+
 ##### Implementation Decision Guide for Protocol Commands
 
 When implementing a new command or syntax in Batfish, you must determine whether it should be extracted to the data model or implemented as a null rule. This decision is critical for maintaining accurate network behavior modeling while avoiding unnecessary complexity.
