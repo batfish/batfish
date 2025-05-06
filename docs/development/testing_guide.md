@@ -17,6 +17,32 @@ Our testing philosophy emphasizes:
 - Maintaining test readability and maintainability
 - Using the right type of test for each situation
 
+## Preferred Testing Workflow
+
+When implementing new features or fixing bugs, follow this testing workflow:
+
+1. **ALWAYS run the specific test first** that directly verifies your changes:
+
+   ```bash
+   # Run a specific test
+   bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+
+   # Run a specific test method
+   bazel test --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest#testAdminGroupDefinitions //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+   ```
+
+2. **Only after the specific test passes**, run related tests or the full test suite:
+
+   ```bash
+   # Run all tests in a package
+   bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper/...
+
+   # Run all tests
+   bazel test //...
+   ```
+
+This approach is more efficient and helps you focus on fixing the specific issue at hand before verifying broader compatibility.
+
 ## Unit Testing
 
 ### When to Write Unit Tests
@@ -87,16 +113,16 @@ Each test directory typically contains:
 
 ### Running Reference Tests
 
-To run all reference tests:
-
-```bash
-bazel test //tests/...
-```
-
 To run a specific reference test:
 
 ```bash
 bazel test //tests/parsing-tests:ref_tests
+```
+
+To run all reference tests (only after specific tests pass):
+
+```bash
+bazel test //tests/...
 ```
 
 ### Updating Reference Tests
