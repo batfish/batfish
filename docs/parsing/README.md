@@ -681,73 +681,110 @@ This makes the parser more fragile and can break recovery in the event that a ch
 If a rule is added with no current plans for further implementation (use in extraction or conversion), the rule should end in `_null`.
 This allows it to be captured by the SilentSyntaxListener and prevents unnecessary parse warnings.
 
-##### When to use `_null`
+##### Implementation Decision Guide for Protocol Commands
 
-You should use the `_null` suffix when:
+When implementing a new command or syntax in Batfish, you must determine whether it should be extracted to the data model or implemented as a null rule. This decision is critical for maintaining accurate network behavior modeling while avoiding unnecessary complexity.
 
-1. The command is recognized by the parser but doesn't affect the data model or network behavior
-2. You want to avoid parse warnings for valid syntax
-3. There's no current plan to extract or convert the command
+###### What Batfish Models
 
-##### Example: Simple case
+Batfish extracts and models configuration elements that affect the following:
 
-For example, a line `log syslog` has been added, which does not affect current Batfish models.
-To avoid creating a parse warning every time this line appears, parsing support is added for it.
-Since nothing in extraction needed to change, the rule was added with `_null`:
+1. **Control Plane Behavior**: Commands that influence routing decisions, next-hop selection, or path determination
+2. **Forwarding Behavior**: Commands that determine how packets are forwarded through the network
+3. **Security Posture**: Commands that affect which traffic is permitted or denied
+4. **Protocol Establishment**: Commands that determine whether protocol adjacencies or sessions can be established
+
+###### What Batfish Doesn't Model
+
+Batfish typically implements as null rules (with `_null` suffix) configuration elements that:
+
+1. **Operational Commands**: Commands that only affect logging, monitoring, or management access
+2. **Performance Tuning**: Commands that only affect convergence speed but not the final converged state
+3. **Protocol Optimizations**: Commands that optimize protocol operation but don't change the final routing decisions
+4. **Cosmetic Settings**: Commands that affect display or formatting of output
+
+###### Protocol Timer Decision Framework
+
+For protocol timers specifically, use this decision framework:
+
+| Timer Type                       | Implementation                           | Reasoning                                                       |
+| -------------------------------- | ---------------------------------------- | --------------------------------------------------------------- |
+| **Session Establishment Timers** | Extract to data model                    | These affect whether sessions/adjacencies can form              |
+| **Convergence Timers**           | Implement as null rules                  | These only affect how quickly the network converges             |
+| **Keep-alive Timers**            | Extract if they affect session stability | Extract if session teardown would occur in realistic timeframes |
+| **Throttling Timers**            | Implement as null rules                  | These only affect message frequency, not final state            |
+
+###### Step-by-Step Decision Process
+
+1. **Identify the command's purpose**: Understand what the command does and how it affects network behavior
+2. **Determine implementation level**:
+   - State 1: Not parsed at all (unrecognized)
+   - State 2: In grammar but never extracted (use `_null` suffix)
+   - State 3: In grammar but not implemented yet (use `todo()` or `warn()`)
+   - State 4: Extracted but conditionally supported (add warnings)
+   - State 5: Fully implemented (no warnings)
+3. **Apply the timer-specific guidance**:
+   - If the timer affects session establishment (like OSPF hello-interval), extract it
+   - If the timer only affects protocol performance or convergence time, implement as null rule
+
+###### Examples Table for Routing Protocol Commands
+
+| Command                      | Implementation | Reasoning                                                            |
+| ---------------------------- | -------------- | -------------------------------------------------------------------- |
+| `ospf hello-interval`        | Extract        | Affects whether OSPF adjacencies can form                            |
+| `ospf dead-interval`         | Extract        | Affects whether OSPF adjacencies remain up                           |
+| `ospf lsa-refresh-timer`     | Null rule      | Only affects how often LSAs are refreshed, not final SPF calculation |
+| `ospf spf-delay`             | Null rule      | Only affects convergence speed, not final SPF calculation            |
+| `bgp keepalive-interval`     | Extract        | Affects whether BGP sessions remain established                      |
+| `bgp hold-time`              | Extract        | Affects whether BGP sessions remain established                      |
+| `bgp advertisement-interval` | Null rule      | Only affects how quickly updates are sent, not final RIB             |
+| `isis hello-interval`        | Extract        | Affects whether IS-IS adjacencies can form                           |
+| `isis lsp-refresh-interval`  | Null rule      | Only affects how often LSPs are refreshed, not final SPF calculation |
+
+###### Example: Protocol Timer Implementation
+
+For example, when implementing the OSPF hello-interval command, it should be extracted because it affects whether OSPF adjacencies can form:
 
 ```
-statement
+s_ospf_interface
 :
-  s_log_null
-  | s_static_routes
-  | s_system
-;
-
-s_log_null
-:
-  LOG SYSLOG NEWLINE
-;
-```
-
-##### Example: Mixed implementation levels
-
-Note that the `_null` indicator should always be added to the leaf rule. For example, if `log syslog` was to be ignored, but `log access-list ACL` was to implemented (in order to track the use of ACL) we would have something like:
-
-```
-s_log
-:
-  LOG
+  OSPF INTERFACE
   (
-    sl_access_list
-    | sl_syslog_null
+    soi_hello_interval
+    | soi_dead_interval
+    | soi_lsa_refresh_interval_null
   )
 ;
-```
 
-##### Example: Juniper-specific pattern
-
-For Juniper configurations, the `null_filler` rule is often used with `_null` suffix rules to ignore the rest of a line:
-
-```
-ife_recovery_timeout_null
+soi_hello_interval
 :
-  RECOVERY_TIMEOUT null_filler
+  HELLO_INTERVAL seconds = uint16 NEWLINE
+;
+
+soi_lsa_refresh_interval_null
+:
+  LSA_REFRESH_INTERVAL uint16 NEWLINE
 ;
 ```
 
-##### Testing `_null` rules
+###### Testing Implementation Decisions
 
-Even though `_null` rules don't require extraction or conversion code, they should still be tested to ensure they parse correctly without warnings:
+Even for `_null` rules, tests should verify that the parser correctly handles the syntax:
 
 ```java
 @Test
-public void testRecoveryTimeoutParsing() {
+public void testOspfTimerParsing() {
   // Should parse without warnings
-  parseConfig("recovery-timeout-test");
+  parseConfig("ospf-timer-test");
+
+  // For extracted timers, verify the values are correctly extracted
+  Configuration c = parseConfig("ospf-hello-interval-test");
+  assertThat(c.getDefaultVrf().getOspfProcess().getAreas().get(0L).getInterfaces().get("eth0")
+      .getHelloInterval(), equalTo(10));
 }
 ```
 
-See the [Implementation Guide](implementation_guide.md) for more detailed guidance on when and how to use `_null` suffix rules.
+See the [Implementation Guide](implementation_guide.md) for more detailed guidance on determining the appropriate implementation level for different types of commands.
 
 ### Grammar packages
 
