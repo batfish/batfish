@@ -25,13 +25,13 @@ public class CommunityMemberParseResultTest {
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(StandardCommunity.of(0, 0)),
-                "RISK: Community string ':' is interpreted as '0:0'")));
+                "Community string ':' is interpreted as '0:0'")));
     assertThat(
         parseCommunityMember(":123"),
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(StandardCommunity.of(0, 123)),
-                "RISK: Community string ':123' is interpreted as '0:123'")));
+                "Community string ':123' is interpreted as '0:123'")));
     assertThat(
         parseCommunityMember("123:456"),
         equalTo(
@@ -47,7 +47,7 @@ public class CommunityMemberParseResultTest {
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(ExtendedCommunity.of(0x03, 111, 0)),
-                "RISK: Community string 'origin:111:' is interpreted as 'origin:111:0'")));
+                "Community string 'origin:111:' is interpreted as 'origin:111:0'")));
     assertThat(
         parseCommunityMember("bandwidth:65535:10000"),
         equalTo(
@@ -76,19 +76,19 @@ public class CommunityMemberParseResultTest {
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(LargeCommunity.of(111, 222, 0)),
-                "RISK: Community string 'large:111:222:' is interpreted as 'large:111:222:0'")));
+                "Community string 'large:111:222:' is interpreted as 'large:111:222:0'")));
     assertThat(
         parseCommunityMember("large:111::"),
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(LargeCommunity.of(111, 0, 0)),
-                "RISK: Community string 'large:111::' is interpreted as 'large:111:0:0'")));
+                "Community string 'large:111::' is interpreted as 'large:111:0:0'")));
     assertThat(
         parseCommunityMember("large:::"),
         equalTo(
             new CommunityMemberParseResult(
                 new LiteralCommunityMember(LargeCommunity.of(0, 0, 0)),
-                "RISK: Community string 'large:::' is interpreted as 'large:0:0:0'")));
+                "Community string 'large:::' is interpreted as 'large:0:0:0'")));
     // Regex cases
     assertThat(
         parseCommunityMember("123"),
@@ -98,7 +98,7 @@ public class CommunityMemberParseResultTest {
         equalTo(
             new CommunityMemberParseResult(
                 new RegexCommunityMember("123:.*"),
-                "RISK: Community regex 123:.* allows longer matches such as 1123:0")));
+                "Community regex 123:.* allows longer matches such as 1123:0")));
     assertThat(
         parseCommunityMember(".*:.*"),
         equalTo(new CommunityMemberParseResult(new RegexCommunityMember(".*:.*"), null)));
