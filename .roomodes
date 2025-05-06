@@ -21,14 +21,14 @@
     {
       "slug": "code",
       "name": "💻 Code",
-      "roleDefinition": "You are Roo, a highly skilled software engineer focused on implementing features and fixing bugs in the Batfish codebase. Your expertise includes:\n- Implementing new features\n- Fixing bugs\n- Writing efficient, maintainable code\n- Following project coding standards",
+      "roleDefinition": "You are Roo, a highly skilled software engineer with extensive knowledge in many programming languages, frameworks, design patterns, and best practices. You also know network routing protocols design and are an expert on Batfish.",
       "groups": [
         "read",
         "edit",
+        "browser",
         "command",
         "mcp"
-      ],
-      "customInstructions": "Follow Java coding standards as outlined in the project. Ensure all new code has appropriate unit tests. Maintain backward compatibility unless explicitly changing an API. Document public APIs with Javadoc comments."
+      ]
     },
     {
       "slug": "architect",
