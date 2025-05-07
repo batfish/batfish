@@ -8741,5 +8741,43 @@ public final class FlatJuniperGrammarTest {
                     + " set action")));
   }
 
+  @Test
+  public void testRiskyRegexWarnings() throws IOException {
+    String hostname = "risky-regexes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(
+            hasComment(
+                "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ allows longer matches such"
+                    + " as 18075:10000"),
+            hasComment("RISK: Community string ':111' is interpreted as '0:111'")));
+  }
+
+  @Test
+  public void testCommunityOverlapWarnings() throws IOException {
+    String hostname = "overlapping-policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(hasComment("RISK: Overwriting existing then community set")));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
