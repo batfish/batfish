@@ -15,7 +15,10 @@ import org.batfish.datamodel.bgp.community.StandardCommunity;
 public class CommunityMemberParseResult {
 
   private final CommunityMember _member;
+
+  /** A parse warning that indicates a risk */
   private final @Nullable String _warning;
+
   private static final Pattern DIGITS_ONLY_PATTERN = Pattern.compile("^\\d+$");
   private static final Pattern STANDARD_PATTERN = Pattern.compile("^\\d*:\\d*$");
   private static final Pattern EXTENDED_PATTERN = Pattern.compile("^([^:]+):[^:]*:$");
@@ -52,7 +55,7 @@ public class CommunityMemberParseResult {
     String warning = null;
     if (!unintendedMatches.isEmpty()) {
       warning =
-          "RISK: Community regex "
+          "Community regex "
               + text
               + " allows longer matches such as "
               + String.join(" and ", unintendedMatches);
@@ -114,8 +117,7 @@ public class CommunityMemberParseResult {
         new CommunityMemberParseResult(
             new LiteralCommunityMember(community),
             String.format(
-                "RISK: Community string '%s' is interpreted as '%s'",
-                originalText, normalizedText)));
+                "Community string '%s' is interpreted as '%s'", originalText, normalizedText)));
   }
 
   /** Returns a {@link Community} if {@code text} can be parsed as one, or else {@code null}. */

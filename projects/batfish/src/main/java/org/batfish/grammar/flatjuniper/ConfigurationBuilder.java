@@ -2322,7 +2322,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private void addPsThen(PsThen then, ParserRuleContext ctx) {
     List<String> cleared = _currentPsThens.addPsThen(then);
     if (!cleared.isEmpty()) {
-      warn(
+      warnRisky(
           ctx,
           String.format(
               "Overwriting existing %s %s",
@@ -5738,7 +5738,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.literal_or_regex_community() != null) {
       CommunityMemberParseResult result = parseCommunityMember(text);
       if (result.getWarning() != null) {
-        warn(ctx, result.getWarning());
+        warnRisky(ctx, result.getWarning());
       }
       return result.getMember();
     } else {
