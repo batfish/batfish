@@ -4130,7 +4130,7 @@ public final class FlatJuniperGrammarTest {
                             "NOPFS_ESP_3DES_MD5",
                             "NOPFS_ESP_DES_SHA",
                             "NOPFS_ESP_DES_MD5"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
   }
 
   @Test
