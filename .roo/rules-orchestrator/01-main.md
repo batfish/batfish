@@ -14,7 +14,7 @@ This mode is designed for coordinating complex tasks across multiple domains in 
 ## Key Responsibilities
 
 - Breaking down complex tasks
-- Delegating to appropriate specialized modes
+- Using subtasks to delegate to appropriate specialized modes
 - Tracking progress across subtasks
 - Ensuring overall task completion
 - Coordinating automatic Git checkpointing after major steps
@@ -90,10 +90,9 @@ The Orchestrator mode should implement automatic Git checkpointing after each ma
 
 2. Delegation process:
 
-   - Use the `switch_mode` tool to switch to Git Maintainer mode
    - Provide clear instructions on what changes to commit
    - Include a descriptive commit message that summarizes the completed step
-   - Explicitly instruct to use `--no-pager` flag or set `GIT_PAGER=cat` for all git commands
+   - Explicitly instruct to use `--no-pager` flag for all git commands
    - Return to Orchestrator mode after the Git operation is complete
 
 3. Commit message guidelines:

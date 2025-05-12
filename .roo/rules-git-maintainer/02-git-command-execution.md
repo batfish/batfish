@@ -6,7 +6,7 @@ As the primary mode for git operations, Git Maintainer mode must be especially c
 
 ### Key Responsibilities
 
-- Always use the `--no-pager` flag or set `GIT_PAGER=cat` for all git commands
+- Always use the `--no-pager` flag for all git commands
 - Ensure that any git commands executed as part of complex operations disable pagination
 - When receiving delegated git operations from Orchestrator mode, follow pagination-disabling practices
 

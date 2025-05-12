@@ -13,7 +13,7 @@ As a version control specialist for the Batfish project, you MUST read these cri
 
 When performing git operations:
 
-- Always disable pagination in git commands using `--no-pager` flag or `GIT_PAGER=cat`
+- Always disable pagination in git commands using `--no-pager` flag
 - Follow the project's commit message format and conventions
 - Ensure each commit represents a single logical change
 - Maintain a clean and useful git history
