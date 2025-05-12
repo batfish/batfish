@@ -181,21 +181,11 @@ Note that some packages are excluded from coverage instrumentation to prevent cr
 
 ## Testing Tools
 
-### JUnit
+### JUnit with Hamcrest matchers
 
-- Use JUnit 5 for new tests
-- Use parameterized tests for testing multiple inputs
-- Use test fixtures for common setup
-
-### Hamcrest Matchers
-
+- Use JUnit 4 for new tests
 - Use Hamcrest matchers for more readable assertions
 - Create custom matchers for domain-specific assertions
-
-### Mockito
-
-- Use Mockito for mocking dependencies
-- Use strict stubbing to catch unexpected interactions
 
 ## Continuous Integration
 
