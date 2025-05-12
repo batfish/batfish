@@ -162,10 +162,22 @@ Always carefully review the changes to reference files after running this script
 
 ### Measuring Coverage
 
-- Use JaCoCo for Java code coverage
+- Batfish uses Bazel's built-in code coverage functionality
+- Coverage results are tracked using codecov.io
+- IntelliJ code coverage support works normally with the Bazel plugin
 - Review coverage reports regularly
 - Address coverage gaps in critical components
 - Don't write tests just to increase coverage numbers
+
+### Running Coverage Analysis
+
+To run code coverage analysis:
+
+```bash
+bazel coverage //...
+```
+
+Note that some packages are excluded from coverage instrumentation to prevent crashes, as configured in the `.bazelrc` file.
 
 ## Testing Tools
 
