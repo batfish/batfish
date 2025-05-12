@@ -24,13 +24,7 @@ Use one of these approaches for all git commands:
    git --no-pager status
    ```
 
-2. Or set the `GIT_PAGER` environment variable to `cat`:
-
-   ```bash
-   GIT_PAGER=cat git log
-   ```
-
-3. For commands that may produce large outputs, consider limiting the output:
+2. For commands that may produce large outputs, consider limiting the output:
    ```bash
    git --no-pager log -n 10
    ```
