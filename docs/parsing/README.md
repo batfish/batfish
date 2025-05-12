@@ -17,6 +17,7 @@ then processed by an [extractor](../extraction/README.md).
 
 Different vendors have unique configuration formats and parsing requirements. For vendor-specific guidance, see:
 
+- [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
 
 Most developers wanting to make changes to Batfish parsing will not need to perform all the
