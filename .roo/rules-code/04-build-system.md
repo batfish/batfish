@@ -62,23 +62,6 @@ bazel test //projects/coordinator/...
 bazel test //...
 ```
 
-### Incorrect Way (DO NOT USE)
-
-The following approaches will not work and should never be used:
-
-```bash
-# DO NOT USE - Maven is not used in this project
-mvn test
-mvn compile
-mvn package
-
-# DO NOT USE - cd + mvn pattern is not applicable
-cd some/directory && mvn test
-
-# DO NOT USE - Running all tests first is inefficient
-bazel test //... && bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
-```
-
 ## Running the Service
 
 To run the Batfish service:
@@ -95,9 +78,8 @@ bazel run //projects/allinone:allinone_main -- -runclient false -coordinatorargs
 
 1. **ALWAYS run specific tests first** before running broader test suites
 2. **Always use Bazel commands** for building, testing, and running the project
-3. **Never suggest Maven commands** as they will not work
-4. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
-5. **Reference the [Roo Tools Guide](../docs/development/roo_tools_guide.md)** when unsure about the correct build or test command
+3. **Use the correct Bazel target syntax** (`//projects/...`) when referring to specific components
+4. **Reference the [Roo Tools Guide](../docs/development/roo_tools_guide.md)** when unsure about the correct build or test command
 
 ## Additional Resources
 

@@ -25,7 +25,7 @@ This section provides information about the Batfish development environment, tec
 ### Prerequisites
 
 - Java 17 or later
-- Bazel
+- [Bazelisk](https://github.com/bazelbuild/bazelisk#installation)
 - Python 3.9 or later (for Pybatfish)
 - Docker (for containerized deployment)
 
@@ -39,7 +39,7 @@ Batfish uses Bazel as its build system. Key commands:
 
 - `bazel build //...`: Build all targets
 - `bazel test //...`: Run all tests
-- `bazel run //projects/batfish:batfish`: Run the Batfish server
+- `./tools/bazel_run.sh`: Run a local Batfish server
 
 **IMPORTANT**: Batfish uses Bazel, NOT Maven. All build and test operations must use Bazel commands.
 

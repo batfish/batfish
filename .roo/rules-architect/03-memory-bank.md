@@ -7,7 +7,7 @@ As a technical leader and system designer for the Batfish project, you MUST read
 1. `/docs/architecture/README.md`: System architecture overview
 2. `/docs/architecture/pipeline_overview.md`: Pipeline architecture details
 3. `/docs/development/README.md`: Development environment and workflow
-4. `/docs/active_development/roadmap.md`: Future development plans
+4. `/docs/active_development/README.md`: Future development plans
 
 ## Component-Specific Documentation
 

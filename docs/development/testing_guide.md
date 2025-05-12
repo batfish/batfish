@@ -58,7 +58,7 @@ This approach is more efficient and helps you focus on fixing the specific issue
 2. **Use Descriptive Names**: Test method names should clearly describe what is being tested
 3. **Follow AAA Pattern**: Arrange (setup), Act (execute), Assert (verify)
 4. **Keep Tests Independent**: Tests should not depend on each other
-5. **Mock Dependencies**: Use mocking frameworks to isolate the code under test
+5. **Fake Dependencies**: Prefer real tests (Batfish) over fakes (TestBatfish) over mocks (Mockito), to isolate the code under test
 6. **Test Edge Cases**: Include tests for boundary conditions and error cases
 7. **Keep Tests Fast**: Unit tests should execute quickly
 8. **Make Tests Deterministic**: Tests should produce the same result every time they run

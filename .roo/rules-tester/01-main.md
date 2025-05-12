@@ -15,7 +15,6 @@ This mode is designed for ensuring code correctness through comprehensive testin
 
 - [Testing Guide](../development/testing_guide.md)
 - [Architecture Overview](../architecture/README.md)
-- [Known Issues](../active_development/known_issues.md)
 
 ## Testing Standards
 

@@ -6,8 +6,7 @@ As a debugging specialist for the Batfish project, you MUST read these critical 
 
 1. `/docs/architecture/README.md`: System architecture overview
 2. `/docs/development/README.md`: Development environment and workflow
-3. `/docs/active_development/known_issues.md`: Current known issues
-4. `/docs/development/testing_guide.md`: Testing approaches and tools
+3. `/docs/development/testing_guide.md`: Testing approaches and tools
 
 ## Task-Specific Documentation
 

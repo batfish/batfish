@@ -1,46 +1,34 @@
 # Active Development
 
-This section provides information about the current state of Batfish development, including focus areas, recent changes, and known issues.
+This section provides information about the current state of Batfish development and known issues.
 
-## Current Focus Areas
+## Active development
 
-1. **Expanding Device Support**
+As of May 2025, the most active area of development by the Batfish core contributors is in enhancing the symbolic policy analysis for Juniper and other operating systems. Recently, open source contributors have supplied improvements to AWS support and proposed support for modeling Azure cloud networks.
 
-   - Adding support for [specific vendor/device]
-   - Enhancing support for [specific vendor/device]
+## Known Issues
 
-2. **Improving Analysis Capabilities**
+This document tracks current known issues and limitations in Batfish.
 
-   - Enhancing [specific protocol] analysis
-   - Adding new checks for [specific network issue]
+### Known Limitations
 
-3. **Performance Optimization**
-   - Optimizing [specific component] for better performance
-   - Reducing memory usage in [specific area]
+1. **IPv6**
 
-## Recent Significant Changes
+   - **Description**: Batfish has very limited support for IPv6, limited primarily to vendor-specific extraction of some concepts.
+   - **Workaround**: None.
+   - **Future Plans**: We want to improve IPv6 support, but so far have been unable to find dedicated funding for bringing IPv6 up to IPv4 standards. We would welcome contributions in this area!
 
-### [Month Year]
+2. **MPLS**
 
-- Added support for [feature/device]
-- Fixed issue with [component]
-- Improved performance of [analysis type]
+   - **Description**: Batfish has no support for MPLS at this time.
+   - **Workaround**: In some networks, MPLS circuits can be mocked out by strategically adding L1 edges or by making small BGP configuration changes.
+   - **Future Plans**: No planned develpoment at this time.
 
-### [Month Year]
+3. **IS-IS, RIP**
+   - **Description**: Batfish has limited support for IS-IS and RIP at this time.
+   - **Workaround**: These protocols are not heavily used in networks where dedicated Batfish development has brought them to parity.
+   - **Future Plans**: No planned develpoment at this time.
 
-- Released version X.Y.Z
-- Added new question type for [purpose]
-- Enhanced documentation for [component]
+### Reporting New Issues
 
-## How to Contribute to Current Priorities
-
-If you're interested in contributing to Batfish, here are the areas where help is most needed:
-
-1. [Area 1]
-2. [Area 2]
-3. [Area 3]
-
-## Additional Information
-
-- [Roadmap](roadmap.md): Short and long-term development plans
-- [Known Issues](known_issues.md): Current status and known issues
+Please file [bug reports](https://github.com/batfish/batfish/issues/new?template=bug_report.md) or other issues on [GitHub](https://github.com/batfish/batfish/issues/new/choose). Bug reports are most likely to be actioned if full reproducible instructions are shared using the provided bug report template.

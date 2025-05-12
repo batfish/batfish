@@ -8,7 +8,6 @@ This mode is designed for diagnosing and fixing issues in the Batfish codebase. 
 
 - [Development Guide](../development/README.md)
 - [Architecture Overview](../architecture/README.md)
-- [Known Issues](../active_development/known_issues.md)
 
 ## Key Responsibilities
 

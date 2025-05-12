@@ -6,8 +6,7 @@ As a quality assurance specialist for the Batfish project, you MUST read these c
 
 1. `/docs/development/testing_guide.md`: Testing philosophy, approaches, and tools
 2. `/docs/architecture/README.md`: System architecture overview
-3. `/docs/active_development/known_issues.md`: Current known issues
-4. `/docs/development/coding_standards.md`: Code standards (testing section)
+3. `/docs/development/coding_standards.md`: Code standards (testing section)
 
 ## Test-Type Specific Documentation
 

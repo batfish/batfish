@@ -11,7 +11,7 @@ or can be [set up separately](https://github.com/batfish/pybatfish#how-do-i-get-
 - Java 17 JDK
 - Python 3.9 or later (for Pybatfish)
 - git
-- [bazelisk](https://github.com/bazelbuild/bazelisk#installation)
+- [`bazelisk`](https://github.com/bazelbuild/bazelisk#installation)
 
 We provide OS-specific advice below.
 
