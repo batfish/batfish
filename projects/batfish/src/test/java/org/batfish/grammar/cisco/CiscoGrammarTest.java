@@ -4339,7 +4339,7 @@ public final class CiscoGrammarTest {
             "~IPSEC_PHASE2_POLICY:mymap:30:15~",
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
 
     assertThat(
         c,

@@ -81662,13 +81662,17 @@
         },
         "ipsecPhase2Policies" : {
           "ipsec-vpn-ba2e34a8-0" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2"
+            ],
             "proposals" : [
               "ipsec-prop-vpn-ba2e34a8-0"
             ]
           },
           "ipsec-vpn-ba2e34a8-1" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2"
+            ],
             "proposals" : [
               "ipsec-prop-vpn-ba2e34a8-1"
             ]
@@ -87363,244 +87367,42 @@
           }
         },
         "ipsecPeerConfigs" : {
-          "vpn-ba2e34a8-1-GROUP14" : {
+          "vpn-ba2e34a8-1" : {
             "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
             "destinationAddress" : "147.75.69.27",
             "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP14",
+            "ipsecPolicy" : "vpn-ba2e34a8-1",
             "localAddress" : "52.27.166.152",
             "sourceInterface" : "external-vpn-ba2e34a8-1",
             "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
           },
-          "vpn-ba2e34a8-1-GROUP15" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP15",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP16" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP16",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP17" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP17",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP18" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP18",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP19" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP19",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP2" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP2",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP20" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP20",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP21" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP21",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP22" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP22",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP23" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP23",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP24" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP24",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-1-GROUP5" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-1",
-            "ipsecPolicy" : "vpn-ba2e34a8-1-GROUP5",
-            "localAddress" : "52.27.166.152",
-            "sourceInterface" : "external-vpn-ba2e34a8-1",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-1"
-          },
-          "vpn-ba2e34a8-2-GROUP14" : {
+          "vpn-ba2e34a8-2" : {
             "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
             "destinationAddress" : "147.75.69.27",
             "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP14",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP15" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP15",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP16" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP16",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP17" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP17",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP18" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP18",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP19" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP19",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP2" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP2",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP20" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP20",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP21" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP21",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP22" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP22",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP23" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP23",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP24" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP24",
-            "localAddress" : "52.39.121.126",
-            "sourceInterface" : "external-vpn-ba2e34a8-2",
-            "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
-          },
-          "vpn-ba2e34a8-2-GROUP5" : {
-            "class" : "org.batfish.datamodel.IpsecStaticPeerConfig",
-            "destinationAddress" : "147.75.69.27",
-            "ikePhase1Policy" : "vpn-ba2e34a8-2",
-            "ipsecPolicy" : "vpn-ba2e34a8-2-GROUP5",
+            "ipsecPolicy" : "vpn-ba2e34a8-2",
             "localAddress" : "52.39.121.126",
             "sourceInterface" : "external-vpn-ba2e34a8-2",
             "tunnelInterface" : "vpn-vpn-ba2e34a8-2"
           }
         },
         "ipsecPhase2Policies" : {
-          "vpn-ba2e34a8-1-GROUP14" : {
-            "pfsKeyGroup" : "GROUP14",
+          "vpn-ba2e34a8-1" : {
+            "pfsKeyGroup" : [
+              "GROUP2",
+              "GROUP5",
+              "GROUP14",
+              "GROUP15",
+              "GROUP16",
+              "GROUP17",
+              "GROUP18",
+              "GROUP19",
+              "GROUP20",
+              "GROUP21",
+              "GROUP22",
+              "GROUP23",
+              "GROUP24"
+            ],
             "proposals" : [
               "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
               "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
@@ -87620,512 +87422,22 @@
               "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
             ]
           },
-          "vpn-ba2e34a8-1-GROUP15" : {
-            "pfsKeyGroup" : "GROUP15",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP16" : {
-            "pfsKeyGroup" : "GROUP16",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP17" : {
-            "pfsKeyGroup" : "GROUP17",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP18" : {
-            "pfsKeyGroup" : "GROUP18",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP19" : {
-            "pfsKeyGroup" : "GROUP19",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP2" : {
-            "pfsKeyGroup" : "GROUP2",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP20" : {
-            "pfsKeyGroup" : "GROUP20",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP21" : {
-            "pfsKeyGroup" : "GROUP21",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP22" : {
-            "pfsKeyGroup" : "GROUP22",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP23" : {
-            "pfsKeyGroup" : "GROUP23",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP24" : {
-            "pfsKeyGroup" : "GROUP24",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-1-GROUP5" : {
-            "pfsKeyGroup" : "GROUP5",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP14" : {
-            "pfsKeyGroup" : "GROUP14",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP15" : {
-            "pfsKeyGroup" : "GROUP15",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP16" : {
-            "pfsKeyGroup" : "GROUP16",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP17" : {
-            "pfsKeyGroup" : "GROUP17",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP18" : {
-            "pfsKeyGroup" : "GROUP18",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP19" : {
-            "pfsKeyGroup" : "GROUP19",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP2" : {
-            "pfsKeyGroup" : "GROUP2",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP20" : {
-            "pfsKeyGroup" : "GROUP20",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP21" : {
-            "pfsKeyGroup" : "GROUP21",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP22" : {
-            "pfsKeyGroup" : "GROUP22",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP23" : {
-            "pfsKeyGroup" : "GROUP23",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP24" : {
-            "pfsKeyGroup" : "GROUP24",
-            "proposals" : [
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
-              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
-              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
-            ]
-          },
-          "vpn-ba2e34a8-2-GROUP5" : {
-            "pfsKeyGroup" : "GROUP5",
+          "vpn-ba2e34a8-2" : {
+            "pfsKeyGroup" : [
+              "GROUP2",
+              "GROUP5",
+              "GROUP14",
+              "GROUP15",
+              "GROUP16",
+              "GROUP17",
+              "GROUP18",
+              "GROUP19",
+              "GROUP20",
+              "GROUP21",
+              "GROUP22",
+              "GROUP23",
+              "GROUP24"
+            ],
             "proposals" : [
               "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
               "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
