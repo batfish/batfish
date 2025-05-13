@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
 import com.google.common.graph.EndpointPair;
 import com.google.common.graph.MutableValueGraph;
@@ -30,6 +31,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.plugin.TracerouteEngine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.Edge;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.FlowDisposition;
@@ -302,9 +304,16 @@ public class IpsecUtil {
     if (initiatorIpsecP2policy == null || responderIpsecP2Policy == null) {
       return;
     }
-    if (initiatorIpsecP2policy.getPfsKeyGroup() != responderIpsecP2Policy.getPfsKeyGroup()) {
+
+    // If no common groups, negotiation fails
+    Set<DiffieHellmanGroup> commonGroups =
+        Sets.intersection(
+            initiatorIpsecP2policy.getPfsKeyGroups(), responderIpsecP2Policy.getPfsKeyGroups());
+    if (commonGroups.isEmpty()) {
       return;
     }
+
+    // TODO: pick a group and put it in the session?
 
     IpsecPhase2Proposal negotiatedIpsecPhase2Proposal =
         getMatchingIpsecP2Proposal(

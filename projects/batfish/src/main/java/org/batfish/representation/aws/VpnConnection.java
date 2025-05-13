@@ -14,6 +14,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.base.MoreObjects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Lists;
@@ -25,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -467,9 +469,14 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
   }
 
   private static @Nonnull IpsecPhase2Policy toIpsecPhase2Policy(
-      List<String> proposals, Value perfectForwardSecrecy) {
+      List<String> proposals, List<Value> perfectForwardSecrecyValues) {
     IpsecPhase2Policy ipsecPhase2Policy = new IpsecPhase2Policy();
-    ipsecPhase2Policy.setPfsKeyGroup(toDiffieHellmanGroup(perfectForwardSecrecy.getValue()));
+    // Convert all PFS values to DiffieHellmanGroup and collect them into a set
+    Set<DiffieHellmanGroup> pfsKeyGroups =
+        perfectForwardSecrecyValues.stream()
+            .map(pfs -> toDiffieHellmanGroup(pfs.getValue()))
+            .collect(ImmutableSet.toImmutableSet());
+    ipsecPhase2Policy.setPfsKeyGroups(pfsKeyGroups);
     ipsecPhase2Policy.setProposals(proposals);
     return ipsecPhase2Policy;
   }
@@ -588,21 +595,25 @@ final class VpnConnection implements AwsVpcEntity, Serializable {
         }
         ipsecProposalNames.add(name);
       }
-      for (Value pfs : ipsecTunnel.getIpsecPerfectForwardSecrecy()) {
-        String ipsecPolicyName = tunnelId + "-" + toDiffieHellmanGroup(pfs.getValue());
-        ipsecPhase2PolicyMapBuilder.put(
-            ipsecPolicyName, toIpsecPhase2Policy(ipsecProposalNames, pfs));
-        ipsecPeerConfigMapBuilder.put(
-            ipsecPolicyName,
-            IpsecStaticPeerConfig.builder()
-                .setTunnelInterface(vpnIfaceName)
-                .setIkePhase1Policy(tunnelId)
-                .setIpsecPolicy(ipsecPolicyName)
-                .setSourceInterface(externalInterfaceName)
-                .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
-                .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
-                .build());
-      }
+      // Create a single IPsec Phase 2 policy with all PFS key groups
+      List<Value> pfsValues = ipsecTunnel.getIpsecPerfectForwardSecrecy();
+      String ipsecPolicyName = tunnelId;
+
+      // Create the policy with all PFS key groups
+      ipsecPhase2PolicyMapBuilder.put(
+          ipsecPolicyName, toIpsecPhase2Policy(ipsecProposalNames, pfsValues));
+
+      // Create a single IPsec static peer config that uses this policy
+      ipsecPeerConfigMapBuilder.put(
+          ipsecPolicyName,
+          IpsecStaticPeerConfig.builder()
+              .setTunnelInterface(vpnIfaceName)
+              .setIkePhase1Policy(tunnelId)
+              .setIpsecPolicy(ipsecPolicyName)
+              .setSourceInterface(externalInterfaceName)
+              .setLocalAddress(ipsecTunnel.getVgwOutsideAddress())
+              .setDestinationAddress(ipsecTunnel.getCgwOutsideAddress())
+              .build());
 
       // configure BGP peering
       if (_isBgpConnection) {

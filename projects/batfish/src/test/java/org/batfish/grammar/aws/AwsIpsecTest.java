@@ -21,6 +21,7 @@ import static org.batfish.representation.aws.AwsConfiguration.vpnTunnelId;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasKey;
 
 import com.google.common.collect.ImmutableList;
@@ -342,7 +343,7 @@ public class AwsIpsecTest {
     assertThat(
         vgwConfiguration,
         hasIpsecPhase2Policy(
-            "vpn-ba2e34a8-2-GROUP2",
+            "vpn-ba2e34a8-2",
             allOf(
                 IpsecPhase2PolicyMatchers.hasIpsecProposals(
                     equalTo(
@@ -363,18 +364,19 @@ public class AwsIpsecTest {
                             "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
                             "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
                             "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(
+                    hasItems(DiffieHellmanGroup.GROUP2, DiffieHellmanGroup.GROUP5)))));
 
     // test for IPsec peer config
     assertThat(
         vgwConfiguration,
         hasIpsecPeerConfig(
-            "vpn-ba2e34a8-1-GROUP2",
+            "vpn-ba2e34a8-1",
             isIpsecStaticPeerConfigThat(
                 allOf(
                     hasDestinationAddress(Ip.parse("4.4.4.27")),
                     IpsecPeerConfigMatchers.hasIkePhase1Policy("vpn-ba2e34a8-1"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1-GROUP2"),
+                    IpsecPeerConfigMatchers.hasIpsecPolicy("vpn-ba2e34a8-1"),
                     hasSourceInterface(vpnExternalInterfaceName(vpnTunnelId("vpn-ba2e34a8", 1))),
                     hasLocalAddress(Ip.parse("1.2.3.4")),
                     hasTunnelInterface(
