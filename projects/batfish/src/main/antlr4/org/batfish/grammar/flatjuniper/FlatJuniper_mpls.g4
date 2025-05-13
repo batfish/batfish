@@ -35,6 +35,7 @@ p_mpls
        | mpls_admin_groups
        | mpls_interface
        | mpls_label_switched_path
+       | mpls_path
    )
 ;
 
@@ -42,6 +43,11 @@ mpls_admin_groups
 :
    // Admin-group values should be in the range 0-31
    ADMIN_GROUPS name = junos_name number = uint8
+;
+
+mpls_path
+:
+   PATH name = junos_name
 ;
 
 mpls_interface
@@ -72,16 +78,22 @@ mpls_label_switched_path
       | mplslsp_adaptive_null
       | mplslsp_admin_group
       | mplslsp_auto_bandwidth
+      | mplslsp_bandwidth_null
       | mplslsp_conditional_metric_null
+      | mplslsp_cross_credibility_cspf_null
+      | mplslsp_hop_limit_null
       | mplslsp_in_place_lsp_bandwidth_update_null
       | mplslsp_install_null
       | mplslsp_link_protection_null
       | mplslsp_no_decrement_ttl_null
       | mplslsp_no_self_ping_null
       | mplslsp_optimize_hold_dead_delay_null
+      | mplslsp_optimize_timer_null
+      | mplslsp_primary
       | mplslsp_priority_null
       | mplslsp_random_null
       | mplslsp_retry_timer_null
+      | mplslsp_revert_timer_null
       | mplslsp_secondary
       | mplslsp_self_ping_duration_null
       | mplslsp_soft_preemption_null
@@ -229,6 +241,36 @@ mplslsp_self_ping_duration_null
    SELF_PING_DURATION uint32
 ;
 
+mplslsp_bandwidth_null
+:
+   BANDWIDTH null_filler
+;
+
+mplslsp_cross_credibility_cspf_null
+:
+   CROSS_CREDIBILITY_CSPF null_filler
+;
+
+mplslsp_hop_limit_null
+:
+   HOP_LIMIT uint32
+;
+
+mplslsp_optimize_timer_null
+:
+   OPTIMIZE_TIMER uint32
+;
+
+mplslsp_primary
+:
+   PRIMARY name = junos_name
+;
+
+mplslsp_revert_timer_null
+:
+   REVERT_TIMER uint32
+;
+
 mplslsp_soft_preemption_null
 :
    SOFT_PREEMPTION null_filler
@@ -240,7 +282,13 @@ mplslsp_secondary
    (
       apply
       | mplslsps_admin_group
+      | mplslsps_preference
    )
+;
+
+mplslsps_preference
+:
+   PREFERENCE uint32
 ;
 
 mplslsps_admin_group

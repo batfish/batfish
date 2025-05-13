@@ -34,6 +34,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
@@ -101,9 +102,11 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTE
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
@@ -450,9 +453,12 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setCo
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_admin_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_srlgContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_primaryContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_secondaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_excludeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_allContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_anyContext;
@@ -7719,6 +7725,12 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitMpls_path(Mpls_pathContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(MPLS_PATH, name, ctx, _parser);
+  }
+
+  @Override
   public void exitMplslspag_exclude(Mplslspag_excludeContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
@@ -7764,6 +7776,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
         name,
         MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY,
         getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslsp_primary(Mplslsp_primaryContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        MPLS_PATH, name, MPLS_LSP_PRIMARY_PATH, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslsp_secondary(Mplslsp_secondaryContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        MPLS_PATH, name, MPLS_LSP_SECONDARY_PATH, getLine(ctx.name.getStart()));
   }
 
   private @Nonnull Optional<String> toString(
