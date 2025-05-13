@@ -6,3 +6,7 @@ set protocols bgp group G family inet6 unicast extended-nexthop-tunnel
 #
 set routing-instances RI protocols bgp forwarding-context master
 #
+set interfaces ge-1/0/0 unit 0 family mpls
+set protocols mpls apply-groups GROUP
+set groups GROUP protocols mpls interface ge-1/0/0.0
+#
