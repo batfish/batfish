@@ -2994,8 +2994,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       }
       if (_currentOspfSettings == null) {
         warn(ctx, "Could not find interface with ip address: " + ip);
-        // create dummy object to store what follows; this dangling object will be ignore
+        // create dummy object to store what follows; this dangling object will be ignored
         _currentOspfSettings = new OspfInterfaceSettings(Ip.ZERO);
+        return;
       }
     } else {
       Interface iface = initRoutingInterface(ctx.id);
