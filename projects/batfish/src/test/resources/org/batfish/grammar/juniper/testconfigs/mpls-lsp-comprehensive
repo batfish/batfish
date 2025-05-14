@@ -103,4 +103,18 @@ set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth adju
 set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth minimum-bandwidth 50m
 set protocols mpls label-switched-path comprehensive-new-lsp auto-bandwidth maximum-bandwidth 500m
 
+# Path definitions and references
+set protocols mpls path PRI
+set protocols mpls label-switched-path path-lsp to 192.0.2.16
+set protocols mpls label-switched-path path-lsp primary PRI
+set protocols mpls label-switched-path path-lsp secondary SEC preference 8
+
+# Additional LSP parameters
+set protocols mpls label-switched-path params-lsp to 192.0.2.17
+set protocols mpls label-switched-path params-lsp bandwidth 100m
+set protocols mpls label-switched-path params-lsp cross-credibility-cspf
+set protocols mpls label-switched-path params-lsp hop-limit 3
+set protocols mpls label-switched-path params-lsp optimize-timer 65535
+set protocols mpls label-switched-path params-lsp revert-timer 900
+
 #
