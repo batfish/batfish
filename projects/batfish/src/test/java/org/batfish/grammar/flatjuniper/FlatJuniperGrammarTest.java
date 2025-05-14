@@ -7885,6 +7885,18 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testOspfAreaInterfaceIpMissing() throws IOException {
+    String hostname = "ospf-area-interface-ip-missing";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(), empty());
+  }
+
+  @Test
   public void testConditionExtraction() {
     String hostname = "juniper-condition";
     JuniperConfiguration jc = parseJuniperConfig(hostname);
