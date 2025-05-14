@@ -31,7 +31,8 @@ p_mpls
 :
    MPLS
    (
-       mpls_admin_groups
+       apply
+       | mpls_admin_groups
        | mpls_interface
        | mpls_label_switched_path
    )
