@@ -323,10 +323,7 @@ BAD_OPTION: 'bad-option';
 
 BACKUP_ROUTER: 'backup-router';
 
-BANDWIDTH
-:
-   'bandwidth' -> pushMode ( M_Bandwidth )
-;
+BANDWIDTH: 'bandwidth' -> pushMode ( M_Bandwidth );
 
 BASIC: 'basic';
 
@@ -468,7 +465,7 @@ COS_NEXT_HOP_MAP: 'cos-next-hop-map' -> pushMode(M_Name);
 COUNT: 'count' -> pushMode(M_Name);
 
 CREDIBILITY_PROTOCOL_PREFERENCE: 'credibility-protocol-preference';
-
+CROSS_CREDIBILITY_CSPF: 'cross-credibility-cspf';
 CVSPSERVER: 'cvspserver';
 
 CWR: 'cwr';
@@ -2063,6 +2060,7 @@ OFF: 'off';
 
 OFFSET: 'offset';
 OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
+OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
 OPTIONS: 'options';
 ORIGIN: 'origin';
@@ -2097,7 +2095,20 @@ PASSIVE: 'passive';
 
 PASSWORD: 'password';
 
-PATH: 'path' -> pushMode(M_AsPathExpr);
+PATH
+:
+  'path'
+  {
+    switch(lastTokenType()) {
+      case MPLS:
+        pushMode(M_Name);
+        break;
+      default:
+        pushMode(M_AsPathExpr);
+        break;
+    }
+  }
+;
 
 PATH_COUNT: 'path-count';
 
@@ -2248,7 +2259,19 @@ PREFIX_LIST_FILTER: 'prefix-list-filter' -> pushMode(M_Name);
 
 PREFIX_POLICY: 'prefix-policy' -> pushMode(M_Name);
 
-PRIMARY: 'primary';
+PRIMARY
+:
+  'primary'
+  {
+    switch(secondToLastTokenType()) {
+      case LABEL_SWITCHED_PATH:
+        pushMode(M_Name);
+        break;
+      default:
+        break;
+    }
+  }
+;
 
 PRINTER: 'printer';
 
@@ -2395,13 +2418,10 @@ RETAIN: 'retain';
 RETRANSMIT_INTERVAL: 'retransmit-interval';
 RETRY_TIMER: 'retry-timer';
 REUSE: 'reuse';
-
 REVERSE: 'reverse';
-
 REVERSE_SSH: 'reverse-ssh';
-
 REVERSE_TELNET: 'reverse-telnet';
-
+REVERT_TIMER: 'revert-timer';
 REWRITE_RULES: 'rewrite-rules';
 
 RIB: 'rib' -> pushMode(M_RibName);

@@ -35,6 +35,7 @@ public enum JuniperStructureType implements StructureType {
   IPSEC_POLICY("ipsec policy"),
   IPSEC_PROPOSAL("ipsec proposal"),
   LOGICAL_SYSTEM("logical-system"),
+  MPLS_PATH("mpls path"),
   NAT_POOL("nat pool"),
   NAT_RULE("nat rule"),
   NAT_RULE_SET("nat rule set"),
