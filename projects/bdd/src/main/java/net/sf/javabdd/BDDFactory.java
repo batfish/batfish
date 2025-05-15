@@ -42,8 +42,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.annotation.Nullable;
-
-import net.sf.javabdd.NDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
