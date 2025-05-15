@@ -515,6 +515,7 @@ import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_as_do
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_colonContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extcommunity_set_rt_elem_linesContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_additional_featureContext;
+import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_area_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Extended_ipv6_access_list_tailContext;
 import org.batfish.grammar.cisco_xr.CiscoXrParser.Flow_exporter_mapContext;
@@ -1346,6 +1347,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private boolean _pimIpv6;
   private boolean _multicastRoutingIpv6;
   private VrfAddressFamily _currentVrfAddressFamily;
+
+  private Optional<Long> _sequence;
 
   public CiscoXrControlPlaneExtractor(
       String text,
@@ -3518,6 +3521,16 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
+  public void enterExtended_access_list_area_tail(Extended_access_list_area_tailContext ctx) {
+      _sequence = Optional.of(ctx.num != null ? toLong(ctx.num) : _currentIpv4Acl.getNextSeq());
+  }
+
+    @Override
+    public void exitExtended_access_list_area_tail(Extended_access_list_area_tailContext ctx) {
+        _sequence = Optional.empty();
+    }
+
+  @Override
   public void enterExtended_access_list_tail(Extended_access_list_tailContext ctx) {
     _currentIpv4AclLine = Ipv4AccessListLine.builder();
   }
@@ -3539,11 +3552,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           IPV4_ACCESS_LIST_LINE, qualifiedName, IPV4_ACCESS_LIST_LINE_SELF_REF, configLine);
     }
 
-    long seq = ctx.num != null ? toLong(ctx.num) : _currentIpv4Acl.getNextSeq();
     Ipv4AccessListLine line =
         _currentIpv4AclLine
             .setName(name)
-            .setSeq(seq)
+            .setSeq(_sequence.orElse(_currentIpv4Acl.getNextSeq()))
             .setAction(action)
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .setDstAddressSpecifier(dstAddressSpecifier)

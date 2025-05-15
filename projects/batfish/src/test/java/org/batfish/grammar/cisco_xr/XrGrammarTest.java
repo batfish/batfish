@@ -452,12 +452,12 @@ public final class XrGrammarTest {
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), aMapWithSize(9));
+    assertThat(acl.getLines(), aMapWithSize(11));
 
     assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
     Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
     // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
+    assertThat(aclv6.getLines(), hasSize(5));
   }
 
   @Test
@@ -466,10 +466,10 @@ public final class XrGrammarTest {
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(9));
+    assertThat(acl.getLines(), hasSize(11));
     {
       // Test reordering - (20, 30, 31, rather than 31 last)
-      assertThat(acl.getLines().get(2).getName(), equalTo("31 permit ipv4 31.31.31.31/32 any"));
+      assertThat(acl.getLines().get(2).getName(), equalTo("permit ipv4 31.31.31.31/32 any"));
     }
     {
       // Test fragments.
@@ -3777,12 +3777,12 @@ public final class XrGrammarTest {
                     hasComment(
                         "ACL based forwarding can only be configured on an ACL line with a permit"
                             + " action"),
-                    hasText("100 deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10")),
+                    hasText("deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10")),
                 allOf(
                     hasComment(
                         "ACL based forwarding can only be configured on an ACL line with a permit"
                             + " action"),
-                    hasText("100 deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
+                    hasText("deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
   }
 
   /** Test conversion of ACL based forwarding constructs in IP access-lists */
@@ -3916,16 +3916,16 @@ public final class XrGrammarTest {
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Access-list lines with different nexthop VRFs are not yet supported. Line '60"
-                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '"
+                    + "permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
                     + " vrfOther ipv4 10.0.11.2' in ACL aclv4 will be ignored.")));
     assertThat(
         ccae,
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Access-list lines with different nexthop VRFs are not yet supported. Line '70"
-                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '"
+                    + "permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 vrf"
                     + " vrf1 ipv4 10.0.11.2 nexthop3 vrf vrfOther ipv4 10.0.11.3' in ACL aclv4 will"
                     + " be ignored.")));
     assertThat(
@@ -3933,16 +3933,16 @@ public final class XrGrammarTest {
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Access-list lines with different nexthop VRFs are not yet supported. Line '80"
-                    + " permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 ipv4"
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '"
+                    + "permit tcp any host 10.0.1.1 nexthop1 vrf vrf1 ipv4 10.0.11.1 nexthop2 ipv4"
                     + " 10.0.11.2' in ACL aclv4 will be ignored.")));
     assertThat(
         ccae,
         hasRedFlagWarning(
             hostname,
             containsString(
-                "Access-list lines with different nexthop VRFs are not yet supported. Line '90"
-                    + " permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther"
+                "Access-list lines with different nexthop VRFs are not yet supported. Line '"
+                    + "permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.11.1 nexthop2 vrf vrfOther"
                     + " ipv4 10.0.11.2' in ACL aclv4 will be ignored.")));
     assertThat(
         ccae,
