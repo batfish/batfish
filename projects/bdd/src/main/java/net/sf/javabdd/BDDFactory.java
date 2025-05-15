@@ -42,6 +42,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 import javax.annotation.Nullable;
+
+import net.sf.javabdd.NDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -70,6 +72,8 @@ public abstract class BDDFactory {
     try {
       if (bddpackage.equals("j") || bddpackage.equals("java")) {
         return JFactory.init(nodenum, cachesize);
+      } else if (bddpackage.equals("ndd")) {
+        return NDDFactory.init(nodenum, cachesize);
       }
     } catch (LinkageError e) {
       LOGGER.info("Could not load BDD package {}: {}", bddpackage, e.getLocalizedMessage());

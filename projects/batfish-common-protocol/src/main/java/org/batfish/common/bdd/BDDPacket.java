@@ -1,7 +1,7 @@
 package org.batfish.common.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.batfish.common.bdd.BDDUtils.swapPairing;
+// import static org.batfish.common.bdd.BDDUtils.swapPairing;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
@@ -19,7 +19,8 @@ import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
-import net.sf.javabdd.JFactory;
+// import net.sf.javabdd.JFactory;
+import net.sf.javabdd.NDDFactory;
 import org.batfish.common.bdd.BDDFlowConstraintGenerator.FlowPreference;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.Ip;
@@ -112,7 +113,8 @@ public class BDDPacket implements Serializable {
    * advertisement.
    */
   public BDDPacket() {
-    this(defaultFactory(JFactory::init));
+    // this(defaultFactory(JFactory::init));
+    this(defaultFactory(NDDFactory::init));
   }
 
   /**
@@ -122,6 +124,7 @@ public class BDDPacket implements Serializable {
   public BDDPacket(BDDFactory factory) {
     _factory = factory;
     // Make sure we have the right number of variables
+    /*
     int numNeeded =
         FIRST_PACKET_VAR // reserved for auxiliary variables before packet vars
             + IP_LENGTH * 4 // primed/unprimed src/dst
@@ -137,6 +140,34 @@ public class BDDPacket implements Serializable {
     if (_factory.varNum() < numNeeded) {
       _factory.setVarNum(numNeeded);
     }
+    */
+    int[] numNeeded = {
+      FIRST_PACKET_VAR, // reserved for auxiliary variables before packet vars
+      IP_LENGTH, // primed/unprimed src/dst
+            IP_LENGTH,
+            IP_LENGTH,
+            IP_LENGTH,
+      PORT_LENGTH, // primed/unprimed src/dst
+            PORT_LENGTH,
+            PORT_LENGTH,
+            PORT_LENGTH,
+      IP_PROTOCOL_LENGTH,
+      ICMP_CODE_LENGTH,
+      ICMP_TYPE_LENGTH,
+      TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+            TCP_FLAG_LENGTH,
+      DSCP_LENGTH,
+      ECN_LENGTH,
+      FRAGMENT_OFFSET_LENGTH,
+      PACKET_LENGTH_LENGTH
+    };
+    ((NDDFactory) _factory).setVarNum(numNeeded, 10000000);
 
     _bitNames = new HashMap<>();
 
@@ -162,10 +193,12 @@ public class BDDPacket implements Serializable {
     _fragmentOffset = allocateBDDInteger("fragmentOffset", FRAGMENT_OFFSET_LENGTH);
     _packetLength = new BDDPacketLength(allocateBDDInteger("packetLength", PACKET_LENGTH_LENGTH));
 
-    _swapSourceAndDestinationPairing =
+    _swapSourceAndDestinationPairing = null;
+    /*
         swapPairing(
             BDDUtils.concatBitvectors(_dstIp.getVar()._bitvec, _dstPort.getVar()._bitvec),
             BDDUtils.concatBitvectors(_srcIp.getVar()._bitvec, _srcPort.getVar()._bitvec));
+    */
 
     initTransientFields();
   }
@@ -338,10 +371,16 @@ public class BDDPacket implements Serializable {
     BDD[] primedVars = new BDD[length];
     for (int i = 0; i < length; i++) {
       _bitNames.put(_nextFreeBDDVarIdx, name + i);
-      vars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
-      _bitNames.put(_nextFreeBDDVarIdx, name + "'" + i);
-      primedVars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
+      // vars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
+      // _bitNames.put(_nextFreeBDDVarIdx, name + "'" + i);
+      // primedVars[i] = _factory.ithVar(_nextFreeBDDVarIdx++);
+      vars[i] = _factory.ithVar(_nextFreeBDDVarIdx);
+      int pairVarIdx = _nextFreeBDDVarIdx + length;
+      _bitNames.put(pairVarIdx, name + "'" + i);
+      primedVars[i] = _factory.ithVar(pairVarIdx);
+      _nextFreeBDDVarIdx++;
     }
+    _nextFreeBDDVarIdx += length;
     return new PrimedBDDInteger(_factory, vars, primedVars);
   }
 
