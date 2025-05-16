@@ -8,20 +8,30 @@ options {
 
 ipv4_access_list
 :
-  ACCESS_LIST name = access_list_name NEWLINE
+  ACCESS_LIST name = access_list_name
   (
-    extended_access_list_tail
+    ipv4_access_list_area
+    | extended_access_list_tail
     | extended_access_list_null_tail
-  )*
+  )
+;
+
+ipv4_access_list_area:
+  NEWLINE extended_access_list_area_tail*
 ;
 
 ipv6_access_list
 :
-  ACCESS_LIST name = access_list_name NEWLINE
+  ACCESS_LIST name = access_list_name
   (
-    extended_ipv6_access_list_tail
+    ipv6_access_list_area
+    | extended_ipv6_access_list_tail
     | extended_access_list_null_tail
-  )*
+  )
+;
+
+ipv6_access_list_area:
+  NEWLINE extended_ipv6_access_list_area_tail*
 ;
 
 no_ipv4_access_list
@@ -170,12 +180,6 @@ extended_access_list_null_tail
 :
    (
       (
-         SEQ
-         | SEQUENCE
-      )? num = uint_legacy
-   )?
-   (
-      (
          access_list_action protocol access_list_ip_range port_specifier?
          access_list_ip_range port_specifier? REFLECT
       )
@@ -187,14 +191,24 @@ extended_access_list_null_tail
    ) null_rest_of_line
 ;
 
-extended_access_list_tail
+extended_access_list_area_tail
 :
    (
       (
          SEQ
          | SEQUENCE
       )? num = uint_legacy
-   )? ala = access_list_action
+   )?
+   (
+      extended_access_list_tail
+      (SEQUENCE num = uint_legacy)? NEWLINE
+      | extended_access_list_null_tail
+   )
+;
+
+extended_access_list_tail
+:
+   ala = access_list_action
    (
       VLAN vlan = uint_legacy vmask = HEX
    )?
@@ -207,9 +221,6 @@ extended_access_list_tail
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
    ipv4_nexthop1?
-   (
-      SEQUENCE num = uint_legacy
-   )? NEWLINE
 ;
 
 ipv4_nexthop1: NEXTHOP1 ipv4_nexthop ipv4_nexthop2?;
@@ -220,14 +231,24 @@ ipv4_nexthop3: NEXTHOP3 ipv4_nexthop;
 
 ipv4_nexthop: (VRF vrf_name)? IPV4 nexthop = IP_ADDRESS;
 
-extended_ipv6_access_list_tail
+extended_ipv6_access_list_area_tail
 :
    (
       (
          SEQ
          | SEQUENCE
       )? num = uint_legacy
-   )? ala = access_list_action prot = protocol srcipr = access_list_ip6_range
+   )?
+   (
+      extended_ipv6_access_list_tail
+         (SEQUENCE num = uint_legacy)? NEWLINE
+         | extended_access_list_null_tail
+      )
+;
+
+extended_ipv6_access_list_tail
+:
+   ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
       alps_src = port_specifier
    )? dstipr = access_list_ip6_range
@@ -235,9 +256,6 @@ extended_ipv6_access_list_tail
       alps_dst = port_specifier
    )? features += extended_access_list_additional_feature*
    ipv6_nexthop1?
-   (
-      SEQUENCE num = uint_legacy
-   )? NEWLINE
 ;
 
 ipv6_nexthop1: NEXTHOP1 ipv6_nexthop ipv6_nexthop2?;

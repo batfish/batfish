@@ -452,12 +452,12 @@ public final class XrGrammarTest {
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), aMapWithSize(9));
+    assertThat(acl.getLines(), aMapWithSize(11));
 
     assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
     Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
     // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
+    assertThat(aclv6.getLines(), hasSize(5));
   }
 
   @Test
@@ -466,7 +466,7 @@ public final class XrGrammarTest {
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(9));
+    assertThat(acl.getLines(), hasSize(11));
     {
       // Test reordering - (20, 30, 31, rather than 31 last)
       assertThat(acl.getLines().get(2).getName(), equalTo("31 permit ipv4 31.31.31.31/32 any"));
@@ -3777,12 +3777,12 @@ public final class XrGrammarTest {
                     hasComment(
                         "ACL based forwarding can only be configured on an ACL line with a permit"
                             + " action"),
-                    hasText("100 deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10")),
+                    hasText("deny tcp any host 10.0.10.1 nexthop1 ipv4 10.10.10.10")),
                 allOf(
                     hasComment(
                         "ACL based forwarding can only be configured on an ACL line with a permit"
                             + " action"),
-                    hasText("100 deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
+                    hasText("deny tcp any host 1111:: nexthop1 ipv6 1112::")))));
   }
 
   /** Test conversion of ACL based forwarding constructs in IP access-lists */

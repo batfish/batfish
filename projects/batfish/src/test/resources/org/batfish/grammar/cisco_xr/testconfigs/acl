@@ -17,12 +17,21 @@ ipv4 access-list acl
  ! One out of order line should be reordered up top.
  31 permit ipv4 31.31.31.31/32 any
 !
+ipv4 access-list acl remark this is a remark
+ipv4 access-list acl permit tcp host 1.1.1.1 any eq 22
+ipv4 access-list acl permit tcp host 2.2.2.2 any eq 22
+ipv4 access-list acl remark *new remark*
+
 ipv6 access-list aclv6
  10 remark Some remark
  20 permit tcp any 1111:1111:1111:1111::/64 eq 8080
  30 permit tcp any 1111:1111:1111:1111::/64 eq www
  40 permit udp 1111:1111::/32 2222:2222:2222:2222::/64 eq 8080
  50 permit icmpv6 any fe80::/10
+!
+ipv6 access-list aclv6 remark Some remark
+ipv6 access-list aclv6 permit tcp any 1111:1111:1111:1111::/64 eq 8080
+ipv6 access-list aclv6 remark Some remark
 !
 !
 ! test no:
