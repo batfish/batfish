@@ -303,7 +303,7 @@ public class ModelGeneration {
    * @param action the action that the symbolic analysis determined is taken on that path
    * @param direction whether the route map is used as an import or export policy
    * @param expectedResult the expected input-output behavior
-   * @return a boolean indicating whether the check succeeded
+   * @return a boolean indicating if validation succeeded
    */
   public static boolean validateModel(
       BDD model,
@@ -331,8 +331,9 @@ public class ModelGeneration {
             expectedResult.getInputRoute(),
             expectedResult.getOutputRoute(),
             outputRouteFromModel);
+        return false;
       }
-      return result;
+      return true;
     }
     return true;
   }
@@ -352,7 +353,7 @@ public class ModelGeneration {
    * @param direction whether the route map is used as an import or export policy
    * @return a BGP route
    */
-  private static BgpRoute satAssignmentToOutputRoute(
+  public static BgpRoute satAssignmentToOutputRoute(
       BDD model,
       BDDRoute bddRoute,
       ConfigAtomicPredicates configAPs,

@@ -8,7 +8,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.questions.Question;
 
-/** A question for validating TransferBDD functionality. */
+/**
+ * A question for validating symbolic route analysis ({@link
+ * org.batfish.minesweeper.bdd.TransferBDD}) against concrete route simulation ({@link
+ * org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}).
+ */
 @ParametersAreNonnullByDefault
 public final class TransferBDDValidationQuestion extends Question {
 
