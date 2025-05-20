@@ -179,6 +179,7 @@ ALIASES: 'aliases';
 
 ALL: 'all';
 ALL_PATHS: 'all-paths';
+ALL_INTERNAL_INTERFACES: 'all-internal-interfaces';
 ALLOW: 'allow';
 
 ALLOW_DUPLICATES: 'allow-duplicates';
@@ -1104,6 +1105,8 @@ INTERFACES
   {
     if (lastTokenType() == CLASS_OF_SERVICE) {
       pushMode(M_InterfaceWildcard);
+    } else if (lastTokenType() == FILTER_INTERFACES) {
+      pushMode(M_InterfaceIdOrInterfaceWildcard);
     } else {
       pushMode(M_Interface);
     }

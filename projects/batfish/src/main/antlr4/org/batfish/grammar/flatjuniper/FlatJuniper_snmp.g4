@@ -46,7 +46,25 @@ snmp_community
 
 snmp_filter_interfaces
 :
-    FILTER_INTERFACES INTERFACES DOUBLE_QUOTED_STRING
+   FILTER_INTERFACES
+   (
+      snmpfi_all_internal_interfaces_null
+      | snmpfi_interfaces_null
+   )
+;
+
+snmpfi_all_internal_interfaces_null
+:
+   ALL_INTERNAL_INTERFACES
+;
+
+snmpfi_interfaces_null
+:
+   INTERFACES
+   (
+      name = interface_id
+      | wc = interface_wildcard
+   )
 ;
 
 snmp_name
