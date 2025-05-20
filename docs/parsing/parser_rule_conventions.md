@@ -43,6 +43,63 @@ sys_host_name: SYSTEM HOST_NAME ...;
 sys_login_banner: SYSTEM LOGIN_BANNER ...;
 ```
 
+## Single Token Advancement: A Critical Principle
+
+### The Fundamental Rule
+
+**Each rule should typically advance only one token at a time.** This is one of the most important principles for maintaining an LL(1) grammar that is robust, maintainable, and has good error recovery.
+
+### What This Means in Practice
+
+1. **Parent rules** should consume exactly one token and then delegate to child rules
+2. **Child rules** should handle the rest of the parsing for their specific path
+3. **Alternatives** should be handled by separate child rules, not within a single rule
+
+### Examples
+
+#### ✅ CORRECT: Single Token Advancement
+
+```antlr
+// Parent rule consumes one token (KEYWORD_A) then delegates
+parent_rule
+:
+    KEYWORD_A (child_rule_1 | child_rule_2)
+;
+
+// Child rule for first alternative
+child_rule_1
+:
+    OPTION_1
+;
+
+// Child rule for second alternative
+child_rule_2
+:
+    OPTION_2 variable_input
+;
+```
+
+#### ❌ INCORRECT: Multiple Tokens in One Rule
+
+```antlr
+// Bad: Consumes multiple tokens in a single rule
+parent_rule
+:
+    KEYWORD_A
+    (
+        OPTION_1
+        | OPTION_2 variable_input
+    )
+;
+```
+
+### Why This Matters
+
+1. **Error Recovery**: When each rule advances only one token, the parser can recover more effectively from syntax errors
+2. **Maintainability**: Rules are simpler and easier to understand
+3. **Extensibility**: Adding new alternatives becomes easier
+4. **Consistency**: Following this pattern creates a uniform grammar structure
+
 ## Rule Naming Conventions
 
 ### Basic Naming Pattern
