@@ -61,12 +61,12 @@ As the primary mode for git operations, Git Maintainer mode must be especially c
 
 ### Orchestrator Mode
 
-Orchestrator mode has two key responsibilities:
+Orchestrator mode has no direct git command capabilities and should:
 
-1. Properly delegating git operations to Git Maintainer mode
-2. Following pagination-disabling practices for any direct git commands
+1. Always delegate git operations to Git Maintainer mode
+2. Never attempt to execute git commands directly
 
-See the [Orchestrator mode-specific guidelines](/.roo/rules-orchestrator/02-git-command-execution.md) for detailed instructions on delegation.
+Include clear instructions for Git Maintainer mode when delegating git operations.
 
 ### All Other Modes
 
