@@ -498,6 +498,7 @@ The structure of a parser file is as follows (in order):
 2. [Imports](#parser-imports)
 3. [Options](#parser-options)
 4. [Parser rules](#parser-rules)
+5. [Parser rule naming conventions](#parser-rule-naming-conventions)
 
 #### Parser grammar declaration
 
@@ -614,12 +615,12 @@ s_system
 :
   SYSTEM
   (
-    ssy_host_name
-    | ssy_login_banner
+    sys_host_name
+    | sys_login_banner
   )
 ;
 ...
-ssy_login_banner: LOGIN_BANNER banner = string NEWLINE;
+sys_login_banner: LOGIN_BANNER banner = string NEWLINE;
 ...
 ```
 
@@ -642,15 +643,15 @@ Consider the `s_system` rule and its alternatives. If we instead had:
 
 s_system
 :
-  ssy_host_name
-  | ssy_login_banner
+  sys_host_name
+  | sys_login_banner
 ;
 
-ssy_host_name: SYSTEM HOST_NAME ...;
-ssy_login_banner: SYSTEM LOGIN_BANNER ...;
+sys_host_name: SYSTEM HOST_NAME ...;
+sys_login_banner: SYSTEM LOGIN_BANNER ...;
 ```
 
-then to make a decision between `ssy_host_name` and `ssy_login_banner`, we would have to read two
+then to make a decision between `sys_host_name` and `sys_login_banner`, we would have to read two
 tokens:
 
 1. `SYSTEM`
@@ -658,9 +659,19 @@ tokens:
 
 This pattern would not be LL(1), so is to be avoided.
 
+#### Parser rule naming conventions
+
+Batfish uses specific naming conventions for parser rules to ensure consistency and maintainability across all grammars. The key conventions include:
+
+- Rules are named using the pattern `<prefix>_next_token`
+- Child rules use a local extension of the parent prefix: `<parent_prefix><nt>_child_next_token`
+- Top-level rules often follow the convention `s_command_name`
+
+For detailed guidance on parser rule naming conventions, LL(1) grammar design, and handling multiple next tokens with similar shortenings, see [Parser Rule Conventions](parser_rule_conventions.md).
+
 #### Parser rule NEWLINE
 
-Also note that `ssy_host_name` and `ssy_login_banner` both end in `NEWLINE`.
+Also note that `sys_host_name` and `sys_login_banner` both end in `NEWLINE`.
 A pattern to avoid is putting the `NEWLINE` in a parent node:
 
 ```
@@ -670,12 +681,12 @@ s_system
 :
 SYSTEM
   (
-    ssy_host_name
-    | ssy_login_banner
+    sys_host_name
+    | sys_login_banner
   ) NEWLINE
 ;
 ...
-ssy_login_banner: LOGIN_BANNER banner = string;
+sys_login_banner: LOGIN_BANNER banner = string;
 ...
 ```
 
