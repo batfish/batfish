@@ -10,28 +10,29 @@ ipv4_access_list
 :
   ACCESS_LIST name = access_list_name
   (
-    ipv4_access_list_area
+    ipv4_access_list_block
+    // Single lines below here
     | extended_access_list_tail
     | extended_access_list_null_tail
   )
 ;
 
-ipv4_access_list_area:
-  NEWLINE extended_access_list_area_tail*
+ipv4_access_list_block:
+  NEWLINE extended_access_list_block_tail*
 ;
 
 ipv6_access_list
 :
   ACCESS_LIST name = access_list_name
   (
-    ipv6_access_list_area
+    ipv6_access_list_block
+    // Single lines below here
     | extended_ipv6_access_list_tail
     | extended_access_list_null_tail
   )
 ;
-
-ipv6_access_list_area:
-  NEWLINE extended_ipv6_access_list_area_tail*
+ipv6_access_list_block:
+  NEWLINE extended_ipv6_access_list_block_tail*
 ;
 
 no_ipv4_access_list
@@ -176,8 +177,15 @@ eacl_feature_udf
   UDF ~NEWLINE*
 ;
 
+sequence_number:
+  // https://www.cisco.com/c/en/us/td/docs/routers/xr12000/software/xr12k_r4-3/addr_serv/command/reference/b_ipaddr_cr43xr12k/b_ipaddr_cr42xr12k_chapter_01.html#wp5137027590
+  // 1 to 2147483646
+  uint32
+;
+
 extended_access_list_null_tail
 :
+    sequence_number?
    (
       (
          access_list_action protocol access_list_ip_range port_specifier?
@@ -191,23 +199,15 @@ extended_access_list_null_tail
    ) null_rest_of_line
 ;
 
-extended_access_list_area_tail
+extended_access_list_block_tail
 :
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = uint_legacy
-   )?
-   (
-      extended_access_list_tail
-      (SEQUENCE num = uint_legacy)? NEWLINE
+      extended_access_list_tail NEWLINE
       | extended_access_list_null_tail
-   )
 ;
 
 extended_access_list_tail
 :
+   sequence_number?
    ala = access_list_action
    (
       VLAN vlan = uint_legacy vmask = HEX
@@ -231,23 +231,15 @@ ipv4_nexthop3: NEXTHOP3 ipv4_nexthop;
 
 ipv4_nexthop: (VRF vrf_name)? IPV4 nexthop = IP_ADDRESS;
 
-extended_ipv6_access_list_area_tail
+extended_ipv6_access_list_block_tail
 :
-   (
-      (
-         SEQ
-         | SEQUENCE
-      )? num = uint_legacy
-   )?
-   (
-      extended_ipv6_access_list_tail
-         (SEQUENCE num = uint_legacy)? NEWLINE
+      extended_ipv6_access_list_tail NEWLINE
          | extended_access_list_null_tail
-      )
 ;
 
 extended_ipv6_access_list_tail
 :
+   sequence_number?
    ala = access_list_action prot = protocol srcipr = access_list_ip6_range
    (
       alps_src = port_specifier
