@@ -1286,7 +1286,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private HsrpGroup _currentHsrpGroup;
   private HsrpInterface _currentHsrpInterface;
   private Interface _currentInterface;
-  private Long _currentSequence;
   private Ipv4AccessList _currentIpv4Acl;
   private Ipv4AccessListLine.Builder _currentIpv4AclLine;
   private Ipv6AccessList _currentIpv6Acl;
@@ -3521,14 +3520,6 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   }
 
   @Override
-  public void enterSequence_number(CiscoXrParser.Sequence_numberContext ctx) {
-    _currentSequence =
-        toIntegerInSpace(ctx.getParent(), ctx, SEQUENCE_NUMBER_RANGE, "sequence number")
-            .map(Long::valueOf)
-            .orElse(null);
-  }
-
-  @Override
   public void enterExtended_access_list_tail(Extended_access_list_tailContext ctx) {
     _currentIpv4AclLine = Ipv4AccessListLine.builder();
   }
@@ -3540,6 +3531,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
+    long sequenceNumber =
+        ctx.sequence_number() != null
+            ? getSequenceNumber(ctx.sequence_number()).orElse(_currentIpv4Acl.getNextSeq())
+            : _currentIpv4Acl.getNextSeq();
 
     // reference tracking
     {
@@ -3553,7 +3548,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     Ipv4AccessListLine line =
         _currentIpv4AclLine
             .setName(name)
-            .setSeq(_currentSequence != null ? _currentSequence : _currentIpv4Acl.getNextSeq())
+            .setSeq(sequenceNumber)
             .setAction(action)
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .setDstAddressSpecifier(dstAddressSpecifier)
@@ -3565,7 +3560,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _currentIpv4Acl.addLine(line);
     }
     _currentIpv4AclLine = null;
-    _currentSequence = null;
+  }
+
+  public Optional<Long> getSequenceNumber(CiscoXrParser.Sequence_numberContext ctx) {
+    return toIntegerInSpace(ctx.getParent(), ctx, SEQUENCE_NUMBER_RANGE, "sequence number")
+        .map(Long::valueOf);
   }
 
   public Ipv4Nexthop toIpv4Nexthop(Ipv4_nexthopContext ctx) {
