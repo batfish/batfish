@@ -75,8 +75,11 @@ public final class TransferBDDValidationAnswerer extends Answerer {
   public static final String COL_CONCRETE_OUTPUT_ROUTE = COL_CONCRETE_PREFIX + COL_OUTPUT_ROUTE;
   public static final String COL_CONCRETE_TRACE = COL_CONCRETE_PREFIX + COL_TRACE;
 
+  private final Random _random;
+
   public TransferBDDValidationAnswerer(TransferBDDValidationQuestion question, IBatfish batfish) {
     super(question, batfish);
+    _random = new Random(question.getSeed());
   }
 
   @Override
@@ -133,8 +136,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
    * @return a list of rows representing violations of the validity test
    */
   @VisibleForTesting
-  static List<Row> validatePaths(
-      RoutingPolicy policy, List<TransferReturn> paths, TransferBDD tbdd) {
+  List<Row> validatePaths(RoutingPolicy policy, List<TransferReturn> paths, TransferBDD tbdd) {
     BDDFactory factory = tbdd.getFactory();
     ConfigAtomicPredicates aps = tbdd.getConfigAtomicPredicates();
     List<Row> violations = new ArrayList<>();
@@ -157,7 +159,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
       if (fullConstraints.isZero()) {
         continue;
       }
-      BDD fullModel = fullConstraints.randomFullSatOne(new Random().nextInt());
+      BDD fullModel = fullConstraints.randomFullSatOne(_random.nextInt());
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(fullModel, aps);
       RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, aps);
 

@@ -63,6 +63,8 @@ public class TransferBDDValidationAnswererTest {
   private Configuration _baseConfig;
   private ConfigAtomicPredicates _configAPs;
 
+  private TransferBDDValidationAnswerer _answerer;
+
   static final class MockBatfish extends IBatfishTestAdapter {
     private final SortedMap<String, Configuration> _baseConfigs;
 
@@ -109,6 +111,9 @@ public class TransferBDDValidationAnswererTest {
 
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(HOSTNAME, _baseConfig);
     _batfish = new MockBatfish(configs);
+    _answerer =
+        new TransferBDDValidationAnswerer(
+            new TransferBDDValidationQuestion(null, null, 123456789), _batfish);
   }
 
   @Test
@@ -132,8 +137,7 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> paths = tbdd.computePaths(policy);
-
-    List<Row> rows = TransferBDDValidationAnswerer.validatePaths(policy, paths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd);
 
     assertThat(rows, empty());
   }
@@ -149,7 +153,7 @@ public class TransferBDDValidationAnswererTest {
     // flip the accepted bit in the one path
     List<TransferReturn> badPaths = ImmutableList.of(paths.get(0).setAccepted(false));
 
-    List<Row> rows = TransferBDDValidationAnswerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
 
     // there are two answers, since we simulate the path in both the IN and OUT directions
     assertThat(rows.size(), equalTo(2));
@@ -188,7 +192,7 @@ public class TransferBDDValidationAnswererTest {
             p.getOutputRoute()
                 .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
-    List<Row> rows = TransferBDDValidationAnswerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
 
     // there are two answers, since we simulate the path in both the IN and OUT directions
     assertThat(rows.size(), equalTo(2));
@@ -236,7 +240,7 @@ public class TransferBDDValidationAnswererTest {
             p.getOutputRoute()
                 .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
-    List<Row> rows = TransferBDDValidationAnswerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
 
     // there are no answers, since paths with unsupported features are ignored
     assertThat(rows, empty());
