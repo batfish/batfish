@@ -452,12 +452,18 @@ public final class XrGrammarTest {
     assertThat(c.getIpv4Acls(), hasKeys("acl"));
     Ipv4AccessList acl = c.getIpv4Acls().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), aMapWithSize(9));
+    assertThat(acl.getLines(), aMapWithSize(11));
+    // TODO: add support for assigning next sequence number to remarks
+    assertThat(acl.getLines().get(100L).getName(), equalTo("permit tcp host 1.1.1.1 any eq 22"));
 
     assertThat(c.getIpv6Acls(), hasKeys("aclv6"));
     Ipv6AccessList aclv6 = c.getIpv6Acls().get("aclv6");
     // TODO: get the remark line in there too.
-    assertThat(aclv6.getLines(), hasSize(4));
+    assertThat(aclv6.getLines(), hasSize(5));
+    // TODO: add support to assign next sequence number and extract sequence number from aclv6 lines
+    assertThat(
+        aclv6.getLines().get(4).getName(),
+        equalTo("permit tcp any 1111:1111:1111:1111::/64 eq 8080"));
   }
 
   @Test
@@ -466,14 +472,15 @@ public final class XrGrammarTest {
     assertThat(c.getIpAccessLists(), hasKeys("acl"));
     IpAccessList acl = c.getIpAccessLists().get("acl");
     // TODO: get the remark line in there too.
-    assertThat(acl.getLines(), hasSize(9));
+    assertThat(acl.getLines(), hasSize(11));
     {
       // Test reordering - (20, 30, 31, rather than 31 last)
       assertThat(acl.getLines().get(2).getName(), equalTo("31 permit ipv4 31.31.31.31/32 any"));
+      assertThat(acl.getLines().get(4).getName(), equalTo("41 permit tcp host 2.2.2.2 any eq 22"));
     }
     {
       // Test fragments.
-      AclLine fragmentLine = acl.getLines().get(8);
+      AclLine fragmentLine = acl.getLines().get(9);
       PermitAndDenyBdds bdds = _aclToBdd.toPermitAndDenyBdds(fragmentLine);
       HeaderSpace expected =
           HeaderSpace.builder()

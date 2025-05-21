@@ -1103,6 +1103,8 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
   private static final IntegerSpace OSPF_METRIC_RANGE = IntegerSpace.of(Range.closed(1, 16777214));
   private static final IntegerSpace OSPF_METRIC_TYPE_RANGE = IntegerSpace.of(Range.closed(1, 2));
   private static final IntegerSpace PINT16_RANGE = IntegerSpace.of(Range.closed(1, 65535));
+  private static final IntegerSpace SEQUENCE_NUMBER_RANGE =
+      IntegerSpace.of(Range.closed(1, 2147483646));
   private static final IntegerSpace REWRITE_INGRESS_TAG_POP_RANGE =
       IntegerSpace.of(Range.closed(1, 2));
 
@@ -3529,6 +3531,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
+    long sequenceNumber =
+        ctx.sequence_number() != null
+            ? getSequenceNumber(ctx.sequence_number()).orElse(_currentIpv4Acl.getNextSeq())
+            : _currentIpv4Acl.getNextSeq();
 
     // reference tracking
     {
@@ -3539,11 +3545,10 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
           IPV4_ACCESS_LIST_LINE, qualifiedName, IPV4_ACCESS_LIST_LINE_SELF_REF, configLine);
     }
 
-    long seq = ctx.num != null ? toLong(ctx.num) : _currentIpv4Acl.getNextSeq();
     Ipv4AccessListLine line =
         _currentIpv4AclLine
             .setName(name)
-            .setSeq(seq)
+            .setSeq(sequenceNumber)
             .setAction(action)
             .setSrcAddressSpecifier(srcAddressSpecifier)
             .setDstAddressSpecifier(dstAddressSpecifier)
@@ -3555,6 +3560,11 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
       _currentIpv4Acl.addLine(line);
     }
     _currentIpv4AclLine = null;
+  }
+
+  public Optional<Long> getSequenceNumber(CiscoXrParser.Sequence_numberContext ctx) {
+    return toIntegerInSpace(ctx.getParent(), ctx, SEQUENCE_NUMBER_RANGE, "sequence number")
+        .map(Long::valueOf);
   }
 
   public Ipv4Nexthop toIpv4Nexthop(Ipv4_nexthopContext ctx) {
