@@ -150,7 +150,7 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> paths = tbdd.computePaths(policy);
-    // flip the accepted bit in the one path
+    // flip the accepted boolean in the one path, to create a violation
     List<TransferReturn> badPaths = ImmutableList.of(paths.get(0).setAccepted(false));
 
     List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
@@ -186,7 +186,7 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> badPaths = tbdd.computePaths(policy);
-    // change the local pref
+    // change the local pref in the symbolic results, to create a violation
     badPaths.forEach(
         p ->
             p.getOutputRoute()
@@ -234,7 +234,7 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> badPaths = tbdd.computePaths(policy);
-    // change the local pref
+    // change the local pref in the symbolic results, to create a violation
     badPaths.forEach(
         p ->
             p.getOutputRoute()

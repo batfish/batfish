@@ -113,7 +113,6 @@ public final class TransferBDDValidationAnswerer extends Answerer {
       TransferBDD tbdd = new TransferBDD(aps);
 
       for (RoutingPolicy policy : policies) {
-        // Compute all possible paths through the policy
         List<TransferReturn> paths = tbdd.computePaths(policy);
         rows.addAll(validatePaths(policy, paths, tbdd));
       }
@@ -154,7 +153,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
               // for now we only validate paths that process BGP routes
               .and(origRoute.wellFormednessConstraints(true))
               // we limit the size of the cluster list for performance reasons;
-              // this means we could in principle skip some feasible paths
+              // this means it is possible that we will skip validation for some feasible paths
               .and(origRoute.getClusterListLength().leq(2000));
       if (fullConstraints.isZero()) {
         continue;
@@ -181,6 +180,19 @@ public final class TransferBDDValidationAnswerer extends Answerer {
     return violations;
   }
 
+  /**
+   * Simulates a route through a routing policy along a given path and compares the results with the
+   * symbolic analysis.
+   *
+   * @param policy The routing policy to simulate
+   * @param inRoute The input BGP route
+   * @param env The routing environment containing session properties and other context
+   * @param direction The direction of the policy (IN or OUT)
+   * @param path The symbolic analysis results for a particular path through the routing policy
+   * @param fullModel A solution to the symbolic constraints, consistent with the given input route
+   * @param aps The atomic predicates used for symbolic analysis
+   * @return A list of rows representing validation violations (empty if validation succeeds)
+   */
   private static List<Row> simulateAndCompare(
       RoutingPolicy policy,
       Bgpv4Route inRoute,
@@ -189,6 +201,8 @@ public final class TransferBDDValidationAnswerer extends Answerer {
       TransferReturn path,
       BDD fullModel,
       ConfigAtomicPredicates aps) {
+
+    // simulate the policy
     Result<Bgpv4Route, Bgpv4Route> result =
         simulatePolicyWithBgpRoute(
             policy,
@@ -228,7 +242,21 @@ public final class TransferBDDValidationAnswerer extends Answerer {
     return ImmutableList.of();
   }
 
-  /** Creates a row representing a validation violation. */
+  /**
+   * Creates a row representing a validation violation between symbolic analysis and concrete
+   * simulation.
+   *
+   * @param policy The routing policy that was analyzed
+   * @param inputRoute The input route used for simulation
+   * @param symbolicAction The action (PERMIT/DENY) determined by symbolic analysis
+   * @param concreteAction The action (PERMIT/DENY) determined by concrete simulation
+   * @param symbolicOutputRoute The output route produced by symbolic analysis (null if action is
+   *     DENY)
+   * @param concreteOutputRoute The output route produced by concrete simulation (null if action is
+   *     DENY)
+   * @param concreteTrace The execution trace from concrete simulation
+   * @return An object containing the violation details
+   */
   private static Row createViolationRow(
       RoutingPolicy policy,
       AbstractRoute inputRoute,
