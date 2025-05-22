@@ -1,4 +1,5 @@
 """Script used to generate JSON Palo Alto application definitions from their XML representation."""
+
 # Run through bazel:
 #  bazel run //tools:generate_pan_apps
 import json
