@@ -1,31 +1,36 @@
 # See https://pre-commit.com for more information
 # See https://pre-commit.com/hooks.html for more hooks
 repos:
--   repo: local
+  - repo: local
     hooks:
-    -   id: java-format
+      - id: java-format
         name: java-format
         entry: ./tools/fix_java_format.sh --replace
         language: script
         files: '\.java$'
         require_serial: true
         pass_filenames: true
-    -   id: buildifier
+      - id: buildifier
         name: buildifier
         entry: bazel --noblock_for_lock run //:buildifier.fix
         language: system
         require_serial: true
-        pass_filenames: false  # this is a global check, only run it once
--   repo: https://github.com/psf/black
-    rev: 22.3.0
+        pass_filenames: false # this is a global check, only run it once
+  - repo: https://github.com/psf/black
+    rev: 25.1.0
     hooks:
-    -   id: black
--   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v4.3.21
+      - id: black
+  - repo: https://github.com/PyCQA/isort
+    rev: 6.0.1
     hooks:
-        -   id: isort
--   repo: https://github.com/humitos/mirrors-autoflake.git
-    rev: v1.3
+      - id: isort
+  - repo: https://github.com/PyCQA/autoflake
+    rev: v2.3.1
     hooks:
-        - id: autoflake
-          args: ["--in-place", "--remove-all-unused-imports", "--remove-unused-variables"]
+      - id: autoflake
+        args:
+          [
+            "--in-place",
+            "--remove-all-unused-imports",
+            "--remove-unused-variables",
+          ]
