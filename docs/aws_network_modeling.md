@@ -43,7 +43,7 @@ Batfish expects AWS configuration data in a specific format, which consists of t
                                                                 ...
 ```
 
-The region-level hierarchy is optional if only one region is present in the data.
+The region-level hierarchy is optional if only one region is present in the data. More information on the snapshot packaging is [here](https://batfish.readthedocs.io/en/latest/formats.html#aws).
 
 ### Parsing Process
 
@@ -264,18 +264,3 @@ Batfish's AWS modeling is implemented in Java, with key classes including:
 
 The conversion process transforms these AWS-specific objects into Batfish's vendor-independent model, which is then used for analysis.
 
-## 10. Future Enhancements
-
-Potential future enhancements to Batfish's AWS modeling include:
-
-- Support for additional AWS services
-- Enhanced modeling of AWS Load Balancers
-- Improved handling of Direct Connect
-- Support for AWS Global Accelerator
-- Integration with AWS CloudFormation and Terraform for pre-deployment validation
-- Support for multi-account AWS environments
-- Enhanced visualization of AWS network topology
-- Support for AWS Transit Gateway Connect
-- Modeling of AWS Network Firewall
-
-These enhancements will further improve Batfish's ability to model and analyze AWS networks.
