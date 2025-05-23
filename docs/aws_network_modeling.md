@@ -2,14 +2,12 @@
 
 ## 1. Introduction to AWS Network Modeling in Batfish
 
-Batfish provides comprehensive modeling and analysis capabilities for AWS cloud networks. This document describes Batfish's approach to modeling AWS Virtual Private Clouds (VPCs) and related networking components, enabling users to analyze connectivity, security, and routing within their AWS environments.
+Batfish provides modeling and analysis capabilities for AWS cloud networks. This document describes Batfish's approach to modeling AWS Virtual Private Clouds (VPCs) and related networking components, enabling users to analyze connectivity, security, and routing within their AWS environments.
 
 Batfish's AWS modeling capabilities allow users to:
-- Visualize AWS network topology
 - Analyze traffic flows between AWS resources
 - Verify security group and network ACL configurations
 - Troubleshoot connectivity issues
-- Validate changes before deployment
 - Ensure compliance with security policies
 
 This document provides a technical overview of how Batfish models AWS networks, including the input format, parsing process, conversion to the vendor-independent model, and the modeling of various AWS components.
@@ -69,8 +67,6 @@ Batfish models the AWS network topology by creating nodes for various AWS compon
 - Subnet routers connect to VPC routers (for intra-VPC traffic)
 - Subnet routers connect to internet gateways (for internet traffic)
 - Subnet routers connect to VPN gateways (for site traffic)
-
-In the past, VPC routers were connected directly to internet and VPN gateways, but this approach was revised since routing tables are subnet-based.
 
 ## 5. Traffic Flow Modeling
 
@@ -253,14 +249,6 @@ Batfish helps troubleshoot connectivity issues by:
 - Identifying blocking ACLs or security groups
 - Verifying routing table configurations
 - Analyzing VPC peering and transit gateway setups
-
-### 8.4 Change Validation
-
-Before implementing changes, Batfish can:
-- Compare network behavior before and after changes
-- Identify unintended consequences of changes
-- Verify that changes achieve their intended goals
-- Ensure compliance with security policies
 
 ## 9. Implementation Details
 
