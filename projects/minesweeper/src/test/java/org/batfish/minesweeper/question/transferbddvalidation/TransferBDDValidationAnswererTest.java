@@ -1,11 +1,14 @@
 package org.batfish.minesweeper.question.transferbddvalidation;
 
 import static org.batfish.datamodel.matchers.RowMatchers.hasColumn;
+import static org.batfish.datamodel.routing_policy.expr.IntComparator.GT;
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
 import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.COL_CONCRETE_ACTION;
 import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.COL_CONCRETE_OUTPUT_ROUTE;
+import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.COL_SEED;
 import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.COL_SYMBOLIC_ACTION;
 import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.COL_SYMBOLIC_OUTPUT_ROUTE;
+import static org.batfish.minesweeper.question.transferbddvalidation.TransferBDDValidationAnswerer.MAX_COMMUNITIES_SIZE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_DIFF;
 import static org.hamcrest.CoreMatchers.allOf;
 import static org.hamcrest.CoreMatchers.notNullValue;
@@ -21,6 +24,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
 import java.util.SortedMap;
+import java.util.stream.IntStream;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.common.plugin.IBatfish;
@@ -32,17 +36,25 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.communities.HasSize;
+import org.batfish.datamodel.routing_policy.communities.InputCommunities;
+import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
+import org.batfish.datamodel.routing_policy.expr.IntComparison;
+import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.UnchangedNextHop;
+import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetNextHop;
 import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
+import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
@@ -166,13 +178,15 @@ public class TransferBDDValidationAnswererTest {
                 hasColumn(
                     COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, nullValue(), Schema.OBJECT),
-                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT)),
+                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
+                hasColumn(COL_SEED, 123456789L, Schema.LONG)),
             allOf(
                 hasColumn(COL_SYMBOLIC_ACTION, equalTo(LineAction.DENY.toString()), Schema.STRING),
                 hasColumn(
                     COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, nullValue(), Schema.OBJECT),
-                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT))));
+                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
+                hasColumn(COL_SEED, 123456789L, Schema.LONG))));
   }
 
   @Test
@@ -210,7 +224,8 @@ public class TransferBDDValidationAnswererTest {
                     COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
                 hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
-                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS)),
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS),
+                hasColumn(COL_SEED, 123456789L, Schema.LONG)),
             allOf(
                 hasColumn(
                     COL_SYMBOLIC_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
@@ -218,7 +233,8 @@ public class TransferBDDValidationAnswererTest {
                     COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
                 hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
                 hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
-                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS))));
+                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS),
+                hasColumn(COL_SEED, 123456789L, Schema.LONG))));
   }
 
   @Test
@@ -243,6 +259,40 @@ public class TransferBDDValidationAnswererTest {
     List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
 
     // there are no answers, since paths with unsupported features are ignored
+    assertThat(rows, empty());
+  }
+
+  @Test
+  public void testTooManyCommunities() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchCommunities(
+                        InputCommunities.instance(),
+                        new HasSize(new IntComparison(GT, new LiteralInt(MAX_COMMUNITIES_SIZE)))),
+                    ImmutableList.of(Statements.ExitReject.toStaticStatement()),
+                    ImmutableList.of(Statements.ExitAccept.toStaticStatement())))
+            .build();
+    _configAPs =
+        forDevice(
+            _batfish,
+            _batfish.getSnapshot(),
+            HOSTNAME,
+            // add a lot of communities, so it's very likely that a random route will satisfy the
+            // route policy's conditional guard
+            IntStream.range(1, 200)
+                .mapToObj(
+                    i -> CommunityVar.from(StandardCommunity.parse(String.valueOf(i) + ":100")))
+                .collect(ImmutableSet.toImmutableSet()),
+            ImmutableSet.of());
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd);
+
+    // there are no answers, since we ensure that routes won't have more than MAX_COMMUNITIES_SIZE
+    // communities on them
     assertThat(rows, empty());
   }
 }
