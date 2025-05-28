@@ -16,7 +16,7 @@ java_library(
         "src/main/resources/org/batfish/representation/aws/ip-ranges.json",
     ],
     runtime_deps = [
-        "//projects/question",
+        "//projects/question/src/main/java/org/batfish/question",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [

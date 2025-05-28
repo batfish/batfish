@@ -20,7 +20,7 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
-        "//projects/question",
+        "//projects/question/src/main/java/org/batfish/question",
     ],
     deps = [
         "//projects/batfish-common-protocol:common",

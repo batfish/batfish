@@ -10,7 +10,7 @@ java_library(
     ]),
     resources = glob(["src/main/resources/**"]),
     runtime_deps = [
-        "//projects/question",
+        "//projects/question/src/main/java/org/batfish/question",
         "@maven//:jakarta_xml_bind_jakarta_xml_bind_api",
         "@maven//:org_glassfish_jersey_inject_jersey_hk2",
     ],
