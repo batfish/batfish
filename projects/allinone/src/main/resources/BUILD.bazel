@@ -1,0 +1,8 @@
+package(
+    default_visibility = ["//projects/allinone:__subpackages__"],
+)
+
+filegroup(
+    name = "resources",
+    srcs = glob(["**"]),
+)
