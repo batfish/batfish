@@ -2372,23 +2372,14 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
     for (String name : newIfaces) {
       if (usedIfaceNames.contains(name)) {
-        warn(
-            ctx,
-            String.format(
-                "Interface %s is already in another aggregate/redundant interface and cannot be"
-                    + " added to %s",
-                name, currentInterfaceName));
+        warn(ctx, "Interface is already in another aggregate/redundant interface");
         return Optional.empty();
       } else if (ifacesMap.containsKey(name)) {
         // set current interface as parent of the new member
         Interface iface = ifacesMap.get(name);
 
         if (iface.getType() != Interface.Type.PHYSICAL) {
-          warn(
-              ctx,
-              String.format(
-                  "Interface %s is not a physical interface and cannot be added to %s",
-                  name, currentInterfaceName));
+          warn(ctx, "Only physical interfaces are allowed");
           return Optional.empty();
         }
 
@@ -2396,18 +2387,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           warn(
               ctx,
               String.format(
-                  "Interface %s is in a different vdom (%s) than the current interface (%s) and"
-                      + " cannot be added to %s",
-                  name, iface.getVdom(), _currentInterface.getVdom(), currentInterfaceName));
+                  "Interface is in a different vdom (%s) than the current interface (%s)",
+                  iface.getVdom(), _currentInterface.getVdom()));
           return Optional.empty();
         }
 
         if (iface.getIp() != null) {
-          warn(
-              ctx,
-              String.format(
-                  "Interface %s has an IP address (%s) and cannot be added to %s",
-                  name, iface.getIp(), currentInterfaceName));
+          warn(ctx, String.format("Interface has an IP address (%s)", iface.getIp()));
           return Optional.empty();
         }
 
@@ -2418,10 +2404,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       } else {
         _c.undefined(
             FortiosStructureType.INTERFACE, name, FortiosStructureUsage.INTERFACE_INTERFACE, line);
-        warn(
-            ctx,
-            String.format(
-                "Interface %s is undefined and cannot be added to %s", name, currentInterfaceName));
+        warn(ctx, "Interface is undefined");
         return Optional.empty();
       }
     }

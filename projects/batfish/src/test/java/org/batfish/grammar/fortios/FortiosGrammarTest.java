@@ -1354,7 +1354,41 @@ public final class FortiosGrammarTest {
     // - It is in the same VDOM as the aggregated interface. Aggregate ports cannot span multiple
     // VDOMs.
     // - It does not have an IP address and is not configured for DHCP or PPPoE.
+    String hostname = "iface_aggregate_warn";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment("Interface is undefined"),
+                    hasText(containsString("iface_undefined"))),
+                allOf(
+                    hasComment("Interface is already in another aggregate/redundant interface"),
+                    hasText(containsString("port1"))),
+                allOf(
+                    hasComment("Only physical interfaces are allowed"),
+                    hasText(containsString("vlan"))),
+                allOf(
+                    hasComment(
+                        "Interface is in a different vdom (customer1) than the current interface"
+                            + " (root)"),
+                    hasText(containsString("port4"))),
+                hasComment("Interface has an IP address (192.168.1.1/24)"))));
 
+    // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
+    // object is created when the name conflicts
+    // don't why redundant3 isn't discarded
+    assertThat(
+        vc.getInterfaces(),
+        hasKeys("port1", "port2", "port3", "port4", "port5", "port6", "vlan", "redundant3"));
   }
 
   @Test
