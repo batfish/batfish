@@ -43,6 +43,7 @@ csi_set_singletons:
     | csi_set_vlanid
     | csi_set_vrf
     | csi_set_null
+    | csi_set_member
 ;
 
 csi_set_alias: ALIAS alias = interface_alias newline;
@@ -72,6 +73,8 @@ csi_set_vlanid: VLANID vlanid newline;
 csi_set_vrf: VRF value = vrf newline;
 
 csi_set_null: SNMP_INDEX null_rest_of_line;
+
+csi_set_member: MEMBER members = interface_names newline;
 
 // 68-65535
 mtu: uint16;

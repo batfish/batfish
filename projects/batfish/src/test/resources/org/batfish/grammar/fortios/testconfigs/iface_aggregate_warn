@@ -1,0 +1,31 @@
+# https://github.com/batfish/batfish/issues/6995
+config system interface
+    edit "port1"
+        set vdom "root"
+        set type physical
+        set snmp-index 1
+    next
+    edit "port2"
+        set vdom "root"
+        set type physical
+        set snmp-index 2
+    next
+    edit "aggregate1"
+        set vdom "root"
+        set type aggregate
+        set member "port1" "port2"
+        set description "Uplink to DC switches"
+        set snmp-index 3
+    next
+    edit "redundant2"
+        set vdom "root"
+        set type redundant
+        # can't add the same interface in two different aggregate/redondante
+        set member "port1"
+    next
+    edit "aggregate3"
+        set vdom "root"
+        set type aggregate
+        set member UNDEFINED
+    next
+end
