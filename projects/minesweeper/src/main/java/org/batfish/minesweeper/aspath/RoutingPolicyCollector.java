@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
@@ -26,6 +27,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -272,9 +274,12 @@ public class RoutingPolicyCollector<T>
     // Otherwise update the set of seen policies and recurse.
     arg.getFirst().add(callExpr.getCalledPolicyName());
 
-    return visitAll(
-        arg.getSecond().getRoutingPolicies().get(callExpr.getCalledPolicyName()).getStatements(),
-        arg);
+    RoutingPolicy routingPolicy =
+        arg.getSecond().getRoutingPolicies().get(callExpr.getCalledPolicyName());
+    if (routingPolicy == null) {
+      return ImmutableSet.of();
+    }
+    return visitAll(routingPolicy.getStatements(), arg);
   }
 
   @Override
@@ -364,6 +369,12 @@ public class RoutingPolicyCollector<T>
 
   @Override
   public Set<T> visitMatchMetric(MatchMetric matchMetric, Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
+  public Set<T> visitMatchPeerAddress(
+      MatchPeerAddress matchPeerAddress, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
   }
 

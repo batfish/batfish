@@ -18,7 +18,7 @@ public class CommunityAPDispositionsTest {
       new CommunityAPDispositions(
           4, IntegerSpace.of(1), IntegerSpace.builder().including(0, 2, 3).build());
   private final BDDRoute _bddRoute =
-      new BDDRoute(JFactory.init(100, 100), 4, 0, 0, 0, 0, ImmutableList.of());
+      new BDDRoute(JFactory.init(100, 100), 4, 0, 0, 0, 0, 0, ImmutableList.of());
 
   @Test
   public void testUnion() {

@@ -10,7 +10,7 @@ public class TransferReturnTest {
   @Test
   public void testEquals() {
     BDDFactory factory = JFactory.init(100, 100);
-    BDDRoute route1 = new BDDRoute(factory, 0, 0, 0, 0, 0, ImmutableList.of());
+    BDDRoute route1 = new BDDRoute(factory, 0, 0, 0, 0, 0, 0, ImmutableList.of());
     BDDRoute route2 = new BDDRoute(route1);
     route2.getAdminDist().setValue(1);
 

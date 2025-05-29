@@ -4,7 +4,6 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
-import static org.batfish.common.matchers.ThrowableMatchers.hasStackTrace;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -248,11 +247,11 @@ import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
+import org.batfish.common.matchers.WarningsMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
@@ -269,6 +268,7 @@ import org.batfish.datamodel.BddTestbed;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
 import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -433,6 +433,7 @@ import org.batfish.representation.juniper.JuniperConfiguration;
 import org.batfish.representation.juniper.JuniperStructureType;
 import org.batfish.representation.juniper.JuniperStructureUsage;
 import org.batfish.representation.juniper.MulticastModeOptions;
+import org.batfish.representation.juniper.NamedBgpGroup;
 import org.batfish.representation.juniper.Nat;
 import org.batfish.representation.juniper.Nat.Type;
 import org.batfish.representation.juniper.NatPacketLocation;
@@ -1153,6 +1154,46 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpKeepExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-keep");
+
+    // Routing instance R1 does not set keep
+    RoutingInstance r1 = c.getMasterLogicalSystem().getRoutingInstances().get("R1");
+    assertNull(r1.getMasterBgpGroup().getKeep());
+    assertEquals(r1.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r1.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+    assertNull(r1.getNamedBgpGroups().get("G3").getKeep());
+
+    // group --> neighbor inheritance
+    IpBgpGroup n1 = r1.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    IpBgpGroup n2 = r1.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from group
+
+    // Routing instance R2 does set keep
+    RoutingInstance r2 = c.getMasterLogicalSystem().getRoutingInstances().get("R2");
+    assertEquals(r2.getMasterBgpGroup().getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G1").getKeep(), BgpGroup.BgpKeepType.NONE);
+    assertEquals(r2.getNamedBgpGroups().get("G2").getKeep(), BgpGroup.BgpKeepType.ALL);
+
+    NamedBgpGroup g3 = r2.getNamedBgpGroups().get("G3");
+    g3.cascadeInheritance();
+    assertEquals(g3.getKeep(), BgpGroup.BgpKeepType.NONE);
+
+    // routing-instance --> neighbor inheritance
+    n1 = r2.getIpBgpGroups().get(Prefix.parse("1.1.1.1/32"));
+    n1.cascadeInheritance();
+    assertEquals(n1.getKeep(), BgpGroup.BgpKeepType.ALL); // override
+
+    n2 = r2.getIpBgpGroups().get(Prefix.parse("2.2.2.2/32"));
+    n2.cascadeInheritance();
+    assertEquals(n2.getKeep(), BgpGroup.BgpKeepType.NONE); // inherit from routing instance
+  }
+
+  @Test
   public void testBgpMultipath() {
     assertThat(
         parseConfig("bgp-multipath").getDefaultVrf(),
@@ -1767,6 +1808,77 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testPsFromNeighbor() {
+    Configuration c = parseConfig("bgp-policy-from-neighbor");
+
+    Bgpv4Route base =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
+    {
+      // Allowed from a specific neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.0.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertTrue(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
+    }
+    {
+      // Rejected from wrong neighbor
+      assertThat(c.getRoutingPolicies(), hasKey("POL"));
+      RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+      BgpSessionProperties session_allowed =
+          BgpSessionProperties.builder()
+              .setRemoteAs(65500)
+              .setLocalAs(65501)
+              .setRemoteIp(Ip.parse("10.0.1.1"))
+              .setLocalIp(Ip.parse("10.9.9.9"))
+              .build();
+      assertFalse(rp.processBgpRoute(base, out_builder, session_allowed, Direction.IN, null));
+    }
+  }
+
+  @Test
+  public void testPsFromNextHop() throws IOException {
+    Configuration c = parseConfig("bgp-policy-from-next-hop");
+
+    Bgpv4Route permittedRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setNextHopIp(Ip.parse("10.0.0.1"))
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route deniedRoute = permittedRoute.toBuilder().setNextHopIp(Ip.parse("10.0.0.3")).build();
+
+    Builder out_builder = org.batfish.datamodel.Bgpv4Route.builder();
+
+    // Allowed from a specific neighbor
+    assertThat(c.getRoutingPolicies(), hasKey("POL"));
+    RoutingPolicy rp = c.getRoutingPolicies().get("POL");
+    BgpSessionProperties session =
+        BgpSessionProperties.builder()
+            .setRemoteAs(65500)
+            .setLocalAs(65501)
+            .setRemoteIp(Ip.parse("10.0.0.1"))
+            .setLocalIp(Ip.parse("10.9.9.9"))
+            .build();
+    assertTrue(rp.processBgpRoute(permittedRoute, out_builder, session, Direction.IN, null));
+    assertFalse(rp.processBgpRoute(deniedRoute, out_builder, session, Direction.IN, null));
+  }
+
+  @Test
   public void testBgpDisable() throws IOException {
     // Config has "set protocols bgp disable"; no VI BGP process should be created
     String hostname = "bgp_disable";
@@ -2335,16 +2447,21 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testFirewallGlobalAddressBookRangeError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testFirewallGlobalAddressBookRangeError() throws IOException {
+    String hostname = "firewall-global-address-book-range-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString(
                     "Range must be from low to high: address INVALID range-address 5.5.5.7 to"
                         + " 5.5.5.5"))));
-    parseConfig("firewall-global-address-book-range-error");
   }
 
   @Test
@@ -4013,7 +4130,7 @@ public final class FlatJuniperGrammarTest {
                             "NOPFS_ESP_3DES_MD5",
                             "NOPFS_ESP_DES_SHA",
                             "NOPFS_ESP_DES_MD5"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(nullValue()))));
+                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
   }
 
   @Test
@@ -4820,6 +4937,11 @@ public final class FlatJuniperGrammarTest {
         nhPolicy.call(
             envWithRoute(
                 c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.4"))).build(), IN));
+    assertTrue(result.getBooleanValue());
+    result =
+        nhPolicy.call(
+            envWithRoute(
+                c, bgpRouteBuilder.setNextHop(NextHopIp.of(Ip.parse("1.2.3.5"))).build(), IN));
     assertFalse(result.getBooleanValue());
 
     /*
@@ -7731,25 +7853,47 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testOspfAreaInterfaceAllDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceAllDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-all-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"all\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-all-duplicate-error");
   }
 
   @Test
-  public void testOspfAreaInterfaceDuplicateError() {
-    _thrown.expect(BatfishException.class);
-    _thrown.expect(
-        hasStackTrace(
-            allOf(
-                containsString("WillNotCommitException"),
+  public void testOspfAreaInterfaceDuplicateError() throws IOException {
+    String hostname = "ospf-area-interface-duplicate-error";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(
+        pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(),
+        hasItem(
+            WarningMatchers.hasText(
                 containsString("Interface \"ge-0/0/0.0\" assigned to multiple areas"))));
-    parseConfig("ospf-area-interface-duplicate-error");
+  }
+
+  @Test
+  public void testOspfAreaInterfaceIpMissing() throws IOException {
+    String hostname = "ospf-area-interface-ip-missing";
+    String fileKey = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    assertThat(pvcae.getWarnings().get(fileKey).getFatalRedFlagWarnings(), empty());
   }
 
   @Test
@@ -7945,34 +8089,32 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testVrrpErrorMultipleSourceAddressesForVrid() throws IOException {
     String hostname = "juniper-vrrp-error-multiple-source-addresses-for-vrid";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
-    batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Multiple inet addresses with the same VRRP VRID 1 on interface 'xe-0/0/0.0'")));
-    parseJuniperConfig(hostname);
+        pvcae.getWarnings().get(fileKey),
+        WarningsMatchers.hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Multiple inet addresses with the same VRRP VRID 1 on interface"
+                    + " 'xe-0/0/0.0'")));
   }
 
   @Test
   public void testVrrpErrorVirtualAddressOutsideSourceAddressSubnet() throws IOException {
     String hostname = "juniper-vrrp-error-virtual-address-outside-source-address-subnet";
+    String fileKey = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ParseVendorConfigurationAnswerElement pvcae =
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            "configs/" + hostname,
-            containsString(
-                "Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
+        pvcae.getWarnings().get(fileKey),
+        WarningsMatchers.hasRedFlag(
+            WarningMatchers.hasText(
+                "FATAL: Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
                     + " 10.0.0.1/24")));
-    parseJuniperConfig(hostname);
   }
 
   @Test
@@ -7987,8 +8129,8 @@ public final class FlatJuniperGrammarTest {
         hasRedFlagWarning(
             hostname,
             equalTo(
-                "Configuration will not actually commit. Cannot create VRRP group for vrid 1 on"
-                    + " interface 'xe-0/0/0.0' because no virtual-address is assigned.")));
+                "FATAL: Cannot create VRRP group for vrid 1 on interface 'xe-0/0/0.0' because no"
+                    + " virtual-address is assigned.")));
   }
 
   @Test
@@ -8513,6 +8655,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testRecoveryTimeout() {
+    // Should not crash.
+    parseConfig("recovery-timeout");
+  }
+
+  @Test
   public void testJuniperAsPathExclamationRegex() {
     Configuration c = parseConfig("juniper-as-path-exclamation-regex");
     RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
@@ -8603,6 +8751,44 @@ public final class FlatJuniperGrammarTest {
             WarningMatchers.hasText(
                 "FATAL: 'COMMUNITY_WITH_NO_LITERAL' community contains no non-wildcard members in a"
                     + " set action")));
+  }
+
+  @Test
+  public void testRiskyRegexWarnings() throws IOException {
+    String hostname = "risky-regexes";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(
+            hasComment(
+                "RISK: Community regex 8075:[1][0][0-3,5-9][0-9][0-9]$ allows longer matches such"
+                    + " as 18075:10000"),
+            hasComment("RISK: Community string ':111' is interpreted as '0:111'")));
+  }
+
+  @Test
+  public void testCommunityOverlapWarnings() throws IOException {
+    String hostname = "overlapping-policy";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    List<ParseWarning> riskyParseWarnings =
+        batfish
+            .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+            .getWarnings()
+            .get("configs/" + hostname)
+            .getRiskyParseWarnings();
+
+    assertThat(
+        riskyParseWarnings,
+        containsInAnyOrder(hasComment("RISK: Overwriting existing then community set")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

@@ -9,6 +9,7 @@ import static org.batfish.representation.juniper.JuniperConfiguration.computeFir
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperStructureType.ADDRESS_BOOK;
+import static org.batfish.representation.juniper.JuniperStructureType.ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_OR_APPLICATION_SET;
 import static org.batfish.representation.juniper.JuniperStructureType.APPLICATION_SET;
@@ -33,6 +34,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IPSEC_PROPOSAL;
 import static org.batfish.representation.juniper.JuniperStructureType.LOGICAL_SYSTEM;
+import static org.batfish.representation.juniper.JuniperStructureType.MPLS_PATH;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_POOL;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE;
 import static org.batfish.representation.juniper.JuniperStructureType.NAT_RULE_SET;
@@ -95,7 +97,16 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.IPSEC_VPN
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_EXPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_IMPORT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.ISIS_INTERFACE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_ADMIN_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_EXCLUDE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_PRIMARY_PATH;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_LSP_SECONDARY_PATH;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_DESTINATION_RULE_SET_RULE_THEN;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.NAT_RULE_SET_FROM_ROUTING_INSTANCE;
@@ -168,7 +179,6 @@ import org.antlr.v4.runtime.tree.ErrorNode;
 import org.batfish.common.BatfishException;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
-import org.batfish.common.WillNotCommitException;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.common.util.JuniperUtils;
 import org.batfish.datamodel.AaaAuthenticationLoginList;
@@ -252,6 +262,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_keepContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
@@ -441,8 +452,19 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_admin_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplsi_srlgContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_primaryContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslsp_secondaryContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_excludeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_allContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspag_include_anyContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_excludeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_allContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mplslspsag_include_anyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Name_or_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_codeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Named_icmp_typeContext;
@@ -812,6 +834,7 @@ import org.batfish.representation.juniper.AddressFamily;
 import org.batfish.representation.juniper.AddressRangeAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetAddressBookEntry;
 import org.batfish.representation.juniper.AddressSetEntry;
+import org.batfish.representation.juniper.AdminGroup;
 import org.batfish.representation.juniper.AggregateRoute;
 import org.batfish.representation.juniper.AllVlans;
 import org.batfish.representation.juniper.ApplicationOrApplicationSetReference;
@@ -956,6 +979,7 @@ import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromMetric;
+import org.batfish.representation.juniper.PsFromNeighbor;
 import org.batfish.representation.juniper.PsFromNextHop;
 import org.batfish.representation.juniper.PsFromNextHop.Hop;
 import org.batfish.representation.juniper.PsFromPolicyStatement;
@@ -1058,6 +1082,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private static final IntegerSpace VNI_NUMBER_RANGE = IntegerSpace.of(new SubRange(0, 16777215));
 
   private static final IntegerSpace VLAN_RANGE = IntegerSpace.of(new SubRange(1, 4094));
+
+  private static final IntegerSpace ADMIN_GROUP_RANGE = IntegerSpace.of(new SubRange(0, 31));
 
   private static final IntegerSpace FRAGMENT_OFFSET_RANGE = IntegerSpace.of(new SubRange(0, 8191));
 
@@ -2302,7 +2328,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private void addPsThen(PsThen then, ParserRuleContext ctx) {
     List<String> cleared = _currentPsThens.addPsThen(then);
     if (!cleared.isEmpty()) {
-      warn(
+      warnRisky(
           ctx,
           String.format(
               "Overwriting existing %s %s",
@@ -2587,6 +2613,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void enterB_keep(B_keepContext ctx) {
+    BgpGroup.BgpKeepType keep =
+        ctx.NONE() != null ? BgpGroup.BgpKeepType.NONE : BgpGroup.BgpKeepType.ALL;
+    _currentBgpGroup.setKeep(keep);
+  }
+
+  @Override
   public void enterF_family(F_familyContext ctx) {
     _currentFirewallFamily = toFamily(ctx);
   }
@@ -2772,13 +2805,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     } else if (!currentVrrpGroup.getSourceAddress().equals(_currentInterfaceAddress)) {
       // Note that we are keeping the VRRP configuration for the first source-address we encounter
       // using this VRID.
-      warn(
-          ctx,
-          String.format(
-              "Configuration will not commit. Multiple inet addresses with the same VRRP VRID %d on"
-                  + " interface '%s'",
-              vrid, _currentInterfaceOrRange.getName()));
-      _currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
+      _w.fatalRedFlag(
+          "Multiple inet addresses with the same VRRP VRID %d on interface '%s'",
+          vrid, _currentInterfaceOrRange.getName());
+      currentVrrpGroup = new VrrpGroup(_currentInterfaceAddress); // dummy
     }
     _currentVrrpGroup = currentVrrpGroup;
   }
@@ -2970,8 +3000,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       }
       if (_currentOspfSettings == null) {
         warn(ctx, "Could not find interface with ip address: " + ip);
-        // create dummy object to store what follows; this dangling object will be ignore
+        // create dummy object to store what follows; this dangling object will be ignored
         _currentOspfSettings = new OspfInterfaceSettings(Ip.ZERO);
+        return;
       }
     } else {
       Interface iface = initRoutingInterface(ctx.id);
@@ -2987,8 +3018,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Ip currentArea = Ip.create(_currentArea.getName());
     Ip currentInterfaceArea = _currentOspfSettings.getOspfArea();
     if (!currentArea.equals(currentInterfaceArea)) {
-      throw new WillNotCommitException(
-          "Interface \"" + ospfInterfaceName + "\" assigned to multiple areas");
+      _w.fatalRedFlag("Interface \"%s\" assigned to multiple areas", ospfInterfaceName);
+      return;
     }
   }
 
@@ -3700,12 +3731,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Ip upper = toIp(ctx.upper_limit);
       if (lower.compareTo(upper) > 0) {
         // Lower is bigger, Juniper will reject this.
-        throw new WillNotCommitException("Range must be from low to high: " + getFullText(ctx));
+        _w.fatalRedFlag("Range must be from low to high: %s", getFullText(ctx));
+        return;
       }
       AddressBookEntry addressEntry = new AddressRangeAddressBookEntry(name, lower, upper);
       _currentAddressBook.getEntries().put(name, addressEntry);
     } else {
-      assert ctx.DESCRIPTION() != null;
+      assert ctx.description() != null;
       /* TODO - data model doesn't have a place to put this yet. */
     }
   }
@@ -5249,12 +5281,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitIfiav_virtual_address(Ifiav_virtual_addressContext ctx) {
     Ip virtualAddress = toIp(ctx.ip_address());
     if (!_currentInterfaceAddress.getPrefix().containsIp(virtualAddress)) {
-      warn(
-          ctx,
-          String.format(
-              "Will not commit. Cannot assign virtual-address %s outside of subnet for inet address"
-                  + " %s",
-              virtualAddress, _currentInterfaceAddress));
+      _w.fatalRedFlag(
+          "Cannot assign virtual-address %s outside of subnet for inet address %s",
+          virtualAddress, _currentInterfaceAddress);
       return;
     }
     _currentVrrpGroup.addVirtualAddress(virtualAddress);
@@ -5485,6 +5514,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitMplsi_admin_group(Mplsi_admin_groupContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_INTERFACE_ADMIN_GROUP, getLine(ctx.name.getStart()));
+  }
+
+  @Override
   public void exitMplsi_srlg(Mplsi_srlgContext ctx) {
     String name = toString(ctx.name);
     _configuration.referenceStructure(
@@ -5709,7 +5745,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     if (ctx.literal_or_regex_community() != null) {
       CommunityMemberParseResult result = parseCommunityMember(text);
       if (result.getWarning() != null) {
-        warn(ctx, result.getWarning());
+        warnRisky(ctx, result.getWarning());
       }
       return result.getMember();
     } else {
@@ -5845,8 +5881,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_neighbor(Popsf_neighborContext ctx) {
-    todo(ctx);
-    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    PsFromNeighbor.Neighbor neighbor;
+    if (ctx.v4 != null) {
+      neighbor = PsFromNeighbor.Neighbor.of(toIp(ctx.v4));
+    } else {
+      assert ctx.v6 != null;
+      neighbor = PsFromNeighbor.Neighbor.of(toIp6(ctx.v6));
+    }
+    _currentPsTerm.getFroms().addFromNeighbor(new PsFromNeighbor(neighbor));
   }
 
   @Override
@@ -6391,7 +6433,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentAggregateRoute
         .getPolicies()
         .add(toComplexPolicyStatement(ctx.expr, AGGREGATE_ROUTE_POLICY));
-    todo(ctx);
   }
 
   @Override
@@ -7665,6 +7706,90 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   private @Nonnull Optional<Integer> toInteger(
       ParserRuleContext messageCtx, Vlan_numberContext ctx) {
     return toIntegerInSpace(messageCtx, ctx, VLAN_RANGE, "vlan number");
+  }
+
+  @Override
+  public void exitMpls_admin_groups(Mpls_admin_groupsContext ctx) {
+    String name = toString(ctx.name);
+
+    // Validate admin-group value (0-31)
+    Optional<Integer> maybeValue =
+        toIntegerInSpace(ctx, ctx.number, ADMIN_GROUP_RANGE, "admin-group");
+    if (!maybeValue.isPresent()) {
+      return;
+    }
+
+    int value = maybeValue.get();
+    _currentLogicalSystem.getAdminGroups().put(name, new AdminGroup(name, value));
+    _configuration.defineFlattenedStructure(ADMIN_GROUP, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitMpls_path(Mpls_pathContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(MPLS_PATH, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitMplslspag_exclude(Mplslspag_excludeContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_EXCLUDE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspag_include_all(Mplslspag_include_allContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_INCLUDE_ALL, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspag_include_any(Mplslspag_include_anyContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_ADMIN_GROUP_INCLUDE_ANY, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_exclude(Mplslspsag_excludeContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP, name, MPLS_LSP_SECONDARY_ADMIN_GROUP_EXCLUDE, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_include_all(Mplslspsag_include_allContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP,
+        name,
+        MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ALL,
+        getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslspsag_include_any(Mplslspsag_include_anyContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        ADMIN_GROUP,
+        name,
+        MPLS_LSP_SECONDARY_ADMIN_GROUP_INCLUDE_ANY,
+        getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslsp_primary(Mplslsp_primaryContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        MPLS_PATH, name, MPLS_LSP_PRIMARY_PATH, getLine(ctx.name.getStart()));
+  }
+
+  @Override
+  public void exitMplslsp_secondary(Mplslsp_secondaryContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.referenceStructure(
+        MPLS_PATH, name, MPLS_LSP_SECONDARY_PATH, getLine(ctx.name.getStart()));
   }
 
   private @Nonnull Optional<String> toString(

@@ -153,10 +153,10 @@ public class ParboiledInterfaceSpecifierTest {
   @Test
   public void testResolveType() {
     _iface11B.setType(InterfaceType.VLAN);
-    _iface12B.setType(InterfaceType.VPN);
+    _iface12B.setType(InterfaceType.TUNNEL);
     build();
     assertThat(
-        new ParboiledInterfaceSpecifier(new TypeInterfaceAstNode("vpn")).resolve(_nodes, _ctxt),
+        new ParboiledInterfaceSpecifier(new TypeInterfaceAstNode("tunnel")).resolve(_nodes, _ctxt),
         contains(NodeInterfacePair.of(_iface12)));
   }
 

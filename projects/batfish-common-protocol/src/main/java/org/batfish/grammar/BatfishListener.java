@@ -67,4 +67,22 @@ public interface BatfishListener extends ParseTreeListener {
     String text = node.getText();
     getWarnings().addWarningOnLine(node.getSymbol().getLine(), ctx, text, getParser(), message);
   }
+
+  /**
+   * Warn helper for risky warnings that indicate a syntax that can parse but may result in
+   * unexpected behavior.
+   */
+  default void warnRisky(ParserRuleContext ctx, String message) {
+    getWarnings().addRiskyWarning(ctx, getWarningText(ctx), getParser(), message);
+  }
+
+  /**
+   * Warn helper for risky warnings that indicate a syntax that can parse but may result in
+   * unexpected behavior. Uses text from the given {@link TerminalNode}.
+   */
+  default void warnRisky(ParserRuleContext ctx, TerminalNode node, String message) {
+    String text = node.getText();
+    getWarnings()
+        .addRiskyWarningOnLine(node.getSymbol().getLine(), ctx, text, getParser(), message);
+  }
 }

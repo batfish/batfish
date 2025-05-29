@@ -1,6 +1,7 @@
 package org.batfish.datamodel.matchers;
 
 import java.util.List;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.IpsecPhase2Policy;
@@ -21,14 +22,15 @@ final class IpsecPhase2PolicyMatchersImpl {
     }
   }
 
-  static final class HasPfsKeyGroup extends FeatureMatcher<IpsecPhase2Policy, DiffieHellmanGroup> {
-    HasPfsKeyGroup(@Nonnull Matcher<? super DiffieHellmanGroup> subMatcher) {
-      super(subMatcher, "An IPSec phase 2 policy with PfsKeyGroup:", "PfsKeyGroup");
+  static final class HasPfsKeyGroups
+      extends FeatureMatcher<IpsecPhase2Policy, Set<DiffieHellmanGroup>> {
+    HasPfsKeyGroups(@Nonnull Matcher<? super Set<DiffieHellmanGroup>> subMatcher) {
+      super(subMatcher, "An IPSec phase 2 policy with PfsKeyGroups:", "PfsKeyGroups");
     }
 
     @Override
-    protected DiffieHellmanGroup featureValueOf(IpsecPhase2Policy actual) {
-      return actual.getPfsKeyGroup();
+    protected Set<DiffieHellmanGroup> featureValueOf(IpsecPhase2Policy actual) {
+      return actual.getPfsKeyGroups();
     }
   }
 }

@@ -81662,13 +81662,17 @@
         },
         "ipsecPhase2Policies" : {
           "ipsec-vpn-ba2e34a8-0" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2"
+            ],
             "proposals" : [
               "ipsec-prop-vpn-ba2e34a8-0"
             ]
           },
           "ipsec-vpn-ba2e34a8-1" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2"
+            ],
             "proposals" : [
               "ipsec-prop-vpn-ba2e34a8-1"
             ]
@@ -85416,7 +85420,198 @@
               }
             },
             "ikePhase1Proposals" : [
-              "vpn-ba2e34a8-1"
+              "ike_proposal_2_SHA1_AES128",
+              "ike_proposal_2_SHA1_AES256",
+              "ike_proposal_2_SHA1_AES128-GCM-16",
+              "ike_proposal_2_SHA1_AES256-GCM-16",
+              "ike_proposal_2_SHA2-256_AES128",
+              "ike_proposal_2_SHA2-256_AES256",
+              "ike_proposal_2_SHA2-256_AES128-GCM-16",
+              "ike_proposal_2_SHA2-256_AES256-GCM-16",
+              "ike_proposal_2_SHA2-384_AES128",
+              "ike_proposal_2_SHA2-384_AES256",
+              "ike_proposal_2_SHA2-384_AES128-GCM-16",
+              "ike_proposal_2_SHA2-384_AES256-GCM-16",
+              "ike_proposal_2_SHA2-512_AES128",
+              "ike_proposal_2_SHA2-512_AES256",
+              "ike_proposal_2_SHA2-512_AES128-GCM-16",
+              "ike_proposal_2_SHA2-512_AES256-GCM-16",
+              "ike_proposal_14_SHA1_AES128",
+              "ike_proposal_14_SHA1_AES256",
+              "ike_proposal_14_SHA1_AES128-GCM-16",
+              "ike_proposal_14_SHA1_AES256-GCM-16",
+              "ike_proposal_14_SHA2-256_AES128",
+              "ike_proposal_14_SHA2-256_AES256",
+              "ike_proposal_14_SHA2-256_AES128-GCM-16",
+              "ike_proposal_14_SHA2-256_AES256-GCM-16",
+              "ike_proposal_14_SHA2-384_AES128",
+              "ike_proposal_14_SHA2-384_AES256",
+              "ike_proposal_14_SHA2-384_AES128-GCM-16",
+              "ike_proposal_14_SHA2-384_AES256-GCM-16",
+              "ike_proposal_14_SHA2-512_AES128",
+              "ike_proposal_14_SHA2-512_AES256",
+              "ike_proposal_14_SHA2-512_AES128-GCM-16",
+              "ike_proposal_14_SHA2-512_AES256-GCM-16",
+              "ike_proposal_15_SHA1_AES128",
+              "ike_proposal_15_SHA1_AES256",
+              "ike_proposal_15_SHA1_AES128-GCM-16",
+              "ike_proposal_15_SHA1_AES256-GCM-16",
+              "ike_proposal_15_SHA2-256_AES128",
+              "ike_proposal_15_SHA2-256_AES256",
+              "ike_proposal_15_SHA2-256_AES128-GCM-16",
+              "ike_proposal_15_SHA2-256_AES256-GCM-16",
+              "ike_proposal_15_SHA2-384_AES128",
+              "ike_proposal_15_SHA2-384_AES256",
+              "ike_proposal_15_SHA2-384_AES128-GCM-16",
+              "ike_proposal_15_SHA2-384_AES256-GCM-16",
+              "ike_proposal_15_SHA2-512_AES128",
+              "ike_proposal_15_SHA2-512_AES256",
+              "ike_proposal_15_SHA2-512_AES128-GCM-16",
+              "ike_proposal_15_SHA2-512_AES256-GCM-16",
+              "ike_proposal_16_SHA1_AES128",
+              "ike_proposal_16_SHA1_AES256",
+              "ike_proposal_16_SHA1_AES128-GCM-16",
+              "ike_proposal_16_SHA1_AES256-GCM-16",
+              "ike_proposal_16_SHA2-256_AES128",
+              "ike_proposal_16_SHA2-256_AES256",
+              "ike_proposal_16_SHA2-256_AES128-GCM-16",
+              "ike_proposal_16_SHA2-256_AES256-GCM-16",
+              "ike_proposal_16_SHA2-384_AES128",
+              "ike_proposal_16_SHA2-384_AES256",
+              "ike_proposal_16_SHA2-384_AES128-GCM-16",
+              "ike_proposal_16_SHA2-384_AES256-GCM-16",
+              "ike_proposal_16_SHA2-512_AES128",
+              "ike_proposal_16_SHA2-512_AES256",
+              "ike_proposal_16_SHA2-512_AES128-GCM-16",
+              "ike_proposal_16_SHA2-512_AES256-GCM-16",
+              "ike_proposal_17_SHA1_AES128",
+              "ike_proposal_17_SHA1_AES256",
+              "ike_proposal_17_SHA1_AES128-GCM-16",
+              "ike_proposal_17_SHA1_AES256-GCM-16",
+              "ike_proposal_17_SHA2-256_AES128",
+              "ike_proposal_17_SHA2-256_AES256",
+              "ike_proposal_17_SHA2-256_AES128-GCM-16",
+              "ike_proposal_17_SHA2-256_AES256-GCM-16",
+              "ike_proposal_17_SHA2-384_AES128",
+              "ike_proposal_17_SHA2-384_AES256",
+              "ike_proposal_17_SHA2-384_AES128-GCM-16",
+              "ike_proposal_17_SHA2-384_AES256-GCM-16",
+              "ike_proposal_17_SHA2-512_AES128",
+              "ike_proposal_17_SHA2-512_AES256",
+              "ike_proposal_17_SHA2-512_AES128-GCM-16",
+              "ike_proposal_17_SHA2-512_AES256-GCM-16",
+              "ike_proposal_18_SHA1_AES128",
+              "ike_proposal_18_SHA1_AES256",
+              "ike_proposal_18_SHA1_AES128-GCM-16",
+              "ike_proposal_18_SHA1_AES256-GCM-16",
+              "ike_proposal_18_SHA2-256_AES128",
+              "ike_proposal_18_SHA2-256_AES256",
+              "ike_proposal_18_SHA2-256_AES128-GCM-16",
+              "ike_proposal_18_SHA2-256_AES256-GCM-16",
+              "ike_proposal_18_SHA2-384_AES128",
+              "ike_proposal_18_SHA2-384_AES256",
+              "ike_proposal_18_SHA2-384_AES128-GCM-16",
+              "ike_proposal_18_SHA2-384_AES256-GCM-16",
+              "ike_proposal_18_SHA2-512_AES128",
+              "ike_proposal_18_SHA2-512_AES256",
+              "ike_proposal_18_SHA2-512_AES128-GCM-16",
+              "ike_proposal_18_SHA2-512_AES256-GCM-16",
+              "ike_proposal_19_SHA1_AES128",
+              "ike_proposal_19_SHA1_AES256",
+              "ike_proposal_19_SHA1_AES128-GCM-16",
+              "ike_proposal_19_SHA1_AES256-GCM-16",
+              "ike_proposal_19_SHA2-256_AES128",
+              "ike_proposal_19_SHA2-256_AES256",
+              "ike_proposal_19_SHA2-256_AES128-GCM-16",
+              "ike_proposal_19_SHA2-256_AES256-GCM-16",
+              "ike_proposal_19_SHA2-384_AES128",
+              "ike_proposal_19_SHA2-384_AES256",
+              "ike_proposal_19_SHA2-384_AES128-GCM-16",
+              "ike_proposal_19_SHA2-384_AES256-GCM-16",
+              "ike_proposal_19_SHA2-512_AES128",
+              "ike_proposal_19_SHA2-512_AES256",
+              "ike_proposal_19_SHA2-512_AES128-GCM-16",
+              "ike_proposal_19_SHA2-512_AES256-GCM-16",
+              "ike_proposal_20_SHA1_AES128",
+              "ike_proposal_20_SHA1_AES256",
+              "ike_proposal_20_SHA1_AES128-GCM-16",
+              "ike_proposal_20_SHA1_AES256-GCM-16",
+              "ike_proposal_20_SHA2-256_AES128",
+              "ike_proposal_20_SHA2-256_AES256",
+              "ike_proposal_20_SHA2-256_AES128-GCM-16",
+              "ike_proposal_20_SHA2-256_AES256-GCM-16",
+              "ike_proposal_20_SHA2-384_AES128",
+              "ike_proposal_20_SHA2-384_AES256",
+              "ike_proposal_20_SHA2-384_AES128-GCM-16",
+              "ike_proposal_20_SHA2-384_AES256-GCM-16",
+              "ike_proposal_20_SHA2-512_AES128",
+              "ike_proposal_20_SHA2-512_AES256",
+              "ike_proposal_20_SHA2-512_AES128-GCM-16",
+              "ike_proposal_20_SHA2-512_AES256-GCM-16",
+              "ike_proposal_21_SHA1_AES128",
+              "ike_proposal_21_SHA1_AES256",
+              "ike_proposal_21_SHA1_AES128-GCM-16",
+              "ike_proposal_21_SHA1_AES256-GCM-16",
+              "ike_proposal_21_SHA2-256_AES128",
+              "ike_proposal_21_SHA2-256_AES256",
+              "ike_proposal_21_SHA2-256_AES128-GCM-16",
+              "ike_proposal_21_SHA2-256_AES256-GCM-16",
+              "ike_proposal_21_SHA2-384_AES128",
+              "ike_proposal_21_SHA2-384_AES256",
+              "ike_proposal_21_SHA2-384_AES128-GCM-16",
+              "ike_proposal_21_SHA2-384_AES256-GCM-16",
+              "ike_proposal_21_SHA2-512_AES128",
+              "ike_proposal_21_SHA2-512_AES256",
+              "ike_proposal_21_SHA2-512_AES128-GCM-16",
+              "ike_proposal_21_SHA2-512_AES256-GCM-16",
+              "ike_proposal_22_SHA1_AES128",
+              "ike_proposal_22_SHA1_AES256",
+              "ike_proposal_22_SHA1_AES128-GCM-16",
+              "ike_proposal_22_SHA1_AES256-GCM-16",
+              "ike_proposal_22_SHA2-256_AES128",
+              "ike_proposal_22_SHA2-256_AES256",
+              "ike_proposal_22_SHA2-256_AES128-GCM-16",
+              "ike_proposal_22_SHA2-256_AES256-GCM-16",
+              "ike_proposal_22_SHA2-384_AES128",
+              "ike_proposal_22_SHA2-384_AES256",
+              "ike_proposal_22_SHA2-384_AES128-GCM-16",
+              "ike_proposal_22_SHA2-384_AES256-GCM-16",
+              "ike_proposal_22_SHA2-512_AES128",
+              "ike_proposal_22_SHA2-512_AES256",
+              "ike_proposal_22_SHA2-512_AES128-GCM-16",
+              "ike_proposal_22_SHA2-512_AES256-GCM-16",
+              "ike_proposal_23_SHA1_AES128",
+              "ike_proposal_23_SHA1_AES256",
+              "ike_proposal_23_SHA1_AES128-GCM-16",
+              "ike_proposal_23_SHA1_AES256-GCM-16",
+              "ike_proposal_23_SHA2-256_AES128",
+              "ike_proposal_23_SHA2-256_AES256",
+              "ike_proposal_23_SHA2-256_AES128-GCM-16",
+              "ike_proposal_23_SHA2-256_AES256-GCM-16",
+              "ike_proposal_23_SHA2-384_AES128",
+              "ike_proposal_23_SHA2-384_AES256",
+              "ike_proposal_23_SHA2-384_AES128-GCM-16",
+              "ike_proposal_23_SHA2-384_AES256-GCM-16",
+              "ike_proposal_23_SHA2-512_AES128",
+              "ike_proposal_23_SHA2-512_AES256",
+              "ike_proposal_23_SHA2-512_AES128-GCM-16",
+              "ike_proposal_23_SHA2-512_AES256-GCM-16",
+              "ike_proposal_24_SHA1_AES128",
+              "ike_proposal_24_SHA1_AES256",
+              "ike_proposal_24_SHA1_AES128-GCM-16",
+              "ike_proposal_24_SHA1_AES256-GCM-16",
+              "ike_proposal_24_SHA2-256_AES128",
+              "ike_proposal_24_SHA2-256_AES256",
+              "ike_proposal_24_SHA2-256_AES128-GCM-16",
+              "ike_proposal_24_SHA2-256_AES256-GCM-16",
+              "ike_proposal_24_SHA2-384_AES128",
+              "ike_proposal_24_SHA2-384_AES256",
+              "ike_proposal_24_SHA2-384_AES128-GCM-16",
+              "ike_proposal_24_SHA2-384_AES256-GCM-16",
+              "ike_proposal_24_SHA2-512_AES128",
+              "ike_proposal_24_SHA2-512_AES256",
+              "ike_proposal_24_SHA2-512_AES128-GCM-16",
+              "ike_proposal_24_SHA2-512_AES256-GCM-16"
             ],
             "localInterface" : "external-vpn-ba2e34a8-1",
             "remoteIdentity" : {
@@ -85436,7 +85631,198 @@
               }
             },
             "ikePhase1Proposals" : [
-              "vpn-ba2e34a8-2"
+              "ike_proposal_2_SHA1_AES128",
+              "ike_proposal_2_SHA1_AES256",
+              "ike_proposal_2_SHA1_AES128-GCM-16",
+              "ike_proposal_2_SHA1_AES256-GCM-16",
+              "ike_proposal_2_SHA2-256_AES128",
+              "ike_proposal_2_SHA2-256_AES256",
+              "ike_proposal_2_SHA2-256_AES128-GCM-16",
+              "ike_proposal_2_SHA2-256_AES256-GCM-16",
+              "ike_proposal_2_SHA2-384_AES128",
+              "ike_proposal_2_SHA2-384_AES256",
+              "ike_proposal_2_SHA2-384_AES128-GCM-16",
+              "ike_proposal_2_SHA2-384_AES256-GCM-16",
+              "ike_proposal_2_SHA2-512_AES128",
+              "ike_proposal_2_SHA2-512_AES256",
+              "ike_proposal_2_SHA2-512_AES128-GCM-16",
+              "ike_proposal_2_SHA2-512_AES256-GCM-16",
+              "ike_proposal_14_SHA1_AES128",
+              "ike_proposal_14_SHA1_AES256",
+              "ike_proposal_14_SHA1_AES128-GCM-16",
+              "ike_proposal_14_SHA1_AES256-GCM-16",
+              "ike_proposal_14_SHA2-256_AES128",
+              "ike_proposal_14_SHA2-256_AES256",
+              "ike_proposal_14_SHA2-256_AES128-GCM-16",
+              "ike_proposal_14_SHA2-256_AES256-GCM-16",
+              "ike_proposal_14_SHA2-384_AES128",
+              "ike_proposal_14_SHA2-384_AES256",
+              "ike_proposal_14_SHA2-384_AES128-GCM-16",
+              "ike_proposal_14_SHA2-384_AES256-GCM-16",
+              "ike_proposal_14_SHA2-512_AES128",
+              "ike_proposal_14_SHA2-512_AES256",
+              "ike_proposal_14_SHA2-512_AES128-GCM-16",
+              "ike_proposal_14_SHA2-512_AES256-GCM-16",
+              "ike_proposal_15_SHA1_AES128",
+              "ike_proposal_15_SHA1_AES256",
+              "ike_proposal_15_SHA1_AES128-GCM-16",
+              "ike_proposal_15_SHA1_AES256-GCM-16",
+              "ike_proposal_15_SHA2-256_AES128",
+              "ike_proposal_15_SHA2-256_AES256",
+              "ike_proposal_15_SHA2-256_AES128-GCM-16",
+              "ike_proposal_15_SHA2-256_AES256-GCM-16",
+              "ike_proposal_15_SHA2-384_AES128",
+              "ike_proposal_15_SHA2-384_AES256",
+              "ike_proposal_15_SHA2-384_AES128-GCM-16",
+              "ike_proposal_15_SHA2-384_AES256-GCM-16",
+              "ike_proposal_15_SHA2-512_AES128",
+              "ike_proposal_15_SHA2-512_AES256",
+              "ike_proposal_15_SHA2-512_AES128-GCM-16",
+              "ike_proposal_15_SHA2-512_AES256-GCM-16",
+              "ike_proposal_16_SHA1_AES128",
+              "ike_proposal_16_SHA1_AES256",
+              "ike_proposal_16_SHA1_AES128-GCM-16",
+              "ike_proposal_16_SHA1_AES256-GCM-16",
+              "ike_proposal_16_SHA2-256_AES128",
+              "ike_proposal_16_SHA2-256_AES256",
+              "ike_proposal_16_SHA2-256_AES128-GCM-16",
+              "ike_proposal_16_SHA2-256_AES256-GCM-16",
+              "ike_proposal_16_SHA2-384_AES128",
+              "ike_proposal_16_SHA2-384_AES256",
+              "ike_proposal_16_SHA2-384_AES128-GCM-16",
+              "ike_proposal_16_SHA2-384_AES256-GCM-16",
+              "ike_proposal_16_SHA2-512_AES128",
+              "ike_proposal_16_SHA2-512_AES256",
+              "ike_proposal_16_SHA2-512_AES128-GCM-16",
+              "ike_proposal_16_SHA2-512_AES256-GCM-16",
+              "ike_proposal_17_SHA1_AES128",
+              "ike_proposal_17_SHA1_AES256",
+              "ike_proposal_17_SHA1_AES128-GCM-16",
+              "ike_proposal_17_SHA1_AES256-GCM-16",
+              "ike_proposal_17_SHA2-256_AES128",
+              "ike_proposal_17_SHA2-256_AES256",
+              "ike_proposal_17_SHA2-256_AES128-GCM-16",
+              "ike_proposal_17_SHA2-256_AES256-GCM-16",
+              "ike_proposal_17_SHA2-384_AES128",
+              "ike_proposal_17_SHA2-384_AES256",
+              "ike_proposal_17_SHA2-384_AES128-GCM-16",
+              "ike_proposal_17_SHA2-384_AES256-GCM-16",
+              "ike_proposal_17_SHA2-512_AES128",
+              "ike_proposal_17_SHA2-512_AES256",
+              "ike_proposal_17_SHA2-512_AES128-GCM-16",
+              "ike_proposal_17_SHA2-512_AES256-GCM-16",
+              "ike_proposal_18_SHA1_AES128",
+              "ike_proposal_18_SHA1_AES256",
+              "ike_proposal_18_SHA1_AES128-GCM-16",
+              "ike_proposal_18_SHA1_AES256-GCM-16",
+              "ike_proposal_18_SHA2-256_AES128",
+              "ike_proposal_18_SHA2-256_AES256",
+              "ike_proposal_18_SHA2-256_AES128-GCM-16",
+              "ike_proposal_18_SHA2-256_AES256-GCM-16",
+              "ike_proposal_18_SHA2-384_AES128",
+              "ike_proposal_18_SHA2-384_AES256",
+              "ike_proposal_18_SHA2-384_AES128-GCM-16",
+              "ike_proposal_18_SHA2-384_AES256-GCM-16",
+              "ike_proposal_18_SHA2-512_AES128",
+              "ike_proposal_18_SHA2-512_AES256",
+              "ike_proposal_18_SHA2-512_AES128-GCM-16",
+              "ike_proposal_18_SHA2-512_AES256-GCM-16",
+              "ike_proposal_19_SHA1_AES128",
+              "ike_proposal_19_SHA1_AES256",
+              "ike_proposal_19_SHA1_AES128-GCM-16",
+              "ike_proposal_19_SHA1_AES256-GCM-16",
+              "ike_proposal_19_SHA2-256_AES128",
+              "ike_proposal_19_SHA2-256_AES256",
+              "ike_proposal_19_SHA2-256_AES128-GCM-16",
+              "ike_proposal_19_SHA2-256_AES256-GCM-16",
+              "ike_proposal_19_SHA2-384_AES128",
+              "ike_proposal_19_SHA2-384_AES256",
+              "ike_proposal_19_SHA2-384_AES128-GCM-16",
+              "ike_proposal_19_SHA2-384_AES256-GCM-16",
+              "ike_proposal_19_SHA2-512_AES128",
+              "ike_proposal_19_SHA2-512_AES256",
+              "ike_proposal_19_SHA2-512_AES128-GCM-16",
+              "ike_proposal_19_SHA2-512_AES256-GCM-16",
+              "ike_proposal_20_SHA1_AES128",
+              "ike_proposal_20_SHA1_AES256",
+              "ike_proposal_20_SHA1_AES128-GCM-16",
+              "ike_proposal_20_SHA1_AES256-GCM-16",
+              "ike_proposal_20_SHA2-256_AES128",
+              "ike_proposal_20_SHA2-256_AES256",
+              "ike_proposal_20_SHA2-256_AES128-GCM-16",
+              "ike_proposal_20_SHA2-256_AES256-GCM-16",
+              "ike_proposal_20_SHA2-384_AES128",
+              "ike_proposal_20_SHA2-384_AES256",
+              "ike_proposal_20_SHA2-384_AES128-GCM-16",
+              "ike_proposal_20_SHA2-384_AES256-GCM-16",
+              "ike_proposal_20_SHA2-512_AES128",
+              "ike_proposal_20_SHA2-512_AES256",
+              "ike_proposal_20_SHA2-512_AES128-GCM-16",
+              "ike_proposal_20_SHA2-512_AES256-GCM-16",
+              "ike_proposal_21_SHA1_AES128",
+              "ike_proposal_21_SHA1_AES256",
+              "ike_proposal_21_SHA1_AES128-GCM-16",
+              "ike_proposal_21_SHA1_AES256-GCM-16",
+              "ike_proposal_21_SHA2-256_AES128",
+              "ike_proposal_21_SHA2-256_AES256",
+              "ike_proposal_21_SHA2-256_AES128-GCM-16",
+              "ike_proposal_21_SHA2-256_AES256-GCM-16",
+              "ike_proposal_21_SHA2-384_AES128",
+              "ike_proposal_21_SHA2-384_AES256",
+              "ike_proposal_21_SHA2-384_AES128-GCM-16",
+              "ike_proposal_21_SHA2-384_AES256-GCM-16",
+              "ike_proposal_21_SHA2-512_AES128",
+              "ike_proposal_21_SHA2-512_AES256",
+              "ike_proposal_21_SHA2-512_AES128-GCM-16",
+              "ike_proposal_21_SHA2-512_AES256-GCM-16",
+              "ike_proposal_22_SHA1_AES128",
+              "ike_proposal_22_SHA1_AES256",
+              "ike_proposal_22_SHA1_AES128-GCM-16",
+              "ike_proposal_22_SHA1_AES256-GCM-16",
+              "ike_proposal_22_SHA2-256_AES128",
+              "ike_proposal_22_SHA2-256_AES256",
+              "ike_proposal_22_SHA2-256_AES128-GCM-16",
+              "ike_proposal_22_SHA2-256_AES256-GCM-16",
+              "ike_proposal_22_SHA2-384_AES128",
+              "ike_proposal_22_SHA2-384_AES256",
+              "ike_proposal_22_SHA2-384_AES128-GCM-16",
+              "ike_proposal_22_SHA2-384_AES256-GCM-16",
+              "ike_proposal_22_SHA2-512_AES128",
+              "ike_proposal_22_SHA2-512_AES256",
+              "ike_proposal_22_SHA2-512_AES128-GCM-16",
+              "ike_proposal_22_SHA2-512_AES256-GCM-16",
+              "ike_proposal_23_SHA1_AES128",
+              "ike_proposal_23_SHA1_AES256",
+              "ike_proposal_23_SHA1_AES128-GCM-16",
+              "ike_proposal_23_SHA1_AES256-GCM-16",
+              "ike_proposal_23_SHA2-256_AES128",
+              "ike_proposal_23_SHA2-256_AES256",
+              "ike_proposal_23_SHA2-256_AES128-GCM-16",
+              "ike_proposal_23_SHA2-256_AES256-GCM-16",
+              "ike_proposal_23_SHA2-384_AES128",
+              "ike_proposal_23_SHA2-384_AES256",
+              "ike_proposal_23_SHA2-384_AES128-GCM-16",
+              "ike_proposal_23_SHA2-384_AES256-GCM-16",
+              "ike_proposal_23_SHA2-512_AES128",
+              "ike_proposal_23_SHA2-512_AES256",
+              "ike_proposal_23_SHA2-512_AES128-GCM-16",
+              "ike_proposal_23_SHA2-512_AES256-GCM-16",
+              "ike_proposal_24_SHA1_AES128",
+              "ike_proposal_24_SHA1_AES256",
+              "ike_proposal_24_SHA1_AES128-GCM-16",
+              "ike_proposal_24_SHA1_AES256-GCM-16",
+              "ike_proposal_24_SHA2-256_AES128",
+              "ike_proposal_24_SHA2-256_AES256",
+              "ike_proposal_24_SHA2-256_AES128-GCM-16",
+              "ike_proposal_24_SHA2-256_AES256-GCM-16",
+              "ike_proposal_24_SHA2-384_AES128",
+              "ike_proposal_24_SHA2-384_AES256",
+              "ike_proposal_24_SHA2-384_AES128-GCM-16",
+              "ike_proposal_24_SHA2-384_AES256-GCM-16",
+              "ike_proposal_24_SHA2-512_AES128",
+              "ike_proposal_24_SHA2-512_AES256",
+              "ike_proposal_24_SHA2-512_AES128-GCM-16",
+              "ike_proposal_24_SHA2-512_AES256-GCM-16"
             ],
             "localInterface" : "external-vpn-ba2e34a8-2",
             "remoteIdentity" : {
@@ -85446,19 +85832,1349 @@
           }
         },
         "ikePhase1Proposals" : {
-          "vpn-ba2e34a8-1" : {
-            "name" : "vpn-ba2e34a8-1",
+          "ike_proposal_14_SHA1_AES128" : {
+            "name" : "ike_proposal_14_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_14_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_14_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_14_SHA1_AES256" : {
+            "name" : "ike_proposal_14_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_14_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_14_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_14_SHA2-256_AES128" : {
+            "name" : "ike_proposal_14_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_14_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_14_SHA2-256_AES256" : {
+            "name" : "ike_proposal_14_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_14_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_14_SHA2-384_AES128" : {
+            "name" : "ike_proposal_14_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_14_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_14_SHA2-384_AES256" : {
+            "name" : "ike_proposal_14_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_14_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_14_SHA2-512_AES128" : {
+            "name" : "ike_proposal_14_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_14_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_14_SHA2-512_AES256" : {
+            "name" : "ike_proposal_14_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_14_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_14_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP14",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_15_SHA1_AES128" : {
+            "name" : "ike_proposal_15_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_15_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_15_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_15_SHA1_AES256" : {
+            "name" : "ike_proposal_15_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_15_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_15_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_15_SHA2-256_AES128" : {
+            "name" : "ike_proposal_15_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_15_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_15_SHA2-256_AES256" : {
+            "name" : "ike_proposal_15_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_15_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_15_SHA2-384_AES128" : {
+            "name" : "ike_proposal_15_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_15_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_15_SHA2-384_AES256" : {
+            "name" : "ike_proposal_15_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_15_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_15_SHA2-512_AES128" : {
+            "name" : "ike_proposal_15_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_15_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_15_SHA2-512_AES256" : {
+            "name" : "ike_proposal_15_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_15_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_15_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP15",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_16_SHA1_AES128" : {
+            "name" : "ike_proposal_16_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_16_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_16_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_16_SHA1_AES256" : {
+            "name" : "ike_proposal_16_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_16_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_16_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_16_SHA2-256_AES128" : {
+            "name" : "ike_proposal_16_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_16_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_16_SHA2-256_AES256" : {
+            "name" : "ike_proposal_16_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_16_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_16_SHA2-384_AES128" : {
+            "name" : "ike_proposal_16_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_16_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_16_SHA2-384_AES256" : {
+            "name" : "ike_proposal_16_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_16_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_16_SHA2-512_AES128" : {
+            "name" : "ike_proposal_16_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_16_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_16_SHA2-512_AES256" : {
+            "name" : "ike_proposal_16_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_16_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_16_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP16",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_17_SHA1_AES128" : {
+            "name" : "ike_proposal_17_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_17_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_17_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_17_SHA1_AES256" : {
+            "name" : "ike_proposal_17_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_17_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_17_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_17_SHA2-256_AES128" : {
+            "name" : "ike_proposal_17_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_17_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_17_SHA2-256_AES256" : {
+            "name" : "ike_proposal_17_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_17_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_17_SHA2-384_AES128" : {
+            "name" : "ike_proposal_17_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_17_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_17_SHA2-384_AES256" : {
+            "name" : "ike_proposal_17_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_17_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_17_SHA2-512_AES128" : {
+            "name" : "ike_proposal_17_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_17_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_17_SHA2-512_AES256" : {
+            "name" : "ike_proposal_17_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_17_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_17_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP17",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_18_SHA1_AES128" : {
+            "name" : "ike_proposal_18_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_18_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_18_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_18_SHA1_AES256" : {
+            "name" : "ike_proposal_18_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_18_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_18_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_18_SHA2-256_AES128" : {
+            "name" : "ike_proposal_18_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_18_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_18_SHA2-256_AES256" : {
+            "name" : "ike_proposal_18_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_18_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_18_SHA2-384_AES128" : {
+            "name" : "ike_proposal_18_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_18_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_18_SHA2-384_AES256" : {
+            "name" : "ike_proposal_18_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_18_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_18_SHA2-512_AES128" : {
+            "name" : "ike_proposal_18_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_18_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_18_SHA2-512_AES256" : {
+            "name" : "ike_proposal_18_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_18_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_18_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP18",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_19_SHA1_AES128" : {
+            "name" : "ike_proposal_19_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_19_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_19_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_19_SHA1_AES256" : {
+            "name" : "ike_proposal_19_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_19_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_19_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_19_SHA2-256_AES128" : {
+            "name" : "ike_proposal_19_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_19_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_19_SHA2-256_AES256" : {
+            "name" : "ike_proposal_19_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_19_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_19_SHA2-384_AES128" : {
+            "name" : "ike_proposal_19_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_19_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_19_SHA2-384_AES256" : {
+            "name" : "ike_proposal_19_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_19_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_19_SHA2-512_AES128" : {
+            "name" : "ike_proposal_19_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_19_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_19_SHA2-512_AES256" : {
+            "name" : "ike_proposal_19_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_19_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_19_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP19",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_20_SHA1_AES128" : {
+            "name" : "ike_proposal_20_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_20_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_20_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_20_SHA1_AES256" : {
+            "name" : "ike_proposal_20_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_20_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_20_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_20_SHA2-256_AES128" : {
+            "name" : "ike_proposal_20_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_20_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_20_SHA2-256_AES256" : {
+            "name" : "ike_proposal_20_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_20_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_20_SHA2-384_AES128" : {
+            "name" : "ike_proposal_20_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_20_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_20_SHA2-384_AES256" : {
+            "name" : "ike_proposal_20_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_20_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_20_SHA2-512_AES128" : {
+            "name" : "ike_proposal_20_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_20_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_20_SHA2-512_AES256" : {
+            "name" : "ike_proposal_20_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_20_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_20_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP20",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_21_SHA1_AES128" : {
+            "name" : "ike_proposal_21_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_21_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_21_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_21_SHA1_AES256" : {
+            "name" : "ike_proposal_21_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_21_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_21_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_21_SHA2-256_AES128" : {
+            "name" : "ike_proposal_21_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_21_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_21_SHA2-256_AES256" : {
+            "name" : "ike_proposal_21_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_21_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_21_SHA2-384_AES128" : {
+            "name" : "ike_proposal_21_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_21_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_21_SHA2-384_AES256" : {
+            "name" : "ike_proposal_21_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_21_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_21_SHA2-512_AES128" : {
+            "name" : "ike_proposal_21_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_21_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_21_SHA2-512_AES256" : {
+            "name" : "ike_proposal_21_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_21_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_21_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP21",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_22_SHA1_AES128" : {
+            "name" : "ike_proposal_22_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_22_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_22_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_22_SHA1_AES256" : {
+            "name" : "ike_proposal_22_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_22_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_22_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_22_SHA2-256_AES128" : {
+            "name" : "ike_proposal_22_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_22_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_22_SHA2-256_AES256" : {
+            "name" : "ike_proposal_22_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_22_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_22_SHA2-384_AES128" : {
+            "name" : "ike_proposal_22_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_22_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_22_SHA2-384_AES256" : {
+            "name" : "ike_proposal_22_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_22_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_22_SHA2-512_AES128" : {
+            "name" : "ike_proposal_22_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_22_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_22_SHA2-512_AES256" : {
+            "name" : "ike_proposal_22_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_22_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_22_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP22",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_23_SHA1_AES128" : {
+            "name" : "ike_proposal_23_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_23_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_23_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_23_SHA1_AES256" : {
+            "name" : "ike_proposal_23_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_23_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_23_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_23_SHA2-256_AES128" : {
+            "name" : "ike_proposal_23_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_23_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_23_SHA2-256_AES256" : {
+            "name" : "ike_proposal_23_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_23_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_23_SHA2-384_AES128" : {
+            "name" : "ike_proposal_23_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_23_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_23_SHA2-384_AES256" : {
+            "name" : "ike_proposal_23_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_23_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_23_SHA2-512_AES128" : {
+            "name" : "ike_proposal_23_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_23_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_23_SHA2-512_AES256" : {
+            "name" : "ike_proposal_23_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_23_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_23_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP23",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_24_SHA1_AES128" : {
+            "name" : "ike_proposal_24_SHA1_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_24_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_24_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_24_SHA1_AES256" : {
+            "name" : "ike_proposal_24_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_24_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_24_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_24_SHA2-256_AES128" : {
+            "name" : "ike_proposal_24_SHA2-256_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_24_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_24_SHA2-256_AES256" : {
+            "name" : "ike_proposal_24_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_24_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_24_SHA2-384_AES128" : {
+            "name" : "ike_proposal_24_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_24_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_24_SHA2-384_AES256" : {
+            "name" : "ike_proposal_24_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_24_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_24_SHA2-512_AES128" : {
+            "name" : "ike_proposal_24_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_24_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_24_SHA2-512_AES256" : {
+            "name" : "ike_proposal_24_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_24_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_24_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP24",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_2_SHA1_AES128" : {
+            "name" : "ike_proposal_2_SHA1_AES128",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
             "encryptionAlgorithm" : "AES_128_CBC",
             "hashingAlgorithm" : "SHA1"
           },
-          "vpn-ba2e34a8-2" : {
-            "name" : "vpn-ba2e34a8-2",
+          "ike_proposal_2_SHA1_AES128-GCM-16" : {
+            "name" : "ike_proposal_2_SHA1_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_2_SHA1_AES256" : {
+            "name" : "ike_proposal_2_SHA1_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_2_SHA1_AES256-GCM-16" : {
+            "name" : "ike_proposal_2_SHA1_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA1"
+          },
+          "ike_proposal_2_SHA2-256_AES128" : {
+            "name" : "ike_proposal_2_SHA2-256_AES128",
             "authenticationMethod" : "PRE_SHARED_KEYS",
             "diffieHellmanGroup" : "GROUP2",
             "encryptionAlgorithm" : "AES_128_CBC",
-            "hashingAlgorithm" : "SHA1"
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_2_SHA2-256_AES128-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-256_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_2_SHA2-256_AES256" : {
+            "name" : "ike_proposal_2_SHA2-256_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_2_SHA2-256_AES256-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-256_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_256"
+          },
+          "ike_proposal_2_SHA2-384_AES128" : {
+            "name" : "ike_proposal_2_SHA2-384_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_2_SHA2-384_AES128-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-384_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_2_SHA2-384_AES256" : {
+            "name" : "ike_proposal_2_SHA2-384_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_2_SHA2-384_AES256-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-384_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_384"
+          },
+          "ike_proposal_2_SHA2-512_AES128" : {
+            "name" : "ike_proposal_2_SHA2-512_AES128",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_2_SHA2-512_AES128-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-512_AES128-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_2_SHA2-512_AES256" : {
+            "name" : "ike_proposal_2_SHA2-512_AES256",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "hashingAlgorithm" : "SHA_512"
+          },
+          "ike_proposal_2_SHA2-512_AES256-GCM-16" : {
+            "name" : "ike_proposal_2_SHA2-512_AES256-GCM-16",
+            "authenticationMethod" : "PRE_SHARED_KEYS",
+            "diffieHellmanGroup" : "GROUP2",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "hashingAlgorithm" : "SHA_512"
           }
         },
         "interfaces" : {
@@ -85618,7 +87334,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "TUNNEL",
             "vrf" : "default"
           },
           "vpn-vpn-ba2e34a8-2" : {
@@ -85646,7 +87362,7 @@
             "switchport" : false,
             "switchportMode" : "NONE",
             "switchportTrunkEncapsulation" : "DOT1Q",
-            "type" : "VPN",
+            "type" : "TUNNEL",
             "vrf" : "default"
           }
         },
@@ -85672,20 +87388,78 @@
         },
         "ipsecPhase2Policies" : {
           "vpn-ba2e34a8-1" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2",
+              "GROUP5",
+              "GROUP14",
+              "GROUP15",
+              "GROUP16",
+              "GROUP17",
+              "GROUP18",
+              "GROUP19",
+              "GROUP20",
+              "GROUP21",
+              "GROUP22",
+              "GROUP23",
+              "GROUP24"
+            ],
             "proposals" : [
-              "vpn-ba2e34a8-1"
+              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
             ]
           },
           "vpn-ba2e34a8-2" : {
-            "pfsKeyGroup" : "GROUP2",
+            "pfsKeyGroup" : [
+              "GROUP2",
+              "GROUP5",
+              "GROUP14",
+              "GROUP15",
+              "GROUP16",
+              "GROUP17",
+              "GROUP18",
+              "GROUP19",
+              "GROUP20",
+              "GROUP21",
+              "GROUP22",
+              "GROUP23",
+              "GROUP24"
+            ],
             "proposals" : [
-              "vpn-ba2e34a8-2"
+              "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_384_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_384_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_384_AES_256_GCM",
+              "ipsec_proposal_HMAC_SHA_512_AES_128_CBC",
+              "ipsec_proposal_HMAC_SHA_512_AES_256_CBC",
+              "ipsec_proposal_HMAC_SHA_512_AES_128_GCM",
+              "ipsec_proposal_HMAC_SHA_512_AES_256_GCM"
             ]
           }
         },
         "ipsecPhase2Proposals" : {
-          "vpn-ba2e34a8-1" : {
+          "ipsec_proposal_HMAC_SHA1_96_AES_128_CBC" : {
             "authenticationAlgorithm" : "HMAC_SHA1_96",
             "encryptionAlgorithm" : "AES_128_CBC",
             "ipsecEncapsulationMode" : "TUNNEL",
@@ -85693,9 +87467,121 @@
               "ESP"
             ]
           },
-          "vpn-ba2e34a8-2" : {
+          "ipsec_proposal_HMAC_SHA1_96_AES_128_GCM" : {
             "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA1_96_AES_256_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA1_96_AES_256_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA1_96",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_256_128_AES_128_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
             "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_256_128_AES_128_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_256_128_AES_256_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_256_128_AES_256_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_256_128",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_384_AES_128_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_384",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_384_AES_128_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_384",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_384_AES_256_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_384",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_384_AES_256_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_384",
+            "encryptionAlgorithm" : "AES_256_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_512_AES_128_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_128_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_512_AES_128_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_128_GCM",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_512_AES_256_CBC" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_CBC",
+            "ipsecEncapsulationMode" : "TUNNEL",
+            "protocols" : [
+              "ESP"
+            ]
+          },
+          "ipsec_proposal_HMAC_SHA_512_AES_256_GCM" : {
+            "authenticationAlgorithm" : "HMAC_SHA_512",
+            "encryptionAlgorithm" : "AES_256_GCM",
             "ipsecEncapsulationMode" : "TUNNEL",
             "protocols" : [
               "ESP"

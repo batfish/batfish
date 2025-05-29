@@ -3,7 +3,6 @@ package org.batfish.minesweeper.bdd;
 import static org.batfish.minesweeper.ConfigAtomicPredicatesTestUtils.forDevice;
 import static org.batfish.minesweeper.bdd.AsPathMatchExprToRegexes.ASSUMED_MAX_AS_PATH_LENGTH;
 import static org.batfish.minesweeper.bdd.TransferBDD.isRelevantForDestination;
-import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.DUMMY_BGP_SESSION_PROPERTIES;
 import static org.batfish.minesweeper.question.searchroutepolicies.SearchRoutePoliciesAnswerer.toSymbolicBgpOutputRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.simulatePolicy;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toQuestionBgpRoute;
@@ -26,7 +25,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
@@ -117,6 +115,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchColor;
 import org.batfish.datamodel.routing_policy.expr.MatchInterface;
 import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
@@ -158,7 +157,7 @@ import org.batfish.minesweeper.OspfType;
 import org.batfish.minesweeper.SymbolicAsPathRegex;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.TransferBDD.Context;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.Location;
 import org.batfish.specifier.LocationInfo;
@@ -230,7 +229,7 @@ public class TransferBDDTest {
   }
 
   private BDDRoute anyRoute(BDDFactory factory) {
-    return new BDDRoute(factory, 1, 1, 0, 0, 0, ImmutableList.of());
+    return new BDDRoute(factory, 1, 1, 0, 0, 0, 0, ImmutableList.of());
   }
 
   private MatchPrefixSet matchPrefixSet(List<PrefixRange> prList) {
@@ -258,8 +257,7 @@ public class TransferBDDTest {
               .and(new BDDRoute(factory, _configAPs).wellFormednessConstraints(false));
       BDD fullModel = ModelGeneration.constraintsToModel(fullConstraints, _configAPs);
       AbstractRoute inRoute = ModelGeneration.satAssignmentToInputRoute(fullModel, _configAPs);
-      Tuple<Predicate<String>, String> env =
-          ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
+      RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, _configAPs);
 
       // simulate the input route in that environment;
       // for good measure we simulate twice, with the policy respectively considered an import and
@@ -268,19 +266,19 @@ public class TransferBDDTest {
           simulatePolicy(
               policy,
               inRoute,
-              DUMMY_BGP_SESSION_PROPERTIES,
+              env.getSessionProperties(),
               Environment.Direction.IN,
-              env.getFirst(),
-              env.getSecond());
+              env.getSuccessfulTracks(),
+              env.getSourceVrf());
 
       Result<? extends AbstractRoute, Bgpv4Route> outResult =
           simulatePolicy(
               policy,
               inRoute,
-              DUMMY_BGP_SESSION_PROPERTIES,
+              env.getSessionProperties(),
               Environment.Direction.OUT,
-              env.getFirst(),
-              env.getSecond());
+              env.getSuccessfulTracks(),
+              env.getSourceVrf());
 
       // convert the output route of each result to a form that can be compared against the results
       // of symbolic analysis
@@ -1503,7 +1501,7 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(policy);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD sourcePred = any.getSourceVrfs().value(1);
+    BDD sourcePred = any.getSourceVrfs().value(0);
 
     assertEquals(
         paths,
@@ -1528,12 +1526,43 @@ public class TransferBDDTest {
     List<TransferReturn> paths = tbdd.computePaths(policy);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
-    BDD intPred = any.getNextHopInterfaces().value(1).or(any.getNextHopInterfaces().value(2));
+    BDD intPred = any.getNextHopInterfaces().value(0).or(any.getNextHopInterfaces().value(1));
 
     assertEquals(
         paths,
         ImmutableList.of(
             new TransferReturn(any, intPred, true), new TransferReturn(any, intPred.not(), false)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
+  public void testMatchPeerAddress() {
+    RoutingPolicy policy =
+        _policyBuilder
+            .addStatement(
+                new If(
+                    new MatchPeerAddress(ImmutableSet.of(Ip.parse("1.1.1.1"), Ip.parse("2.2.2.2"))),
+                    ImmutableList.of(new StaticStatement(Statements.ExitAccept)),
+                    ImmutableList.of(
+                        new If(
+                            new MatchPeerAddress(ImmutableSet.of(Ip.parse("3.3.3.3"))),
+                            ImmutableList.of(new StaticStatement(Statements.ExitReject))))))
+            .build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+
+    BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
+    BDD peerPred1 = any.getPeerAddress().value(0).or(any.getPeerAddress().value(1));
+    BDD peerPred2 = any.getPeerAddress().value(2);
+
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(any, peerPred1, true),
+            new TransferReturn(any, peerPred2, false),
+            new TransferReturn(any, peerPred1.not().and(peerPred2.not()), false)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
 

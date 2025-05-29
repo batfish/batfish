@@ -47,4 +47,9 @@ public enum DiffieHellmanGroup {
   DiffieHellmanGroup(int groupNumber) {
     _groupNumber = groupNumber;
   }
+
+  /** Returns the group number of this Diffie-Hellman group. */
+  public int getGroupNumber() {
+    return _groupNumber;
+  }
 }

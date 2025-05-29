@@ -11,19 +11,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.LongStream;
 import javax.annotation.Nullable;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDFactory;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.batfish.common.BatfishException;
+import org.batfish.common.bdd.BDDInteger;
+import org.batfish.common.bdd.BDDUtils;
+import org.batfish.common.bdd.ImmutableBDDInteger;
+import org.batfish.common.bdd.IpSpaceToBDD;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.AsPath;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.OriginMechanism;
 import org.batfish.datamodel.OriginType;
@@ -48,7 +54,7 @@ import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value;
 import org.batfish.minesweeper.bdd.BDDTunnelEncapsulationAttribute.Value.Type;
-import org.batfish.minesweeper.utils.Tuple;
+import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer;
 
@@ -437,15 +443,54 @@ public class ModelGeneration {
   }
 
   /**
+   * Given a satisfying assignment to the constraints from symbolic route analysis, produce a peer
+   * IP address that is consistent with the assignment.
+   *
+   * @param model the satisfying assignment
+   * @param route a symbolic representation of the input route
+   * @param configAPs an object that provides information about the community atomic predicates
+   * @return a environment that is consistent with the given model
+   */
+  private static Ip satAssignmentToPeerAddress(
+      BDD model, BDDRoute route, ConfigAtomicPredicates configAPs) {
+    Ip remoteIp =
+        optionalSatisfyingItem(configAPs.getPeerAddresses(), route.getPeerAddress(), model);
+    if (remoteIp == null) {
+      if (configAPs.getPeerAddresses().isEmpty()) {
+        // we are not tracking any peer addresses, so just pick a dummy value to use
+        remoteIp = Ip.parse("2.2.2.2");
+      } else {
+        // solve for an IP address other than one of the ones being tracked by the analysis
+        List<Ip> toAvoid =
+            ImmutableList.<Ip>builder()
+                .addAll(configAPs.getPeerAddresses())
+                // the following are not valid next-hop IPs so we avoid them in case
+                // the peer address is used as the next hop
+                .add(Ip.ZERO, Ip.MAX)
+                .build();
+        IpSpace ipSpace =
+            AclIpSpace.union(toAvoid.stream().map(Ip::toIpSpace).collect(Collectors.toList()))
+                .complement();
+        BDDFactory factory = BDDUtils.bddFactory(32);
+        BDD[] bitvec = IntStream.range(0, 32).mapToObj(factory::ithVar).toArray(BDD[]::new);
+        BDDInteger integer = new ImmutableBDDInteger(factory, bitvec);
+        IpSpaceToBDD ipSpaceToBDD = new IpSpaceToBDD(integer);
+        BDD bdd = ipSpaceToBDD.visit(ipSpace);
+        remoteIp = Ip.create(integer.satAssignmentToLong(bdd.satOne()));
+      }
+    }
+    return remoteIp;
+  }
+
+  /**
    * Given a satisfying assignment to the constraints from symbolic route analysis, produce a
-   * concrete environment (for now, a predicate on tracks as well as an optional source VRF) that is
-   * consistent with the assignment.
+   * concrete environment that is consistent with the assignment.
    *
    * @param model the satisfying assignment
    * @param configAPs an object that provides information about the community atomic predicates
-   * @return a pair of a predicate on tracks and an optional source VRF
+   * @return a environment that is consistent with the given model
    */
-  public static Tuple<Predicate<String>, String> satAssignmentToEnvironment(
+  public static RouteMapEnvironment satAssignmentToEnvironment(
       BDD model, ConfigAtomicPredicates configAPs) {
 
     BDDRoute r = new BDDRoute(model.getFactory(), configAPs);
@@ -455,7 +500,9 @@ public class ModelGeneration {
     // get the optional (and hence possibly null) source VRF
     String sourceVrf = optionalSatisfyingItem(configAPs.getSourceVrfs(), r.getSourceVrfs(), model);
 
-    return new Tuple<>(successfulTracks::contains, sourceVrf);
+    Ip remoteIp = satAssignmentToPeerAddress(model, r, configAPs);
+
+    return new RouteMapEnvironment(successfulTracks::contains, sourceVrf, remoteIp);
   }
 
   // Return a list of all items whose corresponding BDD is consistent with the given variable
@@ -478,9 +525,7 @@ public class ModelGeneration {
    */
   private static <T> @Nullable T optionalSatisfyingItem(
       List<T> items, BDDDomain<Integer> itemsBDD, BDD model) {
-    // we subtract 1 to get the list index, since the 0th value in the BDDDomain is used to
-    // represent that there is no value chosen
-    int index = itemsBDD.satAssignmentToValue(model) - 1;
+    int index = itemsBDD.satAssignmentToValue(model);
     if (index == -1) {
       return null;
     } else {

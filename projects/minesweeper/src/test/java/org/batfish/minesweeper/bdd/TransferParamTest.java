@@ -13,7 +13,7 @@ public class TransferParamTest {
   @Test
   public void testEquals() {
     BDDFactory factory = JFactory.init(100, 100);
-    BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, ImmutableList.of());
+    BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, 0, ImmutableList.of());
     BDDRoute route2 = new BDDRoute(route);
     route2.getAdminDist().setValue(1);
     TransferParam p = new TransferParam(route, false);

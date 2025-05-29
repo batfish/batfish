@@ -110,7 +110,7 @@ public class TopologyTest {
 
     // create line topology: c1 <-> c2
     org.batfish.datamodel.Interface c12 =
-        nf.interfaceBuilder().setOwner(c1).setName("to-c2").setType(InterfaceType.VPN).build();
+        nf.interfaceBuilder().setOwner(c1).setName("to-c2").setType(InterfaceType.TUNNEL).build();
     org.batfish.datamodel.Interface c21 =
         nf.interfaceBuilder().setOwner(c2).setName("to-c1").setType(InterfaceType.TUNNEL).build();
 
@@ -126,7 +126,7 @@ public class TopologyTest {
         pojoTopology.getInterfaces(),
         equalTo(
             ImmutableSet.of(
-                new Interface("node-c1", "to-c2", InterfaceType.VPN),
+                new Interface("node-c1", "to-c2", InterfaceType.TUNNEL),
                 new Interface("node-c2", "to-c1", InterfaceType.TUNNEL))));
   }
 

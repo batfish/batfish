@@ -21,6 +21,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_IN
 import static org.batfish.representation.juniper.NatPacketLocation.interfaceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.routingInstanceLocation;
 import static org.batfish.representation.juniper.NatPacketLocation.zoneLocation;
+import static org.batfish.representation.juniper.PsFromNeighbor.toBooleanExprMany;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
 import static org.batfish.representation.juniper.RoutingInstance.OSPF_INTERNAL_SUMMARY_DISCARD_METRIC;
 
@@ -709,7 +710,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       neighbor.setGroup(ig.getGroupName());
 
       // import policies
-      String peerImportPolicyName = "~PEER_IMPORT_POLICY:" + ig.getRemoteAddress() + "~";
+      String peerImportPolicyName = computePeerImportPolicyName(ig.getRemoteAddress());
       ipv4AfBuilder.setImportPolicy(peerImportPolicyName);
       RoutingPolicy peerImportPolicy = new RoutingPolicy(peerImportPolicyName, _c);
       _c.getRoutingPolicies().put(peerImportPolicyName, peerImportPolicy);
@@ -1015,6 +1016,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   public static String computePeerExportPolicyName(Prefix remoteAddress) {
     return "~PEER_EXPORT_POLICY:" + remoteAddress + "~";
+  }
+
+  public static String computePeerImportPolicyName(Prefix remoteAddress) {
+    return "~PEER_IMPORT_POLICY:" + remoteAddress + "~";
   }
 
   private void convertNamedCommunities() {
@@ -2087,9 +2092,9 @@ public final class JuniperConfiguration extends VendorConfiguration {
         (vrid, vrrpGroup) -> {
           Set<Ip> virtualAddresses = vrrpGroup.getVirtualAddresses();
           if (virtualAddresses.isEmpty()) {
-            _w.redFlagf(
-                "Configuration will not actually commit. Cannot create VRRP group for vrid %d"
-                    + " on interface '%s' because no virtual-address is assigned.",
+            _w.fatalRedFlag(
+                "Cannot create VRRP group for vrid %d on interface '%s' because no virtual-address"
+                    + " is assigned.",
                 vrid, ifaceName);
             return;
           }
@@ -3211,8 +3216,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     if (froms.getFromMetric() != null) {
       conj.getConjuncts().add(froms.getFromMetric().toBooleanExpr(this, _c, _w));
     }
-    for (PsFromNextHop from : froms.getFromNextHops()) {
-      subroutines.add(from.toBooleanExpr(this, _c, _w));
+    if (!froms.getFromNeighbor().isEmpty()) {
+      conj.getConjuncts().add(toBooleanExprMany(froms.getFromNeighbor()));
+    }
+    if (!froms.getFromNextHops().isEmpty()) {
+      conj.getConjuncts().add(new Disjunction(toBooleanExprs(froms.getFromNextHops())));
     }
     for (PsFromPolicyStatement from : froms.getFromPolicyStatements()) {
       subroutines.add(from.toBooleanExpr(this, _c, _w));
@@ -3253,7 +3261,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return conj.simplify();
   }
 
-  private List<BooleanExpr> toBooleanExprs(Set<? extends PsFrom> froms) {
+  private List<BooleanExpr> toBooleanExprs(Collection<? extends PsFrom> froms) {
     return froms.stream()
         .map(f -> f.toBooleanExpr(this, _c, _w))
         .collect(ImmutableList.toImmutableList());

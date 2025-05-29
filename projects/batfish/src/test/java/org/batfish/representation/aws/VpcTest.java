@@ -120,9 +120,11 @@ public class VpcTest {
             .setVpnGateways(
                 ImmutableMap.of(
                     gatewayId,
-                    new VpnGateway(gatewayId, ImmutableList.of(vpc.getId()), ImmutableMap.of()),
+                    new VpnGateway(
+                        gatewayId, ImmutableList.of(vpc.getId()), ImmutableMap.of(), 64646L),
                     "other",
-                    new VpnGateway("other", ImmutableList.of("otherVpc"), ImmutableMap.of())))
+                    new VpnGateway(
+                        "other", ImmutableList.of("otherVpc"), ImmutableMap.of(), 64647L)))
             .build();
 
     Configuration vpcCfg =
