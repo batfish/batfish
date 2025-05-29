@@ -128,7 +128,7 @@ jobs:
       - name: Bazel Junit Tests and Coverage
         run: |
           bazel coverage //projects/... \
-            --instrumentation_filter="-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled,-//projects/batfish-common-protocol:specifier_common,-//projects/batfish/src/main/antlr4[/:],-//projects/.*/src/test[/:]" \
+            --instrumentation_filter="-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled,-//projects/batfish-common-protocol/src/main/java:specifier_common,-//projects/batfish/src/main/antlr4[/:],-//projects/.*/src/test[/:]" \
             --test_tag_filters=-pmd_test \
             --combined_report=lcov \
             --instrument_test_targets=false

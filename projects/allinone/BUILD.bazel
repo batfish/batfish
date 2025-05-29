@@ -1,5 +1,4 @@
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
-load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+load("@rules_java//java:defs.bzl", "java_binary")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -7,9 +6,9 @@ java_binary(
     name = "allinone_main",
     main_class = "org.batfish.allinone.Main",
     runtime_deps = [
-        ":allinone",
+        "//projects/allinone/src/main/java/org/batfish/allinone",
         "//projects/minesweeper",
-        "//projects/question",
+        "//projects/question/src/main/java/org/batfish/question",
         "@maven//:org_apache_logging_log4j_log4j_core",
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
@@ -21,23 +20,7 @@ alias(
     actual = ":allinone_main",
 )
 
-java_library(
+alias(
     name = "allinone",
-    srcs = glob([
-        "src/main/**/*.java",
-    ]),
-    resources = glob(["src/main/resources/**"]),
-    deps = [
-        "//projects/batfish",
-        "//projects/batfish-common-protocol:common",
-        "//projects/client",
-        "//projects/coordinator",
-        "@maven//:com_google_guava_guava",
-        "@maven//:commons_cli_commons_cli",
-    ],
-)
-
-pmd_test(
-    name = "pmd",
-    lib = ":allinone",
+    actual = "//projects/allinone/src/main/java/org/batfish/allinone",
 )
