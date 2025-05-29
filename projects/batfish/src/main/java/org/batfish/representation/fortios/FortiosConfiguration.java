@@ -268,7 +268,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private void convertInterface(Interface iface, Configuration c) {
-    InterfaceType type = toViType(iface.getTypeEffective());
+    Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
+    InterfaceType type = toViType(iface.getTypeEffective(), parentType);
     if (type == null) {
       _w.redFlagf(
           "Interface %s has unsupported type %s and will not be converted",
@@ -312,6 +313,15 @@ public class FortiosConfiguration extends VendorConfiguration {
           ImmutableSet.of(new Dependency(iface.getInterface(), DependencyType.BIND)));
     }
 
+    Set<String> members = iface.getMembers();
+    if (!members.isEmpty()) {
+      // AGGREGATE and REDUNDANT
+      viIface.setDependencies(
+          members.stream()
+              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
@@ -353,19 +363,24 @@ public class FortiosConfiguration extends VendorConfiguration {
         .orElse(iface);
   }
 
-  private @Nullable InterfaceType toViType(Interface.Type vsType) {
+  private @Nullable InterfaceType toViType(
+      Interface.Type vsType, @Nullable Interface.Type parentType) {
     return switch (vsType) {
+      case AGGREGATE -> InterfaceType.AGGREGATED;
       case LOOPBACK -> InterfaceType.LOOPBACK;
-      case PHYSICAL -> InterfaceType.PHYSICAL;
+      case PHYSICAL -> {
+        if (parentType == Interface.Type.AGGREGATE) {
+          yield InterfaceType.AGGREGATE_CHILD;
+        } else if (parentType == Interface.Type.REDUNDANT) {
+          yield InterfaceType.REDUNDANT_CHILD;
+        }
+        yield InterfaceType.PHYSICAL;
+      }
+      case REDUNDANT -> InterfaceType.REDUNDANT;
       case TUNNEL -> InterfaceType.TUNNEL;
       case VLAN -> InterfaceType.LOGICAL;
-      case
-          // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
-          AGGREGATE,
-          // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
-          REDUNDANT,
-          // TODO Support this type
-          WL_MESH,
+      // TODO Support this type
+      case WL_MESH,
           // TODO Support this type
           EMAC_VLAN ->
           null;

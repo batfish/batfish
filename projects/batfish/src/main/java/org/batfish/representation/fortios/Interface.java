@@ -5,7 +5,9 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.Serializable;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
@@ -146,6 +148,14 @@ public final class Interface implements InterfaceOrZone, Serializable {
     return _vlanid;
   }
 
+  public @Nonnull Set<String> getMembers() {
+    return _members;
+  }
+
+  public @Nullable Interface getParent() {
+    return _parent;
+  }
+
   @VisibleForTesting
   public @Nullable Integer getVrf() {
     return _vrf;
@@ -210,11 +220,16 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _vrf = vrf;
   }
 
+  public void setParent(Interface parent) {
+    _parent = parent;
+  }
+
   public Interface(String name) {
     _name = name;
     _status = Status.UNKNOWN;
 
     _secondaryip = new HashMap<>();
+    _members = new HashSet<>();
   }
 
   private final @Nonnull String _name;
@@ -227,6 +242,8 @@ public final class Interface implements InterfaceOrZone, Serializable {
   private @Nullable Integer _mtu;
   private @Nullable String _description;
   private @Nullable String _interface;
+  private final @Nonnull Set<String> _members;
+  private @Nullable Interface _parent;
 
   /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
   private @Nullable Boolean _secondaryIp;
