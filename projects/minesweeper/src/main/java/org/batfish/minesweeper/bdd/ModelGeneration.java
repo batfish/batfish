@@ -352,7 +352,7 @@ public class ModelGeneration {
    * @param direction whether the route map is used as an import or export policy
    * @return a BGP route
    */
-  private static BgpRoute satAssignmentToOutputRoute(
+  public static BgpRoute satAssignmentToOutputRoute(
       BDD model,
       BDDRoute bddRoute,
       ConfigAtomicPredicates configAPs,
