@@ -61,7 +61,5 @@ public final class ManagementPackage implements Serializable {
   private final @Nonnull List<AccessLayer> _accessLayers;
   private final @Nullable NatRulebase _natRulebase;
 
-  @SuppressWarnings(
-      "PMD.NonSerializableClass") // as of pmd 6.55.0, produces false positives on Package
   private final @Nonnull Package _package;
 }
