@@ -328,7 +328,6 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   @SuppressWarnings("unused")
   private final @Nonnull String _text;
 
-  @SuppressWarnings("unused")
   private final @Nonnull Warnings _w;
 
   /**

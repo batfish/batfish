@@ -840,7 +840,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Collects the application-override rules from this Vsys and merges the common
    * pre-/post-rulebases from Panorama. Filters out rules that aren't applicable or are invalid.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private List<AppOverrideRuleAndVsys> getApplicableApplicationOverrideRules(
       Vsys vsys, String fromZone, String toZone) {
     Stream<AppOverrideRuleAndVsys> pre =
@@ -1244,7 +1243,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
    * Check security rules from this Vsys and pre-/post-rulebases from Panorama and warn about
    * invalid intrazone rules.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private void checkAllSecurityRuleValidity(Vsys vsys) {
     Stream<Map.Entry<SecurityRule, Vsys>> pre =
         _panorama == null
@@ -1282,7 +1280,6 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   /**
    * Collects the NAT rules from this Vsys and merges the common pre-/post-rulebases from Panorama.
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD has a bug for this pattern.
   private Stream<NatRule> getAllNatRules(Vsys vsys) {
     Stream<NatRule> pre =
         _panorama == null
