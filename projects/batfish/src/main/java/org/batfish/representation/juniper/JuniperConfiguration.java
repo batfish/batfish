@@ -3255,7 +3255,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
     }
 
     if (!subroutines.isEmpty()) {
-      ConjunctionChain chain = new ConjunctionChain(subroutines);
+      // Add a permit-all policy as the last subroutine to handle 'next policy' actions
+      // This prevents "Default policy is not set" exceptions when policies use 'then next policy'
+      List<BooleanExpr> subroutinesWithDefault = new ArrayList<>(subroutines);
+      subroutinesWithDefault.add(BooleanExprs.TRUE);
+      ConjunctionChain chain = new ConjunctionChain(subroutinesWithDefault);
       conj.getConjuncts().add(chain);
     }
     return conj.simplify();

@@ -1,0 +1,7 @@
+#
+set system host-name bgp-from-policy-next-policy
+#
+set policy-options policy-statement OUTER-POLICY term ALLOW-FROM-INNER-POLICY from policy INNER-POLICY
+set policy-options policy-statement OUTER-POLICY term ALLOW-FROM-INNER-POLICY then accept
+set policy-options policy-statement INNER-POLICY term INNER-TERM then next policy
+

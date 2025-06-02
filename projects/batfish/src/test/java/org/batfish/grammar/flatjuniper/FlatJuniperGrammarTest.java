@@ -1888,6 +1888,29 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpFromPolicy() {
+    Configuration c = parseConfig("bgp-from-policy-next-policy");
+
+    // Create a base BGP route for testing
+    Bgpv4Route baseRoute =
+        Bgpv4Route.testBuilder()
+            .setNetwork(Prefix.ZERO)
+            .setOriginatorIp(Ip.ZERO)
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    // Test OUTER-POLICY which references INNER-POLICY
+    assertThat(c.getRoutingPolicies(), hasKey("OUTER-POLICY"));
+    RoutingPolicy outerPolicy = c.getRoutingPolicies().get("OUTER-POLICY");
+
+    // The OUTER-POLICY should permit routes that match the INNER-POLICY
+    // Since INNER-POLICY has "next policy" action, it should continue evaluation
+    // and OUTER-POLICY should accept the route
+    assertTrue(routingPolicyPermitsRoute(outerPolicy, baseRoute));
+  }
+
+  @Test
   public void testDefaultApplications() throws IOException {
     String hostname = "default-applications";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
