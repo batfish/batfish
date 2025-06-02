@@ -164,7 +164,6 @@ public class F5BigipImishConfigurationBuilder extends F5BigipImishParserBaseList
   @SuppressWarnings("unused")
   private @Nullable Boolean _no;
 
-  @SuppressWarnings("unused")
   private final @Nonnull F5BigipImishCombinedParser _parser;
 
   private final @Nonnull String _text;

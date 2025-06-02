@@ -50,7 +50,6 @@ public class AsSet implements Serializable, Comparable<AsSet> {
 
   /** Create a new {@link AsSet} that is for a single ASN. */
   public static AsSet of(long value) {
-    @SuppressWarnings("PMD.UnnecessaryVarargsArrayCreation")
     long[] asArray = new long[] {value};
     return of(asArray);
   }

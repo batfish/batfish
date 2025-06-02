@@ -22,7 +22,6 @@ final class StreamDecoder {
    *
    * @throws IOException if there is an error
    */
-  @SuppressWarnings("PMD.CloseResource") // PMD does not understand Closer.
   static @Nonnull String decodeStreamAndAppendNewline(@Nonnull InputStream inputStream)
       throws IOException {
     byte[] rawBytes = IOUtils.toByteArray(inputStream);
