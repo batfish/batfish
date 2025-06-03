@@ -19,7 +19,6 @@ import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.C
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.COL_TRACE;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.simulatePolicyWithBgpRoute;
 import static org.batfish.question.testroutepolicies.TestRoutePoliciesAnswerer.toQuestionBgpRoute;
-import static org.batfish.specifier.NameRegexRoutingPolicySpecifier.ALL_ROUTING_POLICIES;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
@@ -27,10 +26,12 @@ import com.google.common.collect.ImmutableSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
@@ -39,14 +40,18 @@ import org.batfish.common.Answerer;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.datamodel.AbstractRoute;
+import org.batfish.datamodel.BgpPeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.AnswerElement;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.statement.Statement;
 import org.batfish.datamodel.table.ColumnMetadata;
 import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
@@ -61,7 +66,6 @@ import org.batfish.minesweeper.utils.RouteMapEnvironment;
 import org.batfish.question.testroutepolicies.Result;
 import org.batfish.specifier.AllNodesNodeSpecifier;
 import org.batfish.specifier.NodeSpecifier;
-import org.batfish.specifier.RoutingPolicySpecifier;
 import org.batfish.specifier.SpecifierContext;
 import org.batfish.specifier.SpecifierFactories;
 
@@ -96,10 +100,6 @@ public final class TransferBDDValidationAnswerer extends Answerer {
   public AnswerElement answer(NetworkSnapshot snapshot) {
     TransferBDDValidationQuestion question = (TransferBDDValidationQuestion) _question;
 
-    RoutingPolicySpecifier policySpecifier =
-        SpecifierFactories.getRoutingPolicySpecifierOrDefault(
-            question.getPolicies(), ALL_ROUTING_POLICIES);
-
     NodeSpecifier nodeSpecifier =
         SpecifierFactories.getNodeSpecifierOrDefault(
             question.getNodes(), AllNodesNodeSpecifier.INSTANCE);
@@ -115,16 +115,61 @@ public final class TransferBDDValidationAnswerer extends Answerer {
         continue;
       }
 
-      Set<RoutingPolicy> policies = policySpecifier.resolve(nodeName, ctx);
-
       ConfigAtomicPredicates aps =
           new ConfigAtomicPredicates(
-              ImmutableList.of(Map.entry(c, policies)), ImmutableSet.of(), ImmutableSet.of());
+              ImmutableList.of(Map.entry(c, c.getRoutingPolicies().values())),
+              ImmutableSet.of(),
+              ImmutableSet.of());
       TransferBDD tbdd = new TransferBDD(aps);
 
-      for (RoutingPolicy policy : policies) {
-        List<TransferReturn> paths = tbdd.computePaths(policy);
-        rows.addAll(validatePaths(policy, paths, tbdd));
+      for (Vrf vrf : c.getVrfs().values()) {
+        BgpProcess bgpProcess = vrf.getBgpProcess();
+        if (bgpProcess == null) {
+          continue;
+        }
+
+        // Track peer groups we've already processed to avoid duplicates
+        Set<String> peerGroupsSeen = new HashSet<>();
+        Set<List<Statement>> importPoliciesSeen = new HashSet<>();
+        Set<List<Statement>> exportPoliciesSeen = new HashSet<>();
+
+        // Iterate through all BGP peer configs
+        for (BgpPeerConfig peer : bgpProcess.getAllPeerConfigs()) {
+          // Skip if we've already processed this peer group or if it doesn't have a group
+          if (peer.getGroup() == null || peerGroupsSeen.contains(peer.getGroup())) {
+            continue;
+          }
+
+          // Add this peer group to the set of processed peer groups
+          peerGroupsSeen.add(peer.getGroup());
+
+          if (peer.getIpv4UnicastAddressFamily() != null) {
+
+            if (peer.getIpv4UnicastAddressFamily().getImportPolicy() != null) {
+              String importPolicyName = peer.getIpv4UnicastAddressFamily().getImportPolicy();
+              RoutingPolicy importPolicy = c.getRoutingPolicies().get(importPolicyName);
+              if (importPolicy == null
+                  || importPoliciesSeen.contains(importPolicy.getStatements())) {
+                continue;
+              }
+              importPoliciesSeen.add(importPolicy.getStatements());
+              List<TransferReturn> paths = tbdd.computePaths(importPolicy);
+              rows.addAll(validatePaths(importPolicy, paths, tbdd, Environment.Direction.IN));
+            }
+
+            if (peer.getIpv4UnicastAddressFamily().getExportPolicy() != null) {
+              String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
+              RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
+              if (exportPolicy == null
+                  || exportPoliciesSeen.contains(exportPolicy.getStatements())) {
+                continue;
+              }
+              exportPoliciesSeen.add(exportPolicy.getStatements());
+              List<TransferReturn> paths = tbdd.computePaths(exportPolicy);
+              rows.addAll(validatePaths(exportPolicy, paths, tbdd, Environment.Direction.OUT));
+            }
+          }
+        }
       }
     }
 
@@ -142,10 +187,15 @@ public final class TransferBDDValidationAnswerer extends Answerer {
    * @param policy the route policy being checked
    * @param paths the results of the symbolic analysis -- a set of paths through the policy
    * @param tbdd object containing information about the symbolic analysis
+   * @param direction whether this is an import (IN) or export (OUT) policy
    * @return a list of rows representing violations of the validity test
    */
   @VisibleForTesting
-  List<Row> validatePaths(RoutingPolicy policy, List<TransferReturn> paths, TransferBDD tbdd) {
+  List<Row> validatePaths(
+      RoutingPolicy policy,
+      List<TransferReturn> paths,
+      TransferBDD tbdd,
+      Environment.Direction direction) {
     BDDFactory factory = tbdd.getFactory();
     ConfigAtomicPredicates aps = tbdd.getConfigAtomicPredicates();
     List<Row> violations = new ArrayList<>();
@@ -161,10 +211,13 @@ public final class TransferBDDValidationAnswerer extends Answerer {
       BDD constraints =
           path.getInputConstraints()
               // for now we only validate paths that process BGP routes
-              .and(origRoute.wellFormednessConstraints(true))
-              // we limit the size of the cluster list for performance reasons;
-              // this means it is possible that we will skip validation for some feasible paths
-              .and(origRoute.getClusterListLength().leq(2000));
+              .andWith(
+                  origRoute
+                      .wellFormednessConstraints(true)
+                      // we limit the size of the cluster list for performance reasons;
+                      // this means it is possible that we will skip validation for some feasible
+                      // paths
+                      .andWith(origRoute.getClusterListLength().leq(2000)));
       if (constraints.isZero()) {
         continue;
       }
@@ -183,7 +236,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
         // there could be multiple models with different required community APs, and
         // here we are always getting the "smallest" model, but in practice that should not be a big
         // loss of coverage.
-        BDD requiredCommDispositions = constraints.satOne().project(factory.andAll(commAPs));
+        BDD requiredCommDispositions = constraints.satOne();
         // determine how many communities are required to be present in the route
         int numPos =
             (int)
@@ -194,19 +247,26 @@ public final class TransferBDDValidationAnswerer extends Answerer {
         if (numPos > MAX_COMMUNITIES_SIZE) {
           continue;
         }
-        // otherwise, determine the list of community APs that are not required to have a particular
+        // determine the list of community APs that are and are not required to have a particular
         // disposition according to this model
         BDD support = requiredCommDispositions.support();
-        List<BDD> unassigned =
-            new ArrayList<>(Arrays.stream(commAPs).filter(support::diffSat).toList());
+        Map<Boolean, List<BDD>> partitioned =
+            Arrays.stream(commAPs).collect(Collectors.partitioningBy(support::diffSat));
+        List<BDD> unassigned = partitioned.get(true);
         // choose a random subset of these community APs of sufficient size and require them to be
         // false
         Collections.shuffle(unassigned, _random);
         int minFalse = unassigned.size() - (MAX_COMMUNITIES_SIZE - numPos);
-        BDD mustBeFalse = factory.orAll(unassigned.subList(0, minFalse)).not();
-        fullConstraints = fullConstraints.andWith(requiredCommDispositions).andWith(mustBeFalse);
+        BDD mustBeFalse =
+            minFalse > 0 ? factory.orAll(unassigned.subList(0, minFalse)).not() : factory.one();
+        BDD assigned = factory.orAll(partitioned.get(false));
+        fullConstraints =
+            fullConstraints.andWith(
+                requiredCommDispositions.project(assigned).andWith(mustBeFalse));
+        assigned.free();
       }
       BDD fullModel = fullConstraints.randomFullSatOne(_random.nextInt());
+      fullConstraints.free();
       Bgpv4Route inRoute = ModelGeneration.satAssignmentToBgpInputRoute(fullModel, aps);
       RouteMapEnvironment env = ModelGeneration.satAssignmentToEnvironment(fullModel, aps);
 
@@ -221,14 +281,8 @@ public final class TransferBDDValidationAnswerer extends Answerer {
       }
 
       // simulate the solved-for input route in the solved-for environment;
-      // for good measure we simulate twice, with the policy respectively considered an import and
-      // export policy
       violations.addAll(
-          simulateAndCompare(
-              policy, inRoute, env, Environment.Direction.IN, path, fullModel, updatedAPs));
-      violations.addAll(
-          simulateAndCompare(
-              policy, inRoute, env, Environment.Direction.OUT, path, fullModel, updatedAPs));
+          simulateAndCompare(policy, inRoute, env, direction, path, fullModel, updatedAPs));
     }
     return violations;
   }
