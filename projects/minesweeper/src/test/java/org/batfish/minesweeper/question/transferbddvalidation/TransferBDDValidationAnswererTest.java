@@ -149,7 +149,10 @@ public class TransferBDDValidationAnswererTest {
         BgpActivePeerConfig.builder()
             .setGroup("testGroup")
             .setIpv4UnicastAddressFamily(
-                Ipv4UnicastAddressFamily.builder().setExportPolicy(POLICY_NAME).build())
+                Ipv4UnicastAddressFamily.builder()
+                    .setImportPolicy(POLICY_NAME)
+                    .setExportPolicy(POLICY_NAME)
+                    .build())
             .build();
     bgp.setNeighbors(ImmutableSortedMap.of(Ip.FIRST_CLASS_A_PRIVATE_IP, bgpPeer));
 
