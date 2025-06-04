@@ -1,42 +1,6 @@
-load("@batfish//skylark:pmd_test.bzl", "pmd_test")
-load("@rules_java//java:defs.bzl", "java_library")
-
 package(default_visibility = ["//visibility:public"])
 
-java_library(
+alias(
     name = "coordinator",
-    srcs = glob([
-        "src/main/**/*.java",
-    ]),
-    resources = glob(["src/main/resources/**"]),
-    runtime_deps = [
-        "//projects/question",
-        "@maven//:jakarta_xml_bind_jakarta_xml_bind_api",
-        "@maven//:org_glassfish_jersey_inject_jersey_hk2",
-    ],
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
-        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_errorprone_error_prone_annotations",
-        "@maven//:com_google_guava_guava",
-        "@maven//:commons_io_commons_io",
-        "@maven//:jakarta_annotation_jakarta_annotation_api",
-        "@maven//:jakarta_ws_rs_jakarta_ws_rs_api",
-        "@maven//:org_apache_logging_log4j_log4j_api",
-        "@maven//:org_codehaus_jettison_jettison",
-        "@maven//:org_glassfish_grizzly_grizzly_http_server",
-        "@maven//:org_glassfish_jersey_containers_jersey_container_grizzly2_http",
-        "@maven//:org_glassfish_jersey_core_jersey_common",
-        "@maven//:org_glassfish_jersey_core_jersey_server",
-        "@maven//:org_glassfish_jersey_media_jersey_media_json_jackson",
-    ],
-)
-
-pmd_test(
-    name = "pmd",
-    lib = ":coordinator",
+    actual = "//projects/coordinator/src/main/java/org/batfish/coordinator",
 )
