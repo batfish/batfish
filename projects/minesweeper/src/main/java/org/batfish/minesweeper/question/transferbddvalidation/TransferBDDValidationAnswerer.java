@@ -128,7 +128,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
           continue;
         }
 
-        // Track peer groups we've already processed to avoid duplicates
+        // Track peer groups and policies that we've already validated to avoid duplicates
         Set<String> peerGroupsSeen = new HashSet<>();
         Set<List<Statement>> importPoliciesSeen = new HashSet<>();
         Set<List<Statement>> exportPoliciesSeen = new HashSet<>();
@@ -140,11 +140,11 @@ public final class TransferBDDValidationAnswerer extends Answerer {
             continue;
           }
 
-          // Add this peer group to the set of processed peer groups
           peerGroupsSeen.add(peer.getGroup());
 
           if (peer.getIpv4UnicastAddressFamily() != null) {
 
+            // Validate the import policy
             if (peer.getIpv4UnicastAddressFamily().getImportPolicy() != null) {
               String importPolicyName = peer.getIpv4UnicastAddressFamily().getImportPolicy();
               RoutingPolicy importPolicy = c.getRoutingPolicies().get(importPolicyName);
@@ -157,6 +157,7 @@ public final class TransferBDDValidationAnswerer extends Answerer {
               rows.addAll(validatePaths(importPolicy, paths, tbdd, Environment.Direction.IN));
             }
 
+            // Validate the export policy
             if (peer.getIpv4UnicastAddressFamily().getExportPolicy() != null) {
               String exportPolicyName = peer.getIpv4UnicastAddressFamily().getExportPolicy();
               RoutingPolicy exportPolicy = c.getRoutingPolicies().get(exportPolicyName);
@@ -253,8 +254,8 @@ public final class TransferBDDValidationAnswerer extends Answerer {
         Map<Boolean, List<BDD>> partitioned =
             Arrays.stream(commAPs).collect(Collectors.partitioningBy(support::diffSat));
         List<BDD> unassigned = partitioned.get(true);
-        // choose a random subset of these community APs of sufficient size and require them to be
-        // false
+        // choose a random subset of the unassigned community APs of sufficient size and require
+        // them to be false
         Collections.shuffle(unassigned, _random);
         int minFalse = unassigned.size() - (MAX_COMMUNITIES_SIZE - numPos);
         BDD mustBeFalse =
