@@ -507,7 +507,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
     Context context = TransferBDD.Context.forPolicy(policy);
     try {
       tbdd = new TransferBDD(configAPs);
-      paths = tbdd.computePaths(policy.getStatements(), context);
+      paths = tbdd.computePaths(policy.getStatements(), context, true);
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "

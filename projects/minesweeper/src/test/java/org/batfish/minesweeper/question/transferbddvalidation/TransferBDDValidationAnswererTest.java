@@ -160,7 +160,7 @@ public class TransferBDDValidationAnswererTest {
     _batfish = new MockBatfish(configs);
     _answerer =
         new TransferBDDValidationAnswerer(
-            new TransferBDDValidationQuestion(null, 123456789), _batfish);
+            new TransferBDDValidationQuestion(null, null, true, 123456789), _batfish);
   }
 
   @Test
