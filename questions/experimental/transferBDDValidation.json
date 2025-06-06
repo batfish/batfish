@@ -3,14 +3,16 @@
     "differential": false,
     "nodes": "${nodes}",
     "policies": "${policies}",
+    "retainAllPaths": "${retainAllPaths}",
     "seed": "${seed}",
     "instance": {
         "description": "Validates Batfish's symbolic route-policy analysis against its concrete route-policy simulation engine.",
         "instanceName": "transferBDDValidation",
-        "longDescription": "This question validates Batfish's symbolic route-policy analysis, called TransferBDD, against its concrete route-policy simulation engine, called TestRoutePolicies. For every node that matches the given node specifer, for every route policy in that node that matches the given policy specifier, the symbolic route-policy analysis computes the set of feasible paths through the route policy. For each such path, we choose a random input route whose processing takes that path and check whether the predicted behavior of the route policy on that route is identical between the symbolic analysis and concrete simulation. The question returns the list of identified violations.",
+        "longDescription": "This question validates Batfish's symbolic route-policy analysis, called TransferBDD, against its concrete route-policy simulation engine, called TestRoutePolicies. The question currently validates only the route policies that are used as import or export policies on BGP peers. For every node that matches the given node specifer, for every route policy that matches the given policy specifier, the symbolic route-policy analysis computes the set of feasible paths through the route policy. For each such path, we choose a random input route whose processing takes that path and check whether the predicted behavior of the route policy on that route is identical between the symbolic analysis and concrete simulation. The question returns the list of identified violations.",
         "orderedVariableNames": [
             "nodes",
             "policies",
+            "retainAllPaths",
             "seed"
         ],
         "tags": [
@@ -26,6 +28,12 @@
             "policies": {
                 "description": "Only consider policies that match this specifier",
                 "type": "routingPolicySpec",
+                "optional": true,
+                "displayName": "Policies"
+            },
+            "retainAllPaths": {
+                "description": "Generate one test per path through each route policy, instead of coalescing compatible paths (default value is false)",
+                "type": "boolean",
                 "optional": true,
                 "displayName": "Policies"
             },

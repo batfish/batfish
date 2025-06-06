@@ -23,23 +23,33 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.SortedMap;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.plugin.IBatfishTestAdapter;
 import org.batfish.common.topology.TopologyProvider;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Topology;
+import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
 import org.batfish.datamodel.bgp.community.StandardCommunity;
 import org.batfish.datamodel.questions.BgpRoute;
 import org.batfish.datamodel.questions.BgpRouteDiff;
 import org.batfish.datamodel.questions.BgpRouteDiffs;
+import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.HasSize;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
@@ -56,6 +66,7 @@ import org.batfish.datamodel.table.Row;
 import org.batfish.datamodel.table.TableAnswerElement;
 import org.batfish.minesweeper.CommunityVar;
 import org.batfish.minesweeper.ConfigAtomicPredicates;
+import org.batfish.minesweeper.bdd.BDDRoute;
 import org.batfish.minesweeper.bdd.TransferBDD;
 import org.batfish.minesweeper.bdd.TransferReturn;
 import org.batfish.specifier.Location;
@@ -118,14 +129,38 @@ public class TransferBDDValidationAnswererTest {
     Configuration.Builder cb =
         _nf.configurationBuilder().setHostname(HOSTNAME).setConfigurationFormat(format);
     _baseConfig = cb.build();
-    _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
+    Vrf vrf =
+        _nf.vrfBuilder().setOwner(_baseConfig).setName(Configuration.DEFAULT_VRF_NAME).build();
     _policyBuilder = _nf.routingPolicyBuilder().setOwner(_baseConfig).setName(POLICY_NAME);
+
+    BgpProcess bgp =
+        _nf.bgpProcessBuilder()
+            .setRouterId(Ip.FIRST_CLASS_A_PRIVATE_IP)
+            .setEbgpAdminCost(0)
+            .setIbgpAdminCost(0)
+            .setLocalAdminCost(0)
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
+            .setVrf(vrf)
+            .build();
+
+    BgpActivePeerConfig bgpPeer =
+        BgpActivePeerConfig.builder()
+            .setGroup("testGroup")
+            .setIpv4UnicastAddressFamily(
+                Ipv4UnicastAddressFamily.builder()
+                    .setImportPolicy(POLICY_NAME)
+                    .setExportPolicy(POLICY_NAME)
+                    .build())
+            .build();
+    bgp.setNeighbors(ImmutableSortedMap.of(Ip.FIRST_CLASS_A_PRIVATE_IP, bgpPeer));
 
     SortedMap<String, Configuration> configs = ImmutableSortedMap.of(HOSTNAME, _baseConfig);
     _batfish = new MockBatfish(configs);
     _answerer =
         new TransferBDDValidationAnswerer(
-            new TransferBDDValidationQuestion(null, null, 123456789), _batfish);
+            new TransferBDDValidationQuestion(null, null, true, 123456789), _batfish);
   }
 
   @Test
@@ -149,7 +184,7 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> paths = tbdd.computePaths(policy);
-    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd, Environment.Direction.IN);
 
     assertThat(rows, empty());
   }
@@ -165,21 +200,14 @@ public class TransferBDDValidationAnswererTest {
     // flip the accepted boolean in the one path, to create a violation
     List<TransferReturn> badPaths = ImmutableList.of(paths.get(0).setAccepted(false));
 
-    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd, Environment.Direction.OUT);
 
     // there are two answers, since we simulate the path in both the IN and OUT directions
-    assertThat(rows.size(), equalTo(2));
+    assertThat(rows.size(), equalTo(1));
 
     assertThat(
         rows,
         Matchers.contains(
-            allOf(
-                hasColumn(COL_SYMBOLIC_ACTION, equalTo(LineAction.DENY.toString()), Schema.STRING),
-                hasColumn(
-                    COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
-                hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, nullValue(), Schema.OBJECT),
-                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
-                hasColumn(COL_SEED, 123456789L, Schema.LONG)),
             allOf(
                 hasColumn(COL_SYMBOLIC_ACTION, equalTo(LineAction.DENY.toString()), Schema.STRING),
                 hasColumn(
@@ -206,10 +234,10 @@ public class TransferBDDValidationAnswererTest {
             p.getOutputRoute()
                 .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
-    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd, Environment.Direction.IN);
 
     // there are two answers, since we simulate the path in both the IN and OUT directions
-    assertThat(rows.size(), equalTo(2));
+    assertThat(rows.size(), equalTo(1));
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
@@ -217,15 +245,6 @@ public class TransferBDDValidationAnswererTest {
     assertThat(
         rows,
         Matchers.contains(
-            allOf(
-                hasColumn(
-                    COL_SYMBOLIC_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
-                hasColumn(
-                    COL_CONCRETE_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
-                hasColumn(COL_SYMBOLIC_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
-                hasColumn(COL_CONCRETE_OUTPUT_ROUTE, notNullValue(), Schema.OBJECT),
-                hasColumn(COL_DIFF, equalTo(diff), Schema.BGP_ROUTE_DIFFS),
-                hasColumn(COL_SEED, 123456789L, Schema.LONG)),
             allOf(
                 hasColumn(
                     COL_SYMBOLIC_ACTION, equalTo(LineAction.PERMIT.toString()), Schema.STRING),
@@ -256,7 +275,7 @@ public class TransferBDDValidationAnswererTest {
             p.getOutputRoute()
                 .setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300)));
 
-    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, badPaths, tbdd, Environment.Direction.OUT);
 
     // there are no answers, since paths with unsupported features are ignored
     assertThat(rows, empty());
@@ -289,10 +308,46 @@ public class TransferBDDValidationAnswererTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     List<TransferReturn> paths = tbdd.computePaths(policy);
-    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd);
+    List<Row> rows = _answerer.validatePaths(policy, paths, tbdd, Environment.Direction.IN);
 
     // there are no answers, since we ensure that routes won't have more than MAX_COMMUNITIES_SIZE
     // communities on them
+    assertThat(rows, empty());
+  }
+
+  @Test
+  public void testManyNegatedCommunities() {
+    RoutingPolicy policy =
+        _policyBuilder.addStatement(Statements.ExitAccept.toStaticStatement()).build();
+    Set<CommunityVar> cvars =
+        IntStream.range(1, MAX_COMMUNITIES_SIZE + 1)
+            .mapToObj(i -> CommunityVar.from(StandardCommunity.parse(String.valueOf(i) + ":100")))
+            .collect(ImmutableSet.toImmutableSet());
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME, cvars, ImmutableSet.of());
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    BDDRoute orig = tbdd.getOriginalRoute();
+    // create a path that requires that none of the communities above be on the input route
+    TransferReturn path =
+        new TransferReturn(
+            tbdd.getOriginalRoute(),
+            tbdd.getFactory()
+                .orAll(
+                    cvars.stream()
+                        .flatMap(
+                            cvar ->
+                                _configAPs
+                                    .getStandardCommunityAtomicPredicates()
+                                    .getRegexAtomicPredicates()
+                                    .get(cvar)
+                                    .stream())
+                        .map(i -> orig.getCommunityAtomicPredicates()[i])
+                        .collect(Collectors.toList()))
+                .not(),
+            true);
+
+    List<Row> rows =
+        _answerer.validatePaths(policy, ImmutableList.of(path), tbdd, Environment.Direction.OUT);
     assertThat(rows, empty());
   }
 }
