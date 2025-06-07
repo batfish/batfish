@@ -52,8 +52,42 @@ public final class AsPathContext {
   }
 
   /**
-   * Returns an {@link AsPathContext} if there is a readable {@link AsPath} in the provided {@code
-   * environment}, or else {@link Optional#empty()}.
+   * Creates an {@link AsPathContext} from the provided {@link Environment} using the BGP attribute
+   * handling decision tree. Returns {@link Optional#empty()} if no readable {@link AsPath} is
+   * available in the environment.
+   *
+   * <p><strong>Decision Tree Implementation:</strong>
+   *
+   * <p>This method implements the same precedence hierarchy as the core BGP attribute handling
+   * system:
+   *
+   * <ol>
+   *   <li><strong>Highest Precedence:</strong> If {@link Environment#getUseOutputAttributes()} is
+   *       {@code true} and output route has readable AS-path, use output route AS-path
+   *   <li><strong>Medium Precedence:</strong> If {@link
+   *       Environment#getReadFromIntermediateBgpAttributes()} is {@code true}, use intermediate BGP
+   *       attributes AS-path
+   *   <li><strong>Lowest Precedence:</strong> If original route has readable AS-path, use original
+   *       route AS-path
+   *   <li><strong>No AS-path Available:</strong> Return {@link Optional#empty()}
+   * </ol>
+   *
+   * <p><strong>Vendor-Specific Behavior:</strong>
+   *
+   * <ul>
+   *   <li><strong>Juniper:</strong> Typically uses output route AS-path (first case)
+   *   <li><strong>Cisco:</strong> Typically uses original route AS-path (third case)
+   * </ul>
+   *
+   * <p><strong>Route Type Compatibility:</strong> Only routes implementing {@link
+   * HasReadableAsPath} can provide AS-path context. Routes without AS-path attributes will result
+   * in {@link Optional#empty()}.
+   *
+   * @param environment the routing policy environment containing route and attribute information
+   * @return {@link AsPathContext} if AS-path is available, {@link Optional#empty()} otherwise
+   * @see Environment#getUseOutputAttributes()
+   * @see Environment#getReadFromIntermediateBgpAttributes()
+   * @see HasReadableAsPath
    */
   public static Optional<AsPathContext> fromEnvironment(Environment environment) {
     AsPath inputAsPath = null;

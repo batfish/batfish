@@ -7,8 +7,58 @@ import org.batfish.datamodel.HasReadableCommunities;
 import org.batfish.datamodel.routing_policy.Environment;
 
 /**
- * A runtime structure comprising the evaluation context for community match and transformation
- * operations.
+ * Runtime context for community match and transformation operations that implements the BGP
+ * attribute handling decision tree for community-specific operations. This class provides precise
+ * control over community attribute access patterns during routing policy evaluation.
+ *
+ * <p><strong>BGP Attribute Handling Integration:</strong>
+ *
+ * <p>This class implements the same decision tree logic as the core Environment class for community
+ * attributes:
+ *
+ * <ol>
+ *   <li><strong>Primary:</strong> Use output route communities if {@code useOutputAttributes} is
+ *       true
+ *   <li><strong>Secondary:</strong> Use intermediate BGP attributes communities if {@code
+ *       readFromIntermediateBgpAttributes} is true
+ *   <li><strong>Fallback:</strong> Use original route communities (default behavior)
+ * </ol>
+ *
+ * <p><strong>Vendor-Specific Behavior:</strong>
+ *
+ * <ul>
+ *   <li><strong>Juniper:</strong> Matches against communities as they're being built during policy
+ *       evaluation (output attributes)
+ *   <li><strong>Cisco:</strong> Matches against original received communities (input attributes)
+ * </ul>
+ *
+ * <p><strong>Community Operations:</strong>
+ *
+ * <p>This context supports comprehensive community operations including:
+ *
+ * <ul>
+ *   <li><strong>Matching:</strong> Community and community set matching expressions
+ *   <li><strong>Transformation:</strong> Community set expressions and modifications
+ *   <li><strong>Evaluation:</strong> Named community expressions and sets
+ * </ul>
+ *
+ * <p><strong>Usage Pattern:</strong>
+ *
+ * <pre>{@code
+ * CommunityContext context = CommunityContext.fromEnvironment(environment);
+ * CommunitySet communities = context.getInputCommunitySet();
+ * CommunityMatchExprEvaluator evaluator = context.getCommunityMatchExprEvaluator();
+ * }</pre>
+ *
+ * <p><strong>Thread Safety:</strong> CommunityContext instances are immutable after construction,
+ * ensuring safe concurrent access during policy evaluation.
+ *
+ * @see Environment
+ * @see CommunitySet
+ * @see CommunityMatchExpr
+ * @see <a
+ *     href="../../../../../../../../../docs/routing_policy_invariants/bgp_attribute_handling.md">
+ *     BGP Attribute Handling Documentation</a>
  */
 public final class CommunityContext {
 
@@ -89,6 +139,48 @@ public final class CommunityContext {
     return _inputCommunitySet;
   }
 
+  /**
+   * Creates a {@link CommunityContext} from the provided {@link Environment} using the BGP
+   * attribute handling decision tree. This method implements the same precedence hierarchy as the
+   * core BGP attribute handling system for community attributes.
+   *
+   * <p><strong>Decision Tree Implementation:</strong>
+   *
+   * <p>This method implements the BGP attribute handling precedence hierarchy:
+   *
+   * <ol>
+   *   <li><strong>Highest Precedence:</strong> If {@link Environment#getUseOutputAttributes()} is
+   *       {@code true} and output route has readable communities, use output route communities
+   *   <li><strong>Medium Precedence:</strong> If {@link
+   *       Environment#getReadFromIntermediateBgpAttributes()} is {@code true}, use intermediate BGP
+   *       attributes communities
+   *   <li><strong>Lowest Precedence:</strong> If original route has readable communities, use
+   *       original route communities
+   *   <li><strong>No Communities Available:</strong> Use empty community set
+   * </ol>
+   *
+   * <p><strong>Vendor-Specific Behavior:</strong>
+   *
+   * <ul>
+   *   <li><strong>Juniper:</strong> Typically uses output route communities (first case)
+   *   <li><strong>Cisco:</strong> Typically uses original route communities (third case)
+   * </ul>
+   *
+   * <p><strong>Route Type Compatibility:</strong> Only routes implementing {@link
+   * HasReadableCommunities} can provide community context. Routes without community attributes will
+   * result in an empty community set.
+   *
+   * <p><strong>Context Initialization:</strong> The returned context includes all necessary
+   * community expressions, sets, and evaluators from the environment for complete community
+   * operation support.
+   *
+   * @param environment the routing policy environment containing route and attribute information
+   * @return {@link CommunityContext} with appropriate community set based on decision tree logic
+   * @see Environment#getUseOutputAttributes()
+   * @see Environment#getReadFromIntermediateBgpAttributes()
+   * @see HasReadableCommunities
+   * @see CommunitySet#empty()
+   */
   public static @Nonnull CommunityContext fromEnvironment(Environment environment) {
     CommunitySet inputCommunitySet;
     if (environment.getUseOutputAttributes()
