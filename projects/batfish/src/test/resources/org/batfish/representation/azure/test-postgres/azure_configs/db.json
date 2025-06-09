@@ -1,0 +1,13 @@
+{
+  "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+  "name": "testDB",
+  "id": "testDB_ID",
+  "location": "westeurope",
+  "properties": {
+    "network": {
+      "delegatedSubnetResourceId": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private",
+      "privateDnsZoneArmResourceId": "string",
+      "publicNetworkAccess": "string"
+    }
+  }
+}
