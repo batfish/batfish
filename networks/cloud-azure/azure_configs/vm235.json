@@ -1,0 +1,52 @@
+{
+   "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm235",
+   "name": "vm235",
+   "type": "Microsoft.Network/networkInterfaces",
+   "location": "westeurope",
+   "properties": {
+      "provisioningState": "Succeeded",
+      "resourceGuid": "73d425b0-37b5-4a64-9694-8149e9177114",
+      "ipConfigurations": [
+         {
+            "name": "ipconfig1",
+            "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm235/ipConfigurations/ipconfig1",
+            "etag": "W/\"cd0e1d9e-c480-418f-a35d-4235363885eb\"",
+            "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+            "properties": {
+               "provisioningState": "Succeeded",
+               "privateIPAddress": "10.0.1.4",
+               "privateIPAllocationMethod": "Dynamic",
+               "subnet": {
+                  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet/subnets/private"
+               },
+               "primary": true,
+               "privateIPAddressVersion": "IPv4"
+            }
+         }
+      ],
+      "dnsSettings": {
+         "dnsServers": [],
+         "appliedDnsServers": []
+      },
+      "macAddress": "60-45-BD-A1-B0-E5",
+      "enableAcceleratedNetworking": true,
+      "vnetEncryptionSupported": false,
+      "enableIPForwarding": false,
+      "disableTcpStateTracking": false,
+      "networkSecurityGroup": {
+         "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkSecurityGroups/VM2-nsg"
+      },
+      "primary": true,
+      "virtualMachine": {
+         "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Compute/virtualMachines/VM2"
+      },
+      "hostedWorkloads": [],
+      "tapConfigurations": [],
+      "nicType": "Standard",
+      "allowPort25Out": false,
+      "defaultOutboundConnectivityEnabled": false,
+      "auxiliaryMode": "None",
+      "auxiliarySku": "None"
+   },
+   "kind": "Regular"
+}
