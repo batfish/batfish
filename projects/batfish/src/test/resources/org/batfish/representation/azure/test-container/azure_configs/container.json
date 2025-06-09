@@ -1,0 +1,101 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.ContainerInstance/containerGroups/alpha",
+  "name": "alpha",
+  "type": "Microsoft.ContainerInstance/containerGroups",
+  "location": "westeurope",
+  "properties": {
+    "sku": "Standard",
+    "isCreatedFromStandbyPool": false,
+    "provisioningState": "Succeeded",
+    "provisioningTimeoutInSeconds": 1800,
+    "isCustomProvisioningTimeout": false,
+    "containers": [
+      {
+        "name": "test1",
+        "properties": {
+          "image": "mcr.microsoft.com/azuredocs/aci-helloworld:latest",
+          "ports": [
+            {
+              "protocol": "TCP",
+              "port": 80
+            },
+            {
+              "protocol": "TCP",
+              "port": 443
+            }
+          ],
+          "environmentVariables": [],
+          "configMap": {
+            "keyValuePairs": {}
+          },
+          "resources": {
+            "requests": {
+              "memoryInGB": 1.5,
+              "cpu": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "test2",
+        "properties": {
+          "image": "mcr.microsoft.com/azuredocs/aci-helloworld:latest",
+          "ports": [
+            {
+              "protocol": "UDP",
+              "port": 80
+            },
+            {
+              "protocol": "UDP",
+              "port": 443
+            }
+          ],
+          "environmentVariables": [],
+          "configMap": {
+            "keyValuePairs": {}
+          },
+          "resources": {
+            "requests": {
+              "memoryInGB": 1.5,
+              "cpu": 1
+            }
+          }
+        }
+      }
+    ],
+    "initContainers": [],
+    "restartPolicy": "OnFailure",
+    "ipAddress": {
+      "ports": [
+        {
+          "protocol": "TCP",
+          "port": 80
+        },
+        {
+          "protocol": "TCP",
+          "port": 443
+        },
+        {
+          "protocol": "UDP",
+          "port": 80
+        },
+        {
+          "protocol": "UDP",
+          "port": 443
+        }
+      ],
+      "ip": "10.0.1.4",
+      "type": "Private"
+    },
+    "osType": "Linux",
+    "instanceView": {
+      "events": [],
+      "state": "Running"
+    },
+    "subnetIds": [
+      {
+        "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/private"
+      }
+    ]
+  }
+}

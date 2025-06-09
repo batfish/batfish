@@ -1,0 +1,18 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Compute/virtualMachines/VM2",
+  "name": "VM2",
+  "type": "Microsoft.Compute/virtualMachines",
+  "location": "westeurope",
+  "properties": {
+    "networkProfile": {
+      "networkInterfaces": [
+        {
+          "id": "resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vm235",
+          "properties": {
+            "deleteOption": "Detach"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,52 @@
+[
+  {
+    "class" : "org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement",
+    "fileMap" : {
+      "azure_configs" : [
+        "azure_configs/VM-vnet.json",
+        "azure_configs/VM1-nsg.json",
+        "azure_configs/VM1-public-ip.json",
+        "azure_configs/VM1.json",
+        "azure_configs/VM2-nsg.json",
+        "azure_configs/VM2.json",
+        "azure_configs/nat-gateway-ip.json",
+        "azure_configs/nat-gateway.json",
+        "azure_configs/subnet-nsg.json",
+        "azure_configs/vm1346.json",
+        "azure_configs/vm235.json"
+      ]
+    },
+    "version" : "0.36.0"
+  },
+  {
+    "class" : "org.batfish.datamodel.answers.ConvertConfigurationAnswerElement",
+    "convertStatus" : {
+      "azure_configs" : "PASSED"
+    },
+    "definedStructures" : {
+      "azure_configs" : { }
+    },
+    "fileMap" : {
+      "azure_configs" : [
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+        "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway"
+      ]
+    },
+    "undefinedReferences" : {
+      "azure_configs" : { }
+    },
+    "version" : "0.36.0",
+    "warnings" : {
+      "internet" : { }
+    }
+  },
+  {
+    "class" : "org.batfish.datamodel.answers.InitInfoAnswerElement"
+  }
+]
