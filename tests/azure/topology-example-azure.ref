@@ -1,0 +1,334 @@
+{
+  "id" : "topology-basic-example-azure",
+  "testrigName" : "basic-example-azure",
+  "aggregates" : [ ],
+  "interfaces" : [
+    {
+      "id" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "name" : "To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "nodeId" : "node-isp_8075",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_8075-To-Internet",
+      "name" : "To-Internet",
+      "nodeId" : "node-isp_8075",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "name" : "backbone",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "name" : "To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "nodeId" : "node-isp_8075",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-internet-To-isp_8075",
+      "name" : "To-isp_8075",
+      "nodeId" : "node-internet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-lan",
+      "name" : "to-lan",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-vnet",
+      "name" : "to-vnet",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-lan",
+      "name" : "to-lan",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-vnet",
+      "name" : "to-vnet",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "name" : "To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "nodeId" : "node-isp_8075",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "id" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-nat-gateway",
+      "name" : "nat-gateway",
+      "nodeId" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "PHYSICAL",
+      "properties" : null
+    }
+  ],
+  "links" : [
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-lan-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-lan",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-lan-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-lan",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-lan",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-lan",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm235",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "id" : "link-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "srcId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-internet-To-isp_8075",
+      "id" : "link-interface-node-isp_8075-To-Internet-interface-node-internet-To-isp_8075",
+      "srcId" : "interface-node-isp_8075-To-Internet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-vnet-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-vnet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_8075-To-Internet",
+      "id" : "link-interface-node-internet-To-isp_8075-interface-node-isp_8075-To-Internet",
+      "srcId" : "interface-node-internet-To-isp_8075",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "id" : "link-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "srcId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-nat-gateway",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-nat-gateway",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "id" : "link-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "srcId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-vnet",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-vnet",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-vnet",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-to-vnet",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-nat-gateway-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private-nat-gateway",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-vnet-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-vnet",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone-interface-node-isp_8075-To-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway-backbone",
+      "type" : "PHYSICAL",
+      "properties" : null
+    },
+    {
+      "dstId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-lan",
+      "id" : "link-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346-interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default-to-lan",
+      "srcId" : "interface-node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_networkinterfaces_vm1346",
+      "type" : "PHYSICAL",
+      "properties" : null
+    }
+  ],
+  "nodes" : [
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "model" : "AZURE_SUBNET",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-internet",
+      "model" : "BATFISH_INTERNET",
+      "name" : "internet",
+      "type" : "INTERNET",
+      "properties" : null
+    },
+    {
+      "id" : "node-isp_8075",
+      "model" : "BATFISH_ISP",
+      "name" : "isp_8075",
+      "type" : "ISP",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "model" : "AZURE_SUBNET",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway",
+      "model" : null,
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_natgateways_nat-gateway",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet",
+      "model" : "AZURE_VNET",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet",
+      "type" : "SWITCH",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1",
+      "model" : "AZURE_VM",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm1",
+      "type" : "HOST",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2",
+      "model" : "AZURE_VM",
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.compute_virtualmachines_vm2",
+      "type" : "HOST",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway",
+      "model" : null,
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_default_internet-gateway",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
+      "id" : "node-_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway",
+      "model" : null,
+      "name" : "_subscriptions_b31649d2-3118-472e-8120-043037233633_resourcegroups_anonymized-rg-12345_providers_microsoft.network_virtualnetworks_vm-vnet_subnets_private_internet-gateway",
+      "type" : "ROUTER",
+      "properties" : null
+    }
+  ],
+  "properties" : null
+}
