@@ -1,0 +1,15 @@
+#
+set system host-name policy-statement-from-external
+#
+# Policy statement with "from external type 1"
+set policy-options policy-statement test-external-type-1 term t1 from external type 1
+set policy-options policy-statement test-external-type-1 term t1 then accept
+#
+# Policy statement with "from external type 2"
+set policy-options policy-statement test-external-type-2 term t1 from external type 2
+set policy-options policy-statement test-external-type-2 term t1 then accept
+#
+# Policy statement with just "from external" (no type specified)
+set policy-options policy-statement test-external-any term t1 from external
+set policy-options policy-statement test-external-any term t1 then accept
+#

@@ -163,6 +163,7 @@ pops_from
       | popsf_community
       | popsf_community_count
       | popsf_condition
+      | popsf_external
       | popsf_family
       | popsf_instance
       | popsf_interface
@@ -373,6 +374,17 @@ popsf_route_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+ospf_type
+:
+   // 1 or 2
+   uint8
+;
+
+popsf_external
+:
+   EXTERNAL (TYPE ospf_type)?
 ;
 
 popsf_source_address_filter
