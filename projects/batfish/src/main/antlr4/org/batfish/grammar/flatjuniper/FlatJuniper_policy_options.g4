@@ -163,6 +163,7 @@ pops_from
       | popsf_community
       | popsf_community_count
       | popsf_condition
+      | popsf_external
       | popsf_family
       | popsf_instance
       | popsf_interface
@@ -373,6 +374,11 @@ popsf_route_type
       EXTERNAL
       | INTERNAL
    )
+;
+
+popsf_external
+:
+   EXTERNAL (TYPE dec)?
 ;
 
 popsf_source_address_filter

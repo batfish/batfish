@@ -181,6 +181,13 @@ public class BooleanExprVarCollector
   }
 
   @Override
+  public Set<CommunityVar> visitMatchOspfExternalType(
+      org.batfish.datamodel.routing_policy.expr.MatchOspfExternalType matchOspfExternalType,
+      Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
   public Set<CommunityVar> visitMatchPeerAddress(
       MatchPeerAddress matchPeerAddress, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();
