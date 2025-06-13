@@ -373,6 +373,13 @@ public class RoutingPolicyCollector<T>
   }
 
   @Override
+  public Set<T> visitMatchOspfExternalType(
+      org.batfish.datamodel.routing_policy.expr.MatchOspfExternalType matchOspfExternalType,
+      Tuple<Set<String>, Configuration> arg) {
+    return ImmutableSet.of();
+  }
+
+  @Override
   public Set<T> visitMatchPeerAddress(
       MatchPeerAddress matchPeerAddress, Tuple<Set<String>, Configuration> arg) {
     return ImmutableSet.of();

@@ -28,6 +28,7 @@ import org.batfish.datamodel.routing_policy.expr.MatchIpv4;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
+import org.batfish.datamodel.routing_policy.expr.MatchOspfExternalType;
 import org.batfish.datamodel.routing_policy.expr.MatchPeerAddress;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.MatchProcessAsn;
@@ -203,6 +204,12 @@ public final class AsPathStructuresVerifier {
 
     @Override
     public Void visitMatchMetric(MatchMetric matchMetric, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+
+    @Override
+    public Void visitMatchOspfExternalType(
+        MatchOspfExternalType matchOspfExternalType, AsPathStructuresVerifierContext arg) {
       return null;
     }
 
