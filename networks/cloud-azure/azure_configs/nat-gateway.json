@@ -1,0 +1,20 @@
+{
+  "type": "Microsoft.Network/natGateways",
+  "apiVersion": "2024-05-01",
+  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/natGateways/nat-gateway",
+  "name": "nat-gateway",
+  "location": "westeurope",
+  "properties": {
+    "publicIpAddresses": [
+      {
+        "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/publicIPAddresses/VM1-ip"
+      }
+    ],
+    "subnets": [
+      {
+        "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet/subnets/default"
+      }
+    ],
+    "publicIpPrefixes": []
+  }
+}
