@@ -6,6 +6,7 @@ import static org.batfish.main.CliUtils.readAllFiles;
 
 import com.google.common.base.Throwables;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Map;
@@ -21,7 +22,7 @@ import org.batfish.main.preprocess.Preprocessor;
 public final class Preprocess {
 
   public static void main(String[] args) throws IOException {
-    checkArgument(args.length == 2, "Expected arguments: <input_dir> <output_dir>");
+    checkArgument(args.length == 2, "Expected arguments: <input_path> <output_path>");
     Path inputPath = Paths.get(args[0]);
     Path outputPath = Paths.get(args[1]);
 
@@ -41,31 +42,62 @@ public final class Preprocess {
   /**
    * Pre-process configs in snapshot stored at {@code inputPath}, and dump to {@code outputPath}.
    * Depending on vendor, pre-processing may be a no-op.
+   *
+   * <p>Handles both file and directory inputs:
+   *
+   * <ul>
+   *   <li>If {@code inputPath} is a directory, processes all files in the configs subdirectory
+   *   <li>If {@code inputPath} is a file, processes that file directly
+   * </ul>
    */
   private static void preprocess(
       @Nonnull Path inputPath, @Nonnull Path outputPath, Settings settings) throws IOException {
     BatfishLogger logger = settings.getLogger();
-    logger.info("\n*** READING INPUT FILES ***\n");
-    Map<Path, String> configurationData =
-        readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), logger);
 
-    Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
-    createDirectories(outputConfigDir);
-    logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
-    logger.resetTimer();
-    configurationData.entrySet().parallelStream()
-        .forEach(
-            e -> {
-              Path inputFile = e.getKey();
-              String fileText = e.getValue();
-              Warnings warnings = Warnings.forLogger(logger);
-              Path outputFile = outputConfigDir.resolve(inputFile.getFileName());
-              try {
-                String result = Preprocessor.preprocess(settings, fileText, inputFile, warnings);
-                CommonUtil.writeFile(outputFile, result);
-              } catch (IOException err) {
-                CommonUtil.writeFile(outputFile, Throwables.getStackTraceAsString(err));
-              }
-            });
+    // Check if input is a file or directory
+    if (Files.isRegularFile(inputPath)) {
+      // Handle single file input
+      logger.info("\n*** READING INPUT FILE ***\n");
+      logger.debugf("Reading: \"%s\"\n", inputPath);
+
+      String fileText = Files.readString(inputPath);
+
+      logger.info("\n*** COMPUTING OUTPUT FILE ***\n");
+      logger.resetTimer();
+
+      processFile(settings, inputPath, fileText, outputPath, logger);
+    } else {
+      // Handle directory input (existing behavior)
+      logger.info("\n*** READING INPUT FILES ***\n");
+      Map<Path, String> configurationData =
+          readAllFiles(inputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR), logger);
+
+      Path outputConfigDir = outputPath.resolve(BfConsts.RELPATH_CONFIGURATIONS_DIR);
+      createDirectories(outputConfigDir);
+      logger.info("\n*** COMPUTING OUTPUT FILES ***\n");
+      logger.resetTimer();
+      configurationData.entrySet().parallelStream()
+          .forEach(
+              e -> {
+                Path inputFile = e.getKey();
+                String fileText = e.getValue();
+                Path outputFile = outputConfigDir.resolve(inputFile.getFileName());
+                processFile(settings, inputFile, fileText, outputFile, logger);
+              });
+    }
+  }
+
+  /**
+   * Process a single file by preprocessing its content and writing the result to the output path.
+   */
+  private static void processFile(
+      Settings settings, Path inputFile, String fileText, Path outputFile, BatfishLogger logger) {
+    Warnings warnings = Warnings.forLogger(logger);
+    try {
+      String result = Preprocessor.preprocess(settings, fileText, inputFile, warnings);
+      CommonUtil.writeFile(outputFile, result);
+    } catch (IOException err) {
+      CommonUtil.writeFile(outputFile, Throwables.getStackTraceAsString(err));
+    }
   }
 }

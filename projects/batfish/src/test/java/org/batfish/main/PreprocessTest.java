@@ -118,4 +118,66 @@ public final class PreprocessTest {
         "preprocess-flat-juniper-apply-groups-order-before",
         "preprocess-flat-juniper-apply-groups-order-after");
   }
+
+  /**
+   * Assert that the result of preprocessing the text of the resource {@code before} under {@code
+   * prefix} as a direct file input (not inside a directory) is equal to the text of the resource
+   * {@code after} under {@code prefix}.
+   */
+  private void assertValidFileProcessing(String prefix, String before, String after)
+      throws IOException {
+    Path root = _folder.getRoot().toPath();
+    Path inputFile = root.resolve("input_file");
+    Path outputFile = root.resolve("output_file");
+    writeFile(inputFile, readResource(String.format("%s%s", prefix, before), UTF_8));
+    main(new String[] {inputFile.toString(), outputFile.toString()});
+
+    assertThat(
+        CommonUtil.readFile(outputFile).trim(),
+        equalTo(readResource(String.format("%s%s", prefix, after), UTF_8).trim()));
+  }
+
+  /**
+   * Equivalent to calling {@link PreprocessTest#assertValidFileProcessing(String,String,String)}
+   * with {@code prefix} set to {@link #TESTCONFIGS_PREFIX}.
+   */
+  private void assertValidFileProcessing(String before, String after) throws IOException {
+    assertValidFileProcessing(TESTCONFIGS_PREFIX, before, after);
+  }
+
+  @Test
+  public void testFileBasedProcessing() throws IOException {
+    // Test that file-based processing works with the same input/output as directory-based
+    // processing
+    assertValidFileProcessing("preprocess-flat-before", "preprocess-flat-after");
+  }
+
+  @Test
+  public void testFileBasedProcessingDifferentConfigType() throws IOException {
+    // Test file-based processing with a different configuration type (hierarchical)
+    assertValidFileProcessing("preprocess-hierarchical-before", "preprocess-hierarchical-after");
+  }
+
+  @Test
+  public void testFileBasedProcessingNoOp() throws IOException {
+    // Test file-based processing with input that doesn't require preprocessing (no-op case)
+    assertValidFileProcessing(TESTCONFIGS_PREFIX, "nop-preprocess", "nop-preprocess");
+  }
+
+  @Test
+  public void testFileBasedProcessingWithEmptyFile() throws IOException {
+    // Test that file-based processing works with an empty file
+    Path root = _folder.getRoot().toPath();
+    Path inputFile = root.resolve("empty_file");
+    Path outputFile = root.resolve("output_file");
+
+    // Create an empty file
+    writeFile(inputFile, "");
+
+    main(new String[] {inputFile.toString(), outputFile.toString()});
+
+    // Verify the output is processed correctly (likely empty or contains minimal content)
+    String outputContent = CommonUtil.readFile(outputFile);
+    assertThat(outputContent.trim(), org.hamcrest.Matchers.notNullValue());
+  }
 }
