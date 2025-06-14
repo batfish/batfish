@@ -1016,25 +1016,14 @@ public final class FortiosGrammarTest {
     assertThat(
         ifaces.keySet(),
         containsInAnyOrder(
-            "port1",
-            "port2",
-            "longest if name",
-            "tunnel",
-            "loopback123",
-            "agg",
-            "emac",
-            "redundant",
-            "vlan",
-            "wl"));
+            "port1", "port2", "longest if name", "tunnel", "loopback123", "emac", "vlan", "wl"));
 
     Interface port1 = ifaces.get("port1");
     Interface port2 = ifaces.get("port2");
     Interface longName = ifaces.get("longest if name");
     Interface tunnel = ifaces.get("tunnel");
     Interface loopback = ifaces.get("loopback123");
-    Interface agg = ifaces.get("agg");
     Interface emac = ifaces.get("emac");
-    Interface redundant = ifaces.get("redundant");
     Interface vlan = ifaces.get("vlan");
     Interface wl = ifaces.get("wl");
 
@@ -1108,9 +1097,7 @@ public final class FortiosGrammarTest {
     assertThat(vlan.getVlanid(), equalTo(4094));
 
     assertThat(loopback.getType(), equalTo(Type.LOOPBACK));
-    assertThat(agg.getType(), equalTo(Type.AGGREGATE));
     assertThat(emac.getType(), equalTo(Type.EMAC_VLAN));
-    assertThat(redundant.getType(), equalTo(Type.REDUNDANT));
     assertThat(wl.getType(), equalTo(Type.WL_MESH));
   }
 
@@ -1124,18 +1111,10 @@ public final class FortiosGrammarTest {
             .getWarnings()
             .get(hostname);
 
-    // AGGREGATE, REDUNDANT, and WL_MESH aren't yet supported; confirm in warnings
+    // WL_MESH aren't yet supported; confirm in warnings
     assertThat(
         warnings.getRedFlagWarnings(),
         hasItems(
-            WarningMatchers.hasText(
-                String.format(
-                    "Interface %s has unsupported type %s and will not be converted",
-                    "agg", Type.AGGREGATE)),
-            WarningMatchers.hasText(
-                String.format(
-                    "Interface %s has unsupported type %s and will not be converted",
-                    "redundant", Type.REDUNDANT)),
             WarningMatchers.hasText(
                 String.format(
                     "Interface %s has unsupported type %s and will not be converted",
@@ -1270,6 +1249,138 @@ public final class FortiosGrammarTest {
     // Also check extraction to make sure the conflicting-name lines are discarded, i.e. no VS
     // object is created when the name conflicts
     assertThat(vc.getInterfaces(), hasKeys("port1", "vlan1", "secondary"));
+  }
+
+  // Test for github.com/batfish/batfish/issues/6995
+  @Test
+  public void testAggregateInterfaceExtraction() {
+    String hostname = "iface_aggregate";
+    FortiosConfiguration vc = parseVendorConfig(hostname);
+
+    Map<String, Interface> ifaces = vc.getInterfaces();
+    assertThat(
+        ifaces.keySet(),
+        containsInAnyOrder("port1", "port2", "port3", "Uplink", "redundant1", "test_wan_vlan"));
+
+    Interface port1 = ifaces.get("port1");
+    Interface port2 = ifaces.get("port2");
+    Interface port3 = ifaces.get("port3");
+    Interface uplink = ifaces.get("Uplink");
+    Interface redundant1 = ifaces.get("redundant1");
+    Interface wan_vlan = ifaces.get("test_wan_vlan");
+
+    assertThat(port1.getVdom(), equalTo("root"));
+    assertThat(port1.getType(), equalTo(Type.PHYSICAL));
+
+    assertThat(port2.getVdom(), equalTo("root"));
+    assertThat(port2.getType(), equalTo(Type.PHYSICAL));
+
+    assertThat(port3.getVdom(), equalTo("root"));
+    assertThat(port3.getType(), equalTo(Type.PHYSICAL));
+
+    assertThat(uplink.getDescription(), equalTo("Uplink to DC switches"));
+    assertThat(uplink.getType(), equalTo(Type.AGGREGATE));
+    // test aggregate members
+    assertThat(uplink.getMembers(), containsInAnyOrder("port1", "port2"));
+
+    assertThat(redundant1.getType(), equalTo(Type.REDUNDANT));
+    assertThat(redundant1.getMembers(), containsInAnyOrder("port3"));
+
+    assertThat(wan_vlan.getVdom(), equalTo("test"));
+    assertThat(wan_vlan.getIp(), equalTo(ConcreteInterfaceAddress.parse("10.10.1.1/24")));
+    assertThat(wan_vlan.getType(), equalTo(null));
+    assertThat(wan_vlan.getTypeEffective(), equalTo(Type.VLAN));
+    assertThat(wan_vlan.getInterface(), equalTo("Uplink"));
+    assertThat(wan_vlan.getVlanid(), equalTo(10));
+  }
+
+  // Test for github.com/batfish/batfish/issues/6995
+  @Test
+  public void testAggregateInterfaceConversion() throws IOException {
+    String hostname = "iface_aggregate";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
+    assertThat(
+        ifaces.keySet(),
+        containsInAnyOrder("port1", "port2", "port3", "Uplink", "redundant1", "test_wan_vlan"));
+    org.batfish.datamodel.Interface port1 = ifaces.get("port1");
+    org.batfish.datamodel.Interface port2 = ifaces.get("port2");
+    org.batfish.datamodel.Interface port3 = ifaces.get("port3");
+    org.batfish.datamodel.Interface uplink = ifaces.get("Uplink");
+    org.batfish.datamodel.Interface redundant = ifaces.get("redundant1");
+    org.batfish.datamodel.Interface test_wan_vlan = ifaces.get("test_wan_vlan");
+
+    // Check addresses
+    assertThat(test_wan_vlan.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.1.1/24")));
+    Stream.of(port1, port2, uplink).forEach(iface -> assertNull(iface.getAddress()));
+
+    // Check interface types
+    assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(port3.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(uplink.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
+    assertThat(redundant.getInterfaceType(), equalTo(InterfaceType.REDUNDANT));
+    assertThat(test_wan_vlan.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+
+    // Check aliases
+    Stream.of(port1, port2, port3, uplink, redundant, test_wan_vlan)
+        .forEach(iface -> assertThat(iface.getDeclaredNames(), empty()));
+
+    // Check descriptions
+    assertThat(uplink.getDescription(), equalTo("Uplink to DC switches"));
+    Stream.of(port1, port2, port3, redundant, test_wan_vlan)
+        .forEach(iface -> assertNull(iface.getDescription()));
+
+    // Check VLAN properties and dependencies
+    Dependency port1Dependency = new Dependency("port1", DependencyType.AGGREGATE);
+    Dependency port2Dependency = new Dependency("port2", DependencyType.AGGREGATE);
+    Dependency port3Dependency = new Dependency("port3", DependencyType.AGGREGATE);
+    Dependency uplinkDependency = new Dependency("Uplink", DependencyType.BIND);
+    assertThat(uplink.getDependencies(), containsInAnyOrder(port1Dependency, port2Dependency));
+    assertThat(redundant.getDependencies(), contains(port3Dependency));
+    assertThat(test_wan_vlan.getEncapsulationVlan(), equalTo(10));
+    assertThat(test_wan_vlan.getDependencies(), contains(uplinkDependency));
+  }
+
+  // Test for github.com/batfish/batfish/issues/6995
+  @Test
+  public void testAggregateInferfaceWarning() throws IOException {
+    // https://docs.fortinet.com/document/fortigate/7.6.2/administration-guide/567758/aggregation-and-redundancy
+    // An interface is available to be an aggregate/redondante interface if:
+    // - It is a physical interface and not a VLAN interface or subinterface.
+    // - It is not already part of an aggregate or redundant interface.
+    // - It is in the same VDOM as the aggregated interface. Aggregate ports cannot span multiple
+    // VDOMs.
+    // - It does not have an IP address and is not configured for DHCP or PPPoE.
+    String hostname = "iface_aggregate_warn";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings parseWarnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+    assertThat(
+        parseWarnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                allOf(
+                    hasComment("Interface is undefined"),
+                    hasText(containsString("iface_undefined"))),
+                allOf(
+                    hasComment("Interface is already in another aggregate/redundant interface"),
+                    hasText(containsString("port1"))),
+                allOf(
+                    hasComment("Only physical interfaces are allowed"),
+                    hasText(containsString("vlan"))),
+                allOf(
+                    hasComment(
+                        "Interface is in a different vdom (customer1) than the current interface"
+                            + " (root)"),
+                    hasText(containsString("port4"))),
+                hasComment("Interface has an IP address (192.168.1.1/24)"))));
   }
 
   @Test

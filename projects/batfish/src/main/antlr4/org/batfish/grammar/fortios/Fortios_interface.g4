@@ -33,6 +33,7 @@ csi_set_singletons:
     | csi_set_description
     | csi_set_interface
     | csi_set_ip
+    | csi_set_member
     | csi_set_mtu
     | csi_set_mtu_override
     | csi_set_secondary_ip
@@ -52,6 +53,8 @@ csi_set_description: DESCRIPTION description = str newline;
 csi_set_interface: INTERFACE interface_name newline;
 
 csi_set_ip: IP ip = ip_address_with_mask_or_prefix newline;
+
+csi_set_member: MEMBER members = interface_names newline;
 
 csi_set_mtu: MTU value = mtu newline;
 
