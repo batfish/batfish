@@ -1317,18 +1317,18 @@ public final class FortiosGrammarTest {
     Stream.of(port1, port2, uplink).forEach(iface -> assertNull(iface.getAddress()));
 
     // Check interface types
-    assertThat(port1.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
-    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.AGGREGATE_CHILD));
-    assertThat(port3.getInterfaceType(), equalTo(InterfaceType.REDUNDANT_CHILD));
+    assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
+    assertThat(port3.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
     assertThat(uplink.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
     assertThat(redundant.getInterfaceType(), equalTo(InterfaceType.REDUNDANT));
     assertThat(test_wan_vlan.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
 
-    // // Check aliases
+    // Check aliases
     Stream.of(port1, port2, port3, uplink, redundant, test_wan_vlan)
         .forEach(iface -> assertThat(iface.getDeclaredNames(), empty()));
 
-    // // Check descriptions
+    // Check descriptions
     assertThat(uplink.getDescription(), equalTo("Uplink to DC switches"));
     Stream.of(port1, port2, port3, redundant, test_wan_vlan)
         .forEach(iface -> assertNull(iface.getDescription()));

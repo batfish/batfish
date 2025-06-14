@@ -268,8 +268,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   }
 
   private void convertInterface(Interface iface, Configuration c) {
-    Interface.Type parentType = iface.getParent() != null ? iface.getParent().getType() : null;
-    InterfaceType type = toViType(iface.getTypeEffective(), parentType);
+    InterfaceType type = toViType(iface.getTypeEffective());
     if (type == null) {
       _w.redFlagf(
           "Interface %s has unsupported type %s and will not be converted",
@@ -363,19 +362,11 @@ public class FortiosConfiguration extends VendorConfiguration {
         .orElse(iface);
   }
 
-  private @Nullable InterfaceType toViType(
-      Interface.Type vsType, @Nullable Interface.Type parentType) {
+  private @Nullable InterfaceType toViType(Interface.Type vsType) {
     return switch (vsType) {
       case AGGREGATE -> InterfaceType.AGGREGATED;
       case LOOPBACK -> InterfaceType.LOOPBACK;
-      case PHYSICAL -> {
-        if (parentType == Interface.Type.AGGREGATE) {
-          yield InterfaceType.AGGREGATE_CHILD;
-        } else if (parentType == Interface.Type.REDUNDANT) {
-          yield InterfaceType.REDUNDANT_CHILD;
-        }
-        yield InterfaceType.PHYSICAL;
-      }
+      case PHYSICAL -> InterfaceType.PHYSICAL;
       case REDUNDANT -> InterfaceType.REDUNDANT;
       case TUNNEL -> InterfaceType.TUNNEL;
       case VLAN -> InterfaceType.LOGICAL;

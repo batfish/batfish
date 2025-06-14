@@ -120,6 +120,10 @@ public final class Interface implements InterfaceOrZone, Serializable {
     return _interface;
   }
 
+  public @Nonnull Set<String> getMembers() {
+    return _members;
+  }
+
   public @Nullable Boolean getSecondaryIp() {
     return _secondaryIp;
   }
@@ -146,14 +150,6 @@ public final class Interface implements InterfaceOrZone, Serializable {
 
   public @Nullable Integer getVlanid() {
     return _vlanid;
-  }
-
-  public @Nonnull Set<String> getMembers() {
-    return _members;
-  }
-
-  public @Nullable Interface getParent() {
-    return _parent;
   }
 
   @VisibleForTesting
@@ -220,10 +216,6 @@ public final class Interface implements InterfaceOrZone, Serializable {
     _vrf = vrf;
   }
 
-  public void setParent(Interface parent) {
-    _parent = parent;
-  }
-
   public Interface(String name) {
     _name = name;
     _status = Status.UNKNOWN;
@@ -243,7 +235,6 @@ public final class Interface implements InterfaceOrZone, Serializable {
   private @Nullable String _description;
   private @Nullable String _interface;
   private final @Nonnull Set<String> _members;
-  private @Nullable Interface _parent;
 
   /** Boolean indicating if secondary-IP is enabled, i.e. if secondaryip can be populated */
   private @Nullable Boolean _secondaryIp;

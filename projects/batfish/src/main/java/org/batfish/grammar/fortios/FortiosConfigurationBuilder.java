@@ -2290,6 +2290,13 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return Optional.of(addressUuidsBuilder.build());
   }
 
+  /** Returns the name of all new interfaces in the configuration context */
+  private Set<String> getNewInterfacesName(Interface_namesContext ctx) {
+    return ctx.interface_name().stream()
+        .map(n -> toString(n.str()))
+        .collect(ImmutableSet.toImmutableSet());
+  }
+
   /**
    * Convert names in the specified context into an optional set of interface names. Returns an
    * empty optional if the line would not be accepted.
@@ -2312,10 +2319,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             .collect(ImmutableSet.toImmutableSet());
 
     ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
-    Set<String> newIfaces =
-        ctx.interface_name().stream()
-            .map(n -> toString(n.str()))
-            .collect(ImmutableSet.toImmutableSet());
+    Set<String> newIfaces = getNewInterfacesName(ctx);
 
     for (String name : newIfaces) {
       if (usedIfaceNames.contains(name)) {
@@ -2346,17 +2350,18 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   /**
    * Convert names in the specified context into an optional set of interface names. Returns an
    * empty optional if the line would not be accepted. Usable interface for aggregate and redundant
-   * interfaces as to follow criteria:
+   * interfaces as to follow criteria: We test for the first 4 points: 1. Interface must exist and
+   * is PHYSICAL. 2. Interface must not be in an other aggregate or redundant interface. 3.
+   * Interface must be in the same VDOM as the aggregate/redundant interface. 4. Interface must not
+   * have an IP address
    * https://docs.fortinet.com/document/fortigate/7.6.2/administration-guide/567758/aggregation-and-redundancy
-   * We test for the first 4 points: 1. Interface must exist and is PHYSICAL 2. Interface must not
-   * be in an other aggregate or redundant interface 3. Interface must be in the same VDOM as the
-   * aggregate/redundant interface 4. Interface must not have an IP address
    */
   private Optional<Set<String>> toInterfaceMembers(Interface_namesContext ctx) {
     int line = ctx.start.getLine();
     Map<String, Interface> ifacesMap = _c.getInterfaces();
     String currentInterfaceName = _currentInterface.getName();
 
+    // Search for interfaces used in other aggregate/redundant interface
     ImmutableSet<String> usedIfaceNames =
         _c.getInterfaces().values().stream()
             .filter(i -> !i.getName().equals(currentInterfaceName))
@@ -2365,10 +2370,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
             .collect(ImmutableSet.toImmutableSet());
 
     ImmutableSet.Builder<String> ifaceNameBuilder = ImmutableSet.builder();
-    Set<String> newIfaces =
-        ctx.interface_name().stream()
-            .map(n -> toString(n.str()))
-            .collect(ImmutableSet.toImmutableSet());
+    Set<String> newIfaces = getNewInterfacesName(ctx);
 
     for (String name : newIfaces) {
       if (usedIfaceNames.contains(name)) {
@@ -2397,7 +2399,6 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
           return Optional.empty();
         }
 
-        iface.setParent(_currentInterface);
         ifaceNameBuilder.add(name);
         _c.referenceStructure(
             FortiosStructureType.INTERFACE, name, FortiosStructureUsage.INTERFACE_INTERFACE, line);
