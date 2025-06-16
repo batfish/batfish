@@ -34,6 +34,7 @@ public final class PsFroms implements Serializable {
   private final Set<PsFromPrefixListFilterOrLonger> _fromPrefixListFilterOrLongers;
   private final Set<PsFromProtocol> _fromProtocols;
   private final Set<PsFromRouteFilter> _fromRouteFilters;
+  private PsFromExternal _fromExternal;
   private PsFromRouteType _fromRouteType;
   private final Set<PsFromTag> _fromTags;
   private PsFromUnsupported _fromUnsupported;
@@ -127,6 +128,11 @@ public final class PsFroms implements Serializable {
   public void addFromRouteFilter(@Nonnull PsFromRouteFilter fromRouteFilter) {
     _atLeastOneFrom = true;
     _fromRouteFilters.add(fromRouteFilter);
+  }
+
+  public void setFromExternal(@Nonnull PsFromExternal fromExternal) {
+    _atLeastOneFrom = true;
+    _fromExternal = fromExternal;
   }
 
   public void setFromRouteType(@Nonnull PsFromRouteType fromRouteType) {
@@ -235,6 +241,10 @@ public final class PsFroms implements Serializable {
   @Nonnull
   Set<PsFromRouteFilter> getFromRouteFilters() {
     return _fromRouteFilters;
+  }
+
+  public @Nullable PsFromExternal getFromExternal() {
+    return _fromExternal;
   }
 
   public @Nullable PsFromRouteType getFromRouteType() {

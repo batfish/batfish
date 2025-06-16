@@ -367,6 +367,7 @@ import org.batfish.datamodel.matchers.StubSettingsMatchers;
 import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
+import org.batfish.datamodel.ospf.OspfMetricType;
 import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.ospf.StubType;
@@ -377,6 +378,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
@@ -460,6 +462,7 @@ import org.batfish.representation.juniper.PathSelectionMode;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
+import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
@@ -8789,6 +8792,113 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         riskyParseWarnings,
         containsInAnyOrder(hasComment("RISK: Overwriting existing then community set")));
+  }
+
+  @Test
+  public void testPsFromExternal() {
+    String hostname = "policy-statement-from-external";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+    Configuration c = parseConfig(hostname);
+    Warnings w = new Warnings();
+
+    // Test policy statement with "from external type 1"
+    PsTerm termType1 =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-type-1")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termType1);
+
+    PsFromExternal fromExternalType1 = termType1.getFroms().getFromExternal();
+    assertNotNull(fromExternalType1);
+    assertThat(fromExternalType1.getType(), equalTo(OspfMetricType.E1));
+
+    // Verify conversion to vendor-independent model
+    assertThat(
+        fromExternalType1.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E1)));
+
+    // Test policy statement with "from external type 2"
+    PsTerm termType2 =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-type-2")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termType2);
+
+    PsFromExternal fromExternalType2 = termType2.getFroms().getFromExternal();
+    assertNotNull(fromExternalType2);
+    assertThat(fromExternalType2.getType(), equalTo(OspfMetricType.E2));
+
+    // Verify conversion to vendor-independent model
+    assertThat(
+        fromExternalType2.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E2)));
+
+    // Test policy statement with just "from external" (no type specified)
+    PsTerm termAny =
+        juniperConfig
+            .getMasterLogicalSystem()
+            .getPolicyStatements()
+            .get("test-external-any")
+            .getTerms()
+            .get("t1");
+    assertNotNull(termAny);
+
+    PsFromExternal fromExternalAny = termAny.getFroms().getFromExternal();
+    assertNotNull(fromExternalAny);
+    assertThat(fromExternalAny.getType(), nullValue());
+
+    // Verify conversion to vendor-independent model - should match any external type
+    assertThat(
+        fromExternalAny.toBooleanExpr(juniperConfig, c, w),
+        equalTo(new MatchProtocol(RoutingProtocol.OSPF_E1, RoutingProtocol.OSPF_E2)));
+
+    // Get the converted routing policies
+    RoutingPolicy type1Policy = c.getRoutingPolicies().get("test-external-type-1");
+    RoutingPolicy type2Policy = c.getRoutingPolicies().get("test-external-type-2");
+    RoutingPolicy anyTypePolicy = c.getRoutingPolicies().get("test-external-any");
+    assertNotNull(anyTypePolicy);
+
+    // Create OSPF External Type 1 and Type 2 routes
+    Prefix testPrefix = Prefix.parse("192.0.2.0/24");
+    OspfExternalType1Route ospfE1Route =
+        (OspfExternalType1Route)
+            OspfExternalType1Route.testBuilder()
+                .setNetwork(testPrefix)
+                .setMetric(20)
+                .setAdmin(100)
+                .build();
+
+    OspfExternalType2Route ospfE2Route =
+        (OspfExternalType2Route)
+            OspfExternalType2Route.builder()
+                .setNetwork(testPrefix)
+                .setNextHopIp(Ip.parse("10.0.0.1"))
+                .setArea(0)
+                .setMetric(20)
+                .setCostToAdvertiser(10)
+                .setLsaMetric(10)
+                .setAdvertiser("advertiser")
+                .setAdmin(100)
+                .setNonRouting(true) // Required when using NextHopIp
+                .build();
+
+    assertTrue("Type 1 policy should match E1 route", type1Policy.processReadOnly(ospfE1Route));
+    assertFalse(
+        "Type 1 policy should not match E2 route", type1Policy.processReadOnly(ospfE2Route));
+
+    assertTrue("Type 2 policy should match E2 route", type2Policy.processReadOnly(ospfE2Route));
+    assertFalse(
+        "Type 2 policy should not match E1 route", type2Policy.processReadOnly(ospfE1Route));
+
+    // Test that "any type" policy matches both E1 and E2 routes
+    assertTrue("Any type policy should match E1 route", anyTypePolicy.processReadOnly(ospfE1Route));
+    assertTrue("Any type policy should match E2 route", anyTypePolicy.processReadOnly(ospfE2Route));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
