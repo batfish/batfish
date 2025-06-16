@@ -526,6 +526,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_as_path_groupCont
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_colorContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_community_countContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
@@ -974,6 +975,7 @@ import org.batfish.representation.juniper.PsFromCommunity;
 import org.batfish.representation.juniper.PsFromCommunityCount;
 import org.batfish.representation.juniper.PsFromCommunityCount.Mode;
 import org.batfish.representation.juniper.PsFromCondition;
+import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromFamily;
 import org.batfish.representation.juniper.PsFromInstance;
 import org.batfish.representation.juniper.PsFromInterface;
@@ -1089,6 +1091,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private static final IntegerSpace ADD_PATH_SEND_PATH_COUNT_RANGE =
       IntegerSpace.of(new SubRange(2, 64));
+
+  private static final IntegerSpace OSPF_EXTERNAL_TYPE_RANGE = IntegerSpace.of(new SubRange(1, 2));
 
   private <T, U extends T> T convProblem(
       Class<T> returnType, ParserRuleContext ctx, U defaultReturnValue) {
@@ -5986,6 +5990,26 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentRouteFilter = null;
     _currentRouteFilterLine = null;
     _currentRoute6FilterLine = null;
+  }
+
+  @Override
+  public void exitPopsf_external(Popsf_externalContext ctx) {
+    if (ctx.ospf_type() == null) {
+      // No type specified - match all external routes
+      _currentPsTerm.getFroms().setFromExternal(new PsFromExternal(null));
+    } else {
+      Optional<Integer> maybeType =
+          toIntegerInSpace(
+              ctx, ctx.ospf_type().uint8(), OSPF_EXTERNAL_TYPE_RANGE, "OSPF external type");
+      if (maybeType.isPresent()) {
+        int type = maybeType.get();
+        if (type == 1) {
+          _currentPsTerm.getFroms().setFromExternal(new PsFromExternal(OspfMetricType.E1));
+        } else if (type == 2) {
+          _currentPsTerm.getFroms().setFromExternal(new PsFromExternal(OspfMetricType.E2));
+        }
+      }
+    }
   }
 
   @Override
