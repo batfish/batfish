@@ -312,6 +312,15 @@ public class FortiosConfiguration extends VendorConfiguration {
           ImmutableSet.of(new Dependency(iface.getInterface(), DependencyType.BIND)));
     }
 
+    Set<String> members = iface.getMembers();
+    if (!members.isEmpty()) {
+      // AGGREGATE and REDUNDANT
+      viIface.setDependencies(
+          members.stream()
+              .map(member -> new Dependency(member, DependencyType.AGGREGATE))
+              .collect(ImmutableSet.toImmutableSet()));
+    }
+
     // TODO Is this the right VI field for interface alias?
     Optional.ofNullable(iface.getAlias())
         .ifPresent(alias -> viIface.setDeclaredNames(ImmutableList.of(iface.getAlias())));
@@ -355,17 +364,14 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   private @Nullable InterfaceType toViType(Interface.Type vsType) {
     return switch (vsType) {
+      case AGGREGATE -> InterfaceType.AGGREGATED;
       case LOOPBACK -> InterfaceType.LOOPBACK;
       case PHYSICAL -> InterfaceType.PHYSICAL;
+      case REDUNDANT -> InterfaceType.REDUNDANT;
       case TUNNEL -> InterfaceType.TUNNEL;
       case VLAN -> InterfaceType.LOGICAL;
-      case
-          // TODO Distinguish between AGGREGATED and AGGREGATE_CHILD
-          AGGREGATE,
-          // TODO Distinguish between REDUNDANT and REDUNDANT_CHILD
-          REDUNDANT,
-          // TODO Support this type
-          WL_MESH,
+      // TODO Support this type
+      case WL_MESH,
           // TODO Support this type
           EMAC_VLAN ->
           null;
