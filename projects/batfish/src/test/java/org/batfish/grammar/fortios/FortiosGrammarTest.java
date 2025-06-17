@@ -14,12 +14,17 @@ import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasMultipathIbgp
 import static org.batfish.datamodel.matchers.BgpProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasHostname;
 import static org.batfish.datamodel.matchers.ConfigurationMatchers.hasInterface;
+import static org.batfish.datamodel.matchers.DataModelMatchers.hasBandwidth;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasDefinedStructureWithDefinitionLines;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasNumReferrers;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasOutgoingFilter;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasReferencedStructure;
 import static org.batfish.datamodel.matchers.DataModelMatchers.hasUndefinedReference;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasAddress;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasDescription;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasInterfaceType;
+import static org.batfish.datamodel.matchers.InterfaceMatchers.hasSpeed;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.accepts;
 import static org.batfish.datamodel.matchers.IpAccessListMatchers.rejects;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
@@ -1169,10 +1174,10 @@ public final class FortiosGrammarTest {
     Stream.of(port1, longName, tunnel, loopback, vlan)
         .forEach(iface -> assertThat(iface.getMtu(), equalTo(Interface.DEFAULT_INTERFACE_MTU)));
 
-    // Check speeds
-    assertThat(port1.getSpeed(), equalTo(10000e6));
-    assertThat(port2.getSpeed(), equalTo(10000e6));
-    assertThat(longName.getSpeed(), equalTo(100e9));
+    // Check speeds and bandwidths
+    assertThat(port1, allOf(hasSpeed(10e9), hasBandwidth(10e9)));
+    assertThat(port2, allOf(hasSpeed(10e9), hasBandwidth(10e9)));
+    assertThat(longName, allOf(hasSpeed(100e9), hasBandwidth(100e9)));
 
     // Check aliases
     assertThat(port1.getDeclaredNames(), contains("longest possibl alias str"));
@@ -1302,9 +1307,7 @@ public final class FortiosGrammarTest {
 
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     Map<String, org.batfish.datamodel.Interface> ifaces = c.getAllInterfaces();
-    assertThat(
-        ifaces.keySet(),
-        containsInAnyOrder("port1", "port2", "port3", "Uplink", "redundant1", "test_wan_vlan"));
+    assertThat(ifaces, hasKeys("port1", "port2", "port3", "Uplink", "redundant1", "test_wan_vlan"));
     org.batfish.datamodel.Interface port1 = ifaces.get("port1");
     org.batfish.datamodel.Interface port2 = ifaces.get("port2");
     org.batfish.datamodel.Interface port3 = ifaces.get("port3");
@@ -1313,16 +1316,18 @@ public final class FortiosGrammarTest {
     org.batfish.datamodel.Interface test_wan_vlan = ifaces.get("test_wan_vlan");
 
     // Check addresses
-    assertThat(test_wan_vlan.getAddress(), equalTo(ConcreteInterfaceAddress.parse("10.10.1.1/24")));
-    Stream.of(port1, port2, uplink).forEach(iface -> assertNull(iface.getAddress()));
+    assertThat(test_wan_vlan, hasAddress("10.10.1.1/24"));
+    assertThat(port1, hasAddress(nullValue()));
+    assertThat(port2, hasAddress(nullValue()));
+    assertThat(uplink, hasAddress(nullValue()));
 
     // Check interface types
-    assertThat(port1.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
-    assertThat(port2.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
-    assertThat(port3.getInterfaceType(), equalTo(InterfaceType.PHYSICAL));
-    assertThat(uplink.getInterfaceType(), equalTo(InterfaceType.AGGREGATED));
-    assertThat(redundant.getInterfaceType(), equalTo(InterfaceType.REDUNDANT));
-    assertThat(test_wan_vlan.getInterfaceType(), equalTo(InterfaceType.LOGICAL));
+    assertThat(port1, hasInterfaceType(InterfaceType.PHYSICAL));
+    assertThat(port2, hasInterfaceType(InterfaceType.PHYSICAL));
+    assertThat(port3, hasInterfaceType(InterfaceType.PHYSICAL));
+    assertThat(uplink, hasInterfaceType(InterfaceType.AGGREGATED));
+    assertThat(redundant, hasInterfaceType(InterfaceType.REDUNDANT));
+    assertThat(test_wan_vlan, hasInterfaceType(InterfaceType.LOGICAL));
 
     // Check aliases
     Stream.of(port1, port2, port3, uplink, redundant, test_wan_vlan)
@@ -1331,17 +1336,25 @@ public final class FortiosGrammarTest {
     // Check descriptions
     assertThat(uplink.getDescription(), equalTo("Uplink to DC switches"));
     Stream.of(port1, port2, port3, redundant, test_wan_vlan)
-        .forEach(iface -> assertNull(iface.getDescription()));
+        .forEach(iface -> assertThat(iface, hasDescription(nullValue())));
 
-    // Check VLAN properties and dependencies
+    // Check VLAN properties
+    assertThat(test_wan_vlan.getEncapsulationVlan(), equalTo(10));
+
+    // Dependencies
     Dependency port1Dependency = new Dependency("port1", DependencyType.AGGREGATE);
     Dependency port2Dependency = new Dependency("port2", DependencyType.AGGREGATE);
     Dependency port3Dependency = new Dependency("port3", DependencyType.AGGREGATE);
     Dependency uplinkDependency = new Dependency("Uplink", DependencyType.BIND);
     assertThat(uplink.getDependencies(), containsInAnyOrder(port1Dependency, port2Dependency));
     assertThat(redundant.getDependencies(), contains(port3Dependency));
-    assertThat(test_wan_vlan.getEncapsulationVlan(), equalTo(10));
     assertThat(test_wan_vlan.getDependencies(), contains(uplinkDependency));
+
+    // Aggregated bandwidths
+    assertThat(port1, hasSpeed(10e9));
+    assertThat(port1, hasBandwidth(10e9));
+    assertThat(uplink, hasBandwidth(20e9));
+    assertThat(redundant, hasSpeed(10e9));
   }
 
   // Test for github.com/batfish/batfish/issues/6995
