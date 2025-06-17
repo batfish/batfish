@@ -289,6 +289,7 @@ public class FortiosConfiguration extends VendorConfiguration {
             .setAdminUp(iface.getStatusEffective())
             .setMtu(iface.getMtuEffective())
             .setSpeed(toSpeed(iface.getSpeedEffective()))
+            .setBandwidth(toSpeed(iface.getSpeedEffective()))
             .setType(type);
 
     List<InterfaceAddress> secondaryAddresses =
