@@ -3100,6 +3100,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+    detectMisplacedTerminalActions(ps);
+
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
       _vrfReferencesInPolicies = new TreeMap<>();
@@ -4453,6 +4455,79 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (!prefixList.getHasIpv6() && prefixList.getPrefixes().isEmpty()) {
         _w.redFlag("Empty prefix-list: '" + name + "'");
       }
+    }
+  }
+
+  /**
+   * Detect misplaced terminal actions on the input policy statement that create unreachable terms
+   * Returns True if there is a terminal "then" statement with no match conditions And terms
+   * following it that are now unreachable.
+   */
+  private void detectMisplacedTerminalActions(PolicyStatement policy) {
+    List<PsTerm> terms = ImmutableList.copyOf(policy.getTerms().values());
+
+    for (int i = 0; i < terms.size() - 1; i++) { // Skip last term
+      PsTerm currentTerm = terms.get(i);
+
+      // Check if term has no match conditions (matches everything)
+      // A term makes subsequent terms unreachable if:
+      // 1. It has no match conditions (no "from" AND no "to"), AND
+      // 2. It has a terminal action (accept/reject)
+      //
+      // Note: Currently only checking "from" conditions since "to" conditions
+      // are not yet implemented
+      // TODO: When "to" conditions are implemented, update this to also check for "to" conditions
+      if (!currentTerm.hasAtLeastOneFrom()) {
+
+        Optional<PsThen> terminalAction = getTerminalAction(currentTerm);
+        if (terminalAction.isPresent()) {
+
+          // Get the terminal action name for the warning
+          String actionName = getTerminalActionName(terminalAction.get());
+
+          // Calculate how many subsequent terms will be ignored
+          int subsequentTermsCount = terms.size() - 1 - i;
+
+          _w.riskyRedFlag(
+              "'policy-statement %s term %s then %s' always ends processing, but there %s %d"
+                  + " subsequent %s that will not be evaluated",
+              policy.getName(),
+              currentTerm.getName(),
+              actionName,
+              subsequentTermsCount == 1 ? "is" : "are",
+              subsequentTermsCount,
+              subsequentTermsCount == 1 ? "term" : "terms");
+        }
+      }
+    }
+  }
+
+  /** Get the terminal action from a term, if any */
+  private Optional<PsThen> getTerminalAction(PsTerm term) {
+    if (term.getThens() == null) {
+      return Optional.empty();
+    }
+
+    return term.getThens().getAllThens().stream()
+        .filter(
+            then ->
+                then instanceof PsThenAccept
+                    || then instanceof PsThenReject
+                    || then instanceof PsThenNextPolicy)
+        .findFirst();
+  }
+
+  /** Get the Junos syntax name for a terminal action */
+  private String getTerminalActionName(PsThen terminalAction) {
+    if (terminalAction instanceof PsThenAccept) {
+      return "accept";
+    } else if (terminalAction instanceof PsThenReject) {
+      return "reject";
+    } else if (terminalAction instanceof PsThenNextPolicy) {
+      return "next policy";
+    } else {
+      throw new IllegalArgumentException(
+          "Unknown terminal action type: " + terminalAction.getClass().getSimpleName());
     }
   }
 
