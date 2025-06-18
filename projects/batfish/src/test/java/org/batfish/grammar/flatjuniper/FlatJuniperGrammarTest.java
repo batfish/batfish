@@ -243,11 +243,13 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.SortedSet;
 import java.util.stream.Collectors;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.BatfishLogger;
+import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
@@ -8899,6 +8901,42 @@ public final class FlatJuniperGrammarTest {
     // Test that "any type" policy matches both E1 and E2 routes
     assertTrue("Any type policy should match E1 route", anyTypePolicy.processReadOnly(ospfE1Route));
     assertTrue("Any type policy should match E2 route", anyTypePolicy.processReadOnly(ospfE2Route));
+  }
+
+  @Test
+  public void testRiskyTerminalTermsInPolicyStatements() throws IOException {
+    String hostname = "risky-terminal-actions";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    SortedSet<Warning> riskyWarnings = ccae.getWarnings().get(hostname).getRiskyRedFlagWarnings();
+
+    assertThat("Should have exactly 3 RISKY warnings", riskyWarnings, hasSize(3));
+
+    String expectedRiskyRejectWarning =
+        "RISK: 'policy-statement RISKY-REJECT term UNCONDITIONAL-REJECT then reject' always ends"
+            + " processing, but is not the last term in the policy";
+    assertThat(
+        "Should have exact warning for RISKY-REJECT policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyRejectWarning)));
+
+    String expectedRiskyAcceptWarning =
+        "RISK: 'policy-statement RISKY-ACCEPT term UNCONDITIONAL-ACCEPT then accept' always ends"
+            + " processing, but is not the last term in the policy";
+    assertThat(
+        "Should have exact warning for RISKY-ACCEPT policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyAcceptWarning)));
+
+    String expectedRiskyNextPolicyWarning =
+        "RISK: 'policy-statement RISKY-NEXT-POLICY term UNCONDITIONAL-NEXT-POLICY then next policy'"
+            + " always ends processing, but is not the last term in the policy";
+    assertThat(
+        "Should have exact warning for RISKY-NEXT-POLICY policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedRiskyNextPolicyWarning)));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
