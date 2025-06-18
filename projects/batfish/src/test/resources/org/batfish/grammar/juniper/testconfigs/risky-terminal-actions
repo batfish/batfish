@@ -1,0 +1,42 @@
+#
+set system host-name risky-terminal-actions
+#
+# === ESSENTIAL RISKY CASES (should generate RISKY warnings) ===
+#
+# Risky Case 1: Unconditional reject followed by other terms
+set policy-options policy-statement RISKY-REJECT term UNCONDITIONAL-REJECT then reject
+set policy-options policy-statement RISKY-REJECT term UNREACHABLE-TERM1 from protocol bgp
+set policy-options policy-statement RISKY-REJECT term UNREACHABLE-TERM1 then accept
+set policy-options policy-statement RISKY-REJECT term UNREACHABLE-TERM2 from community TEST-COMM
+set policy-options policy-statement RISKY-REJECT term UNREACHABLE-TERM2 then reject
+#
+# Risky Case 2: Unconditional accept followed by other terms
+set policy-options policy-statement RISKY-ACCEPT term UNCONDITIONAL-ACCEPT then accept
+set policy-options policy-statement RISKY-ACCEPT term UNREACHABLE-TERM from protocol ospf
+set policy-options policy-statement RISKY-ACCEPT term UNREACHABLE-TERM then reject
+#
+# Risky Case 3: Unconditional next policy followed by other terms
+set policy-options policy-statement RISKY-NEXT-POLICY term UNCONDITIONAL-NEXT-POLICY then next policy
+set policy-options policy-statement RISKY-NEXT-POLICY term UNREACHABLE-TERM from protocol bgp
+set policy-options policy-statement RISKY-NEXT-POLICY term UNREACHABLE-TERM then accept
+#
+#
+# === ESSENTIAL SAFE CASES (should NOT generate warnings) ===
+#
+# Safe Case 1: Only conditional terms
+set policy-options policy-statement SAFE-CONDITIONAL term CONDITIONAL-REJECT from protocol bgp
+set policy-options policy-statement SAFE-CONDITIONAL term CONDITIONAL-REJECT then reject
+set policy-options policy-statement SAFE-CONDITIONAL term CONDITIONAL-ACCEPT from community TEST-COMM
+set policy-options policy-statement SAFE-CONDITIONAL term CONDITIONAL-ACCEPT then accept
+#
+# Safe Case 2: Unconditional terminal as last term (not risky)
+set policy-options policy-statement SAFE-LAST-TERMINAL term CONDITIONAL-FIRST from protocol ospf
+set policy-options policy-statement SAFE-LAST-TERMINAL term CONDITIONAL-FIRST then accept
+set policy-options policy-statement SAFE-LAST-TERMINAL term UNCONDITIONAL-LAST then reject
+#
+# Safe Case 3: Single-term policy (boundary condition)
+set policy-options policy-statement SINGLE-TERM term ONLY-TERM then accept
+#
+# Community definitions for testing
+set policy-options community TEST-COMM members 65001:100
+#
