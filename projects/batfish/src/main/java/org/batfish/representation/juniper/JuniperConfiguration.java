@@ -729,7 +729,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 PolicyStatement importPolicy =
                     _masterLogicalSystem.getPolicyStatements().get(importPolicyName);
                 if (importPolicy != null) {
-                  setPolicyStatementReferent(importPolicyName);
                   CallExpr callPolicy = new CallExpr(importPolicyName);
                   importPolicyCalls.add(callPolicy);
                 }
@@ -775,7 +774,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 PolicyStatement exportPolicy =
                     _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
                 if (exportPolicy != null) {
-                  setPolicyStatementReferent(exportPolicyName);
                   CallExpr callPolicy = new CallExpr(exportPolicyName);
                   exportPolicyCalls.add(callPolicy);
                 }
@@ -1178,7 +1176,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     PolicyStatement importPolicy =
                         _masterLogicalSystem.getPolicyStatements().get(calledPolicyName);
                     if (importPolicy != null) {
-                      setPolicyStatementReferent(calledPolicyName);
                       return new CallExpr(calledPolicyName);
                     }
                     return null;
@@ -1385,7 +1382,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
               PolicyStatement exportPolicy =
                   _masterLogicalSystem.getPolicyStatements().get(exportPolicyName);
               if (exportPolicy != null) {
-                setPolicyStatementReferent(exportPolicyName);
                 CallExpr callPolicy = new CallExpr(exportPolicyName);
                 matchSomeExportPolicy.getDisjuncts().add(callPolicy);
               }
@@ -1684,28 +1680,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     newArea.addInterface(interfaceName);
   }
 
-  private void setPolicyStatementReferent(String policyName) {
-    PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
-    if (policy == null) {
-      return;
-    }
-    List<PsTerm> terms = new ArrayList<>();
-    terms.add(policy.getDefaultTerm());
-    terms.addAll(policy.getTerms().values());
-    for (PsTerm term : terms) {
-      for (PsFromPolicyStatement fromPolicyStatement : term.getFroms().getFromPolicyStatements()) {
-        String subPolicyName = fromPolicyStatement.getPolicyStatement();
-        setPolicyStatementReferent(subPolicyName);
-      }
-      for (PsFromPolicyStatementConjunction fromPolicyStatementConjunction :
-          term.getFroms().getFromPolicyStatementConjunctions()) {
-        for (String subPolicyName : fromPolicyStatementConjunction.getConjuncts()) {
-          setPolicyStatementReferent(subPolicyName);
-        }
-      }
-    }
-  }
-
   @Override
   public void setVendor(ConfigurationFormat format) {
     _vendor = format;
@@ -1805,7 +1779,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
                 PolicyStatement policy = _masterLogicalSystem.getPolicyStatements().get(policyName);
                 boolean defined = policy != null;
                 if (defined) {
-                  setPolicyStatementReferent(policyName);
                   generationPolicy.getStatements().add(new CallStatement(policyName));
                 } else {
                   generationPolicy
@@ -3877,17 +3850,6 @@ public final class JuniperConfiguration extends VendorConfiguration {
     // static nats
     if (_masterLogicalSystem.getNatStatic() != null) {
       _w.unimplemented("Static NAT is not currently implemented");
-    }
-
-    // mark forwarding table export policy if it exists
-    String forwardingTableExportPolicyName =
-        _masterLogicalSystem.getDefaultRoutingInstance().getForwardingTableExportPolicy();
-    if (forwardingTableExportPolicyName != null) {
-      PolicyStatement forwardingTableExportPolicy =
-          _masterLogicalSystem.getPolicyStatements().get(forwardingTableExportPolicyName);
-      if (forwardingTableExportPolicy != null) {
-        setPolicyStatementReferent(forwardingTableExportPolicyName);
-      }
     }
 
     // Count and mark structure usages and identify undefined references
