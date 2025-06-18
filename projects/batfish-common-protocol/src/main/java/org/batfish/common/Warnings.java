@@ -202,6 +202,11 @@ public class Warnings implements Serializable {
     redFlag(FATAL_FLAG + String.format(msg, args));
   }
 
+  /** Indicate that this red flag warning is a risky construct */
+  public void riskyRedFlag(String message) {
+    redFlag(RISKY_FLAG + message);
+  }
+
   /** Get all red flag warnings that are fatal error */
   @JsonIgnore
   public SortedSet<Warning> getFatalRedFlagWarnings() {
@@ -212,6 +217,18 @@ public class Warnings implements Serializable {
       }
     }
     return fatalWarnings;
+  }
+
+  /** Get all red flag warnings that are risky */
+  @JsonIgnore
+  public SortedSet<Warning> getRiskyRedFlagWarnings() {
+    SortedSet<Warning> riskyWarnings = new TreeSet<>();
+    for (Warning warning : _redFlagWarnings) {
+      if (warning.getText().startsWith(RISKY_FLAG)) {
+        riskyWarnings.add(warning);
+      }
+    }
+    return riskyWarnings;
   }
 
   /** Get all red flag warnings that are fatal error */

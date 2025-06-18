@@ -3100,6 +3100,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
   @VisibleForTesting
   RoutingPolicy toRoutingPolicy(PolicyStatement ps) {
+    detectMisplacedTerminalActions(ps);
+
     // Ensure map of VRFs referenced in routing policies is initialized
     if (_vrfReferencesInPolicies == null) {
       _vrfReferencesInPolicies = new TreeMap<>();
@@ -4454,6 +4456,62 @@ public final class JuniperConfiguration extends VendorConfiguration {
         _w.redFlag("Empty prefix-list: '" + name + "'");
       }
     }
+  }
+
+  /**
+   * Detect misplaced terminal actions on the input policy statement that create unreachable terms
+   * Returns True if there is a terminal "then" statement with no match conditions And terms
+   * following it that are now unreachable.
+   */
+  private void detectMisplacedTerminalActions(PolicyStatement policy) {
+    List<PsTerm> terms = ImmutableList.copyOf(policy.getTerms().values());
+
+    for (int i = 0; i < terms.size() - 1; i++) { // Skip last term
+      PsTerm currentTerm = terms.get(i);
+
+      // Check if term has no match conditions (matches everything)
+      // A term makes subsequent terms unreachable if:
+      // 1. It has no match conditions (no "from" AND no "to"), AND
+      // 2. It has a terminal action (accept/reject)
+      //
+      // Note: Currently only checking "from" conditions since "to" conditions
+      // are not yet implemented
+      // TODO: When "to" conditions are implemented, update this to also check for "to" conditions
+      if (!currentTerm.hasAtLeastOneFrom()) {
+
+        if (hasTerminalAction(currentTerm)) {
+
+          // Count unreachable terms after this one
+          int unreachableTerms = terms.size() - i - 1;
+
+          _w.riskyRedFlag(
+              String.format(
+                  "Policy statement '%s' term '%s' contains unconditional terminal action "
+                      + "that makes %d subsequent term(s) unreachable: %s",
+                  policy.getName(),
+                  currentTerm.getName(),
+                  unreachableTerms,
+                  getUnreachableTermNames(terms, i + 1)));
+        }
+      }
+    }
+  }
+
+  /** Check if a term contains terminal actions */
+  private boolean hasTerminalAction(PsTerm term) {
+    if (term.getThens() == null) {
+      return false;
+    }
+
+    return term.getThens().getAllThens().stream()
+        .anyMatch(then -> then instanceof PsThenAccept || then instanceof PsThenReject);
+  }
+
+  /** Get names of unreachable terms for warning message */
+  private String getUnreachableTermNames(List<PsTerm> terms, int startIndex) {
+    return terms.subList(startIndex, terms.size()).stream()
+        .map(PsTerm::getName)
+        .collect(Collectors.joining(", "));
   }
 
   /**
