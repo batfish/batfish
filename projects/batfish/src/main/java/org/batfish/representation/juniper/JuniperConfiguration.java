@@ -4435,11 +4435,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // A term makes subsequent terms unreachable if:
       // 1. It has no match conditions (no "from" AND no "to"), AND
       // 2. It has a terminal action (accept/reject)
-      //
-      // Note: Currently only checking "from" conditions since "to" conditions
-      // are not yet implemented
-      // TODO: When "to" conditions are implemented, update this to also check for "to" conditions
-      if (!currentTerm.hasAtLeastOneFrom()) {
+      if (!currentTerm.hasAtLeastOneFrom() && !currentTerm.hasAtLeastOneTo()) {
 
         Optional<PsThen> terminalAction = getTerminalAction(currentTerm);
         if (terminalAction.isPresent()) {

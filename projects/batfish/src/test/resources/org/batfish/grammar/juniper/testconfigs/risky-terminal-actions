@@ -40,3 +40,18 @@ set policy-options policy-statement SINGLE-TERM term ONLY-TERM then accept
 # Community definitions for testing
 set policy-options community TEST-COMM members 65001:100
 #
+# === SAFE CASES WITH "TO" CONDITIONS ===
+#
+# Safe Case 4: Terminal action with "to" condition only (not risky because it has a match condition)
+set policy-options policy-statement TO-ONLY term TO-CONDITION-TERM to level 1
+set policy-options policy-statement TO-ONLY term TO-CONDITION-TERM then accept
+set policy-options policy-statement TO-ONLY term REACHABLE-TERM from protocol bgp
+set policy-options policy-statement TO-ONLY term REACHABLE-TERM then reject
+#
+# Safe Case 5: Terminal action with both "from" and "to" conditions (not risky because it has match conditions)
+set policy-options policy-statement FROM-AND-TO term FROM-TO-CONDITION-TERM from protocol ospf
+set policy-options policy-statement FROM-AND-TO term FROM-TO-CONDITION-TERM to rib inet.0
+set policy-options policy-statement FROM-AND-TO term FROM-TO-CONDITION-TERM then accept
+set policy-options policy-statement FROM-AND-TO term REACHABLE-TERM from protocol bgp
+set policy-options policy-statement FROM-AND-TO term REACHABLE-TERM then reject
+#

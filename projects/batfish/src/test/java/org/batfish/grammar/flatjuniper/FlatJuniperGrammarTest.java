@@ -8939,5 +8939,47 @@ public final class FlatJuniperGrammarTest {
         hasItem(WarningMatchers.hasText(expectedRiskyNextPolicyWarning)));
   }
 
+  @Test
+  public void testPsToConditionsFlag() throws IOException {
+    String hostname = "risky-terminal-actions";
+    JuniperConfiguration juniperConfig = parseJuniperConfig(hostname);
+
+    // Test policy with only "to" condition
+    PolicyStatement policyToOnly =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("TO-ONLY");
+    PsTerm toConditionTerm = policyToOnly.getTerms().get("TO-CONDITION-TERM");
+
+    assertThat(
+        "Term with 'to' condition should have hasToConditions=true",
+        toConditionTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with 'to' condition should not have any 'from' conditions",
+        !toConditionTerm.hasAtLeastOneFrom());
+
+    // Test policy with both "from" and "to" conditions
+    PolicyStatement policyFromAndTo =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("FROM-AND-TO");
+    PsTerm fromToConditionTerm = policyFromAndTo.getTerms().get("FROM-TO-CONDITION-TERM");
+
+    assertThat(
+        "Term with both 'from' and 'to' conditions should have hasToConditions=true",
+        fromToConditionTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with both 'from' and 'to' conditions should have hasAtLeastOneFrom=true",
+        fromToConditionTerm.hasAtLeastOneFrom());
+
+    // Test policy with only "from" conditions (negative test case for hasToConditions)
+    PolicyStatement policyFromOnly =
+        juniperConfig.getMasterLogicalSystem().getPolicyStatements().get("SAFE-CONDITIONAL");
+    PsTerm fromOnlyTerm = policyFromOnly.getTerms().get("CONDITIONAL-REJECT");
+
+    assertThat(
+        "Term with only 'from' conditions should have hasToConditions=false",
+        !fromOnlyTerm.hasAtLeastOneTo());
+    assertThat(
+        "Term with only 'from' conditions should have hasAtLeastOneFrom=true",
+        fromOnlyTerm.hasAtLeastOneFrom());
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }

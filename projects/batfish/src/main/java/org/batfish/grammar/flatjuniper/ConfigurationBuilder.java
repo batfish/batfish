@@ -583,6 +583,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv6Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_peer_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_selfContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_levelContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Proposal_set_typeContext;
@@ -6042,6 +6044,18 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopsf_tag2(Popsf_tag2Context ctx) {
     todo(ctx);
     _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+  }
+
+  @Override
+  public void exitPopsto_level(Popsto_levelContext ctx) {
+    todo(ctx);
+    _currentPsTerm.setHasToConditions(true);
+  }
+
+  @Override
+  public void exitPopsto_rib(Popsto_ribContext ctx) {
+    todo(ctx);
+    _currentPsTerm.setHasToConditions(true);
   }
 
   @Override
