@@ -8,6 +8,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 public final class PsTerm implements Serializable {
 
   private final @Nonnull PsFroms _froms;
+  private boolean _hasToConditions = false;
   private final @Nonnull String _name;
   private final @Nonnull PsThens _thens;
 
@@ -31,5 +32,13 @@ public final class PsTerm implements Serializable {
 
   public boolean hasAtLeastOneFrom() {
     return _froms.hasAtLeastOneFrom();
+  }
+
+  public boolean hasAtLeastOneTo() {
+    return _hasToConditions;
+  }
+
+  public void setHasToConditions(boolean hasToConditions) {
+    _hasToConditions = hasToConditions;
   }
 }
