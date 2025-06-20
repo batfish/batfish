@@ -90,6 +90,17 @@ po_prefix_list
    )
 ;
 
+po_rtf_prefix_list
+:
+   RTF_PREFIX_LIST (name = junos_name | wildcard)
+   (
+      apply
+      | portfplt_apply_path
+      | portfplt_network
+      | portfplt_network6
+   )
+;
+
 po_tunnel_attribute
 :
    TUNNEL_ATTRIBUTE name = junos_name
@@ -144,6 +155,21 @@ poplt_network6
    network = ipv6_prefix_default_128
 ;
 
+portfplt_apply_path
+:
+   APPLY_PATH path = DOUBLE_QUOTED_STRING
+;
+
+portfplt_network
+:
+   network = ip_prefix_default_32
+;
+
+portfplt_network6
+:
+   network = ipv6_prefix_default_128
+;
+
 pops_common
 :
    apply
@@ -180,6 +206,7 @@ pops_from
       | popsf_rib
       | popsf_route_filter
       | popsf_route_type
+      | popsf_rtf_prefix_list
       | popsf_source_address_filter
       | popsf_tag
       | popsf_tag2
@@ -376,6 +403,7 @@ popsf_route_type
    )
 ;
 
+
 ospf_type
 :
    // 1 or 2
@@ -385,6 +413,11 @@ ospf_type
 popsf_external
 :
    EXTERNAL (TYPE ospf_type)?
+;
+
+popsf_rtf_prefix_list
+:
+   RTF_PREFIX_LIST name = junos_name
 ;
 
 popsf_source_address_filter
@@ -790,6 +823,7 @@ s_policy_options
       | po_condition
       | po_policy_statement
       | po_prefix_list
+      | po_rtf_prefix_list
       | po_tunnel_attribute
    )
 ;
