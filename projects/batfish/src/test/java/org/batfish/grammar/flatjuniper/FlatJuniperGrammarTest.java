@@ -8912,7 +8912,8 @@ public final class FlatJuniperGrammarTest {
 
     SortedSet<Warning> riskyWarnings = ccae.getWarnings().get(hostname).getRiskyRedFlagWarnings();
 
-    assertThat("Should have exactly 3 RISKY warnings", riskyWarnings, hasSize(3));
+    // Test risky cases (should generate warnings)
+    assertThat("Should have exactly 6 RISKY warnings", riskyWarnings, hasSize(6));
 
     String expectedRiskyRejectWarning =
         "RISK: 'policy-statement RISKY-REJECT term UNCONDITIONAL-REJECT then reject' always ends"
@@ -8937,6 +8938,33 @@ public final class FlatJuniperGrammarTest {
         "Should have exact warning for RISKY-NEXT-POLICY policy",
         riskyWarnings,
         hasItem(WarningMatchers.hasText(expectedRiskyNextPolicyWarning)));
+
+    String expectedTooManyTerminalWarning =
+        "RISK: 'policy-statement TOO-MANY-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there are 2 subsequent terms that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for TOO-MANY-TERMINAL policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedTooManyTerminalWarning)));
+
+    String expectedTwoTerminalWarning =
+        "RISK: 'policy-statement RISKY-TWO-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there are 2 subsequent terms that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-TWO-TERMINAL policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(expectedTwoTerminalWarning)));
+
+    String riskyMutatingWarning =
+        "RISK: 'policy-statement RISKY-UNREACHABLE-MUTATING term UNCONDITIONAL-REJECT then reject'"
+            + " always ends processing, but there is 1 subsequent term that will not be"
+            + " evaluated";
+    assertThat(
+        "Should have exact warning for RISKY-UNREACHABLE-MUTATING policy",
+        riskyWarnings,
+        hasItem(WarningMatchers.hasText(riskyMutatingWarning)));
   }
 
   @Test
