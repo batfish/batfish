@@ -24,7 +24,7 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: projects\/.*\/src\/main\/.*$
+        - fileRegex: /src/main/.*$
           description: Main code
       - browser
       - command
@@ -112,8 +112,8 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: projects\/.*\/src\/test\/.*$|tests\/.*$|tools/(stress_tests|bdd|benchmarks)/.*$
-          description: Test files in projects/*/src/test/ or tests/ directories only
+        - fileRegex: /src/test/.*$|tests/.*$|tools/(stress_tests|bdd|benchmarks)/.*$
+          description: Test files in */src/test/ or tests/ directories only
       - command
       - mcp
     customInstructions: Every feature must have unit tests. Critical paths must have integration tests. Tests should be independent and deterministic. Tests should clearly indicate what they're testing. Test coverage should focus on logic branches, not just line coverage. Edge cases should be explicitly tested.
@@ -164,6 +164,6 @@ customModes:
     groups:
       - read
       - - edit
-        - fileRegex: \.roomodes$|\.roo\/
+        - fileRegex: \.roomodes$|\.roo/
           description: Mode configuration files only
       - mcp
