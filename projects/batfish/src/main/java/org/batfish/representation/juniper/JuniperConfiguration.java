@@ -4421,9 +4421,21 @@ public final class JuniperConfiguration extends VendorConfiguration {
   }
 
   /**
-   * Detect misplaced terminal actions on the input policy statement that create unreachable terms
-   * Returns True if there is a terminal "then" statement with no match conditions And terms
-   * following it that are now unreachable.
+   * Detects potentially risky terminal actions in policy statements.
+   *
+   * <p>An unconditional terminal action (accept/reject/next-policy with no match conditions)
+   * normally makes all subsequent terms unreachable, which is a common source of routing errors.
+   *
+   * <p>There is one acceptable exception: It's OK to have EXACTLY ONE unconditional terminal term
+   * after an unconditional terminal term. For example: - ACCEPT with no match conditions, followed
+   * by a REJECT with no match conditions - REJECT with no match conditions, followed by a NEXT
+   * POLICY with no match conditions
+   *
+   * <p>All other cases are flagged as risky: - Unconditional terminal term followed by a
+   * conditional term - Unconditional terminal term followed by a non-terminal term - Unconditional
+   * terminal term followed by more than one term
+   *
+   * @param policy The policy statement to analyze
    */
   private void detectMisplacedTerminalActions(PolicyStatement policy) {
     List<PsTerm> terms = ImmutableList.copyOf(policy.getTerms().values());
@@ -4432,14 +4444,35 @@ public final class JuniperConfiguration extends VendorConfiguration {
       PsTerm currentTerm = terms.get(i);
 
       // Check if term has no match conditions (matches everything)
-      // A term makes subsequent terms unreachable if:
-      // 1. It has no match conditions (no "from" AND no "to"), AND
-      // 2. It has a terminal action (accept/reject)
+      // A term with no match conditions and a terminal action can make subsequent terms unreachable
       if (!currentTerm.hasAtLeastOneFrom() && !currentTerm.hasAtLeastOneTo()) {
 
         Optional<PsThen> terminalAction = getTerminalAction(currentTerm);
         if (terminalAction.isPresent()) {
 
+          // Special case: It's acceptable to have EXACTLY ONE unconditional terminal term
+          // after an unconditional terminal term, with a single terminal "then", as default
+          // terminal terms are common.
+          if (i == terms.size() - 2) {
+            PsTerm nextTerm = terms.get(i + 1);
+
+            // Check if the next term is also unconditional
+            if (!nextTerm.hasAtLeastOneFrom() && !nextTerm.hasAtLeastOneTo()) {
+
+              // Check if the next term also has a terminal action
+              Optional<PsThen> nextTerminalAction = getTerminalAction(nextTerm);
+              if (nextTerminalAction.isPresent()) {
+                // Check that the terminal action is the ONLY action.
+                // If there are multiple thens, some are likely mutating actions that are skipped
+                Set<PsThen> allThens = nextTerm.getThens().getAllThens();
+                if (allThens.size() == 1) {
+                  return;
+                }
+              }
+            }
+          }
+
+          // If we reach here, it's not the acceptable case, so flag it as risky
           // Get the terminal action name for the warning
           String actionName = getTerminalActionName(terminalAction.get());
 
@@ -4455,6 +4488,8 @@ public final class JuniperConfiguration extends VendorConfiguration {
               subsequentTermsCount == 1 ? "is" : "are",
               subsequentTermsCount,
               subsequentTermsCount == 1 ? "term" : "terms");
+          // Just warn once per policy statement
+          return;
         }
       }
     }

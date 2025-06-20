@@ -37,9 +37,41 @@ set policy-options policy-statement SAFE-LAST-TERMINAL term UNCONDITIONAL-LAST t
 # Safe Case 3: Single-term policy (boundary condition)
 set policy-options policy-statement SINGLE-TERM term ONLY-TERM then accept
 #
+# Safe Case 4: Unconditional "then" non-mutating terms are ok
+set policy-options policy-statement SAFE-MUTATING term UNCONDITIONAL-MUTATING then metric 1
+set policy-options policy-statement SAFE-MUTATING term REACHABLE-TERM from protocol bgp
+set policy-options policy-statement SAFE-MUTATING term REACHABLE-TERM then accept
+#
 # Community definitions for testing
 set policy-options community TEST-COMM members 65001:100
 #
+# === SPECIAL CASE: EXACTLY ONE UNCONDITIONAL TERMINAL TERM AFTER ANOTHER ===
+#
+# Acceptable Case 1: Exactly one unconditional terminal term after another unconditional terminal term
+# (ACCEPT followed by REJECT)
+set policy-options policy-statement ACCEPTABLE-ACCEPT-REJECT term FIRST-UNCONDITIONAL-ACCEPT then accept
+set policy-options policy-statement ACCEPTABLE-ACCEPT-REJECT term SECOND-UNCONDITIONAL-REJECT then reject
+#
+# Acceptable Case 2: Exactly one unconditional terminal term after another unconditional terminal term
+# (REJECT followed by NEXT POLICY)
+set policy-options policy-statement ACCEPTABLE-REJECT-NEXTPOLICY term FIRST-UNCONDITIONAL-REJECT then reject
+set policy-options policy-statement ACCEPTABLE-REJECT-NEXTPOLICY term SECOND-UNCONDITIONAL-NEXTPOLICY then next policy
+#
+# Unacceptable Case: Three is just too many unconditional terms
+set policy-options policy-statement TOO-MANY-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject
+set policy-options policy-statement TOO-MANY-TERMINAL term SECOND-UNCONDITIONAL-NEXTPOLICY then next policy
+set policy-options policy-statement TOO-MANY-TERMINAL term THIRD-UNCONDITIONAL-ACCEPT then accept
+#
+# Unacceptable Case: Two unconditional terms followed by a conditional term
+set policy-options policy-statement RISKY-TWO-TERMINAL term FIRST-UNCONDITIONAL-REJECT then reject
+set policy-options policy-statement RISKY-TWO-TERMINAL term SECOND-UNCONDITIONAL-NEXTPOLICY then next policy
+set policy-options policy-statement RISKY-TWO-TERMINAL term CONDITIONAL-ACCEPT from community TEST-COMM
+set policy-options policy-statement RISKY-TWO-TERMINAL term CONDITIONAL-ACCEPT then accept
+#
+# Unacceptable Case: The final unconditional term is mutating
+set policy-options policy-statement RISKY-UNREACHABLE-MUTATING term UNCONDITIONAL-REJECT then reject
+set policy-options policy-statement RISKY-UNREACHABLE-MUTATING term UNCONDITIONAL-NEXTPOLICY then metric 1
+set policy-options policy-statement RISKY-UNREACHABLE-MUTATING term UNCONDITIONAL-NEXTPOLICY then next policy
 # === SAFE CASES WITH "TO" CONDITIONS ===
 #
 # Safe Case 4: Terminal action with "to" condition only (not risky because it has a match condition)
