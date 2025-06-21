@@ -43,6 +43,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RIB_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.ROUTING_INSTANCE;
+import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
@@ -127,6 +128,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_ST
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_PREFIX_LIST_FILTER;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_ADD_COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_DELETE_COMMUNITY;
@@ -506,6 +508,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_communityContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_conditionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_policy_statementContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_prefix_listContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Po_rtf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poapg_as_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_invert_matchContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Poc_membersContext;
@@ -543,6 +546,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_route_typeContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_rtf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_source_address_filterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_tagContext;
@@ -3177,6 +3181,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     Map<String, PrefixList> prefixLists = _currentLogicalSystem.getPrefixLists();
     _currentPrefixList = prefixLists.computeIfAbsent(name, PrefixList::new);
     _configuration.defineFlattenedStructure(PREFIX_LIST, name, ctx, _parser);
+  }
+
+  @Override
+  public void enterPo_rtf_prefix_list(Po_rtf_prefix_listContext ctx) {
+    String name = toString(ctx.name);
+    _configuration.defineFlattenedStructure(RTF_PREFIX_LIST, name, ctx, _parser);
+    todo(ctx);
   }
 
   @Override
@@ -5927,6 +5938,15 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _currentPsTerm.getFroms().addFromPrefixList(new PsFromPrefixList(name));
     _configuration.referenceStructure(
         PREFIX_LIST, name, POLICY_STATEMENT_PREFIX_LIST, getLine(ctx.name.start));
+  }
+
+  @Override
+  public void exitPopsf_rtf_prefix_list(Popsf_rtf_prefix_listContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
+    _configuration.referenceStructure(
+        RTF_PREFIX_LIST, name, POLICY_STATEMENT_RTF_PREFIX_LIST, getLine(ctx.name.start));
   }
 
   @Override

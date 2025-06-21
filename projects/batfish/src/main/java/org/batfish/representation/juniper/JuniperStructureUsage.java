@@ -79,6 +79,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   POLICY_STATEMENT_POLICY("policy-statement policy"),
   POLICY_STATEMENT_PREFIX_LIST("policy-statement prefix-list"),
   POLICY_STATEMENT_PREFIX_LIST_FILTER("policy-statement prefix-list-filter"),
+  POLICY_STATEMENT_RTF_PREFIX_LIST("policy-statement rtf-prefix-list"),
   POLICY_STATEMENT_TERM_DEFINITION("policy-statement term"),
   POLICY_STATEMENT_THEN_ADD_COMMUNITY("policy-statement then add community"),
   POLICY_STATEMENT_THEN_DELETE_COMMUNITY("policy-statement then delete community"),
