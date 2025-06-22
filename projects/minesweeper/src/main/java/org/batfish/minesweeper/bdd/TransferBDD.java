@@ -303,6 +303,7 @@ public class TransferBDD {
       throws UnsupportedOperationException {
     TransferParam p = state.getTransferParam();
     TransferResult result = state.getTransferResult();
+    TransferReturn treturn = result.getReturnValue();
 
     List<TransferResult> finalResults = new ArrayList<>();
 
@@ -369,10 +370,10 @@ public class TransferBDD {
                   d ->
                       d instanceof MatchAsPath
                           && ((MatchAsPath) d).getAsPathExpr().equals(InputAsPath.instance()))) {
-        checkForAsPathMatchAfterUpdate(p, context);
+        checkForAsPathMatchAfterUpdate(p, treturn, context);
         // collect all as-path regexes, produce a single regex that is their union, and then create
         // the corresponding BDD
-        BDDRoute currRoute = routeForMatching(p, context);
+        BDDRoute currRoute = routeForMatching(p, treturn, context);
         Set<SymbolicAsPathRegex> asPathRegexes =
             disj.getDisjuncts().stream()
                 .flatMap(
@@ -390,7 +391,7 @@ public class TransferBDD {
                 : asPathRegexesToBDD(
                     ImmutableSet.of(SymbolicAsPathRegex.union(asPathRegexes)),
                     _asPathRegexAtomicPredicates,
-                    routeForMatching(p, context));
+                    routeForMatching(p, treturn, context));
         finalResults.add(result.setReturnValueBDD(asPathRegexBDD).setReturnValueAccepted(true));
       } else {
         List<TransferResult> currResults = new ArrayList<>();
@@ -514,7 +515,8 @@ public class TransferBDD {
     } else if (expr instanceof MatchProtocol) {
       MatchProtocol mp = (MatchProtocol) expr;
       Set<RoutingProtocol> rps = mp.getProtocols();
-      BDD matchRPBDD = _originalRoute.anyElementOf(rps, p.getData().getProtocolHistory());
+      BDD matchRPBDD =
+          _originalRoute.anyElementOf(rps, treturn.getOutputRoute().getProtocolHistory());
       finalResults.add(result.setReturnValueBDD(matchRPBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchPrefixSet) {
@@ -574,7 +576,7 @@ public class TransferBDD {
           mc.getCommunitySetMatchExpr()
               .accept(
                   new CommunitySetMatchExprToBDD(),
-                  new Arg(this, routeForMatching(p, context), context));
+                  new Arg(this, routeForMatching(p, treturn, context), context));
       if (!mcPredicate.isZero()) {
         finalResults.add(result.setReturnValueBDD(mcPredicate).setReturnValueAccepted(true));
       }
@@ -582,14 +584,15 @@ public class TransferBDD {
     } else if (expr instanceof MatchTag) {
       MatchTag mt = (MatchTag) expr;
       BDD mtBDD =
-          matchLongComparison(mt.getCmp(), mt.getTag(), routeForMatching(p, context).getTag());
+          matchLongComparison(
+              mt.getCmp(), mt.getTag(), routeForMatching(p, treturn, context).getTag());
       finalResults.add(result.setReturnValueBDD(mtBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchMetric) {
       MatchMetric mm = (MatchMetric) expr;
       BDD mmBDD =
           matchLongComparison(
-              mm.getComparator(), mm.getMetric(), routeForMatching(p, context).getMed());
+              mm.getComparator(), mm.getMetric(), routeForMatching(p, treturn, context).getMed());
       finalResults.add(result.setReturnValueBDD(mmBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchClusterListLength) {
@@ -598,7 +601,7 @@ public class TransferBDD {
           matchIntComparison(
               mcll.getComparator(),
               mcll.getRhs(),
-              routeForMatching(p, context).getClusterListLength());
+              routeForMatching(p, treturn, context).getClusterListLength());
       finalResults.add(result.setReturnValueBDD(mcllBDD).setReturnValueAccepted(true));
 
     } else if (expr instanceof BooleanExprs.StaticBooleanExpr) {
@@ -632,18 +635,21 @@ public class TransferBDD {
 
     } else if (expr instanceof LegacyMatchAsPath) {
       p.debug("MatchAsPath");
-      checkForAsPathMatchAfterUpdate(p, context);
+      checkForAsPathMatchAfterUpdate(p, treturn, context);
       LegacyMatchAsPath legacyMatchAsPathNode = (LegacyMatchAsPath) expr;
       BDD asPathPredicate =
           matchAsPathSetExpr(
-              p.indent(), legacyMatchAsPathNode.getExpr(), routeForMatching(p, context), context);
+              p.indent(),
+              legacyMatchAsPathNode.getExpr(),
+              routeForMatching(p, treturn, context),
+              context);
       finalResults.add(result.setReturnValueBDD(asPathPredicate).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchAsPath
         && ((MatchAsPath) expr).getAsPathExpr().equals(InputAsPath.instance())) {
-      checkForAsPathMatchAfterUpdate(p, context);
+      checkForAsPathMatchAfterUpdate(p, treturn, context);
       MatchAsPath matchAsPath = (MatchAsPath) expr;
-      BDDRoute currRoute = routeForMatching(p, context);
+      BDDRoute currRoute = routeForMatching(p, treturn, context);
       BDD asPathPredicate =
           asPathRegexesToBDD(
               matchAsPath
@@ -656,19 +662,21 @@ public class TransferBDD {
     } else if (expr instanceof MatchSourceVrf) {
       MatchSourceVrf msv = (MatchSourceVrf) expr;
       int index = _configAtomicPredicates.getSourceVrfs().indexOf(msv.getSourceVrf());
-      BDD sourceVrfPred = p.getData().getSourceVrfs().value(index);
+      BDD sourceVrfPred = treturn.getOutputRoute().getSourceVrfs().value(index);
       finalResults.add(result.setReturnValueBDD(sourceVrfPred).setReturnValueAccepted(true));
 
     } else if (expr instanceof TrackSucceeded) {
       TrackSucceeded ts = (TrackSucceeded) expr;
       BDD trackPred =
           itemToBDD(
-              ts.getTrackName(), _configAtomicPredicates.getTracks(), p.getData().getTracks());
+              ts.getTrackName(),
+              _configAtomicPredicates.getTracks(),
+              treturn.getOutputRoute().getTracks());
       finalResults.add(result.setReturnValueBDD(trackPred).setReturnValueAccepted(true));
 
     } else if (expr instanceof MatchInterface) {
       MatchInterface mi = (MatchInterface) expr;
-      if (context.useOutputAttributes() && p.getData().getNextHopSet()) {
+      if (context.useOutputAttributes() && treturn.getOutputRoute().getNextHopSet()) {
         // we don't yet properly model the situation where a modified next-hop is later matched
         // upon, so we check for that situation here
         throw new UnsupportedOperationException(expr.toString());
@@ -678,7 +686,7 @@ public class TransferBDD {
               .map(
                   nhi -> {
                     int index = _configAtomicPredicates.getNextHopInterfaces().indexOf(nhi);
-                    return p.getData().getNextHopInterfaces().value(index);
+                    return treturn.getOutputRoute().getNextHopInterfaces().value(index);
                   })
               .reduce(_factory.zero(), BDD::or);
       finalResults.add(result.setReturnValueBDD(miPred).setReturnValueAccepted(true));
@@ -691,7 +699,7 @@ public class TransferBDD {
               ips.stream()
                   .map(ip -> _configAtomicPredicates.getPeerAddresses().indexOf(ip))
                   .collect(Collectors.toSet()),
-              p.getData().getPeerAddress());
+              treturn.getOutputRoute().getPeerAddress());
       finalResults.add(result.setReturnValueBDD(matchPABDD).setReturnValueAccepted(true));
 
     } else {
@@ -735,6 +743,7 @@ public class TransferBDD {
       throws UnsupportedOperationException {
     TransferParam curP = state.getTransferParam();
     TransferResult result = state.getTransferResult();
+    TransferReturn treturn = result.getReturnValue();
 
     if (stmt instanceof StaticStatement) {
       StaticStatement ss = (StaticStatement) stmt;
@@ -810,30 +819,16 @@ public class TransferBDD {
           result = suppressedValue(result, false);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
-        /*
-         * These directives are used by the Batfish route simulation to control the handling of
-         * route updates that implicitly involve both a "read" and a "write". For example, Batfish
-         * models an additive community set of 40:40 as a write of (InputCommunities U 40:40). For
-         * some config formats InputCommunities should refer to the communities of the original
-         * route, but for others it should refer to the current community set that reflects prior
-         * updates. To account for the latter semantics, Batfish inserts directives to read from
-         * and write to the intermediate attributes.
-         *
-         * <p>This code, {@link TransferBDD}, properly handles two common cases: 1) platforms that
-         * never use these directives, so that the original route attributes are always read; and
-         * 2) platforms that use the SetRead... and SetWrite... directives in such a way as to
-         * ensure that they always read from the current set of route attributes, which reflect
-         * all updates made so far by the route map. In principle these directives can allow for a
-         * wider range of semantics to be expressed. For example, it is possible for writing to
-         * intermediate attributes to be turned off at some point, so that later writes are no
-         * longer recorded there (and hence are not seen by later reads). We can handle such
-         * situations by introducing an explicit {@link BDDRoute} to represent the intermediate
-         * BGP attributes.
-         */
         case SetReadIntermediateBgpAttributes:
           curP = curP.setReadIntermediateBgpAttributes(true);
           return ImmutableList.of(toTransferBDDState(curP, result));
+
         case SetWriteIntermediateBgpAttributes:
+          curP = curP.setWriteIntermediateBgpAttributes(true);
+          return ImmutableList.of(toTransferBDDState(curP, result));
+
+        case UnsetWriteIntermediateBgpAttributes:
+          curP = curP.setWriteIntermediateBgpAttributes(false);
           return ImmutableList.of(toTransferBDDState(curP, result));
 
         default:
@@ -860,7 +855,8 @@ public class TransferBDD {
         BDDRoute current = guardResult.getReturnValue().getOutputRoute();
         boolean accepted = guardResult.getReturnValue().getAccepted();
 
-        TransferParam pCopy = curP.indent().setData(current);
+        // TODO Set the intermediate attributes as well
+        TransferParam pCopy = curP.indent();
         List<Statement> branch = accepted ? i.getTrueStatements() : i.getFalseStatements();
         newStates.addAll(
             compute(
@@ -885,7 +881,7 @@ public class TransferBDD {
         throw new UnsupportedOperationException(ie.toString());
       }
       int val = ((LiteralInt) ie).getValue();
-      curP.getData().setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 8, val));
+      treturn.getOutputRoute().setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 8, val));
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetDefaultPolicy) {
@@ -897,18 +893,19 @@ public class TransferBDD {
       curP.debug("SetMetric");
       SetMetric sm = (SetMetric) stmt;
       LongExpr ie = sm.getMetric();
-      MutableBDDInteger curMed = curP.getData().getMed();
+      MutableBDDInteger curMed = treturn.getOutputRoute().getMed();
       MutableBDDInteger med = applyLongExprModification(curP.indent(), curMed, ie);
-      curP.getData().setMed(med);
+      treturn.getOutputRoute().setMed(med);
       return ImmutableList.of(toTransferBDDState(curP, result));
     } else if (stmt instanceof SetOrigin) {
       curP.debug("SetOrigin");
       OriginExpr oe = ((SetOrigin) stmt).getOriginType();
       if (oe instanceof LiteralOrigin) {
         OriginType ot = ((LiteralOrigin) oe).getOriginType();
-        BDDDomain<OriginType> originType = new BDDDomain<>(curP.getData().getOriginType());
+        BDDDomain<OriginType> originType =
+            new BDDDomain<>(treturn.getOutputRoute().getOriginType());
         originType.setValue(ot);
-        curP.getData().setOriginType(originType);
+        treturn.getOutputRoute().setOriginType(originType);
         return ImmutableList.of(toTransferBDDState(curP, result));
       } else {
         throw new UnsupportedOperationException(oe.toString());
@@ -926,7 +923,7 @@ public class TransferBDD {
         curP.indent().debug("Value: E2");
         newValue.setValue(OspfType.E2);
       }
-      curP.getData().setOspfMetric(newValue);
+      treturn.getOutputRoute().setOspfMetric(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetLocalPreference) {
@@ -934,17 +931,17 @@ public class TransferBDD {
       SetLocalPreference slp = (SetLocalPreference) stmt;
       LongExpr ie = slp.getLocalPreference();
       MutableBDDInteger newValue =
-          applyLongExprModification(curP.indent(), curP.getData().getLocalPref(), ie);
-      curP.getData().setLocalPref(newValue);
+          applyLongExprModification(curP.indent(), treturn.getOutputRoute().getLocalPref(), ie);
+      treturn.getOutputRoute().setLocalPref(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetTag) {
       curP.debug("SetTag");
       SetTag st = (SetTag) stmt;
       LongExpr ie = st.getTag();
-      MutableBDDInteger currTag = curP.getData().getTag();
+      MutableBDDInteger currTag = treturn.getOutputRoute().getTag();
       MutableBDDInteger newValue = applyLongExprModification(curP.indent(), currTag, ie);
-      curP.getData().setTag(newValue);
+      treturn.getOutputRoute().setTag(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof RemoveTunnelEncapsulationAttribute
@@ -962,7 +959,7 @@ public class TransferBDD {
         assert stmt instanceof RemoveTunnelEncapsulationAttribute;
         newValue.setValue(Value.absent());
       }
-      curP.getData().setTunnelEncapsulationAttribute(newValue);
+      treturn.getOutputRoute().setTunnelEncapsulationAttribute(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetWeight) {
@@ -973,10 +970,10 @@ public class TransferBDD {
         throw new UnsupportedOperationException(ie.toString());
       }
       LiteralInt z = (LiteralInt) ie;
-      MutableBDDInteger currWeight = curP.getData().getWeight();
+      MutableBDDInteger currWeight = treturn.getOutputRoute().getWeight();
       MutableBDDInteger newValue =
           MutableBDDInteger.makeFromValue(currWeight.getFactory(), 16, z.getValue());
-      curP.getData().setWeight(newValue);
+      treturn.getOutputRoute().setWeight(newValue);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetCommunities) {
@@ -988,7 +985,7 @@ public class TransferBDD {
       // to its corresponding BDD variable, so we use the original route here
       CommunityAPDispositions dispositions =
           setExpr.accept(new SetCommunitiesVisitor(), new Arg(this, _originalRoute, context));
-      updateCommunities(dispositions, curP, context);
+      updateCommunities(dispositions, curP, treturn, context);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof CallStatement) {
@@ -1031,13 +1028,13 @@ public class TransferBDD {
 
     } else if (stmt instanceof SetNextHop) {
       curP.debug("SetNextHop");
-      setNextHop(((SetNextHop) stmt).getExpr(), curP.getData());
+      setNextHop(((SetNextHop) stmt).getExpr(), treturn.getOutputRoute());
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof PrependAsPath) {
       curP.debug("PrependAsPath");
       PrependAsPath pap = (PrependAsPath) stmt;
-      prependASPath(pap.getExpr(), curP.getData());
+      prependASPath(pap.getExpr(), treturn.getOutputRoute());
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof TraceableStatement) {
@@ -1078,7 +1075,7 @@ public class TransferBDD {
             newStates.addAll(compute(stmt, currState, context, retainAllPaths));
           }
         } catch (UnsupportedOperationException e) {
-          unsupported(e, currState.getTransferParam().getData(), context);
+          unsupported(e, currState.getTransferResult().getReturnValue().getOutputRoute(), context);
           newStates.add(currState);
         }
       }
@@ -1129,7 +1126,7 @@ public class TransferBDD {
   // Create a TransferBDDState, using the BDDRoute in the given TransferResult and throwing away the
   // one that is in the given TransferParam.
   private TransferBDDState toTransferBDDState(TransferParam curP, TransferResult result) {
-    return new TransferBDDState(curP.setData(result.getReturnValue().getOutputRoute()), result);
+    return new TransferBDDState(curP, result);
   }
 
   // Produce a BDD representing conditions under which the route's destination prefix is within a
@@ -1188,10 +1185,11 @@ public class TransferBDD {
 
   // Raise an exception if we are about to match on an as-path that has been previously updated
   // along this path; the analysis currently does not handle that situation.
-  private void checkForAsPathMatchAfterUpdate(TransferParam p, Context context)
+  private void checkForAsPathMatchAfterUpdate(
+      TransferParam p, TransferReturn treturn, Context context)
       throws UnsupportedOperationException {
     if ((context.useOutputAttributes() || p.getReadIntermediateBgpAtttributes())
-        && !p.getData().getPrependedASes().isEmpty()) {
+        && !treturn.getOutputRoute().getPrependedASes().isEmpty()) {
       throw new UnsupportedOperationException(
           "Matching on a modified as-path is not currently supported");
     }
@@ -1378,9 +1376,12 @@ public class TransferBDD {
 
   // Update community atomic predicates based on the given CommunityAPDispositions object
   private void updateCommunities(
-      CommunityAPDispositions dispositions, TransferParam curP, Context context) {
-    BDD[] commAPBDDs = curP.getData().getCommunityAtomicPredicates();
-    BDD[] currAPBDDs = routeForMatching(curP, context).getCommunityAtomicPredicates();
+      CommunityAPDispositions dispositions,
+      TransferParam curP,
+      TransferReturn treturn,
+      Context context) {
+    BDD[] commAPBDDs = treturn.getOutputRoute().getCommunityAtomicPredicates();
+    BDD[] currAPBDDs = routeForMatching(curP, treturn, context).getCommunityAtomicPredicates();
 
     // Initialize commAPBdds with input communities, then override forced trues and falses.
     System.arraycopy(currAPBDDs, 0, commAPBDDs, 0, currAPBDDs.length);
@@ -1441,10 +1442,15 @@ public class TransferBDD {
   }
 
   // Returns the appropriate route to use for matching on attributes.
-  private BDDRoute routeForMatching(TransferParam p, Context context) {
-    return context.useOutputAttributes() || p.getReadIntermediateBgpAtttributes()
-        ? p.getData()
-        : _originalRoute;
+  private BDDRoute routeForMatching(TransferParam p, TransferReturn treturn, Context context) {
+    if (context.useOutputAttributes()) {
+      return treturn.getOutputRoute();
+    } else if (p.getReadIntermediateBgpAtttributes()) {
+      // TODO return the intermediate attributes
+      return treturn.getOutputRoute();
+    } else {
+      return _originalRoute;
+    }
   }
 
   /**
@@ -1494,8 +1500,8 @@ public class TransferBDD {
   public List<TransferReturn> computePaths(
       List<Statement> statements, Context context, boolean retainAllPaths) {
     BDDRoute o = new BDDRoute(_factory, _configAtomicPredicates);
-    TransferParam p = new TransferParam(o, false);
-    TransferBDDState state = new TransferBDDState(p, new TransferResult(p.getData()));
+    TransferParam p = new TransferParam(false);
+    TransferBDDState state = new TransferBDDState(p, new TransferResult(o));
     return computePaths(state, statements, context, retainAllPaths).stream()
         .map(TransferResult::getReturnValue)
         .collect(ImmutableList.toImmutableList());

@@ -110,7 +110,7 @@ public class TransferResult {
         new TransferReturn(_returnValue.getOutputRoute(), newBDD, _returnValue.getAccepted()));
   }
 
-  public @Nonnull TransferResult setReturnValueBDDRoute(BDDRoute newBDDRoute) {
+  public @Nonnull TransferResult setReturnValueOutputRoute(BDDRoute newBDDRoute) {
     return setReturnValue(
         new TransferReturn(
             newBDDRoute, _returnValue.getInputConstraints(), _returnValue.getAccepted()));

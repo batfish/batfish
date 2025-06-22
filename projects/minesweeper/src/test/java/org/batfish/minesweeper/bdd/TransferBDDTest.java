@@ -2225,7 +2225,7 @@ public class TransferBDDTest {
   @Test
   public void testApplyLongExprModification() {
     TransferBDD tbdd = new TransferBDD(forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME));
-    TransferParam p = new TransferParam(tbdd.getOriginalRoute(), false);
+    TransferParam p = new TransferParam(false);
 
     MutableBDDInteger toBeModified =
         MutableBDDInteger.makeFromIndex(tbdd.getFactory(), 32, 0, false);
@@ -3918,13 +3918,12 @@ public class TransferBDDTest {
 
     BDDRoute routeParam = new BDDRoute(tbdd.getOriginalRoute());
     TransferBDDState initial =
-        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+        new TransferBDDState(new TransferParam(false), new TransferResult(routeParam));
     assertThat(
         tbdd.computePaths(initial, manyMatchesSameResult, context, true), hasSize(1 << numIfs));
 
     routeParam = new BDDRoute(tbdd.getOriginalRoute());
-    initial =
-        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+    initial = new TransferBDDState(new TransferParam(false), new TransferResult(routeParam));
     assertThat(tbdd.computePaths(initial, manyMatchesSameResult, context, false), hasSize(2));
   }
 }
