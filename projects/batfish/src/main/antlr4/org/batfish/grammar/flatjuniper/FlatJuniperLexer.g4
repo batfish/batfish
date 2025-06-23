@@ -2520,6 +2520,8 @@ RSTP: 'rstp';
 
 RSVP: 'rsvp';
 
+RTF_PREFIX_LIST: 'rtf-prefix-list' -> pushMode(M_Name);
+
 RTSP: 'rtsp';
 
 RULE: 'rule' -> pushMode(M_Name);

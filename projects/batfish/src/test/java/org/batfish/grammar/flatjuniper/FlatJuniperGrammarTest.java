@@ -182,6 +182,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
@@ -192,6 +193,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.INTERFACE
 import static org.batfish.representation.juniper.JuniperStructureUsage.MPLS_INTERFACE_SRLG;
 import static org.batfish.representation.juniper.JuniperStructureUsage.OSPF_AREA_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_FROM_COMMUNITY;
+import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.POLICY_STATEMENT_THEN_TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.SECURITY_POLICY_MATCH_APPLICATION;
 import static org.batfish.representation.juniper.RoutingInformationBase.RIB_IPV4_UNICAST;
@@ -6118,6 +6120,30 @@ public final class FlatJuniperGrammarTest {
     assertThat(filterPrefixList, rejects(flowDenied, null, c));
     assertThat(filterPrefixList, accepts(flowAccepted1, null, c));
     assertThat(filterPrefixList, accepts(flowAccepted2, null, c));
+  }
+
+  @Test
+  public void testRtfPrefixList() throws IOException {
+    String hostname = "rtf-prefix-lists";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify that the rtf-prefix-list is properly tracked as a defined structure
+    assertThat(ccae, hasDefinedStructure(filename, RTF_PREFIX_LIST, "RTF_PL"));
+    assertThat(ccae, hasDefinedStructure(filename, RTF_PREFIX_LIST, "RTF_PL_UNUSED"));
+
+    // Verify that the reference to the rtf-prefix-list is properly tracked
+    assertThat(
+        ccae,
+        hasReferencedStructure(
+            filename, RTF_PREFIX_LIST, "RTF_PL", POLICY_STATEMENT_RTF_PREFIX_LIST));
+    assertThat(ccae, hasNumReferrers(filename, RTF_PREFIX_LIST, "RTF_PL", 1));
+    assertThat(ccae, hasNumReferrers(filename, RTF_PREFIX_LIST, "RTF_PL_UNUSED", 0));
+
+    // Verify that the undefined reference is detected
+    assertThat(ccae, hasUndefinedReference(filename, RTF_PREFIX_LIST, "RTF_PL_UNDEF"));
   }
 
   @Test
