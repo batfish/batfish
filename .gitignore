@@ -28,3 +28,6 @@ __pycache__
 # If someone happens to install the busted antlr4 plugin, ignore the files it creates
 /gen/
 **/antlr4/**/gen/
+
+# Working directory for various tasks
+/working/
