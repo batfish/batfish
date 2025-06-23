@@ -2226,24 +2226,27 @@ public class TransferBDDTest {
   public void testApplyLongExprModification() {
     TransferBDD tbdd = new TransferBDD(forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME));
     TransferParam p = new TransferParam(false);
+    BDDRoute orig = tbdd.getOriginalRoute();
+    TransferBDDState state = new TransferBDDState(p, new TransferResult(orig.deepCopy()));
+    Context context = Context.forPolicy(_policyBuilder.build());
 
-    MutableBDDInteger toBeModified =
-        MutableBDDInteger.makeFromIndex(tbdd.getFactory(), 32, 0, false);
     MutableBDDInteger value5 = MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 5);
     value5.setValue(5);
 
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementMetric(5)),
-        equalTo(toBeModified.addClipping(value5)));
+        tbdd.applyLongExprModification(state, context, BDDRoute::getMed, new IncrementMetric(5)),
+        equalTo(orig.getMed().addClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementMetric(5)),
-        equalTo(toBeModified.subClipping(value5)));
+        tbdd.applyLongExprModification(state, context, BDDRoute::getMed, new DecrementMetric(5)),
+        equalTo(orig.getMed().subClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementLocalPreference(5)),
-        equalTo(toBeModified.addClipping(value5)));
+        tbdd.applyLongExprModification(
+            state, context, BDDRoute::getLocalPref, new IncrementLocalPreference(5)),
+        equalTo(orig.getLocalPref().addClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementLocalPreference(5)),
-        equalTo(toBeModified.subClipping(value5)));
+        tbdd.applyLongExprModification(
+            state, context, BDDRoute::getLocalPref, new DecrementLocalPreference(5)),
+        equalTo(orig.getLocalPref().subClipping(value5)));
   }
 
   @Test

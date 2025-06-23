@@ -22,6 +22,8 @@ public class TransferResult {
    */
   private final @Nonnull TransferReturn _returnValue;
 
+  private final @Nonnull BDDRoute _intermediateBgpAttributes;
+
   /**
    * Whether the routes that go down this path should be suppressed (i.e., not announced). Route
    * suppression happens due to aggregation, and this is represented by the {@link
@@ -60,17 +62,25 @@ public class TransferResult {
    * as the initial value for having hit a return/exit/fallthrough statement.
    */
   public TransferResult(BDDRoute bddRoute, BDD inputRouteConstraints) {
-    this(new TransferReturn(bddRoute, inputRouteConstraints, false), false, false, false, false);
+    this(
+        new TransferReturn(bddRoute, inputRouteConstraints, false),
+        bddRoute.deepCopy(),
+        false,
+        false,
+        false,
+        false);
   }
 
   public TransferResult(
       TransferReturn retVal,
+      BDDRoute intermediateBgpAttributes,
       boolean suppressedValue,
       boolean exitAssignedValue,
       boolean fallThroughValue,
       boolean returnAssignedValue) {
     _suppressedValue = suppressedValue;
     _returnValue = retVal;
+    _intermediateBgpAttributes = intermediateBgpAttributes;
     _exitAssignedValue = exitAssignedValue;
     _fallthroughValue = fallThroughValue;
     _returnAssignedValue = returnAssignedValue;
@@ -78,6 +88,10 @@ public class TransferResult {
 
   public @Nonnull TransferReturn getReturnValue() {
     return _returnValue;
+  }
+
+  public @Nonnull BDDRoute getIntermediateBgpAttributes() {
+    return _intermediateBgpAttributes;
   }
 
   public boolean getSuppressedValue() {
@@ -98,7 +112,22 @@ public class TransferResult {
 
   public @Nonnull TransferResult setReturnValue(TransferReturn newReturn) {
     return new TransferResult(
-        newReturn, _suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        newReturn,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
+  }
+
+  public @Nonnull TransferResult setIntermediateAttributes(BDDRoute newIntermediateAttributes) {
+    return new TransferResult(
+        _returnValue,
+        newIntermediateAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setReturnValueAccepted(boolean newAccepted) {
@@ -118,22 +147,42 @@ public class TransferResult {
 
   public @Nonnull TransferResult setSuppressedValue(boolean suppressedValue) {
     return new TransferResult(
-        _returnValue, suppressedValue, _exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setExitAssignedValue(boolean exitAssignedValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, exitAssignedValue, _fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        exitAssignedValue,
+        _fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setFallthroughValue(boolean fallthroughValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, _exitAssignedValue, fallthroughValue, _returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        fallthroughValue,
+        _returnAssignedValue);
   }
 
   public @Nonnull TransferResult setReturnAssignedValue(boolean returnAssignedValue) {
     return new TransferResult(
-        _returnValue, _suppressedValue, _exitAssignedValue, _fallthroughValue, returnAssignedValue);
+        _returnValue,
+        _intermediateBgpAttributes,
+        _suppressedValue,
+        _exitAssignedValue,
+        _fallthroughValue,
+        returnAssignedValue);
   }
 
   @Override
@@ -148,13 +197,15 @@ public class TransferResult {
         && _fallthroughValue == that._fallthroughValue
         && _exitAssignedValue == that._exitAssignedValue
         && _returnAssignedValue == that._returnAssignedValue
-        && Objects.equals(_returnValue, that._returnValue);
+        && Objects.equals(_returnValue, that._returnValue)
+        && Objects.equals(_intermediateBgpAttributes, that._intermediateBgpAttributes);
   }
 
   @Override
   public int hashCode() {
     return Objects.hash(
         _returnValue,
+        _intermediateBgpAttributes,
         _suppressedValue,
         _fallthroughValue,
         _exitAssignedValue,

@@ -13,8 +13,8 @@ public class TransferBDDStateTest {
     BDDRoute route = new BDDRoute(factory, 0, 0, 0, 0, 0, 0, ImmutableList.of());
     TransferParam p = new TransferParam(false);
     TransferReturn ret = new TransferReturn(route, factory.one(), false);
-    TransferResult r1 = new TransferResult(ret, false, false, false, false);
-    TransferResult r2 = new TransferResult(ret, true, false, false, false);
+    TransferResult r1 = new TransferResult(ret, route, false, false, false, false);
+    TransferResult r2 = new TransferResult(ret, route, true, false, false, false);
 
     new EqualsTester()
         .addEqualityGroup(new TransferBDDState(p, r1), new TransferBDDState(p, r1))
