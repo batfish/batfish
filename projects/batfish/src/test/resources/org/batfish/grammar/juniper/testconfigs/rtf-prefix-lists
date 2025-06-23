@@ -1,0 +1,12 @@
+#
+set system host-name rtf-prefix-lists
+#
+# Define rtf-prefix-lists
+set policy-options rtf-prefix-list RTF_PL 1.2.3.0/24
+set policy-options rtf-prefix-list RTF_PL_UNUSED 2.3.4.0/24
+
+# Reference RTF_PL in a policy statement
+set policy-options policy-statement POLICY_WITH_RTF from rtf-prefix-list RTF_PL
+
+# Reference an undefined rtf-prefix-list to test undefined reference tracking
+set policy-options policy-statement POLICY_WITH_UNDEF from rtf-prefix-list RTF_PL_UNDEF

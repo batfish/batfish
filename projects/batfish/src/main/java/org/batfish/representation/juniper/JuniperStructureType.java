@@ -44,6 +44,7 @@ public enum JuniperStructureType implements StructureType {
   PREFIX_LIST("prefix-list"),
   RIB_GROUP("rib-group"),
   ROUTING_INSTANCE("routing-instance"),
+  RTF_PREFIX_LIST("rtf-prefix-list"),
   SECURE_TUNNEL_INTERFACE("secure tunnel interface"),
   /**
    * A security policy. In config like {@code security policies from-zone A to-zone B policy P}, the
