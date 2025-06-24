@@ -7,8 +7,9 @@ import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 
 /**
- * The data produced by the symbolic route policy analysis performed in {@link TransferBDD}. It
- * represents the analysis results along a particular execution path through the route policy:
+ * The data produced by the symbolic route policy analysis performed in {@link TransferBDD}. It is a
+ * triple representing the analysis results along a particular execution path through the route
+ * policy:
  *
  * <p>1. A {@link BDDRoute} that represents a function from an input announcement to the
  * corresponding output announcement produced by the analyzed route policy on this particular path.
@@ -21,10 +22,6 @@ import net.sf.javabdd.BDD;
  * path.
  *
  * <p>3. A boolean indicating whether the path accepts or rejects the input announcement.
- *
- * <p>4. Another {@link BDDRoute} that are used to record intermediate BGP attributes (see {@link
- * org.batfish.datamodel.routing_policy.Environment}). These attributes are used internally during
- * the analysis but are not meaningful as part of the end result.
  */
 @ParametersAreNonnullByDefault
 public final class TransferReturn {

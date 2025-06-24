@@ -19,6 +19,7 @@ public class TransferParamTest {
         .addEqualityGroup(p.setDefaultAcceptLocal(true))
         .addEqualityGroup(p.setDefaultPolicy(new SetDefaultPolicy("foo")))
         .addEqualityGroup(p.setReadIntermediateBgpAttributes(true))
+        .addEqualityGroup(p.setWriteIntermediateBgpAttributes(true))
         .testEquals();
   }
 }

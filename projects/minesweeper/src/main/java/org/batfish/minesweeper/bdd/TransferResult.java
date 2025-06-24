@@ -22,6 +22,12 @@ public class TransferResult {
    */
   private final @Nonnull TransferReturn _returnValue;
 
+  /**
+   * Intermediate BGP attributes are used by the vendor-independent model to properly encode the
+   * semantics of attribute reads and writes of various vendors. See {@link
+   * org.batfish.datamodel.routing_policy.statement.Statements.StaticStatement} for the statements
+   * that pertain to intermediate attributes.
+   */
   private final @Nonnull BDDRoute _intermediateBgpAttributes;
 
   /**
@@ -139,10 +145,10 @@ public class TransferResult {
         new TransferReturn(_returnValue.getOutputRoute(), newBDD, _returnValue.getAccepted()));
   }
 
-  public @Nonnull TransferResult setReturnValueOutputRoute(BDDRoute newBDDRoute) {
+  public @Nonnull TransferResult setReturnValueOutputRoute(BDDRoute newOutputRoute) {
     return setReturnValue(
         new TransferReturn(
-            newBDDRoute, _returnValue.getInputConstraints(), _returnValue.getAccepted()));
+            newOutputRoute, _returnValue.getInputConstraints(), _returnValue.getAccepted()));
   }
 
   public @Nonnull TransferResult setSuppressedValue(boolean suppressedValue) {
