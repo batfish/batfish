@@ -2520,7 +2520,17 @@ RSTP: 'rstp';
 
 RSVP: 'rsvp';
 
-RTF_PREFIX_LIST: 'rtf-prefix-list' -> pushMode(M_Name);
+RTF_PREFIX_LIST
+:
+  'rtf-prefix-list'
+  {
+    if (lastTokenType() == POLICY_OPTIONS) {
+      pushMode(M_RTFPrefixList);
+    } else {
+      pushMode(M_Name);
+    }
+  }
+;
 
 RTSP: 'rtsp';
 
@@ -4921,6 +4931,19 @@ M_Range2_DASH: '-' -> type(DASH);
 M_Range2_COMMA: ',' -> type(COMMA);
 M_Range2_WS: F_WhitespaceChar+ -> skip, popMode;
 M_Range2_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_RTFPrefixList;
+M_RTFPrefixList_NAME: F_Name -> type(NAME), mode(M_RouteTargetFilterPrefix);
+M_RTFPrefixList_WS: F_WhitespaceChar+ -> skip;
+M_RTFPrefixList_NEWLINE: F_Newline -> type(NEWLINE), popMode;
+
+mode M_RouteTargetFilterPrefix;
+M_RouteTargetFilterPrefix_UINT8: F_Uint8 -> type(UINT8);
+M_RouteTargetFilterPrefix_UINT32: F_Uint32 -> type(UINT32);
+M_RouteTargetFilterPrefix_SLASH: '/' -> type(FORWARD_SLASH);
+M_RouteTargetFilterPrefix_COLON: ':' -> type(COLON);
+M_RouteTargetFilterPrefix_WS: F_WhitespaceChar+ -> skip;
+M_RouteTargetFilterPrefix_NEWLINE: F_Newline -> type(NEWLINE), popMode;
 
 mode M_PrefixLengthRange;
 M_PrefixLengthRange_WS: F_WhitespaceChar+ -> skip, mode(M_PrefixLengthRange2);
