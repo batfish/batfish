@@ -92,13 +92,7 @@ po_prefix_list
 
 po_rtf_prefix_list
 :
-   RTF_PREFIX_LIST (name = junos_name | wildcard)
-   (
-      apply
-      | portfplt_apply_path
-      | portfplt_network
-      | portfplt_network6
-   )
+   RTF_PREFIX_LIST (name = junos_name | wildcard) portfplt_prefix
 ;
 
 po_tunnel_attribute
@@ -155,19 +149,16 @@ poplt_network6
    network = ipv6_prefix_default_128
 ;
 
-portfplt_apply_path
+portfplt_prefix
 :
-   APPLY_PATH path = DOUBLE_QUOTED_STRING
+    prefix = rtf_prefix
 ;
 
-portfplt_network
-:
-   network = ip_prefix_default_32
-;
-
-portfplt_network6
-:
-   network = ipv6_prefix_default_128
+rtf_prefix:
+    // TODO: are IP address variants valid here?
+    asn = uint32
+    COLON rt_hi = uint32 COLON rt_lo = uint32
+    FORWARD_SLASH length = uint8
 ;
 
 pops_common
