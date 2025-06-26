@@ -1,0 +1,7 @@
+#
+set system host-name juniper-policy-statement-from-metric2
+#
+set policy-options policy-statement METRIC2_POLICY term T1 from metric2 0
+set policy-options policy-statement METRIC2_POLICY term T1 from metric2 100
+set policy-options policy-statement METRIC2_POLICY term T1 then accept
+#

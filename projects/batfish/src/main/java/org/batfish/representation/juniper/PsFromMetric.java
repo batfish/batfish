@@ -10,13 +10,13 @@ import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 /** Represents a "from metric" line in a {@link PsTerm} */
 public class PsFromMetric extends PsFrom {
 
-  private final int _metric;
+  private final long _metric;
 
-  public PsFromMetric(int metric) {
+  public PsFromMetric(long metric) {
     _metric = metric;
   }
 
-  public int getMetric() {
+  public long getMetric() {
     return _metric;
   }
 

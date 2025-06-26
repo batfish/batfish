@@ -187,6 +187,7 @@ pops_from
       | popsf_level
       | popsf_local_preference
       | popsf_metric
+      | popsf_metric2
       | popsf_neighbor
       | popsf_next_hop
       | popsf_origin
@@ -304,7 +305,18 @@ popsf_metric
 :
    METRIC
    (
-      metric = dec
+      // The range seems to depend on protocol, but uint32 is the highest for any of them.
+      metric = uint32
+      | apply_groups
+   )
+;
+
+popsf_metric2
+:
+   METRIC2
+   (
+      // The range seems to depend on protocol, but uint32 is the highest for any of them.
+      metric = uint32
       | apply_groups
    )
 ;
