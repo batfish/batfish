@@ -68,6 +68,12 @@ public final class FlattenTest {
   }
 
   @Test
+  public void testJunosReplaceOrder() throws IOException {
+    assertInputOutputPair(
+        "junos-order-sensitive-replace-before", "junos-order-sensitive-replace-flattened");
+  }
+
+  @Test
   public void testActiveOnly() throws IOException {
     assertInputOutputPair("active_only", "active_only_flattened");
   }
