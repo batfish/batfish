@@ -1,0 +1,10 @@
+####BATFISH FLATTENED JUNIPER CONFIG####
+set system host-name junos-order-sensitive-replace-before
+set policy-options policy-statement PS term T1 then reject
+set policy-options policy-statement PS term T2 then accept
+set policy-options policy-statement PS term T3 then reject
+set policy-options policy-statement PS term T4 then accept
+replace policy-options policy-statement PS term T3
+set policy-options policy-statement PS term T3 from community C1
+set policy-options policy-statement PS term T3 then metric 5
+set policy-options policy-statement PS term T3 then accept

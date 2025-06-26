@@ -23,6 +23,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurat
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_dstContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Insert_srcContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Replace_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_lineContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Set_line_tailContext;
 import org.batfish.grammar.hierarchical.StatementTree;
@@ -139,7 +140,15 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   @Override
   public void exitDelete_line(Delete_lineContext ctx) {
-    deleteSubtree(_statementTree);
+    deleteSubtree(_statementTree, false);
+    _dirty = true;
+  }
+
+  @Override
+  public void exitReplace_line(Replace_lineContext ctx) {
+    // Replace is just delete, except we preserve the parent node so that the replacement lines
+    // appear at the same spot in the output config.
+    deleteSubtree(_statementTree, true);
     _dirty = true;
   }
 
@@ -233,9 +242,10 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
 
   /*
    * - Find the node corresponding to the last word of tree
-   * - Remove the node (and therefore its subtrees) from tree
+   * - In delete mode, remove the node (and therefore its subtrees) from tree.
+   * - In replace mode, remove only the subtree to preserve order of the node relative to its siblings.
    */
-  private void deleteSubtree(StatementTree tree) {
+  private void deleteSubtree(StatementTree tree, boolean replace) {
     StatementTree subtree = tree;
     String lastWord = null;
     for (String word : _words) {
@@ -253,7 +263,11 @@ public class InsertDeleteApplicator extends FlatJuniperParserBaseListener
               _statementsByTree.removeAll(t);
             });
     assert subtree.getParent() != null;
-    subtree.getParent().deleteSubtree(lastWord);
+    if (!replace) {
+      subtree.getParent().deleteSubtree(lastWord);
+    } else {
+      subtree.deleteAllSubtrees();
+    }
   }
 
   /*
