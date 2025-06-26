@@ -178,7 +178,7 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
       return "delete";
     } else {
       assert ctx.REPLACE() != null;
-      return "delete";
+      return "replace";
     }
   }
 

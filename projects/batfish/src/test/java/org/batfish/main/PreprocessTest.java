@@ -102,6 +102,12 @@ public final class PreprocessTest {
   }
 
   @Test
+  public void testJuniperReplacePreservesOrder() throws IOException {
+    assertValidPair(
+        "junos-order-sensitive-replace-before", "junos-order-sensitive-replace-preprocessed");
+  }
+
+  @Test
   public void testMainBadArgs() throws IOException {
     _thrown.expect(IllegalArgumentException.class);
     main(new String[] {});
