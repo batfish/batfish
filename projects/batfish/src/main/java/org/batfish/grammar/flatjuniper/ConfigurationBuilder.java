@@ -535,6 +535,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_levelContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_local_preferenceContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metric2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_metricContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_neighborContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsf_next_hopContext;
@@ -5892,8 +5893,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_metric(Popsf_metricContext ctx) {
-    int metric = toInt(ctx.metric);
+    long metric = toLong(ctx.metric);
     _currentPsTerm.getFroms().setFromMetric(new PsFromMetric(metric));
+  }
+
+  @Override
+  public void exitPopsf_metric2(Popsf_metric2Context ctx) {
+    todo(ctx);
+    _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
   }
 
   @Override

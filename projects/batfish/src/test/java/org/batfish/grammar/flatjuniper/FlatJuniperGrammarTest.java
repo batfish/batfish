@@ -5108,6 +5108,27 @@ public final class FlatJuniperGrammarTest {
     assertThat(result.getBooleanValue(), equalTo(false));
   }
 
+  @Test
+  public void testJuniperPolicyStatementFromMetric2Parsing() {
+    // Test that "from metric2" statements parse and are marked as unsupported
+    String hostname = "juniper-policy-statement-from-metric2";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    // Verify that the configuration generates expected unsupported warnings
+    List<ParseWarning> parseWarnings = vc.getWarnings().getParseWarnings();
+    assertThat(
+        parseWarnings,
+        contains(
+            allOf(hasComment("This feature is not currently supported"), hasText("metric2 0")),
+            allOf(hasComment("This feature is not currently supported"), hasText("metric2 100"))));
+
+    // Verify that the METRIC2_POLICY was parsed into the policy statement map
+    assertThat(vc.getMasterLogicalSystem().getPolicyStatements(), hasKey("METRIC2_POLICY"));
+    PolicyStatement metric2Policy =
+        vc.getMasterLogicalSystem().getPolicyStatements().get("METRIC2_POLICY");
+    assertThat(metric2Policy.getTerms(), hasKey("T1"));
+  }
+
   private static Environment envWithRoute(Configuration c, AbstractRoute route) {
     return envWithRoute(c, route, Direction.OUT);
   }
