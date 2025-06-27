@@ -1028,6 +1028,59 @@ public class TransferBDDTest {
   }
 
   @Test
+  public void testTwoIncrements() {
+    List<Statement> stmts =
+        ImmutableList.of(
+            new SetLocalPreference(new IncrementLocalPreference(5)),
+            new SetLocalPreference(new IncrementLocalPreference(5)),
+            new StaticStatement(Statements.ExitAccept));
+    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+    _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
+
+    TransferBDD tbdd = new TransferBDD(_configAPs);
+    List<TransferReturn> paths = tbdd.computePaths(policy);
+
+    BDDRoute expected = anyRoute(tbdd.getFactory());
+    MutableBDDInteger localPref = expected.getLocalPref();
+    // since the increments read from the original route, the first increment is lost
+    expected.setLocalPref(
+        expected
+            .getLocalPref()
+            .addClipping(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 5)));
+
+    List<TransferReturn> expectedPaths =
+        ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // now do the analysis again, but with reading and writing intermediate attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .addAll(stmts)
+                    .build())
+            .build();
+    paths = tbdd.computePaths(policy);
+
+    expected = anyRoute(tbdd.getFactory());
+    localPref = expected.getLocalPref();
+    // now both increments take effect
+    expected.setLocalPref(
+        expected
+            .getLocalPref()
+            .addClipping(MutableBDDInteger.makeFromValue(localPref.getFactory(), 32, 10)));
+
+    expectedPaths = ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
+    assertEquals(expectedPaths, paths);
+    // TODO: validation currently fails due to a bug in concrete route simulation
+    // assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+  }
+
+  @Test
   public void testSetTag() {
     RoutingPolicy policy =
         _policyBuilder
@@ -1203,13 +1256,13 @@ public class TransferBDDTest {
 
   @Test
   public void testSetThenMatchTag() {
-    List<Statement> stmts =
-        ImmutableList.of(
-            new SetTag(new LiteralLong(42)),
-            new If(
-                new MatchTag(IntComparator.EQ, new LiteralLong(42)),
-                ImmutableList.of(new StaticStatement(Statements.ExitAccept))));
-    RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
+
+    Statement setTag = new SetTag(new LiteralLong(42));
+    Statement cond =
+        new If(
+            new MatchTag(IntComparator.EQ, new LiteralLong(42)),
+            ImmutableList.of(new StaticStatement(Statements.ExitAccept)));
+    RoutingPolicy policy = _policyBuilder.addStatement(setTag).addStatement(cond).build();
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     // the analysis will use the original route for matching
@@ -1230,14 +1283,14 @@ public class TransferBDDTest {
 
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
-    policy = _policyBuilder.setStatements(stmts).build();
+    policy = _policyBuilder.addStatement(setTag).addStatement(cond).build();
     paths = tbdd.computePaths(policy);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
 
-    // do the analysis once more, but after a directive to read from intermediate attributes
+    // do the analysis again, but reading and writing to intermediate attributes
     setup(ConfigurationFormat.CISCO_IOS);
     policy =
         _policyBuilder
@@ -1245,11 +1298,58 @@ public class TransferBDDTest {
                 ImmutableList.<Statement>builder()
                     .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
                     .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
-                    .addAll(stmts)
+                    .add(setTag)
+                    .add(cond)
                     .build())
             .build();
     paths = tbdd.computePaths(policy);
 
+    assertEquals(
+        paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // do the analysis again, but where the tag update happens before we start writing to
+    // intermediate attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(setTag)
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .add(cond)
+                    .build())
+            .build();
+    paths = tbdd.computePaths(policy);
+
+    // the tag update is not read
+    assertEquals(
+        paths,
+        ImmutableList.of(
+            new TransferReturn(expected, any.getTag().value(42), true),
+            new TransferReturn(expected, any.getTag().value(42).not(), false)));
+    assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
+
+    // do the analysis once more, but testing the behavior of unsetting writes to BGP attributes
+    setup(ConfigurationFormat.CISCO_IOS);
+    policy =
+        _policyBuilder
+            .setStatements(
+                ImmutableList.<Statement>builder()
+                    .add(new StaticStatement(Statements.SetWriteIntermediateBgpAttributes))
+                    .add(new StaticStatement(Statements.SetReadIntermediateBgpAttributes))
+                    .add(setTag)
+                    .add(new StaticStatement(Statements.UnsetWriteIntermediateBgpAttributes))
+                    .add(new SetTag(new LiteralLong(0)))
+                    .add(cond)
+                    .build())
+            .build();
+    paths = tbdd.computePaths(policy);
+
+    expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 0));
+
+    // the second tag update is not read since it was not written to intermediate attributes
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
@@ -2225,25 +2325,28 @@ public class TransferBDDTest {
   @Test
   public void testApplyLongExprModification() {
     TransferBDD tbdd = new TransferBDD(forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME));
-    TransferParam p = new TransferParam(tbdd.getOriginalRoute(), false);
+    TransferParam p = new TransferParam(false);
+    BDDRoute orig = tbdd.getOriginalRoute();
+    TransferBDDState state = new TransferBDDState(p, new TransferResult(orig.deepCopy()));
+    Context context = Context.forPolicy(_policyBuilder.build());
 
-    MutableBDDInteger toBeModified =
-        MutableBDDInteger.makeFromIndex(tbdd.getFactory(), 32, 0, false);
     MutableBDDInteger value5 = MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 5);
     value5.setValue(5);
 
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementMetric(5)),
-        equalTo(toBeModified.addClipping(value5)));
+        tbdd.applyLongExprModification(state, context, BDDRoute::getMed, new IncrementMetric(5)),
+        equalTo(orig.getMed().addClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementMetric(5)),
-        equalTo(toBeModified.subClipping(value5)));
+        tbdd.applyLongExprModification(state, context, BDDRoute::getMed, new DecrementMetric(5)),
+        equalTo(orig.getMed().subClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new IncrementLocalPreference(5)),
-        equalTo(toBeModified.addClipping(value5)));
+        tbdd.applyLongExprModification(
+            state, context, BDDRoute::getLocalPref, new IncrementLocalPreference(5)),
+        equalTo(orig.getLocalPref().addClipping(value5)));
     assertThat(
-        TransferBDD.applyLongExprModification(p, toBeModified, new DecrementLocalPreference(5)),
-        equalTo(toBeModified.subClipping(value5)));
+        tbdd.applyLongExprModification(
+            state, context, BDDRoute::getLocalPref, new DecrementLocalPreference(5)),
+        equalTo(orig.getLocalPref().subClipping(value5)));
   }
 
   @Test
@@ -3918,13 +4021,12 @@ public class TransferBDDTest {
 
     BDDRoute routeParam = new BDDRoute(tbdd.getOriginalRoute());
     TransferBDDState initial =
-        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+        new TransferBDDState(new TransferParam(false), new TransferResult(routeParam));
     assertThat(
         tbdd.computePaths(initial, manyMatchesSameResult, context, true), hasSize(1 << numIfs));
 
     routeParam = new BDDRoute(tbdd.getOriginalRoute());
-    initial =
-        new TransferBDDState(new TransferParam(routeParam, false), new TransferResult(routeParam));
+    initial = new TransferBDDState(new TransferParam(false), new TransferResult(routeParam));
     assertThat(tbdd.computePaths(initial, manyMatchesSameResult, context, false), hasSize(2));
   }
 }
