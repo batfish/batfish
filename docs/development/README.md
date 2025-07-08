@@ -26,7 +26,7 @@ This section provides information about the Batfish development environment, tec
 
 - Java 17 or later
 - [Bazelisk](https://github.com/bazelbuild/bazelisk#installation)
-- Python 3.9 or later (for Pybatfish)
+- Python 3.10 or later (for Pybatfish)
 - Docker (for containerized deployment)
 
 ### IDE Setup
