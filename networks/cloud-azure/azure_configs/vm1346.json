@@ -1,0 +1,56 @@
+{
+   "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm1346",
+   "name": "vm1346",
+   "type": "Microsoft.Network/networkInterfaces",
+   "location": "westeurope",
+   "properties": {
+      "provisioningState": "Succeeded",
+      "resourceGuid": "73d425b0-37b5-4a64-9694-8149e9177114",
+      "ipConfigurations": [
+         {
+            "name": "ipconfig1",
+            "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm1346/ipConfigurations/ipconfig1",
+            "etag": "W/\"0d607e3b-8a49-42ad-a142-c6c94374eed6\"",
+            "type": "Microsoft.Network/networkInterfaces/ipConfigurations",
+            "properties": {
+               "provisioningState": "Succeeded",
+               "privateIPAddress": "10.0.0.4",
+               "privateIPAllocationMethod": "Dynamic",
+               "publicIPAddress": {
+                  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/publicIPAddresses/VM1-ip"
+               },
+               "subnet": {
+                  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet/subnets/default"
+               },
+               "primary": true,
+               "privateIPAddressVersion": "IPv4"
+            }
+         }
+      ],
+      "dnsSettings": {
+         "dnsServers": [],
+         "appliedDnsServers": [],
+         "internalDomainNameSuffix": "smo4vtkqs2nudl21rmzfzsebne.ax.internal.cloudapp.net"
+      },
+      "macAddress": "00-0D-3A-A9-9A-0D",
+      "enableAcceleratedNetworking": true,
+      "vnetEncryptionSupported": false,
+      "enableIPForwarding": false,
+      "disableTcpStateTracking": false,
+      "networkSecurityGroup": {
+         "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkSecurityGroups/VM1-nsg"
+      },
+      "primary": true,
+      "virtualMachine": {
+         "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Compute/virtualMachines/VM1"
+      },
+      "hostedWorkloads": [],
+      "tapConfigurations": [],
+      "nicType": "Standard",
+      "allowPort25Out": false,
+      "defaultOutboundConnectivityEnabled": false,
+      "auxiliaryMode": "None",
+      "auxiliarySku": "None"
+   },
+   "kind": "Regular"
+}
