@@ -16,7 +16,7 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.19.1",
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.19.1",
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.19.1",
-    "com.github.ben-manes.caffeine:caffeine:3.2.1",
+    "com.github.ben-manes.caffeine:caffeine:3.2.2",
     "com.google.auto.service:auto-service:1.1.1",
     "com.google.auto.service:auto-service-annotations:1.1.1",
     "com.google.auto.value:auto-value:1.11.0",
