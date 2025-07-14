@@ -99,3 +99,33 @@ NAT rules are represented as input-output relationships over two integer/IP vari
 [`PrimedBDDInteger`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/PrimedBDDInteger.java) defines the two variables,
 and [`TransformationToTransition`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/bddreachability/transition/TransformationToTransition.java) converts
 NAT rules ([`Transformation`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/transformation/Transformation.java) objects in Batfish vendor-independent model) to reachability graph transitions.
+
+## Implementation Architecture
+
+### Graph Construction Process
+The symbolic engine builds a reachability graph where nodes represent forwarding pipeline stages and edges represent packet flow transitions:
+
+1. **BDDReachabilityAnalysisFactory** orchestrates graph construction:
+   - Converts ACLs and header constraints to BDD using `IpAccessListToBdd`, `HeaderSpaceToBDD`
+   - Generates state nodes for each forwarding stage (interface processing, VRF lookup, dispositions)
+   - Creates transition edges between states labeled with BDD constraints
+   - Delegates FIB rule encoding to **BDDFibGenerator**
+
+2. **BDDFibGenerator** encodes forwarding behavior:
+   - Takes ForwardingAnalysis results (FIB entries, ARP reachability) as input
+   - Generates edges representing packet flow through VRFs and interfaces
+   - Handles disposition outcomes (accept, drop, exit network, neighbor unreachable)
+
+### State Expression Pipeline
+Packets flow through a standardized pipeline of state expressions:
+- **Interface ingress**: `PreInInterface` → `PostInInterface` → `InterfaceAccept`
+- **VRF processing**: `PostInVrf` → `PreOutVrf` → `VrfAccept`
+- **Final dispositions**: `NodeAccept`, `NodeDropAclIn`, `ExitsNetwork`, etc.
+
+### Analysis Execution
+- **Fixpoint computation**: `BDDReachabilityUtils.fixpoint()` iteratively propagates BDD packet sets through the graph until convergence
+- **Backward analysis** (default): More efficient for comprehensive queries - starts from target dispositions and computes which ingress locations can reach them
+- **Forward analysis**: Available for tight source constraints - propagates from specific ingress points
+
+### Solution Extraction
+**BDDRepresentativePicker** converts BDD solution sets to concrete packet examples using `BDD.satOne()` to find satisfying assignments that represent actual flows.
