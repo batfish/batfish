@@ -16,13 +16,26 @@ import org.batfish.common.BfConsts;
 import org.batfish.common.Warnings;
 import org.batfish.common.util.CommonUtil;
 import org.batfish.config.Settings;
+import org.batfish.main.preprocess.DiffOptions;
+import org.batfish.main.preprocess.DiffResult;
+import org.batfish.main.preprocess.PreprocessedDiff;
 import org.batfish.main.preprocess.Preprocessor;
 
 /** Utility to dump output of configuration pre-processing. */
 public final class Preprocess {
 
   public static void main(String[] args) throws IOException {
-    checkArgument(args.length == 2, "Expected arguments: <input_path> <output_path>");
+    // Check for diff mode
+    if (args.length >= 3 && "--diff".equals(args[0])) {
+      runDiffMode(args);
+      return;
+    }
+
+    // Original preprocess mode
+    checkArgument(
+        args.length == 2,
+        "Expected arguments: <input_path> <output_path> OR --diff <file1> <file2> [--output"
+            + " <outputfile>]");
     Path inputPath = Paths.get(args[0]);
     Path outputPath = Paths.get(args[1]);
 
@@ -37,6 +50,54 @@ public final class Preprocess {
     BatfishLogger logger = new BatfishLogger(BatfishLogger.LEVELSTR_WARN, false, System.out);
     settings.setLogger(logger);
     preprocess(inputPath, outputPath, settings);
+  }
+
+  /** Handle --diff mode: compare two preprocessed configuration files. */
+  private static void runDiffMode(String[] args) throws IOException {
+    // Parse arguments: --diff <file1> <file2> [--output <outputfile>]
+    checkArgument(
+        args.length >= 3, "Expected arguments: --diff <file1> <file2> [--output <outputfile>]");
+
+    Path file1 = Paths.get(args[1]);
+    Path file2 = Paths.get(args[2]);
+    Path outputFile = null;
+
+    // Check for --output option
+    if (args.length >= 5 && "--output".equals(args[3])) {
+      outputFile = Paths.get(args[4]);
+    }
+
+    // Bazel: resolve relative to current working directory. No-op if paths are already absolute.
+    String wd = System.getenv("BUILD_WORKING_DIRECTORY");
+    if (wd != null) {
+      file1 = Paths.get(wd).resolve(file1);
+      file2 = Paths.get(wd).resolve(file2);
+      if (outputFile != null) {
+        outputFile = Paths.get(wd).resolve(outputFile);
+      }
+    }
+
+    // Compute diff
+    DiffResult result = PreprocessedDiff.diffFiles(file1, file2, DiffOptions.defaults());
+
+    if (!result.wasSuccessful()) {
+      System.err.println(
+          "Error computing diff: " + result.getErrorMessage().orElse("Unknown error"));
+      System.exit(1);
+    }
+
+    String diffOutput = result.getUnifiedDiff();
+    if (diffOutput.isEmpty()) {
+      System.out.println("Files are identical after preprocessing.");
+    } else {
+      // Output diff to file or stdout
+      if (outputFile != null) {
+        CommonUtil.writeFile(outputFile, diffOutput);
+        System.out.println("Diff written to: " + outputFile);
+      } else {
+        System.out.println(diffOutput);
+      }
+    }
   }
 
   /**
