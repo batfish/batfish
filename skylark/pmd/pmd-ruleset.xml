@@ -62,6 +62,7 @@
         <exclude name="MoreThanOneLogger"/>
         <exclude name="NullAssignment"/>
         <exclude name="OverrideBothEqualsAndHashcode"/>
+        <exclude name="ReplaceJavaUtilDate"/>
         <exclude name="SimpleDateFormatNeedsLocale"/>
         <exclude name="UseLocaleWithCaseConversions"/>
     </rule>
