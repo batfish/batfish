@@ -1,21 +1,64 @@
 name: Lab Validation for PR
 
 on:
-  workflow_dispatch:
-    inputs:
-      pr_number:
-        description: "PR number to test (e.g., 1234)"
-        required: true
-        type: string
-      lab_filter:
-        description: "Optional lab filter pattern (e.g., 'eos_*', 'aws_*'). Leave empty for all labs."
-        required: false
-        type: string
+  # Trigger when label is added to PR
+  pull_request:
+    types: [labeled]
+  # Trigger when someone comments on PR
+  issue_comment:
+    types: [created]
 
 jobs:
+  # Check if we should run based on trigger type
+  check-trigger:
+    runs-on: ubuntu-latest
+    outputs:
+      should_run: ${{ steps.check.outputs.should_run }}
+      pr_number: ${{ steps.check.outputs.pr_number }}
+      lab_filter: ${{ steps.check.outputs.lab_filter }}
+    steps:
+    - name: Check trigger conditions
+      id: check
+      run: |
+        SHOULD_RUN="false"
+        PR_NUMBER=""
+        LAB_FILTER=""
+        
+        if [ "${{ github.event_name }}" = "pull_request" ]; then
+          # Check if 'lab-validation' label was added
+          if [ "${{ github.event.label.name }}" = "lab-validation" ]; then
+            SHOULD_RUN="true"
+            PR_NUMBER="${{ github.event.number }}"
+            echo "🏷️ Label 'lab-validation' added to PR #$PR_NUMBER"
+          fi
+        elif [ "${{ github.event_name }}" = "issue_comment" ]; then
+          # Check if comment contains lab validation command
+          COMMENT_BODY="${{ github.event.comment.body }}"
+          if echo "$COMMENT_BODY" | grep -qE "^@github-actions? run lab-validation"; then
+            # Only run on PRs, not issues
+            if [ "${{ github.event.issue.pull_request.url }}" != "null" ]; then
+              SHOULD_RUN="true"
+              PR_NUMBER="${{ github.event.issue.number }}"
+              echo "💬 Lab validation command found in comment on PR #$PR_NUMBER"
+              
+              # Extract lab filter if specified: "@github-actions run lab-validation eos_*"
+              LAB_FILTER=$(echo "$COMMENT_BODY" | sed -n 's/^@github-actions run lab-validation \(.*\)/\1/p' | tr -d '\n\r')
+              if [ -n "$LAB_FILTER" ]; then
+                echo "🔍 Lab filter: $LAB_FILTER"
+              fi
+            fi
+          fi
+        fi
+        
+        echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
+        echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+        echo "lab_filter=$LAB_FILTER" >> $GITHUB_OUTPUT
+
   # Build Batfish JAR from the PR branch
   build-batfish:
     runs-on: ubuntu-latest
+    needs: check-trigger
+    if: needs.check-trigger.outputs.should_run == 'true'
     outputs:
       pr_ref: ${{ steps.get_pr.outputs.pr_ref }}
       pr_title: ${{ steps.get_pr.outputs.pr_title }}
@@ -23,12 +66,12 @@ jobs:
     - name: Get PR information
       id: get_pr
       run: |
-        PR_DATA=$(gh api repos/batfish/batfish/pulls/${{ inputs.pr_number }})
+        PR_DATA=$(gh api repos/batfish/batfish/pulls/${{ needs.check-trigger.outputs.pr_number }})
         PR_REF=$(echo "$PR_DATA" | jq -r '.head.ref')
         PR_TITLE=$(echo "$PR_DATA" | jq -r '.title')
         echo "pr_ref=$PR_REF" >> $GITHUB_OUTPUT
         echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
-        echo "Testing PR #${{ inputs.pr_number }}: $PR_TITLE"
+        echo "Testing PR #${{ needs.check-trigger.outputs.pr_number }}: $PR_TITLE"
         echo "Branch: $PR_REF"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -77,17 +120,17 @@ jobs:
   # Run lab validation using the built JAR
   lab-validation:
     runs-on: ubuntu-latest
-    needs: build-batfish
+    needs: [check-trigger, build-batfish]
     steps:
     - name: Add PR comment - Starting validation
       run: |
-        gh api repos/batfish/batfish/issues/${{ inputs.pr_number }}/comments \
+        gh api repos/batfish/batfish/issues/${{ needs.check-trigger.outputs.pr_number }}/comments \
           --method POST \
           --field body="🧪 **Lab Validation Started**
 
-        Running lab validation for PR #${{ inputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
+        Running lab validation for PR #${{ needs.check-trigger.outputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
         Branch: \`${{ needs.build-batfish.outputs.pr_ref }}\`
-        Filter: ${{ inputs.lab_filter || 'All labs' }}
+        Filter: ${{ needs.check-trigger.outputs.lab_filter || 'All labs' }}
 
         [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
       env:
@@ -97,33 +140,31 @@ jobs:
       uses: batfish/lab-validation/.github/workflows/reusable-lab-validation.yml@main
       with:
         batfish_ref: ${{ needs.build-batfish.outputs.pr_ref }}
-        lab_filter: ${{ inputs.lab_filter }}
+        lab_filter: ${{ needs.check-trigger.outputs.lab_filter }}
 
   # Post results as PR comment
   post-results:
     runs-on: ubuntu-latest
-    needs: [build-batfish, lab-validation]
-    if: always()  # Run even if lab validation fails
+    needs: [check-trigger, build-batfish, lab-validation]
+    if: always() && needs.check-trigger.outputs.should_run == 'true'  # Run even if lab validation fails, but only if we started
     steps:
     - name: Add PR comment - Results
       run: |
         if [ "${{ needs.lab-validation.result }}" == "success" ]; then
           STATUS="✅ **Lab Validation Passed**"
           EMOJI="🎉"
-          COLOR="#28a745"
         else
           STATUS="❌ **Lab Validation Failed**"
           EMOJI="⚠️"
-          COLOR="#d73a49"
         fi
 
-        gh api repos/batfish/batfish/issues/${{ inputs.pr_number }}/comments \
+        gh api repos/batfish/batfish/issues/${{ needs.check-trigger.outputs.pr_number }}/comments \
           --method POST \
           --field body="$EMOJI $STATUS
 
-        PR #${{ inputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
+        PR #${{ needs.check-trigger.outputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
         Branch: \`${{ needs.build-batfish.outputs.pr_ref }}\`
-        Filter: ${{ inputs.lab_filter || 'All labs' }}
+        Filter: ${{ needs.check-trigger.outputs.lab_filter || 'All labs' }}
 
         [View detailed results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
@@ -135,6 +176,12 @@ jobs:
         - Expected failures are tracked in sickbay files and should be listed in the logs
 
         If you see unexpected failures, your changes may have introduced a regression in Batfish's network modeling.
-        </details>"
+        </details>
+
+        ---
+
+        **💡 How to trigger lab validation:**
+        - Add the \`lab-validation\` label to this PR, or
+        - Comment: \`@github-actions run lab-validation\` (optionally with filter like \`@github-actions run lab-validation eos_*\`)"
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
