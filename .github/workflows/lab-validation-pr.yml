@@ -117,7 +117,7 @@ jobs:
 
         Running lab validation for PR #${{ needs.check-trigger.outputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
         Branch: \`${{ needs.build-batfish.outputs.pr_ref }}\`
-        Testing: All labs (~96 network scenarios)
+        Testing: All available lab scenarios
 
         [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
       env:
@@ -150,7 +150,7 @@ jobs:
 
         PR #${{ needs.check-trigger.outputs.pr_number }}: ${{ needs.build-batfish.outputs.pr_title }}
         Branch: \`${{ needs.build-batfish.outputs.pr_ref }}\`
-        Tested: All labs (~96 network scenarios)
+        Tested: All available lab scenarios
 
         [View detailed results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
 
