@@ -2483,10 +2483,9 @@ public final class AristaConfiguration extends VendorConfiguration {
               .forEach(
                   (prefix, srm) -> {
                     for (StaticRoute staticRoute : srm.getVariants()) {
-                      //                      newVrf
-                      //                          .getStaticRoutes()
-                      //                          .add(Conversions.toStaticRoute(c, prefix,
-                      // staticRoute, srm.getTag()));
+                      newVrf
+                          .getStaticRoutes()
+                          .add(Conversions.toStaticRoute(c, prefix, staticRoute, srm.getTag()));
                     }
                   });
 
