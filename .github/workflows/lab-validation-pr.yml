@@ -14,7 +14,7 @@ jobs:
       run: |
         gh api repos/batfish/batfish/issues/${{ github.event.pull_request.number }}/comments \
           --method POST \
-          --field body="🧪 **Lab Validation Started**
+          --field body="🧪 **Lab Validation Started** (Run ${{ github.run_number }})
 
         Running lab validation for PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
         Branch: \`${{ github.event.pull_request.head.ref }}\`
@@ -50,7 +50,7 @@ jobs:
 
         gh api repos/batfish/batfish/issues/${{ github.event.pull_request.number }}/comments \
           --method POST \
-          --field body="$EMOJI $STATUS
+          --field body="$EMOJI $STATUS (Run ${{ github.run_number }})
 
         PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
         Branch: \`${{ github.event.pull_request.head.ref }}\`
