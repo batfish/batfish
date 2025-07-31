@@ -100,8 +100,8 @@ jobs:
           questions.tgz
         retention-days: 1
 
-  # Run lab validation using the built JAR
-  lab-validation:
+  # Add PR comment before running lab validation  
+  add-starting-comment:
     runs-on: ubuntu-latest
     needs: [check-trigger, build-batfish]
     steps:
@@ -117,15 +117,17 @@ jobs:
 
         [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
 
-    - name: Run lab validation
-      uses: batfish/lab-validation/.github/workflows/reusable-lab-validation.yml@main
-      with:
-        batfish_ref: ${{ needs.build-batfish.outputs.pr_ref }}
+  # Run lab validation using the built JAR
+  lab-validation:
+    needs: [check-trigger, build-batfish, add-starting-comment]
+    uses: batfish/lab-validation/.github/workflows/reusable-lab-validation.yml@main
+    with:
+      batfish_ref: ${{ needs.build-batfish.outputs.pr_ref }}
 
   # Post results as PR comment
   post-results:
     runs-on: ubuntu-latest
-    needs: [check-trigger, build-batfish, lab-validation]
+    needs: [check-trigger, build-batfish, add-starting-comment, lab-validation]
     if: always() && needs.check-trigger.outputs.should_run == 'true'  # Run even if lab validation fails, but only if we started
     steps:
     - name: Add PR comment - Results
