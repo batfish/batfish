@@ -1,9 +1,9 @@
 name: Lab Validation for PR
 
 on:
-  # Trigger when label is added to PR
+  # Trigger when label is added to PR or new commits are pushed (if label exists)
   pull_request:
-    types: [labeled]
+    types: [labeled, synchronize]
   # Trigger when someone comments on PR
   issue_comment:
     types: [created]
@@ -19,17 +19,29 @@ jobs:
     steps:
     - name: Check trigger conditions
       id: check
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         SHOULD_RUN="false"
         PR_NUMBER=""
         LAB_FILTER=""
         
         if [ "${{ github.event_name }}" = "pull_request" ]; then
-          # Check if 'lab-validation' label was added
-          if [ "${{ github.event.label.name }}" = "lab-validation" ]; then
-            SHOULD_RUN="true"
-            PR_NUMBER="${{ github.event.number }}"
-            echo "🏷️ Label 'lab-validation' added to PR #$PR_NUMBER"
+          if [ "${{ github.event.action }}" = "labeled" ]; then
+            # Check if 'lab-validation' label was added
+            if [ "${{ github.event.label.name }}" = "lab-validation" ]; then
+              SHOULD_RUN="true"
+              PR_NUMBER="${{ github.event.number }}"
+              echo "🏷️ Label 'lab-validation' added to PR #$PR_NUMBER"
+            fi
+          elif [ "${{ github.event.action }}" = "synchronize" ]; then
+            # Check if PR has 'lab-validation' label when new commits are pushed
+            LABELS=$(gh api repos/batfish/batfish/pulls/${{ github.event.number }}/labels --jq '.[].name')
+            if echo "$LABELS" | grep -q "lab-validation"; then
+              SHOULD_RUN="true"
+              PR_NUMBER="${{ github.event.number }}"
+              echo "🔄 New commits pushed to PR #$PR_NUMBER with 'lab-validation' label"
+            fi
           fi
         elif [ "${{ github.event_name }}" = "issue_comment" ]; then
           # Check if comment contains lab validation command
