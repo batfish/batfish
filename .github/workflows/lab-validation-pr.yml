@@ -28,7 +28,7 @@ jobs:
           fi
         elif [ "${{ github.event.action }}" = "synchronize" ]; then
           # Check if PR has 'lab-validation' label when new commits are pushed
-          LABELS=$(gh api repos/batfish/batfish/pulls/${{ github.event.number }}/labels --jq '.[].name')
+          LABELS=$(gh api repos/batfish/batfish/issues/${{ github.event.number }}/labels --jq '.[].name')
           if echo "$LABELS" | grep -q "lab-validation"; then
             SHOULD_RUN="true"
             PR_NUMBER="${{ github.event.number }}"
