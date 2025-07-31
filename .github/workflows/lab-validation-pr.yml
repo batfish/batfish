@@ -38,6 +38,8 @@ jobs:
         
         echo "should_run=$SHOULD_RUN" >> $GITHUB_OUTPUT
         echo "pr_number=$PR_NUMBER" >> $GITHUB_OUTPUT
+      env:
+        GH_TOKEN: ${{ github.token }}
 
   # Build Batfish JAR from the PR branch
   build-batfish:
@@ -58,6 +60,8 @@ jobs:
         echo "pr_title=$PR_TITLE" >> $GITHUB_OUTPUT
         echo "Testing PR #${{ needs.check-trigger.outputs.pr_number }}: $PR_TITLE"
         echo "Branch: $PR_REF"
+      env:
+        GH_TOKEN: ${{ github.token }}
     
     - name: Checkout PR branch
       uses: actions/checkout@v4
@@ -116,6 +120,8 @@ jobs:
         Testing: All available lab scenarios
 
         [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+      env:
+        GH_TOKEN: ${{ github.token }}
 
   # Run lab validation using the built JAR
   lab-validation:
@@ -164,3 +170,5 @@ jobs:
 
         **💡 How to trigger lab validation:**
         Add the \`lab-validation\` label to this PR. Validation will rerun automatically when you push new commits."
+      env:
+        GH_TOKEN: ${{ github.token }}
