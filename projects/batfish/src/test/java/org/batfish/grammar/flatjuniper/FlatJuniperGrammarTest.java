@@ -1161,6 +1161,29 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testDescriptionValidationFatalError() throws IOException {
+    String fileKey = "description-validation";
+    String warningKey = "configs/" + fileKey;
+
+    Batfish batfish = getBatfishForConfigurationNames(fileKey);
+    batfish.loadConfigurations(batfish.getSnapshot());
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+
+    // Should generate fatal errors for both empty descriptions (length 0) and long descriptions
+    // (>255 chars)
+    assertThat(
+        pvcae.getWarnings().get(warningKey).getFatalRedFlagWarnings(),
+        contains(
+            WarningMatchers.hasText(
+                containsString("Description length 0 is not within range (1..255)")),
+            WarningMatchers.hasText(
+                containsString("Description length 278 is not within range (1..255)")),
+            WarningMatchers.hasText(
+                containsString("Description length 290 is not within range (1..255)"))));
+  }
+
+  @Test
   public void testBgpKeepExtraction() {
     JuniperConfiguration c = parseJuniperConfig("bgp-keep");
 

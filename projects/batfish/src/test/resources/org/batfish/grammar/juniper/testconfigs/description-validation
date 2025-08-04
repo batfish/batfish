@@ -1,0 +1,15 @@
+#
+set system host-name description-validation
+#
+set routing-options autonomous-system 1
+# Empty BGP neighbor description 
+set routing-instances TEST-RI protocols bgp group TEST-GROUP type external
+set routing-instances TEST-RI protocols bgp group TEST-GROUP neighbor 10.0.0.1 description ""
+set routing-instances TEST-RI protocols bgp group TEST-GROUP neighbor 10.0.0.1 local-address 10.0.0.2
+set routing-instances TEST-RI protocols bgp group TEST-GROUP neighbor 10.0.0.1 peer-as 65001
+# Long BGP neighbor description (over 255 chars)
+set routing-instances TEST-RI protocols bgp group TEST-GROUP neighbor 10.0.0.3 description "This is a very long description that exceeds the 255 character limit imposed by Juniper routers. This description should trigger a fatal error because it is too long for Juniper to accept. The limit is 255 characters and this description will definitely exceed that limit making it invalid."
+# Empty interface description
+set interfaces ge-0/0/0 description ""
+# Long interface description (over 255 chars)  
+set interfaces ge-0/0/1 description "This is another very long description that exceeds the 255 character limit imposed by Juniper routers. This description should trigger a fatal error because it is too long for Juniper to accept. The limit is 255 characters and this description will definitely exceed that limit."

@@ -4403,7 +4403,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitB_description(B_descriptionContext ctx) {
-    _currentBgpGroup.setDescription(toString(ctx.description()));
+    toString(ctx.description()).ifPresent(_currentBgpGroup::setDescription);
   }
 
   @Override
@@ -5075,8 +5075,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_description(I_descriptionContext ctx) {
-    String text = toString(ctx.description());
-    _currentInterfaceOrRange.setDescription(text);
+    toString(ctx.description()).ifPresent(_currentInterfaceOrRange::setDescription);
   }
 
   @Override
@@ -8206,8 +8205,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return ctx.getText();
   }
 
-  private @Nonnull String toString(DescriptionContext ctx) {
-    return unquote(ctx.text.getText(), ctx);
+  private @Nonnull Optional<String> toString(DescriptionContext ctx) {
+    String description = unquote(ctx.text.getText(), ctx);
+    // Juniper requires descriptions to be between 1 and 255 characters
+    if (description.isEmpty() || description.length() > 255) {
+      _w.fatalRedFlag(
+          "Description length %d is not within range (1..255): %s",
+          description.length(), getFullText(ctx));
+      return Optional.empty();
+    }
+    return Optional.of(description);
   }
 
   private @Nonnull String toString(Filter_nameContext ctx) {
