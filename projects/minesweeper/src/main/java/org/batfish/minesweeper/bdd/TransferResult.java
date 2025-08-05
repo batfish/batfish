@@ -64,8 +64,10 @@ public class TransferResult {
   }
 
   /**
-   * Construct a TransferResult from a BDDRoute with given input route constraints. This uses FALSE
-   * as the initial value for having hit a return/exit/fallthrough statement.
+   * Construct a TransferResult from a BDDRoute with given input route constraints. The given
+   * BDDRoute is used as the output route that the analysis tracks, and a copy of this BDDRoute is
+   * used as the intermediate route that the analysis tracks. This uses FALSE as the initial value
+   * for having hit a return/exit/fallthrough statement.
    */
   public TransferResult(BDDRoute bddRoute, BDD inputRouteConstraints) {
     this(
