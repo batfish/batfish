@@ -1178,8 +1178,6 @@ public final class FlatJuniperGrammarTest {
             WarningMatchers.hasText(
                 containsString("Description length 0 is not within range (1..255)")),
             WarningMatchers.hasText(
-                containsString("Description length 278 is not within range (1..255)")),
-            WarningMatchers.hasText(
                 containsString("Description length 290 is not within range (1..255)"))));
   }
 

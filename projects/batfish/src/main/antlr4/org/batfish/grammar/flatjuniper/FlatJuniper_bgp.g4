@@ -134,9 +134,11 @@ b_damping
    DAMPING
 ;
 
+bgp_description_text: M_Description_DESCRIPTION;
+
 b_description
 :
-   description
+   DESCRIPTION text = bgp_description_text
 ;
 
 b_disable
