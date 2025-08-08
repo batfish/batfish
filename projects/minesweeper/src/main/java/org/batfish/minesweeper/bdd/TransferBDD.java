@@ -1484,19 +1484,6 @@ public class TransferBDD {
    * executed along a given path are not included in this representation but can be reconstructed by
    * simulating one route that takes this path using {@link
    * org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
-   */
-  public List<TransferReturn> computePaths(RoutingPolicy policy) {
-    return computePaths(policy.getStatements(), Context.forPolicy(policy), true);
-  }
-
-  /**
-   * The results of symbolic route-map analysis: one {@link
-   * org.batfish.minesweeper.bdd.TransferReturn} per execution path through the given route map. The
-   * list of paths is unordered, and by construction each path is unique, as each path has a unique
-   * condition under which it is taken (the BDD in the TransferResult). The particular statements
-   * executed along a given path are not included in this representation but can be reconstructed by
-   * simulating one route that takes this path using {@link
-   * org.batfish.question.testroutepolicies.TestRoutePoliciesQuestion}.
    *
    * <p>If {@code retainAllPaths} is {@code false}, then paths with the same output behavior (aka,
    * {@link TransferResult} is equivalent except for the input conditions under which the path is

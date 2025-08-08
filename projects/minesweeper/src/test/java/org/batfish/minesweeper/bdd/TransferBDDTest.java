@@ -329,7 +329,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
@@ -345,7 +345,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -359,7 +359,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(_policyBuilder.build());
+    List<TransferReturn> paths = tbdd.computePaths(_policyBuilder.build(), true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -378,7 +378,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
     BDD expectedBDD = isRelevantForDestination(anyRoute, PrefixRange.fromString("1.0.0.0/8:16-24"));
@@ -407,7 +407,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
@@ -431,7 +431,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -449,7 +449,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -470,7 +470,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
     BDD expectedBDD = isRelevantForDestination(anyRoute, PrefixRange.fromString("0.0.0.0/0:32-32"));
@@ -500,7 +500,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
     BDD suppressed = isRelevantForDestination(anyRoute, PrefixRange.fromString("1.0.0.0/8:31-32"));
@@ -528,7 +528,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
@@ -547,7 +547,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), true));
@@ -573,7 +573,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDD if1 =
         isRelevantForDestination(
@@ -612,7 +612,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDD if1 =
         isRelevantForDestination(
@@ -653,7 +653,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDD if1 =
         isRelevantForDestination(
@@ -691,7 +691,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -719,7 +719,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -739,7 +739,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     // currently we assume announcements are IPv4
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
@@ -759,7 +759,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -785,7 +785,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -813,7 +813,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -839,7 +839,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -867,7 +867,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -891,7 +891,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger localPref = expected.getLocalPref();
@@ -913,7 +913,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     // the local preference is now 42
     BDDRoute expected = anyRoute(tbdd.getFactory());
@@ -936,7 +936,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOriginType().setValue(OriginType.INCOMPLETE);
@@ -956,7 +956,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.setUnsupported(true);
@@ -975,7 +975,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E1);
@@ -995,7 +995,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expectedRoute = anyRoute(tbdd.getFactory());
     expectedRoute.getOspfMetric().setValue(OspfType.E2);
@@ -1015,7 +1015,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger med = expected.getMed();
@@ -1038,7 +1038,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger localPref = expected.getLocalPref();
@@ -1064,7 +1064,7 @@ public class TransferBDDTest {
                     .addAll(stmts)
                     .build())
             .build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     expected = anyRoute(tbdd.getFactory());
     localPref = expected.getLocalPref();
@@ -1091,7 +1091,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger tag = expected.getTag();
@@ -1121,7 +1121,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
@@ -1141,7 +1141,7 @@ public class TransferBDDTest {
     List<TransferReturn> expectedPaths =
         ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true));
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     assertEquals(expectedPaths, paths);
     assertTrue(validatePaths(policy, paths, tbdd.getFactory()));
   }
@@ -1156,7 +1156,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger weight = expected.getWeight();
@@ -1178,7 +1178,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -1198,7 +1198,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     MutableBDDInteger ad = expected.getAdminDist();
@@ -1220,7 +1220,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -1242,7 +1242,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1267,7 +1267,7 @@ public class TransferBDDTest {
 
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -1284,7 +1284,7 @@ public class TransferBDDTest {
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
     policy = _policyBuilder.addStatement(setTag).addStatement(cond).build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
@@ -1302,7 +1302,7 @@ public class TransferBDDTest {
                     .add(cond)
                     .build())
             .build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
@@ -1321,7 +1321,7 @@ public class TransferBDDTest {
                     .add(cond)
                     .build())
             .build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     // the tag update is not read
     assertEquals(
@@ -1345,7 +1345,7 @@ public class TransferBDDTest {
                     .add(cond)
                     .build())
             .build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     expected.setTag(MutableBDDInteger.makeFromValue(tag.getFactory(), 32, 0));
 
@@ -1367,7 +1367,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1392,7 +1392,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1416,7 +1416,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1443,7 +1443,7 @@ public class TransferBDDTest {
 
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -1460,7 +1460,7 @@ public class TransferBDDTest {
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
     policy = _policyBuilder.setStatements(stmts).build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
@@ -1479,7 +1479,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     any.setUnsupported(true);
@@ -1499,7 +1499,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1523,7 +1523,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1553,7 +1553,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     any.setUnsupported(true);
@@ -1573,7 +1573,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD trackPred = any.getTracks()[0];
@@ -1598,7 +1598,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD sourcePred = any.getSourceVrfs().value(0);
@@ -1623,7 +1623,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD intPred = any.getNextHopInterfaces().value(0).or(any.getNextHopInterfaces().value(1));
@@ -1651,7 +1651,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD peerPred1 = any.getPeerAddress().value(0).or(any.getPeerAddress().value(1));
@@ -1681,7 +1681,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1710,7 +1710,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -1734,7 +1734,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -1753,7 +1753,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopType(BDDRoute.NextHopType.DISCARDED);
@@ -1774,7 +1774,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopType(BDDRoute.NextHopType.SELF);
@@ -1795,7 +1795,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopType(BDDRoute.NextHopType.BGP_PEER_ADDRESS);
@@ -1816,7 +1816,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopSet(true);
@@ -1839,7 +1839,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopSet(true);
@@ -1859,7 +1859,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setNextHopSet(true);
@@ -1883,7 +1883,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDDomain<RoutingProtocol> protocol = any.getProtocolHistory();
@@ -1912,7 +1912,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
@@ -1932,7 +1932,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
@@ -1960,7 +1960,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDD expectedBDD = isRelevantForDestination(any, PrefixRange.fromString("1.0.0.0/8:16-24"));
@@ -1987,7 +1987,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
@@ -2014,7 +2014,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
@@ -2052,7 +2052,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
@@ -2077,7 +2077,7 @@ public class TransferBDDTest {
     // now do the analysis again for a platform that matches on the output route;
     // the behavior should be the same since the as-path has not been updated
     setup(ConfigurationFormat.JUNIPER);
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths,
@@ -2105,7 +2105,7 @@ public class TransferBDDTest {
     BDDFactory factory = tbdd.getFactory();
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     assertEquals(paths, ImmutableList.of(new TransferReturn(anyRouteWithAPs, factory.one(), true)));
     assertTrue(validatePaths(policy, paths, factory));
   }
@@ -2126,7 +2126,7 @@ public class TransferBDDTest {
     BDDFactory factory = tbdd.getFactory();
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(anyRouteWithAPs, factory.one(), false)));
     assertTrue(validatePaths(policy, paths, factory));
@@ -2146,7 +2146,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -2178,7 +2178,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute unsupported = new BDDRoute(any);
@@ -2224,7 +2224,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expectedOut = anyRoute(tbdd.getFactory());
     expectedOut.setLocalPref(MutableBDDInteger.makeFromValue(expectedOut.getFactory(), 32, 300));
@@ -2264,7 +2264,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
@@ -2304,7 +2304,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -2359,7 +2359,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), true)));
@@ -2380,7 +2380,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -2412,7 +2412,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute unsupported = new BDDRoute(any);
@@ -2461,7 +2461,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -2487,7 +2487,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     assertEquals(paths, ImmutableList.of(new TransferReturn(any, tbdd.getFactory().one(), false)));
@@ -2506,7 +2506,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
@@ -2547,7 +2547,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRouteWithAPs = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDDDomain<Integer> aps = anyRouteWithAPs.getAsPathRegexAtomicPredicates();
@@ -2591,7 +2591,7 @@ public class TransferBDDTest {
             null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2628,7 +2628,7 @@ public class TransferBDDTest {
             null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2671,7 +2671,7 @@ public class TransferBDDTest {
             null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2711,7 +2711,7 @@ public class TransferBDDTest {
             null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2737,7 +2737,7 @@ public class TransferBDDTest {
                     .addAll(stmts)
                     .build())
             .build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     // now additionally each atomic predicate for community 4:44 has the 1 BDD
     for (int ap :
@@ -2770,7 +2770,7 @@ public class TransferBDDTest {
             null);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2810,7 +2810,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2845,7 +2845,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2879,7 +2879,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2918,7 +2918,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
 
@@ -2959,7 +2959,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
@@ -3002,7 +3002,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = anyRoute.getCommunityAtomicPredicates();
@@ -3051,7 +3051,7 @@ public class TransferBDDTest {
 
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = expected.getCommunityAtomicPredicates();
@@ -3081,7 +3081,7 @@ public class TransferBDDTest {
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
     policy = _policyBuilder.setStatements(stmts).build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     // all input routes satisfy the if statement now, so there is only one path
     assertEquals(
@@ -3107,7 +3107,7 @@ public class TransferBDDTest {
 
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = expected.getCommunityAtomicPredicates();
@@ -3141,7 +3141,7 @@ public class TransferBDDTest {
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
     policy = _policyBuilder.setStatements(stmts).build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths,
@@ -3167,7 +3167,7 @@ public class TransferBDDTest {
 
     // the analysis will use the original route for matching
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = new BDDRoute(tbdd.getFactory(), _configAPs);
     BDD[] aps = expected.getCommunityAtomicPredicates();
@@ -3196,7 +3196,7 @@ public class TransferBDDTest {
     // now do the analysis again but use the output attributes for matching
     setup(ConfigurationFormat.JUNIPER);
     policy = _policyBuilder.setStatements(stmts).build();
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), false)));
@@ -3229,7 +3229,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute localPref300 = anyRoute(tbdd.getFactory());
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
@@ -3270,7 +3270,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
 
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute localPref300 = anyRoute(tbdd.getFactory());
     localPref300.setLocalPref(MutableBDDInteger.makeFromValue(tbdd.getFactory(), 32, 300));
@@ -3315,7 +3315,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute anyRoute = anyRoute(tbdd.getFactory());
 
@@ -3353,7 +3353,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<TransferReturn> expectedPaths =
         ImmutableList.of(
             new TransferReturn(anyRoute(tbdd.getFactory()), tbdd.getFactory().one(), false));
@@ -3377,7 +3377,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     // the tag is now 42 and local pref is 44
     BDDRoute expected = anyRoute(tbdd.getFactory());
@@ -3399,7 +3399,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -3421,7 +3421,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -3439,7 +3439,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -3457,7 +3457,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setPrependedASes(ImmutableList.of(42L));
@@ -3469,7 +3469,7 @@ public class TransferBDDTest {
     // now do the analysis again for a platform that reads from output attributes;
     // it should still work since we aren't later matching on the updated as-path
     setup(ConfigurationFormat.JUNIPER);
-    paths = tbdd.computePaths(policy);
+    paths = tbdd.computePaths(policy, true);
 
     assertEquals(
         paths, ImmutableList.of(new TransferReturn(expected, tbdd.getFactory().one(), true)));
@@ -3488,7 +3488,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     // the first
@@ -3539,7 +3539,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -3596,7 +3596,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -3645,7 +3645,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -3676,7 +3676,7 @@ public class TransferBDDTest {
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
     _expectedException.expect(BatfishException.class);
-    tbdd.computePaths(policy);
+    tbdd.computePaths(policy, true);
   }
 
   @Test
@@ -3720,7 +3720,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -3771,7 +3771,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -3821,7 +3821,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -3851,7 +3851,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
 
@@ -3877,7 +3877,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
@@ -3900,7 +3900,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute any = anyRoute(tbdd.getFactory());
     BDDRoute expected = new BDDRoute(any);
@@ -3928,7 +3928,7 @@ public class TransferBDDTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
 
     BDDRoute expected = anyRoute(tbdd.getFactory());
     expected.setUnsupported(true);
