@@ -183,7 +183,7 @@ public class TransferBDDValidationAnswererTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<Row> rows = _answerer.validatePaths(policy, paths, tbdd, Environment.Direction.IN);
 
     assertThat(rows, empty());
@@ -196,7 +196,7 @@ public class TransferBDDValidationAnswererTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     // flip the accepted boolean in the one path, to create a violation
     List<TransferReturn> badPaths = ImmutableList.of(paths.get(0).setAccepted(false));
 
@@ -227,7 +227,7 @@ public class TransferBDDValidationAnswererTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> badPaths = tbdd.computePaths(policy);
+    List<TransferReturn> badPaths = tbdd.computePaths(policy, true);
     // change the local pref in the symbolic results, to create a violation
     badPaths.forEach(
         p ->
@@ -268,7 +268,7 @@ public class TransferBDDValidationAnswererTest {
     _configAPs = forDevice(_batfish, _batfish.getSnapshot(), HOSTNAME);
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> badPaths = tbdd.computePaths(policy);
+    List<TransferReturn> badPaths = tbdd.computePaths(policy, true);
     // change the local pref in the symbolic results, to create a violation
     badPaths.forEach(
         p ->
@@ -307,7 +307,7 @@ public class TransferBDDValidationAnswererTest {
             ImmutableSet.of());
 
     TransferBDD tbdd = new TransferBDD(_configAPs);
-    List<TransferReturn> paths = tbdd.computePaths(policy);
+    List<TransferReturn> paths = tbdd.computePaths(policy, true);
     List<Row> rows = _answerer.validatePaths(policy, paths, tbdd, Environment.Direction.IN);
 
     // there are no answers, since we ensure that routes won't have more than MAX_COMMUNITIES_SIZE

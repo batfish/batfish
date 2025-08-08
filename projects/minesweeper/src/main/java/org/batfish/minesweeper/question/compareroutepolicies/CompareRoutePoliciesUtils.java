@@ -292,7 +292,7 @@ public final class CompareRoutePoliciesUtils {
    */
   private List<TransferReturn> computePaths(TransferBDD tbdd, RoutingPolicy policy) {
     try {
-      return tbdd.computePaths(policy);
+      return tbdd.computePaths(policy, true);
     } catch (Exception e) {
       throw new BatfishException(
           "Unexpected error analyzing policy "
