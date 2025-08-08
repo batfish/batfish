@@ -1,0 +1,83 @@
+{
+   "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Compute/virtualMachines/VM2",
+   "name": "VM2",
+   "type": "Microsoft.Compute/virtualMachines",
+   "location": "westeurope",
+   "properties": {
+      "hardwareProfile": {
+         "vmSize": "Standard_D2s_v3"
+      },
+      "provisioningState": "Succeeded",
+      "vmId": "a1b2c3d4-e5f6-7890-1234-567890abcdef",
+      "additionalCapabilities": {
+         "hibernationEnabled": false
+      },
+      "storageProfile": {
+         "imageReference": {
+            "publisher": "canonical",
+            "offer": "ubuntu-24_04-lts",
+            "sku": "server",
+            "version": "latest",
+            "exactVersion": "24.04.202407160"
+         },
+         "osDisk": {
+            "osType": "Linux",
+            "name": "VM2_disk1_61ed98b5121d448d9eb90bb8201c2eae",
+            "createOption": "FromImage",
+            "caching": "ReadWrite",
+            "managedDisk": {
+               "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Compute/disks/VM2_disk1_61ed98b5121d448d9eb90bb8201c2eae"
+            },
+            "deleteOption": "Delete"
+         },
+         "dataDisks": [],
+         "diskControllerType": "SCSI"
+      },
+      "osProfile": {
+         "computerName": "VM2",
+         "adminUsername": "azureuser",
+         "linuxConfiguration": {
+            "disablePasswordAuthentication": true,
+            "ssh": {
+               "publicKeys": [
+                  {
+                     "path": "/home/azureuser/.ssh/authorized_keys",
+                     "keyData": "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCof71U+xttW3TYinj4kLYrY+5QlNx78G/o2NgPN7sNJSyNtulqn1cY8yxEvAY5t/5bBLHXa/UvyWV+3RwUVqGaiclKxdgm/ij+CVAEpu3wJLVw1DMS+bFkrmBQxDSLKNBHVbRDnEuAfjG5aBM4nANHWXnPAjZTGmghzaqpPlLdqQb6l4yimwB7K+vFjmIFsdcm15xCCUquAwspMU307kJjdb/K6I0QAJP4bPFeD4v9p+i4ny+OOaKHVALqGx4OWWK9QdwuwsBhcm17sA6cE25cOszp57BMHUy+3xXEsoWRDKP8oGMdSVMQlGVcKWBd+cTjzAbifmQSjo/9YAPTDl6P12P+Aw4Bn9WXeKKbeHsel8gGqJcigiyhsrHderOnh3omIEWXi9mBmW9PLvJbI0YTXJTgUo6rIujzSFC2TH3n/+K/HfIpd7Wp60Nz59FJmgDkeNorM9ilGCIi7A7QHNXbI0sKEipfD1RlYlUubCvTTGkB/CWx/cxq1KNsR2ecL6E= generated-by-azure"
+                  }
+               ]
+            },
+            "provisionVMAgent": true,
+            "patchSettings": {
+               "patchMode": "ImageDefault",
+               "assessmentMode": "ImageDefault"
+            }
+         },
+         "secrets": [],
+         "allowExtensionOperations": true,
+         "requireGuestProvisionSignal": true
+      },
+      "securityProfile": {
+         "uefiSettings": {
+            "secureBootEnabled": true,
+            "vTpmEnabled": true
+         },
+         "securityType": "TrustedLaunch"
+      },
+      "networkProfile": {
+         "networkInterfaces": [
+            {
+               "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm235",
+               "properties": {
+                  "deleteOption": "Detach"
+               }
+            }
+         ]
+      },
+      "diagnosticsProfile": {
+         "bootDiagnostics": {
+            "enabled": true
+         }
+      },
+      "timeCreated": "2024-07-25T13:55:43.0943841+00:00"
+   }
+}
