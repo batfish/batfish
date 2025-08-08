@@ -286,6 +286,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_countContex
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_path_selection_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bfiuas_prefix_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_asnContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bgp_description_textContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_aliasContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_loopsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Bl_no_prepend_global_asContext;
@@ -4403,7 +4404,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitB_description(B_descriptionContext ctx) {
-    toString(ctx.description()).ifPresent(_currentBgpGroup::setDescription);
+    toString(ctx.text).ifPresent(_currentBgpGroup::setDescription);
   }
 
   @Override
@@ -5075,7 +5076,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitI_description(I_descriptionContext ctx) {
-    toString(ctx.description()).ifPresent(_currentInterfaceOrRange::setDescription);
+    String description = toString(ctx.description());
+    _currentInterfaceOrRange.setDescription(description);
   }
 
   @Override
@@ -8205,9 +8207,9 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     return ctx.getText();
   }
 
-  private @Nonnull Optional<String> toString(DescriptionContext ctx) {
-    String description = unquote(ctx.text.getText(), ctx);
-    // Juniper requires descriptions to be between 1 and 255 characters
+  private @Nonnull Optional<String> toString(Bgp_description_textContext ctx) {
+    String description = unquote(ctx.getText(), ctx.getParent());
+    // Juniper requires BGP descriptions to be between 1 and 255 characters
     if (description.isEmpty() || description.length() > 255) {
       _w.fatalRedFlag(
           "Description length %d is not within range (1..255): %s",
@@ -8215,6 +8217,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return Optional.empty();
     }
     return Optional.of(description);
+  }
+
+  private @Nonnull String toString(DescriptionContext ctx) {
+    return unquote(ctx.text.getText(), ctx);
   }
 
   private @Nonnull String toString(Filter_nameContext ctx) {
