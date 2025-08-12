@@ -2056,6 +2056,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       return IpProtocol.HOPOPT;
     } else if (ctx.ICMP() != null) {
       return IpProtocol.ICMP;
+    } else if (ctx.ICMP6() != null) {
+      return IpProtocol.IPV6_ICMP;
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
     } else if (ctx.IPIP() != null) {
