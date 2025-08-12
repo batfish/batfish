@@ -264,6 +264,7 @@ ip_protocol
   | GRE
   | HOP_BY_HOP
   | ICMP
+  | ICMP6
   | IGMP
   | IPIP
   | IPV6

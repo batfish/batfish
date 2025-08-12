@@ -817,6 +817,35 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testApplicationIcmp6() {
+    String hostname = "application-icmp6";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+
+    // Verify that ICMP6 applications are parsed and extracted correctly
+    assertThat(
+        vc.getMasterLogicalSystem().getApplications(), hasKeys("icmp6-app", "icmp-app", "tcp-app"));
+
+    // The ICMP6 application should contain IPV6_ICMP protocol
+    BaseApplication icmp6App = vc.getMasterLogicalSystem().getApplications().get("icmp6-app");
+    assertThat(
+        icmp6App.getMainTerm().getHeaderSpace().getIpProtocols(), contains(IpProtocol.IPV6_ICMP));
+
+    // ICMP6 applications should convert to MatchHeaderSpace like other protocol applications
+    AclLineMatchExpr icmp6Expr = icmp6App.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(icmp6Expr, instanceOf(MatchHeaderSpace.class));
+
+    // For comparison, ICMP should also work normally
+    BaseApplication icmpApp = vc.getMasterLogicalSystem().getApplications().get("icmp-app");
+    AclLineMatchExpr icmpExpr = icmpApp.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(icmpExpr, instanceOf(MatchHeaderSpace.class));
+
+    // TCP applications should also work normally
+    BaseApplication tcpApp = vc.getMasterLogicalSystem().getApplications().get("tcp-app");
+    AclLineMatchExpr tcpExpr = tcpApp.toAclLineMatchExpr(vc, new Warnings());
+    assertThat(tcpExpr, instanceOf(MatchHeaderSpace.class));
+  }
+
+  @Test
   public void testAuthenticationKeyChain() throws IOException {
     String hostname = "authentication-key-chain";
     String filename = "configs/" + hostname;

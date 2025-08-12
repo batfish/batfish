@@ -1,0 +1,8 @@
+#
+set system host-name application-icmp6
+#
+set applications application icmp6-app protocol icmp6
+set applications application icmp-app protocol icmp
+set applications application tcp-app protocol tcp
+set applications application tcp-app destination-port 80
+#
