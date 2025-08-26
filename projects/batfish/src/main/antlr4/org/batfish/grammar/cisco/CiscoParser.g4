@@ -1695,28 +1695,6 @@ phone_proxy_null
    ) null_rest_of_line
 ;
 
-qm_length
-:
-   LENGTH null_rest_of_line
-;
-
-qm_streaming
-:
-   STREAMING NEWLINE
-   (
-      qms_null
-   )*
-;
-
-qms_null
-:
-   NO?
-   (
-      MAX_CONNECTIONS
-      | SHUTDOWN
-   ) null_rest_of_line
-;
-
 redundancy_linecard_group
 :
    LINECARD_GROUP null_rest_of_line
@@ -2647,15 +2625,6 @@ s_process_max_time
    NO? PROCESS_MAX_TIME dec NEWLINE
 ;
 
-s_queue_monitor
-:
-   QUEUE_MONITOR
-   (
-      qm_length
-      | qm_streaming
-   )
-;
-
 s_radius_server
 :
    RADIUS SERVER name = variable NEWLINE
@@ -3400,7 +3369,6 @@ stanza
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
-   | s_queue_monitor
    | s_radius_server
    | s_redundancy
    | s_rf

@@ -979,7 +979,6 @@ if_null_block
       | PRIORITY_FLOW_CONTROL
       | PRIORITY_QUEUE
       | QOS
-      | QUEUE_MONITOR
       | QUEUE_SET
       | RANDOM_DETECT
       | RATE_LIMIT

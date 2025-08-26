@@ -380,14 +380,14 @@
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 277,
+        "Line" : 276,
         "Text" : "zone-member t1",
         "Parser_Context" : "[if_zone_member if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
       },
       {
         "Filename" : "configs/cisco_interface",
-        "Line" : 308,
+        "Line" : 307,
         "Text" : "mode gre multipoint",
         "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface_definition s_interface stanza cisco_configuration]",
         "Comment" : "This feature is not currently supported"
