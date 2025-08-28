@@ -1589,11 +1589,15 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface("FiftyGigE2/0/0", hasBandwidth(50e9)));
     assertThat(c, hasInterface("FiftyGigE3/0/0", hasBandwidth(50e9)));
     //
+    assertThat(c, hasInterface("FiveGigabitEthernet1/0/1", hasBandwidth(5e9)));
+    //
     assertThat(c, hasInterface("FortyGigabitEthernet1/0/0", hasBandwidth(40e9)));
     assertThat(c, hasInterface("FortyGigabitEthernet2/0/0", hasBandwidth(40e9)));
     //
     assertThat(c, hasInterface("HundredGigabitEthernet1/0/0", hasBandwidth(100e9)));
     assertThat(c, hasInterface("HundredGigabitEthernet2/0/0", hasBandwidth(100e9)));
+    // Bad interface names don't cause problems and get some default bandwidth.
+    assertThat(c, hasInterface("TwoPiGigabitEthernet1/0/1", hasBandwidth(1e12)));
   }
 
   @Test

@@ -1312,9 +1312,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static String toInterfaceName(Interface_nameContext ctx) {
+    String prefix = ctx.name_prefix_alpha.getText();
     StringBuilder name =
         new StringBuilder(
-            CiscoConfiguration.getCanonicalInterfaceNamePrefix(ctx.name_prefix_alpha.getText()));
+            CiscoConfiguration.getCanonicalInterfaceNamePrefix(prefix).orElse(prefix));
     for (Token part : ctx.name_middle_parts) {
       name.append(part.getText());
     }
@@ -1948,10 +1949,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitCipt_mode(Cipt_modeContext ctx) {
     if (ctx.TRANSPORT() != null) {
       _currentIpsecTransformSet.setIpsecEncapsulationMode(IpsecEncapsulationMode.TRANSPORT);
-    } else if (ctx.TUNNEL() != null) {
-      _currentIpsecTransformSet.setIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL);
     } else {
-      throw new BatfishException("Unsupported mode " + ctx.getText());
+      assert ctx.TUNNEL() != null;
+      _currentIpsecTransformSet.setIpsecEncapsulationMode(IpsecEncapsulationMode.TUNNEL);
     }
   }
 
@@ -2036,10 +2036,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.PRE_SHARED_KEYS);
     } else if (ctx.RSA_ENCR() != null) {
       _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES);
-    } else if (ctx.RSA_SIG() != null) {
-      _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES);
     } else {
-      throw new BatfishException("Unsupported authentication method in " + ctx.getText());
+      assert ctx.RSA_SIG() != null;
+      _currentIsakmpPolicy.setAuthenticationMethod(IkeAuthenticationMethod.RSA_SIGNATURES);
     }
   }
 
@@ -2060,10 +2059,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.MD5);
     } else if (ctx.SHA() != null) {
       _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA1);
-    } else if (ctx.SHA2_256_128() != null) {
-      _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA_256);
     } else {
-      throw new BatfishException("Unsupported authentication method in " + ctx.getText());
+      assert ctx.SHA2_256_128() != null;
+      _currentIsakmpPolicy.setHashAlgorithm(IkeHashingAlgorithm.SHA_256);
     }
   }
 
@@ -2174,9 +2172,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCrypto_keyring(Crypto_keyringContext ctx) {
-    if (_currentKeyring != null) {
-      throw new BatfishException("Keyring should be null!");
-    }
     _currentKeyring = new Keyring(ctx.name.getText());
     if (ctx.vrf != null) {
       todo(ctx);
@@ -2282,10 +2277,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name = ctx.name.getText();
     } else if (ctx.shortname != null) {
       name = ctx.shortname.getText();
-    } else if (ctx.num != null) {
-      name = ctx.num.getText();
     } else {
-      throw new BatfishException("Could not determine acl name");
+      assert ctx.num != null;
+      name = ctx.num.getText();
     }
     _currentExtendedAcl =
         _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
@@ -2294,12 +2288,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterExtended_ipv6_access_list_stanza(Extended_ipv6_access_list_stanzaContext ctx) {
-    String name;
-    if (ctx.name != null) {
-      name = ctx.name.getText();
-    } else {
-      throw new BatfishException("Could not determine acl name");
-    }
+    String name = toString(ctx.name);
     _currentExtendedIpv6Acl =
         _configuration.getExtendedIpv6Acls().computeIfAbsent(name, ExtendedIpv6AccessList::new);
     _configuration.defineStructure(IPV6_ACCESS_LIST_EXTENDED, name, ctx);
@@ -2499,10 +2488,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name;
     if (ctx.num != null) {
       name = ctx.num.getText();
-    } else if (ctx.name != null) {
-      name = ctx.name.getText();
     } else {
-      throw new BatfishException("Invalid community-list name");
+      assert ctx.name != null;
+      name = ctx.name.getText();
     }
     _currentExpandedCommunityList =
         _configuration
@@ -2518,10 +2506,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       name = ctx.num.getText();
     } else if (ctx.name != null) {
       name = ctx.name.getText();
-    } else if (ctx.name_cl != null) {
-      name = ctx.name_cl.getText();
     } else {
-      throw new BatfishException("Invalid standard community-list name");
+      assert ctx.name_cl != null;
+      name = ctx.name_cl.getText();
     }
     _currentStandardCommunityList =
         _configuration
@@ -2559,10 +2546,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     IsisProcess proc = currentVrf().getIsisProcess();
     if (ctx.LEVEL_1() != null) {
       proc.setLevel(IsisLevel.LEVEL_1);
-    } else if (ctx.LEVEL_2_ONLY() != null || ctx.LEVEL_2() != null) {
-      proc.setLevel(IsisLevel.LEVEL_2);
     } else {
-      throw new BatfishException("Unsupported is-type");
+      assert ctx.LEVEL_2_ONLY() != null || ctx.LEVEL_2() != null;
+      proc.setLevel(IsisLevel.LEVEL_2);
     }
   }
 
@@ -3289,14 +3275,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_interface_definition(S_interface_definitionContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
-    String canonicalNamePrefix;
-    try {
-      canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
-    } catch (BatfishException e) {
-      warn(ctx, "Error fetching interface name: " + e.getMessage());
-      _currentInterfaces = ImmutableList.of();
-      return;
-    }
+    String canonicalNamePrefix =
+        CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
     StringBuilder namePrefix = new StringBuilder(canonicalNamePrefix);
     for (Token part : ctx.iname.name_middle_parts) {
       namePrefix.append(part.getText());
@@ -3686,6 +3666,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   private static @Nonnull String toString(VariableContext ctx) {
+    return ctx.getText();
+  }
+
+  private static @Nonnull String toString(Variable_permissiveContext ctx) {
     return ctx.getText();
   }
 
@@ -9799,7 +9783,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
     String nameAlpha = ctx.name_prefix_alpha.getText();
-    String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha);
+    String canonicalNamePrefix =
+        CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
     String vrf =
         canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
             ? CiscoConfiguration.MANAGEMENT_VRF_NAME
