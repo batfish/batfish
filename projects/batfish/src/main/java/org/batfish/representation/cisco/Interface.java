@@ -56,7 +56,7 @@ public class Interface implements Serializable {
 
   public static @Nullable Double getDefaultBandwidth(
       @Nonnull String name, @Nonnull ConfigurationFormat format) {
-    Double defaultSpeed = getDefaultSpeed(name, format);
+    Double defaultSpeed = getDefaultSpeed(name);
     if (defaultSpeed != null) {
       return defaultSpeed;
     } else if (name.startsWith("Loopback")) {
@@ -74,14 +74,15 @@ public class Interface implements Serializable {
     }
   }
 
-  public static @Nullable Double getDefaultSpeed(
-      @Nonnull String name, @Nonnull ConfigurationFormat format) {
+  public static @Nullable Double getDefaultSpeed(@Nonnull String name) {
     if (name.startsWith("Ethernet")) {
       return DEFAULT_IOS_ETHERNET_SPEED;
     } else if (name.startsWith("FastEthernet")) {
       return DEFAULT_FAST_ETHERNET_SPEED;
     } else if (name.startsWith("FiftyGig")) {
       return 50E9D;
+    } else if (name.startsWith("FiveGigabit")) {
+      return 5E9D;
     } else if (name.startsWith("FortyGig")) {
       return 40E9D;
     } else if (name.startsWith("GigabitEthernet")) {

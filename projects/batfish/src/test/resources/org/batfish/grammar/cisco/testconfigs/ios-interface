@@ -10,6 +10,9 @@ interface FiftyGigE2/0/0
 interface Fif3/0/0
  no shutdown
 !
+interface FiveGigabitEthernet1/0/1
+ no shutdown
+!
 interface FortyGigabitEthernet1/0/0
  no shutdown
 !
@@ -20,5 +23,9 @@ interface HundredGigabitEthernet1/0/0
  no shutdown
 !
 interface Hu2/0/0
+ no shutdown
+!
+! One that hopefully never exists, should proceed and not crash.
+interface TwoPiGigabitEthernet1/0/1
  no shutdown
 !
