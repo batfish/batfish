@@ -250,6 +250,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
           .put("fi", "FiftyGigE")
           .put("fiftyGigE", "FiftyGigE")
           .put("FiftyGigabitEthernet", "FiftyGigE")
+          .put("FiveGigabitEthernet", "FiveGigabitEthernet")
           .put("fortyGigE", "FortyGigabitEthernet")
           .put("FortyGigabitEthernet", "FortyGigabitEthernet")
           .put("GigabitEthernet", "GigabitEthernet")
@@ -360,27 +361,34 @@ public final class CiscoConfiguration extends VendorConfiguration {
     return String.format("~SERVICE_OBJECT_GROUP~%s~", name);
   }
 
+  private static Pattern INTERFACE_PREFIX_EXTRACTOR =
+      Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]");
+
   @Override
   public String canonicalizeInterfaceName(String ifaceName) {
-    Matcher matcher = Pattern.compile("[A-Za-z][-A-Za-z0-9]*[A-Za-z]").matcher(ifaceName);
-    if (matcher.find()) {
-      String ifacePrefix = matcher.group();
-      String canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
-      String suffix = ifaceName.substring(ifacePrefix.length());
-      return canonicalPrefix + suffix;
+    Matcher matcher = INTERFACE_PREFIX_EXTRACTOR.matcher(ifaceName);
+    if (!matcher.find()) {
+      return ifaceName;
     }
-    throw new BatfishException("Invalid interface name: '" + ifaceName + "'");
+    String ifacePrefix = matcher.group();
+    Optional<String> canonicalPrefix = getCanonicalInterfaceNamePrefix(ifacePrefix);
+    if (!canonicalPrefix.isPresent()) {
+      return ifaceName;
+    }
+    String suffix = ifaceName.substring(ifacePrefix.length());
+    return canonicalPrefix.get() + suffix;
   }
 
-  public static String getCanonicalInterfaceNamePrefix(String prefix) {
+  public static Optional<String> getCanonicalInterfaceNamePrefix(String prefix) {
     for (Entry<String, String> e : CISCO_INTERFACE_PREFIXES.entrySet()) {
       String matchPrefix = e.getKey();
       String canonicalPrefix = e.getValue();
       if (matchPrefix.toLowerCase().startsWith(prefix.toLowerCase())) {
-        return canonicalPrefix;
+        return Optional.ofNullable(canonicalPrefix);
       }
     }
-    throw new BatfishException("Invalid interface name prefix: '" + prefix + "'");
+    // No match.
+    return Optional.empty();
   }
 
   @VisibleForTesting
@@ -1330,10 +1338,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       newIface.setHsrpVersion(toString(iface.getHsrpVersion()));
     }
     newIface.setVrf(c.getVrfs().get(vrfName));
-    newIface.setSpeed(
-        firstNonNull(
-            iface.getSpeed(),
-            Interface.getDefaultSpeed(iface.getName(), c.getConfigurationFormat())));
+    newIface.setSpeed(firstNonNull(iface.getSpeed(), Interface.getDefaultSpeed(iface.getName())));
     newIface.setBandwidth(
         firstNonNull(
             iface.getBandwidth(),
