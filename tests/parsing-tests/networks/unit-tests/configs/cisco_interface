@@ -196,7 +196,6 @@ interface Ethernet0
   encapsulation aal5snap
   protocol ppp dialer
  !
- queue-monitor length thresholds 12 1
  redundancy rii 1
  redundancy group 1 ip 1.2.3.4 exclusive
  routing dynamic

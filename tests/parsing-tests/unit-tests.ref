@@ -84,7 +84,6 @@
         "configs/cisco_platform" : "CISCO_IOS",
         "configs/cisco_privilege" : "CISCO_IOS",
         "configs/cisco_qos" : "CISCO_IOS",
-        "configs/cisco_queue_monitor" : "CISCO_IOS",
         "configs/cisco_redundancy" : "CISCO_IOS",
         "configs/cisco_rip" : "CISCO_IOS",
         "configs/cisco_role" : "CISCO_IOS",
@@ -531,9 +530,6 @@
         ],
         "cisco_qos" : [
           "configs/cisco_qos"
-        ],
-        "cisco_queue_monitor" : [
-          "configs/cisco_queue_monitor"
         ],
         "cisco_redundancy" : [
           "configs/cisco_redundancy"
@@ -1171,7 +1167,6 @@
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",
         "configs/cisco_qos" : "PASSED",
-        "configs/cisco_queue_monitor" : "PASSED",
         "configs/cisco_redundancy" : "PASSED",
         "configs/cisco_rip" : "PASSED",
         "configs/cisco_role" : "PASSED",
@@ -8121,7 +8116,7 @@
             "          (cqer_null*",
             "            MONITORING_BASICS:'monitoring-basics'",
             "            (null_rest_of_line*",
-            "              VARIABLE:'legacy'",
+            "              LEGACY:'legacy'",
             "              VARIABLE:'docsis11'",
             "              NEWLINE:'\\n'))",
             "          (cqer_null*",
@@ -15702,14 +15697,6 @@
             "                DIALER:'dialer'",
             "                NEWLINE:'\\n'))))",
             "        (if_inner*",
-            "          (if_null_block*",
-            "            QUEUE_MONITOR:'queue-monitor'",
-            "            LENGTH:'length'",
-            "            VARIABLE:'thresholds'",
-            "            UINT8:'12'",
-            "            UINT8:'1'",
-            "            NEWLINE:'\\n'))",
-            "        (if_inner*",
             "          (if_null_single*",
             "            REDUNDANCY:'redundancy'",
             "            VARIABLE:'rii'",
@@ -20116,7 +20103,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Traffic'",
             "          VARIABLE:'rate'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLFilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20173,7 +20160,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Interface'",
             "          VARIABLE:'Tunnel9'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLfilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20181,7 +20168,7 @@
             "          VARIABLE:'shutdown.'",
             "          VARIABLE:'It'",
             "          VARIABLE:'needs'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'be'",
             "          VARIABLE:'manually'",
             "          VARIABLE:'unshut.'",
@@ -20199,7 +20186,7 @@
             "          DOUBLE_QUOTE:'\"'",
             "          VARIABLE:'Tunnel9\\'",
             "          DOUBLE_QUOTE:'\"'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'URLfilter'",
             "          VARIABLE:'pepper'",
             "          VARIABLE:'has'",
@@ -20207,7 +20194,7 @@
             "          VARIABLE:'shutdown.'",
             "          VARIABLE:'It'",
             "          VARIABLE:'needs'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          VARIABLE:'be'",
             "          VARIABLE:'manually'",
             "          VARIABLE:'unshut.'",
@@ -21191,7 +21178,7 @@
             "          UINT8:'7'",
             "          UINT8:'8'",
             "          UINT8:'9'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          PRIORITY:'priority'",
             "          UINT8:'0'",
             "          VARIABLE:'drop-precedence'",
@@ -21209,7 +21196,7 @@
             "          UINT8:'3'",
             "          UINT8:'4'",
             "          UINT8:'7'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          PRIORITY:'priority'",
             "          UINT8:'0'",
             "          NEWLINE:'\\n'))))",
@@ -21327,7 +21314,7 @@
             "            UINT8:'0'",
             "            COLON:':'",
             "            DEC:'00'",
-            "            VARIABLE:'to'",
+            "            TO:'to'",
             "            UINT8:'23'",
             "            COLON:':'",
             "            UINT8:'59'",
@@ -24756,7 +24743,7 @@
             "            UINT8:'20')",
             "          AUTHENTICATE:'authenticate'",
             "          (null_rest_of_line*",
-            "            VARIABLE:'using'",
+            "            USING:'using'",
             "            DOT1X:'dot1x'",
             "            PRIORITY:'priority'",
             "            UINT8:'10'",
@@ -24764,8 +24751,8 @@
             "      (pm_event*",
             "        EVENT:'event'",
             "        (null_rest_of_line*",
-            "          VARIABLE:'authentication-failure'",
-            "          VARIABLE:'match-first'",
+            "          AUTHENTICATION_FAILURE:'authentication-failure'",
+            "          MATCH_FIRST:'match-first'",
             "          NEWLINE:'\\n')",
             "        (pm_event_class",
             "          (dec*",
@@ -24812,7 +24799,7 @@
             "            UINT8:'40')",
             "          AUTHENTICATE:'authenticate'",
             "          (null_rest_of_line*",
-            "            VARIABLE:'using'",
+            "            USING:'using'",
             "            MAB:'mab'",
             "            PRIORITY:'priority'",
             "            UINT8:'10'",
@@ -24908,7 +24895,7 @@
             "          UINT8:'10'",
             "          COMMA:','",
             "          UINT8:'12'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'14'",
             "          NEWLINE:'\\n'))",
             "      (table_map_null*",
@@ -24916,65 +24903,8 @@
             "        (null_rest_of_line*",
             "          FROM:'from'",
             "          UINT8:'0'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'8'",
-            "          NEWLINE:'\\n'))))",
-            "  EOF:<EOF>)"
-          ]
-        },
-        "configs/cisco_queue_monitor" : {
-          "sentences" : [
-            "(cisco_configuration",
-            "  (stanza*",
-            "    (s_hostname",
-            "      HOSTNAME:'hostname'",
-            "      VARIABLE:'cisco_queue_monitor'",
-            "      NEWLINE:'\\n'))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'global-buffer'",
-            "          VARIABLE:'thresholds'",
-            "          UINT16:'16384'",
-            "          UINT16:'512'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'global-buffer'",
-            "          LOG:'log'",
-            "          UINT8:'60'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          LOG:'log'",
-            "          UINT8:'60'",
-            "          NEWLINE:'\\n'))))",
-            "  (stanza*",
-            "    (s_queue_monitor*",
-            "      QUEUE_MONITOR:'queue-monitor'",
-            "      (qm_length*",
-            "        LENGTH:'length'",
-            "        (null_rest_of_line*",
-            "          VARIABLE:'update-interval'",
-            "          UINT32:'5000000'",
             "          NEWLINE:'\\n'))))",
             "  EOF:<EOF>)"
           ]
@@ -28608,7 +28538,7 @@
             "          UINT8:'5'",
             "          FORWARD_SLASH:'/'",
             "          UINT8:'2'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'5'",
             "          FORWARD_SLASH:'/'",
             "          UINT8:'7'",
@@ -28616,7 +28546,7 @@
             "          UINT8:'6'",
             "          FORWARD_SLASH:'/'",
             "          UINT8:'1'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT8:'6'",
             "          FORWARD_SLASH:'/'",
             "          UINT8:'2'",
@@ -28789,7 +28719,7 @@
             "        (null_rest_of_line*",
             "          VARIABLE:'1'  <== mode:M_Alias",
             "          UINT16:'5003'",
-            "          VARIABLE:'to'",
+            "          TO:'to'",
             "          UINT16:'5002'",
             "          NEWLINE:'\\n'))",
             "      (cmf_null*",
@@ -29316,14 +29246,14 @@
             "            ALLOW_CONNECTIONS:'allow-connections'",
             "            (null_rest_of_line*",
             "              H323:'h323'",
-            "              VARIABLE:'to'",
+            "              TO:'to'",
             "              H323:'h323'",
             "              NEWLINE:'\\n'))",
             "          (voice_service_voip_null*",
             "            ALLOW_CONNECTIONS:'allow-connections'",
             "            (null_rest_of_line*",
             "              SIP:'sip'",
-            "              VARIABLE:'to'",
+            "              TO:'to'",
             "              SIP:'sip'",
             "              NEWLINE:'\\n'))",
             "          (voice_service_voip_null*",
@@ -70231,13 +70161,13 @@
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 277,
+              "Line" : 276,
               "Parser_Context" : "[if_zone_member if_inner s_interface_definition s_interface stanza cisco_configuration]",
               "Text" : "zone-member t1"
             },
             {
               "Comment" : "This feature is not currently supported",
-              "Line" : 308,
+              "Line" : 307,
               "Parser_Context" : "[iftunnel_mode if_tunnel if_inner s_interface_definition s_interface stanza cisco_configuration]",
               "Text" : "mode gre multipoint"
             }
@@ -71773,7 +71703,6 @@
         "cisco_platform" : "PASSED",
         "cisco_privilege" : "PASSED",
         "cisco_qos" : "PASSED",
-        "cisco_queue_monitor" : "PASSED",
         "cisco_redundancy" : "PASSED",
         "cisco_rip" : "PASSED",
         "cisco_role" : "PASSED",
@@ -72874,99 +72803,99 @@
           },
           "interface" : {
             "Async1" : {
-              "definitionLines" : "280",
+              "definitionLines" : "279",
               "numReferrers" : 1
             },
             "Cable1/2/3:4" : {
-              "definitionLines" : "282",
+              "definitionLines" : "281",
               "numReferrers" : 1
             },
             "Crypto-Engine1/2/3" : {
-              "definitionLines" : "284",
+              "definitionLines" : "283",
               "numReferrers" : 1
             },
             "Dot11Radio0" : {
-              "definitionLines" : "286",
+              "definitionLines" : "285",
               "numReferrers" : 1
             },
             "Ethernet0" : {
-              "definitionLines" : "7-278",
+              "definitionLines" : "7-277",
               "numReferrers" : 1
             },
             "Ethernet1/11" : {
-              "definitionLines" : "288",
+              "definitionLines" : "287",
               "numReferrers" : 1
             },
             "Ethernet1/12" : {
-              "definitionLines" : "336-337",
+              "definitionLines" : "335-336",
               "numReferrers" : 1
             },
             "GigabitEthernet0/0" : {
-              "definitionLines" : "290-292",
+              "definitionLines" : "289-291",
               "numReferrers" : 1
             },
             "Loopback0" : {
-              "definitionLines" : "294-295",
+              "definitionLines" : "293-294",
               "numReferrers" : 1
             },
             "Modular-Cable1/2/3:4" : {
-              "definitionLines" : "297",
+              "definitionLines" : "296",
               "numReferrers" : 1
             },
             "Null0" : {
-              "definitionLines" : "299",
+              "definitionLines" : "298",
               "numReferrers" : 1
             },
             "Tunnel0" : {
-              "definitionLines" : "303-313",
+              "definitionLines" : "302-312",
               "numReferrers" : 1
             },
             "Vlan1" : {
-              "definitionLines" : "316",
+              "definitionLines" : "315",
               "numReferrers" : 1
             },
             "Vlan1005" : {
-              "definitionLines" : "322",
+              "definitionLines" : "321",
               "numReferrers" : 1
             },
             "Vlan1006" : {
-              "definitionLines" : "324",
+              "definitionLines" : "323",
               "numReferrers" : 1
             },
             "Vlan111" : {
-              "definitionLines" : "314",
+              "definitionLines" : "313",
               "numReferrers" : 1
             },
             "Vlan1234" : {
-              "definitionLines" : "326",
+              "definitionLines" : "325",
               "numReferrers" : 1
             },
             "Vlan2" : {
-              "definitionLines" : "318",
+              "definitionLines" : "317",
               "numReferrers" : 1
             },
             "Vlan3" : {
-              "definitionLines" : "320",
+              "definitionLines" : "319",
               "numReferrers" : 1
             },
             "Vlan4094" : {
-              "definitionLines" : "328",
+              "definitionLines" : "327",
               "numReferrers" : 1
             },
             "Wideband-Cable1/2/3:4" : {
-              "definitionLines" : "330",
+              "definitionLines" : "329",
               "numReferrers" : 1
             },
             "Wlan-GigabitEthernet0" : {
-              "definitionLines" : "334",
+              "definitionLines" : "333",
               "numReferrers" : 1
             },
             "Wlan-ap0" : {
-              "definitionLines" : "332",
+              "definitionLines" : "331",
               "numReferrers" : 1
             },
             "tunnel-ip6" : {
-              "definitionLines" : "301",
+              "definitionLines" : "300",
               "numReferrers" : 1
             }
           }
@@ -73206,7 +73135,6 @@
             }
           }
         },
-        "configs/cisco_queue_monitor" : { },
         "configs/cisco_redundancy" : { },
         "configs/cisco_rip" : { },
         "configs/cisco_role" : { },
@@ -77205,9 +77133,6 @@
         "configs/cisco_qos" : [
           "cisco_qos"
         ],
-        "configs/cisco_queue_monitor" : [
-          "cisco_queue_monitor"
-        ],
         "configs/cisco_redundancy" : [
           "cisco_redundancy"
         ],
@@ -79078,27 +79003,27 @@
           "interface" : {
             "Async1" : {
               "interface" : [
-                280
+                279
               ]
             },
             "Cable1/2/3:4" : {
               "interface" : [
-                282
+                281
               ]
             },
             "Cellular0" : {
               "tunnel source" : [
-                311
+                310
               ]
             },
             "Crypto-Engine1/2/3" : {
               "interface" : [
-                284
+                283
               ]
             },
             "Dot11Radio0" : {
               "interface" : [
-                286
+                285
               ]
             },
             "Ethernet0" : {
@@ -79106,102 +79031,102 @@
                 7
               ],
               "tunnel source" : [
-                312
+                311
               ]
             },
             "Ethernet1/11" : {
               "interface" : [
-                288
+                287
               ]
             },
             "Ethernet1/12" : {
               "interface" : [
-                336
+                335
               ]
             },
             "GigabitEthernet0/0" : {
               "interface" : [
-                290
+                289
               ]
             },
             "Loopback0" : {
               "interface" : [
-                294
+                293
               ]
             },
             "Modular-Cable1/2/3:4" : {
               "interface" : [
-                297
+                296
               ]
             },
             "Null0" : {
               "interface" : [
-                299
+                298
               ]
             },
             "Tunnel0" : {
               "interface" : [
-                303
+                302
               ]
             },
             "Vlan1" : {
               "interface" : [
-                316
+                315
               ]
             },
             "Vlan1005" : {
               "interface" : [
-                322
+                321
               ]
             },
             "Vlan1006" : {
               "interface" : [
-                324
+                323
               ]
             },
             "Vlan111" : {
               "interface" : [
-                314
+                313
               ]
             },
             "Vlan1234" : {
               "interface" : [
-                326
+                325
               ]
             },
             "Vlan2" : {
               "interface" : [
-                318
+                317
               ]
             },
             "Vlan3" : {
               "interface" : [
-                320
+                319
               ]
             },
             "Vlan4094" : {
               "interface" : [
-                328
+                327
               ]
             },
             "Wideband-Cable1/2/3:4" : {
               "interface" : [
-                330
+                329
               ]
             },
             "Wlan-GigabitEthernet0" : {
               "interface" : [
-                334
+                333
               ]
             },
             "Wlan-ap0" : {
               "interface" : [
-                332
+                331
               ]
             },
             "tunnel-ip6" : {
               "interface" : [
-                301
+                300
               ]
             }
           },
@@ -79242,8 +79167,8 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                208,
-                209
+                207,
+                208
               ]
             }
           },
@@ -79262,14 +79187,14 @@
           "zone" : {
             "t1" : {
               "interface zone-member" : [
-                277
+                276
               ]
             }
           },
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                278
+                277
               ]
             }
           }
@@ -85563,8 +85488,8 @@
           "policy-map" : {
             "limit-access-to-1Gbps" : {
               "interface service-instance service-policy" : [
-                208,
-                209
+                207,
+                208
               ]
             }
           },
@@ -85583,7 +85508,7 @@
           "zone security" : {
             "z1" : {
               "interface zone-member security" : [
-                278
+                277
               ]
             }
           }
@@ -85980,7 +85905,6 @@
             }
           }
         },
-        "configs/cisco_queue_monitor" : { },
         "configs/cisco_redundancy" : { },
         "configs/cisco_rip" : {
           "ipv4/6 acl" : {
@@ -88065,7 +87989,6 @@
         "configs/cisco_platform" : "PASSED",
         "configs/cisco_privilege" : "PASSED",
         "configs/cisco_qos" : "PASSED",
-        "configs/cisco_queue_monitor" : "PASSED",
         "configs/cisco_redundancy" : "PASSED",
         "configs/cisco_rip" : "PASSED",
         "configs/cisco_role" : "PASSED",
