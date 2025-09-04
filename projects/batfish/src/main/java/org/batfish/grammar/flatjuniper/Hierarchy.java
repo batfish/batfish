@@ -31,7 +31,6 @@ import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.antlr.v4.runtime.tree.TerminalNode;
 import org.antlr.v4.runtime.tree.TerminalNodeImpl;
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.PatternProvider;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
@@ -690,10 +689,11 @@ final class Hierarchy {
 
       private HierarchyWildcardNode(String text, int lineNumber) {
         super(text, lineNumber);
-        if (_unquotedText.charAt(0) != '<'
-            || _unquotedText.charAt(_unquotedText.length() - 1) != '>') {
-          throw new BatfishException("Improperly-formatted wildcard: " + text);
-        }
+        checkArgument(
+            _unquotedText.charAt(0) == '<'
+                && _unquotedText.charAt(_unquotedText.length() - 1) == '>',
+            "Improperly-formatted wildcard: %s",
+            _unquotedText);
         _wildcard = _unquotedText.substring(1, _unquotedText.length() - 1);
         _wildcardPattern = PatternProvider.fromString(GroupWildcard.toJavaRegex(_wildcard));
       }

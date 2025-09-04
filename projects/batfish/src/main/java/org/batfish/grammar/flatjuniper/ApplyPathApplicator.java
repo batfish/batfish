@@ -48,11 +48,13 @@ public class ApplyPathApplicator extends FlatJuniperParserBaseListener {
     String[] pathComponents = pathWithoutQuotes.split("\\s+");
     for (String pathComponent : pathComponents) {
       if (pathComponent.charAt(0) == '<') {
-        if (pathComponent.charAt(pathComponent.length() - 1) != '>') {
+        try {
+          applyPathPath.addWildcardNode(pathComponent, line);
+        } catch (IllegalArgumentException e) {
+          _w.redFlagf("Could not parse %s as a wildcard", pathComponent);
           // Malformed wildcard - don't try to expand this apply-path
           return;
         }
-        applyPathPath.addWildcardNode(pathComponent, line);
       } else {
         applyPathPath.addNode(pathComponent, line);
       }
