@@ -4,6 +4,8 @@ import static com.google.common.collect.Iterables.getOnlyElement;
 import static java.nio.charset.StandardCharsets.UTF_8;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasComment;
 import static org.batfish.common.matchers.ParseWarningMatchers.hasText;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlag;
+import static org.batfish.common.matchers.WarningsMatchers.hasRedFlags;
 import static org.batfish.common.util.Resources.readResource;
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.AuthenticationMethod.GROUP_RADIUS;
@@ -255,7 +257,6 @@ import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
 import org.batfish.common.matchers.WarningMatchers;
-import org.batfish.common.matchers.WarningsMatchers;
 import org.batfish.common.plugin.IBatfish;
 import org.batfish.common.topology.L3Adjacencies;
 import org.batfish.common.topology.Layer1Edge;
@@ -5193,7 +5194,7 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
-  public void testJuniperWildcards() {
+  public void testJuniperWildcards() throws IOException {
     String hostname = "juniper-wildcards";
     String loopback = "lo0.0";
     String prefix1 = "1.1.1.1/32";
@@ -5204,7 +5205,18 @@ public final class FlatJuniperGrammarTest {
     String prefixList3 = "p3";
     Ip neighborIp = Ip.parse("2.2.2.2");
 
-    Configuration c = parseConfig(hostname);
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ParseVendorConfigurationAnswerElement pvcae =
+        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+    assertThat(
+        pvcae.getWarnings().get("configs/" + hostname),
+        hasRedFlags(
+            containsInAnyOrder(
+                WarningMatchers.hasText("Could not parse < as a wildcard"),
+                WarningMatchers.hasText("Could not parse <*>; as a wildcard"),
+                WarningMatchers.hasText("Could not parse <%> as a wildcard"))));
+
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* apply-groups using group containing interface wildcard should function as expected. */
     assertThat(
@@ -5267,7 +5279,7 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
-            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10, 27)));
+            filename, PREFIX_LIST, "p1", containsInAnyOrder(4, 9, 10, 25)));
     assertThat(
         ccae,
         hasDefinedStructureWithDefinitionLines(
@@ -8197,7 +8209,7 @@ public final class FlatJuniperGrammarTest {
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
         pvcae.getWarnings().get(fileKey),
-        WarningsMatchers.hasRedFlag(
+        hasRedFlag(
             WarningMatchers.hasText(
                 "FATAL: Multiple inet addresses with the same VRRP VRID 1 on interface"
                     + " 'xe-0/0/0.0'")));
@@ -8213,7 +8225,7 @@ public final class FlatJuniperGrammarTest {
         batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
         pvcae.getWarnings().get(fileKey),
-        WarningsMatchers.hasRedFlag(
+        hasRedFlag(
             WarningMatchers.hasText(
                 "FATAL: Cannot assign virtual-address 10.0.1.2 outside of subnet for inet address"
                     + " 10.0.0.1/24")));
