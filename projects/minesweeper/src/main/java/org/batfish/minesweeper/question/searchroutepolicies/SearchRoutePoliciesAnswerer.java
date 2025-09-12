@@ -550,7 +550,7 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
                 _outputConstraints,
                 outputRoute,
                 true,
-                new TransferBDD(tbdd.getFactory(), outConfigAPs),
+                new TransferBDD(outputRoute.getFactory(), outConfigAPs),
                 context);
         intersection = intersection.and(outConstraints);
       }
