@@ -280,6 +280,7 @@ public class SonicConversions {
   }
 
   /** An intermediate class to order ACL rules and simplify processing code. */
+  @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
   static class AclRuleWithName implements Comparable<AclRuleWithName> {
     private final String _name;
     private final AclRule _rule;

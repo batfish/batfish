@@ -29,6 +29,7 @@
         <exclude name="MethodReturnsInternalArray"/>
         <exclude name="OneDeclarationPerLine"/>
         <exclude name="PreserveStackTrace"/>
+        <exclude name="RelianceOnDefaultCharset"/>
         <exclude name="SystemPrintln"/>
         <exclude name="UnitTestAssertionsShouldIncludeMessage"/>
         <exclude name="UnitTestContainsTooManyAsserts"/>
