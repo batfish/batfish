@@ -547,7 +547,11 @@ public final class SearchRoutePoliciesAnswerer extends Answerer {
         // incorporate the constraints on the output route as well
         BDD outConstraints =
             routeConstraintsToBDD(
-                _outputConstraints, outputRoute, true, new TransferBDD(outConfigAPs), context);
+                _outputConstraints,
+                outputRoute,
+                true,
+                new TransferBDD(outputRoute.getFactory(), outConfigAPs),
+                context);
         intersection = intersection.and(outConstraints);
       }
 
