@@ -53,6 +53,7 @@ public class OspfStatusQuestionPlugin extends QuestionPlugin {
       SWITCHPORT
     }
 
+    @SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
     public static class OspfInfo implements Comparable<OspfInfo> {
       private static final String PROP_INTERFACE = "interface";
       private static final String PROP_OSPF_STATUS = "ospfStatus";
