@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.google.common.collect.ImmutableSortedSet;
 import java.util.SortedSet;
 
+@SuppressWarnings("PMD.OverrideBothEqualsAndHashCodeOnComparable")
 public class NamedStructureEquivalenceSet<T>
     implements Comparable<NamedStructureEquivalenceSet<T>> {
   private static final String PROP_NODES = "nodes";
