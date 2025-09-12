@@ -6057,6 +6057,49 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testRouteMapUndefinedAcl() throws IOException {
+    Configuration c = parseConfig("ios-route-map-undefined-acl");
+    Bgpv4Route.Builder builder =
+        Bgpv4Route.testBuilder()
+            .setOriginatorIp(Ip.parse("1.1.1.1"))
+            .setOriginType(OriginType.INCOMPLETE)
+            .setProtocol(RoutingProtocol.BGP);
+
+    Prefix prefix10 = Prefix.parse("10.0.0.0/8");
+    Prefix prefix11 = Prefix.parse("11.0.0.0/8");
+    Bgpv4Route route10 = builder.setNetwork(prefix10).build();
+    Bgpv4Route route11 = builder.setNetwork(prefix11).build();
+
+    assertTrue(
+        "All (single) ACLs are undefined -> the match is ignored",
+        c.getRoutingPolicies()
+            .get("rm_single_undefined")
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertTrue(
+        "All (single) ACLs are undefined -> the match is ignored",
+        c.getRoutingPolicies()
+            .get("rm_all_undefined")
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+
+    assertTrue(
+        "Some undefined, some defined -> only defined matter",
+        c.getRoutingPolicies()
+            .get("rm_mixed_defined_undefined")
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+
+    assertTrue(
+        "Route 10/8 permitted by first defined ACL",
+        c.getRoutingPolicies()
+            .get("rm_multiple_defined")
+            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+    assertTrue(
+        "Route 11/8 permitted by second defined ACL",
+        c.getRoutingPolicies()
+            .get("rm_multiple_defined")
+            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+  }
+
+  @Test
   public void testSetMetricEigrp() throws IOException {
     Configuration c = parseConfig("ios-route-map-set-metric-eigrp");
 
