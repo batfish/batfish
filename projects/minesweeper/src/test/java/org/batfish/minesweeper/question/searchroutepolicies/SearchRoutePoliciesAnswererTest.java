@@ -2272,7 +2272,10 @@ public class SearchRoutePoliciesAnswererTest {
             EMPTY_CONSTRAINTS,
             BgpRouteConstraints.builder()
                 .setCommunities(
-                    new RegexConstraints(ImmutableList.of(new RegexConstraint("^4:44$", true))))
+                    new RegexConstraints(
+                        ImmutableList.of(
+                            new RegexConstraint("^4:44$", true),
+                            new RegexConstraint("^5:55$", true))))
                 .build(),
             HOSTNAME,
             policy.getName(),
