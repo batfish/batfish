@@ -742,6 +742,7 @@ import org.batfish.grammar.cisco.CiscoParser.Match_extcommunity_rm_stanzaContext
 import org.batfish.grammar.cisco.CiscoParser.Match_interface_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ip_prefix_list_rm_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Match_ip_route_source_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_access_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_ipv6_prefix_list_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Match_semanticsContext;
@@ -6907,6 +6908,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     RouteMapMatchIpPrefixListLine line = new RouteMapMatchIpPrefixListLine(names);
     _currentRouteMapClause.addMatchLine(line);
+  }
+
+  @Override
+  public void exitMatch_ip_route_source_rm_stanza(Match_ip_route_source_rm_stanzaContext ctx) {
+    todo(ctx);
   }
 
   @Override

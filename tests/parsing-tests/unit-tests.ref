@@ -25388,7 +25388,7 @@
             "      (rm_stanza*",
             "        (match_rm_stanza*",
             "          MATCH:'match'",
-            "          (match_ip_route_source_rm_stanza*",
+            "          (match_ip_route_source_rm_stanza",
             "            IP:'ip'",
             "            ROUTE_SOURCE:'route-source'",
             "            src = (dec*",
@@ -70305,6 +70305,12 @@
         },
         "configs/cisco_route_map" : {
           "Parse warnings" : [
+            {
+              "Comment" : "This feature is not currently supported",
+              "Line" : 25,
+              "Parser_Context" : "[match_ip_route_source_rm_stanza match_rm_stanza rm_stanza route_map_stanza stanza cisco_configuration]",
+              "Text" : "ip route-source 124"
+            },
             {
               "Comment" : "This feature is not currently supported",
               "Line" : 33,
