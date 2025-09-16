@@ -1,0 +1,30 @@
+!
+hostname ios-route-map-undefined-acl
+!
+! Test undefined ACL behavior in route-map match statements
+! Undefined ACLs should be treated as no filter
+!
+! Define only some ACLs - others will be undefined
+ip access-list standard ACL_DEFINED_PERMIT
+  permit 10.0.0.0 0.255.255.255
+!
+ip access-list standard ACL_DEFINED_DENY
+  deny 10.0.0.0 0.255.255.255
+  permit any
+!
+! Test case 1: All ACLs undefined - should result in permit all
+route-map rm_all_undefined permit 10
+  match ip address UNDEFINED_ACL1 UNDEFINED_ACL2
+!
+! Test case 2: Mixed defined and undefined ACLs - only defined ones should be used
+route-map rm_mixed_defined_undefined permit 10
+  match ip address ACL_DEFINED_PERMIT UNDEFINED_ACL3
+!
+! Test case 3: Single undefined ACL - should result in permit all
+route-map rm_single_undefined permit 10
+  match ip address UNDEFINED_SINGLE
+!
+! Test case 4: Multiple defined ACLs (no undefined) - should OR them together
+route-map rm_multiple_defined permit 10
+  match ip address ACL_DEFINED_PERMIT ACL_DEFINED_DENY
+!
