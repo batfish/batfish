@@ -795,11 +795,15 @@ import org.batfish.grammar.cisco.CiscoParser.Ogn_network_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_group_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogp_protocol_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_group_objectContext;
-import org.batfish.grammar.cisco.CiscoParser.Ogs_icmpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_port_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_service_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_tcpContext;
 import org.batfish.grammar.cisco.CiscoParser.Ogs_udpContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogsi_anyContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogsi_echoContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogsi_echo_replyContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogsi_time_exceededContext;
+import org.batfish.grammar.cisco.CiscoParser.Ogsi_unreachableContext;
 import org.batfish.grammar.cisco.CiscoParser.On_descriptionContext;
 import org.batfish.grammar.cisco.CiscoParser.On_fqdnContext;
 import org.batfish.grammar.cisco.CiscoParser.On_hostContext;
@@ -2995,8 +2999,40 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void exitOgs_icmp(Ogs_icmpContext ctx) {
-    _currentServiceObjectGroup.getLines().add(new IcmpServiceObjectGroupLine());
+  public void exitOgsi_any(Ogsi_anyContext ctx) {
+    _currentServiceObjectGroup.getLines().add(new IcmpServiceObjectGroupLine(null, null));
+  }
+
+  @Override
+  public void exitOgsi_echo(Ogsi_echoContext ctx) {
+    _currentServiceObjectGroup
+        .getLines()
+        .add(
+            new IcmpServiceObjectGroupLine(
+                IcmpCode.ECHO_REQUEST.getType(), IcmpCode.ECHO_REQUEST.getCode()));
+  }
+
+  @Override
+  public void exitOgsi_echo_reply(Ogsi_echo_replyContext ctx) {
+    _currentServiceObjectGroup
+        .getLines()
+        .add(
+            new IcmpServiceObjectGroupLine(
+                IcmpCode.ECHO_REPLY.getType(), IcmpCode.ECHO_REPLY.getCode()));
+  }
+
+  @Override
+  public void exitOgsi_time_exceeded(Ogsi_time_exceededContext ctx) {
+    _currentServiceObjectGroup
+        .getLines()
+        .add(new IcmpServiceObjectGroupLine(IcmpType.TIME_EXCEEDED, null));
+  }
+
+  @Override
+  public void exitOgsi_unreachable(Ogsi_unreachableContext ctx) {
+    _currentServiceObjectGroup
+        .getLines()
+        .add(new IcmpServiceObjectGroupLine(IcmpType.DESTINATION_UNREACHABLE, null));
   }
 
   @Override
