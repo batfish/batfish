@@ -4,6 +4,12 @@ hostname ios-object-group-service
 object-group service og-icmp
  icmp
 !
+object-group service og-icmp-specific
+ icmp echo
+ icmp echo-reply
+ icmp time-exceeded
+ icmp unreachable
+!
 object-group service og-tcp
  tcp eq 65500
  tcp eq cmd
