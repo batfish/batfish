@@ -9,7 +9,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public class IcmpTypeObjectGroup extends ObjectGroup {
 
-  private List<IcmpTypeObjectGroupLine> _lines;
+  private final List<IcmpTypeObjectGroupLine> _lines;
 
   public IcmpTypeObjectGroup(String name) {
     super(name);

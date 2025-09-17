@@ -27,6 +27,7 @@ import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.OriginMechanism.REDISTRIBUTE;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
+import static org.batfish.datamodel.acl.AclLineMatchExprs.matchIpProtocol;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrc;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchSrcInterface;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
@@ -322,6 +323,7 @@ import org.batfish.datamodel.FirewallSessionInterfaceInfo.Action;
 import org.batfish.datamodel.Flow;
 import org.batfish.datamodel.GeneratedRoute;
 import org.batfish.datamodel.HeaderSpace;
+import org.batfish.datamodel.IcmpType;
 import org.batfish.datamodel.IkeAuthenticationMethod;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkeKeyType;
@@ -2251,10 +2253,43 @@ public final class CiscoGrammarTest {
         hasIpAccessList(
             computeServiceObjectGroupAclName("og-icmp"),
             hasLines(
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        isMatchHeaderSpaceThat(
-                            hasHeaderSpace(hasIpProtocols(contains(IpProtocol.ICMP)))))))));
+                isExprAclLineThat(hasMatchCondition(equalTo(matchIpProtocol(IpProtocol.ICMP)))))));
+
+    /* og-icmp-specific */
+    Flow.Builder testFlow =
+        Flow.builder()
+            .setIngressNode(c.getHostname())
+            .setSrcIp(Ip.ZERO)
+            .setDstIp(Ip.ZERO)
+            .setIpProtocol(IpProtocol.ICMP);
+    assertThat(
+        c,
+        hasIpAccessList(
+            computeServiceObjectGroupAclName("og-icmp-specific"),
+            allOf(
+                accepts(
+                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(0).build(), null, c),
+                // echo is both type/code
+                rejects(
+                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(1).build(), null, c),
+                // echo-reply is both type/code
+                accepts(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(0).build(), null, c),
+                rejects(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(1).build(), null, c),
+                // time-exceeded is just type
+                accepts(
+                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(0).build(), null, c),
+                accepts(
+                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(1).build(), null, c),
+                // unreacbale is just type
+                accepts(
+                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(0).build(),
+                    null,
+                    c),
+                accepts(
+                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(1).build(),
+                    null,
+                    c))));
+
     /* og-tcp */
     assertThat(
         c,
