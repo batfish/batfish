@@ -94,7 +94,6 @@ public class BfConsts {
   public static final String PROP_INSTANCE = "instance";
   public static final String PROP_INSTANCE_NAME = "instanceName";
   public static final String PROP_LONG_DESCRIPTION = "longDescription";
-  public static final String PROP_MAJOR_ISSUE_CONFIGS = "majorIssueConfigs";
   public static final String PROP_MAX_ROWS = "maxRows";
   public static final String PROP_METADATA = "metadata";
   public static final String PROP_METRICS = "metrics";
