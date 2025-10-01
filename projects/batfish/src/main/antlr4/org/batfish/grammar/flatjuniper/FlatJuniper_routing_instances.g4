@@ -713,7 +713,8 @@ rosr_as_path
 
 rosr_common
 :
-   rosr_active
+   apply
+   | rosr_active
    | rosr_as_path
    | rosr_community
    | rosr_discard
