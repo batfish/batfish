@@ -3,6 +3,10 @@ set system host-name preprocess-apply-groups-static-route
 set routing-options static route 0.0.0.0/0 discard
 set routing-options static route 0.0.0.0/0 no-install
 set routing-options static route 0.0.0.0/0 preference 100
+set routing-options static route 1.1.1.1/32 discard
+set routing-options static route 1.1.1.1/32 no-install
+set routing-options static route 1.1.1.1/32 community 5:5
+set routing-options static route 1.1.1.1/32 apply-groups ROUTE_OPTIONS
 set routing-options rib inet6.0 static route ::/0 discard
 set routing-options rib inet6.0 static route ::/0 no-install
 set routing-options rib inet6.0 static route ::/0 preference 200
