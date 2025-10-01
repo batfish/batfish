@@ -10,3 +10,7 @@ set groups MYGROUP routing-options static route <*> discard
 set groups MYGROUP routing-options static route <*> no-install
 
 set apply-groups MYGROUP
+
+# Using apply-groups to set route-options.
+set groups ROUTE_OPTIONS routing-options static route <*> community 5:5
+set routing-options static route 1.1.1.1/32 apply-groups ROUTE_OPTIONS
