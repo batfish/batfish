@@ -8,7 +8,6 @@ java_library(
     srcs = glob([
         "**/*.java",
     ]),
-    resources = glob(["src/main/resources/**"]),
     runtime_deps = [
         "//projects/question/src/main/java/org/batfish/question",
         "@maven//:jakarta_xml_bind_jakarta_xml_bind_api",

@@ -31,6 +31,37 @@ bazel_skylib_workspace()
 ##########################################################
 # External Java dependencies (from Maven)                #
 ##########################################################
+# Override rules_java to use Bazel 8-compatible version before rules_jvm_external loads it
+http_archive(
+    name = "rules_java",
+    sha256 = "1b30698d89dccd9dc01b1a4ad7e9e5c6e669cdf1918dbb050334e365b40a1b5e",
+    urls = [
+        "https://github.com/bazelbuild/rules_java/releases/download/8.16.1/rules_java-8.16.1.tar.gz",
+    ],
+)
+
+http_archive(
+    name = "bazel_features",
+    sha256 = "a660027f5a87f13224ab54b8dc6e191693c554f2692fcca46e8e29ee7dabc43b",
+    strip_prefix = "bazel_features-1.30.0",
+    url = "https://github.com/bazel-contrib/bazel_features/releases/download/v1.30.0/bazel_features-v1.30.0.tar.gz",
+)
+
+load("@bazel_features//:deps.bzl", "bazel_features_deps")
+
+bazel_features_deps()
+
+load("@rules_java//java:rules_java_deps.bzl", "rules_java_dependencies")
+
+rules_java_dependencies()
+
+load("@com_google_protobuf//bazel/private:proto_bazel_features.bzl", "proto_bazel_features")
+
+proto_bazel_features(name = "proto_bazel_features")
+
+load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
+
+rules_java_toolchains()
 
 RULES_JVM_EXTERNAL_TAG = "6.8"
 
