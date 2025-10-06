@@ -383,11 +383,29 @@ if_inet6
    INET6
    (
       apply
+      | ifi6_address
       | ifi6_destination_udp_port
       | ifi6_filter
       | ifi6_mtu
    )
 ;
+
+ifi6_address
+:
+   ADDRESS
+   (
+      ipv6_address
+      | ipv6_prefix
+      | wildcard
+   )
+   (
+      ifi6a_preferred
+      | ifi6a_primary
+   )?
+;
+
+ifi6a_preferred: PREFERRED;
+ifi6a_primary: PRIMARY;
 
 ifi6_destination_udp_port: DESTINATION_UDP_PORT port_number;
 
