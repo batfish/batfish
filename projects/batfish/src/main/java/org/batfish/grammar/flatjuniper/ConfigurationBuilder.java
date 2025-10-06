@@ -5362,11 +5362,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       Ip6 ip = Ip6.parse(parts[0]);
       int prefixLength = Integer.parseInt(parts[1]);
       address = ConcreteInterfaceAddress6.create(ip, prefixLength);
-    } else if (ctx.ipv6_address() != null) {
+    } else {
+      assert ctx.ipv6_address() != null;
       Ip6 ip = toIp6(ctx.ipv6_address());
       address = ConcreteInterfaceAddress6.create(ip, Prefix6.MAX_PREFIX_LENGTH);
-    } else {
-      throw new BatfishException("Invalid or missing IPv6 address");
     }
     _currentInterfaceAddress6 = address;
     if (_currentInterfaceOrRange.getPrimaryAddress6() == null) {

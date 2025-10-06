@@ -3904,14 +3904,14 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         units1.get("ge-0/0/1.0").getAllAddresses6(),
         containsInAnyOrder(
-            ConcreteInterfaceAddress6.parse("2001:db8:1::1/64"),
-            ConcreteInterfaceAddress6.parse("2001:db8:2::1/64")));
+            ConcreteInterfaceAddress6.parse("2001:db8::1/64"),
+            ConcreteInterfaceAddress6.parse("2001:db8::2/64")));
     assertThat(
         units1.get("ge-0/0/1.0").getPrimaryAddress6(),
-        equalTo(ConcreteInterfaceAddress6.parse("2001:db8:1::1/64")));
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
     assertThat(
         units1.get("ge-0/0/1.0").getPreferredAddress6(),
-        equalTo(ConcreteInterfaceAddress6.parse("2001:db8:2::1/64")));
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::2/64")));
   }
 
   @Test
