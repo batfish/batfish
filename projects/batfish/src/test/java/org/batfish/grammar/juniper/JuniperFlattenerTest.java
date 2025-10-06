@@ -144,4 +144,39 @@ public class JuniperFlattenerTest {
       }
     }
   }
+
+  /**
+   * Test that delete and replace tags do not generate spurious set lines.
+   *
+   * <p>Top-level delete (delete: protocols bgp) should not generate a set line.
+   *
+   * <p>Nested delete inside braces (xe-0/0/0 { delete: unit 0; }) should still generate a set line
+   * for the parent block (set interfaces xe-0/0/0), since the parent exists even though its content
+   * was deleted.
+   */
+  @Test
+  public void testDeleteReplaceNoSpuriousSetLines() {
+    String hostname = "flatten-delete-replace";
+    Flattener flattener =
+        Batfish.flatten(
+            readResource(TESTCONFIGS_PREFIX + hostname, UTF_8),
+            new BatfishLogger(BatfishLogger.LEVELSTR_OUTPUT, false),
+            new Settings(),
+            new Warnings(),
+            ConfigurationFormat.JUNIPER,
+            VendorConfigurationFormatDetector.BATFISH_FLATTENED_JUNIPER_HEADER);
+    assert flattener instanceof JuniperFlattener;
+    String flatText = flattener.getFlattenedConfigurationText();
+    assertThat(
+        flatText,
+        equalTo(
+            """
+            ####BATFISH FLATTENED JUNIPER CONFIG####
+            replace system host-name "some-device"
+            set system host-name "some-device"
+            delete protocols bgp
+            delete interfaces xe-0/0/0 unit 0
+            set interfaces xe-0/0/0
+            """));
+  }
 }

@@ -90,7 +90,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public void enterHierarchical_statement(Hierarchical_statementContext ctx) {
-    _inEmptyBracedClause = false;
+    // Only clear _inEmptyBracedClause if this statement has content (no delete tag)
+    if (_inEmptyBracedClause && ctx.tag().stream().noneMatch(tag -> tag.DELETE() != null)) {
+      _inEmptyBracedClause = false;
+    }
 
     int firstWordLine = ctx.words.get(0).getStart().getLine();
     ImmutableSet.Builder<Integer> extraLinesBuilder =
@@ -133,6 +136,10 @@ public class JuniperFlattener extends JuniperParserBaseListener implements Flatt
 
   @Override
   public void exitTerminator(TerminatorContext ctx) {
+    if (_inDelete) {
+      // Tag command already constructed; nothing more to do.
+      return;
+    }
     if (_currentBracketedWords != null) {
       // Make a separate set-line for each of the bracketed words
       for (WordContext bracketedWordCtx : _currentBracketedWords) {
