@@ -189,6 +189,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.HeaderSpace;
@@ -384,7 +385,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_interface_modeConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_native_vlan_idContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_port_modeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ife_vlanContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6_destination_udp_portContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_preferredContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6a_primaryContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi6f_inputContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ifi_destination_udp_portContext;
@@ -2303,6 +2307,8 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private ConcreteInterfaceAddress _currentInterfaceAddress;
 
+  private ConcreteInterfaceAddress6 _currentInterfaceAddress6;
+
   private IpsecPolicy _currentIpsecPolicy;
 
   private IpsecProposal _currentIpsecProposal;
@@ -2789,11 +2795,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     ConcreteInterfaceAddress address;
     if (ctx.ip_prefix() != null) {
       address = toConcreteInterfaceAddress(ctx.ip_prefix());
-    } else if (ctx.ip_address() != null) {
+    } else {
+      assert ctx.ip_address() != null;
       Ip ip = toIp(ctx.ip_address());
       address = ConcreteInterfaceAddress.create(ip, Prefix.MAX_PREFIX_LENGTH);
-    } else {
-      throw new BatfishException("Invalid or missing address");
     }
     _currentInterfaceAddress = address;
     if (_currentInterfaceOrRange.getPrimaryAddress() == null) {
@@ -5345,6 +5350,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitIfm_destination_udp_port(Ifm_destination_udp_portContext ctx) {
     todo(ctx);
+  }
+
+  @Override
+  public void enterIfi6_address(Ifi6_addressContext ctx) {
+    Set<ConcreteInterfaceAddress6> allAddresses6 = _currentInterfaceOrRange.getAllAddresses6();
+    ConcreteInterfaceAddress6 address;
+    if (ctx.ipv6_prefix() != null) {
+      String text = ctx.ipv6_prefix().getText();
+      String[] parts = text.split("/");
+      Ip6 ip = Ip6.parse(parts[0]);
+      int prefixLength = Integer.parseInt(parts[1]);
+      address = ConcreteInterfaceAddress6.create(ip, prefixLength);
+    } else {
+      assert ctx.ipv6_address() != null;
+      Ip6 ip = toIp6(ctx.ipv6_address());
+      address = ConcreteInterfaceAddress6.create(ip, Prefix6.MAX_PREFIX_LENGTH);
+    }
+    _currentInterfaceAddress6 = address;
+    if (_currentInterfaceOrRange.getPrimaryAddress6() == null) {
+      _currentInterfaceOrRange.setPrimaryAddress6(address);
+    }
+    if (_currentInterfaceOrRange.getPreferredAddress6() == null) {
+      _currentInterfaceOrRange.setPreferredAddress6(address);
+    }
+    allAddresses6.add(address);
+  }
+
+  @Override
+  public void exitIfi6_address(Ifi6_addressContext ctx) {
+    _currentInterfaceAddress6 = null;
+  }
+
+  @Override
+  public void exitIfi6a_preferred(Ifi6a_preferredContext ctx) {
+    _currentInterfaceOrRange.setPreferredAddress6(_currentInterfaceAddress6);
+  }
+
+  @Override
+  public void exitIfi6a_primary(Ifi6a_primaryContext ctx) {
+    _currentInterfaceOrRange.setPrimaryAddress6(_currentInterfaceAddress6);
   }
 
   @Override
