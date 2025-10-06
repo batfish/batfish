@@ -277,6 +277,7 @@ import org.batfish.datamodel.BgpSessionProperties;
 import org.batfish.datamodel.Bgpv4Route;
 import org.batfish.datamodel.Bgpv4Route.Builder;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ConnectedRoute;
@@ -3876,6 +3877,41 @@ public final class FlatJuniperGrammarTest {
         c,
         hasInterface(
             "vtnet0.0", hasAllAddresses(contains(ConcreteInterfaceAddress.parse("10.1.2.1/30")))));
+  }
+
+  @Test
+  public void testInterfaceInet6Address() {
+    String hostname = "interface-inet6-address";
+    JuniperConfiguration jc = parseJuniperConfig(hostname);
+
+    Map<String, org.batfish.representation.juniper.Interface> units0 =
+        jc.getMasterLogicalSystem().getInterfaces().get("ge-0/0/0").getUnits();
+    Map<String, org.batfish.representation.juniper.Interface> units1 =
+        jc.getMasterLogicalSystem().getInterfaces().get("ge-0/0/1").getUnits();
+
+    // ge-0/0/0.0 has a single IPv6 address
+    assertThat(
+        units0.get("ge-0/0/0.0").getAllAddresses6(),
+        contains(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+    assertThat(
+        units0.get("ge-0/0/0.0").getPrimaryAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+    assertThat(
+        units0.get("ge-0/0/0.0").getPreferredAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8::1/64")));
+
+    // ge-0/0/1.0 has two IPv6 addresses with explicit primary and preferred
+    assertThat(
+        units1.get("ge-0/0/1.0").getAllAddresses6(),
+        containsInAnyOrder(
+            ConcreteInterfaceAddress6.parse("2001:db8:1::1/64"),
+            ConcreteInterfaceAddress6.parse("2001:db8:2::1/64")));
+    assertThat(
+        units1.get("ge-0/0/1.0").getPrimaryAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8:1::1/64")));
+    assertThat(
+        units1.get("ge-0/0/1.0").getPreferredAddress6(),
+        equalTo(ConcreteInterfaceAddress6.parse("2001:db8:2::1/64")));
   }
 
   @Test

@@ -1,0 +1,10 @@
+#
+set system host-name interface-inet6-address
+#
+set interfaces ge-0/0/0 unit 0 family inet6 address 2001:db8::1/64
+#
+set interfaces ge-0/0/1 unit 0 family inet6 address 2001:db8:1::1/64
+set interfaces ge-0/0/1 unit 0 family inet6 address 2001:db8:1::1/64 primary
+set interfaces ge-0/0/1 unit 0 family inet6 address 2001:db8:2::1/64
+set interfaces ge-0/0/1 unit 0 family inet6 address 2001:db8:2::1/64 preferred
+#

@@ -12,10 +12,10 @@ import java.util.TreeMap;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IsoAddress;
-import org.batfish.datamodel.Prefix6;
 import org.batfish.datamodel.SubRange;
 
 public class Interface implements Serializable {
@@ -147,7 +147,7 @@ public class Interface implements Serializable {
   private boolean _active;
   private Set<Ip> _additionalArpIps;
   private final Set<ConcreteInterfaceAddress> _allAddresses;
-  private final Set<Prefix6> _allAddresses6;
+  private final Set<ConcreteInterfaceAddress6> _allAddresses6;
   // Dumb name to appease checkstyle
   private String _agg8023adInterface;
   private final Set<Ip> _allAddressIps;
@@ -170,9 +170,9 @@ public class Interface implements Serializable {
   private @Nullable List<String> _outgoingFilterList;
   private Interface _parent;
   private InterfaceAddress _preferredAddress;
-  private @Nullable Prefix6 _preferredAddress6;
+  private @Nullable ConcreteInterfaceAddress6 _preferredAddress6;
   private ConcreteInterfaceAddress _primaryAddress;
-  private @Nullable Prefix6 _primaryAddress6;
+  private @Nullable ConcreteInterfaceAddress6 _primaryAddress6;
   private boolean _primary;
   private @Nullable String _redundantParentInterface;
   private RoutingInstance _routingInstance;
@@ -216,7 +216,7 @@ public class Interface implements Serializable {
     return _allAddresses;
   }
 
-  public Set<Prefix6> getAllAddresses6() {
+  public Set<ConcreteInterfaceAddress6> getAllAddresses6() {
     return _allAddresses6;
   }
 
@@ -300,7 +300,7 @@ public class Interface implements Serializable {
     return _preferredAddress;
   }
 
-  public @Nullable Prefix6 getPreferredAddress6() {
+  public @Nullable ConcreteInterfaceAddress6 getPreferredAddress6() {
     return _preferredAddress6;
   }
 
@@ -308,7 +308,7 @@ public class Interface implements Serializable {
     return _primaryAddress;
   }
 
-  public @Nullable Prefix6 getPrimaryAddress6() {
+  public @Nullable ConcreteInterfaceAddress6 getPrimaryAddress6() {
     return _primaryAddress6;
   }
 
@@ -496,7 +496,7 @@ public class Interface implements Serializable {
     _preferredAddress = address;
   }
 
-  public void setPreferredAddress6(@Nullable Prefix6 address) {
+  public void setPreferredAddress6(@Nullable ConcreteInterfaceAddress6 address) {
     _preferredAddress6 = address;
   }
 
@@ -504,7 +504,7 @@ public class Interface implements Serializable {
     _primaryAddress = address;
   }
 
-  public void setPrimaryAddress6(@Nullable Prefix6 address) {
+  public void setPrimaryAddress6(@Nullable ConcreteInterfaceAddress6 address) {
     _primaryAddress6 = address;
   }
 

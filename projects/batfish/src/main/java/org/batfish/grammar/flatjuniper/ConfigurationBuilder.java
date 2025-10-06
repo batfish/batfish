@@ -189,6 +189,7 @@ import org.batfish.datamodel.AsSet;
 import org.batfish.datamodel.AuthenticationMethod;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.ConcreteInterfaceAddress6;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.HeaderSpace;
@@ -2306,7 +2307,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private ConcreteInterfaceAddress _currentInterfaceAddress;
 
-  private Prefix6 _currentInterfaceAddress6;
+  private ConcreteInterfaceAddress6 _currentInterfaceAddress6;
 
   private IpsecPolicy _currentIpsecPolicy;
 
@@ -5353,14 +5354,19 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void enterIfi6_address(Ifi6_addressContext ctx) {
-    Set<Prefix6> allAddresses6 = _currentInterfaceOrRange.getAllAddresses6();
-    Prefix6 address;
+    Set<ConcreteInterfaceAddress6> allAddresses6 = _currentInterfaceOrRange.getAllAddresses6();
+    ConcreteInterfaceAddress6 address;
     if (ctx.ipv6_prefix() != null) {
-      address = toPrefix6(ctx.ipv6_prefix());
-    } else {
-      assert ctx.ipv6_address() != null;
+      String text = ctx.ipv6_prefix().getText();
+      String[] parts = text.split("/");
+      Ip6 ip = Ip6.parse(parts[0]);
+      int prefixLength = Integer.parseInt(parts[1]);
+      address = ConcreteInterfaceAddress6.create(ip, prefixLength);
+    } else if (ctx.ipv6_address() != null) {
       Ip6 ip = toIp6(ctx.ipv6_address());
-      address = Prefix6.create(ip, Prefix6.MAX_PREFIX_LENGTH);
+      address = ConcreteInterfaceAddress6.create(ip, Prefix6.MAX_PREFIX_LENGTH);
+    } else {
+      throw new BatfishException("Invalid or missing IPv6 address");
     }
     _currentInterfaceAddress6 = address;
     if (_currentInterfaceOrRange.getPrimaryAddress6() == null) {
