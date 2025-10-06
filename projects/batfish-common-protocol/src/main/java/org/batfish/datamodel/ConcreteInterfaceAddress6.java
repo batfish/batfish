@@ -5,15 +5,21 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonValue;
 import com.google.common.collect.ImmutableMap;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 
-/** A concrete IPv6 address assigned to an interface */
+/**
+ * A concrete IPv6 address assigned to an interface
+ *
+ * <p>TODO: Consider extending InterfaceAddress if needed for polymorphism in the future
+ */
 @ParametersAreNonnullByDefault
-public final class ConcreteInterfaceAddress6 extends InterfaceAddress {
+public final class ConcreteInterfaceAddress6
+    implements Comparable<ConcreteInterfaceAddress6>, Serializable {
 
   private static final Comparator<ConcreteInterfaceAddress6> COMPARATOR =
       Comparator.comparing(ConcreteInterfaceAddress6::getIp)
@@ -71,11 +77,8 @@ public final class ConcreteInterfaceAddress6 extends InterfaceAddress {
   }
 
   @Override
-  public int compareTo(InterfaceAddress rhs) {
-    if (rhs instanceof ConcreteInterfaceAddress6) {
-      return COMPARATOR.compare(this, (ConcreteInterfaceAddress6) rhs);
-    }
-    return 1;
+  public int compareTo(ConcreteInterfaceAddress6 rhs) {
+    return COMPARATOR.compare(this, rhs);
   }
 
   @Override
