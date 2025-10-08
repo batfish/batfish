@@ -20,21 +20,32 @@ def _antlr_grammar_impl(ctx):
             outs.append(ctx.actions.declare_file(base_name + "BaseListener.java"))
             outs.append(ctx.actions.declare_file(base_name + "Listener.java"))
 
+    # Get Java runtime
+    java_runtime = ctx.toolchains["@bazel_tools//tools/jdk:runtime_toolchain_type"].java_runtime
+    java_executable = java_runtime.java_executable_exec_path
+
     # Get ANTLR tool
     antlr_jar = ctx.file.antlr_tool
 
     # Build ANTLR command
-    cmd = "java -cp %s org.antlr.v4.Tool -Xexact-output-dir %s -package %s -encoding UTF-8 -Werror -o %s" % (
-        antlr_jar.path,
-        " ".join([f.path for f in lexer_parser_files]),
-        package,
-        outs[0].dirname,
-    )
+    args = ctx.actions.args()
+    args.add("-cp", antlr_jar)
+    args.add("org.antlr.v4.Tool")
+    args.add("-Xexact-output-dir")
+    args.add_all(lexer_parser_files)
+    args.add("-package", package)
+    args.add("-encoding", "UTF-8")
+    args.add("-Werror")
+    args.add("-o", outs[0].dirname)
 
     # Run ANTLR (all srcs are inputs for dependencies, but only lexer/parser are in command line)
-    ctx.actions.run_shell(
-        command = cmd,
-        inputs = depset(direct = srcs + [antlr_jar]),
+    ctx.actions.run(
+        executable = java_executable,
+        arguments = [args],
+        inputs = depset(
+            direct = srcs + [antlr_jar],
+            transitive = [java_runtime.files],
+        ),
         outputs = outs,
         mnemonic = "AntlrGeneration",
         progress_message = "Generating ANTLR parser for %s" % package,
@@ -60,5 +71,6 @@ antlr_grammar = rule(
             doc = "ANTLR tool JAR",
         ),
     },
+    toolchains = ["@bazel_tools//tools/jdk:runtime_toolchain_type"],
     doc = "Generates Java parser files from ANTLR grammar files.",
 )
