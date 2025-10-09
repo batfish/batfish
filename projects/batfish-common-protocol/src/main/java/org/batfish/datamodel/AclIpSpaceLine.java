@@ -133,9 +133,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   @Override
   public String toString() {
     ToStringHelper helper = MoreObjects.toStringHelper(getClass());
-    if (_action != LineAction.PERMIT) {
-      helper.add(PROP_ACTION, _action);
-    }
+    helper.add(PROP_ACTION, _action);
     helper.add(PROP_IP_SPACE, _ipSpace);
     return helper.toString();
   }
