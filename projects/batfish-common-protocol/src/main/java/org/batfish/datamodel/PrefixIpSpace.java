@@ -7,6 +7,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
@@ -65,6 +66,7 @@ public final class PrefixIpSpace extends IpSpace {
   }
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.getUnchecked(_prefix);
   }

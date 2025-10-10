@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import java.io.Serial;
 import net.sf.javabdd.BDD;
 
 /** A transition that permits all flows unmodified. */
@@ -28,6 +29,7 @@ public final class Identity implements Transition {
     return visitor.visitIdentity(this);
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

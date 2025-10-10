@@ -5,6 +5,7 @@ import static com.google.common.base.MoreObjects.toStringHelper;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Objects;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -83,6 +84,7 @@ public final class FibForward implements FibAction {
   }
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.get(this);
   }

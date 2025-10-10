@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class DeliveredToSubnet implements StateExpr {
 
   public static final DeliveredToSubnet INSTANCE = new DeliveredToSubnet();
@@ -16,6 +18,7 @@ public final class DeliveredToSubnet implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

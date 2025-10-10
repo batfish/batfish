@@ -6,6 +6,7 @@ import static org.batfish.common.bdd.BDDUtils.bitvector;
 
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -37,6 +38,7 @@ public final class MutableBDDInteger extends BDDInteger {
     setValue(other);
   }
 
+  @Serial
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();

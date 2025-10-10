@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Set;
@@ -171,6 +172,7 @@ public final class IpWildcardSetIpSpace extends IpSpace {
   private transient int _hashCode;
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.get(this);
   }

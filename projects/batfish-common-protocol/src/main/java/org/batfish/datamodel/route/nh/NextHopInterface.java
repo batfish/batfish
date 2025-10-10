@@ -9,6 +9,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -129,6 +130,7 @@ public final class NextHopInterface implements NextHop {
   }
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.getUnchecked(this);
   }

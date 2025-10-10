@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.route.nh.NextHopDiscard;
@@ -39,6 +40,7 @@ public class DiscardNextHop extends NextHopExpr {
     return INSTANCE;
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

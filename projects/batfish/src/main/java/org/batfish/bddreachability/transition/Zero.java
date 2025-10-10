@@ -1,5 +1,6 @@
 package org.batfish.bddreachability.transition;
 
+import java.io.Serial;
 import net.sf.javabdd.BDD;
 
 /** A transition that allows nothing. */
@@ -28,6 +29,7 @@ public final class Zero implements Transition {
     return visitor.visitZero(this);
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

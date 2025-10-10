@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import java.io.IOException;
+import java.io.Serial;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -354,6 +355,7 @@ public final class FibImpl implements Fib {
     return builder.build();
   }
 
+  @Serial
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();

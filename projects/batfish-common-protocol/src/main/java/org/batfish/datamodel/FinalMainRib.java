@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.LinkedList;
@@ -100,6 +101,7 @@ public final class FinalMainRib implements Serializable {
     _routeTree = tree;
   }
 
+  @Serial
   private Object writeReplace() throws ObjectStreamException {
     return new SerializedForm(_routeTree.getAllElements());
   }
@@ -111,6 +113,7 @@ public final class FinalMainRib implements Serializable {
       _routes = routes;
     }
 
+    @Serial
     private Object readResolve() throws ObjectStreamException {
       return FinalMainRib.of(_routes);
     }

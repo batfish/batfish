@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class EmptyIpSpace extends IpSpace {
@@ -48,6 +49,7 @@ public class EmptyIpSpace extends IpSpace {
   }
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return INSTANCE;
   }

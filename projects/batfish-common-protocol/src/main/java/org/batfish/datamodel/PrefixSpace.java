@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Ordering;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.BitSet;
@@ -326,6 +327,7 @@ public class PrefixSpace implements Serializable {
     return !intersection.isEmpty();
   }
 
+  @Serial
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
     _cache = new ConcurrentHashMap<>();
