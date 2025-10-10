@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public class NeighborUnreachable implements StateExpr {
 
   public static final NeighborUnreachable INSTANCE = new NeighborUnreachable();
@@ -16,6 +18,7 @@ public class NeighborUnreachable implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

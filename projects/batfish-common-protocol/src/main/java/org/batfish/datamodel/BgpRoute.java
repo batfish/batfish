@@ -10,6 +10,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
@@ -205,6 +206,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
     }
 
     /** Re-intern after deserialization. */
+    @Serial
     private Object readResolve() throws ObjectStreamException {
       return ATTRIBUTE_CACHE.get(this);
     }

@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.Ordering;
 import com.google.common.primitives.UnsignedInts;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -262,6 +263,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
     return _ip + "/" + _prefixLength;
   }
 
+  @Serial
   private Object writeReplace() throws ObjectStreamException {
     return new SerializedForm(_ip, _prefixLength);
   }
@@ -276,6 +278,7 @@ public final class Prefix implements Comparable<Prefix>, Serializable {
       _length = (byte) prefixLength;
     }
 
+    @Serial
     private Object readResolve() throws ObjectStreamException {
       return CACHE.get(new Prefix(Ip.create(UnsignedInts.toLong(_ip)), _length));
     }

@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class ExitsNetwork implements StateExpr {
 
   public static final ExitsNetwork INSTANCE = new ExitsNetwork();
@@ -16,6 +18,7 @@ public final class ExitsNetwork implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

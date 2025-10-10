@@ -1,6 +1,7 @@
 package org.batfish.datamodel.routing_policy.expr;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.Serial;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpRoute;
 import org.batfish.datamodel.BgpSessionProperties;
@@ -56,6 +57,7 @@ public class UnchangedNextHop extends NextHopExpr {
     return INSTANCE;
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

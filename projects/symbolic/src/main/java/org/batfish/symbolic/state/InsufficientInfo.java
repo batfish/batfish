@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class InsufficientInfo implements StateExpr {
 
   public static final InsufficientInfo INSTANCE = new InsufficientInfo();
@@ -16,6 +18,7 @@ public final class InsufficientInfo implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

@@ -9,6 +9,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
@@ -78,6 +79,7 @@ public class BDDReachabilityAnalysis implements Serializable {
         Suppliers.memoize(() -> BDDReachabilityUtils.transposeAndMaterialize(_forwardEdgeTable));
   }
 
+  @Serial
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();

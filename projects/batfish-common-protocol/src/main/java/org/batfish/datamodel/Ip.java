@@ -8,6 +8,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Optional;
 import javax.annotation.Nonnull;
@@ -255,6 +256,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.getUnchecked(this);
   }

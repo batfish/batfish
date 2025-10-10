@@ -5,6 +5,7 @@ import com.google.common.collect.Comparators;
 import com.google.common.collect.ImmutableList;
 import com.google.common.primitives.Ints;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 import java.util.List;
@@ -78,6 +79,7 @@ public final class InterfaceNameComparator implements Comparator<String>, Serial
   }
 
   /** Singleton after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return INSTANCE;
   }

@@ -7,6 +7,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.io.IOException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.BitSet;
 import java.util.HashMap;
@@ -177,6 +178,7 @@ public class BDDPacket implements Serializable {
     _srcIpSpaceToBDD = new IpSpaceToBDD(_srcIp.getVar());
   }
 
+  @Serial
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();

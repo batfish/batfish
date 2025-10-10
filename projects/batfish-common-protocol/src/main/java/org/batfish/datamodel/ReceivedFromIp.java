@@ -9,6 +9,7 @@ import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.base.MoreObjects;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -82,6 +83,7 @@ public final class ReceivedFromIp implements ReceivedFrom {
   private final @Nonnull Ip _ip;
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.get(this);
   }

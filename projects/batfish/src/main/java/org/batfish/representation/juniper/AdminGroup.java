@@ -1,5 +1,6 @@
 package org.batfish.representation.juniper;
 
+import java.io.Serial;
 import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -11,7 +12,7 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class AdminGroup implements Serializable {
 
-  private static final long serialVersionUID = 1L;
+  @Serial private static final long serialVersionUID = 1L;
 
   private final @Nonnull String _name;
   private final int _value;
