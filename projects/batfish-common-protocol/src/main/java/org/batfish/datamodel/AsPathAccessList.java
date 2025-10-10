@@ -4,16 +4,15 @@ import static com.google.common.base.MoreObjects.firstNonNull;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.github.benmanes.caffeine.cache.Caffeine;
+import com.github.benmanes.caffeine.cache.LoadingCache;
 import com.google.common.collect.ImmutableList;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.Serial;
 import java.io.Serializable;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
@@ -25,13 +24,15 @@ public final class AsPathAccessList implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_NAME = "name";
 
-  private transient Set<AsPath> _deniedCache;
-
   private final @Nonnull List<AsPathAccessListLine> _lines;
 
   private final String _name;
 
-  private transient Set<AsPath> _permittedCache;
+  /**
+   * Cache for AS path permit/deny decisions. Maps AsPath to Boolean where true = permitted, false =
+   * denied, null = not yet evaluated. Bounded to 1024 entries to prevent memory leaks.
+   */
+  private transient LoadingCache<AsPath, Boolean> _cache;
 
   @JsonCreator
   public AsPathAccessList(
@@ -39,6 +40,11 @@ public final class AsPathAccessList implements Serializable {
       @JsonProperty(PROP_LINES) @Nullable List<AsPathAccessListLine> lines) {
     _lines = firstNonNull(lines, ImmutableList.of());
     _name = name;
+    initTransientFields();
+  }
+
+  private void initTransientFields() {
+    _cache = Caffeine.newBuilder().softValues().maximumSize(1024).build(this::evaluatePermits);
   }
 
   @Override
@@ -68,37 +74,25 @@ public final class AsPathAccessList implements Serializable {
     return _name;
   }
 
-  private boolean newPermits(AsPath asPath) {
-    boolean accept = false;
+  private boolean evaluatePermits(AsPath asPath) {
+    String asPathString = asPath.getAsPathString();
     for (AsPathAccessListLine line : _lines) {
       Pattern p = PatternProvider.fromString(line.getRegex());
-      Matcher matcher = p.matcher(asPath.getAsPathString());
+      Matcher matcher = p.matcher(asPathString);
       if (matcher.find()) {
-        accept = line.getAction() == LineAction.PERMIT;
-        break;
+        return line.getAction() == LineAction.PERMIT;
       }
     }
-    if (accept) {
-      _permittedCache.add(asPath);
-    } else {
-      _deniedCache.add(asPath);
-    }
-    return accept;
+    return false;
   }
 
   public boolean permits(AsPath asPath) {
-    if (_deniedCache.contains(asPath)) {
-      return false;
-    } else if (_permittedCache.contains(asPath)) {
-      return true;
-    }
-    return newPermits(asPath);
+    return _cache.get(asPath);
   }
 
   @Serial
   private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException {
     in.defaultReadObject();
-    _deniedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
-    _permittedCache = Collections.newSetFromMap(new ConcurrentHashMap<>());
+    initTransientFields();
   }
 }
