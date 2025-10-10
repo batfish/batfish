@@ -7,6 +7,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import org.batfish.datamodel.visitors.GenericIpSpaceVisitor;
 
 public class IpIpSpace extends IpSpace {
@@ -62,6 +63,7 @@ public class IpIpSpace extends IpSpace {
   }
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.getUnchecked(_ip);
   }

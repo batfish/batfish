@@ -9,6 +9,7 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
@@ -222,6 +223,7 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.getUnchecked(this);
   }

@@ -12,6 +12,7 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Range;
 import com.google.common.collect.RangeSet;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Map;
@@ -567,6 +568,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
       return new SerializedForm<>(keys.build(), values.build());
     }
 
+    @Serial
     public Object readResolve() throws ObjectStreamException {
       PrefixTrieMultiMap<T> ret = new PrefixTrieMultiMap<>();
       for (int i = 0; i < _keys.size(); ++i) {
@@ -576,6 +578,7 @@ public final class PrefixTrieMultiMap<T> implements Serializable {
     }
   }
 
+  @Serial
   private Object writeReplace() throws ObjectStreamException {
     return SerializedForm.of(this);
   }

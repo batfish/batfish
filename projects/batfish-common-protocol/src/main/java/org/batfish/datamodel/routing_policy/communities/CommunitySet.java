@@ -10,6 +10,7 @@ import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Set;
 import java.util.SortedSet;
@@ -146,6 +147,7 @@ public final class CommunitySet implements Serializable {
                   }));
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return of(_communities);
   }

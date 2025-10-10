@@ -1,5 +1,7 @@
 package org.batfish.symbolic.state;
 
+import java.io.Serial;
+
 public final class DropNullRoute implements StateExpr {
   public static final DropNullRoute INSTANCE = new DropNullRoute();
 
@@ -15,6 +17,7 @@ public final class DropNullRoute implements StateExpr {
     return getClass().getSimpleName();
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

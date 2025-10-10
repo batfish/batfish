@@ -3,6 +3,7 @@ package org.batfish.datamodel.routing_policy.expr;
 import static com.google.common.base.Preconditions.checkState;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import java.io.Serial;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.Ip;
@@ -46,6 +47,7 @@ public final class BgpPeerAddressNextHop extends NextHopExpr {
     return INSTANCE;
   }
 
+  @Serial
   private Object readResolve() {
     return INSTANCE;
   }

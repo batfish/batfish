@@ -37,6 +37,7 @@ import com.carrotsearch.hppc.procedures.IntProcedure;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.io.Serial;
 import java.io.Serializable;
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -96,6 +97,7 @@ public class JFactory extends BDDFactory implements Serializable {
     _bddReuse = new LinkedList<>();
   }
 
+  @Serial
   private void readObject(java.io.ObjectInputStream stream)
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();

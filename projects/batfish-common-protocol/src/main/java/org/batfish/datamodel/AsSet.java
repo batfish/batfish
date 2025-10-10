@@ -12,6 +12,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.primitives.Longs;
 import com.google.errorprone.annotations.concurrent.LazyInit;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
@@ -191,6 +192,7 @@ public class AsSet implements Serializable, Comparable<AsSet> {
   }
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return CACHE.get(this);
   }

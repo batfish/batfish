@@ -8,6 +8,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.MoreObjects;
 import com.google.common.base.MoreObjects.ToStringHelper;
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.io.Serializable;
 import java.util.Comparator;
 import javax.annotation.Nonnull;
@@ -139,6 +140,7 @@ public class AclIpSpaceLine implements Comparable<AclIpSpaceLine>, Serializable 
   }
 
   /** Re-intern after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return create(_ipSpace, _action);
   }

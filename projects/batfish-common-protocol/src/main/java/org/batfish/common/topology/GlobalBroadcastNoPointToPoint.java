@@ -1,6 +1,7 @@
 package org.batfish.common.topology;
 
 import java.io.ObjectStreamException;
+import java.io.Serial;
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -32,6 +33,7 @@ public final class GlobalBroadcastNoPointToPoint implements L3Adjacencies {
   private static final GlobalBroadcastNoPointToPoint INSTANCE = new GlobalBroadcastNoPointToPoint();
 
   /** Cache after deserialization. */
+  @Serial
   private Object readResolve() throws ObjectStreamException {
     return INSTANCE;
   }
