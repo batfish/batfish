@@ -1,0 +1,60 @@
+{
+   "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet",
+   "name": "VM-vnet",
+   "type": "Microsoft.Network/virtualNetworks",
+   "location": "westeurope",
+   "properties": {
+      "provisioningState": "Succeeded",
+      "resourceGuid": "73d425b0-37b5-4a64-9694-8149e9177114",
+      "addressSpace": {
+         "addressPrefixes": [
+            "10.0.0.0/16"
+         ]
+      },
+      "privateEndpointVNetPolicies": "Disabled",
+      "subnets": [
+         {
+            "name": "default",
+            "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet/subnets/default",
+            "etag": "W/\"f49f6da4-4ee6-42ac-a091-7f8739e661d2\"",
+            "properties": {
+               "provisioningState": "Succeeded",
+               "addressPrefix": "10.0.0.0/24",
+               "ipConfigurations": [
+                  {
+                     "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/VM1346/ipConfigurations/IPCONFIG1"
+                  }
+               ],
+               "delegations": [],
+               "privateEndpointNetworkPolicies": "Disabled",
+               "privateLinkServiceNetworkPolicies": "Enabled"
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+         },
+         {
+            "name": "private",
+            "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/virtualNetworks/VM-vnet/subnets/private",
+            "etag": "W/\"f49f6da4-4ee6-42ac-a091-7f8739e661d2\"",
+            "properties": {
+               "provisioningState": "Succeeded",
+               "addressPrefix": "10.0.1.0/24",
+               "networkSecurityGroup": {
+                  "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkSecurityGroups/subnet-nsg"
+               },
+               "ipConfigurations": [
+                  {
+                     "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/VM235/ipConfigurations/IPCONFIG1"
+                  }
+               ],
+               "delegations": [],
+               "privateEndpointNetworkPolicies": "Disabled",
+               "privateLinkServiceNetworkPolicies": "Enabled",
+               "defaultOutboundAccess": false
+            },
+            "type": "Microsoft.Network/virtualNetworks/subnets"
+         }
+      ],
+      "virtualNetworkPeerings": [],
+      "enableDdosProtection": false
+   }
+}
