@@ -39,6 +39,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.iterableWithSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
@@ -926,6 +927,24 @@ public class JuniperConfigurationTest {
         traceableStatement.getTraceElement(),
         equalTo(
             toTraceableStatement(ImmutableList.of(), "psterm", "ps", "file").getTraceElement()));
+  }
+
+  /** Check that default terms are NOT wrapped in TraceableStatement */
+  @Test
+  public void toRoutingPolicy_defaultTermNotTraced() {
+    JuniperConfiguration vsC = new JuniperConfiguration();
+    vsC.setFilename("file");
+
+    PolicyStatement ps = new PolicyStatement("ps");
+    PsTerm defaultTerm = new PsTerm("__ps__DEFAULT_TERM__");
+    defaultTerm.getThens().addPsThen(new PsThenTag(456L));
+    ps.getTerms().put(defaultTerm.getName(), defaultTerm);
+
+    // Default term should NOT be wrapped in TraceableStatement
+    List<Statement> statements = vsC.toRoutingPolicy(ps).getStatements();
+    // Expect: SetTag statement directly (not wrapped), then end-of-policy If
+    assertThat(statements, contains(instanceOf(SetTag.class), instanceOf(If.class)));
+    assertThat(statements.get(0), not(instanceOf(TraceableStatement.class)));
   }
 
   private Configuration createViConfig(List<String> ifaceNames) {

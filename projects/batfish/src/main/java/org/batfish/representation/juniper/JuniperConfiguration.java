@@ -3136,7 +3136,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
             ImmutableList.of(toTraceableStatement(thens, term.getName(), ps.getName(), _filename)));
         statements.add(ifStatement);
       } else {
-        statements.add(toTraceableStatement(thens, term.getName(), ps.getName(), _filename));
+        boolean isDefaultTerm = term.getName().contains("__DEFAULT_TERM__");
+        if (isDefaultTerm) {
+          statements.addAll(thens);
+        } else {
+          statements.add(toTraceableStatement(thens, term.getName(), ps.getName(), _filename));
+        }
       }
     }
     If endOfPolicy = new If();
