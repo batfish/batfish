@@ -69,13 +69,28 @@ public final class ConjunctionChain extends BooleanExpr {
     // By default move on to the next policy
     Result subroutineResult = Result.builder().setFallThrough(true).build();
     for (BooleanExpr subroutine : _subroutines) {
+      org.batfish.datamodel.trace.Tracer tracer = environment.getTracer();
+      if (tracer != null) {
+        tracer.newSubTrace();
+      }
       subroutineResult = subroutine.evaluate(environment);
       if (subroutineResult.getExit()) {
-        // Reached an exit/terminal action. Return regardless of boolean value
+        // Reached an exit/terminal action. Return regardless of boolean value - keep the trace
+        if (tracer != null) {
+          tracer.endSubTrace();
+        }
         return subroutineResult;
       } else if (!subroutineResult.getFallThrough() && !subroutineResult.getBooleanValue()) {
-        // Found first match that returns false, short-circuit here
+        // Found first match that returns false, short-circuit here - discard the trace
+        if (tracer != null) {
+          tracer.discardSubTrace();
+        }
         return subroutineResult.toBuilder().setReturn(false).build();
+      } else {
+        // Continue to next subroutine - keep the trace
+        if (tracer != null) {
+          tracer.endSubTrace();
+        }
       }
     }
     // Check if we are allowed to fall through to the default policy, if not, return last result

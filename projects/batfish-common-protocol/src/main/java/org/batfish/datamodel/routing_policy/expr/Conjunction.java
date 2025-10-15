@@ -54,11 +54,28 @@ public final class Conjunction extends BooleanExpr {
   @Override
   public Result evaluate(Environment environment) {
     for (BooleanExpr conjunct : _conjuncts) {
+      org.batfish.datamodel.trace.Tracer tracer = environment.getTracer();
+      if (tracer != null) {
+        tracer.newSubTrace();
+      }
       Result conjunctResult = conjunct.evaluate(environment);
       if (conjunctResult.getExit()) {
+        // Exit means accept or reject - keep the trace
+        if (tracer != null) {
+          tracer.endSubTrace();
+        }
         return conjunctResult;
       } else if (!conjunctResult.getBooleanValue()) {
+        // False result - discard the trace
+        if (tracer != null) {
+          tracer.discardSubTrace();
+        }
         return conjunctResult.toBuilder().setReturn(false).build();
+      } else {
+        // True result - keep the trace and continue
+        if (tracer != null) {
+          tracer.endSubTrace();
+        }
       }
     }
     return new Result(true);
