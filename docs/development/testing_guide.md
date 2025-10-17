@@ -24,18 +24,21 @@ When implementing new features or fixing bugs, follow this testing workflow:
 1. **ALWAYS run the specific test first** that directly verifies your changes:
 
    ```bash
-   # Run a specific test
-   bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+   # Run a specific test method within a test target
+   bazel test --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest#testAdminGroupDefinitions //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:tests
 
-   # Run a specific test method
-   bazel test --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest#testAdminGroupDefinitions //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:JunosMplsAdminGroupTest
+   # Run a specific test class within a test target
+   bazel test --test_filter=org.batfish.grammar.flatjuniper.JunosMplsAdminGroupTest //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper:tests
    ```
 
 2. **Only after the specific test passes**, run related tests or the full test suite:
 
    ```bash
-   # Run all tests in a package
+   # Run all tests in a package/directory
    bazel test //projects/batfish/src/test/java/org/batfish/grammar/flatjuniper/...
+
+   # Run a specific test target (common pattern: :tests)
+   bazel test //projects/batfish:tests
 
    # Run all tests
    bazel test //...
