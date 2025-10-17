@@ -1053,8 +1053,6 @@ public final class FrrConversionsTest {
 
     Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_CONCATENATED);
 
-    RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(config, neighbor, bgpVrf);
-
     // checking the import policy is correct (i.e. it successfully calls the route map to
     // permite/block route).
     RoutingPolicy routemapPolicy =
@@ -1070,6 +1068,8 @@ public final class FrrConversionsTest {
                     ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
                     ImmutableList.of(Statements.ExitReject.toStaticStatement())))
             .build();
+
+    RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(config, neighbor, bgpVrf);
 
     Builder builder =
         Bgpv4Route.testBuilder()
@@ -2080,5 +2080,28 @@ public final class FrrConversionsTest {
                     new SetMetric(new LiteralLong(DEFAULT_MAX_MED)),
                     Statements.ExitAccept.toStaticStatement()),
                 ImmutableList.of(Statements.ExitReject.toStaticStatement()))));
+  }
+
+  @Test
+  public void testComputeBgpNeighborImportRoutingPolicy_undefinedRouteMap() {
+    BgpNeighbor neighbor = new BgpIpNeighbor("neighbor", Ip.parse("1.2.3.4"));
+
+    BgpNeighborIpv4UnicastAddressFamily neighborIpv4UnicastFamily =
+        new BgpNeighborIpv4UnicastAddressFamily();
+
+    neighborIpv4UnicastFamily.setRouteMapIn("UNDEFINED_ROUTEMAP");
+
+    BgpVrf bgpVrf = new BgpVrf("bgpVrf");
+    bgpVrf
+        .getOrCreateIpv4Unicast()
+        .getNeighbors()
+        .put(neighbor.getName(), neighborIpv4UnicastFamily);
+
+    Configuration config = new Configuration("host", ConfigurationFormat.CUMULUS_CONCATENATED);
+
+    RoutingPolicy importPolicy = computeBgpNeighborImportRoutingPolicy(config, neighbor, bgpVrf);
+
+    // Should return null since route-map doesn't exist
+    assertNull(importPolicy);
   }
 }
