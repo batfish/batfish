@@ -102,6 +102,7 @@ import org.batfish.datamodel.route.nh.NextHopVisitor;
 import org.batfish.datamodel.route.nh.NextHopVrf;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.RoutingPolicyReferencesVerifier;
 import org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.transformation.Transformation;
@@ -577,6 +578,7 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     assert verifyAclInvariants(c); // this is expensive on some devices
     verifyAsPathStructures(c);
     verifyCommunityStructures(c);
+    verifyRoutingPolicyReferences(c);
   }
 
   private static void verifyOspfAreas(Configuration c, Warnings w) {
@@ -871,6 +873,10 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
   private static void verifyCommunityStructures(Configuration c) {
     // TODO: crash on undefined/circular refs (conversion is responsible for preventing them)
     CommunityStructuresVerifier.verify(c);
+  }
+
+  private static void verifyRoutingPolicyReferences(Configuration c) {
+    RoutingPolicyReferencesVerifier.verify(c);
   }
 
   /**
