@@ -3,6 +3,7 @@ package org.batfish.representation.juniper;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.expr.BooleanExpr;
+import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 
 /** Represents a "from policy" line in a {@link PsTerm} */
@@ -20,6 +21,9 @@ public final class PsFromPolicyStatement extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
+    if (!c.getRoutingPolicies().containsKey(_policyStatement)) {
+      return BooleanExprs.FALSE;
+    }
     return new CallExpr(_policyStatement);
   }
 }
