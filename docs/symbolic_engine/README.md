@@ -61,8 +61,10 @@ Fault tolerance can be verified by comparing network behavior before and after a
 
 # The symbolic engine
 Batfish builds symbolic constraints on flows using [Binary Decision Diagrams (BDDs)](https://en.wikipedia.org/wiki/Binary_decision_diagram),
-which efficiently perform boolean operations on sets of boolean variables. Batfish includes classes for representing 
+which efficiently perform boolean operations on sets of boolean variables. Batfish includes classes for representing
 packets using BDDs and building constraints on them (Java to BDD), and extracting solutions (BDD to Java).
+
+For critical information about BDD memory management and best practices, see the [BDD Best Practices](../development/bdd_best_practices.md) guide.
 
 Representation:
 * [`BDDFactory`](https://github.com/batfish/batfish/blob/master/projects/bdd/src/main/java/net/sf/javabdd/BDDFactory.java) and [BDD](https://github.com/batfish/batfish/blob/master/projects/bdd/src/main/java/net/sf/javabdd/BDD.java) are at the core of the symbolic analysis engine.
