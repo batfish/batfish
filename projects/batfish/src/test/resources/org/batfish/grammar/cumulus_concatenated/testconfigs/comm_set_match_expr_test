@@ -34,7 +34,7 @@ router bgp 2
 !
  address-family ipv4 unicast
   network 1.1.1.3/32
-  neighbor xy route-map RM1 out
+  neighbor xy route-map Standard_RM1 out
  exit-address-family
 !
 !
