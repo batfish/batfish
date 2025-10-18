@@ -1,0 +1,12 @@
+{
+  "type": "Microsoft.DBforPostgreSQL/flexibleServers",
+  "name": "testName",
+  "id": "testId",
+  "properties": {
+    "network": {
+      "delegatedSubnetResourceId": "subnetId",
+      "privateDnsZoneArmResourceId": "string",
+      "publicNetworkAccess": "string"
+    }
+  }
+}
