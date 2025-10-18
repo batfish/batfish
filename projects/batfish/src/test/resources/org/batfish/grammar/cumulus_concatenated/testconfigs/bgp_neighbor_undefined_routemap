@@ -1,0 +1,33 @@
+bgp_neighbor_undefined_routemap
+# This file describes the network interfaces
+
+iface lo inet loopback
+ address 1.1.1.1/32
+
+iface eth0
+ address 10.0.0.1/31
+
+### end /etc/network/interfaces
+
+# ports.conf --
+
+### start of frr.conf
+frr version
+agentx
+!
+router bgp 1
+ bgp router-id 1.1.1.1
+ neighbor xy peer-group
+ neighbor xy remote-as 2
+ neighbor 10.0.0.0 peer-group xy
+!
+ address-family ipv4 unicast
+  network 1.1.1.1/32
+  neighbor xy route-map UNDEFINED_ROUTEMAP out
+ exit-address-family
+!
+!
+!
+line vty
+!
+!### end frr.conf
