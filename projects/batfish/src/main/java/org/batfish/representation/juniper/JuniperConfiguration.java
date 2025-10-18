@@ -2921,8 +2921,12 @@ public final class JuniperConfiguration extends VendorConfiguration {
 
     RibId exportRib =
         rg.getExportRib() != null ? toRibId(c.getHostname(), rg.getExportRib(), w) : null;
+    // Already warned on undefined reference, ignore
     List<BooleanExpr> policyCalls =
-        rg.getImportPolicies().stream().map(CallExpr::new).collect(ImmutableList.toImmutableList());
+        rg.getImportPolicies().stream()
+            .filter(c.getRoutingPolicies()::containsKey)
+            .map(CallExpr::new)
+            .collect(ImmutableList.toImmutableList());
 
     String policyName = generateRibGroupImportPolicyName(rg, protocol);
     RoutingPolicy.builder()
@@ -3970,8 +3974,10 @@ public final class JuniperConfiguration extends VendorConfiguration {
       // TODO: support other resolution ribs
       return;
     }
+    // Already warned on undefined reference, ignore
     List<BooleanExpr> policyCalls =
         rib.getImportPolicies().stream()
+            .filter(_c.getRoutingPolicies()::containsKey)
             .map(CallExpr::new)
             .collect(ImmutableList.toImmutableList());
 
