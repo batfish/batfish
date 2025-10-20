@@ -1185,13 +1185,6 @@ public class TransferBDD {
     }
   }
 
-  /*
-   * If-then-else statement
-   */
-  private BDD ite(BDD b, BDD x, BDD y) {
-    return b.ite(x, y);
-  }
-
   // find the BDD corresponding to an item that is being tracked symbolically
   private BDD itemToBDD(String item, List<String> items, BDD[] itemsBDDs) {
     int index = items.indexOf(item);
