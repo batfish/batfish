@@ -2,6 +2,7 @@ package org.batfish.datamodel.routing_policy.as_path;
 
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.AS_PATH_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.AS_PATH_MATCH_EXPR_VERIFIER;
+import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.AS_PATH_SET_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.BOOLEAN_EXPR_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.STATEMENT_VERIFIER;
 import static org.batfish.datamodel.routing_policy.as_path.AsPathStructuresVerifier.verify;
@@ -11,6 +12,7 @@ import static org.junit.Assert.assertNull;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.OriginType;
@@ -101,7 +103,6 @@ public final class AsPathStructuresVerifierTest {
     assertNull(BooleanExprs.TRUE.accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new CallExpr("a").accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new HasRoute(new NamedPrefixSet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
-    assertNull(new LegacyMatchAsPath(new NamedAsPathSet("a")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(new MatchColor(1).accept(BOOLEAN_EXPR_VERIFIER, ctx));
     assertNull(
         new MatchCommunities(
@@ -518,5 +519,44 @@ public final class AsPathStructuresVerifierTest {
     _thrown.expect(VendorConversionException.class);
     _thrown.expectMessage(containsString("Undefined reference"));
     DedupedAsPath.of(AsPathExprReference.of("undefined")).accept(AS_PATH_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitLegacyMatchAsPathDefined() {
+    AsPathStructuresVerifierContext ctx =
+        AsPathStructuresVerifierContext.builder()
+            .setAsPathAccessLists(ImmutableMap.of("defined", new AsPathAccessList("defined", null)))
+            .build();
+
+    assertNull(
+        new LegacyMatchAsPath(new NamedAsPathSet("defined")).accept(BOOLEAN_EXPR_VERIFIER, ctx));
+  }
+
+  @Test
+  public void testVisitLegacyMatchAsPathUndefined() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference to AsPathAccessList"));
+    new LegacyMatchAsPath(new NamedAsPathSet("undefined")).accept(BOOLEAN_EXPR_VERIFIER, ctx);
+  }
+
+  @Test
+  public void testVisitNamedAsPathSetDefined() {
+    AsPathStructuresVerifierContext ctx =
+        AsPathStructuresVerifierContext.builder()
+            .setAsPathAccessLists(ImmutableMap.of("defined", new AsPathAccessList("defined", null)))
+            .build();
+
+    assertNull(AS_PATH_SET_EXPR_VERIFIER.accept(new NamedAsPathSet("defined"), ctx));
+  }
+
+  @Test
+  public void testVisitNamedAsPathSetUndefined() {
+    AsPathStructuresVerifierContext ctx = AsPathStructuresVerifierContext.builder().build();
+
+    _thrown.expect(VendorConversionException.class);
+    _thrown.expectMessage(containsString("Undefined reference to AsPathAccessList"));
+    AS_PATH_SET_EXPR_VERIFIER.accept(new NamedAsPathSet("undefined"), ctx);
   }
 }
