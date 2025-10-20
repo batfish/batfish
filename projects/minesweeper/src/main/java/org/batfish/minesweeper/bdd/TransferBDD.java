@@ -209,6 +209,19 @@ public class TransferBDD {
         _configAtomicPredicates.getAsPathRegexAtomicPredicates().getRegexAtomicPredicates();
   }
 
+  /**
+   * Assert that the number of outstanding BDDs has increased by exactly the expected amount.
+   *
+   * @param startBDDs the number of outstanding BDDs before the operation
+   * @param expected the expected number of new BDDs created
+   */
+  private void assertNoLeaks(long startBDDs, long expected) {
+    assert _factory.numOutstandingBDDs() == startBDDs + expected
+        : String.format(
+            "Expected to create %d new BDDs, actually created %d",
+            expected, _factory.numOutstandingBDDs() - startBDDs);
+  }
+
   /*
    * Apply the effect of modifying a long value (e.g., to set the metric).
    * Overflows for IncrementMetric are handled by clipping to the max value.
@@ -1224,8 +1237,11 @@ public class TransferBDD {
     return acc;
   }
 
-  /*
+  /**
    * Converts a route filter list to a boolean expression.
+   *
+   * <p>This method takes ownership of BDDs returned by {@code symbolicMatcher} and will free them
+   * if not returned.
    */
   private BDD matchFilterList(
       TransferParam p,
@@ -1233,6 +1249,7 @@ public class TransferBDD {
       BDDRoute other,
       BiFunction<BDDRoute, PrefixRange, BDD> symbolicMatcher)
       throws UnsupportedOperationException {
+    long priorBDDs = _factory.numOutstandingBDDs();
     BDD acc = _factory.zero();
     LineAction currentAction = LineAction.PERMIT;
     List<BDD> lineBDDsWithCurrentAction = new ArrayList<>();
@@ -1247,18 +1264,21 @@ public class TransferBDD {
       p.debug("Action: %s", line.getAction());
       BDD matches = symbolicMatcher.apply(other, range);
       if (line.getAction() != currentAction) {
-        BDD allCurrentAction = _factory.orAllAndFree(lineBDDsWithCurrentAction);
-        BDD action = mkBDD(currentAction == LineAction.PERMIT);
-        acc = ite(allCurrentAction, action, acc);
+        acc =
+            _factory
+                .orAllAndFree(lineBDDsWithCurrentAction)
+                .iteWith(mkBDD(currentAction == LineAction.PERMIT), acc);
         // and reset for next step
         lineBDDsWithCurrentAction.clear();
         currentAction = line.getAction();
       }
       lineBDDsWithCurrentAction.add(matches);
     }
-    BDD allCurrentAction = _factory.orAllAndFree(lineBDDsWithCurrentAction);
-    BDD action = mkBDD(currentAction == LineAction.PERMIT);
-    acc = ite(allCurrentAction, action, acc);
+    acc =
+        _factory
+            .orAllAndFree(lineBDDsWithCurrentAction)
+            .iteWith(mkBDD(currentAction == LineAction.PERMIT), acc);
+    assertNoLeaks(priorBDDs, 1);
     return acc;
   }
 
