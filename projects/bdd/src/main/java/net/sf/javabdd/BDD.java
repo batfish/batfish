@@ -508,6 +508,18 @@ public abstract class BDD implements Serializable {
   public abstract BDD ite(BDD thenBDD, BDD elseBDD);
 
   /**
+   * Makes this BDD be the if-then-else of three BDDs. The {@code thenBDD} and {@code elseBDD}
+   * parameters are consumed, and can no longer be used.
+   *
+   * <p>Compare to bdd_ite and bdd_delref.
+   *
+   * @param thenBDD the 'then' BDD
+   * @param elseBDD the 'else' BDD
+   * @return the result of the if-then-else operator on the three BDDs
+   */
+  public abstract BDD iteWith(BDD thenBDD, BDD elseBDD);
+
+  /**
    * Returns the logical 'less-than' of two BDDs, equivalent to {@code this.not().and(that)}. This
    * is a shortcut for calling "apply" with the "less" operator.
    *

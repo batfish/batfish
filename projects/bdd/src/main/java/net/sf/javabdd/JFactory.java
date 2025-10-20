@@ -251,6 +251,26 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     @Override
+    public BDD iteWith(BDD thenBDD, BDD elseBDD) {
+      int x = _index;
+      int y = ((BDDImpl) thenBDD)._index;
+      int z = ((BDDImpl) elseBDD)._index;
+      int result = bdd_ite(x, y, z);
+      // Update this BDD to point to the result
+      bdd_delref(_index);
+      // Free the then and else BDDs, avoiding double-free if they're the same object
+      if (this != thenBDD) {
+        thenBDD.free();
+      }
+      if (this != elseBDD && thenBDD != elseBDD) {
+        elseBDD.free();
+      }
+      bdd_addref(result);
+      _index = result;
+      return this;
+    }
+
+    @Override
     public BDD relprod(BDD that, BDD var) {
       int x = _index;
       int y = ((BDDImpl) that)._index;
