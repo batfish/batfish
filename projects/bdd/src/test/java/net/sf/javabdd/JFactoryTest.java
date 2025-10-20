@@ -725,4 +725,45 @@ public class JFactoryTest {
     bddClone.not(); // can do operations after deserialization
     assertEquals(bdd.not().toReprString(), bddClone.not().toReprString());
   }
+
+  @Test
+  public void testIteWith() {
+    _factory.setVarNum(3);
+    long startBDDs = _factory.numOutstandingBDDs();
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+    BDD v2 = _factory.ithVar(2);
+
+    BDD expected = v0.ite(v1, v2);
+    BDD result = v0.iteWith(v1, v2);
+
+    assertEquals(expected, result);
+    expected.free();
+    result.free();
+    assertEquals(startBDDs, _factory.numOutstandingBDDs());
+  }
+
+  @Test
+  public void testIteWithSameObjectAsCondition() {
+    _factory.setVarNum(3);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+
+    // No crash, correct result.
+    BDD expected = v0.ite(v0, v1);
+    BDD result = v0.iteWith(v0, v1);
+    assertEquals(expected, result);
+  }
+
+  @Test
+  public void testIteWithSameThenAndElse() {
+    _factory.setVarNum(3);
+    BDD v0 = _factory.ithVar(0);
+    BDD v1 = _factory.ithVar(1);
+
+    // No crash, correct result.
+    BDD expected = v1.id();
+    BDD result = v0.iteWith(v1, v1);
+    assertEquals(expected, result);
+  }
 }
