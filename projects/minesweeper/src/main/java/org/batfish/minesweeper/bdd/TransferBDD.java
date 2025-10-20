@@ -361,6 +361,7 @@ public class TransferBDD {
                     r -> {
                       BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
                       if (condition.isZero()) {
+                        condition.free();
                         return;
                       }
                       TransferResult updated = r.setReturnValueBDD(condition);
@@ -430,6 +431,7 @@ public class TransferBDD {
                       r -> {
                         BDD condition = r.getReturnValue().getInputConstraints().and(currBDD);
                         if (condition.isZero()) {
+                          condition.free();
                           return;
                         }
                         TransferResult updated = r.setReturnValueBDD(condition);
