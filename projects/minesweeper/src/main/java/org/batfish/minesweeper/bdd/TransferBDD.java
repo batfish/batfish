@@ -283,7 +283,7 @@ public class TransferBDD {
     Set<Integer> asPathAPs = atomicPredicatesFor(asPathRegexes, apMap);
     return route
         .getFactory()
-        .orAll(
+        .orAllAndFree(
             asPathAPs.stream()
                 .map(ap -> route.getAsPathRegexAtomicPredicates().value(ap))
                 .collect(Collectors.toList()));
@@ -1220,8 +1220,14 @@ public class TransferBDD {
     }
   }
 
-  /* Convert an AS-path access list to a boolean formula represented as a BDD. */
+  /**
+   * Convert an AS-path access list to a boolean formula represented as a BDD.
+   *
+   * <p>This method takes ownership of BDDs returned by asPathRegexesToBDD and will free them if not
+   * returned.
+   */
   private BDD matchAsPathAccessList(AsPathAccessList accessList, BDDRoute other) {
+    long priorBDDs = _factory.numOutstandingBDDs();
     List<AsPathAccessListLine> lines = new ArrayList<>(accessList.getLines());
     Collections.reverse(lines);
     BDD acc = _factory.zero();
@@ -1232,8 +1238,9 @@ public class TransferBDD {
       SymbolicAsPathRegex regex = new SymbolicAsPathRegex(line.getRegex());
       BDD regexAPBdd =
           asPathRegexesToBDD(ImmutableSet.of(regex), _asPathRegexAtomicPredicates, other);
-      acc = ite(regexAPBdd, mkBDD(action), acc);
+      acc = regexAPBdd.iteWith(mkBDD(action), acc);
     }
+    assertNoLeaks(priorBDDs, 1);
     return acc;
   }
 
