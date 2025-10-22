@@ -21,7 +21,7 @@ public final class PsFromPolicyStatement extends PsFrom {
 
   @Override
   public BooleanExpr toBooleanExpr(JuniperConfiguration jc, Configuration c, Warnings warnings) {
-    if (!c.getRoutingPolicies().containsKey(_policyStatement)) {
+    if (!jc.getMasterLogicalSystem().getPolicyStatements().containsKey(_policyStatement)) {
       return BooleanExprs.FALSE;
     }
     return new CallExpr(_policyStatement);
