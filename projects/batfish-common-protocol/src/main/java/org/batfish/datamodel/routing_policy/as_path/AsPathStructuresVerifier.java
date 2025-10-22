@@ -7,10 +7,12 @@ import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AsPathAccessList;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprVisitor;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs.StaticBooleanExpr;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -36,9 +38,11 @@ import org.batfish.datamodel.routing_policy.expr.MatchRouteType;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceProtocol;
 import org.batfish.datamodel.routing_policy.expr.MatchSourceVrf;
 import org.batfish.datamodel.routing_policy.expr.MatchTag;
+import org.batfish.datamodel.routing_policy.expr.NamedAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.Not;
 import org.batfish.datamodel.routing_policy.expr.RouteIsClassful;
 import org.batfish.datamodel.routing_policy.expr.TrackSucceeded;
+import org.batfish.datamodel.routing_policy.expr.VarAsPathSet;
 import org.batfish.datamodel.routing_policy.expr.WithEnvironmentExpr;
 import org.batfish.datamodel.routing_policy.statement.CallStatement;
 import org.batfish.datamodel.routing_policy.statement.Comment;
@@ -157,6 +161,7 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitMatchLegacyAsPath(
         LegacyMatchAsPath legacyMatchAsPath, AsPathStructuresVerifierContext arg) {
+      AS_PATH_SET_EXPR_VERIFIER.accept(legacyMatchAsPath.getExpr(), arg);
       return null;
     }
 
@@ -328,6 +333,34 @@ public final class AsPathStructuresVerifier {
     @Override
     public Void visitHasAsPathLength(
         HasAsPathLength hasAsPathLength, AsPathStructuresVerifierContext arg) {
+      return null;
+    }
+  }
+
+  @VisibleForTesting
+  static final class AsPathSetExprVerifier {
+
+    public Void accept(AsPathSetExpr expr, AsPathStructuresVerifierContext arg) {
+      if (expr instanceof NamedAsPathSet) {
+        return visitNamedAsPathSet((NamedAsPathSet) expr, arg);
+      } else if (expr instanceof VarAsPathSet) {
+        return visitVarAsPathSet((VarAsPathSet) expr, arg);
+      } else {
+        throw new IllegalArgumentException("Unknown AsPathSetExpr type: " + expr.getClass());
+      }
+    }
+
+    public Void visitNamedAsPathSet(
+        NamedAsPathSet namedAsPathSet, AsPathStructuresVerifierContext arg) {
+      String name = namedAsPathSet.getName();
+      if (!arg._asPathAccessLists.containsKey(name)) {
+        throw new VendorConversionException(
+            String.format("Undefined reference to AsPathAccessList: '%s'", name));
+      }
+      return null;
+    }
+
+    public Void visitVarAsPathSet(VarAsPathSet varAsPathSet, AsPathStructuresVerifierContext arg) {
       return null;
     }
   }
@@ -537,7 +570,13 @@ public final class AsPathStructuresVerifier {
     static final class Builder {
       public @Nonnull AsPathStructuresVerifierContext build() {
         return new AsPathStructuresVerifierContext(
-            _asPathExprs, _asPathMatchExprs, _routingPolicies);
+            _asPathAccessLists, _asPathExprs, _asPathMatchExprs, _routingPolicies);
+      }
+
+      public @Nonnull Builder setAsPathAccessLists(
+          Map<String, AsPathAccessList> asPathAccessLists) {
+        _asPathAccessLists = asPathAccessLists;
+        return this;
       }
 
       public @Nonnull Builder setAsPathExprs(Map<String, AsPathExpr> asPathExprs) {
@@ -555,11 +594,13 @@ public final class AsPathStructuresVerifier {
         return this;
       }
 
+      private @Nonnull Map<String, AsPathAccessList> _asPathAccessLists;
       private @Nonnull Map<String, AsPathExpr> _asPathExprs;
       private @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
       private @Nonnull Map<String, RoutingPolicy> _routingPolicies;
 
       private Builder() {
+        _asPathAccessLists = ImmutableMap.of();
         _asPathExprs = ImmutableMap.of();
         _asPathMatchExprs = ImmutableMap.of();
         _routingPolicies = ImmutableMap.of();
@@ -574,6 +615,7 @@ public final class AsPathStructuresVerifier {
     @VisibleForTesting
     static @Nonnull AsPathStructuresVerifierContext fromConfiguration(Configuration c) {
       return builder()
+          .setAsPathAccessLists(c.getAsPathAccessLists())
           .setAsPathExprs(c.getAsPathExprs())
           .setAsPathMatchExprs(c.getAsPathMatchExprs())
           .setRoutingPolicies(c.getRoutingPolicies())
@@ -581,9 +623,11 @@ public final class AsPathStructuresVerifier {
     }
 
     private AsPathStructuresVerifierContext(
+        Map<String, AsPathAccessList> asPathAccessLists,
         Map<String, AsPathExpr> asPathExprs,
         Map<String, AsPathMatchExpr> asPathMatchExprs,
         Map<String, RoutingPolicy> routingPolicies) {
+      _asPathAccessLists = asPathAccessLists;
       _asPathExprs = asPathExprs;
       _asPathMatchExprs = asPathMatchExprs;
       _routingPolicies = routingPolicies;
@@ -593,6 +637,7 @@ public final class AsPathStructuresVerifier {
       _asPathExprReferenceStack = new HashSet<>();
     }
 
+    private final @Nonnull Map<String, AsPathAccessList> _asPathAccessLists;
     private final @Nonnull Map<String, AsPathExpr> _asPathExprs;
     private final @Nonnull Map<String, AsPathMatchExpr> _asPathMatchExprs;
     private final @Nonnull Map<String, RoutingPolicy> _routingPolicies;
@@ -608,6 +653,9 @@ public final class AsPathStructuresVerifier {
 
   @VisibleForTesting
   static final AsPathMatchExprVerifier AS_PATH_MATCH_EXPR_VERIFIER = new AsPathMatchExprVerifier();
+
+  @VisibleForTesting
+  static final AsPathSetExprVerifier AS_PATH_SET_EXPR_VERIFIER = new AsPathSetExprVerifier();
 
   @VisibleForTesting
   static final AsPathExprVerifier AS_PATH_EXPR_VERIFIER = new AsPathExprVerifier();
