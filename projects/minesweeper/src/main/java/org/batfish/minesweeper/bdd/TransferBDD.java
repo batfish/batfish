@@ -1,6 +1,7 @@
 package org.batfish.minesweeper.bdd;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Verify.verify;
 
 import com.google.auto.value.AutoValue;
 import com.google.common.annotations.VisibleForTesting;
@@ -1019,18 +1020,19 @@ public class TransferBDD {
       updateCommunities(dispositions, state, context);
       return ImmutableList.of(toTransferBDDState(curP, result));
 
-    } else if (stmt instanceof CallStatement) {
+    } else if (stmt instanceof CallStatement cs) {
       /*
        this code is based on the concrete semantics defined by CallStatement::execute, which also
        relies on RoutingPolicy::call
       */
       curP.debug("CallStatement");
-      CallStatement cs = (CallStatement) stmt;
       String name = cs.getCalledPolicyName();
       RoutingPolicy pol = context.config().getRoutingPolicies().get(name);
-      if (pol == null) {
-        throw new BatfishException("Called route policy does not exist: " + name);
-      }
+      verify(
+          pol != null,
+          "%s call missing policy that should have been sanitized during conversion and caught"
+              + " during finalization",
+          cs);
 
       // save callee state
       boolean oldReturnAssigned = result.getReturnAssignedValue();
