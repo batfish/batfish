@@ -17,7 +17,6 @@ public enum Command {
   DEBUG_PUT("debug-put"),
   DEL_BATFISH_OPTION("del-batfish-option"),
   DEL_NETWORK("del-network"),
-  EXIT("exit"),
   GEN_DP("generate-dataplane"),
   GET("get"),
   GET_POJO_TOPOLOGY("get-pojo-topology"),
@@ -26,7 +25,6 @@ public enum Command {
   INIT_REFERENCE_SNAPSHOT("init-reference-snapshot"),
   INIT_SNAPSHOT("init-snapshot"),
   LOAD_QUESTIONS("load-questions"),
-  QUIT("quit"),
   SET_BATFISH_LOGLEVEL("set-batfish-loglevel"),
   SET_LOGLEVEL("set-loglevel"),
   SET_NETWORK("set-network"),
@@ -100,7 +98,6 @@ public enum Command {
         DEL_BATFISH_OPTION,
         new CommandUsage("<option-key>", "Stop passing this option to Batfish"));
     descs.put(DEL_NETWORK, new CommandUsage("<network-name>", "Delete the specified network"));
-    descs.put(EXIT, new CommandUsage("", "Terminate interactive client session"));
     descs.put(GEN_DP, new CommandUsage("", "Generate dataplane for the current snapshot"));
     descs.put(
         GET,
@@ -130,7 +127,6 @@ public enum Command {
             "Load questions from local directory, -loadremote loads questions from coordinator, "
                 + "if both are specified, questions from local directory overwrite the remote "
                 + "questions"));
-    descs.put(QUIT, new CommandUsage("", "Terminate interactive client session"));
     descs.put(
         SET_BATFISH_LOGLEVEL,
         new CommandUsage(

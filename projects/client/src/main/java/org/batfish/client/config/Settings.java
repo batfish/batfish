@@ -7,11 +7,6 @@ import org.batfish.common.CoordConsts;
 
 public class Settings extends BaseSettings {
 
-  public enum RunMode {
-    batch,
-    interactive
-  }
-
   private static final String ARG_API_KEY = "apikey";
   public static final String ARG_BATFISH_LOG_LEVEL = "batfishloglevel";
   public static final String ARG_COMMAND_FILE = "cmdfile";
@@ -21,7 +16,6 @@ public class Settings extends BaseSettings {
   public static final String ARG_LOG_FILE = "logfile";
   public static final String ARG_LOG_LEVEL = "loglevel";
   private static final String ARG_NO_SANITY_CHECK = "nosanitycheck";
-  public static final String ARG_RUN_MODE = "runmode";
   public static final String ARG_SERVICE_NAME = "servicename";
   private static final String ARG_SERVICE_WORK_PORT = "coordinatorworkport";
   private static final String ARG_SERVICE_WORK_V2_PORT = "coordinatorworkv2port";
@@ -38,7 +32,6 @@ public class Settings extends BaseSettings {
   private String _logFile;
   private String _logLevel;
 
-  private RunMode _runMode;
   private boolean _sanityCheck;
   private String _serviceName;
   private String _snapshotDir;
@@ -89,10 +82,6 @@ public class Settings extends BaseSettings {
     return _logLevel;
   }
 
-  public RunMode getRunMode() {
-    return _runMode;
-  }
-
   public boolean getSanityCheck() {
     return _sanityCheck;
   }
@@ -118,7 +107,6 @@ public class Settings extends BaseSettings {
     setDefaultProperty(ARG_LOG_FILE, null);
     setDefaultProperty(ARG_LOG_LEVEL, BatfishLogger.getLogLevelStr(BatfishLogger.LEVEL_OUTPUT));
     setDefaultProperty(ARG_NO_SANITY_CHECK, false);
-    setDefaultProperty(ARG_RUN_MODE, RunMode.batch.toString());
     setDefaultProperty(ARG_SERVICE_NAME, "client-service");
     setDefaultProperty(ARG_SERVICE_WORK_V2_PORT, CoordConsts.SVC_CFG_WORK_V2_PORT);
   }
@@ -142,8 +130,6 @@ public class Settings extends BaseSettings {
 
     addBooleanOption(
         ARG_NO_SANITY_CHECK, "do not check if network, snapshot etc. are set. (helps debugging.)");
-
-    addOption(ARG_RUN_MODE, "which mode to run in (batch|interactive|genquestions)", "run_mode");
 
     addOption(ARG_SERVICE_NAME, "service name", "service_name");
 
@@ -189,7 +175,6 @@ public class Settings extends BaseSettings {
     _containerId = getStringOptionValue(ARG_CONTAINER_ID);
     _logFile = getStringOptionValue(ARG_LOG_FILE);
     _logLevel = getStringOptionValue(ARG_LOG_LEVEL);
-    _runMode = RunMode.valueOf(getStringOptionValue(ARG_RUN_MODE));
     _sanityCheck = !getBooleanOptionValue(ARG_NO_SANITY_CHECK);
     _serviceName = getStringOptionValue(ARG_SERVICE_NAME);
 
