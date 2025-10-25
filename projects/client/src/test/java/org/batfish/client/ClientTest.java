@@ -124,7 +124,8 @@ public final class ClientTest {
 
   private void checkProcessCommandErrorMessage(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
@@ -164,7 +165,8 @@ public final class ClientTest {
 
   @Test
   public void testDefaultCase() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       client._logger = new BatfishLogger("output", false);
@@ -824,7 +826,8 @@ public final class ClientTest {
 
   @Test
   public void testLoadQuestionsNames() throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     JSONObject testQuestion = new JSONObject();
     testQuestion.put(
         "instance",
@@ -1047,7 +1050,8 @@ public final class ClientTest {
 
   private void testProcessCommandWithValidInput(
       Command command, String[] parameters, String expected) throws Exception {
-    Client client = new Client(new String[] {"-runmode", "interactive"});
+    Path dummyCmdFile = _folder.newFile("dummy.cmd").toPath();
+    Client client = new Client(new String[] {"-cmdfile", dummyCmdFile.toString()});
     File tempFile = _folder.newFile("writer");
     try (FileWriter writer = new FileWriter(tempFile)) {
       String[] args = ArrayUtils.addAll(new String[] {command.commandName()}, parameters);
