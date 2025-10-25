@@ -1,0 +1,11 @@
+#this file assumes that we are running from top-level source directory
+
+add-batfish-option haltonconverterror
+add-batfish-option haltonparseerror
+add-batfish-option verboseparse
+
+# example-aws network
+test tests/azure/init-example-azure.ref init-snapshot networks/cloud-azure basic-example-azure
+test tests/azure/vimodel-example-azure.ref get viModel
+test -json tests/azure/topology-example-azure.ref get-pojo-topology
+
