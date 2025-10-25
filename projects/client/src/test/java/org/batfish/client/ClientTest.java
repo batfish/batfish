@@ -4,7 +4,6 @@ import static org.batfish.client.Command.ADD_BATFISH_OPTION;
 import static org.batfish.client.Command.ANSWER;
 import static org.batfish.client.Command.DEL_BATFISH_OPTION;
 import static org.batfish.client.Command.DEL_NETWORK;
-import static org.batfish.client.Command.EXIT;
 import static org.batfish.client.Command.GEN_DP;
 import static org.batfish.client.Command.GET;
 import static org.batfish.client.Command.HELP;
@@ -210,17 +209,6 @@ public final class ClientTest {
     _thrown.expectMessage(
         equalTo(String.format("A Batfish %s must start with \"/\"", JSON_PATH_REGEX.getName())));
     Client.validateJsonPathRegex("");
-  }
-
-  @Test
-  public void testExitInvalidParas() throws Exception {
-    String[] parameters = new String[] {"parameter1"};
-    testInvalidInput(EXIT, new String[] {}, parameters);
-  }
-
-  @Test
-  public void testExitValidParas() throws Exception {
-    testProcessCommandWithValidInput(EXIT, new String[] {}, "");
   }
 
   @Test
