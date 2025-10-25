@@ -733,23 +733,13 @@ public class Client extends AbstractClient implements IClient {
     _bfq = new TreeMap<>();
     _settings = settings;
 
-    switch (_settings.getRunMode()) {
-      case batch:
-        if (_settings.getBatchCommandFile() == null) {
-          System.err.println(
-              "org.batfish.client: Command file not specified while running in batch mode.");
-          System.err.printf("Use '-%s <cmdfile>' for batch mode\n", Settings.ARG_COMMAND_FILE);
-          System.exit(1);
-        }
-        _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
-        break;
-      case interactive:
-        System.err.println(
-            "Interactive mode is not supported. Please use pybatfish following the instructions in"
-                + " the README: https://github.com/batfish/batfish/#how-do-i-get-started");
-        System.exit(1);
-        break;
+    if (_settings.getBatchCommandFile() == null) {
+      System.err.println(
+          "org.batfish.client: Command file not specified while running in batch mode.");
+      System.err.printf("Use '-%s <cmdfile>' for batch mode\n", Settings.ARG_COMMAND_FILE);
+      System.exit(1);
     }
+    _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
   }
 
   public Client(String[] args) {
@@ -1005,14 +995,6 @@ public class Client extends AbstractClient implements IClient {
     boolean result = pollWorkAndGetAnswer(wItem, outWriter);
 
     return result;
-  }
-
-  private boolean exit(List<String> options, List<String> parameters) {
-    if (!isValidArgument(options, parameters, 0, 0, 0, Command.EXIT)) {
-      return false;
-    }
-    // Exit command is only used in interactive mode, which is no longer supported
-    return true;
   }
 
   private boolean generateDataplane(
@@ -1630,7 +1612,6 @@ public class Client extends AbstractClient implements IClient {
       case SHOW_SNAPSHOT -> showSnapshot(options, parameters);
       case TEST -> test(options, parameters);
       case VALIDATE_TEMPLATE -> validateTemplate(words, outWriter, options, parameters);
-      case EXIT, QUIT -> exit(options, parameters);
     };
   }
 
@@ -1804,18 +1785,7 @@ public class Client extends AbstractClient implements IClient {
       return;
     }
 
-    switch (_settings.getRunMode()) {
-      case batch:
-        runBatchFile();
-        break;
-
-      case interactive:
-        System.err.println(
-            "Interactive mode is not supported. Please use pybatfish following the instructions in"
-                + " the README: https://github.com/batfish/batfish/#how-do-i-get-started");
-        System.exit(1);
-        break;
-    }
+    runBatchFile();
   }
 
   private void runBatchFile() {
