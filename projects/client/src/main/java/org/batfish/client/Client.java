@@ -20,8 +20,6 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Files;
@@ -50,7 +48,6 @@ import javax.annotation.Nullable;
 import javax.ws.rs.HttpMethod;
 import javax.ws.rs.core.MediaType;
 import org.apache.commons.io.IOUtils;
-import org.apache.commons.io.output.WriterOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.batfish.client.BfCoordWorkHelper.WorkResult;
 import org.batfish.client.Command.CommandUsage;
@@ -100,18 +97,7 @@ import org.batfish.specifier.parboiled.ParboiledIpSpaceSpecifier;
 import org.codehaus.jettison.json.JSONException;
 import org.codehaus.jettison.json.JSONObject;
 import org.codehaus.jettison.json.JSONTokener;
-import org.jline.reader.EndOfFileException;
-import org.jline.reader.LineReader;
-import org.jline.reader.LineReader.Option;
-import org.jline.reader.LineReaderBuilder;
-import org.jline.reader.UserInterruptException;
-import org.jline.reader.impl.completer.ArgumentCompleter;
-import org.jline.reader.impl.completer.NullCompleter;
-import org.jline.terminal.TerminalBuilder;
-import sun.misc.Signal;
-import sun.misc.SignalHandler;
 
-@SuppressWarnings({"restriction"})
 public class Client extends AbstractClient implements IClient {
 
   private static final Set<String> COMPARATORS =
@@ -126,11 +112,7 @@ public class Client extends AbstractClient implements IClient {
   private static final String DIFF_NOT_READY_MSG =
       "Cannot ask differential question without first setting reference snapshot\n";
 
-  private static final String ENV_HOME = "HOME";
-
   private static final String FLAG_FAILING_TEST = "-error";
-
-  private static final String HISTORY_FILE = ".batfishclient_history";
 
   private static final int NUM_TRIES_WARNING_THRESHOLD = 5;
 
@@ -740,11 +722,7 @@ public class Client extends AbstractClient implements IClient {
 
   private String _currTestrig = null;
 
-  private boolean _exit;
-
   BatfishLogger _logger;
-
-  private LineReader _reader;
 
   private Settings _settings;
 
@@ -760,41 +738,16 @@ public class Client extends AbstractClient implements IClient {
         if (_settings.getBatchCommandFile() == null) {
           System.err.println(
               "org.batfish.client: Command file not specified while running in batch mode.");
-          System.err.printf(
-              "Use '-%s <cmdfile>' if you want batch mode, or '-%s interactive' if you want "
-                  + "interactive mode\n",
-              Settings.ARG_COMMAND_FILE, Settings.ARG_RUN_MODE);
+          System.err.printf("Use '-%s <cmdfile>' for batch mode\n", Settings.ARG_COMMAND_FILE);
           System.exit(1);
         }
         _logger = new BatfishLogger(_settings.getLogLevel(), false, _settings.getLogFile());
         break;
       case interactive:
         System.err.println(
-            "This is not a supported client for Batfish. Please use pybatfish following the"
-                + " instructions in the README:"
-                + " https://github.com/batfish/batfish/#how-do-i-get-started");
-        try {
-          _reader =
-              LineReaderBuilder.builder()
-                  .terminal(TerminalBuilder.builder().build())
-                  .completer(new ArgumentCompleter(new CommandCompleter(), new NullCompleter()))
-                  .build();
-          Path historyPath = Paths.get(System.getenv(ENV_HOME), HISTORY_FILE);
-          historyPath.toFile().createNewFile();
-          _reader.setVariable(LineReader.HISTORY_FILE, historyPath.toAbsolutePath().toString());
-          _reader.unsetOpt(Option.INSERT_TAB); // supports completion with nothing entered
-
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          PrintWriter pWriter = new PrintWriter(_reader.getTerminal().output(), true);
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          OutputStream os = new WriterOutputStream(pWriter, StandardCharsets.UTF_8);
-          @SuppressWarnings("PMD.CloseResource") // PMD does not understand things closed later.
-          PrintStream ps = new PrintStream(os, true);
-          _logger = new BatfishLogger(_settings.getLogLevel(), false, ps);
-        } catch (Exception e) {
-          System.err.printf("Could not initialize client: %s\n", e.getMessage());
-          e.printStackTrace();
-        }
+            "Interactive mode is not supported. Please use pybatfish following the instructions in"
+                + " the README: https://github.com/batfish/batfish/#how-do-i-get-started");
+        System.exit(1);
         break;
     }
   }
@@ -1058,7 +1011,7 @@ public class Client extends AbstractClient implements IClient {
     if (!isValidArgument(options, parameters, 0, 0, 0, Command.EXIT)) {
       return false;
     }
-    _exit = true;
+    // Exit command is only used in interactive mode, which is no longer supported
     return true;
   }
 
@@ -1853,16 +1806,15 @@ public class Client extends AbstractClient implements IClient {
 
     switch (_settings.getRunMode()) {
       case batch:
-        {
-          runBatchFile();
-          break;
-        }
+        runBatchFile();
+        break;
 
       case interactive:
-        {
-          runInteractive();
-          break;
-        }
+        System.err.println(
+            "Interactive mode is not supported. Please use pybatfish following the instructions in"
+                + " the README: https://github.com/batfish/batfish/#how-do-i-get-started");
+        System.exit(1);
+        break;
     }
   }
 
@@ -1872,34 +1824,6 @@ public class Client extends AbstractClient implements IClient {
     boolean result = processCommands(commands);
     if (!result) {
       System.exit(1);
-    }
-  }
-
-  private void runInteractive() {
-    SignalHandler handler = signal -> _logger.debugf("Client: Ignoring signal: %s\n", signal);
-    Signal.handle(new Signal("INT"), handler);
-    try {
-      while (!_exit) {
-        try {
-          String rawLine = _reader.readLine("batfish> ");
-          if (rawLine == null) {
-            break;
-          }
-          processCommand(rawLine);
-        } catch (UserInterruptException e) {
-          continue;
-        }
-      }
-    } catch (EndOfFileException e) {
-      // ignored
-    } catch (Throwable t) {
-      t.printStackTrace();
-    } finally {
-      try {
-        _reader.getHistory().save();
-      } catch (IOException e) {
-        e.printStackTrace();
-      }
     }
   }
 
