@@ -83,10 +83,11 @@ load("@rules_jvm_external//:setup.bzl", "rules_jvm_external_setup")
 rules_jvm_external_setup()
 
 load("@rules_jvm_external//:defs.bzl", "maven_install")
-load(":library_deps.bzl", "BATFISH_MAVEN_ARTIFACTS")
+load(":library_deps.bzl", "BATFISH_MAVEN_ARTIFACTS", "BATFISH_MAVEN_BOMS")
 
 maven_install(
     artifacts = BATFISH_MAVEN_ARTIFACTS,
+    boms = BATFISH_MAVEN_BOMS,
     excluded_artifacts = ["org.hamcrest:hamcrest-core"],
     fetch_sources = True,
     maven_install_json = "@batfish//:maven_install.json",
