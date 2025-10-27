@@ -196,6 +196,8 @@ here is a summary of the steps involved:
 
 1. Edit [`library_deps.bzl`](https://github.com/batfish/batfish/blob/master/library_deps.bzl) to update the version of
    the library used to a non-vulnerable release.
+   - For Jackson dependencies, update the version in `BATFISH_MAVEN_BOMS` instead of individual artifact versions,
+     as Jackson uses Maven BOM for centralized version management.
 2. Run [`bazel run @unpinned_maven//:pin`](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
    to re-generate `maven_install.json`.
 3. Manually review the changes (e.g., with `git diff`) to ensure all needed upgrades are achieved.

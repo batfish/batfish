@@ -7,15 +7,16 @@ load("@rules_jvm_external//:specs.bzl", "maven")
 # See: https://github.com/bazelbuild/rules_jvm_external#exporting-and-consuming-artifacts-from-external-repositories
 BATFISH_MAVEN_ARTIFACTS = [
     "com.carrotsearch:hppc:0.10.0",
-    "com.fasterxml.jackson.core:jackson-annotations:2.20",
-    "com.fasterxml.jackson.core:jackson-core:2.20.0",
-    "com.fasterxml.jackson.core:jackson-databind:2.20.0",
-    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.0",
-    "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.20.0",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.0",
-    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.20.0",
-    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:2.20.0",
-    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:2.20.0",
+    # Jackson dependencies use BOM for version management
+    "com.fasterxml.jackson.core:jackson-annotations",
+    "com.fasterxml.jackson.core:jackson-core",
+    "com.fasterxml.jackson.core:jackson-databind",
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
+    "com.fasterxml.jackson.datatype:jackson-datatype-guava",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jdk8",
+    "com.fasterxml.jackson.datatype:jackson-datatype-jsr310",
+    "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base",
+    "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
     "com.github.ben-manes.caffeine:caffeine:3.2.2",
     "com.google.auto.service:auto-service:1.1.1",
     "com.google.auto.service:auto-service-annotations:1.1.1",
@@ -70,4 +71,8 @@ BATFISH_MAVEN_ARTIFACTS = [
     "org.parboiled:parboiled-java:1.4.1",
     "org.skyscreamer:jsonassert:1.5.3",
     "org.yaml:snakeyaml:2.5",
+]
+
+BATFISH_MAVEN_BOMS = [
+    "com.fasterxml.jackson:jackson-bom:2.20.0",
 ]
