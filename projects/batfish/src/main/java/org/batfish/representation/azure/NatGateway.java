@@ -24,6 +24,7 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.BgpUnnumberedPeerConfig;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
@@ -31,13 +32,13 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
+import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
-import org.batfish.datamodel.route.nh.NextHop;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 
@@ -113,7 +114,7 @@ public class NatGateway extends Resource implements Serializable {
   }
 
   /**
-   * Returns the {@link Configuration} node for this VNet.
+   * Returns the {@link Configuration} node for this NatGateway.
    *
    * <p>Creates for each subnet one interface through {@link LinkLocalAddress}. Creates toInternet
    * {@link Interface} which advertise through BGP the nat gateway's public ip and each {@link
@@ -133,195 +134,185 @@ public class NatGateway extends Resource implements Serializable {
 
     Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(cfgNode).build();
 
-    Transformation snatTransformation = null;
-    Transformation dnatTransformation = null;
+    Interface toInternet =
+        Interface.builder()
+            .setName(getBackboneIfaceName())
+            .setVrf(cfgNode.getDefaultVrf())
+            .setOwner(cfgNode)
+            .setType(InterfaceType.PHYSICAL)
+            .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+            .build();
 
-    { // Internet
-      Interface toInternet =
-          Interface.builder()
-              .setName(getBackboneIfaceName())
-              .setVrf(cfgNode.getDefaultVrf())
-              .setOwner(cfgNode)
-              .setType(InterfaceType.PHYSICAL)
-              .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
-              .build();
+    BgpProcess process =
+        BgpProcess.builder()
+            .setRouterId(AzureConfiguration.LINK_LOCAL_IP)
+            .setVrf(cfgNode.getDefaultVrf())
+            .setEbgpAdminCost(20)
+            .setIbgpAdminCost(200)
+            .setLocalAdminCost(200)
+            // arbitrary values below since does not export from BGP RIB
+            .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
+            .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
+            .build();
 
-      BgpProcess process =
-          BgpProcess.builder()
-              .setRouterId(AzureConfiguration.LINK_LOCAL_IP)
-              .setVrf(cfgNode.getDefaultVrf())
-              .setEbgpAdminCost(20)
-              .setIbgpAdminCost(200)
-              .setLocalAdminCost(200)
-              // arbitrary values below since does not export from BGP RIB
-              .setLocalOriginationTypeTieBreaker(LocalOriginationTypeTieBreaker.NO_PREFERENCE)
-              .setNetworkNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
-              .setRedistributeNextHopIpTieBreaker(HIGHEST_NEXT_HOP_IP)
-              .build();
+    BgpUnnumberedPeerConfig.builder()
+        .setPeerInterface(AzureConfiguration.BACKBONE_FACING_INTERFACE_NAME)
+        .setRemoteAs(AzureConfiguration.AZURE_BACKBONE_ASN)
+        .setLocalIp(AzureConfiguration.LINK_LOCAL_IP)
+        .setLocalAs(AzureConfiguration.AZURE_LOCAL_ASN)
+        .setBgpProcess(process)
+        .setIpv4UnicastAddressFamily(
+            Ipv4UnicastAddressFamily.builder()
+                .setExportPolicy(AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME)
+                .build())
+        .build();
 
-      BgpUnnumberedPeerConfig.builder()
-          .setPeerInterface(AzureConfiguration.BACKBONE_FACING_INTERFACE_NAME)
-          .setRemoteAs(AzureConfiguration.AZURE_BACKBONE_ASN)
-          .setLocalIp(AzureConfiguration.LINK_LOCAL_IP)
-          .setLocalAs(AzureConfiguration.AZURE_LOCAL_ASN)
-          .setBgpProcess(process)
-          .setIpv4UnicastAddressFamily(
-              Ipv4UnicastAddressFamily.builder()
-                  .setExportPolicy(AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME)
-                  .build())
-          .build();
+    PrefixSpace ps = new PrefixSpace();
+    ps.addPrefixRange(PrefixRange.ALL);
+    installRoutingPolicyAdvertiseStatic(
+        AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, ps);
 
-      PrefixSpace ps = new PrefixSpace();
+    // todo: handle publicIpPrefix
+    // todo: handle multiple ip addresses
+    for (IdReference publicIpReference : getProperties().getPublicIpAddresses()) {
+      PublicIpAddress publicIpAddress =
+          region.findResource(publicIpReference, PublicIpAddress.class);
 
-      if (getProperties() == null) {
-        installRoutingPolicyAdvertiseStatic(
-            AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, ps);
-        return cfgNode;
-      }
-
-      Ip startIp = null;
-      Ip endIp = null;
-
-      for (IdReference id : getProperties().getPublicIpAddresses()) {
-        if (id == null) {
-          continue;
-        }
-
-        PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(id.getId());
-        if (publicIpAddress == null) {
-          throw new BatfishException(
-              "PublicIpAddress not found (did you include it ?). id: " + id.getId());
-        }
-        startIp = publicIpAddress.getProperties().getIpAddress();
-        endIp = startIp;
-      }
-
-      // todo : handle multiple public ips not in the same range
-      // todo : handle prefix
-      if (startIp != null) {
-
-        snatTransformation =
-            Transformation.when(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()))
-                .apply(
-                    TransformationStep.assignSourceIp(startIp, endIp),
-                    TransformationStep.assignSourcePort(1024, 65525))
-                .build();
-
-        // need to create a null route so we can advertise the prefix before sending traffic to the
-        // right host
-        StaticRoute st =
-            StaticRoute.builder()
-                .setNextHopInterface(NULL_INTERFACE_NAME)
-                .setNetwork(startIp.toPrefix())
-                .setAdministrativeCost(0)
-                .setMetric(0)
-                .setNonForwarding(true)
-                .build();
-
-        cfgNode.getDefaultVrf().getStaticRoutes().add(st);
-
-        ps.addPrefix(startIp.toPrefix());
-      }
-
-      if (getProperties().getSubnets() == null) {
-        installRoutingPolicyAdvertiseStatic(
-            AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, ps);
-        return cfgNode;
-      }
-
-      for (IdReference subnetReference : getProperties().getSubnets()) {
-
-        Subnet subnet = region.getSubnets().get(subnetReference.getId());
-
-        if (subnet == null) {
-          throw new BatfishException(
-              "Subnet not found (did you include it ?). id : " + subnetReference.getId());
-        }
-
-        Transformation subnetSnatTransformation = snatTransformation;
-
-        for (IdReference ipConfigurationReference : subnet.getProperties().getIpConfigurations()) {
-          IPConfiguration ipConfiguration =
-              region.getIpConfigurations().get(ipConfigurationReference.getId().toLowerCase());
-
-          if (ipConfiguration == null) {
-            throw new BatfishException(
-                "referenced ipConfiguration not found (did you include it ?). id : "
-                    + ipConfigurationReference.getId());
-          }
-
-          String publicIpAddressId = ipConfiguration.getProperties().getPublicIpAddressId();
-          if (publicIpAddressId == null) {
-            continue;
-          }
-
-          PublicIpAddress publicIpAddress = region.getPublicIpAddresses().get(publicIpAddressId);
-          if (publicIpAddress == null) {
-            throw new BatfishException(
-                "Referenced Public Ip not found (did you include it ?). id : " + publicIpAddressId);
-          }
-
-          subnetSnatTransformation =
-              applySnat(
-                  subnetSnatTransformation,
-                  ipConfiguration.getProperties().getPrivateIpAddress(),
-                  publicIpAddress.getProperties().getIpAddress());
-
-          dnatTransformation =
-              applyDnat(
-                  dnatTransformation,
-                  ipConfiguration.getProperties().getPrivateIpAddress(),
-                  publicIpAddress.getProperties().getIpAddress());
-
-          StaticRoute st =
+      cfgNode
+          .getDefaultVrf()
+          .getStaticRoutes()
+          .add(
               StaticRoute.builder()
-                  .setNetwork(publicIpAddress.getProperties().getIpAddress().toPrefix())
                   .setNextHopInterface(NULL_INTERFACE_NAME)
+                  .setNetwork(publicIpAddress.getProperties().getIpAddress().toPrefix())
                   .setAdministrativeCost(0)
                   .setMetric(0)
-                  .build();
+                  .setNonForwarding(true)
+                  .build());
 
-          cfgNode.getDefaultVrf().getStaticRoutes().add(st);
+      // default SNAT rule since all the others will apply first before this one (VM public ip for
+      // instance).
+      toInternet.setOutgoingTransformation(
+          Transformation.when(
+                  new MatchHeaderSpace(HeaderSpace.builder().setIpProtocols(NAT_PROTOCOLS).build()))
+              .apply(
+                  TransformationStep.assignSourceIp(
+                      publicIpAddress.getProperties().getIpAddress(),
+                      publicIpAddress.getProperties().getIpAddress()),
+                  TransformationStep.assignSourcePort(1024, 65525))
+              .build());
 
-          ps.addPrefix(publicIpAddress.getProperties().getIpAddress().toPrefix());
-        }
+      // remember outgoing SNAT traffic for the response
+      toInternet.setFirewallSessionInterfaceInfo(
+          new FirewallSessionInterfaceInfo(
+              FirewallSessionInterfaceInfo.Action.FORWARD_OUT_IFACE,
+              ImmutableList.of(toInternet.getName()),
+              null,
+              null));
 
-        Interface toSubnet =
-            Interface.builder()
-                .setName(subnet.getNodeName())
-                .setVrf(cfgNode.getDefaultVrf())
-                .setOwner(cfgNode)
-                .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
-                .build();
-
-        StaticRoute st =
-            StaticRoute.builder()
-                .setNetwork(subnet.getProperties().getAddressPrefix())
-                .setNextHop(
-                    NextHop.legacyConverter(toSubnet.getName(), AzureConfiguration.LINK_LOCAL_IP))
-                .setMetric(0)
-                .setAdministrativeCost(0)
-                .setNonForwarding(false)
-                .build();
-
-        cfgNode.getDefaultVrf().getStaticRoutes().add(st);
-
-        convertedConfiguration.addLayer1Edge(
-            cfgNode.getHostname(), subnet.getNodeName(),
-            subnet.getNodeName(), subnet.getToNatInterfaceName());
-
-        toSubnet.setIncomingTransformation(subnetSnatTransformation);
+      // handle only the first ip for now
+      // todo: handle multiple ips
+      if ((2 + 1) == 3) {
+        break;
       }
-
-      toInternet.setIncomingTransformation(dnatTransformation);
-
-      installRoutingPolicyAdvertiseStatic(
-          AzureConfiguration.AZURE_SERVICES_GATEWAY_EXPORT_POLICY_NAME, cfgNode, ps);
     }
 
     return cfgNode;
+  }
+
+  /**
+   * Connects a subnet to this NatGateway.
+   *
+   * @param convertedConfiguration convertedConfiguration
+   * @param subnet the subnet you wish to connect
+   * @param subnetNode the subnetNode
+   * @param toNatGateway the subnet interface to connect to this nat gateway
+   * @return created interface on nat gateway connected with subnet.
+   */
+  public Interface connectToSubnet(
+      ConvertedConfiguration convertedConfiguration,
+      Subnet subnet,
+      Configuration subnetNode,
+      Interface toNatGateway) {
+
+    Configuration natGatewayNode = convertedConfiguration.getNode(getNodeName());
+
+    Interface toSubnet =
+        Interface.builder()
+            .setName(subnet.getNodeName())
+            .setVrf(natGatewayNode.getDefaultVrf())
+            .setOwner(natGatewayNode)
+            .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+            .build();
+
+    convertedConfiguration.addLayer1Edge(
+        natGatewayNode.getHostname(), toSubnet.getName(),
+        subnetNode.getHostname(), toNatGateway.getName());
+
+    natGatewayNode
+        .getDefaultVrf()
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(subnet.getProperties().getAddressPrefix())
+                .setNextHopInterface(toSubnet.getName())
+                .setNextHopIp(AzureConfiguration.LINK_LOCAL_IP)
+                .setMetric(0)
+                .setAdministrativeCost(0)
+                .setNonForwarding(false)
+                .build());
+
+    return toSubnet;
+  }
+
+  /**
+   * use this NatGateway to handle a host public ip (any endpoint ip in a connected subnet)
+   *
+   * <p>this nat gateway has to be connected with the host's subnet through connectToSubnet method
+   * below.
+   *
+   * @param convertedConfiguration convertedConfiguration
+   * @param publicIpAddress the publicIpAddress you wish to use
+   * @param privateAddress the privateAddress where the traffic should be forwarded
+   */
+  public void handleHostPublicIp(
+      ConvertedConfiguration convertedConfiguration,
+      PublicIpAddress publicIpAddress,
+      Ip privateAddress) {
+    Configuration natGatewayNode = convertedConfiguration.getNode(getNodeName());
+    Interface toInternet = natGatewayNode.getAllInterfaces().get(getBackboneIfaceName());
+    if (toInternet == null) {
+      throw new BatfishException(
+          "internal error, unable to find NatGateway toInternet interface !");
+    }
+    Transformation currentSNatTransformation = toInternet.getOutgoingTransformation();
+    Transformation currentDNatTransformation = toInternet.getIncomingTransformation();
+
+    toInternet.setOutgoingTransformation(
+        applySnat(
+            currentSNatTransformation,
+            privateAddress,
+            publicIpAddress.getProperties().getIpAddress()));
+
+    toInternet.setIncomingTransformation(
+        applyDnat(
+            currentDNatTransformation,
+            privateAddress,
+            publicIpAddress.getProperties().getIpAddress()));
+
+    // the nat gateway needs a static route to advertise the public ip
+    natGatewayNode
+        .getDefaultVrf()
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNetwork(publicIpAddress.getProperties().getIpAddress().toPrefix())
+                .setNextHopInterface(NULL_INTERFACE_NAME)
+                .setAdministrativeCost(0)
+                .setMetric(0)
+                .setNonForwarding(true)
+                .build());
   }
 
   public Properties getProperties() {

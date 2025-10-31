@@ -53,6 +53,7 @@ public class PostgreTest {
             "subnetType",
             new Subnet.Properties(Prefix.parse("10.0.0.0/24"), null, null, Set.of(), false));
     rgp.getSubnets().put(subnet.getId(), subnet);
+    convertedConfiguration.addNode(subnet.toConfigurationNode(rgp, convertedConfiguration));
 
     Postgres.Properties properties = new Postgres.Properties(new Postgres.Network(subnet.getId()));
 
@@ -66,7 +67,7 @@ public class PostgreTest {
 
     for (Interface iFace : cfgNode.getAllInterfaces().values()) {
       assertNotNull(iFace);
-      assertEquals("to-subnet", iFace.getName());
+      assertEquals("subnet", iFace.getName());
       assertEquals(
           ConcreteInterfaceAddress.create(
               Ip.parse("10.0.0.2"), subnet.getProperties().getAddressPrefix().getPrefixLength()),

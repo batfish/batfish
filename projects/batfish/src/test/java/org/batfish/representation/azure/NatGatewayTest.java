@@ -68,7 +68,31 @@ public class NatGatewayTest {
     Region region = new Region("test");
     ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
 
+    PublicIpAddress publicIpAddress =
+        new PublicIpAddress(
+            "testPublicIpId",
+            "testPublicIpName",
+            "Microsoft.Network/publicIPAddresses",
+            new PublicIpAddress.Properties(Ip.parse("1.1.1.1")));
+    region.getPublicIpAddresses().put(publicIpAddress.getId(), publicIpAddress);
+
     String natGatewayId = "natGatewayId";
+
+    NatGateway.Properties natGatewayProperties =
+        new NatGateway.Properties(
+            Set.of(new IdReference("testPublicIpId")),
+            Set.of(),
+            Set.of(new IdReference("subnetId")));
+
+    NatGateway natGateway =
+        new NatGateway(
+            natGatewayId, "natGatwayName", "Microsoft.Network/natGateways", natGatewayProperties);
+    region.getNatGateways().put(natGateway.getId(), natGateway);
+
+    Configuration cfgNode = natGateway.toConfigurationNode(region, convertedConfiguration);
+    assertNotNull(cfgNode);
+    assertEquals(natGateway.getNodeName(), cfgNode.getHostname());
+    convertedConfiguration.addNode(cfgNode);
 
     Subnet.Properties subnetProperties =
         new Subnet.Properties(
@@ -84,35 +108,13 @@ public class NatGatewayTest {
     region.getSubnets().put(subnet.getId(), subnet);
     convertedConfiguration.addNode(subnet.toConfigurationNode(region, convertedConfiguration));
 
-    PublicIpAddress publicIpAddress =
-        new PublicIpAddress(
-            "testPublicIpId",
-            "testPublicIpName",
-            "Microsoft.Network/publicIPAddresses",
-            new PublicIpAddress.Properties(Ip.parse("1.1.1.1")));
-    region.getPublicIpAddresses().put(publicIpAddress.getId(), publicIpAddress);
-
-    NatGateway.Properties natGatewayProperties =
-        new NatGateway.Properties(
-            Set.of(new IdReference("testPublicIpId")),
-            Set.of(),
-            Set.of(new IdReference("subnetId")));
-
-    NatGateway natGateway =
-        new NatGateway(
-            natGatewayId, "natGatwayName", "Microsoft.Network/natGateways", natGatewayProperties);
-
-    Configuration cfgNode = natGateway.toConfigurationNode(region, convertedConfiguration);
-    assertNotNull(cfgNode);
-    assertEquals(natGateway.getNodeName(), cfgNode.getHostname());
-
     Interface toSubnet = cfgNode.getAllInterfaces().get(subnet.getCleanId());
     assertNotNull(toSubnet);
 
     Interface toInternet = cfgNode.getAllInterfaces().get(natGateway.getBackboneIfaceName());
     assertNotNull(toInternet);
 
-    Transformation snatTransformation = toSubnet.getIncomingTransformation();
+    Transformation snatTransformation = toInternet.getOutgoingTransformation();
     assertNotNull(snatTransformation);
 
     assertEquals(
@@ -144,6 +146,19 @@ public class NatGatewayTest {
     ConvertedConfiguration convertedConfiguration = new ConvertedConfiguration();
 
     String natGatewayId = "natGatewayId";
+    NatGateway.Properties natGatewayProperties =
+        new NatGateway.Properties(Set.of(), Set.of(), Set.of(new IdReference("subnetId")));
+
+    NatGateway natGateway =
+        new NatGateway(
+            natGatewayId, "natGatwayName", "Microsoft.Network/natGateways", natGatewayProperties);
+
+    region.getNatGateways().put(natGateway.getId(), natGateway);
+    Configuration cfgNode = natGateway.toConfigurationNode(region, convertedConfiguration);
+    convertedConfiguration.addNode(cfgNode);
+    assertNotNull(cfgNode);
+    assertEquals(natGateway.getNodeName(), cfgNode.getHostname());
+
     String subnetId = "subnetId";
 
     PublicIpAddress publicIpAddress =
@@ -166,6 +181,8 @@ public class NatGatewayTest {
                 true));
     region.getIpConfigurations().put(ipConfiguration.getId().toLowerCase(), ipConfiguration);
 
+    ipConfiguration.advertisePublicIpIfAny(region, convertedConfiguration, natGateway);
+
     Subnet.Properties subnetProperties =
         new Subnet.Properties(
             Prefix.parse("192.168.1.0/24"),
@@ -184,24 +201,13 @@ public class NatGatewayTest {
     region.getSubnets().put(subnet.getId(), subnet);
     convertedConfiguration.addNode(subnet.toConfigurationNode(region, convertedConfiguration));
 
-    NatGateway.Properties natGatewayProperties =
-        new NatGateway.Properties(Set.of(), Set.of(), Set.of(new IdReference("subnetId")));
-
-    NatGateway natGateway =
-        new NatGateway(
-            natGatewayId, "natGatwayName", "Microsoft.Network/natGateways", natGatewayProperties);
-
-    Configuration cfgNode = natGateway.toConfigurationNode(region, convertedConfiguration);
-    assertNotNull(cfgNode);
-    assertEquals(natGateway.getNodeName(), cfgNode.getHostname());
-
     Interface toSubnet = cfgNode.getAllInterfaces().get(subnet.getCleanId());
     assertNotNull(toSubnet);
 
     Interface toInternet = cfgNode.getAllInterfaces().get(natGateway.getBackboneIfaceName());
     assertNotNull(toInternet);
 
-    Transformation snatTransformation = toSubnet.getIncomingTransformation();
+    Transformation snatTransformation = toInternet.getOutgoingTransformation();
     assertNotNull(snatTransformation);
 
     assertEquals(

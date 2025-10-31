@@ -10,7 +10,17 @@ import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.Vrf;
 
 /**
  * Represents ContainerInstance azure services. (Part of {@link ContainerGroup}). <a
@@ -91,5 +101,46 @@ public class ContainerInstance implements Serializable {
     public int hashCode() {
       return _protocol.hashCode() + _port;
     }
+  }
+
+  public String getInterfaceName() {
+    return "to-container-group";
+  }
+
+  public Configuration toConfigurationNode(
+      Region region, Configuration containerGroup, Ip containerIp, Ip containerGroupIp) {
+
+    Configuration containerInstanceNode =
+        Configuration.builder()
+            .setHostname(containerGroup.getHostname() + "_" + getName())
+            .setHumanName(getName())
+            .setDomainName("azure")
+            .setDeviceModel(DeviceModel.AZURE_CONTAINER_INSTANCE)
+            .setDefaultInboundAction(LineAction.PERMIT)
+            .setDefaultCrossZoneAction(LineAction.PERMIT)
+            .setConfigurationFormat(ConfigurationFormat.AZURE)
+            .build();
+
+    Vrf.builder().setOwner(containerInstanceNode).setName(Configuration.DEFAULT_VRF_NAME).build();
+
+    Interface.builder()
+        .setAddress(ConcreteInterfaceAddress.create(containerIp, 16))
+        .setOwner(containerInstanceNode)
+        .setName(getInterfaceName())
+        .setVrf(containerInstanceNode.getDefaultVrf())
+        .build();
+
+    containerInstanceNode
+        .getDefaultVrf()
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setMetric(0)
+                .setAdministrativeCost(0)
+                .setNextHopIp(containerGroupIp)
+                .setNetwork(Prefix.ZERO)
+                .build());
+
+    return containerInstanceNode;
   }
 }

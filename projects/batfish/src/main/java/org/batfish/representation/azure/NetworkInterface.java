@@ -6,11 +6,17 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.Vrf;
 
 /**
  * Represents an Azure Network Interface which is used for {@link VirtualMachine} objects. <a
@@ -34,6 +40,61 @@ public class NetworkInterface extends Resource implements Serializable {
     super(name, id, type);
     checkArgument(properties != null, "properties must be provided");
     _properties = properties;
+  }
+
+  public @Nullable String getSubnetId() {
+    return getProperties().getIPConfigurations().stream()
+        .findAny()
+        .map(ipConfiguration -> ipConfiguration.getProperties().getSubnetId())
+        .orElse(null);
+  }
+
+  /**
+   * Generates an {@link Interface} from its parsed configuration.
+   *
+   * <p>requires the default {@link Vrf} to be created on the owner.
+   *
+   * @param rgp region
+   * @param owner the owner of the Interface
+   * @return {@link Interface}
+   */
+  public Interface getInterface(Region rgp, Configuration owner) {
+    Interface.Builder interfaceBuilder = Interface.builder();
+    interfaceBuilder.setName(getCleanId());
+    interfaceBuilder.setHumanName(getName());
+    interfaceBuilder.setOwner(owner);
+
+    ConcreteInterfaceAddress primaryAddress = null;
+    List<ConcreteInterfaceAddress> secondaryInterfacesAddresses =
+        new ArrayList<>(getProperties().getIPConfigurations().size() - 1);
+
+    Subnet subnet = getSubnetId() == null ? null : rgp.getSubnets().get(getSubnetId());
+    int mask = subnet == null ? 32 : subnet.getProperties().getAddressPrefix().getPrefixLength();
+
+    for (IPConfiguration ipConfiguration : getProperties().getIPConfigurations()) {
+      ConcreteInterfaceAddress currentAddress =
+          ConcreteInterfaceAddress.create(
+              ipConfiguration.getProperties().getPrivateIpAddress(), mask);
+
+      if (ipConfiguration.getProperties().isPrimary()) {
+        primaryAddress = currentAddress;
+      } else {
+        secondaryInterfacesAddresses.add(currentAddress);
+      }
+    }
+
+    interfaceBuilder.setAddress(primaryAddress);
+    interfaceBuilder.setSecondaryAddresses(secondaryInterfacesAddresses);
+    interfaceBuilder.setVrf(owner.getDefaultVrf());
+
+    return interfaceBuilder.build();
+  }
+
+  public void advertisePublicIpIfAny(
+      Region region, ConvertedConfiguration convertedConfiguration, NatGateway natGateway) {
+    for (IPConfiguration ipConfiguration : getProperties().getIPConfigurations()) {
+      ipConfiguration.advertisePublicIpIfAny(region, convertedConfiguration, natGateway);
+    }
   }
 
   @JsonIgnoreProperties(ignoreUnknown = true)
