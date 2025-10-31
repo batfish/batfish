@@ -55,28 +55,30 @@ public class SecurityRule extends Resource implements Serializable {
     headerSpaceBuilder.setDstIps(_properties.getDestinationIpSpace());
     headerSpaceBuilder.setSrcIps(_properties.getSourceIpSpace());
 
-    headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
+    if (_properties.getProtocol() != null) {
+        headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
 
-    // handle port range(s) only if layer 4's protocol is TCP or UDP
-    if ((_properties.getProtocol().equals(IpProtocol.TCP))
-        || _properties.getProtocol().equals(IpProtocol.UDP)) {
+        // handle port range(s) only if layer 4's protocol is TCP or UDP
+        if ((_properties.getProtocol().equals(IpProtocol.TCP))
+                || _properties.getProtocol().equals(IpProtocol.UDP)) {
 
-      // if there are multiple port range, then we ignore single port range field
+            // if there are multiple port range, then we ignore single port range field
 
-      if (_properties.getSourcePortRanges().isEmpty()) {
-        headerSpaceBuilder.setSrcPorts(_properties.getSourcePortRange());
-      } else {
-        headerSpaceBuilder.setSrcPorts(_properties.getSourcePortRanges());
-      }
+            if (_properties.getSourcePortRanges().isEmpty()) {
+                headerSpaceBuilder.setSrcPorts(_properties.getSourcePortRange());
+            } else {
+                headerSpaceBuilder.setSrcPorts(_properties.getSourcePortRanges());
+            }
 
-      if (_properties.getDestinationPortRanges().isEmpty()) {
-        headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRange());
-      } else {
-        headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRanges());
-      }
+            if (_properties.getDestinationPortRanges().isEmpty()) {
+                headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRange());
+            } else {
+                headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRanges());
+            }
 
-    } else if (_properties.getProtocol().equals(IpProtocol.ICMP)) {
-      headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
+        } else if (_properties.getProtocol().equals(IpProtocol.ICMP)) {
+            headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
+        }
     }
 
     LineAction action =
@@ -173,9 +175,9 @@ public class SecurityRule extends Resource implements Serializable {
     }
 
     /** convert {@link String} to {@link IpProtocol} */
-    private static @Nonnull IpProtocol getProtocol(String protocol) {
+    private static @Nullable IpProtocol getProtocol(String protocol) {
       if (protocol.equals("*")) {
-        return IpProtocol.ANY_0_HOP_PROTOCOL;
+        return null;
       }
       return IpProtocol.fromString(protocol);
     }
@@ -215,7 +217,7 @@ public class SecurityRule extends Resource implements Serializable {
       }
     }
 
-    public @Nonnull IpProtocol getProtocol() {
+    public @Nullable IpProtocol getProtocol() {
       return _protocol;
     }
 
