@@ -5,16 +5,19 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.google.common.collect.ImmutableList;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
@@ -154,6 +157,18 @@ public class ContainerGroup extends Instance implements Serializable {
   }
 
   /**
+   * returns the associated subnet (id) with this containerGroup.
+   *
+   * @return ID
+   */
+  public @Nullable String getSubnetId() {
+    for (IdReference subnetReference : getProperties().getSubnetIds()) {
+      return subnetReference.getId();
+    }
+    return null;
+  }
+
+  /**
    * Returns the {@link Configuration} node for this ContainerGroup.
    *
    * <p>Creates ContainerGroup node which is connected to subnet node : toSubnet. Creates
@@ -177,15 +192,11 @@ public class ContainerGroup extends Instance implements Serializable {
 
     Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(containerGroupNode).build();
 
-    String subnetId = null;
-    for (IdReference idReference : getProperties().getSubnetIds()) {
-      subnetId = idReference.getId();
-    }
-    Subnet subnet = region.getSubnets().get(subnetId);
+    Subnet subnet = region.findResource(getSubnetId(), Subnet.class);
 
     Interface toSubnet =
         Interface.builder()
-            .setName("to-subnet")
+            .setName("subnet")
             .setOwner(containerGroupNode)
             .setAddress(
                 ConcreteInterfaceAddress.create(
@@ -194,9 +205,7 @@ public class ContainerGroup extends Instance implements Serializable {
             .setVrf(containerGroupNode.getDefaultVrf())
             .build();
 
-    convertedConfiguration.addLayer1Edge(
-        containerGroupNode.getHostname(), toSubnet.getName(),
-        subnet.getNodeName(), subnet.getToLanInterfaceName());
+    subnet.connectToHost(region, convertedConfiguration, containerGroupNode, toSubnet);
 
     containerGroupNode
         .getDefaultVrf()
@@ -210,107 +219,52 @@ public class ContainerGroup extends Instance implements Serializable {
                 .setMetric(0)
                 .build());
 
+    Ip toContainerInstancesIp = Ip.parse("172.17.0.1");
+    int mask = 16;
+
+    ConcreteInterfaceAddress toContainerInstancesAddress =
+        ConcreteInterfaceAddress.create(toContainerInstancesIp, mask);
     Interface toContainerInstances =
         Interface.builder()
-            .setAddress(ConcreteInterfaceAddress.create(Ip.parse("172.17.0.1"), 16))
+            .setAddress(toContainerInstancesAddress)
             .setOwner(containerGroupNode)
             .setName("to-containers")
             .setVrf(containerGroupNode.getDefaultVrf())
             .build();
-    assert toContainerInstances.getConcreteAddress() != null;
 
-    long containerIp = Ip.parse("172.17.0.2").asLong();
+    long containerIpLong = toContainerInstancesIp.asLong() + 1L;
 
     // will be used to store every dnat Transformation (used for providing open ports to containers)
     Transformation dnatTransformationStack = null;
 
     for (ContainerInstance containerInstance : getProperties().getContainers()) {
 
-      Configuration containerInstanceNode =
-          Configuration.builder()
-              .setHostname(getCleanId() + "_" + containerInstance.getName())
-              .setHumanName(getName())
-              .setDomainName("azure")
-              .setDeviceModel(DeviceModel.AZURE_CONTAINER_INSTANCE)
-              .setDefaultInboundAction(LineAction.PERMIT)
-              .setDefaultCrossZoneAction(LineAction.PERMIT)
-              .setConfigurationFormat(ConfigurationFormat.AZURE)
-              .build();
+      Ip containerIp = Ip.create(containerIpLong++);
 
+      Configuration containerInstanceNode =
+          containerInstance.toConfigurationNode(
+              region, containerGroupNode, containerIp, toContainerInstancesIp);
       convertedConfiguration.addNode(containerInstanceNode);
 
-      Vrf.builder().setOwner(containerInstanceNode).setName(Configuration.DEFAULT_VRF_NAME).build();
-
-      Ip containerInstanceIp = Ip.create(containerIp++);
-
-      Interface toContainerGroup =
-          Interface.builder()
-              .setAddress(
-                  ConcreteInterfaceAddress.create(
-                      containerInstanceIp,
-                      subnet.getProperties().getAddressPrefix().getPrefixLength()))
-              .setOwner(containerInstanceNode)
-              .setName("to-container-group")
-              .setVrf(containerInstanceNode.getDefaultVrf())
-              .build();
-
-      containerInstanceNode
-          .getDefaultVrf()
-          .getStaticRoutes()
-          .add(
-              StaticRoute.builder()
-                  .setMetric(0)
-                  .setAdministrativeCost(0)
-                  .setNextHopIp(toContainerInstances.getConcreteAddress().getIp())
-                  .setNetwork(Prefix.ZERO)
-                  .build());
-
       convertedConfiguration.addLayer1Edge(
-          containerInstanceNode.getHostname(), toContainerGroup.getName(),
+          containerInstanceNode.getHostname(), containerInstance.getInterfaceName(),
           containerGroupNode.getHostname(), toContainerInstances.getName());
 
-      // DNAT
-      Set<SubRange> tcpPorts = new HashSet<>();
-      Set<SubRange> udpPorts = new HashSet<>();
-      for (ContainerInstance.Port port : containerInstance.getProperties().getPorts()) {
-        if (port.getProtocol().equals(IpProtocol.TCP)) {
-          tcpPorts.add(new SubRange(port.getPort()));
-        } else if (port.getProtocol().equals(IpProtocol.UDP)) {
-          udpPorts.add(new SubRange(port.getPort()));
-        }
-      }
-
-      if (!tcpPorts.isEmpty()) {
-        dnatTransformationStack =
-            Transformation.when(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstPorts(tcpPorts)
-                            .setIpProtocols(IpProtocol.TCP)
-                            .build()))
-                .apply(TransformationStep.assignDestinationIp(containerInstanceIp))
-                .setOrElse(dnatTransformationStack)
-                .build();
-      }
-      if (!udpPorts.isEmpty()) {
-        dnatTransformationStack =
-            Transformation.when(
-                    new MatchHeaderSpace(
-                        HeaderSpace.builder()
-                            .setDstPorts(udpPorts)
-                            .setIpProtocols(IpProtocol.UDP)
-                            .build()))
-                .apply(TransformationStep.assignDestinationIp(containerInstanceIp))
-                .setOrElse(dnatTransformationStack)
-                .build();
-      }
+      dnatTransformationStack =
+          getContainerDNat(
+              containerInstance,
+              containerIp,
+              getProperties().getIpAddress().getIp(),
+              dnatTransformationStack);
     }
 
+    // regular S-NAT
     toSubnet.setIncomingTransformation(dnatTransformationStack);
     toSubnet.setOutgoingTransformation(
         Transformation.when(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
+                        .setSrcIps(toContainerInstancesAddress.getPrefix().toIpSpace())
                         .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.ICMP)
                         .build()))
             .apply(
@@ -318,6 +272,63 @@ public class ContainerGroup extends Instance implements Serializable {
                 TransformationStep.assignSourcePort(1024, 65525))
             .build());
 
+    toSubnet.setFirewallSessionInterfaceInfo(
+        new FirewallSessionInterfaceInfo(
+            FirewallSessionInterfaceInfo.Action.FORWARD_OUT_IFACE,
+            ImmutableList.of(toSubnet.getName()),
+            null,
+            null));
+
     return containerGroupNode;
+  }
+
+  private Transformation getContainerDNat(
+      ContainerInstance containerInstance,
+      Ip containerInstanceIp,
+      Ip containerGroupIp,
+      Transformation initialTransformation) {
+    Transformation dnatTransformationStack = initialTransformation;
+
+    // D-NAT
+    Set<SubRange> tcpPorts =
+        containerInstance.getProperties().getPorts().stream()
+            .filter(port -> port.getProtocol().equals(IpProtocol.TCP))
+            .map(port -> new SubRange(port.getPort()))
+            .collect(Collectors.toSet());
+
+    Set<SubRange> udpPorts =
+        containerInstance.getProperties().getPorts().stream()
+            .filter(port -> port.getProtocol().equals(IpProtocol.UDP))
+            .map(port -> new SubRange(port.getPort()))
+            .collect(Collectors.toSet());
+
+    if (!tcpPorts.isEmpty()) {
+      dnatTransformationStack =
+          Transformation.when(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setDstIps(containerGroupIp.toIpSpace())
+                          .setDstPorts(tcpPorts)
+                          .setIpProtocols(IpProtocol.TCP)
+                          .build()))
+              .apply(TransformationStep.assignDestinationIp(containerInstanceIp))
+              .setOrElse(dnatTransformationStack)
+              .build();
+    }
+    if (!udpPorts.isEmpty()) {
+      dnatTransformationStack =
+          Transformation.when(
+                  new MatchHeaderSpace(
+                      HeaderSpace.builder()
+                          .setDstIps(containerGroupIp.toIpSpace())
+                          .setDstPorts(udpPorts)
+                          .setIpProtocols(IpProtocol.UDP)
+                          .build()))
+              .apply(TransformationStep.assignDestinationIp(containerInstanceIp))
+              .setOrElse(dnatTransformationStack)
+              .build();
+    }
+
+    return dnatTransformationStack;
   }
 }

@@ -6,7 +6,6 @@ import java.util.HashMap;
 import java.util.Map;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-
 import org.batfish.common.BatfishException;
 import org.batfish.common.BfConsts;
 import org.batfish.common.Warning;
@@ -24,7 +23,8 @@ public class Region implements Serializable {
   private final @Nonnull Map<String, NetworkSecurityGroup> _networkSecurityGroups = new HashMap<>();
   private final @Nonnull Map<String, NatGateway> _natGateways = new HashMap<>();
   private final @Nonnull Map<String, PublicIpAddress> _publicIpAddresses = new HashMap<>();
-  private final @Nonnull Map<Class<? extends Resource>, Map<String, ? extends Resource>> resourcesMap = new HashMap();
+  private final @Nonnull Map<Class<? extends Resource>, Map<String, ? extends Resource>>
+      resourcesMap = new HashMap();
   private final @Nonnull String _regionName;
 
   public Region(String regionName) {
@@ -32,39 +32,39 @@ public class Region implements Serializable {
     resourceFinderInitializer();
   }
 
-  private void resourceFinderInitializer(){
-      resourcesMap.put(NetworkInterface.class, _interfaces);
-      resourcesMap.put(IPConfiguration.class, _ipConfigurations);
-      resourcesMap.put(VNet.class, _vnets);
-      resourcesMap.put(Subnet.class, _subnets);
-      resourcesMap.put(Instance.class, _instances);
-      resourcesMap.put(NetworkSecurityGroup.class, _networkSecurityGroups);
-      resourcesMap.put(NatGateway.class, _natGateways);
-      resourcesMap.put(PublicIpAddress.class, _publicIpAddresses);
+  private void resourceFinderInitializer() {
+    resourcesMap.put(NetworkInterface.class, _interfaces);
+    resourcesMap.put(IPConfiguration.class, _ipConfigurations);
+    resourcesMap.put(VNet.class, _vnets);
+    resourcesMap.put(Subnet.class, _subnets);
+    resourcesMap.put(Instance.class, _instances);
+    resourcesMap.put(NetworkSecurityGroup.class, _networkSecurityGroups);
+    resourcesMap.put(NatGateway.class, _natGateways);
+    resourcesMap.put(PublicIpAddress.class, _publicIpAddresses);
   }
 
-  public <T extends Resource> T findResource(IdReference idReference, Class<T> resourceClass){
-      return findResource(idReference.getId(), resourceClass);
+  public <T extends Resource> T findResource(IdReference idReference, Class<T> resourceClass) {
+    return findResource(idReference.getId(), resourceClass);
   }
 
-  public @Nonnull <T extends Resource> T findResource(String id, Class<T> resourceClass){
-      Map<String, ? extends Resource> wantedMap = resourcesMap.get(resourceClass);
-      if(wantedMap == null) {
-          throw new IllegalArgumentException("Resource class not supported: " + resourceClass.getName());
-      }
+  public @Nonnull <T extends Resource> T findResource(String id, Class<T> resourceClass) {
+    Map<String, ? extends Resource> wantedMap = resourcesMap.get(resourceClass);
+    if (wantedMap == null) {
+      throw new IllegalArgumentException(
+          "Resource class not supported: " + resourceClass.getName());
+    }
 
-      Resource resource = wantedMap.get(id);
-      if(resource == null){
-          throw new BatfishException(
-                  "Unable to find \""
-                          + id
-                          + "\" resource ("
-                          + resourceClass.getName()
-                          +"), did you include it ?"
-          );
-      }
+    Resource resource = wantedMap.get(id);
+    if (resource == null) {
+      throw new BatfishException(
+          "Unable to find \""
+              + id
+              + "\" resource ("
+              + resourceClass.getName()
+              + "), did you include it ?");
+    }
 
-      return resourceClass.cast(resource);
+    return resourceClass.cast(resource);
   }
 
   public @Nonnull Map<String, NetworkInterface> getInterfaces() {
@@ -99,8 +99,8 @@ public class Region implements Serializable {
     return _publicIpAddresses;
   }
 
-  public @Nullable String getName(){
-      return _regionName;
+  public @Nullable String getName() {
+    return _regionName;
   }
 
   public void addConfigElement(

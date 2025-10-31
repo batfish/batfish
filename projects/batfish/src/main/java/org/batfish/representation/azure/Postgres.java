@@ -69,17 +69,11 @@ public class Postgres extends Instance implements Serializable {
       throw new BatfishException(
           "Postgres are only supported with a Delegated Subnet (Vnet integration).");
     }
-    Subnet subnet =
-        rgp.getSubnets().get(getProperties().getNetwork().getDelegatedSubnetResourceId());
-    if (subnet == null) {
-      throw new BatfishException(
-          "Subnet not found (did you forget to include it ?). id: "
-              + getProperties().getNetwork().getDelegatedSubnetResourceId());
-    }
+    Subnet subnet = rgp.findResource(subnetId, Subnet.class);
 
     Interface toSubnet =
         Interface.builder()
-            .setName("to-subnet")
+            .setName("subnet")
             .setHumanName(getName())
             .setAddress(
                 ConcreteInterfaceAddress.create(
@@ -91,19 +85,18 @@ public class Postgres extends Instance implements Serializable {
             .setVrf(cfgNode.getDefaultVrf())
             .build();
 
-    StaticRoute st =
-        StaticRoute.builder()
-            .setNextHopIp(subnet.computeInstancesIfaceIp())
-            .setAdministrativeCost(0)
-            .setMetric(0)
-            .setNetwork(Prefix.ZERO)
-            .build();
+    subnet.connectToHost(rgp, convertedConfiguration, cfgNode, toSubnet);
 
-    cfgNode.getDefaultVrf().getStaticRoutes().add(st);
-
-    convertedConfiguration.addLayer1Edge(
-        subnet.getNodeName(), subnet.getToLanInterfaceName(),
-        cfgNode.getHostname(), toSubnet.getName());
+    cfgNode
+        .getDefaultVrf()
+        .getStaticRoutes()
+        .add(
+            StaticRoute.builder()
+                .setNextHopIp(subnet.computeInstancesIfaceIp())
+                .setAdministrativeCost(0)
+                .setMetric(0)
+                .setNetwork(Prefix.ZERO)
+                .build());
 
     return cfgNode;
   }

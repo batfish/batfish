@@ -30,6 +30,17 @@ public class IPConfiguration extends Resource {
     _properties = properties;
   }
 
+  public void advertisePublicIpIfAny(
+      Region region, ConvertedConfiguration convertedConfiguration, NatGateway natGateway) {
+    if (getProperties().getPublicIpAddressId() == null) {
+      return;
+    }
+    PublicIpAddress publicIpAddress =
+        region.findResource(getProperties().getPublicIpAddressId(), PublicIpAddress.class);
+    natGateway.handleHostPublicIp(
+        convertedConfiguration, publicIpAddress, getProperties().getPrivateIpAddress());
+  }
+
   public @Nonnull Properties getProperties() {
     return _properties;
   }
