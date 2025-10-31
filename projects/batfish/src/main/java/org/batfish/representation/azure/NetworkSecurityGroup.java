@@ -66,8 +66,7 @@ public class NetworkSecurityGroup extends Resource implements Serializable {
               .build();
 
       configuration.getIpAccessLists().put(inboundAcl.getName(), inboundAcl);
-
-      iface.setInboundFilter(inboundAcl);
+      iface.setIncomingFilter(inboundAcl);
     }
 
     if (!_outboundAclLines.isEmpty()) {
