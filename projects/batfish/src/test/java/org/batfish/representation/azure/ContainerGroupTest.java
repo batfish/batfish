@@ -100,6 +100,7 @@ public class ContainerGroupTest {
             new Subnet.Properties(Prefix.parse("10.0.1.0/24"), null, null, Set.of(), false));
 
     region.getSubnets().put(subnet.getId(), subnet);
+    convertedConfiguration.addNode(subnet.toConfigurationNode(region, convertedConfiguration));
 
     ContainerInstance containerInstance =
         new ContainerInstance(
@@ -133,7 +134,7 @@ public class ContainerGroupTest {
       assertEquals(subnet.computeInstancesIfaceIp(), staticRoute.getNextHopIp());
     }
 
-    Interface toSubnet = containerGroupNode.getAllInterfaces().get("to-subnet");
+    Interface toSubnet = containerGroupNode.getAllInterfaces().get("subnet");
     assertNotNull(toSubnet);
     assertNotNull(toSubnet.getConcreteAddress());
     assertEquals(Ip.parse("10.0.1.4"), toSubnet.getConcreteAddress().getIp());
@@ -144,6 +145,7 @@ public class ContainerGroupTest {
         Transformation.when(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
+                        .setSrcIps(Prefix.parse("172.17.0.0/16").toIpSpace())
                         .setIpProtocols(IpProtocol.TCP, IpProtocol.UDP, IpProtocol.ICMP)
                         .build()))
             .apply(
@@ -158,6 +160,7 @@ public class ContainerGroupTest {
         Transformation.when(
                 new MatchHeaderSpace(
                     HeaderSpace.builder()
+                        .setDstIps(Ip.parse("10.0.1.4").toIpSpace())
                         .setDstPorts(new SubRange(80))
                         .setIpProtocols(IpProtocol.TCP)
                         .build()))

@@ -17,13 +17,11 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
-import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.route.nh.NextHop;
 
 /**
  * Represents an Azure VNet. <a
@@ -69,45 +67,22 @@ public class VNet extends Resource {
 
     for (Subnet subnet : _properties.getSubnets()) {
 
-      Configuration subnetNode = convertedConfiguration.getNode(subnet.getNodeName());
+      Interface toSubnet =
+          Interface.builder()
+              .setName(subnet.getNodeName())
+              .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+              .setVrf(cfgNode.getDefaultVrf())
+              .setOwner(cfgNode)
+              .build();
 
-      Interface.builder()
-          .setName(subnet.getNodeName())
-          .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
-          .setVrf(cfgNode.getDefaultVrf())
-          .setOwner(cfgNode)
-          .build();
-
-      convertedConfiguration.addLayer1Edge(
-          cfgNode.getHostname(), subnet.getNodeName(),
-          subnetNode.getHostname(), subnet.getToVnetInterfaceName());
-
-      convertedConfiguration.addLayer1Edge(
-          subnetNode.getHostname(), subnet.getToVnetInterfaceName(),
-          cfgNode.getHostname(), subnet.getNodeName());
-
-      // Add routes from subnet to VNet node (Address Space prefix)
-      for (Prefix prefix : getProperties().getAddressSpace().getAddressPrefixes()) {
-        subnetNode
-            .getDefaultVrf()
-            .getStaticRoutes()
-            .add(
-                StaticRoute.builder()
-                    .setNetwork(prefix)
-                    .setNextHop(
-                        NextHop.legacyConverter(
-                            subnet.getToVnetInterfaceName(), AzureConfiguration.LINK_LOCAL_IP))
-                    .setAdministrativeCost(0)
-                    .setMetric(0)
-                    .setNonForwarding(false)
-                    .build());
-      }
+      subnet.connectToVnet(convertedConfiguration, cfgNode, this, toSubnet);
 
       // Add route from VNet node to subnet node
       StaticRoute st =
           StaticRoute.builder()
               .setAdministrativeCost(1)
-              .setNextHop(NextHop.legacyConverter(subnet.getNodeName(), Ip.parse("169.254.0.1")))
+              .setNextHopInterface(toSubnet.getName())
+              .setNextHopIp(AzureConfiguration.LINK_LOCAL_IP)
               .setNetwork(subnet.getProperties().getAddressPrefix())
               .setNonForwarding(false)
               .setMetric(0)

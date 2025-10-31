@@ -62,6 +62,7 @@ public class VirtualMachineTest {
             "testType",
             new Subnet.Properties(Prefix.parse("192.168.0.0/24"), null, null, Set.of(), false));
     region.getSubnets().put(subnet.getId(), subnet);
+    convertedConfiguration.addNode(subnet.toConfigurationNode(region, convertedConfiguration));
 
     NetworkInterface networkInterface =
         new NetworkInterface(

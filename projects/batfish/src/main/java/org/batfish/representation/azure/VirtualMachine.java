@@ -6,15 +6,11 @@ import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import java.io.Serializable;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import org.batfish.common.BatfishException;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
@@ -71,80 +67,29 @@ public class VirtualMachine extends Instance implements Serializable {
 
     Vrf.builder().setName(Configuration.DEFAULT_VRF_NAME).setOwner(cfgNode).build();
 
-    for (IdReference idReference : _properties.getNetworkProfile().getNetworkInterfaces()) {
-      NetworkInterface networkInterface = rgp.getInterfaces().get(idReference.getId());
+    for (IdReference idReference : getProperties().getNetworkProfile().getNetworkInterfaces()) {
+      NetworkInterface parsedInterface = rgp.findResource(idReference, NetworkInterface.class);
 
-      Interface.Builder interfaceBuilder = Interface.builder();
-      Subnet subnet = null;
-      List<ConcreteInterfaceAddress> secondaryInterfacesAddresses =
-          new ArrayList<>(networkInterface.getProperties().getIPConfigurations().size() - 1);
+      Interface currentInterface = parsedInterface.getInterface(rgp, cfgNode);
 
-      for (IPConfiguration ipConfiguration :
-          networkInterface.getProperties().getIPConfigurations()) {
-        subnet = rgp.getSubnets().get(ipConfiguration.getProperties().getSubnetId());
-
-        ConcreteInterfaceAddress concreteInterfaceAddress =
-            ConcreteInterfaceAddress.create(
-                ipConfiguration.getProperties().getPrivateIpAddress(),
-                subnet.getProperties().getAddressPrefix().getPrefixLength());
-
-        if (ipConfiguration.getProperties().isPrimary()) {
-          interfaceBuilder.setAddress(concreteInterfaceAddress);
-        } else {
-          secondaryInterfacesAddresses.add(concreteInterfaceAddress);
-        }
-      }
-
-      if (!secondaryInterfacesAddresses.isEmpty()) {
-        interfaceBuilder.setSecondaryAddresses(secondaryInterfacesAddresses);
-      }
-
-      // security check for the trick above
-      if (subnet == null) {
-        continue;
-      }
-
-      // assign itself to this device through setOwner
-      Interface currentInterface =
-          interfaceBuilder
-              .setName(networkInterface.getCleanId())
-              .setHumanName(networkInterface.getName())
-              .setOwner(cfgNode)
-              .setVrf(cfgNode.getDefaultVrf())
-              .build();
+      Subnet subnet = rgp.getSubnets().get(parsedInterface.getSubnetId());
+      subnet.connectToHost(rgp, convertedConfiguration, cfgNode, currentInterface);
 
       // default route to the subnet iface
-      StaticRoute st =
-          StaticRoute.builder()
-              .setNextHopIp(subnet.computeInstancesIfaceIp())
-              .setAdministrativeCost(0)
-              .setMetric(0)
-              .setNetwork(Prefix.ZERO)
-              .build();
+      cfgNode
+          .getDefaultVrf()
+          .getStaticRoutes()
+          .add(
+              StaticRoute.builder()
+                  .setNextHopIp(subnet.computeInstancesIfaceIp())
+                  .setAdministrativeCost(0)
+                  .setMetric(0)
+                  .setNetwork(Prefix.ZERO)
+                  .build());
 
-      cfgNode.getDefaultVrf().getStaticRoutes().add(st);
-
-      // draw edge toward the subnet node
-      convertedConfiguration.addLayer1Edge(
-          cfgNode.getHostname(), networkInterface.getCleanId(),
-          subnet.getNodeName(), subnet.getToLanInterfaceName());
-
-      // ACL
-      {
-        String nsgId = networkInterface.getProperties().getNetworkSecurityGroupID();
-        if (nsgId != null) {
-          NetworkSecurityGroup nsg = rgp.getNetworkSecurityGroups().get(nsgId);
-
-          if (nsg == null) {
-            throw new BatfishException(
-                String.format(
-                    "Unable to apply the NSG %s on subnet %s.\n" + "Missing nsg file !",
-                    getCleanId(), nsgId));
-          }
-
-          nsg.applyToInterface(currentInterface);
-        }
-      }
+      NatGateway natGateway =
+          rgp.findResource(subnet.getProperties().getNatGatewayId(), NatGateway.class);
+      parsedInterface.advertisePublicIpIfAny(rgp, convertedConfiguration, natGateway);
     }
 
     return cfgNode;
