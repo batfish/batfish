@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
+
+import org.batfish.common.BatfishException;
 import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 
@@ -34,7 +36,13 @@ public class ConvertedConfiguration implements Serializable {
     _configurationNodes.put(node.getHostname(), node);
   }
 
-  public Configuration getNode(String hostname) {
+  public @Nonnull Configuration getNode(String hostname) {
+      Configuration node = _configurationNodes.get(hostname);
+      if(node == null) {
+          throw new BatfishException(
+                  "Failed to retrieve node \"" + hostname +
+                  "\". Internal error or missing \"" + hostname + ".json\".");
+      }
     return _configurationNodes.get(hostname);
   }
 
