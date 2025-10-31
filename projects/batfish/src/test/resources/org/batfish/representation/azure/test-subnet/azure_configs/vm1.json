@@ -1,0 +1,18 @@
+{
+  "id": "resourceGroups/test/providers/Microsoft.Compute/virtualMachines/VM1",
+  "name": "VM1",
+  "type": "Microsoft.Compute/virtualMachines",
+  "location": "westeurope",
+  "properties": {
+    "networkProfile": {
+      "networkInterfaces": [
+        {
+          "id": "resourceGroups/test/providers/Microsoft.Network/networkInterfaces/vm1346",
+          "properties": {
+            "deleteOption": "Detach"
+          }
+        }
+      ]
+    }
+  }
+}
