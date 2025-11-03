@@ -46,8 +46,7 @@
 
     <rule ref="category/java/errorprone.xml">
         <exclude name="AssignmentInOperand"/>
-        <exclude name="AvoidCatchingNPE"/>
-        <exclude name="AvoidCatchingThrowable"/>
+        <exclude name="AvoidCatchingGenericException"/>
         <exclude name="AvoidDuplicateLiterals"/>
         <exclude name="AvoidFieldNameMatchingMethodName"/>
         <exclude name="AvoidFieldNameMatchingTypeName"/>
