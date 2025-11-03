@@ -1973,6 +1973,7 @@ public class CiscoConversions {
     private final @Nonnull Configuration _c;
 
     @Override
+    @SuppressWarnings("PMD.IdenticalConditionalBranches")
     public TrackMethod visitTrackInterface(TrackInterface trackInterface) {
       if (!_interfaceExists.test(trackInterface.getInterfaceName())) {
         return alwaysFalse();
