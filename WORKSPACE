@@ -63,9 +63,9 @@ load("@rules_java//java:repositories.bzl", "rules_java_toolchains")
 
 rules_java_toolchains()
 
-RULES_JVM_EXTERNAL_TAG = "6.8"
+RULES_JVM_EXTERNAL_TAG = "6.9"
 
-RULES_JVM_EXTERNAL_SHA = "704a0197e4e966f96993260418f2542568198490456c21814f647ae7091f56f2"
+RULES_JVM_EXTERNAL_SHA = "3c41eae4226a7dfdce7b213bc541557b8475c92da71e2233ec7c306630243a65"
 
 http_archive(
     name = "rules_jvm_external",
