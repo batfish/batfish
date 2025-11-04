@@ -164,6 +164,7 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferMajorVersionFromImage("bootflash:/nxos.9.2.1.bin"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromImage("bootflash:/nxos.9.2.3.bin"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromImage("bootflash:/nxos.10.1.1.bin"), equalTo(NXOS10));
+    assertThat(inferMajorVersionFromImage("bootflash:/nxos64-cs.10.5.4.M.bin"), equalTo(NXOS10));
   }
 
   @Test
@@ -205,6 +206,7 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferMajorVersionFromVersion("9.2(1) Bios:version 05.31"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromVersion("9.2(3) Bios:version"), equalTo(NXOS9));
     assertThat(inferMajorVersionFromVersion("10.1(1) Bios:version 05.43"), equalTo(NXOS10));
+    assertThat(inferMajorVersionFromVersion("10.5(4) Bios:version 05.53"), equalTo(NXOS10));
   }
 
   @Test
@@ -226,6 +228,8 @@ public final class CiscoNxosPreprocessorTest {
     vc.setVersion("9.2.3 Bios:version");
     assertThat(inferMajorVersion(vc), equalTo(NXOS9));
     vc.setVersion("10.1(1) Bios:version 05.43");
+    assertThat(inferMajorVersion(vc), equalTo(NXOS10));
+    vc.setVersion("10.5(4) Bios:version 05.53");
     assertThat(inferMajorVersion(vc), equalTo(NXOS10));
   }
 
@@ -382,6 +386,9 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(inferPlatformFromImage("bootflash:/nxos.9.2.3.bin"), equalTo(NexusPlatform.UNKNOWN));
     assertThat(
         inferPlatformFromImage("bootflash:/nxos.10.1.1.bin"), equalTo(NexusPlatform.UNKNOWN));
+    assertThat(
+        inferPlatformFromImage("bootflash:/nxos64-cs.10.5.4.M.bin"),
+        equalTo(NexusPlatform.UNKNOWN));
   }
 
   @Test

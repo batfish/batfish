@@ -74,7 +74,7 @@ public final class CiscoNxosPreprocessor extends CiscoNxosParserBaseListener {
   private static final Pattern NEXUS_3K5K6K7K_IMAGE_MAJOR_VERSION_PATTERN =
       Pattern.compile(".*?[A-Za-z][0-9]\\.([0-9]).*");
   private static final Pattern NEXUS_9000_IMAGE_MAJOR_VERSION_PATTERN =
-      Pattern.compile(".*nxos\\.(10|[0-9]).*");
+      Pattern.compile(".*(?:nxos|nxos64-cs)\\.(10|[0-9]).*");
   private static final Pattern KICKSTART_MAJOR_VERSION_PATTERN =
       Pattern.compile(".*kickstart\\.(10|[0-9]).*");
 
