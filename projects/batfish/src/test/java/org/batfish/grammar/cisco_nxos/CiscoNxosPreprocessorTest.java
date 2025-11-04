@@ -387,7 +387,7 @@ public final class CiscoNxosPreprocessorTest {
     assertThat(
         inferPlatformFromImage("bootflash:/nxos.10.1.1.bin"), equalTo(NexusPlatform.UNKNOWN));
     assertThat(
-	inferPlatformFromImage("bootflash:/nxos64-cs.10.5.4.M.bin"), equalTo(NexusPlatform.UNKNOWN));
+        inferPlatformFromImage("bootflash:/nxos64-cs.10.5.4.M.bin"), equalTo(NexusPlatform.UNKNOWN));
   }
 
   @Test
