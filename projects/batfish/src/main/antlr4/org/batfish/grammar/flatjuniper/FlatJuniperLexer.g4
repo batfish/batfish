@@ -601,6 +601,8 @@ DOMAIN_NAME: 'domain-name' -> pushMode(M_Name);
 
 DOMAIN_SEARCH: 'domain-search';
 DOMAIN_TYPE: 'domain-type';
+DROP: 'drop';
+DROP_AND_LOG: 'drop-and-log';
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
 
 DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
@@ -1087,6 +1089,7 @@ INTERFACE
    'interface' -> pushMode ( M_Interface )
 ;
 
+INTERFACE_MAC_LIMIT: 'interface-mac-limit';
 INTERFACE_MODE: 'interface-mode';
 
 INTERFACE_RANGE: 'interface-range' -> pushMode(M_Name);
@@ -2087,6 +2090,7 @@ OVERRIDES: 'overrides';
 P2MP: 'p2mp';
 P2MP_OVER_LAN: 'p2mp-over-lan';
 P2P: 'p2p';
+PACKET_ACTION: 'packet-action';
 PACKET_LENGTH: 'packet-length' -> pushMode(M_SubRange);
 PACKET_LENGTH_EXCEPT: 'packet-length-except' -> pushMode(M_SubRange);
 
@@ -2643,7 +2647,7 @@ SHARED_IKE_ID: 'shared-ike-id';
 SHIM6_HEADER: 'shim6-header';
 
 SHORTCUTS: 'shortcuts';
-
+SHUTDOWN: 'shutdown';
 SIGNALING: 'signaling';
 
 SIMPLE: 'simple';
