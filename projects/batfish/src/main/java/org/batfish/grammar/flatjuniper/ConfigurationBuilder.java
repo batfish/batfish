@@ -458,7 +458,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ist_family_shortcutsCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_applicationContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_application_setContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Junos_nameContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Line_typeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_admin_groupsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_pathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Mpls_rib_nameContext;
@@ -806,7 +805,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_name_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_portsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_porttypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_security_profileContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_services_linetypeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sy_tacplus_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_serverContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_server_routing_instanceContext;
@@ -814,6 +812,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syn_source_addressConte
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syp_disableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syr_encrypted_passwordContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sys_hostContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_ftpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_sshContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syserv_telnetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysh_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Sysp_logical_systemContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Syt_routing_instanceContext;
@@ -4200,9 +4201,7 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
     _configuration.defineFlattenedStructure(SECURITY_PROFILE, toString(ctx.name), ctx, _parser);
   }
 
-  @Override
-  public void enterSy_services_linetype(Sy_services_linetypeContext ctx) {
-    String name = toString(ctx.linetype);
+  private void enterServiceLine(String name) {
     _currentLogicalSystem.getJf().getLines().computeIfAbsent(name, Line::new);
     _currentLine = _currentLogicalSystem.getJf().getLines().get(name);
 
@@ -4214,6 +4213,21 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
           new AaaAuthenticationLoginList(
               _currentLogicalSystem.getJf().getSystemAuthenticationOrder().getMethods(), true));
     }
+  }
+
+  @Override
+  public void enterSyserv_ftp(Syserv_ftpContext ctx) {
+    enterServiceLine("ftp");
+  }
+
+  @Override
+  public void enterSyserv_ssh(Syserv_sshContext ctx) {
+    enterServiceLine("ssh");
+  }
+
+  @Override
+  public void enterSyserv_telnet(Syserv_telnetContext ctx) {
+    enterServiceLine("telnet");
   }
 
   @Override
@@ -7534,7 +7548,17 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitSy_services_linetype(Sy_services_linetypeContext ctx) {
+  public void exitSyserv_ftp(Syserv_ftpContext ctx) {
+    _currentLine = null;
+  }
+
+  @Override
+  public void exitSyserv_ssh(Syserv_sshContext ctx) {
+    _currentLine = null;
+  }
+
+  @Override
+  public void exitSyserv_telnet(Syserv_telnetContext ctx) {
     _currentLine = null;
   }
 
@@ -8248,10 +8272,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private @Nonnull String toString(Sy_porttypeContext ctx) {
     return unquote(ctx.getText(), ctx);
-  }
-
-  private static @Nonnull String toString(Line_typeContext ctx) {
-    return ctx.getText();
   }
 
   private @Nonnull Optional<String> toString(Bgp_description_textContext ctx) {
