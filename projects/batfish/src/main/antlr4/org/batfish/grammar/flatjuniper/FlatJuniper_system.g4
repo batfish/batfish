@@ -254,29 +254,44 @@ sy_services
 :
    SERVICES
    (
-      sy_services_linetype
-      | sy_services_null
+      syserv_ftp
+      | syserv_ssh
+      | syserv_telnet
+      | syserv_null
    )
 ;
 
-sy_services_linetype
+syserv_ftp
 :
-   linetype = line_type
+   FTP
    (
       apply_groups
       | sy_authentication_order
-      | sysl_null
+      | sysl_null  // TODO: refactor to FTP-specific rules
    )?
 ;
 
-line_type
+syserv_ssh
 :
-  FTP
-  | SSH
-  | TELNET
+   SSH
+   (
+      apply_groups
+      | sy_authentication_order
+      | syservs_null
+   )?
 ;
 
-sy_services_null
+syserv_telnet
+:
+   TELNET
+   (
+      apply_groups
+      | sy_authentication_order
+      | sysl_null  // TODO: refactor to TELNET-specific rules
+   )?
+;
+
+syserv_null
 :
    (
       DATABASE_REPLICATION
@@ -345,6 +360,33 @@ syr_encrypted_password
 
 sysl_null
 :
+   // Generic line_type options (used by FTP/TELNET pending refactoring)
+   (
+      AUTHORIZED_KEYS_COMMAND
+      | AUTHORIZED_KEYS_COMMAND_USER
+      | CIPHERS
+      | CLIENT_ALIVE_COUNT_MAX
+      | CLIENT_ALIVE_INTERVAL
+      | CONNECTION_LIMIT
+      | FINGERPRINT_HASH
+      | HOSTKEY_ALGORITHM
+      | KEY_EXCHANGE
+      | MACS
+      | MAX_PRE_AUTHENTICATION_PACKETS
+      | MAX_SESSIONS_PER_CONNECTION
+      | NO_PASSWORDS
+      | NO_TCP_FORWARDING
+      | PROTOCOL_VERSION
+      | RATE_LIMIT
+      | REKEY
+      | ROOT_LOGIN
+      | TCP_FORWARDING
+   ) null_filler
+;
+
+syservs_null
+:
+   // SSH-specific options
    (
       AUTHORIZED_KEYS_COMMAND
       | AUTHORIZED_KEYS_COMMAND_USER
