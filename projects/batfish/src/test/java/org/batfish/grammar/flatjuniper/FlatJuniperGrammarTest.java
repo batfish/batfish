@@ -1017,6 +1017,11 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testSystemServicesSshParsing() {
+    parseJuniperConfig("system-services-ssh");
+  }
+
+  @Test
   public void testL2Topology() throws IOException {
     /*
     L1:
