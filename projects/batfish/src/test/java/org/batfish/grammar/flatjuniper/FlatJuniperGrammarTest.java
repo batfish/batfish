@@ -1012,6 +1012,11 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceMacLimitParsing() {
+    parseJuniperConfig("interface-mac-limit");
+  }
+
+  @Test
   public void testL2Topology() throws IOException {
     /*
     L1:
