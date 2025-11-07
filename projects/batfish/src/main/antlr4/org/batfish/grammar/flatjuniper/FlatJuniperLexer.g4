@@ -54,6 +54,8 @@ ACCEPTED_PREFIX_LIMIT: 'accepted-prefix-limit';
 
 ACCESS: 'access';
 
+ACCESS_DISABLE_EXTERNAL: 'access-disable-external';
+
 ACCESS_INTERNAL: 'access-internal';
 
 ACCESS_PROFILE: 'access-profile' -> pushMode(M_Name);
@@ -185,6 +187,8 @@ ALLOW: 'allow';
 ALLOW_DUPLICATES: 'allow-duplicates';
 
 ALLOW_SNOOPED_CLIENTS: 'allow-snooped-clients';
+
+ALLOW_TCP_FORWARDING: 'allow-tcp-forwarding';
 
 ALLOW_V4MAPPED_PACKETS: 'allow-v4mapped-packets';
 
@@ -1994,6 +1998,7 @@ NO_ANTI_REPLAY: 'no-anti-replay';
 
 NO_ARP: 'no-arp';
 NO_AUTO_NEGOTIATION: 'no-auto-negotiation';
+NO_CHALLENGE_RESPONSE: 'no-challenge-response';
 NO_CLIENT_REFLECT: 'no-client-reflect';
 NO_DECREMENT_TTL: 'no-decrement-ttl';
 NO_ECMP_FAST_REROUTE: 'no-ecmp-fast-reroute';
@@ -2013,6 +2018,8 @@ NO_NEXT_HEADER: 'no-next-header';
 
 NO_NEXTHOP_CHANGE: 'no-nexthop-change';
 
+NO_PASSWORD_AUTHENTICATION: 'no-password-authentication';
+
 NO_PASSWORDS: 'no-passwords';
 
 NO_PEER_LOOP_CHECK: 'no-peer-loop-check';
@@ -2024,6 +2031,8 @@ NO_PING_TIME_STAMP: 'no-ping-time-stamp';
 NO_PREEMPT: 'no-preempt';
 
 NO_PREPEND_GLOBAL_AS: 'no-prepend-global-as';
+
+NO_PUBLIC_KEYS: 'no-public-keys';
 
 NO_READVERTISE: 'no-readvertise';
 
