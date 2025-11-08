@@ -4,6 +4,8 @@ This file defines the functionality for testing a Batfish reference (ref) test.
 These are tests in //tests/*, where they use the client's functionality to
 generate output and confirm that output matches an existing reference (extension .ref)."""
 
+load("@rules_shell//shell:sh_test.bzl", "sh_test")
+
 _CMD = """
 ALL_FILES="$(rootpaths {allinone})"
 BIN_FILE=$$(tr " " "\n" <<< $${{ALL_FILES}} | grep -v jar)
@@ -46,7 +48,7 @@ def ref_tests(name, commands, allinone = None, extra_deps = None, **kwargs):
     # Run the sh_test on the needed inputs.
     if extra_deps == None:
         extra_deps = []
-    native.sh_test(
+    sh_test(
         name = name,
         srcs = [name + ".sh"],
         data = [

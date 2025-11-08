@@ -1,5 +1,6 @@
 load("@batfish//skylark:junit.bzl", "junit_tests")
 load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:java_library.bzl", "java_library")
 
 package(
     default_testonly = True,
