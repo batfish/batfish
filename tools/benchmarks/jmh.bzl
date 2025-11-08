@@ -3,6 +3,7 @@ This file contains rules to import Java Microbench Harness (JMH) and
 to build runnable benchmark targets.
 """
 
+load("@rules_java//java:java_binary.bzl", "java_binary")
 load("@rules_jvm_external//:defs.bzl", "maven_install")
 
 def setup_jmh_maven():
@@ -32,7 +33,7 @@ def jmh_java_benchmarks(name, srcs, deps = [], tags = [], plugins = [], **kwargs
     specified as srcs. It takes the same arguments as java_binary,
     except for main_class.
     """
-    native.java_binary(
+    java_binary(
         name = name,
         srcs = srcs,
         main_class = "org.openjdk.jmh.Main",

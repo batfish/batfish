@@ -1,5 +1,7 @@
 """Test rule that executes PMD against a given library."""
 
+load("@rules_java//java/common:java_info.bzl", "JavaInfo")
+
 def _impl(ctx):
     lib = ctx.attr.lib[JavaInfo]
     if len(lib.source_jars) != 1:

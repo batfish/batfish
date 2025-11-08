@@ -183,23 +183,19 @@ bazel test --test_filter=org.batfish.coordinator.WorkMgrServiceTest#getNonExistN
 
 ## Dependency management and upgrades
 
-We use Bazel's [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) to manage our Java dependencies
-from Maven. Refer to that
-project's [documentation](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
+We use Bazel's bzlmod with [`rules_jvm_external`](https://github.com/bazelbuild/rules_jvm_external) to manage our Java dependencies
+from Maven. All external dependencies are declared in [`MODULE.bazel`](https://github.com/batfish/batfish/blob/master/MODULE.bazel).
+Refer to the rules_jvm_external [bzlmod documentation](https://github.com/bazelbuild/rules_jvm_external/blob/master/docs/bzlmod.md)
 to understand how it works, how Maven dependencies are versioned and captured in `maven_install.json`, and
 other information.
 
-Commonly, some Java library will have a CVE and we will want to upgrade our dependence on it. While the true reference
-for upgrading should be
-the [`rules_jvm_external` instructions on re-pinning](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson),
-here is a summary of the steps involved:
+Commonly, some Java library will have a CVE and we will want to upgrade our dependence on it. Here are the steps:
 
-1. Edit [`library_deps.bzl`](https://github.com/batfish/batfish/blob/master/library_deps.bzl) to update the version of
-   the library used to a non-vulnerable release.
-   - For Jackson dependencies, update the version in `BATFISH_MAVEN_BOMS` instead of individual artifact versions,
+1. Edit [`MODULE.bazel`](https://github.com/batfish/batfish/blob/master/MODULE.bazel) to update the version of
+   the artifact in the `maven.install()` block.
+   - For Jackson dependencies, update the version in the `boms` list instead of individual artifact versions,
      as Jackson uses Maven BOM for centralized version management.
-2. Run [`bazel run @unpinned_maven//:pin`](https://github.com/bazelbuild/rules_jvm_external#updating-maven_installjson)
-   to re-generate `maven_install.json`.
+2. Run `REPIN=1 bazel run @maven//:pin` to re-generate `maven_install.json`.
 3. Manually review the changes (e.g., with `git diff`) to ensure all needed upgrades are achieved.
 4. Run all the tests (e.g., `bazel test //...`) to ensure that Batfish still builds and the tests still pass.
 5. Submit a PR to this repository as usual.
