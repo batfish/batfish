@@ -67,7 +67,7 @@ antlr_grammar = rule(
         ),
         "antlr_tool": attr.label(
             allow_single_file = True,
-            default = "@antlr4_tool//jar",
+            default = "@maven//:org_antlr_antlr4_complete",
             doc = "ANTLR tool JAR",
         ),
     },
