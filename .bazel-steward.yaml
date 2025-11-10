@@ -24,15 +24,15 @@ pull-requests:
 post-update-hooks:
   - kinds: maven
     commands:
-      - "REPIN=1 bazel run @unpinned_maven//:pin"
+      - "REPIN=1 bazel run @maven//:pin"
     files-to-commit:
       - "maven_install.json"
     run-for: commit
   - dependencies: rules_jvm_external
     commands:
-      - "REPIN=1 bazel run @unpinned_maven//:pin"
-      - "REPIN=1 bazel run @unpinned_jol_maven//:pin"
-      - "REPIN=1 bazel run @unpinned_jmh_maven//:pin"
+      - "REPIN=1 bazel run @maven//:pin"
+      - "REPIN=1 bazel run @jol_maven//:pin"
+      - "REPIN=1 bazel run @jmh_maven//:pin"
     files-to-commit:
       - "maven_install.json"
       - "tools/jol/jol_maven_install.json"
