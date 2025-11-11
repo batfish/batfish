@@ -98,12 +98,12 @@ bazel_dep(name = "rules_java", version = "8.16.1")
 bazel_dep(name = "rules_jvm_external", version = "6.9")
 
 # Python rules
-bazel_dep(name = "rules_python", version = "1.4.1")
+bazel_dep(name = "rules_python", version = "1.6.3")
 
 # Development tools
 bazel_dep(name = "buildifier_prebuilt", version = "8.2.1", dev_dependency = True)
 
-bazel_dep(name = "rules_shell", version = "0.4.0")
+bazel_dep(name = "rules_shell", version = "0.6.1")
 
 # Python toolchain
 python = use_extension("@rules_python//python/extensions:python.bzl", "python")
