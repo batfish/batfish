@@ -460,7 +460,7 @@ public class Client extends AbstractClient implements IClient {
           throw new BatfishException(
               String.format("A Batfish %s must be a JSON string", expectedType.getName()));
         }
-        Enum.valueOf(InterfaceType.class, value.textValue().toUpperCase());
+        InterfaceType ignored = Enum.valueOf(InterfaceType.class, value.textValue().toUpperCase());
         break;
       case INTERFACES_SPEC:
         if (!(value.isTextual())) {

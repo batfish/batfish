@@ -183,8 +183,7 @@ class FlowTracer {
 
       @Override
       public Integer visitFibNullRoute(FibNullRoute fibNullRoute) {
-        // guarantee type correctness
-        FibNullRoute.class.cast(_rhs);
+        FibNullRoute ignored = (FibNullRoute) _rhs;
         return 0;
       }
     }
