@@ -1,8 +1,8 @@
 package org.batfish.minesweeper.bdd;
 
-import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.stream.Stream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
@@ -37,12 +37,11 @@ public class TransferBDDUtils {
       BiFunction<T, TransferReturn, BDD> postconditionToBDD) {
 
     // collect all accepting paths
-    List<TransferReturn> permits =
-        paths.stream().filter(TransferReturn::getAccepted).collect(ImmutableList.toImmutableList());
+    Stream<TransferReturn> permits = paths.stream().filter(TransferReturn::getAccepted);
 
     return tbdd.getFactory()
-        .orAllAndFree(
-            permits.stream()
+        .orAll(
+            permits
                 // for each accepting path, we conjoin its input constraints with the constraint
                 // that the output route on that path satisfies the given postcondition
                 .map(
@@ -62,11 +61,9 @@ public class TransferBDDUtils {
    * @return a BDD representing the denied input routes
    */
   public static BDD deniedRoutes(List<TransferReturn> paths, TransferBDD tbdd) {
-    List<TransferReturn> denies =
-        paths.stream().filter(p -> !p.getAccepted()).collect(ImmutableList.toImmutableList());
+    Stream<TransferReturn> denies = paths.stream().filter(p -> !p.getAccepted());
 
-    return tbdd.getFactory()
-        .orAllAndFree(denies.stream().map(TransferReturn::getInputConstraints).toList());
+    return tbdd.getFactory().orAll(denies.map(TransferReturn::getInputConstraints).toList());
   }
 
   /**
