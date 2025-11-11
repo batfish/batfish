@@ -29,7 +29,7 @@ jobs:
         with:
           path: "~/.cache/google-java-format"
           key: google-java-format-${{ hashFiles('tools/fix_java_format.sh') }}
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
@@ -56,7 +56,7 @@ jobs:
         with:
           path: "~/.cache/checkstyle"
           key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
@@ -81,7 +81,7 @@ jobs:
           restore-keys: |
             ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-
             ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
@@ -121,7 +121,7 @@ jobs:
             ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-
             ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-
             ${{runner.os}}-bazel-
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "17"
