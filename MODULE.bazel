@@ -16,13 +16,13 @@ BATFISH_MAVEN_ARTIFACTS = [
     "com.github.ben-manes.caffeine:caffeine:3.2.3",
     "com.google.auto.service:auto-service:1.1.1",
     "com.google.auto.service:auto-service-annotations:1.1.1",
-    "com.google.auto.value:auto-value:1.11.0",
-    "com.google.auto.value:auto-value-annotations:1.11.0",
+    "com.google.auto.value:auto-value:1.11.1",
+    "com.google.auto.value:auto-value-annotations:1.11.1",
     "com.google.code.findbugs:jsr305:3.0.2",
     "com.google.code.gson:gson:2.13.2",
     "com.google.errorprone:error_prone_annotations:2.44.0",
-    "com.google.guava:guava:33.4.0-jre",
-    "com.google.guava:guava-testlib:33.4.0-jre",
+    "com.google.guava:guava",
+    "com.google.guava:guava-testlib",
     "com.google.re2j:re2j:1.8",
     "com.ibm.icu:icu4j:76.1",
     "commons-beanutils:commons-beanutils:1.11.0",
@@ -71,7 +71,8 @@ BATFISH_MAVEN_ARTIFACTS = [
 ]
 
 BATFISH_MAVEN_BOMS = [
-    "com.fasterxml.jackson:jackson-bom:2.20.0",
+    "com.fasterxml.jackson:jackson-bom:2.20.1",
+    "com.google.guava:guava-bom:33.5.0-jre",
 ]
 
 JOL_MAVEN_ARTIFACTS = [
