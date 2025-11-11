@@ -133,7 +133,7 @@ jobs:
             --combined_report=lcov \
             --instrument_test_targets=false
       - name: Generate report
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v5
         env:
           CODECOV_TOKEN: ${{ secrets.BATFISH_CODECOV_TOKEN }}
         with:
