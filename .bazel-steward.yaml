@@ -22,6 +22,11 @@ pull-requests:
       max-open: 5
 
 post-update-hooks:
+  - kinds: bzlmod
+    commands:
+      - "bazel build //..."
+    files-to-commit:
+      - "MODULE.bazel.lock"
   - kinds: maven
     commands:
       - "REPIN=1 bazel run @maven//:pin"
