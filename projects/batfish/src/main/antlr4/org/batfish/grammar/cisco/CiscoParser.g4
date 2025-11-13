@@ -27,6 +27,7 @@ Cisco_sla,
 Cisco_snmp,
 Cisco_static,
 Cisco_track,
+Cisco_vlan,
 Cisco_vxlan,
 Cisco_zone;
 
@@ -2886,44 +2887,6 @@ s_username_attributes
 ;
 
 
-s_vlan_cisco
-:
-   NO? VLAN
-   (
-      ACCESS_MAP
-      |
-      (
-         variable_vlan? dec
-      )
-   ) null_rest_of_line
-   (
-      vlan_vn_segment
-      | vlan_null
-   )*
-;
-
-s_vlan_configuration
-:
-  VLAN CONFIGURATION vlan_range NEWLINE
-  (
-    vlanc_device_tracking
-  )*
-;
-
-vlanc_device_tracking
-:
-  DEVICE_TRACKING ATTACH_POLICY name = device_tracking_policy_name NEWLINE
-;
-
-s_vlan_internal_cisco
-:
-   NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
-;
-
-s_vlan_name
-:
-   VLAN_NAME name = variable_permissive NEWLINE
-;
 
 s_voice
 :
@@ -3419,9 +3382,7 @@ stanza
    | s_user_role
    | s_username
    | s_username_attributes
-   | s_vlan_cisco
-   | s_vlan_configuration
-   | s_vlan_internal_cisco
+   | s_vlan
    | s_vlan_name
    | s_voice
    | s_voice_card
@@ -3450,6 +3411,7 @@ s_no
   (
     no_ip
     | no_track
+    | no_vlan
   )
 ;
 
@@ -3766,40 +3728,6 @@ vc_null
    ) null_rest_of_line
 ;
 
-vlan_vn_segment
-:
-   VN_SEGMENT vni = dec NEWLINE
-;
-
-vlan_null
-:
-   NO?
-   (
-      ACTION
-      | BACKUPCRF
-      | BRIDGE
-      | MATCH
-      | MEDIA
-      | MTU
-      | MULTICAST
-      | NAME
-      | PARENT
-      | PRIORITY
-      | PRIVATE_VLAN
-      | REMOTE_SPAN
-      | ROUTER_INTERFACE
-      | SHUTDOWN
-      | SPANNING_TREE
-      | STATE
-      | STATISTICS
-      | STP
-      | TAGGED
-      | TRUNK
-      | TB_VLAN1
-      | TB_VLAN2
-      | UNTAGGED
-   ) null_rest_of_line
-;
 
 voice_class
 :
