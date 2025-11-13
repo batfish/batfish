@@ -206,6 +206,22 @@ For "interface" vs "ip" commands:
 - Use `ip` for ip commands (already short)
 - Use `ip_acl` for "ip access-list" (more specific than just `ip_a`)
 
+## Handling Prefix Collisions
+
+When a natural prefix is already in use, choose a longer prefix that avoids collisions.
+
+**Example**: In Cisco grammars, `dt_` is used for "depi-tunnel" so "device-tracking" uses `dtr_` instead.
+
+## Inlining Simple Alternatives
+
+Inline simple alternatives instead of creating separate child rules:
+
+**Inline** when alternatives are simple tokens without parameters (enable/disable, true/false).
+
+**Don't inline** when alternatives have different parameters, require different extraction logic, or form a long list (4+ alternatives).
+
+**See**: Cisco_device_tracking.g4 `dtrp_tracking` (inlined) vs `dtrp_limit` (separate child rules).
+
 ## Opportunistic Improvements
 
 While these conventions should be followed for all new grammar rules, existing rules may not always conform to these patterns. When working with existing code:
