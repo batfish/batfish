@@ -437,6 +437,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final List<IsakmpKey> _isakmpKeys;
 
+  private final Map<String, DeviceTrackingPolicy> _deviceTrackingPolicies;
+
   private final Map<Integer, IsakmpPolicy> _isakmpPolicies;
 
   private final Map<String, IsakmpProfile> _isakmpProfiles;
@@ -515,6 +517,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     _cf = new CiscoFamily();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
+    _deviceTrackingPolicies = new TreeMap<>();
     _dhcpRelayServers = new ArrayList<>();
     _dnsServers = new TreeSet<>();
     _expandedCommunityLists = new TreeMap<>();
@@ -673,6 +676,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public Vrf getDefaultVrf() {
     return _vrfs.get(Configuration.DEFAULT_VRF_NAME);
+  }
+
+  public Map<String, DeviceTrackingPolicy> getDeviceTrackingPolicies() {
+    return _deviceTrackingPolicies;
   }
 
   public List<Ip> getDhcpRelayServers() {
@@ -3144,6 +3151,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     markConcreteStructure(
         CiscoStructureType.IP_PORT_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PORTGROUP);
+    markConcreteStructure(CiscoStructureType.DEVICE_TRACKING_POLICY);
     markConcreteStructure(
         CiscoStructureType.PROTOCOL_OBJECT_GROUP,
         CiscoStructureUsage.EXTENDED_ACCESS_LIST_PROTOCOL_OBJECT_GROUP,

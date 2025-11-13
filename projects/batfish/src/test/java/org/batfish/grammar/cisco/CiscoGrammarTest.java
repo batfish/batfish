@@ -194,6 +194,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.BFD_TEMPLATE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_LISTEN_RANGE;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureType.DEVICE_TRACKING_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST_STANDARD;
 import static org.batfish.representation.cisco.CiscoStructureType.INSPECT_CLASS_MAP;
@@ -432,6 +433,8 @@ import org.batfish.representation.cisco.CiscoConfiguration;
 import org.batfish.representation.cisco.CiscoIosDynamicNat;
 import org.batfish.representation.cisco.CiscoIosNat;
 import org.batfish.representation.cisco.CiscoIosNat.RuleAction;
+import org.batfish.representation.cisco.DeviceTrackingPolicy;
+import org.batfish.representation.cisco.DeviceTrackingSecurityLevel;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.EigrpProcess;
@@ -7271,5 +7274,80 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosInterfaceCts() {
     parseCiscoConfig("ios-interface-cts", ConfigurationFormat.CISCO_IOS);
+  }
+
+  @Test
+  public void testIosDeviceTrackingExtraction() {
+    String hostname = "ios-device-tracking";
+    CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
+
+    // Verify policies are extracted
+    assertThat(
+        vc.getDeviceTrackingPolicies(),
+        hasKeys("BASIC_POLICY", "SECURE_POLICY", "LIMIT_POLICY", "GLBP_POLICY"));
+
+    // BASIC_POLICY: no protocol udp, tracking enable
+    {
+      DeviceTrackingPolicy policy = vc.getDeviceTrackingPolicies().get("BASIC_POLICY");
+      assertThat(policy.getProtocolUdp(), equalTo(false));
+      assertThat(policy.getTrackingEnabled(), equalTo(true));
+      assertThat(policy.getSecurityLevel(), nullValue());
+      assertThat(policy.getIpv6PerMacLimit(), nullValue());
+    }
+
+    // SECURE_POLICY: security-level inspect, no protocol udp, tracking enable
+    {
+      DeviceTrackingPolicy policy = vc.getDeviceTrackingPolicies().get("SECURE_POLICY");
+      assertThat(policy.getSecurityLevel(), equalTo(DeviceTrackingSecurityLevel.INSPECT));
+      assertThat(policy.getProtocolUdp(), equalTo(false));
+      assertThat(policy.getTrackingEnabled(), equalTo(true));
+      assertThat(policy.getIpv6PerMacLimit(), nullValue());
+    }
+
+    // LIMIT_POLICY: limit address-count ipv6-per-mac 10, no protocol udp
+    {
+      DeviceTrackingPolicy policy = vc.getDeviceTrackingPolicies().get("LIMIT_POLICY");
+      assertThat(policy.getIpv6PerMacLimit(), equalTo(10));
+      assertThat(policy.getProtocolUdp(), equalTo(false));
+      assertThat(policy.getSecurityLevel(), nullValue());
+      assertThat(policy.getTrackingEnabled(), nullValue());
+    }
+
+    // GLBP_POLICY: security-level glbp
+    {
+      DeviceTrackingPolicy policy = vc.getDeviceTrackingPolicies().get("GLBP_POLICY");
+      assertThat(policy.getSecurityLevel(), equalTo(DeviceTrackingSecurityLevel.GLBP));
+      assertThat(policy.getProtocolUdp(), nullValue());
+      assertThat(policy.getTrackingEnabled(), nullValue());
+      assertThat(policy.getIpv6PerMacLimit(), nullValue());
+    }
+  }
+
+  @Test
+  public void testIosDeviceTracking() throws IOException {
+    String hostname = "ios-device-tracking";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify policy definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, DEVICE_TRACKING_POLICY, "BASIC_POLICY"));
+    assertThat(ccae, hasDefinedStructure(filename, DEVICE_TRACKING_POLICY, "SECURE_POLICY"));
+    assertThat(ccae, hasDefinedStructure(filename, DEVICE_TRACKING_POLICY, "LIMIT_POLICY"));
+    assertThat(ccae, hasDefinedStructure(filename, DEVICE_TRACKING_POLICY, "GLBP_POLICY"));
+
+    // Verify references are tracked
+    assertThat(ccae, hasNumReferrers(filename, DEVICE_TRACKING_POLICY, "BASIC_POLICY", 1));
+    assertThat(ccae, hasNumReferrers(filename, DEVICE_TRACKING_POLICY, "SECURE_POLICY", 1));
+    assertThat(ccae, hasNumReferrers(filename, DEVICE_TRACKING_POLICY, "LIMIT_POLICY", 1));
+
+    // Verify undefined references are detected
+    assertThat(ccae, hasUndefinedReference(filename, DEVICE_TRACKING_POLICY, "UNDEFINED_POLICY"));
+    assertThat(
+        ccae, hasUndefinedReference(filename, DEVICE_TRACKING_POLICY, "UNDEFINED_VLAN_POLICY"));
+
+    // Verify GLBP_POLICY is defined but not used
+    assertThat(ccae, hasNumReferrers(filename, DEVICE_TRACKING_POLICY, "GLBP_POLICY", 0));
   }
 }

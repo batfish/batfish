@@ -106,6 +106,7 @@ public enum CiscoStructureUsage implements StructureUsage {
   INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP("class-map type inspect match access-group"),
   INSPECT_POLICY_MAP_INSPECT_CLASS("policy-map type inspect class type inspect"),
   INTERFACE_BFD_TEMPLATE("interface bfd template"),
+  INTERFACE_DEVICE_TRACKING_ATTACH_POLICY("interface device-tracking attach-policy"),
   INTERFACE_IGMP_ACCESS_GROUP_ACL("interface igmp access-group acl"),
   INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST("interface igmp host-proxy access-list"),
   INTERFACE_IGMP_STATIC_GROUP_ACL("interface igmp static-group acl"),
@@ -241,6 +242,8 @@ public enum CiscoStructureUsage implements StructureUsage {
   TRACK_LIST_THRESHOLD_WEIGHT("track list threshold weight"),
   TUNNEL_PROTECTION_IPSEC_PROFILE("interface TunnelX tunnel protection ipsec profile"),
   TUNNEL_SOURCE("tunnel source"),
+  VLAN_CONFIGURATION_DEVICE_TRACKING_ATTACH_POLICY(
+      "vlan configuration device-tracking attach-policy"),
   TWICE_NAT_MAPPED_INTERFACE("twice nat mapped interface"),
   TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT("twice nat mapped destination network object"),
   TWICE_NAT_MAPPED_DESTINATION_NETWORK_OBJECT_GROUP(
