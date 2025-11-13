@@ -8,6 +8,7 @@ Cisco_bgp,
 Cisco_cable,
 Cisco_crypto,
 Cisco_callhome,
+Cisco_device_tracking,
 Cisco_eigrp,
 Cisco_ignored,
 Cisco_interface,
@@ -2901,6 +2902,19 @@ s_vlan_cisco
    )*
 ;
 
+s_vlan_configuration
+:
+  VLAN CONFIGURATION vlan_range NEWLINE
+  (
+    vlanc_device_tracking
+  )*
+;
+
+vlanc_device_tracking
+:
+  DEVICE_TRACKING ATTACH_POLICY name = device_tracking_policy_name NEWLINE
+;
+
 s_vlan_internal_cisco
 :
    NO? VLAN INTERNAL ALLOCATION POLICY (ASCENDING | DESCENDING) NEWLINE
@@ -3286,6 +3300,7 @@ stanza
    | s_daemon
    | s_depi_class
    | s_depi_tunnel
+   | s_device_tracking
    | s_dhcp
    | s_dialer
    | s_dial_peer
@@ -3405,6 +3420,7 @@ stanza
    | s_username
    | s_username_attributes
    | s_vlan_cisco
+   | s_vlan_configuration
    | s_vlan_internal_cisco
    | s_vlan_name
    | s_voice

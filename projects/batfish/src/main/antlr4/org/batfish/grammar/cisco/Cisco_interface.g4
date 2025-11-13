@@ -119,6 +119,16 @@ if_delay
    NO? DELAY dec NEWLINE
 ;
 
+if_device_tracking
+:
+  DEVICE_TRACKING ifdt_attach_policy
+;
+
+ifdt_attach_policy
+:
+  ATTACH_POLICY name = device_tracking_policy_name NEWLINE
+;
+
 if_encapsulation
 :
   ENCAPSULATION
@@ -1823,6 +1833,7 @@ if_inner
    | if_default_gw
    | if_delay
    | if_description
+   | if_device_tracking
    | if_encapsulation
    | if_flow_sampler
    | if_ip
