@@ -10,8 +10,8 @@ updates:
     open-pull-requests-limit: 5
     ignore:
       # Ignore pre-release versions (rc, alpha, beta, etc.)
-      - dependency-name: "*"
-        update-types: ["version-update:semver-prerelease"]
+      - dependency-name: "rules_python"
+        versions: ["1.7.0rc"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
