@@ -8,6 +8,10 @@ updates:
     schedule:
       interval: "weekly"
     open-pull-requests-limit: 5
+    ignore:
+      # Ignore pre-release versions (rc, alpha, beta, etc.)
+      - dependency-name: "*"
+        update-types: ["version-update:semver-prerelease"]
 
   # GitHub Actions
   - package-ecosystem: "github-actions"
