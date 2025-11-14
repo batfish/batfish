@@ -43197,7 +43197,7 @@
             "      (template_null*",
             "        ACCESS_SESSION:'access-session'",
             "        (null_rest_of_line*",
-            "          VARIABLE:'port-control'",
+            "          PORT_CONTROL:'port-control'",
             "          AUTO:'auto'",
             "          NEWLINE:'\\n'))",
             "      (template_null*",

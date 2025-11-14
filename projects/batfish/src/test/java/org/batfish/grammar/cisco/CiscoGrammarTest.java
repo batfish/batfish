@@ -773,6 +773,16 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testIosAccessSessionPortControl() throws IOException {
+    String hostname = "ios-access-session-port-control";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasInterface("GigabitEthernet1/0/1", isActive()));
+    assertThat(c, hasInterface("GigabitEthernet1/0/2", isActive()));
+    assertThat(c, hasInterface("GigabitEthernet1/0/3", isActive()));
+  }
+
+  @Test
   public void testIosAclInRouteMap() throws IOException {
     String hostname = "ios-acl-in-routemap";
     Configuration c = parseConfig(hostname);
