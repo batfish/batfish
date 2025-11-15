@@ -7,6 +7,7 @@ public enum ConfigurationFormat {
   ARISTA("arista"),
   ARUBAOS("aruba"),
   AWS("aws"),
+  AZURE("azure"),
   BLADENETWORK("bladenetwork"),
   CADANT("cadant"),
   CHECK_POINT_GATEWAY("check_point_gateway"),

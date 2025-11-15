@@ -1,0 +1,24 @@
+{
+  "type": "Microsoft.Network/natGateways",
+  "apiVersion": "2024-05-01",
+  "id": "testId",
+  "name": "testName",
+  "location": "westeurope",
+  "properties": {
+    "publicIpAddresses": [
+      {
+        "id": "testPublicIpAddressId"
+      }
+    ],
+    "subnets": [
+      {
+        "id": "testSubnetId"
+      }
+    ],
+    "publicIpPrefixes": [
+      {
+        "id": "testPublicPrefixId"
+      }
+    ]
+  }
+}

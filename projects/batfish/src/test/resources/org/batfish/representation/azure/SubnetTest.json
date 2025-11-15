@@ -1,0 +1,18 @@
+{
+  "name": "SubnetTest",
+  "id": "resourceGroups/test/providers/Microsoft.Network/virtualNetworks/VM1-vnet/subnets/default",
+  "etag": "foo",
+  "properties": {
+    "provisioningState": "foo",
+    "addressPrefix": "10.0.0.0/24",
+    "ipConfigurations": [
+      {
+        "id": "resourceGroups/Test-Subnet/providers/Microsoft.Network/networkInterfaces/VM1346/ipConfigurations/IPCONFIG1"
+      }
+    ],
+    "delegations": [],
+    "privateEndpointNetworkPolicies": "Disabled",
+    "privateLinkServiceNetworkPolicies": "Enabled"
+  },
+  "type": "Microsoft.Network/virtualNetworks/subnets"
+}
