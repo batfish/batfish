@@ -37,6 +37,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.CRYPTO_DYNAMIC
 import static org.batfish.representation.cisco.CiscoStructureType.CRYPTO_MAP_SET;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureType.DEPI_TUNNEL;
+import static org.batfish.representation.cisco.CiscoStructureType.DEVICE_TRACKING_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureType.DOCSIS_POLICY_RULE;
 import static org.batfish.representation.cisco.CiscoStructureType.EXTCOMMUNITY_LIST;
@@ -182,6 +183,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.ICMP_TYPE_OBJ
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_CLASS_MAP_MATCH_ACCESS_GROUP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INSPECT_POLICY_MAP_INSPECT_CLASS;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_BFD_TEMPLATE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_DEVICE_TRACKING_ATTACH_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_ACCESS_GROUP_ACL;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_HOST_PROXY_ACCESS_LIST;
 import static org.batfish.representation.cisco.CiscoStructureUsage.INTERFACE_IGMP_STATIC_GROUP_ACL;
@@ -302,6 +304,7 @@ import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST_TH
 import static org.batfish.representation.cisco.CiscoStructureUsage.TRACK_LIST_THRESHOLD_WEIGHT;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_PROTECTION_IPSEC_PROFILE;
 import static org.batfish.representation.cisco.CiscoStructureUsage.TUNNEL_SOURCE;
+import static org.batfish.representation.cisco.CiscoStructureUsage.VLAN_CONFIGURATION_DEVICE_TRACKING_ATTACH_POLICY;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_EXPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.VRF_DEFINITION_ADDRESS_FAMILY_IMPORT_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.WCCP_GROUP_LIST;
@@ -573,6 +576,11 @@ import org.batfish.grammar.cisco.CiscoParser.Dscp_typeContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_depi_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_l2tp_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Dt_protect_tunnelContext;
+import org.batfish.grammar.cisco.CiscoParser.Dtr_policyContext;
+import org.batfish.grammar.cisco.CiscoParser.Dtrp_security_levelContext;
+import org.batfish.grammar.cisco.CiscoParser.Dtrp_trackingContext;
+import org.batfish.grammar.cisco.CiscoParser.Dtrplac_ipv6_per_macContext;
+import org.batfish.grammar.cisco.CiscoParser.Dtrpn_protocolContext;
 import org.batfish.grammar.cisco.CiscoParser.Eacl_port_specifierContext;
 import org.batfish.grammar.cisco.CiscoParser.Ebgp_multihop_bgp_tailContext;
 import org.batfish.grammar.cisco.CiscoParser.Ec_ga_la_literalContext;
@@ -647,6 +655,7 @@ import org.batfish.grammar.cisco.CiscoParser.If_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrf_memberContext;
 import org.batfish.grammar.cisco.CiscoParser.If_vrrpContext;
 import org.batfish.grammar.cisco.CiscoParser.If_zone_memberContext;
+import org.batfish.grammar.cisco.CiscoParser.Ifdt_attach_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmp_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmphp_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Ifigmpsg_aclContext;
@@ -1064,6 +1073,7 @@ import org.batfish.grammar.cisco.CiscoParser.Variable_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_group_idContext;
 import org.batfish.grammar.cisco.CiscoParser.Variable_permissiveContext;
 import org.batfish.grammar.cisco.CiscoParser.Vlan_idContext;
+import org.batfish.grammar.cisco.CiscoParser.Vlanc_device_trackingContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_address_familyContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_export_nonvpnContext;
 import org.batfish.grammar.cisco.CiscoParser.Vrfd_af_export_vpnContext;
@@ -1096,6 +1106,8 @@ import org.batfish.representation.cisco.CiscoStructureType;
 import org.batfish.representation.cisco.CiscoStructureUsage;
 import org.batfish.representation.cisco.CryptoMapEntry;
 import org.batfish.representation.cisco.CryptoMapSet;
+import org.batfish.representation.cisco.DeviceTrackingPolicy;
+import org.batfish.representation.cisco.DeviceTrackingSecurityLevel;
 import org.batfish.representation.cisco.DistributeList;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.representation.cisco.DynamicIpBgpPeerGroup;
@@ -1563,6 +1575,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private SecurityZonePair _currentSecurityZonePair;
 
   private List<HsrpGroup> _currentHsrpGroups;
+
+  private @Nullable DeviceTrackingPolicy _currentDeviceTrackingPolicy;
 
   private Integer _currentTrack;
 
@@ -3307,6 +3321,50 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.getCf().getDepiTunnels().computeIfAbsent(name, DepiTunnel::new);
     _configuration.defineStructure(DEPI_TUNNEL, name, ctx);
+  }
+
+  @Override
+  public void enterDtr_policy(Dtr_policyContext ctx) {
+    String name = ctx.name.getText();
+    _configuration.defineStructure(DEVICE_TRACKING_POLICY, name, ctx);
+    _currentDeviceTrackingPolicy =
+        _configuration.getDeviceTrackingPolicies().computeIfAbsent(name, DeviceTrackingPolicy::new);
+  }
+
+  @Override
+  public void exitDtr_policy(Dtr_policyContext ctx) {
+    _currentDeviceTrackingPolicy = null;
+  }
+
+  @Override
+  public void exitDtrplac_ipv6_per_mac(Dtrplac_ipv6_per_macContext ctx) {
+    _currentDeviceTrackingPolicy.setIpv6PerMacLimit(toInteger(ctx.limit));
+  }
+
+  @Override
+  public void exitDtrpn_protocol(Dtrpn_protocolContext ctx) {
+    assert ctx.UDP() != null;
+    _currentDeviceTrackingPolicy.setProtocolUdp(false);
+  }
+
+  @Override
+  public void exitDtrp_security_level(Dtrp_security_levelContext ctx) {
+    if (ctx.GLBP() != null) {
+      _currentDeviceTrackingPolicy.setSecurityLevel(DeviceTrackingSecurityLevel.GLBP);
+    } else {
+      assert ctx.INSPECT() != null;
+      _currentDeviceTrackingPolicy.setSecurityLevel(DeviceTrackingSecurityLevel.INSPECT);
+    }
+  }
+
+  @Override
+  public void exitDtrp_tracking(Dtrp_trackingContext ctx) {
+    if (ctx.ENABLE() != null) {
+      _currentDeviceTrackingPolicy.setTrackingEnabled(true);
+    } else {
+      assert ctx.DISABLE() != null;
+      _currentDeviceTrackingPolicy.setTrackingEnabled(false);
+    }
   }
 
   @Override
@@ -5354,6 +5412,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       newDelayPs = toLong(ctx.dec()) * 10_000_000;
     }
     _currentInterfaces.forEach(i -> i.setDelay(newDelayPs));
+  }
+
+  @Override
+  public void exitIfdt_attach_policy(Ifdt_attach_policyContext ctx) {
+    String policyName = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        DEVICE_TRACKING_POLICY, policyName, INTERFACE_DEVICE_TRACKING_ATTACH_POLICY, line);
   }
 
   private @Nullable String computeAggregatedInterfaceName(int num, ConfigurationFormat format) {
@@ -8976,6 +9042,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_vrf_definition(S_vrf_definitionContext ctx) {
     _currentVrf = Configuration.DEFAULT_VRF_NAME;
+  }
+
+  @Override
+  public void exitVlanc_device_tracking(Vlanc_device_trackingContext ctx) {
+    String policyName = ctx.name.getText();
+    int line = ctx.name.getStart().getLine();
+    _configuration.referenceStructure(
+        DEVICE_TRACKING_POLICY, policyName, VLAN_CONFIGURATION_DEVICE_TRACKING_ATTACH_POLICY, line);
   }
 
   @Override
