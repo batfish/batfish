@@ -16,6 +16,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
@@ -100,6 +101,7 @@ public class Subnet extends Resource implements Serializable {
           .setOwner(cfgNode)
           .setName(getToVnetInterfaceName())
           .setDescription("to vnet interface")
+          .setType(InterfaceType.PHYSICAL)
           .build();
 
       // static route set from Vnet object (no knowledge of Vnet addressSpace nor Vnet peering s)
@@ -132,6 +134,7 @@ public class Subnet extends Resource implements Serializable {
               .setName(getToNatInterfaceName())
               .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
               .setDescription("to nat gateway")
+              .setType(InterfaceType.PHYSICAL)
               .build();
 
       NatGateway natGateway = rgp.findResource(getProperties().getNatGatewayId(), NatGateway.class);
@@ -180,6 +183,7 @@ public class Subnet extends Resource implements Serializable {
             .setOwner(subnetNode)
             .setName(getToVnetInterfaceName())
             .setDescription("to vnet interface")
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     convertedConfiguration.addLayer1Edge(
@@ -234,6 +238,7 @@ public class Subnet extends Resource implements Serializable {
             .setOwner(subnetNode)
             .setVrf(subnetNode.getDefaultVrf())
             .setProxyArp(true)
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     convertedConfiguration.addLayer1Edge(

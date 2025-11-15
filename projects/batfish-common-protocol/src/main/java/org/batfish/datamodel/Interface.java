@@ -725,7 +725,7 @@ public final class Interface extends ComparableStructure<String> {
   }
 
   private static InterfaceType computeAzureInterfaceType(String name) {
-    return InterfaceType.PHYSICAL;
+    throw new UnsupportedOperationException("Should not be reachable: " + name);
   }
 
   @VisibleForTesting

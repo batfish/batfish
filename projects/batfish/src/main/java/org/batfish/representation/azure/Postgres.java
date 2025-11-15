@@ -14,6 +14,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.DeviceType;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
@@ -83,6 +84,7 @@ public class Postgres extends Instance implements Serializable {
                     subnet.getProperties().getAddressPrefix().getPrefixLength()))
             .setOwner(cfgNode)
             .setVrf(cfgNode.getDefaultVrf())
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     subnet.connectToHost(rgp, convertedConfiguration, cfgNode, toSubnet);

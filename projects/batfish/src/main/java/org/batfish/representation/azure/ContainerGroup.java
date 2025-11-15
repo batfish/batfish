@@ -20,6 +20,7 @@ import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.FirewallSessionInterfaceInfo;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -200,6 +201,7 @@ public class ContainerGroup extends Instance implements Serializable {
                     getProperties().getIpAddress().getIp(),
                     subnet.getProperties().getAddressPrefix().getPrefixLength()))
             .setVrf(containerGroupNode.getDefaultVrf())
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     subnet.connectToHost(region, convertedConfiguration, containerGroupNode, toSubnet);
@@ -227,6 +229,7 @@ public class ContainerGroup extends Instance implements Serializable {
             .setOwner(containerGroupNode)
             .setName("to-containers")
             .setVrf(containerGroupNode.getDefaultVrf())
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     long containerIpLong = toContainerInstancesIp.asLong() + 1L;

@@ -16,6 +16,7 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Vrf;
 
 /**
@@ -63,6 +64,7 @@ public class NetworkInterface extends Resource implements Serializable {
     interfaceBuilder.setName(getCleanId());
     interfaceBuilder.setHumanName(getName());
     interfaceBuilder.setOwner(owner);
+    interfaceBuilder.setType(InterfaceType.PHYSICAL);
 
     ConcreteInterfaceAddress primaryAddress = null;
     List<ConcreteInterfaceAddress> secondaryInterfacesAddresses =

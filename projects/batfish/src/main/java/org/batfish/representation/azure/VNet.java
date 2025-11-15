@@ -17,6 +17,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.Prefix;
@@ -73,6 +74,7 @@ public class VNet extends Resource {
               .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
               .setVrf(cfgNode.getDefaultVrf())
               .setOwner(cfgNode)
+              .setType(InterfaceType.PHYSICAL)
               .build();
 
       subnet.connectToVnet(convertedConfiguration, cfgNode, this, toSubnet);

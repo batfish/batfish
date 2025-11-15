@@ -141,6 +141,7 @@ public class NatGateway extends Resource implements Serializable {
             .setOwner(cfgNode)
             .setType(InterfaceType.PHYSICAL)
             .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     BgpProcess process =
@@ -244,6 +245,7 @@ public class NatGateway extends Resource implements Serializable {
             .setVrf(natGatewayNode.getDefaultVrf())
             .setOwner(natGatewayNode)
             .setAddress(LinkLocalAddress.of(AzureConfiguration.LINK_LOCAL_IP))
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     convertedConfiguration.addLayer1Edge(

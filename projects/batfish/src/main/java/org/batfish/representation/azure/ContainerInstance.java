@@ -15,6 +15,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
@@ -128,6 +129,7 @@ public class ContainerInstance implements Serializable {
         .setOwner(containerInstanceNode)
         .setName(getInterfaceName())
         .setVrf(containerInstanceNode.getDefaultVrf())
+        .setType(InterfaceType.PHYSICAL)
         .build();
 
     containerInstanceNode
