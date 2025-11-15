@@ -631,5 +631,11 @@ public class TestStorageProvider implements StorageProvider {
   }
 
   @Override
+  public @Nonnull Stream<String> listInputAzureSingleAccountKeys(NetworkSnapshot snapshot)
+      throws IOException {
+    throw new UnsupportedOperationException();
+  }
+
+  @Override
   public void runGarbageCollection() {}
 }

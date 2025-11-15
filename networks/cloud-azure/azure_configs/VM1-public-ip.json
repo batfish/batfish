@@ -1,0 +1,22 @@
+{
+   "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/publicIPAddresses/VM1-ip",
+   "name": "VM1-ip",
+   "type": "Microsoft.Network/publicIPAddresses",
+   "location": "westeurope",
+   "properties": {
+      "provisioningState": "Succeeded",
+      "resourceGuid": "73d425b0-37b5-4a64-9694-8149e9177114",
+      "ipAddress": "40.91.194.198",
+      "publicIPAddressVersion": "IPv4",
+      "publicIPAllocationMethod": "Static",
+      "idleTimeoutInMinutes": 4,
+      "ipTags": [],
+      "ipConfiguration": {
+         "id": "/subscriptions/b31649d2-3118-472e-8120-043037233633/resourceGroups/Anonymized-RG-12345/providers/Microsoft.Network/networkInterfaces/vm1346/ipConfigurations/ipconfig1"
+      }
+   },
+   "sku": {
+      "name": "Standard",
+      "tier": "Regional"
+   }
+}
