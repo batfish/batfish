@@ -21,6 +21,7 @@ import java.util.stream.IntStream;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.bdd.MutableBDDInteger;
 import org.batfish.datamodel.AbstractRoute;
 import org.batfish.datamodel.Ip;
@@ -507,6 +508,35 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
         peerAddressValid,
         sourceVrfValid,
         tunnelEncapValid);
+  }
+
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given BDDRoute with this one. The
+   * BDDs in the given BDDRoute should all be variables.
+   *
+   * @param other the BDDRoute of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(BDDRoute other, BDDPairing pairing) {
+    _asPathRegexAtomicPredicates.augmentPairing(other._asPathRegexAtomicPredicates, pairing);
+    _clusterListLength.augmentPairing(other._clusterListLength, pairing);
+    pairing.set(other._communityAtomicPredicates, _communityAtomicPredicates);
+    _prefixLength.augmentPairing(other._prefixLength, pairing);
+    _prefix.augmentPairing(other._prefix, pairing);
+    _nextHop.augmentPairing(other._nextHop, pairing);
+    _adminDist.augmentPairing(other._adminDist, pairing);
+    _med.augmentPairing(other._med, pairing);
+    _tag.augmentPairing(other._tag, pairing);
+    _weight.augmentPairing(other._weight, pairing);
+    _localPref.augmentPairing(other._localPref, pairing);
+    _protocolHistory.augmentPairing(other._protocolHistory, pairing);
+    _originType.augmentPairing(other._originType, pairing);
+    _ospfMetric.augmentPairing(other._ospfMetric, pairing);
+    _nextHopInterfaces.augmentPairing(other._nextHopInterfaces, pairing);
+    _peerAddress.augmentPairing(other._peerAddress, pairing);
+    _sourceVrfs.augmentPairing(other._sourceVrfs, pairing);
+    pairing.set(other._tracks, _tracks);
+    _tunnelEncapsulationAttribute.augmentPairing(other._tunnelEncapsulationAttribute, pairing);
   }
 
   /*

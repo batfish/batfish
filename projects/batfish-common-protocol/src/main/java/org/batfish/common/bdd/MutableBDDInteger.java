@@ -15,6 +15,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -267,6 +268,17 @@ public final class MutableBDDInteger extends BDDInteger {
                 .collect(ImmutableList.toImmutableList()));
     assertNoLeaks(startBDDCount, 1);
     return result;
+  }
+
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given MutableBDDInteger with this
+   * one. The BDDs in the given MutableBDDInteger should all be variables.
+   *
+   * @param other the MutableBDDInteger of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(MutableBDDInteger other, BDDPairing pairing) {
+    pairing.set(other._bitvec, _bitvec);
   }
 
   /**

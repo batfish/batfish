@@ -789,6 +789,52 @@ public class BasicTest {
     assert res.equals(a.diff(xorCD));
   }
 
+  @Test
+  public void testVeccompose() {
+    if (_factory.varNum() < 4) {
+      _factory.setVarNum(4);
+    }
+    BDD a = _factory.ithVar(0);
+    BDD b = _factory.ithVar(1);
+    BDD c = _factory.ithVar(2);
+    BDD d = _factory.ithVar(3);
+
+    BDD xorAB = a.xor(b);
+    BDD xorCD = c.xor(d);
+
+    BDDPairing pairing = _factory.makePair();
+
+    pairing.set(new BDD[] {a, b}, new BDD[] {a, b});
+    BDD res = a.veccompose(pairing);
+    assert res.equals(a);
+
+    pairing.reset();
+    pairing.set(new BDD[] {b, c}, new BDD[] {xorAB, xorCD});
+    res = a.veccompose(pairing);
+    assert res.equals(a);
+
+    res = b.not().veccompose(pairing);
+    assert res.equals(xorAB.not());
+
+    pairing.reset();
+    pairing.set(new BDD[] {a, b}, new BDD[] {xorAB, xorAB.not()});
+    res = a.and(b).veccompose(pairing);
+    assert res.equals(_factory.zero());
+
+    res = a.or(b).veccompose(pairing);
+    assert res.equals(_factory.one());
+
+    res = a.or(b.not()).veccompose(pairing);
+    assert res.equals(xorAB);
+
+    pairing.reset();
+    pairing.set(new BDD[] {a, b}, new BDD[] {b, a});
+    res = a.or(b.not()).veccompose(pairing);
+    assert res.equals(b.or(a.not()));
+
+    pairing.reset();
+  }
+
   void tEnsureCapacity() {
     long[] domains = new long[] {127, 17, 31, 4};
     BDDDomain[] d = _factory.extDomain(domains);

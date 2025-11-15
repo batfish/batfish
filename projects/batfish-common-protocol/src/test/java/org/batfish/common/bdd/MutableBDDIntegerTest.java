@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -175,6 +176,25 @@ public class MutableBDDIntegerTest {
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 2, 1);
     assertThat(constant1.and(factory.one()), equalTo(constant1));
     assertThat(constant1.and(factory.zero()), equalTo(constant0));
+  }
+
+  @Test
+  public void testAugmentPairing() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 5, 1);
+    MutableBDDInteger xPlusX = x.add(x);
+
+    BDDPairing pairing = factory.makePair();
+
+    one.augmentPairing(x, pairing);
+    assertEquals(x._bitvec[4].veccompose(pairing), factory.one());
+    assertEquals(x._bitvec[3].veccompose(pairing), factory.zero());
+
+    pairing.reset();
+    xPlusX.augmentPairing(x, pairing);
+    assertEquals(x._bitvec[4].veccompose(pairing), factory.zero());
+    assertEquals(x._bitvec[3].veccompose(pairing), x._bitvec[4]);
   }
 
   @Test
