@@ -34,7 +34,7 @@ public class InferFromFibTest extends TestCase {
     c.setInterfaces(
         ImmutableSortedMap.of(
             iface1,
-            Interface.builder()
+            TestInterface.builder()
                 .setName(iface1)
                 .setAddress(ConcreteInterfaceAddress.create(sourceIp, 31))
                 .build()));

@@ -33,6 +33,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.PacketHeaderConstraints;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.answers.Schema;
@@ -194,14 +195,14 @@ public class TestFiltersAnswererTest {
     aclb.setOwner(c1).build();
 
     Interface iface1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface1")
             .setOwner(c1)
             .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
             .setVrf(new Vrf("default"))
             .build();
     Interface iface2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface2")
             .setOwner(c1)
             .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/24"))

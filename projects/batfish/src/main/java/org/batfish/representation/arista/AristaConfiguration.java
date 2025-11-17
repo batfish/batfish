@@ -4,7 +4,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static org.apache.commons.lang3.ObjectUtils.firstNonNull;
 import static org.batfish.common.util.CollectionUtil.toImmutableSortedMap;
 import static org.batfish.datamodel.Interface.UNSET_LOCAL_INTERFACE;
-import static org.batfish.datamodel.Interface.computeInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.EXACT_PATH;
 import static org.batfish.datamodel.MultipathEquivalentAsPathMatchMode.PATH_LENGTH;
@@ -1156,13 +1155,100 @@ public final class AristaConfiguration extends VendorConfiguration {
     return null;
   }
 
+  // TODO: This was copied from a multi-Cisco-like-vendor version. Review and update to be specific
+  // to Arista interface naming conventions, removing patterns that don't apply to Arista.
+  private static InterfaceType computeAristaInterfaceType(String name) {
+    if (name.startsWith("Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("ATM")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Bundle-Ether")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("cmp-mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Crypto-Engine")) {
+      return InterfaceType.TUNNEL; // IPSec VPN
+    } else if (name.startsWith("Dialer")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Dot11Radio")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Embedded-Service-Engine")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("GMPLS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Ethernet")
+        || name.startsWith("FastEthernet")
+        || name.startsWith("FortyGigabitEthernet")
+        || name.startsWith("GigabitEthernet")
+        || name.startsWith("HundredGigabitEthernet")
+        || name.startsWith("HundredGigE")
+        || name.startsWith("FiftyGigE")
+        || name.startsWith("FortyGigE")
+        || name.startsWith("FourHundredGigE")
+        || name.startsWith("TenGigabitEthernet")
+        || name.startsWith("TenGigE")
+        || name.startsWith("TwentyFiveGigE")
+        || name.startsWith("TwoHundredGigE")) {
+      if (name.contains(".")) {
+        // Subinterface
+        return InterfaceType.LOGICAL;
+      } else {
+        return InterfaceType.PHYSICAL;
+      }
+    } else if (name.startsWith("Group-Async")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Loopback")) {
+      return InterfaceType.LOOPBACK;
+    } else if (name.startsWith("Management")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("mgmt")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("MgmtEth")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Null")) {
+      return InterfaceType.NULL;
+    } else if (name.toLowerCase().startsWith("port-channel")) {
+      if (name.contains(".")) {
+        // Subinterface of a port channel
+        return InterfaceType.AGGREGATE_CHILD;
+      } else {
+        return InterfaceType.AGGREGATED;
+      }
+    } else if (name.startsWith("POS")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Redundant") && name.contains(".")) {
+      return InterfaceType.REDUNDANT_CHILD;
+    } else if (name.startsWith("Redundant")) {
+      return InterfaceType.REDUNDANT;
+    } else if (name.startsWith("Serial")) {
+      return InterfaceType.PHYSICAL;
+    } else if (name.startsWith("Tunnel")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-ip")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("tunnel-te")) {
+      return InterfaceType.TUNNEL;
+    } else if (name.startsWith("Vlan")) {
+      return InterfaceType.VLAN;
+    } else if (name.startsWith("Vxlan")) {
+      return InterfaceType.TUNNEL;
+    } else {
+      return InterfaceType.UNKNOWN;
+    }
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(ifaceName)
             .setOwner(c)
-            .setType(computeInterfaceType(iface.getName(), c.getConfigurationFormat()))
+            .setType(computeAristaInterfaceType(iface.getName()))
             .build();
     String vrfName = iface.getVrf();
     Vrf vrf = _vrfs.computeIfAbsent(vrfName, Vrf::new);

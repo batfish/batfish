@@ -164,6 +164,14 @@ public final class Utils {
     return c;
   }
 
+  private static InterfaceType computeAwsInterfaceType(String name) {
+    if (name.startsWith("vpn")) {
+      return InterfaceType.TUNNEL;
+    } else {
+      return InterfaceType.PHYSICAL;
+    }
+  }
+
   /** Creates a new interface on {@code c} with the provided name, address, and description. */
   static Interface newInterface(
       String name, Configuration c, @Nullable InterfaceAddress primaryAddress, String description) {
@@ -188,6 +196,7 @@ public final class Utils {
         .setVrf(c.getVrfs().get(vrfName))
         .setAddress(primaryAddress)
         .setDescription(description)
+        .setType(computeAwsInterfaceType(name))
         .build();
   }
 

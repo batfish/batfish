@@ -145,7 +145,7 @@ public class JuniperConfigurationTest {
     JuniperConfiguration config = createConfig();
     String iface1Name = "iface1";
     Vrf vrf = new Vrf("vrf");
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface1Name)
         .setOwner(config._c)
         .setVrf(vrf)
@@ -256,7 +256,11 @@ public class JuniperConfigurationTest {
     Vrf vrf = new Vrf("vrf");
     c.setVrfs(ImmutableMap.of("vrf", vrf));
     org.batfish.datamodel.Interface iface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setOwner(c).setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder()
+            .setName("iface")
+            .setOwner(c)
+            .setVrf(vrf)
+            .build();
     return iface;
   }
 
@@ -298,18 +302,18 @@ public class JuniperConfigurationTest {
     String iface1Name = "iface1";
     String iface2Name = "iface2";
     Vrf vrf = new Vrf("vrf");
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setOwner(config._c)
         .setName(loopbackName)
         .setVrf(vrf)
         .setType(InterfaceType.LOOPBACK)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface1Name)
         .setOwner(config._c)
         .setVrf(vrf)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName(iface2Name)
         .setOwner(config._c)
         .setVrf(vrf)
@@ -936,7 +940,7 @@ public class JuniperConfigurationTest {
             .build();
     ifaceNames.forEach(
         ifaceName ->
-            org.batfish.datamodel.Interface.builder().setName(ifaceName).setOwner(c).build());
+            org.batfish.datamodel.TestInterface.builder().setName(ifaceName).setOwner(c).build());
     return c;
   }
 

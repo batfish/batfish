@@ -57,6 +57,7 @@ import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SubRange;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -134,13 +135,13 @@ public final class FixedPointTopologyTest {
     Vrf s1VniVrf = vb.setOwner(_s1).setName("vrf1").build();
     Vrf s2Vrf = vb.setOwner(_s2).setName(Configuration.DEFAULT_VRF_NAME).build();
     Vrf s2VniVrf = vb.setOwner(_s2).setName("vrf1").build();
-    Interface.Builder l3Builder = Interface.builder().setType(InterfaceType.PHYSICAL);
+    Interface.Builder l3Builder = TestInterface.builder().setType(InterfaceType.PHYSICAL);
     l3Builder.setName(E1_NAME).setAddresses(H1_ADDRESS).setOwner(_h1).setVrf(h1Vrf).build();
     l3Builder.setName(E2_NAME).setAddresses(H2_ADDRESS).setOwner(_h2).setVrf(h2Vrf).build();
     l3Builder.setName(E12_NAME).setAddresses(S1_ADDRESS).setOwner(_s1).setVrf(s1Vrf).build();
     l3Builder.setName(E21_NAME).setAddresses(S2_ADDRESS).setOwner(_s2).setVrf(s2Vrf).build();
     Interface.Builder l2Builder =
-        Interface.builder()
+        TestInterface.builder()
             .setType(InterfaceType.PHYSICAL)
             .setAccessVlan(VLAN)
             .setSwitchport(true)

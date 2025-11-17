@@ -873,6 +873,7 @@ public final class IspModelingUtils {
             .setAddress(
                 ConcreteInterfaceAddress.create(
                     INTERNET_OUT_ADDRESS, INTERNET_OUT_SUBNET.getPrefixLength()))
+            .setType(InterfaceType.PHYSICAL)
             .build();
 
     internetConfiguration

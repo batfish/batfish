@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
@@ -28,10 +29,10 @@ public class VrfNameInterfaceSpecifierTest {
     Vrf vrf1node2 = new Vrf("vrf1");
 
     Interface iface11 =
-        Interface.builder().setName("iface11").setOwner(node1).setVrf(vrf1node1).build();
-    Interface.builder().setName("iface12").setOwner(node1).setVrf(vrf2node1).build();
+        TestInterface.builder().setName("iface11").setOwner(node1).setVrf(vrf1node1).build();
+    TestInterface.builder().setName("iface12").setOwner(node1).setVrf(vrf2node1).build();
     Interface iface2 =
-        Interface.builder().setName("iface2").setOwner(node2).setVrf(vrf1node2).build();
+        TestInterface.builder().setName("iface2").setOwner(node2).setVrf(vrf1node2).build();
 
     node1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1node1, "vrf2", vrf2node1));
     node2.setVrfs(ImmutableSortedMap.of("vrf1", vrf1node2));

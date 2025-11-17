@@ -13,7 +13,7 @@ public class VerboseEdgeTest {
    */
   @Test
   public void testEquals() {
-    Interface i1 = Interface.builder().setName("eth0").build();
+    Interface i1 = TestInterface.builder().setName("eth0").build();
     new EqualsTester()
         .addEqualityGroup(
             new VerboseEdge(i1, i1, Edge.of("node1", "eth0", "node2", "eth0")),

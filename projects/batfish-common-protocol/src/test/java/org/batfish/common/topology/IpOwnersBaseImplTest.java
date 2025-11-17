@@ -49,6 +49,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -167,12 +168,12 @@ public class IpOwnersBaseImplTest {
         ImmutableMap.of(
             node,
             ImmutableSet.of(
-                Interface.builder()
+                TestInterface.builder()
                     .setAddress(ConcreteInterfaceAddress.create(activeIp, networkBits))
                     .setVrf(vrf)
                     .setName(activeName)
                     .build(),
-                Interface.builder()
+                TestInterface.builder()
                     .setAddress(ConcreteInterfaceAddress.create(inactiveIp, networkBits))
                     .setAdminUp(false)
                     .setName(inactiveName)
@@ -225,7 +226,7 @@ public class IpOwnersBaseImplTest {
     {
       // no HsrpGroups
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
-      Interface i = Interface.builder().setName("name").setAddress(sourceAddress).build();
+      Interface i = TestInterface.builder().setName("name").setAddress(sourceAddress).build();
       extractHsrp(groups, i);
 
       assertThat(groups, anEmptyMap());
@@ -235,7 +236,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -252,7 +253,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -273,7 +274,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -308,10 +309,10 @@ public class IpOwnersBaseImplTest {
     Map<Integer, Map<NodeInterfacePair, Set<Ip>>> groups = new HashMap<>();
     ConcreteInterfaceAddress i1SourceAddress = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     Interface i1 =
-        Interface.builder().setOwner(c1).setName("i1").setAddress(i1SourceAddress).build();
+        TestInterface.builder().setOwner(c1).setName("i1").setAddress(i1SourceAddress).build();
     ConcreteInterfaceAddress i2SourceAddress = ConcreteInterfaceAddress.parse("1.2.3.5/24");
     Interface i2 =
-        Interface.builder().setOwner(c2).setName("i2").setAddress(i2SourceAddress).build();
+        TestInterface.builder().setOwner(c2).setName("i2").setAddress(i2SourceAddress).build();
 
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip12 = Ip.parse("1.1.1.2");
@@ -367,7 +368,7 @@ public class IpOwnersBaseImplTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Interface i1 =
-        Interface.builder()
+        TestInterface.builder()
             .setOwner(c1)
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/24"))
@@ -382,7 +383,7 @@ public class IpOwnersBaseImplTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Interface i2 =
-        Interface.builder()
+        TestInterface.builder()
             .setOwner(c2)
             .setName("i2")
             .setAddress(ConcreteInterfaceAddress.parse("1.1.1.4/24"))
@@ -397,7 +398,7 @@ public class IpOwnersBaseImplTest {
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
     Interface i3 =
-        Interface.builder()
+        TestInterface.builder()
             .setOwner(c3)
             .setName("i3")
             .setAddress(ConcreteInterfaceAddress.parse("1.1.1.3/24"))
@@ -440,8 +441,8 @@ public class IpOwnersBaseImplTest {
             .build();
     Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
     Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
-    Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
-    Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
+    Interface i1 = TestInterface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
+    Interface i2 = TestInterface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
     c1.setTrackingGroups(ImmutableMap.of("1", alwaysTrue()));
     HsrpGroup i1HsrpGroup =
         HsrpGroup.builder()
@@ -492,8 +493,8 @@ public class IpOwnersBaseImplTest {
             .build();
     Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
     Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
-    Interface i1 = Interface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
-    Interface i2 = Interface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
+    Interface i1 = TestInterface.builder().setName("i1").setVrf(v1).setOwner(c1).build();
+    Interface i2 = TestInterface.builder().setName("i2").setVrf(v2).setOwner(c2).build();
     c1.setTrackingGroups(ImmutableMap.of("1", alwaysTrue()));
     VrrpGroup i1VrrpGroup =
         VrrpGroup.builder()
@@ -552,7 +553,7 @@ public class IpOwnersBaseImplTest {
                     new DecrementPriority(track2Decrement)))
             .build();
     Interface i1 =
-        Interface.builder()
+        TestInterface.builder()
             .setOwner(c1)
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("10.10.10.2/24"))
@@ -595,7 +596,7 @@ public class IpOwnersBaseImplTest {
             .addVirtualAddress("i1", Ip.parse("10.10.10.1"))
             .build();
     Interface i1 =
-        Interface.builder()
+        TestInterface.builder()
             .setOwner(c1)
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("10.10.10.2/24"))
@@ -626,7 +627,7 @@ public class IpOwnersBaseImplTest {
     {
       // no VrrpGroups
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> groups = new HashMap<>();
-      Interface i = Interface.builder().setName("name").setAddress(sourceAddress).build();
+      Interface i = TestInterface.builder().setName("name").setAddress(sourceAddress).build();
       extractVrrp(groups, i);
 
       assertThat(groups, anEmptyMap());
@@ -636,7 +637,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -653,7 +654,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -677,7 +678,7 @@ public class IpOwnersBaseImplTest {
       Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> groups = new HashMap<>();
       Ip ip1 = Ip.parse("1.1.1.1");
       Interface i =
-          Interface.builder()
+          TestInterface.builder()
               .setName("name")
               .setOwner(c)
               .setAddress(sourceAddress)
@@ -712,12 +713,12 @@ public class IpOwnersBaseImplTest {
     Map<Integer, Map<NodeInterfacePair, Map<String, Set<Ip>>>> groups = new HashMap<>();
     ConcreteInterfaceAddress i1SourceAddress = ConcreteInterfaceAddress.parse("1.2.3.4/24");
     Interface i1 =
-        Interface.builder().setOwner(c1).setName("i1").setAddress(i1SourceAddress).build();
+        TestInterface.builder().setOwner(c1).setName("i1").setAddress(i1SourceAddress).build();
     ConcreteInterfaceAddress i2SourceAddress = ConcreteInterfaceAddress.parse("1.2.3.5/24");
     Interface i2 =
-        Interface.builder().setOwner(c2).setName("i2").setAddress(i2SourceAddress).build();
+        TestInterface.builder().setOwner(c2).setName("i2").setAddress(i2SourceAddress).build();
     Interface i3 =
-        Interface.builder().setOwner(c2).setName("i3").setAddress(i2SourceAddress).build();
+        TestInterface.builder().setOwner(c2).setName("i3").setAddress(i2SourceAddress).build();
 
     Ip ip1 = Ip.parse("1.1.1.1");
     Ip ip12 = Ip.parse("1.1.1.2");
@@ -868,8 +869,8 @@ public class IpOwnersBaseImplTest {
             "true", alwaysTrue(),
             "false", alwaysFalse()));
     Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface i1 = Interface.builder().setName("i1").setOwner(c).setVrf(v).build();
-    Interface i2 = Interface.builder().setName("i2").setOwner(c).setVrf(v).build();
+    Interface i1 = TestInterface.builder().setName("i1").setOwner(c).setVrf(v).build();
+    Interface i2 = TestInterface.builder().setName("i2").setOwner(c).setVrf(v).build();
     i1.setHsrpGroups(
         ImmutableMap.of(
             1,
@@ -1004,7 +1005,7 @@ public class IpOwnersBaseImplTest {
             "true", alwaysTrue(),
             "false", alwaysFalse()));
     Vrf v = Vrf.builder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
-    Interface i1 = Interface.builder().setName("i1").setOwner(c).setVrf(v).build();
+    Interface i1 = TestInterface.builder().setName("i1").setOwner(c).setVrf(v).build();
     i1.setHsrpGroups(
         ImmutableMap.of(
             1,

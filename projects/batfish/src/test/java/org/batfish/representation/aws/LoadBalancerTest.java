@@ -72,6 +72,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
@@ -355,7 +356,7 @@ public class LoadBalancerTest {
   @Test
   public void testInstallTransformation() {
     Interface viIface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("interface")
             .setAddress(ConcreteInterfaceAddress.create(_loadBalancerIp, 24))
             .build();
@@ -417,7 +418,7 @@ public class LoadBalancerTest {
 
   @Test
   public void testInstallTransformation_noListener() {
-    Interface viIface = Interface.builder().setName("interface").build();
+    Interface viIface = TestInterface.builder().setName("interface").build();
     Region region = Region.builder("r1").build();
     _loadBalancer.installTransformations(
         viIface, ImmutableSet.of("zone1"), ImmutableList.of(), region, new Warnings());

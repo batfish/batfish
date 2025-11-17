@@ -54,6 +54,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AndMatchExpr;
@@ -160,7 +161,7 @@ public final class ConvertConfigurationJobTest {
             .setOrElse(orElseT)
             .build();
     Interface i =
-        Interface.builder()
+        TestInterface.builder()
             .setType(InterfaceType.PHYSICAL)
             .setName("i")
             .setIncomingTransformation(inT)
@@ -205,7 +206,7 @@ public final class ConvertConfigurationJobTest {
       c.setDefaultCrossZoneAction(LineAction.PERMIT);
       c.setDefaultInboundAction(LineAction.PERMIT);
 
-      Interface.builder()
+      TestInterface.builder()
           .setOwner(c)
           .setName("exists")
           .setVrrpGroups(
@@ -243,8 +244,8 @@ public final class ConvertConfigurationJobTest {
                   .addVirtualAddress("exists", Ip.parse("1.1.1.1"))
                   .addVirtualAddress("alsoExists", Ip.parse("2.2.2.2"))
                   .build());
-      Interface.builder().setOwner(c).setName("exists").setVrrpGroups(vrrpGroups).build();
-      Interface.builder().setOwner(c).setName("alsoExists").build();
+      TestInterface.builder().setOwner(c).setName("exists").setVrrpGroups(vrrpGroups).build();
+      TestInterface.builder().setOwner(c).setName("alsoExists").build();
       Warnings w = new Warnings(false, true, false);
       finalizeConfiguration(c, vc, w);
 
@@ -264,7 +265,7 @@ public final class ConvertConfigurationJobTest {
             .build();
     VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c).build();
-    Interface.builder().setName("i1").setVrf(v).setOwner(c).build();
+    TestInterface.builder().setName("i1").setVrf(v).setOwner(c).build();
 
     StaticRoute intMissing =
         StaticRoute.builder()
@@ -352,7 +353,7 @@ public final class ConvertConfigurationJobTest {
                 ImmutableSortedMap.of(
                     "missing", new DecrementPriority(1), "present", new DecrementPriority(1)))
             .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setVrf(v)
         .setOwner(c)
@@ -392,7 +393,7 @@ public final class ConvertConfigurationJobTest {
     VendorConfiguration vc = baseVendorConfig();
     Vrf v = Vrf.builder().setName("v").setOwner(c).build();
     // good
-    Interface.builder()
+    TestInterface.builder()
         .setName("switchportOnModeAccess")
         .setSwitchport(true)
         .setSwitchportMode(SwitchportMode.ACCESS)
@@ -400,7 +401,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("switchportOnModeNone")
         .setSwitchport(true)
         .setSwitchportMode(SwitchportMode.NONE)
@@ -408,7 +409,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("switchportOffModeAccess")
         .setSwitchport(false)
         .setSwitchportMode(SwitchportMode.ACCESS)
@@ -416,7 +417,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("switchportAndL3")
         .setSwitchport(true)
         .setSwitchportMode(SwitchportMode.ACCESS)
@@ -425,14 +426,14 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("vlanNoVlan")
         .setType(InterfaceType.VLAN)
         .setVrf(v)
         .setOwner(c)
         .build();
     // good
-    Interface.builder()
+    TestInterface.builder()
         .setName("vlanWithVlan")
         .setType(InterfaceType.VLAN)
         .setVlan(5)
@@ -440,7 +441,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("channelGroupAndL3")
         .setType(InterfaceType.PHYSICAL)
         .setChannelGroup("aggregated")
@@ -449,14 +450,14 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // good
-    Interface.builder()
+    TestInterface.builder()
         .setName("aggregated")
         .setType(InterfaceType.AGGREGATED)
         .setVrf(v)
         .setOwner(c)
         .build();
     // good
-    Interface.builder()
+    TestInterface.builder()
         .setName("channelGroup")
         .setType(InterfaceType.PHYSICAL)
         .setChannelGroup("aggregated")
@@ -464,7 +465,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("l3AndParentChannelGroup")
         .setType(InterfaceType.LOGICAL)
         .setDependencies(ImmutableSet.of(new Dependency("channelGroup", DependencyType.BIND)))
@@ -473,7 +474,7 @@ public final class ConvertConfigurationJobTest {
         .setOwner(c)
         .build();
     // bad
-    Interface.builder()
+    TestInterface.builder()
         .setName("missingBindDep")
         .setType(InterfaceType.LOGICAL)
         .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.BIND)))
@@ -482,7 +483,7 @@ public final class ConvertConfigurationJobTest {
         .build();
     // bad
     Interface missingAggregateDep =
-        Interface.builder()
+        TestInterface.builder()
             .setName("missingAggregateDep")
             .setType(InterfaceType.AGGREGATED)
             .setDependencies(ImmutableSet.of(new Dependency("undefined", DependencyType.AGGREGATE)))
@@ -548,7 +549,7 @@ public final class ConvertConfigurationJobTest {
             .setRouterId(Ip.ZERO)
             .build();
     v.setOspfProcesses(ImmutableSortedMap.of(proc.getProcessId(), proc));
-    Interface.builder().setName("defined").setOwner(c).setVrf(v).build();
+    TestInterface.builder().setName("defined").setOwner(c).setVrf(v).build();
 
     Warnings w = new Warnings(false, true, false);
     finalizeConfiguration(c, vc, w);

@@ -25,6 +25,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpLink;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkConfigurations;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -330,7 +331,7 @@ public class OspfTopologyUtilsTest {
                         : ImmutableMap.of())
                 .setRouterId(routerId)
                 .build()));
-    Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
+    Builder iface = TestInterface.builder().setName(ifaceName).setMtu(mtu);
     iface.setOspfSettings(
         firstNonNull(ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
     c.getAllInterfaces().put(ifaceName, iface.build());
@@ -376,7 +377,7 @@ public class OspfTopologyUtilsTest {
                             .build()))
                 .setRouterId(routerId)
                 .build()));
-    Builder iface = Interface.builder().setName(ifaceName).setMtu(mtu);
+    Builder iface = TestInterface.builder().setName(ifaceName).setMtu(mtu);
     iface.setOspfSettings(
         firstNonNull(ospfSettings, OspfInterfaceSettings.defaultSettingsBuilder().build()));
     c.getAllInterfaces().put(ifaceName, iface.build());

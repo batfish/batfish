@@ -58,6 +58,7 @@ import org.batfish.datamodel.Mlag;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixTrieMultiMap;
 import org.batfish.datamodel.RouteFilterList;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
@@ -82,7 +83,9 @@ public final class CompletionMetadataUtilsTest {
     for (String interfaceName : interfaceNames) {
       config
           .getAllInterfaces()
-          .put(interfaceName, Interface.builder().setName(interfaceName).setOwner(config).build());
+          .put(
+              interfaceName,
+              TestInterface.builder().setName(interfaceName).setOwner(config).build());
     }
     return config;
   }
@@ -114,8 +117,8 @@ public final class CompletionMetadataUtilsTest {
     Configuration cfg = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     Configuration cfgHuman = new Configuration("host", ConfigurationFormat.CISCO_IOS);
     cfgHuman.setHumanName("human");
-    Interface iface = Interface.builder().setOwner(cfg).setName("iface1").build();
-    Interface ifaceHuman = Interface.builder().setOwner(cfgHuman).setName("iface2").build();
+    Interface iface = TestInterface.builder().setOwner(cfg).setName("iface1").build();
+    Interface ifaceHuman = TestInterface.builder().setOwner(cfgHuman).setName("iface2").build();
 
     assertThat(interfaceDisplayString(iface), equalTo("host[iface1]"));
     assertThat(interfaceDisplayString(ifaceHuman), equalTo("host[iface2] (human)"));
@@ -603,7 +606,7 @@ public final class CompletionMetadataUtilsTest {
             .setHostname("n4")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i4")
         .setOwner(c4)
         .setAdminUp(true)
@@ -652,7 +655,7 @@ public final class CompletionMetadataUtilsTest {
     {
       // both i1 locations are valid
       Interface i1 =
-          Interface.builder()
+          TestInterface.builder()
               .setName("i1")
               .setOwner(c)
               .setAdminUp(true)
@@ -668,7 +671,7 @@ public final class CompletionMetadataUtilsTest {
     {
       // inactive interface
       Interface i2 =
-          Interface.builder()
+          TestInterface.builder()
               .setName("i2")
               .setOwner(c)
               .setAdminUp(false)
@@ -681,7 +684,7 @@ public final class CompletionMetadataUtilsTest {
 
     {
       // no address
-      Interface i3 = Interface.builder().setName("i3").setOwner(c).setAdminUp(true).build();
+      Interface i3 = TestInterface.builder().setName("i3").setOwner(c).setAdminUp(true).build();
       Location loc3 = new InterfaceLocation("n1", i3.getName());
 
       assertFalse(isTracerouteSource(loc3, configurations));
@@ -689,7 +692,7 @@ public final class CompletionMetadataUtilsTest {
 
     {
       // L2 interface
-      Interface i4 = Interface.builder().setName("i4").setOwner(c).setSwitchport(true).build();
+      Interface i4 = TestInterface.builder().setName("i4").setOwner(c).setSwitchport(true).build();
       Location loc4 = new InterfaceLinkLocation("n1", i4.getName());
 
       assertFalse(isTracerouteSource(loc4, configurations));
@@ -698,7 +701,7 @@ public final class CompletionMetadataUtilsTest {
     {
       // loopback interface
       Interface i5 =
-          Interface.builder()
+          TestInterface.builder()
               .setName("Loopback")
               .setOwner(c)
               .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))
@@ -711,7 +714,7 @@ public final class CompletionMetadataUtilsTest {
     {
       // non-loopback interface with a /32 address
       Interface i6 =
-          Interface.builder()
+          TestInterface.builder()
               .setName("i6")
               .setOwner(c)
               .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/32"))

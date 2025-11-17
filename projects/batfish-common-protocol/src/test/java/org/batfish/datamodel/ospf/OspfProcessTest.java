@@ -10,6 +10,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -24,7 +25,7 @@ public class OspfProcessTest {
   @Test
   public void testComputeInterfaceCost() {
     Interface.Builder ib =
-        Interface.builder()
+        TestInterface.builder()
             .setName("eth0")
             .setBandwidth(1e3)
             .setOwner(new Configuration("r1", ConfigurationFormat.CISCO_IOS));
@@ -38,7 +39,7 @@ public class OspfProcessTest {
     assertThat(
         OspfProcess.computeInterfaceCost(
             4e10,
-            Interface.builder()
+            TestInterface.builder()
                 .setName("Vlan1")
                 .setBandwidth(1e9)
                 .setOwner(new Configuration("r1", ConfigurationFormat.CISCO_NX))

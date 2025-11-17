@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.referencelibrary.InterfaceGroup;
 import org.batfish.referencelibrary.ReferenceBook;
@@ -24,9 +25,9 @@ public class ReferenceInterfaceGroupInterfaceSpecifierTest {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
 
-    Interface iface11 = Interface.builder().setName("iface1").setOwner(node1).build();
-    Interface iface12 = Interface.builder().setName("iface2").setOwner(node1).build();
-    Interface iface21 = Interface.builder().setName("iface1").setOwner(node2).build();
+    Interface iface11 = TestInterface.builder().setName("iface1").setOwner(node1).build();
+    Interface iface12 = TestInterface.builder().setName("iface2").setOwner(node1).build();
+    Interface iface21 = TestInterface.builder().setName("iface1").setOwner(node2).build();
 
     node1.setInterfaces(
         ImmutableSortedMap.of(iface11.getName(), iface11, iface12.getName(), iface12));

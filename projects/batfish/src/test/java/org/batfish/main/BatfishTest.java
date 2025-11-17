@@ -84,6 +84,7 @@ import org.batfish.datamodel.OriginType;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Answer;
@@ -896,14 +897,14 @@ public class BatfishTest {
     Vrf v1 = Vrf.builder().setName("v1").setOwner(c1).build();
     Vrf v2 = Vrf.builder().setName("v2").setOwner(c2).build();
     Interface i1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i1")
             .setOwner(c1)
             .setVrf(v1)
             .setType(InterfaceType.PHYSICAL)
             .build();
     Interface i2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i2")
             .setOwner(c2)
             .setVrf(v2)

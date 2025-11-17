@@ -1062,7 +1062,9 @@ public final class A10Configuration extends VendorConfiguration {
             .map(
                 name -> {
                   org.batfish.datamodel.Interface.Builder baseIface =
-                      org.batfish.datamodel.Interface.builder().setName("");
+                      org.batfish.datamodel.Interface.builder()
+                          .setName("")
+                          .setType(InterfaceType.PHYSICAL);
                   setVlanSettings(_ifaceNametoIface.get(name), baseIface);
                   return baseIface.build();
                 })

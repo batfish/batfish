@@ -11,6 +11,7 @@ import com.google.common.collect.ImmutableSortedMap;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
 
@@ -22,9 +23,9 @@ public class NameInterfaceSpecifierTest {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
 
-    Interface iface1node1 = Interface.builder().setName("iface1").setOwner(node1).build();
-    Interface iface2node1 = Interface.builder().setName("iface2").setOwner(node1).build();
-    Interface iface1node2 = Interface.builder().setName("iface1").setOwner(node2).build();
+    Interface iface1node1 = TestInterface.builder().setName("iface1").setOwner(node1).build();
+    Interface iface2node1 = TestInterface.builder().setName("iface2").setOwner(node1).build();
+    Interface iface1node2 = TestInterface.builder().setName("iface1").setOwner(node2).build();
 
     node1.setInterfaces(
         ImmutableSortedMap.of(
