@@ -82,6 +82,7 @@ import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
@@ -951,7 +952,7 @@ public final class BidirectionalReachabilityAnalysisTest {
     Vrf egressVrf = nf.vrfBuilder().setName(SFL_EGRESS_VRF).setOwner(ingressNode).build();
 
     Interface.Builder ib =
-        Interface.builder().setOwner(ingressNode).setType(InterfaceType.PHYSICAL);
+        TestInterface.builder().setOwner(ingressNode).setType(InterfaceType.PHYSICAL);
     ib.setName(SFL_INGRESS_IFACE).setVrf(ingressVrf).setAddress(SFL_INGRESS_IFACE_ADDRESS).build();
     ib.setName(SFL_EGRESS_IFACE)
         .setVrf(separateEgressVrf ? egressVrf : ingressVrf)
@@ -995,7 +996,7 @@ public final class BidirectionalReachabilityAnalysisTest {
 
     Configuration neighbor = cb.setHostname(SFL_NEIGHBOR).build();
     Vrf neighborVrf = nf.vrfBuilder().setName(SFL_NEIGHBOR_VRF).setOwner(neighbor).build();
-    Interface.builder()
+    TestInterface.builder()
         .setOwner(neighbor)
         .setVrf(neighborVrf)
         .setName(SFL_NEIGHBOR_IFACE)

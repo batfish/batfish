@@ -29,6 +29,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
@@ -51,7 +52,7 @@ public class IpOwnersAnswererTest {
   @Before
   public void setup() {
     Vrf vrf = new Vrf(Configuration.DEFAULT_VRF_NAME);
-    Interface.Builder ib = Interface.builder().setVrf(vrf);
+    Interface.Builder ib = TestInterface.builder().setVrf(vrf);
     ConcreteInterfaceAddress uniqueAddr =
         ConcreteInterfaceAddress.create(_uniqueIp, MAX_PREFIX_LENGTH - 1);
     InterfaceAddress secondaryUniqueAddr =

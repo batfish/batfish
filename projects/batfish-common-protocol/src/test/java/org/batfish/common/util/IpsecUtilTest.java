@@ -32,6 +32,7 @@ import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.junit.Before;
@@ -161,20 +162,20 @@ public class IpsecUtilTest {
         ImmutableSortedMap.naturalOrder();
     c1.setInterfaces(
         interfaceBuilder
-            .put("Tunnel1", Interface.builder().setName("Tunnel1").setOwner(c1).build())
-            .put("Tunnel3", Interface.builder().setName("Tunnel3").setOwner(c1).build())
-            .put("interface5", Interface.builder().setName("interface5").setOwner(c1).build())
-            .put("Tunnel9", Interface.builder().setName("Tunnel9").setOwner(c1).build())
-            .put("Tunnel7", Interface.builder().setName("Tunnel7").setOwner(c1).build())
+            .put("Tunnel1", TestInterface.builder().setName("Tunnel1").setOwner(c1).build())
+            .put("Tunnel3", TestInterface.builder().setName("Tunnel3").setOwner(c1).build())
+            .put("interface5", TestInterface.builder().setName("interface5").setOwner(c1).build())
+            .put("Tunnel9", TestInterface.builder().setName("Tunnel9").setOwner(c1).build())
+            .put("Tunnel7", TestInterface.builder().setName("Tunnel7").setOwner(c1).build())
             .build());
     interfaceBuilder = ImmutableSortedMap.naturalOrder();
     c2.setInterfaces(
         interfaceBuilder
-            .put("Tunnel2", Interface.builder().setName("Tunnel2").setOwner(c2).build())
-            .put("Tunnel4", Interface.builder().setName("Tunnel4").setOwner(c2).build())
-            .put("interface6", Interface.builder().setName("interface6").setOwner(c2).build())
-            .put("Tunnel8", Interface.builder().setName("Tunnel8").setOwner(c2).build())
-            .put("Tunnel10", Interface.builder().setName("Tunnel10").setOwner(c2).build())
+            .put("Tunnel2", TestInterface.builder().setName("Tunnel2").setOwner(c2).build())
+            .put("Tunnel4", TestInterface.builder().setName("Tunnel4").setOwner(c2).build())
+            .put("interface6", TestInterface.builder().setName("interface6").setOwner(c2).build())
+            .put("Tunnel8", TestInterface.builder().setName("Tunnel8").setOwner(c2).build())
+            .put("Tunnel10", TestInterface.builder().setName("Tunnel10").setOwner(c2).build())
             .build());
 
     _configurations.put("host1", c1);

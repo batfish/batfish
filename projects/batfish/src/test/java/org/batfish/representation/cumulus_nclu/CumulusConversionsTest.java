@@ -1025,7 +1025,7 @@ public final class CumulusConversionsTest {
       @Nullable ConcreteInterfaceAddress address) {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_NCLU);
     org.batfish.datamodel.Interface loopback =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setOwner(c)
             .setType(LOOPBACK)
@@ -1200,13 +1200,13 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferRouterID_MaxInterfaceIp() {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_NCLU);
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName("eth1")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30"))
         .setType(PHYSICAL)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName("eth2")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/30"))
@@ -1275,7 +1275,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
@@ -1292,7 +1292,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
 
     assertNull(viIface.getOspfAreaName());
   }
@@ -1308,7 +1308,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1326,7 +1326,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1344,7 +1344,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1455,7 +1455,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1476,7 +1476,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1496,7 +1496,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1515,7 +1515,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1535,7 +1535,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1562,7 +1562,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
 
@@ -1589,7 +1589,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
@@ -1605,7 +1605,7 @@ public final class CumulusConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder().setName("iface").setVrf(vrf).build();
+        org.batfish.datamodel.TestInterface.builder().setName("iface").setVrf(vrf).build();
 
     Map<String, org.batfish.datamodel.Interface> ifaceMap =
         ImmutableMap.of(viIface.getName(), viIface);
@@ -1747,7 +1747,7 @@ public final class CumulusConversionsTest {
     ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_NCLU);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setOwner(c)
             .setAddress(ifaceAddress)
@@ -1773,14 +1773,14 @@ public final class CumulusConversionsTest {
   public void testInferPeerIp_slash31() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")) // first address
                 .setName("iface")
                 .build()),
         Optional.of(Ip.parse("1.1.1.1")));
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")) // second address
                 .setName("iface")
                 .build()),
@@ -1791,14 +1791,14 @@ public final class CumulusConversionsTest {
   public void testInferPeerIp_slash30() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")) // second address
                 .setName("iface")
                 .build()),
         Optional.of(Ip.parse("1.1.1.2")));
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")) // third address
                 .setName("iface")
                 .build()),
@@ -1809,14 +1809,14 @@ public final class CumulusConversionsTest {
   public void testInferPeerIp_otherLength() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/32"))
                 .setName("iface")
                 .build()),
         Optional.empty());
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/29"))
                 .setName("iface")
                 .build()),
@@ -1826,7 +1826,7 @@ public final class CumulusConversionsTest {
   @Test
   public void testInferPeerIp_multipleAddresses() {
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setAddresses(
                 ConcreteInterfaceAddress.parse("1.1.1.1/31"),
                 ConcreteInterfaceAddress.parse("2.2.2.2/31"))

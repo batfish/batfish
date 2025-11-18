@@ -1112,7 +1112,7 @@ public final class FrrConversionsTest {
       @Nullable ConcreteInterfaceAddress address) {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface loopback =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setType(LOOPBACK)
             .setOwner(c)
@@ -1268,13 +1268,13 @@ public final class FrrConversionsTest {
   @Test
   public void testInferRouterID_MaxInterfaceIp() {
     Configuration c = new Configuration("test", ConfigurationFormat.CUMULUS_CONCATENATED);
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName("eth1")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30"))
         .setType(PHYSICAL)
         .build();
-    org.batfish.datamodel.Interface.builder()
+    org.batfish.datamodel.TestInterface.builder()
         .setName("eth2")
         .setOwner(c)
         .setAddress(ConcreteInterfaceAddress.parse("2.2.2.2/30"))
@@ -1339,7 +1339,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1355,7 +1355,7 @@ public final class FrrConversionsTest {
   public void testAddOspfInterfaces_NoArea() {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1375,7 +1375,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1396,7 +1396,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("lo")
             .setVrf(vrf)
             .setType(LOOPBACK)
@@ -1414,7 +1414,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1432,7 +1432,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1538,7 +1538,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1558,7 +1558,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1578,7 +1578,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1598,7 +1598,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1619,7 +1619,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1647,7 +1647,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1675,7 +1675,7 @@ public final class FrrConversionsTest {
 
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1693,7 +1693,7 @@ public final class FrrConversionsTest {
   public void testAddOspfInterfaces_NoInterface() {
     Vrf vrf = new Vrf(DEFAULT_VRF_NAME);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setVrf(vrf)
             .setType(PHYSICAL)
@@ -1845,7 +1845,7 @@ public final class FrrConversionsTest {
     ConcreteInterfaceAddress ifaceAddress = ConcreteInterfaceAddress.parse("1.1.1.1/31");
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setOwner(c)
             .setAddress(ifaceAddress)
@@ -1868,7 +1868,7 @@ public final class FrrConversionsTest {
   public void testInferPeerIp_slash31() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/31")) // first address
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1876,7 +1876,7 @@ public final class FrrConversionsTest {
         Optional.of(Ip.parse("1.1.1.1")));
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/31")) // second address
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1888,7 +1888,7 @@ public final class FrrConversionsTest {
   public void testInferPeerIp_slash30() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/30")) // second address
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1896,7 +1896,7 @@ public final class FrrConversionsTest {
         Optional.of(Ip.parse("1.1.1.2")));
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.2/30")) // third address
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1908,7 +1908,7 @@ public final class FrrConversionsTest {
   public void testInferPeerIp_otherLength() {
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.0/32"))
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1916,7 +1916,7 @@ public final class FrrConversionsTest {
         Optional.empty());
     assertEquals(
         inferPeerIp(
-            org.batfish.datamodel.Interface.builder()
+            org.batfish.datamodel.TestInterface.builder()
                 .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/29"))
                 .setName("iface")
                 .setType(PHYSICAL)
@@ -1927,7 +1927,7 @@ public final class FrrConversionsTest {
   @Test
   public void testInferPeerIp_multipleAddresses() {
     org.batfish.datamodel.Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setAddresses(
                 ConcreteInterfaceAddress.parse("1.1.1.1/31"),
                 ConcreteInterfaceAddress.parse("2.2.2.2/31"))

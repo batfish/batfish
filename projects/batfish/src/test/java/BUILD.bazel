@@ -16,6 +16,7 @@ java_library(
     deps = [
         "//projects/batfish",
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel:testlib",
         "//projects/bdd",
         "//projects/symbolic",
         "@maven//:com_google_code_findbugs_jsr305",

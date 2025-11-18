@@ -25,6 +25,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.table.ColumnMetadata;
@@ -76,7 +77,7 @@ public final class HsrpPropertiesAnswererTest {
 
     // active interface with HSRP group
     Interface iface1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface1")
             .setOwner(conf1)
             .setHsrpGroups(ImmutableSortedMap.of(0, group1))
@@ -85,7 +86,7 @@ public final class HsrpPropertiesAnswererTest {
 
     // inactive interface with HSRP group
     Interface iface2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface2")
             .setOwner(conf1)
             .setHsrpGroups(ImmutableSortedMap.of(0, group2))
@@ -94,7 +95,7 @@ public final class HsrpPropertiesAnswererTest {
 
     // active interface without HSRP group
     Interface iface3 =
-        Interface.builder().setName("iface3").setOwner(conf1).setAdminUp(true).build();
+        TestInterface.builder().setName("iface3").setOwner(conf1).setAdminUp(true).build();
 
     conf1
         .getAllInterfaces()
@@ -134,7 +135,7 @@ public final class HsrpPropertiesAnswererTest {
             .build();
 
     Interface iface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface")
             .setOwner(conf)
             .setHsrpGroups(ImmutableSortedMap.of(0, group))

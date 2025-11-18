@@ -14,6 +14,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.specifier.InterfaceWithConnectedIpsSpecifier.Factory;
 import org.junit.Rule;
@@ -56,13 +57,13 @@ public class InterfaceWithConnectedIpsSpecifierTest {
   public void testResolve() {
     Configuration node1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
     Interface iface11 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface11")
             .setOwner(node1)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
             .build();
     Interface iface12 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface12")
             .setOwner(node1)
             .setAddress(ConcreteInterfaceAddress.parse("2.3.4.5/24"))
@@ -71,7 +72,7 @@ public class InterfaceWithConnectedIpsSpecifierTest {
 
     Configuration node2 = new Configuration("node2", ConfigurationFormat.CISCO_IOS);
     Interface iface2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface2")
             .setOwner(node2)
             .setAddress(ConcreteInterfaceAddress.parse("1.2.3.5/30"))

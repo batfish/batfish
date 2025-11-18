@@ -1848,6 +1848,28 @@ public final class JuniperConfiguration extends VendorConfiguration {
     return ikePhase1Proposal;
   }
 
+  private static org.batfish.datamodel.InterfaceType computeJuniperInterfaceType(String name) {
+    if (name.startsWith("st")) {
+      return org.batfish.datamodel.InterfaceType.TUNNEL;
+    } else if (name.startsWith("reth") && name.contains(".")) {
+      return org.batfish.datamodel.InterfaceType.REDUNDANT_CHILD;
+    } else if (name.startsWith("reth")) {
+      return org.batfish.datamodel.InterfaceType.REDUNDANT;
+    } else if (name.startsWith("ae") && name.contains(".")) {
+      return org.batfish.datamodel.InterfaceType.AGGREGATE_CHILD;
+    } else if (name.startsWith("ae")) {
+      return org.batfish.datamodel.InterfaceType.AGGREGATED;
+    } else if (name.startsWith("lo")) {
+      return org.batfish.datamodel.InterfaceType.LOOPBACK;
+    } else if (name.startsWith("irb")) {
+      return org.batfish.datamodel.InterfaceType.VLAN;
+    } else if (name.contains(".")) {
+      return org.batfish.datamodel.InterfaceType.LOGICAL;
+    } else {
+      return org.batfish.datamodel.InterfaceType.PHYSICAL;
+    }
+  }
+
   /**
    * Convert a non-unit interface to the VI {@link org.batfish.datamodel.Interface}. Returns null if
    * the interface is not eligible for conversion
@@ -1866,9 +1888,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
     org.batfish.datamodel.Interface newIface =
         org.batfish.datamodel.Interface.builder()
             .setName(name)
-            .setType(
-                org.batfish.datamodel.Interface.computeInterfaceType(
-                    name, _c.getConfigurationFormat()))
+            .setType(computeJuniperInterfaceType(name))
             .build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
@@ -1915,7 +1935,11 @@ public final class JuniperConfiguration extends VendorConfiguration {
       return null;
     }
     org.batfish.datamodel.Interface newIface =
-        org.batfish.datamodel.Interface.builder().setName(name).setOwner(_c).build();
+        org.batfish.datamodel.Interface.builder()
+            .setName(name)
+            .setOwner(_c)
+            .setType(computeJuniperInterfaceType(name))
+            .build();
     newIface.setDeclaredNames(ImmutableSortedSet.of(name));
     newIface.setDescription(iface.getDescription());
     Integer mtu = iface.getMtu();

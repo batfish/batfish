@@ -36,7 +36,6 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -46,6 +45,7 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.FalseExpr;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.acl.MatchSrcInterface;
@@ -81,10 +81,11 @@ public class FilterLineReachabilityTest {
     _c1.setInterfaces(
         ImmutableSortedMap.of(
             "iface",
-            Interface.builder().setName("iface").build(),
+            TestInterface.builder().setName("iface").build(),
             "iface2",
-            Interface.builder().setName("iface2").build()));
-    _c2.setInterfaces(ImmutableSortedMap.of("iface", Interface.builder().setName("iface").build()));
+            TestInterface.builder().setName("iface2").build()));
+    _c2.setInterfaces(
+        ImmutableSortedMap.of("iface", TestInterface.builder().setName("iface").build()));
   }
 
   @Test

@@ -14,6 +14,7 @@ java_library(
     ],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel:testlib",
     ],
 )
 
@@ -25,6 +26,7 @@ junit_tests(
     resources = ["//projects/batfish-common-protocol/src/test/resources/org/batfish/datamodel/questions"],
     deps = [
         "//projects/batfish-common-protocol:common",
+        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel:testlib",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",

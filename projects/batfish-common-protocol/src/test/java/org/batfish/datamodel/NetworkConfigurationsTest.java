@@ -37,7 +37,7 @@ public class NetworkConfigurationsTest {
   @Test
   public void testGetInterface() {
     Configuration c = new Configuration("foo", ConfigurationFormat.CISCO_IOS);
-    Interface i = Interface.builder().setBandwidth(1e9).setName("eth0").build();
+    Interface i = TestInterface.builder().setBandwidth(1e9).setName("eth0").build();
     c.getAllInterfaces().put(i.getName(), i);
 
     NetworkConfigurations nc = NetworkConfigurations.of(ImmutableMap.of("foo", c));

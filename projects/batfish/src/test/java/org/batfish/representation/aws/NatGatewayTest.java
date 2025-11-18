@@ -41,6 +41,7 @@ import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.referencelibrary.GeneratedRefBookUtils;
@@ -311,7 +312,7 @@ public class NatGatewayTest {
   @Test
   public void testInstallIncomingFilter() {
     Configuration cfg = new Configuration("cfg", ConfigurationFormat.AWS);
-    Interface iface = Interface.builder().setOwner(cfg).setName("test").build();
+    Interface iface = TestInterface.builder().setOwner(cfg).setName("test").build();
 
     Ip blockedIp = Ip.parse("8.8.8.8");
     IpAccessList nacl =

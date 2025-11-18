@@ -16,6 +16,7 @@ import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.TestInterface;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -73,7 +74,7 @@ public class InterfacePropertySpecifierTest {
             .setName("MY_ACL")
             .setLines(ImmutableList.of(ExprAclLine.ACCEPT_ALL))
             .build();
-    Interface i1 = Interface.builder().setOwner(c).setName("i1").setIncomingFilter(acl).build();
+    Interface i1 = TestInterface.builder().setOwner(c).setName("i1").setIncomingFilter(acl).build();
     assertThat(
         InterfacePropertySpecifier.getPropertyDescriptor(INCOMING_FILTER_NAME)
             .getGetter()

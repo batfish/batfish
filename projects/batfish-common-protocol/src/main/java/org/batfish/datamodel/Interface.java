@@ -30,11 +30,9 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.function.Supplier;
-import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
-import org.batfish.common.BatfishException;
 import org.batfish.common.util.ComparableStructure;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.eigrp.EigrpInterfaceSettings;
@@ -114,9 +112,9 @@ public final class Interface extends ComparableStructure<String> {
 
     public Interface build() {
       checkArgument(_name != null || _nameGenerator != null, "Must set name before building");
+      checkArgument(_type != null, "Must set type before building");
       String name = _name != null ? _name : _nameGenerator.get();
-      Interface iface =
-          _type == null ? new Interface(name, _owner) : new Interface(name, _owner, _type);
+      Interface iface = new Interface(name, _owner, _type);
       if (_owner != null) {
         _owner.getAllInterfaces().put(name, iface);
       }
@@ -706,225 +704,6 @@ public final class Interface extends ComparableStructure<String> {
     return isActiveL3() && !isLoopback();
   }
 
-  private static InterfaceType computeAosInteraceType(String name) {
-    if (name.startsWith("vlan")) {
-      return InterfaceType.VLAN;
-    } else if (name.startsWith("loopback")) {
-      return InterfaceType.LOOPBACK;
-    } else {
-      return InterfaceType.PHYSICAL;
-    }
-  }
-
-  private static InterfaceType computeAwsInterfaceType(String name) {
-    if (name.startsWith("vpn")) {
-      return InterfaceType.TUNNEL;
-    } else {
-      return InterfaceType.PHYSICAL;
-    }
-  }
-
-  private static InterfaceType computeAzureInterfaceType(String name) {
-    throw new UnsupportedOperationException("Should not be reachable: " + name);
-  }
-
-  @VisibleForTesting
-  static InterfaceType computeCiscoInterfaceType(String name) {
-    if (name.startsWith("Async")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("ATM")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Bundle-Ether")) {
-      if (name.contains(".")) {
-        // Subinterface
-        return InterfaceType.AGGREGATE_CHILD;
-      } else {
-        return InterfaceType.AGGREGATED;
-      }
-    } else if (name.startsWith("cmp-mgmt")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Crypto-Engine")) {
-      return InterfaceType.TUNNEL; // IPSec VPN
-    } else if (name.startsWith("Dialer")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Dot11Radio")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Embedded-Service-Engine")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("GMPLS")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Ethernet")
-        || name.startsWith("FastEthernet")
-        || name.startsWith("FortyGigabitEthernet")
-        || name.startsWith("GigabitEthernet")
-        || name.startsWith("HundredGigabitEthernet")
-        || name.startsWith("HundredGigE")
-        || name.startsWith("FiftyGigE")
-        || name.startsWith("FortyGigE")
-        || name.startsWith("FourHundredGigE")
-        || name.startsWith("TenGigabitEthernet")
-        || name.startsWith("TenGigE")
-        || name.startsWith("TwentyFiveGigE")
-        || name.startsWith("TwoHundredGigE")) {
-      if (name.contains(".")) {
-        // Subinterface
-        return InterfaceType.LOGICAL;
-      } else {
-        return InterfaceType.PHYSICAL;
-      }
-    } else if (name.startsWith("Group-Async")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Loopback")) {
-      return InterfaceType.LOOPBACK;
-    } else if (name.startsWith("Management")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("mgmt")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("MgmtEth")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Null")) {
-      return InterfaceType.NULL;
-    } else if (name.toLowerCase().startsWith("port-channel")) {
-      if (name.contains(".")) {
-        // Subinterface of a port channel
-        return InterfaceType.AGGREGATE_CHILD;
-      } else {
-        return InterfaceType.AGGREGATED;
-      }
-    } else if (name.startsWith("POS")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Redundant") && name.contains(".")) {
-      return InterfaceType.REDUNDANT_CHILD;
-    } else if (name.startsWith("Redundant")) {
-      return InterfaceType.REDUNDANT;
-    } else if (name.startsWith("Serial")) {
-      return InterfaceType.PHYSICAL;
-    } else if (name.startsWith("Tunnel")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("tunnel-ip")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("tunnel-te")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("Vlan")) {
-      return InterfaceType.VLAN;
-    } else if (name.startsWith("Vxlan")) {
-      return InterfaceType.TUNNEL;
-    } else {
-      return InterfaceType.UNKNOWN;
-    }
-  }
-
-  private static InterfaceType computeCumulusInterfaceType(String name) {
-    throw new UnsupportedOperationException("Should not be reachable: " + name);
-  }
-
-  private static InterfaceType computeHostInterfaceType(String name) {
-    if (name.startsWith("lo")) {
-      return InterfaceType.LOOPBACK;
-    } else {
-      return InterfaceType.PHYSICAL;
-    }
-  }
-
-  public static InterfaceType computeInterfaceType(String name, ConfigurationFormat format) {
-    switch (format) {
-      case ALCATEL_AOS:
-        return computeAosInteraceType(name);
-
-      case AWS:
-        return computeAwsInterfaceType(name);
-
-      case AZURE:
-        return computeAzureInterfaceType(name);
-
-      case ARISTA:
-      case ARUBAOS:
-      case CADANT:
-      case CISCO_ASA:
-      case CISCO_IOS:
-      case CISCO_IOS_XR:
-      case CISCO_NX:
-      case FOUNDRY:
-        return computeCiscoInterfaceType(name);
-
-      case CUMULUS_CONCATENATED:
-      case CUMULUS_NCLU:
-        return computeCumulusInterfaceType(name);
-
-      case F5_BIGIP_STRUCTURED:
-        return computeF5BigipStructuredInterfaceType(name);
-
-      case FLAT_JUNIPER:
-      case JUNIPER:
-      case JUNIPER_SWITCH:
-        return computeJuniperInterfaceType(name);
-
-      case VYOS:
-      case FLAT_VYOS:
-        return computeVyosInterfaceType(name);
-
-      case HOST:
-        return computeHostInterfaceType(name);
-
-      case MRV:
-        // TODO: find out if other interface types are possible
-        return InterfaceType.PHYSICAL;
-
-      case EMPTY:
-      case MSS:
-      case IPTABLES:
-      case UNKNOWN:
-      case VXWORKS:
-      // $CASES-OMITTED$
-      default:
-        throw new BatfishException(
-            "Cannot compute interface type for unsupported configuration format: " + format);
-    }
-  }
-
-  private static final Pattern F5_PHYSICAL_INTERFACE_NAME_PATTERN =
-      Pattern.compile("^\\d+\\.\\d+$");
-
-  private static @Nonnull InterfaceType computeF5BigipStructuredInterfaceType(String name) {
-    if (F5_PHYSICAL_INTERFACE_NAME_PATTERN.matcher(name).find()) {
-      return InterfaceType.PHYSICAL;
-    } else {
-      return InterfaceType.UNKNOWN;
-    }
-  }
-
-  private static InterfaceType computeJuniperInterfaceType(String name) {
-    if (name.startsWith("st")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("reth") && name.contains(".")) {
-      return InterfaceType.REDUNDANT_CHILD;
-    } else if (name.startsWith("reth")) {
-      return InterfaceType.REDUNDANT;
-    } else if (name.startsWith("ae") && name.contains(".")) {
-      return InterfaceType.AGGREGATE_CHILD;
-    } else if (name.startsWith("ae")) {
-      return InterfaceType.AGGREGATED;
-    } else if (name.startsWith("lo")) {
-      return InterfaceType.LOOPBACK;
-    } else if (name.startsWith("irb")) {
-      return InterfaceType.VLAN;
-    } else if (name.contains(".")) {
-      return InterfaceType.LOGICAL;
-    } else {
-      return InterfaceType.PHYSICAL;
-    }
-  }
-
-  private static InterfaceType computeVyosInterfaceType(String name) {
-    if (name.startsWith("vti")) {
-      return InterfaceType.TUNNEL;
-    } else if (name.startsWith("lo")) {
-      return InterfaceType.LOOPBACK;
-    } else {
-      return InterfaceType.PHYSICAL;
-    }
-  }
-
   private @Nullable Integer _accessVlan;
   private boolean _active;
   private @Nonnull IpSpace _additionalArpIps;
@@ -995,17 +774,7 @@ public final class Interface extends ComparableStructure<String> {
 
   @JsonCreator
   private Interface(@JsonProperty(PROP_NAME) @Nullable String name) {
-    this(name, null);
-  }
-
-  private Interface(String name, Configuration owner) {
-    this(name, owner, InterfaceType.UNKNOWN);
-
-    // Determine interface type after setting owner
-    _interfaceType =
-        ((_key == null) || (_owner == null))
-            ? InterfaceType.UNKNOWN
-            : computeInterfaceType(_key, _owner.getConfigurationFormat());
+    this(name, null, InterfaceType.UNKNOWN);
   }
 
   private Interface(String name, Configuration owner, @Nonnull InterfaceType interfaceType) {
