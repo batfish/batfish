@@ -21,12 +21,12 @@ import org.batfish.datamodel.BgpProcess;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.route.nh.NextHopIp;
@@ -107,7 +107,7 @@ public final class BgpResolutionConditionTest {
             .build();
     r1.setExportBgpFromBgpRib(true);
     Vrf r1Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r1).build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("r1_r2")
         .setAddress(R1_PEERING_ADDR)
         .setVrf(r1Vrf)
@@ -115,14 +115,14 @@ public final class BgpResolutionConditionTest {
         .build();
     // needed to activate static route
     String r1StaticRoute1ResolverInterfaceName = "r1sr1";
-    Interface.builder()
+    TestInterface.builder()
         .setName(r1StaticRoute1ResolverInterfaceName)
         .setOwner(r1)
         .setVrf(r1Vrf)
         .setAddress(R1_RESOLVER_INTERFACE1_ADDRESS)
         .build();
     String r1StaticRoute2ResolverInterfaceName = "r1sr2";
-    Interface.builder()
+    TestInterface.builder()
         .setName(r1StaticRoute2ResolverInterfaceName)
         .setOwner(r1)
         .setVrf(r1Vrf)
@@ -181,7 +181,7 @@ public final class BgpResolutionConditionTest {
             .build();
     r2.setExportBgpFromBgpRib(true);
     Vrf r2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r2).build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("r2_r1")
         .setAddress(R2_PEERING_ADDR)
         .setVrf(r2Vrf)
@@ -189,14 +189,14 @@ public final class BgpResolutionConditionTest {
         .build();
     // interface whose routes resolve the received BGP routes
     String r2ResolverInterface1Name = "r2resolver1";
-    Interface.builder()
+    TestInterface.builder()
         .setName(r2ResolverInterface1Name)
         .setOwner(r2)
         .setVrf(r2Vrf)
         .setAddress(R2_RESOLVER_INTERFACE1_ADDRESS)
         .build();
     String r2ResolverInterface2Name = "r2resolver2";
-    Interface.builder()
+    TestInterface.builder()
         .setName(r2ResolverInterface2Name)
         .setOwner(r2)
         .setVrf(r2Vrf)

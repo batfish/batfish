@@ -91,6 +91,7 @@ import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Topology;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
@@ -193,7 +194,7 @@ public class EdgesAnswererTest {
     _host1.setInterfaces(
         ImmutableSortedMap.of(
             "int1",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int1")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build()));
@@ -202,7 +203,7 @@ public class EdgesAnswererTest {
     _host2.setInterfaces(
         ImmutableSortedMap.of(
             "int2",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int2")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
                 .build()));
@@ -718,12 +719,12 @@ public class EdgesAnswererTest {
     host1.setInterfaces(
         ImmutableSortedMap.of(
             "int1",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int1")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("1.1.1.1"), 24))
                 .build(),
             "int10",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int10")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("10.10.10.10"), 24))
                 .build()));
@@ -732,12 +733,12 @@ public class EdgesAnswererTest {
     host2.setInterfaces(
         ImmutableSortedMap.of(
             "int2",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int2")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("2.2.2.2"), 24))
                 .build(),
             "int3",
-            Interface.builder()
+            TestInterface.builder()
                 .setName("int3")
                 .setAddress(ConcreteInterfaceAddress.create(Ip.parse("3.3.3.3"), 24))
                 .build()));

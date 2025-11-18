@@ -59,6 +59,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkConfigurations;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.flow.FirewallSessionTraceInfo;
 import org.batfish.datamodel.flow.Hop;
@@ -176,7 +177,8 @@ public final class VxlanTopologyUtilsTest {
   private Vrf _v2;
 
   private Map<String, Configuration> compatibleVxlanConfigs() {
-    Interface.Builder ib = Interface.builder().setType(InterfaceType.PHYSICAL).setName(IFACE_NAME);
+    Interface.Builder ib =
+        TestInterface.builder().setType(InterfaceType.PHYSICAL).setName(IFACE_NAME);
     ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP1, 31)).setOwner(_c1).setVrf(_v1).build();
     ib.setAddresses(ConcreteInterfaceAddress.create(SRC_IP2, 31)).setOwner(_c2).setVrf(_v2).build();
     Layer2Vni.Builder vsb =

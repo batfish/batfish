@@ -433,7 +433,7 @@ public class CumulusConcatenatedConfigurationTest {
     CumulusConcatenatedConfiguration vc = new CumulusConcatenatedConfiguration();
     InterfacesInterface vsIface = new InterfacesInterface("iface");
     Interface viIface =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName("iface")
             .setOwner(c)
             .setType(InterfaceType.UNKNOWN)
@@ -453,7 +453,7 @@ public class CumulusConcatenatedConfigurationTest {
   public void testPopulateLoopbackProperties_clagVxlanAnycastIp() {
     Configuration c = new Configuration("c", ConfigurationFormat.CUMULUS_CONCATENATED);
     org.batfish.datamodel.Interface viLoopback =
-        org.batfish.datamodel.Interface.builder()
+        org.batfish.datamodel.TestInterface.builder()
             .setName(LOOPBACK_INTERFACE_NAME)
             .setOwner(c)
             .setType(InterfaceType.UNKNOWN)
@@ -510,7 +510,7 @@ public class CumulusConcatenatedConfigurationTest {
                 c.getAllInterfaces()
                     .put(
                         iface.getName(),
-                        org.batfish.datamodel.Interface.builder()
+                        org.batfish.datamodel.TestInterface.builder()
                             .setName(iface.getName())
                             .setOwner(c)
                             .setType(InterfaceType.PHYSICAL)

@@ -7,7 +7,6 @@ import static org.batfish.datamodel.InactiveReason.IGNORE_MGMT;
 import static org.batfish.datamodel.InactiveReason.NODE_DOWN;
 import static org.batfish.datamodel.InactiveReason.PARENT_DOWN;
 import static org.batfish.datamodel.InactiveReason.PHYSICAL_NEIGHBOR_DOWN;
-import static org.batfish.datamodel.Interface.computeCiscoInterfaceType;
 import static org.batfish.datamodel.Interface.isRealInterfaceName;
 import static org.batfish.datamodel.InterfaceType.LOGICAL;
 import static org.batfish.datamodel.InterfaceType.PHYSICAL;
@@ -54,7 +53,7 @@ public class InterfaceTest {
   public void testInterfaceStatus() {
     // no line status
     assertThat(
-        Interface.builder().setName("foo").setType(LOGICAL).build(),
+        TestInterface.builder().setName("foo").setType(LOGICAL).build(),
         allOf(
             isActive(),
             isAdminUp(),
@@ -62,7 +61,7 @@ public class InterfaceTest {
             hasInactiveReason(nullValue()),
             isBlacklisted(nullValue())));
     assertThat(
-        Interface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build(),
+        TestInterface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build(),
         allOf(
             isActive(false),
             isAdminUp(false),
@@ -71,7 +70,7 @@ public class InterfaceTest {
 
     // line status
     assertThat(
-        Interface.builder().setName("foo").setType(PHYSICAL).build(),
+        TestInterface.builder().setName("foo").setType(PHYSICAL).build(),
         allOf(
             isActive(),
             isAdminUp(),
@@ -79,17 +78,17 @@ public class InterfaceTest {
             hasInactiveReason(nullValue()),
             isBlacklisted(false)));
     assertThat(
-        Interface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build(),
+        TestInterface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build(),
         allOf(isActive(false), isAdminUp(false), isLineUp(true), hasInactiveReason(ADMIN_DOWN)));
     assertThat(
-        Interface.builder().setName("foo").setType(PHYSICAL).setLineUp(false).build(),
+        TestInterface.builder().setName("foo").setType(PHYSICAL).setLineUp(false).build(),
         allOf(
             isActive(false),
             isAdminUp(true),
             isLineUp(false),
             hasInactiveReason(FORCED_LINE_DOWN)));
     assertThat(
-        Interface.builder()
+        TestInterface.builder()
             .setName("foo")
             .setType(PHYSICAL)
             .setAdminUp(false)
@@ -102,14 +101,14 @@ public class InterfaceTest {
   public void testInterfaceStatusInvalid() {
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage("Cannot set lineUp value for interface type: LOGICAL");
-    Interface.builder().setName("foo").setType(LOGICAL).setLineUp(true).build();
+    TestInterface.builder().setName("foo").setType(LOGICAL).setLineUp(true).build();
   }
 
   @Test
   public void testDeactivate() {
     {
       // default case
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       i.deactivate(PARENT_DOWN);
       assertThat(
           i,
@@ -122,7 +121,7 @@ public class InterfaceTest {
     }
     {
       // special case: ADMIN_DOWN
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
       i.deactivate(ADMIN_DOWN);
       assertThat(
@@ -136,7 +135,7 @@ public class InterfaceTest {
     }
     {
       // special case: BLACKLISTED
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
       i.deactivate(BLACKLISTED);
       assertThat(
@@ -150,7 +149,7 @@ public class InterfaceTest {
     }
     {
       // special case: FORCED_LINE_DOWN
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
       i.deactivate(FORCED_LINE_DOWN);
       assertThat(
@@ -164,7 +163,7 @@ public class InterfaceTest {
     }
     {
       // special case: NODE_DOWN
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
       i.deactivate(NODE_DOWN);
       assertThat(
@@ -178,7 +177,7 @@ public class InterfaceTest {
     }
     {
       // special case: PHYSICAL_NEIGHBOR_DOWN
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, isActive());
       i.deactivate(PHYSICAL_NEIGHBOR_DOWN);
       assertThat(
@@ -194,7 +193,7 @@ public class InterfaceTest {
 
   @Test
   public void testDeactivateInvalidTwice() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.deactivate(IGNORE_MGMT);
 
     _thrown.expect(IllegalStateException.class);
@@ -205,7 +204,7 @@ public class InterfaceTest {
   @Test
   public void testAdminDown() {
     // admin down
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
     i.adminDown();
     assertThat(
@@ -214,7 +213,7 @@ public class InterfaceTest {
 
   @Test
   public void testAdminDownInvalidTwice() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.adminDown();
 
     _thrown.expect(IllegalStateException.class);
@@ -225,7 +224,7 @@ public class InterfaceTest {
 
   @Test
   public void testAdminDownInvalidInactive() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.deactivate(IGNORE_MGMT);
 
     _thrown.expect(IllegalStateException.class);
@@ -237,7 +236,7 @@ public class InterfaceTest {
   public void testBlacklist() {
     {
       // blacklist
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.blacklist();
       assertThat(
@@ -251,7 +250,7 @@ public class InterfaceTest {
     }
     {
       // admin down, then blacklist
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.adminDown();
       assertThat(
@@ -274,7 +273,7 @@ public class InterfaceTest {
     }
     {
       // node down, then blacklist
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.nodeDown();
       assertThat(
@@ -297,7 +296,7 @@ public class InterfaceTest {
     }
     {
       // deactivate, then blacklist
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.deactivate(IGNORE_MGMT);
       assertThat(
@@ -322,7 +321,7 @@ public class InterfaceTest {
 
   @Test
   public void testBlacklistInvalidTwice() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.blacklist();
 
     _thrown.expect(IllegalStateException.class);
@@ -332,7 +331,7 @@ public class InterfaceTest {
 
   @Test
   public void testBlacklistInvalidType() {
-    Interface i = Interface.builder().setName("foo").setType(LOGICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
 
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage(
@@ -344,7 +343,7 @@ public class InterfaceTest {
   public void testDisconnect() {
     {
       // disconnect
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.disconnect(FORCED_LINE_DOWN);
       assertThat(
@@ -354,7 +353,7 @@ public class InterfaceTest {
     }
     {
       // admin down, then disconnect
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       i.adminDown();
       assertThat(
           i, allOf(isActive(false), isAdminUp(false), isLineUp(), hasInactiveReason(ADMIN_DOWN)));
@@ -365,7 +364,7 @@ public class InterfaceTest {
     }
     {
       // deactivate, then disconnect
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       i.deactivate(InactiveReason.IGNORE_MGMT);
       assertThat(
           i, allOf(isActive(false), isAdminUp(), isLineUp(), hasInactiveReason(IGNORE_MGMT)));
@@ -377,7 +376,7 @@ public class InterfaceTest {
 
   @Test
   public void testDisconnectInvalidTwice() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     i.disconnect(FORCED_LINE_DOWN);
 
     _thrown.expect(IllegalStateException.class);
@@ -387,7 +386,7 @@ public class InterfaceTest {
 
   @Test
   public void testDisconnectInvalidType() {
-    Interface i = Interface.builder().setName("foo").setType(LOGICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
 
     _thrown.expect(IllegalStateException.class);
     _thrown.expectMessage(
@@ -397,7 +396,7 @@ public class InterfaceTest {
 
   @Test
   public void testPhysicalNeighborDown() {
-    Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+    Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
     assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
     i.physicalNeighborDown();
     assertThat(
@@ -413,7 +412,7 @@ public class InterfaceTest {
   public void testNodeDown() {
     // physical
     {
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.nodeDown();
       assertThat(
@@ -421,7 +420,7 @@ public class InterfaceTest {
     }
     // non-physical
     {
-      Interface i = Interface.builder().setName("foo").setType(LOGICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(LOGICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp(nullValue())));
       i.nodeDown();
       assertThat(
@@ -430,7 +429,7 @@ public class InterfaceTest {
     }
     // admin down, then node down
     {
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).build();
+      Interface i = TestInterface.builder().setName("foo").setType(PHYSICAL).build();
       assertThat(i, allOf(isActive(), isAdminUp(), isLineUp()));
       i.adminDown();
       i.nodeDown();
@@ -444,7 +443,8 @@ public class InterfaceTest {
   public void testActivateForTest() {
     {
       // physical
-      Interface i = Interface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build();
+      Interface i =
+          TestInterface.builder().setName("foo").setType(PHYSICAL).setAdminUp(false).build();
       i.blacklist();
       assertThat(
           i,
@@ -467,7 +467,8 @@ public class InterfaceTest {
     }
     {
       // non-physical
-      Interface i = Interface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build();
+      Interface i =
+          TestInterface.builder().setName("foo").setType(LOGICAL).setAdminUp(false).build();
       assertThat(
           i,
           allOf(
@@ -490,12 +491,6 @@ public class InterfaceTest {
   }
 
   @Test
-  public void testInterfaceType() {
-    assertThat(computeCiscoInterfaceType("TenGigE0/5/0/5/8"), equalTo(InterfaceType.PHYSICAL));
-    assertThat(computeCiscoInterfaceType("TenGigE0/5/0/5/8.1"), equalTo(LOGICAL));
-  }
-
-  @Test
   public void testRealInterfaceName() {
     assertThat(isRealInterfaceName("Ethernet0"), equalTo(true));
     assertThat(isRealInterfaceName("ge-0/0/0"), equalTo(true));
@@ -509,7 +504,12 @@ public class InterfaceTest {
   @Test
   public void testRoutingPolicySettingInBuilder() {
     String policy = "some_policy";
-    Interface i = Interface.builder().setName("iface").setPacketPolicy(policy).build();
+    Interface i =
+        TestInterface.builder()
+            .setName("iface")
+            .setType(InterfaceType.PHYSICAL)
+            .setPacketPolicy(policy)
+            .build();
     assertThat(i.getPacketPolicyName(), equalTo(policy));
   }
 
@@ -517,9 +517,10 @@ public class InterfaceTest {
   public void testSerialization() {
     // TODO: more thorough testing
     Interface i =
-        Interface.builder()
+        TestInterface.builder()
             .setMtu(7)
             .setName("ifaceName")
+            .setType(InterfaceType.PHYSICAL)
             .setOspfSettings(OspfInterfaceSettings.defaultSettingsBuilder().build())
             .setHmm(true)
             .build();
@@ -532,7 +533,12 @@ public class InterfaceTest {
   @Test
   public void testJacksonSerialization() {
     // TODO: more thorough testing
-    Interface obj = Interface.builder().setName("ifaceName").setHmm(true).build();
+    Interface obj =
+        TestInterface.builder()
+            .setName("ifaceName")
+            .setType(InterfaceType.PHYSICAL)
+            .setHmm(true)
+            .build();
     assertEquals(obj, BatfishObjectMapper.clone(obj, Interface.class));
   }
 
@@ -544,7 +550,8 @@ public class InterfaceTest {
             .setHostname("c")
             .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
             .build();
-    Interface.Builder b = Interface.builder().setOwner(c).setName("ifaceName");
+    Interface.Builder b =
+        TestInterface.builder().setOwner(c).setName("ifaceName").setType(InterfaceType.PHYSICAL);
     new EqualsTester()
         .addEqualityGroup(b.build(), b.build())
         .addEqualityGroup(b.setHmm(true).build())

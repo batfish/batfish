@@ -20,9 +20,9 @@ import java.util.Set;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.packet_policy.ApplyTransformation;
 import org.batfish.datamodel.packet_policy.Conjunction;
 import org.batfish.datamodel.packet_policy.Drop;
@@ -43,7 +43,7 @@ public class SourcesReferencedOnDeviceTest {
         .setOwner(c)
         .setLines(ExprAclLine.accepting(matchSrcInterface("in-acl")))
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setOwner(c)
         .setVrf(c.getDefaultVrf())
         .setAddress(ConcreteInterfaceAddress.parse("1.1.1.1/24"))
@@ -54,7 +54,7 @@ public class SourcesReferencedOnDeviceTest {
                 .build())
         .setOutgoingTransformation(when(matchSrcInterface("in-outgoing-trans")).build())
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setOwner(c)
         .setAdminUp(false)
         .setVrf(c.getDefaultVrf())

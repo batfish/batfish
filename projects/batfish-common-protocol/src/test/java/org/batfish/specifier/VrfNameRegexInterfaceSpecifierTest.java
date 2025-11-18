@@ -10,6 +10,7 @@ import java.util.regex.Pattern;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
@@ -26,9 +27,10 @@ public class VrfNameRegexInterfaceSpecifierTest {
     Vrf vrf2 = new Vrf("vrf2");
     Vrf vrf3 = new Vrf("vrf2");
 
-    Interface iface11 = Interface.builder().setName("iface11").setOwner(node1).setVrf(vrf1).build();
-    Interface.builder().setName("iface12").setOwner(node1).setVrf(vrf2).build();
-    Interface.builder().setName("iface2").setOwner(node2).setVrf(vrf3).build();
+    Interface iface11 =
+        TestInterface.builder().setName("iface11").setOwner(node1).setVrf(vrf1).build();
+    TestInterface.builder().setName("iface12").setOwner(node1).setVrf(vrf2).build();
+    TestInterface.builder().setName("iface2").setOwner(node2).setVrf(vrf3).build();
 
     node1.setVrfs(ImmutableSortedMap.of("vrf1", vrf1, "vrf2", vrf2));
     node2.setVrfs(ImmutableSortedMap.of("vrf3", vrf3));

@@ -10,6 +10,7 @@ import com.google.common.collect.ImmutableSortedSet;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.junit.Test;
@@ -26,11 +27,11 @@ public class ZoneNameInterfaceSpecifierTest {
     Zone zone2node1 = new Zone("zone2");
     Zone zone1node2 = new Zone("zone1");
 
-    Interface iface11 = Interface.builder().setName("iface11").setOwner(node1).build();
-    Interface iface12 = Interface.builder().setName("iface12").setOwner(node1).build();
+    Interface iface11 = TestInterface.builder().setName("iface11").setOwner(node1).build();
+    Interface iface12 = TestInterface.builder().setName("iface12").setOwner(node1).build();
     @SuppressWarnings("unused")
-    Interface iface13 = Interface.builder().setName("iface13").setOwner(node1).build();
-    Interface iface2 = Interface.builder().setName("iface2").setOwner(node2).build();
+    Interface iface13 = TestInterface.builder().setName("iface13").setOwner(node1).build();
+    Interface iface2 = TestInterface.builder().setName("iface2").setOwner(node2).build();
 
     node1.setZones(ImmutableSortedMap.of("zone1", zone1node1, "zone2", zone2node1));
     zone1node1.setInterfaces(ImmutableSortedSet.of("iface11", "iface12"));

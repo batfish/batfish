@@ -52,6 +52,7 @@ import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LinkLocalAddress;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.SwitchportMode;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.collections.NodeInterfacePair;
 import org.batfish.datamodel.vxlan.Layer2Vni;
@@ -860,7 +861,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("h11").setConfigurationFormat(CISCO_IOS).build();
     Vrf h11Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h11).build();
     Interface h11i =
-        Interface.builder()
+        TestInterface.builder()
             .setName("h11i")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.10.1/24"))
             .setType(PHYSICAL)
@@ -872,7 +873,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("h12").setConfigurationFormat(CISCO_IOS).build();
     Vrf h12Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h12).build();
     Interface h12i =
-        Interface.builder()
+        TestInterface.builder()
             .setName("h12i")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.20.1/24"))
             .setType(PHYSICAL)
@@ -884,7 +885,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("h21").setConfigurationFormat(CISCO_IOS).build();
     Vrf h21Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h21).build();
     Interface h21i =
-        Interface.builder()
+        TestInterface.builder()
             .setName("h21i")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.10.2/24"))
             .setType(PHYSICAL)
@@ -896,7 +897,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("h22").setConfigurationFormat(CISCO_IOS).build();
     Vrf h22Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(h22).build();
     Interface h22i =
-        Interface.builder()
+        TestInterface.builder()
             .setName("h22i")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.20.2/24"))
             .setType(PHYSICAL)
@@ -908,7 +909,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("r1").setConfigurationFormat(CISCO_IOS).build();
     Vrf r1Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r1).build();
     Interface r1h11 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r1h11")
             .setSwitchport(true)
             .setSwitchportMode(SwitchportMode.ACCESS)
@@ -918,7 +919,7 @@ public class L3AdjacencyComputerTest {
             .setOwner(r1)
             .build();
     Interface r1h12 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r1h12")
             .setSwitchport(true)
             .setSwitchportMode(SwitchportMode.ACCESS)
@@ -928,7 +929,7 @@ public class L3AdjacencyComputerTest {
             .setOwner(r1)
             .build();
     Interface r1r2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r1r2")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
             .setType(PHYSICAL)
@@ -958,7 +959,7 @@ public class L3AdjacencyComputerTest {
         Configuration.builder().setHostname("r2").setConfigurationFormat(CISCO_IOS).build();
     Vrf r2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(r2).build();
     Interface r2h21 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r2h21")
             .setSwitchport(true)
             .setSwitchportMode(SwitchportMode.ACCESS)
@@ -968,7 +969,7 @@ public class L3AdjacencyComputerTest {
             .setOwner(r2)
             .build();
     Interface r2h22 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r2h22")
             .setSwitchport(true)
             .setSwitchportMode(SwitchportMode.ACCESS)
@@ -978,7 +979,7 @@ public class L3AdjacencyComputerTest {
             .setOwner(r2)
             .build();
     Interface r2r1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("r2r1")
             .setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24"))
             .setType(PHYSICAL)

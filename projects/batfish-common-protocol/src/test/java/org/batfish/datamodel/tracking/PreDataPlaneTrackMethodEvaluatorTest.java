@@ -9,7 +9,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.junit.Test;
 
 /** Tests of {@link PreDataPlaneTrackMethodEvaluator} */
@@ -19,14 +19,14 @@ public class PreDataPlaneTrackMethodEvaluatorTest {
     Configuration c =
         Configuration.builder().setHostname("c").setConfigurationFormat(CISCO_IOS).build();
     // i1: active
-    Interface.builder()
+    TestInterface.builder()
         .setOwner(c)
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))
         .setAdminUp(true)
         .build();
     // i2: not active
-    Interface.builder()
+    TestInterface.builder()
         .setOwner(c)
         .setName("i2")
         .setAddress(ConcreteInterfaceAddress.parse("1.2.3.4/24"))

@@ -56,6 +56,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.PrefixRange;
 import org.batfish.datamodel.PrefixSpace;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.acl.TrueExpr;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
@@ -206,7 +207,7 @@ public class InternetGatewayTest {
 
   @Test
   public void testConfigureNatEmptyMap() {
-    Interface iface = Interface.builder().setName("iface").build();
+    Interface iface = TestInterface.builder().setName("iface").build();
     configureNat(iface, ImmutableMap.of());
     assertThat(iface.getIncomingTransformation(), nullValue());
     assertThat(iface.getOutgoingTransformation(), nullValue());
@@ -219,7 +220,7 @@ public class InternetGatewayTest {
     Ip pub1 = Ip.parse("1.1.1.1");
     Ip pub2 = Ip.parse("1.1.1.2");
 
-    Interface iface = Interface.builder().setName("iface").build();
+    Interface iface = TestInterface.builder().setName("iface").build();
     configureNat(iface, ImmutableMap.of(pvt1, pub1, pvt2, pub2));
 
     assertThat(

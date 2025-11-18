@@ -18,6 +18,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.NetworkFactory;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -54,14 +55,18 @@ public class InterfacePropertiesAnswererTest {
   public void getProperties() {
     Configuration conf1 = new Configuration("node1", ConfigurationFormat.CISCO_IOS);
 
-    Interface.builder()
+    TestInterface.builder()
         .setName("iface1")
         .setOwner(conf1)
         .setDescription("desc desc desc")
         .setAdminUp(false)
         .build();
-    Interface.builder().setName("iface2").setOwner(conf1).setDescription("blah blah blah").build();
-    Interface.builder()
+    TestInterface.builder()
+        .setName("iface2")
+        .setOwner(conf1)
+        .setDescription("blah blah blah")
+        .build();
+    TestInterface.builder()
         .setName("iface3")
         .setType(LOGICAL)
         .setOwner(conf1)
@@ -115,8 +120,9 @@ public class InterfacePropertiesAnswererTest {
   public void getPropertiesExcludeShutInterfaces() {
     Configuration conf = new Configuration("node", ConfigurationFormat.CISCO_IOS);
     Interface active =
-        Interface.builder().setName("active").setOwner(conf).setAdminUp(true).build();
-    Interface shut = Interface.builder().setName("shut").setOwner(conf).setAdminUp(false).build();
+        TestInterface.builder().setName("active").setOwner(conf).setAdminUp(true).build();
+    Interface shut =
+        TestInterface.builder().setName("shut").setOwner(conf).setAdminUp(false).build();
     conf.getAllInterfaces().putAll(ImmutableMap.of("active", active, "shut", shut));
 
     String property = InterfacePropertySpecifier.DESCRIPTION;

@@ -16,6 +16,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.Zone;
 import org.batfish.datamodel.collections.NodeInterfacePair;
@@ -34,9 +35,9 @@ public class ParboiledInterfaceSpecifierTest {
   private Set<String> _nodes = ImmutableSet.of("node1", "node2");
 
   // Leave the interfaces in builder form, so tests can add to it as needed
-  private Interface.Builder _iface11B = Interface.builder().setName("iface11").setOwner(_node1);
-  private Interface.Builder _iface12B = Interface.builder().setName("iface12").setOwner(_node1);
-  private Interface.Builder _iface2B = Interface.builder().setName("iface2").setOwner(_node2);
+  private Interface.Builder _iface11B = TestInterface.builder().setName("iface11").setOwner(_node1);
+  private Interface.Builder _iface12B = TestInterface.builder().setName("iface12").setOwner(_node1);
+  private Interface.Builder _iface2B = TestInterface.builder().setName("iface2").setOwner(_node2);
 
   // Leave the context in builder form too
   private MockSpecifierContext.Builder _ctxtB =

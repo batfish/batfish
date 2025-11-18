@@ -55,6 +55,7 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.Transformation;
@@ -1160,7 +1161,7 @@ public final class CheckpointNatConversionsTest {
   public void testGetOutgoingTransformations() {
     Ip ifaceIp = Ip.parse("10.10.10.1");
     Interface viIface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("iface")
             .setAddress(ConcreteInterfaceAddress.create(ifaceIp, 24))
             .build();

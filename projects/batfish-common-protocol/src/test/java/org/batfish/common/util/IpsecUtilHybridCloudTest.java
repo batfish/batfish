@@ -21,6 +21,7 @@ import org.batfish.datamodel.IpsecPeerConfigId;
 import org.batfish.datamodel.IpsecPhase2Proposal;
 import org.batfish.datamodel.IpsecSession;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.ipsec.IpsecTopology;
 import org.junit.Before;
 import org.junit.Test;
@@ -83,15 +84,19 @@ public class IpsecUtilHybridCloudTest {
         ImmutableSortedMap.naturalOrder();
     c1.setInterfaces(
         interfaceBuilder
-            .put("Tunnel1", Interface.builder().setName("Tunnel1").setOwner(c1).build())
+            .put("Tunnel1", TestInterface.builder().setName("Tunnel1").setOwner(c1).build())
             .put(
                 "interface1",
-                Interface.builder().setName("interface1").setOwner(c1).setAdminUp(false).build())
+                TestInterface.builder()
+                    .setName("interface1")
+                    .setOwner(c1)
+                    .setAdminUp(false)
+                    .build())
             .build());
     interfaceBuilder = ImmutableSortedMap.naturalOrder();
     c2.setInterfaces(
         interfaceBuilder
-            .put("Tunnel2", Interface.builder().setName("Tunnel2").setOwner(c2).build())
+            .put("Tunnel2", TestInterface.builder().setName("Tunnel2").setOwner(c2).build())
             .build());
 
     _configurations.put("host1", c1);

@@ -51,6 +51,7 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ReceivedFromIp;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
@@ -170,13 +171,13 @@ public final class IncrementalBdpEngineTest {
             .build();
     Vrf v1 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c1).build();
     Vrf v2 = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(c2).build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"))
         .setVrf(v1)
         .setOwner(c1)
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i2")
         .setAddress(ConcreteInterfaceAddress.parse("10.0.0.2/24"))
         .setVrf(v2)
@@ -359,7 +360,7 @@ public final class IncrementalBdpEngineTest {
     Vrf vrrp2Vrf = Vrf.builder().setName(DEFAULT_VRF_NAME).setOwner(vrrp2).build();
     // h interfaces
     Interface hI1 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i1")
             .setAddress(ConcreteInterfaceAddress.parse("10.1.0.1/24"))
             .setHmm(true)
@@ -367,7 +368,7 @@ public final class IncrementalBdpEngineTest {
             .setOwner(h)
             .build();
     Interface hI2 =
-        Interface.builder()
+        TestInterface.builder()
             .setName("i2")
             .setAddress(ConcreteInterfaceAddress.parse("10.2.0.1/24"))
             .setHmm(true)
@@ -376,7 +377,7 @@ public final class IncrementalBdpEngineTest {
             .build();
     // vrrp1 interfaces
     ConcreteInterfaceAddress i1HAddress = ConcreteInterfaceAddress.parse("10.1.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(i1HAddress)
         .setName("i1")
         .setVrf(vrrp1Vrf)
@@ -387,7 +388,7 @@ public final class IncrementalBdpEngineTest {
         ImmutableMap.of(
             trackIndex,
             route(vrrp1Source.getPrefix(), ImmutableSet.of(CONNECTED), DEFAULT_VRF_NAME)));
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(vrrp1Source)
         .setName("i2")
         .setVrrpGroups(
@@ -405,14 +406,14 @@ public final class IncrementalBdpEngineTest {
 
     // vrrp2 interfaces
     ConcreteInterfaceAddress i2HAddress = ConcreteInterfaceAddress.parse("10.2.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(i2HAddress)
         .setName("i1")
         .setVrf(vrrp2Vrf)
         .setOwner(vrrp2)
         .build();
     ConcreteInterfaceAddress vrrp2Source = ConcreteInterfaceAddress.parse("192.168.0.2/24");
-    Interface.builder()
+    TestInterface.builder()
         .setAddress(vrrp2Source)
         .setName("i2")
         .setVrrpGroups(
@@ -507,14 +508,14 @@ public final class IncrementalBdpEngineTest {
             .addVirtualAddress("i1", virtualIp)
             .setSourceAddress(r2Address)
             .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setOwner(r1)
         .setVrf(v1)
         .setAddress(r1Address)
         .setVrrpGroups(ImmutableSortedMap.of(1, g1))
         .build();
-    Interface.builder()
+    TestInterface.builder()
         .setName("i1")
         .setOwner(r2)
         .setVrf(v2)

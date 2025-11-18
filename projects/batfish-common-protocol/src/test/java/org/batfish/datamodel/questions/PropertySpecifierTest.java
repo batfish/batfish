@@ -12,6 +12,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.answers.Schema;
 import org.batfish.datamodel.pojo.Node;
 import org.batfish.datamodel.questions.PropertySpecifier.PropertyDescriptor;
@@ -128,7 +129,7 @@ public class PropertySpecifierTest {
   public void fillPropertyMap() {
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
     configuration.setInterfaces(
-        ImmutableSortedMap.of("i1", Interface.builder().setName("i1").build()));
+        ImmutableSortedMap.of("i1", TestInterface.builder().setName("i1").build()));
     String property = NodePropertySpecifier.INTERFACES;
     PropertyDescriptor<Configuration> propertyDescriptor =
         NodePropertySpecifier.getPropertyDescriptor(property);
@@ -158,7 +159,7 @@ public class PropertySpecifierTest {
   public void testFillPropertyMapForAllInterfaceProperties() {
     // all interface properties should be process correctly without throwing exceptions
     Configuration configuration = new Configuration("hostname", ConfigurationFormat.CISCO_IOS);
-    Interface i1 = Interface.builder().setName("i1").build();
+    Interface i1 = TestInterface.builder().setName("i1").build();
     configuration.setInterfaces(ImmutableSortedMap.of("i1", i1));
     InterfacePropertySpecifier.ALL
         .getMatchingProperties()

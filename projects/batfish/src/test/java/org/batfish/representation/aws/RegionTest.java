@@ -46,6 +46,7 @@ import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.NetworkFactory;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.acl.AclLineEvaluator;
 import org.batfish.datamodel.acl.AclTracer;
 import org.batfish.datamodel.answers.ParseVendorConfigurationAnswerElement;
@@ -294,7 +295,7 @@ public class RegionTest {
   public void testComputeAntiSpoofingFilter() {
     Ip validSourceIp = Ip.parse("10.10.10.10");
     Interface iface =
-        Interface.builder()
+        TestInterface.builder()
             .setName("test")
             .setAddresses(ConcreteInterfaceAddress.create(validSourceIp, Prefix.MAX_PREFIX_LENGTH))
             .build();

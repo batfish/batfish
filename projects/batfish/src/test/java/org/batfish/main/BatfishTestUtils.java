@@ -33,7 +33,7 @@ import org.batfish.config.Settings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DataPlane;
-import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.TestInterface;
 import org.batfish.datamodel.collections.BgpAdvertisementsByVrf;
 import org.batfish.dataplane.ibdp.IncrementalDataPlanePlugin;
 import org.batfish.identifiers.IdResolver;
@@ -291,7 +291,9 @@ public class BatfishTestUtils {
     for (String interfaceName : interfaceNames) {
       config
           .getAllInterfaces()
-          .put(interfaceName, Interface.builder().setName(interfaceName).setOwner(config).build());
+          .put(
+              interfaceName,
+              TestInterface.builder().setName(interfaceName).setOwner(config).build());
     }
     return config;
   }
