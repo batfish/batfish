@@ -33,11 +33,22 @@ p_mpls
    (
        apply
        | mpls_admin_groups
+       | mpls_explicit_null_null
+       | mpls_icmp_tunneling_null
        | mpls_interface
+       | mpls_ipv6_tunneling_null
        | mpls_label_switched_path
+       | mpls_log_lsp_history_null
+       | mpls_log_updown_null
        | mpls_optimize_adaptive_teardown_null
+       | mpls_optimize_aggressive_null
+       | mpls_optimize_timer_null
        | mpls_path
+       | mpls_path_mtu_null
+       | mpls_record_null
+       | mpls_smart_optimize_timer_null
        | mpls_statistics_null
+       | mpls_traffic_engineering_null
        | mpls_traceoptions_null
    )
 ;
@@ -324,14 +335,69 @@ mplslsp_to_null
    TO (ip_address | ipv6_address)
 ;
 
+mpls_explicit_null_null
+:
+   EXPLICIT_NULL null_filler
+;
+
+mpls_icmp_tunneling_null
+:
+   ICMP_TUNNELING null_filler
+;
+
+mpls_ipv6_tunneling_null
+:
+   IPV6_TUNNELING null_filler
+;
+
+mpls_log_lsp_history_null
+:
+   LOG_LSP_HISTORY null_filler
+;
+
+mpls_log_updown_null
+:
+   LOG_UPDOWN null_filler
+;
+
 mpls_optimize_adaptive_teardown_null
 :
    OPTIMIZE_ADAPTIVE_TEARDOWN null_filler
 ;
 
+mpls_optimize_aggressive_null
+:
+   OPTIMIZE_AGGRESSIVE null_filler
+;
+
+mpls_optimize_timer_null
+:
+   OPTIMIZE_TIMER uint32
+;
+
+mpls_path_mtu_null
+:
+   PATH_MTU null_filler
+;
+
+mpls_record_null
+:
+   RECORD null_filler
+;
+
+mpls_smart_optimize_timer_null
+:
+   SMART_OPTIMIZE_TIMER uint32
+;
+
 mpls_statistics_null
 :
    STATISTICS null_filler
+;
+
+mpls_traffic_engineering_null
+:
+   TRAFFIC_ENGINEERING null_filler
 ;
 
 mpls_traceoptions_null
