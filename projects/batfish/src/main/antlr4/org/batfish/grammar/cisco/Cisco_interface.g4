@@ -6,6 +6,21 @@ options {
    tokenVocab = CiscoLexer;
 }
 
+if_access_session
+:
+  ACCESS_SESSION ifas_port_control_null
+;
+
+ifas_port_control_null
+:
+  PORT_CONTROL
+  (
+    AUTO
+    | FORCE_AUTHORIZED
+    | FORCE_UNAUTHORIZED
+  ) NEWLINE
+;
+
 if_autostate
 :
    NO? AUTOSTATE NEWLINE
@@ -1824,7 +1839,8 @@ s_interface_definition
 
 if_inner
 :
-   if_autostate
+   if_access_session
+   | if_autostate
    | if_bandwidth
    | if_bfd
    | if_channel_group
