@@ -1,0 +1,58 @@
+set system host-name cos-test
+set class-of-service code-point-aliases dscp ALIAS1 001000
+set class-of-service code-point-aliases dscp-ipv6 ALIAS2 000000
+set class-of-service code-point-aliases exp ALIAS3 001
+set class-of-service code-point-aliases ieee-802.1 ALIAS-8021P 010
+set class-of-service code-point-aliases inet-precedence ALIAS-IPPREC 010
+set class-of-service classifiers dscp DSCP-BA forwarding-class FC-CLASS1 loss-priority high code-points 000000
+set class-of-service classifiers dscp DSCP-BA forwarding-class FC-CLASS1 loss-priority low code-points 100000
+set class-of-service classifiers dscp DSCP-BA forwarding-class FC-CLASS2 loss-priority high code-points ALIAS1
+set class-of-service classifiers dscp DSCP-BA forwarding-class FC-CLASS3 loss-priority low code-points af11
+set class-of-service classifiers dscp DSCP-BA import default
+set class-of-service classifiers dscp-ipv6 DSCP-IPV6-BA forwarding-class FC-CLASS2 loss-priority high code-points 000000
+set class-of-service classifiers dscp-ipv6 DSCP-IPV6-BA forwarding-class FC-CLASS1 loss-priority low code-points ALIAS2
+set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS3 loss-priority high code-points 000
+set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS1 loss-priority low code-points ALIAS3
+set class-of-service classifiers exp EXP-BA forwarding-class FC-CLASS2 loss-priority high code-points be
+set class-of-service classifiers ieee-802.1 IEEE-BA forwarding-class FC-CLASS1 loss-priority high code-points 000
+set class-of-service classifiers ieee-802.1 IEEE-BA forwarding-class FC-CLASS2 loss-priority low code-points ALIAS-8021P
+set class-of-service classifiers ieee-802.1 IEEE-BA forwarding-class FC-CLASS3 loss-priority high code-points be
+set class-of-service classifiers inet-precedence IPPREC-BA forwarding-class FC-CLASS1 loss-priority high code-points 000
+set class-of-service classifiers inet-precedence IPPREC-BA forwarding-class FC-CLASS2 loss-priority low code-points ALIAS-IPPREC
+set class-of-service classifiers inet-precedence IPPREC-BA forwarding-class FC-CLASS3 loss-priority high code-points af11
+set class-of-service forwarding-classes class FC-CLASS1 queue-num 0
+set class-of-service forwarding-classes class FC-CLASS2 queue-num 1
+set class-of-service forwarding-classes queue 3 FC-CLASS3
+set class-of-service host-outbound-traffic forwarding-class FC-CLASS1
+set class-of-service interfaces ae1 scheduler-map SCHED-MAP1
+set class-of-service interfaces ae1 unit 0 forwarding-class FC-CLASS1
+set class-of-service interfaces ae1 unit 0 classifiers dscp DSCP-BA
+set class-of-service interfaces ae2 forwarding-class FC-CLASS2
+set class-of-service rewrite-rules dscp REWRITE-DSCP forwarding-class FC-CLASS1 loss-priority high code-point ALIAS1
+set class-of-service rewrite-rules dscp REWRITE-DSCP forwarding-class FC-CLASS2 loss-priority low code-point 001000
+set class-of-service rewrite-rules dscp REWRITE-DSCP forwarding-class FC-CLASS3 loss-priority high code-point af11
+set class-of-service rewrite-rules dscp-ipv6 REWRITE-DSCP-IPV6 forwarding-class FC-CLASS2 loss-priority low code-point ALIAS2
+set class-of-service rewrite-rules dscp-ipv6 REWRITE-DSCP-IPV6 forwarding-class FC-CLASS1 loss-priority high code-point 000000
+set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS3 loss-priority low code-point ALIAS3
+set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS1 loss-priority high code-point 001
+set class-of-service rewrite-rules exp REWRITE-EXP forwarding-class FC-CLASS2 loss-priority low code-point be
+set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS1 loss-priority high code-point ALIAS-8021P
+set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS2 loss-priority low code-point 010
+set class-of-service rewrite-rules ieee-802.1 REWRITE-8021P forwarding-class FC-CLASS3 loss-priority high code-point be
+set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-class FC-CLASS1 loss-priority high code-point ALIAS-IPPREC
+set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-class FC-CLASS2 loss-priority low code-point 010
+set class-of-service rewrite-rules inet-precedence REWRITE-IPPREC forwarding-class FC-CLASS3 loss-priority high code-point af11
+set class-of-service interfaces ae1 unit 0 rewrite-rules exp REWRITE-EXP protocol mpls-any
+set class-of-service interfaces ae1 unit 0 classifiers dscp-ipv6 DSCP-IPV6-BA
+set class-of-service interfaces ae1 unit 0 classifiers ieee-802.1 IEEE-BA
+set class-of-service interfaces ae1 unit 0 classifiers inet-precedence IPPREC-BA
+set class-of-service interfaces ae1 unit 0 rewrite-rules dscp REWRITE-DSCP
+set class-of-service interfaces ae1 unit 0 rewrite-rules dscp-ipv6 REWRITE-DSCP-IPV6
+set class-of-service interfaces ae1 unit 0 rewrite-rules ieee-802.1 REWRITE-8021P
+set class-of-service interfaces ae1 unit 0 rewrite-rules inet-precedence REWRITE-IPPREC
+set class-of-service scheduler-maps SCHED-MAP1 forwarding-class FC-CLASS1 scheduler SCHED1
+set class-of-service schedulers SCHED1 transmit-rate percent 10
+set class-of-service schedulers SCHED1 buffer-size percent 15
+set class-of-service schedulers SCHED1 priority high
+set class-of-service schedulers SCHED2 buffer-size remainder
+set class-of-service schedulers SCHED2 transmit-rate remainder

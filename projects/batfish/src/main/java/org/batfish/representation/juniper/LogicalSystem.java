@@ -49,6 +49,12 @@ public class LogicalSystem implements Serializable {
 
   private final Map<String, Integer> _dscpAliases;
 
+  private final Map<String, Integer> _expAliases;
+
+  private final Map<String, Integer> _ieee8021pAliases;
+
+  private final Map<String, Integer> _inetPrecedenceAliases;
+
   private Evpn _evpn;
 
   private final Map<String, FirewallFilter> _filters;
@@ -131,6 +137,9 @@ public class LogicalSystem implements Serializable {
     _defaultRoutingInstance = new RoutingInstance(Configuration.DEFAULT_VRF_NAME);
     _dnsServers = new TreeSet<>();
     _dscpAliases = new TreeMap<>();
+    _expAliases = new TreeMap<>();
+    _ieee8021pAliases = new TreeMap<>();
+    _inetPrecedenceAliases = new TreeMap<>();
     _filters = new TreeMap<>();
     _screens = new TreeMap<>();
     _ikeGateways = new TreeMap<>();
@@ -234,6 +243,18 @@ public class LogicalSystem implements Serializable {
 
   public Map<String, Integer> getDscpAliases() {
     return _dscpAliases;
+  }
+
+  public Map<String, Integer> getExpAliases() {
+    return _expAliases;
+  }
+
+  public Map<String, Integer> getIeee8021pAliases() {
+    return _ieee8021pAliases;
+  }
+
+  public Map<String, Integer> getInetPrecedenceAliases() {
+    return _inetPrecedenceAliases;
   }
 
   public Evpn getEvpn() {
