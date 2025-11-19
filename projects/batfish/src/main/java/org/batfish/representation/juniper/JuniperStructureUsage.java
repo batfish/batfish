@@ -16,6 +16,81 @@ public enum JuniperStructureUsage implements StructureUsage {
   BGP_NEIGHBOR("bgp group neighbor"),
   BGP_NEIGHBOR_SELF_REFERENCE("bgp neighbor self ref"),
   BGP_FAMILY_INET_UNICAST_RIB_GROUP("bgp family inet unicast rib-group"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_FORWARDING_CLASS(
+      "class-of-service classifiers dscp forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_CODE_POINTS("class-of-service classifiers dscp code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_FORWARDING_CLASS(
+      "class-of-service classifiers dscp-ipv6 forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_CODE_POINTS(
+      "class-of-service classifiers dscp-ipv6 code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS(
+      "class-of-service classifiers exp forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_EXP_CODE_POINTS("class-of-service classifiers exp code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS(
+      "class-of-service classifiers ieee-802.1 forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_CODE_POINTS(
+      "class-of-service classifiers ieee-802.1 code-points"),
+  CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_FORWARDING_CLASS(
+      "class-of-service classifiers inet-precedence forwarding-class"),
+  CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_CODE_POINTS(
+      "class-of-service classifiers inet-precedence code-points"),
+  CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS(
+      "class-of-service host-outbound-traffic forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS("class-of-service interfaces forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_SCHEDULER_MAP("class-of-service interfaces scheduler-map"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP(
+      "class-of-service interfaces unit classifiers dscp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6(
+      "class-of-service interfaces unit classifiers dscp-ipv6"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_EXP(
+      "class-of-service interfaces unit classifiers exp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_IEEE_802_1(
+      "class-of-service interfaces unit classifiers ieee-802.1"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_INET_PRECEDENCE(
+      "class-of-service interfaces unit classifiers inet-precedence"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_FORWARDING_CLASS(
+      "class-of-service interfaces unit forwarding-class"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP(
+      "class-of-service interfaces unit rewrite-rules dscp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP_IPV6(
+      "class-of-service interfaces unit rewrite-rules dscp-ipv6"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_EXP(
+      "class-of-service interfaces unit rewrite-rules exp"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_IEEE_802_1(
+      "class-of-service interfaces unit rewrite-rules ieee-802.1"),
+  CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_INET_PRECEDENCE(
+      "class-of-service interfaces unit rewrite-rules inet-precedence"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_FORWARDING_CLASS(
+      "class-of-service rewrite-rules dscp forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_CODE_POINT("class-of-service rewrite-rules dscp code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_FORWARDING_CLASS(
+      "class-of-service rewrite-rules dscp-ipv6 forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_CODE_POINT(
+      "class-of-service rewrite-rules dscp-ipv6 code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS(
+      "class-of-service rewrite-rules exp forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_CODE_POINT("class-of-service rewrite-rules exp code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS(
+      "class-of-service rewrite-rules ieee-802.1 forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_CODE_POINT(
+      "class-of-service rewrite-rules ieee-802.1 code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_FORWARDING_CLASS(
+      "class-of-service rewrite-rules inet-precedence forwarding-class"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_CODE_POINT(
+      "class-of-service rewrite-rules inet-precedence code-point"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_SELF_REFERENCE(
+      "class-of-service rewrite-rules dscp self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_SELF_REFERENCE(
+      "class-of-service rewrite-rules dscp-ipv6 self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_EXP_SELF_REFERENCE(
+      "class-of-service rewrite-rules exp self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_SELF_REFERENCE(
+      "class-of-service rewrite-rules ieee-802.1 self reference"),
+  CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_SELF_REFERENCE(
+      "class-of-service rewrite-rules inet-precedence self reference"),
+  CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS(
+      "class-of-service scheduler-maps forwarding-class"),
+  CLASS_OF_SERVICE_SCHEDULER_MAPS_SCHEDULER("class-of-service scheduler-maps scheduler"),
   BRIDGE_DOMAIN_SELF_REF("bridge-domain self reference"),
   BRIDGE_DOMAINS_ROUTING_INTERFACE("bridge-domains routing-interface"),
   DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP("dhcp relay group active-server-group"),
