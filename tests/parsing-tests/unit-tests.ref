@@ -55917,7 +55917,7 @@
             "                (o_null*",
             "                  SPF_OPTIONS:'spf-options'",
             "                  (null_filler*",
-            "                    UNRECOGNIZED_WORD:'delay'",
+            "                    DELAY:'delay'",
             "                    UINT8:'50'))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
