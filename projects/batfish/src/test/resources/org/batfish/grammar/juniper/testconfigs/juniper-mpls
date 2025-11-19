@@ -10,6 +10,10 @@ set interfaces ge-1/0/0 unit 0 family mpls
 set protocols mpls apply-groups GROUP
 set groups GROUP protocols mpls interface ge-1/0/0.0
 #
+set protocols mpls optimize-adaptive-teardown p2p
+set protocols mpls optimize-adaptive-teardown timeout 1800
+set protocols mpls optimize-adaptive-teardown delay 360
+#
 set protocols mpls statistics file stats.log
 set protocols mpls statistics file size 10m
 set protocols mpls statistics file files 10

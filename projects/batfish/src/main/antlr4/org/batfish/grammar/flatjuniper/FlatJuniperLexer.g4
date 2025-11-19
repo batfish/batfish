@@ -527,6 +527,7 @@ DEFAULT_METRIC: 'default-metric';
 DEFAULT_POLICY: 'default-policy';
 
 DEFAULTS: 'defaults';
+DELAY: 'delay';
 DELEGATE_PROCESSING: 'delegate-processing';
 DELETE
 :
@@ -2149,6 +2150,7 @@ OAM: 'oam';
 OFF: 'off';
 
 OFFSET: 'offset';
+OPTIMIZE_ADAPTIVE_TEARDOWN: 'optimize-adaptive-teardown';
 OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
 OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
