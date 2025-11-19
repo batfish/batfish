@@ -472,6 +472,7 @@ import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsTerm;
+import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
 import org.batfish.representation.juniper.PsThenAsPathPrepend;
@@ -4885,6 +4886,16 @@ public final class FlatJuniperGrammarTest {
       assertThat(
           policy.getTerms().get("REMOVE_TUNNEL_ATTR").getThens().getAllThens(),
           contains(PsThenTunnelAttributeRemove.INSTANCE));
+    }
+    {
+      PolicyStatement policy = c.getMasterLogicalSystem().getPolicyStatements().get("AIGP_POLICY");
+      assertThat(policy.getTerms(), hasKeys("WITHOUT_DISTANCE", "WITH_DISTANCE"));
+      assertThat(
+          policy.getTerms().get("WITHOUT_DISTANCE").getThens().getAllThens(),
+          contains(new PsThenAigpOriginate(null)));
+      assertThat(
+          policy.getTerms().get("WITH_DISTANCE").getThens().getAllThens(),
+          contains(new PsThenAigpOriginate(100L)));
     }
   }
 

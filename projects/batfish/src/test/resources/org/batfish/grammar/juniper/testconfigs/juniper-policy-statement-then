@@ -23,3 +23,6 @@ set policy-options policy-statement TAG2_POLICY term TMAX then tag2 4294967295
 #
 set policy-options policy-statement TUNNEL_ATTR_POLICY term SET_TUNNEL_ATTR then tunnel-attribute set TA
 set policy-options policy-statement TUNNEL_ATTR_POLICY term REMOVE_TUNNEL_ATTR then tunnel-attribute remove all
+#
+set policy-options policy-statement AIGP_POLICY term WITHOUT_DISTANCE then aigp-originate
+set policy-options policy-statement AIGP_POLICY term WITH_DISTANCE then aigp-originate 100
