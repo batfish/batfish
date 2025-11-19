@@ -746,9 +746,8 @@ EXP
 ;
 
 EXPEDITED: 'expedited';
-
+EXPLICIT_NULL: 'explicit-null';
 EXPLICIT_PRIORITY: 'explicit-priority';
-
 EXPORT
 :
   'export'
@@ -993,12 +992,10 @@ ICMP: 'icmp';
 
 ICMP_CODE: 'icmp-code' -> pushMode(M_IcmpCodeOrType);
 ICMP_CODE_EXCEPT: 'icmp-code-except' -> pushMode(M_IcmpCodeOrType);
-
+ICMP_TUNNELING: 'icmp-tunneling';
 ICMP_TYPE: 'icmp-type' -> pushMode(M_IcmpCodeOrType);
 ICMP_TYPE_EXCEPT: 'icmp-type-except' -> pushMode(M_IcmpCodeOrType);
-
 ICMP6: 'icmp6';
-
 ICMP6_CODE: 'icmp6-code';
 
 ICMPV6_MALFORMED: 'icmpv6-malformed';
@@ -1238,6 +1235,7 @@ IPSEC_POLICY: 'ipsec-policy' -> pushMode(M_Name);
 IPSEC_VPN: 'ipsec-vpn' -> pushMode(M_Name);
 
 IPV6: 'ipv6';
+IPV6_TUNNELING: 'ipv6-tunneling';
 
 IPV6_EXTENSION_HEADER: 'ipv6-extension-header';
 
@@ -1800,17 +1798,12 @@ LOCAL_PREFERENCE: 'local-preference';
 LOCATION: 'location';
 
 LOG: 'log';
-
+LOG_LSP_HISTORY: 'log-lsp-history';
 LOG_OUT_ON_DISCONNECT: 'log-out-on-disconnect';
-
 LOG_PREFIX: 'log-prefix';
-
 LOG_UPDOWN: 'log-updown';
-
 LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
-
 LOGICAL_SYSTEMS: 'logical-systems' -> pushMode(M_Name);
-
 LOGIN: 'login';
 
 LONGER: 'longer';
@@ -1970,7 +1963,7 @@ MSTP: 'mstp';
 MTU: 'mtu';
 
 MTU_DISCOVERY: 'mtu-discovery';
-
+MTU_SIGNALING: 'mtu-signaling';
 MULTI_CHASSIS: 'multi-chassis';
 
 MULTICAST: 'multicast';
@@ -2151,6 +2144,7 @@ OFF: 'off';
 
 OFFSET: 'offset';
 OPTIMIZE_ADAPTIVE_TEARDOWN: 'optimize-adaptive-teardown';
+OPTIMIZE_AGGRESSIVE: 'optimize-aggressive';
 OPTIMIZE_HOLD_DEAD_DELAY: 'optimize-hold-dead-delay';
 OPTIMIZE_TIMER: 'optimize-timer';
 OPTIMIZED: 'optimized';
@@ -2204,25 +2198,17 @@ PATH
 ;
 
 PATH_COUNT: 'path-count';
-
+PATH_MTU: 'path-mtu';
 PATH_SELECTION: 'path-selection';
 PATH_SELECTION_MODE: 'path-selection-mode';
 PAYLOAD_PROTOCOL: 'payload-protocol';
-
 PEER_ADDRESS: 'peer-address';
-
 PEER_AS: 'peer-as' -> pushMode(M_BgpAsn);
-
 PEER_UNIT: 'peer-unit';
-
 PER_PACKET: 'per-packet';
-
 PER_UNIT_SCHEDULER: 'per-unit-scheduler';
-
 PERCENT: 'percent';
-
 PERFECT_FORWARD_SECRECY: 'perfect-forward-secrecy';
-
 PERMIT: 'permit';
 
 PERMIT_ALL: 'permit-all';
@@ -2451,6 +2437,7 @@ READ_WRITE: 'read-write';
 READVERTISE: 'readvertise';
 
 RECEIVE: 'receive';
+RECORD: 'record';
 
 RECORD_LIFETIME: 'record-lifetime';
 RECORD_ROUTE_OPTION: 'record-route-option';
@@ -2774,6 +2761,7 @@ SINGLE_CONNECTION: 'single-connection';
 SIP: 'sip';
 
 SMTP: 'smtp';
+SMART_OPTIMIZE_TIMER: 'smart-optimize-timer';
 
 SNMP: 'snmp';
 
