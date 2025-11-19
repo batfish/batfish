@@ -10,3 +10,20 @@ set interfaces ge-1/0/0 unit 0 family mpls
 set protocols mpls apply-groups GROUP
 set groups GROUP protocols mpls interface ge-1/0/0.0
 #
+set protocols mpls statistics file stats.log
+set protocols mpls statistics file size 10m
+set protocols mpls statistics file files 10
+set protocols mpls statistics interval 300
+set protocols mpls statistics auto-bandwidth
+set protocols mpls statistics no-transit-statistics
+set protocols mpls statistics traffic-class-statistics
+set protocols mpls statistics transit-statistics-polling
+#
+set protocols mpls traceoptions file mpls.log
+set protocols mpls traceoptions file size 10m
+set protocols mpls traceoptions file files 10
+set protocols mpls traceoptions flag lsp-history
+set protocols mpls traceoptions flag state
+set protocols mpls traceoptions flag error
+set protocols mpls traceoptions flag all
+#
