@@ -3655,6 +3655,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testInterfaceSampling() {
+    // Sampling is parsed but ignored; verify parsing succeeds for both family inet and inet6
+    parseConfig("interface-sampling");
+  }
+
+  @Test
   public void testInterfaceOspfNetworkType() {
     String hostname = "ospf-interface-network-type";
     Configuration c = parseConfig(hostname);

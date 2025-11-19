@@ -1,0 +1,8 @@
+#
+set system host-name interface-sampling
+#
+set interfaces xe-0/0/0 unit 0 family inet sampling input
+set interfaces xe-0/0/1 unit 0 family inet6 sampling input
+#
+set groups SAMPLING-GROUP interfaces <xe-*> unit <*> family inet6 sampling input
+#
