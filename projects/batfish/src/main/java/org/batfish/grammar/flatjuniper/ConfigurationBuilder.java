@@ -310,6 +310,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_authentication_key_ch
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_clusterContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_descriptionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_disableContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_drop_path_attributesContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enableContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_enforce_first_asContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_exportContext;
@@ -4543,6 +4544,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitB_disable(B_disableContext ctx) {
     _currentBgpGroup.setDisable(true);
+  }
+
+  @Override
+  public void exitB_drop_path_attributes(B_drop_path_attributesContext ctx) {
+    SubRange range = toSubRange(ctx.attr);
+    IntegerSpace updatedSpace =
+        _currentBgpGroup.getDropPathAttributes().union(IntegerSpace.of(range));
+    _currentBgpGroup.setDropPathAttributes(updatedSpace);
   }
 
   @Override
