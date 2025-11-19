@@ -636,6 +636,11 @@ subrange
    )?
 ;
 
+vlan_range
+:
+   range
+;
+
 switchport_trunk_encapsulation
 :
    DOT1Q
@@ -726,6 +731,11 @@ variable_group_id
 variable_vlan
 :
    ~( NEWLINE | ACCESS_MAP | DEC | UINT8 | UINT16 | UINT32 )
+;
+
+device_tracking_policy_name
+:
+   variable
 ;
 
 vlan_id
