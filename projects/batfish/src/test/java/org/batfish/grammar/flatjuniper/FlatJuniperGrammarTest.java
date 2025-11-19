@@ -1208,6 +1208,20 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testBgpDropPathAttributes() {
+    JuniperConfiguration c = parseJuniperConfig("bgp-drop-path-attributes");
+    BgpGroup master = c.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
+    IntegerSpace expected =
+        IntegerSpace.builder()
+            .including(10)
+            .including(20)
+            .including(new SubRange(30, 35))
+            .including(new SubRange(100, 110))
+            .build();
+    assertThat(master.getDropPathAttributes(), equalTo(expected));
+  }
+
+  @Test
   public void testDescriptionValidationFatalError() throws IOException {
     String fileKey = "description-validation";
     String warningKey = "configs/" + fileKey;

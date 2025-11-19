@@ -622,7 +622,7 @@ DOMAIN_SEARCH: 'domain-search';
 DOMAIN_TYPE: 'domain-type';
 DROP: 'drop';
 DROP_AND_LOG: 'drop-and-log';
-DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
+DROP_PATH_ATTRIBUTES: 'drop-path-attributes' -> pushMode(M_SubRange);
 
 DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
 
