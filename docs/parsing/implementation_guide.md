@@ -190,6 +190,7 @@ For commands that define named objects referenced elsewhere:
 2. Add usage type(s) to vendor's `StructureUsage` enum (name should match command path)
 3. In extractor enter method: Call `defineStructure(type, name, ctx)`
 4. In extractor exit methods: Call `referenceStructure(type, name, usage, line)` at reference sites
+   - For hierarchical configs (Junos, Palo Alto): Use `getLine(token)` helper, not `token.getLine()`
 5. In conversion: Call `markConcreteStructure(type)`
 6. Test with `hasDefinedStructure()`, `hasNumReferrers()`, `hasUndefinedReference()` matchers
 
