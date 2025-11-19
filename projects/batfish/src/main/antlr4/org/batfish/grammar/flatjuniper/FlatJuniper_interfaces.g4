@@ -374,6 +374,7 @@ if_inet
       | ifi_no_redirects
       | ifi_null
       | ifi_rpf_check
+      | ifi_sampling_null
       | ifi_tcp_mss
    )
 ;
@@ -387,6 +388,7 @@ if_inet6
       | ifi6_destination_udp_port
       | ifi6_filter
       | ifi6_mtu
+      | ifi6_sampling_null
    )
 ;
 
@@ -414,6 +416,11 @@ ifi6_filter: FILTER ifi6f_input;
 ifi6f_input: INPUT name = junos_name;
 
 ifi6_mtu: i_mtu;
+
+ifi6_sampling_null
+:
+   SAMPLING null_filler
+;
 
 if_iso
 :
@@ -542,10 +549,14 @@ ifi_null
    (
       DHCP
       | POLICER
-      | SAMPLING
       | SERVICE
       | TARGETED_BROADCAST
    ) null_filler
+;
+
+ifi_sampling_null
+:
+   SAMPLING null_filler
 ;
 
 ifi_rpf_check
