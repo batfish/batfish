@@ -2871,6 +2871,8 @@ STATION_ADDRESS: 'station-address';
 
 STATION_PORT: 'station-port';
 
+STATISTICS: 'statistics';
+
 STATISTICS_TIMEOUT: 'statistics-timeout';
 
 STATS_CACHE_LIFETIME: 'stats-cache-lifetime';

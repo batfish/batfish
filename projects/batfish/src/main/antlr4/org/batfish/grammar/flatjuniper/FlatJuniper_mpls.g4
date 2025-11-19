@@ -36,6 +36,8 @@ p_mpls
        | mpls_interface
        | mpls_label_switched_path
        | mpls_path
+       | mpls_statistics_null
+       | mpls_traceoptions_null
    )
 ;
 
@@ -319,4 +321,14 @@ mplslspsag_include_any
 mplslsp_to_null
 :
    TO (ip_address | ipv6_address)
+;
+
+mpls_statistics_null
+:
+   STATISTICS null_filler
+;
+
+mpls_traceoptions_null
+:
+   TRACEOPTIONS null_filler
 ;
