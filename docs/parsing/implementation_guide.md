@@ -181,3 +181,70 @@ For commands that are partially supported:
 
 1. Extract the property
 2. Add conditional warnings during conversion
+
+### Pattern 4: Structure Definition and Reference Tracking
+
+For commands that define named objects referenced elsewhere:
+
+1. Add structure type to vendor's `StructureType` enum
+2. Add usage type(s) to vendor's `StructureUsage` enum (name should match command path)
+3. In extractor enter method: Call `defineStructure(type, name, ctx)`
+4. In extractor exit methods: Call `referenceStructure(type, name, usage, line)` at reference sites
+5. In conversion: Call `markConcreteStructure(type)`
+6. Test with `hasDefinedStructure()`, `hasNumReferrers()`, `hasUndefinedReference()` matchers
+
+**See**: CiscoControlPlaneExtractor methods `enterDtr_policy`, `exitIfdt_attach_policy`, `exitVlanc_device_tracking` and CiscoConfiguration method `toVendorIndependentConfiguration` for examples.
+
+## Extraction Best Practices
+
+### Using Assert Statements in Alternatives
+
+When extracting grammar alternatives, use assert in else branches to catch when new alternatives are added without updating extraction logic:
+
+```java
+// GOOD: Future-proof with assert
+if (ctx.OPTION_A() != null) {
+  handleOptionA();
+} else {
+  assert ctx.OPTION_B() != null;  // Fails if OPTION_C added to grammar
+  handleOptionB();
+}
+
+// BAD: else-if chain silently skips new alternatives
+if (ctx.OPTION_A() != null) {
+  handleOptionA();
+} else if (ctx.OPTION_B() != null) {  // OPTION_C would be silently ignored
+  handleOptionB();
+}
+```
+
+### Using @Nullable to Distinguish Unconfigured vs Explicit Values
+
+Use `@Nullable Boolean`/`Integer` instead of primitives with constructor defaults. This allows conversion to distinguish "not configured" from "explicitly set to default":
+
+```java
+// GOOD: null means unconfigured, false means explicit
+private @Nullable Boolean _trackingEnabled;
+
+// BAD: Cannot distinguish unconfigured from explicit false
+private boolean _trackingEnabled = false;
+```
+
+### Storing Current Context Objects vs Names
+
+For block-mode configurations, store the current object rather than its name to avoid repeated map lookups and null checks:
+
+```java
+// GOOD: Store object, access directly in exit methods
+private @Nullable PolicyObject _currentPolicy;
+_currentPolicy = _configuration.getPolicies().computeIfAbsent(name, PolicyObject::new);
+// Later: _currentPolicy.setSomeProperty(value);
+
+// BAD: Store name, lookup required in every exit method
+private @Nullable String _currentPolicyName;
+PolicyObject policy = _configuration.getPolicies().get(_currentPolicyName);
+if (policy != null) { policy.setSomeProperty(value); }
+```
+
+**See**: Extractor `_current*` fields for examples of this pattern.
+
