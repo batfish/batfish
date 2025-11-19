@@ -1,0 +1,15 @@
+!
+!RANCID-CONTENT-TYPE: cisco
+!
+hostname ios-access-session-port-control
+!
+!
+interface GigabitEthernet1/0/1
+  access-session port-control auto
+!
+interface GigabitEthernet1/0/2
+  access-session port-control force-authorized
+!
+interface GigabitEthernet1/0/3
+  access-session port-control force-unauthorized
+!

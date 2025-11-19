@@ -4217,6 +4217,8 @@ PORT_CHANNEL: 'port-channel';
 
 PORT_CHANNEL_PROTOCOL: 'port-channel-protocol';
 
+PORT_CONTROL: 'port-control';
+
 PORT_NAME: 'port-name';
 
 PORT_OBJECT: 'port-object';
