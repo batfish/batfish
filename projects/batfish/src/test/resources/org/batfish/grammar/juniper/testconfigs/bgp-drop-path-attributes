@@ -1,0 +1,9 @@
+#
+set system host-name bgp-drop-path-attributes
+#
+set routing-options autonomous-system 1
+set protocols bgp drop-path-attributes 10
+set protocols bgp drop-path-attributes 20
+set protocols bgp drop-path-attributes 30-35
+set protocols bgp drop-path-attributes 100-110
+#
