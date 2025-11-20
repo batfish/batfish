@@ -7359,47 +7359,38 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitScosiiu_dscp(Scosiiu_dscpContext ctx) {
-    _configuration.referenceStructure(
-        CLASS_OF_SERVICE_CLASSIFIER,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP,
-        getLine(ctx.name.getStart()));
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_CLASSIFIER, CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP);
   }
 
   @Override
   public void exitScosiiu_dscp_ipv6(Scosiiu_dscp_ipv6Context ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_CLASSIFIER,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_DSCP_IPV6);
   }
 
   @Override
   public void exitScosiiu_exp(Scosiiu_expContext ctx) {
-    _configuration.referenceStructure(
-        CLASS_OF_SERVICE_CLASSIFIER,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_EXP,
-        getLine(ctx.name.getStart()));
+    referenceBuiltIn(
+        ctx.name, CLASS_OF_SERVICE_CLASSIFIER, CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_EXP);
   }
 
   @Override
   public void exitScosiiu_ieee_802_1(Scosiiu_ieee_802_1Context ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_CLASSIFIER,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_IEEE_802_1,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_IEEE_802_1);
   }
 
   @Override
   public void exitScosiiu_inet_precedence(Scosiiu_inet_precedenceContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_CLASSIFIER,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_INET_PRECEDENCE,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_CLASSIFIERS_INET_PRECEDENCE);
   }
 
   @Override
@@ -7413,47 +7404,42 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitScosiiu_dscp_rw(Scosiiu_dscp_rwContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_REWRITE_RULE,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP);
   }
 
   @Override
   public void exitScosiiu_dscp_ipv6_rw(Scosiiu_dscp_ipv6_rwContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_REWRITE_RULE,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP_IPV6,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_DSCP_IPV6);
   }
 
   @Override
   public void exitScosiiu_exp_rw(Scosiiu_exp_rwContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_REWRITE_RULE,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_EXP,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_EXP);
   }
 
   @Override
   public void exitScosiiu_ieee_802_1_rw(Scosiiu_ieee_802_1_rwContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_REWRITE_RULE,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_IEEE_802_1,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_IEEE_802_1);
   }
 
   @Override
   public void exitScosiiu_inet_precedence_rw(Scosiiu_inet_precedence_rwContext ctx) {
-    _configuration.referenceStructure(
+    referenceBuiltIn(
+        ctx.name,
         CLASS_OF_SERVICE_REWRITE_RULE,
-        toString(ctx.name),
-        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_INET_PRECEDENCE,
-        getLine(ctx.name.getStart()));
+        CLASS_OF_SERVICE_INTERFACES_UNIT_REWRITE_RULES_INET_PRECEDENCE);
   }
 
   @Override

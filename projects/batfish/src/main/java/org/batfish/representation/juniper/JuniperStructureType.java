@@ -92,12 +92,14 @@ public enum JuniperStructureType implements StructureType {
    */
   public static final ImmutableSetMultimap<JuniperStructureType, String> BUILT_IN_STRUCTURES =
       ImmutableSetMultimap.<JuniperStructureType, String>builder()
+          .put(CLASS_OF_SERVICE_CLASSIFIER, "default")
           .putAll(CLASS_OF_SERVICE_FORWARDING_CLASS, ForwardingClassUtil.builtinNames())
           .putAll(CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS, DscpUtil.builtinNames())
           .putAll(CLASS_OF_SERVICE_EXP_CODE_POINT_ALIAS, ExpUtil.builtinNames())
           .putAll(CLASS_OF_SERVICE_IEEE_802_1_CODE_POINT_ALIAS, Ieee8021pUtil.builtinNames())
           .putAll(
               CLASS_OF_SERVICE_INET_PRECEDENCE_CODE_POINT_ALIAS, InetPrecedenceUtil.builtinNames())
+          .put(CLASS_OF_SERVICE_REWRITE_RULE, "default")
           .build();
 
   public static final Set<JuniperStructureType> CONCRETE_STRUCTURES =

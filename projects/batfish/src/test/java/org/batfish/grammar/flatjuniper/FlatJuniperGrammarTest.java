@@ -1047,6 +1047,83 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testClassOfServiceDefaultClassifier() throws IOException {
+    String hostname = "class-of-service-default-classifier";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "default" classifier doesn't produce undefined reference warnings
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceDefaultRewriteRule() throws IOException {
+    String hostname = "class-of-service-default-rewrite-rule";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "default" rewrite-rule doesn't produce undefined reference warnings
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxMcastForwardingClass() throws IOException {
+    String hostname = "class-of-service-qfx-mcast-fc";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in "mcast" forwarding class doesn't produce undefined reference warnings
+    // Platform-specific: QFX switches (except QFX10000)
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceEx4300McastVariants() throws IOException {
+    String hostname = "class-of-service-ex4300-mcast-variants";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in mcast-* forwarding class variants don't produce undefined reference warnings
+    // Platform-specific: EX4300 switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxShortAliases() throws IOException {
+    String hostname = "class-of-service-qfx-short-aliases";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in short forwarding class aliases don't produce undefined reference warnings
+    // Platform-specific: QFX switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
+  public void testClassOfServiceQfxFcoeNoLoss() throws IOException {
+    String hostname = "class-of-service-qfx-fcoe-no-loss";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in fcoe and no-loss forwarding classes don't produce undefined reference
+    // warnings
+    // Platform-specific: QFX switches
+    assertThat(ccae, hasNoUndefinedReferences());
+  }
+
+  @Test
   public void testInterfaceMacLimitParsing() {
     parseJuniperConfig("interface-mac-limit");
   }
