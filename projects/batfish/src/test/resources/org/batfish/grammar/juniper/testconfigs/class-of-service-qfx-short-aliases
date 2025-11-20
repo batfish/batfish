@@ -1,0 +1,20 @@
+set system host-name cos-qfx-short-aliases
+# Test that built-in short forwarding class aliases can be used without explicit definition
+# Platform: QFX switches
+# Reference: https://www.juniper.net/documentation/us/en/software/junos/traffic-mgmt-qfx/topics/example/forwarding-classes-cos-configuring.html
+# be (queue 0), be1 (queue 1), nc (queue 7)
+set class-of-service classifiers dscp SHORT-ALIASES forwarding-class be loss-priority low code-points 000000
+set class-of-service classifiers dscp SHORT-ALIASES forwarding-class be1 loss-priority low code-points 001000
+set class-of-service classifiers dscp SHORT-ALIASES forwarding-class nc loss-priority low code-points 110000
+set class-of-service scheduler-maps SHORT-MAP forwarding-class be scheduler SCHED-BE
+set class-of-service scheduler-maps SHORT-MAP forwarding-class be1 scheduler SCHED-BE1
+set class-of-service scheduler-maps SHORT-MAP forwarding-class nc scheduler SCHED-NC
+set class-of-service rewrite-rules dscp SHORT-REWRITE forwarding-class be loss-priority low code-point 000000
+set class-of-service rewrite-rules dscp SHORT-REWRITE forwarding-class be1 loss-priority low code-point 001000
+set class-of-service rewrite-rules dscp SHORT-REWRITE forwarding-class nc loss-priority low code-point 110000
+set class-of-service host-outbound-traffic forwarding-class be
+set class-of-service interfaces ae1 forwarding-class nc
+set class-of-service interfaces ae1 unit 0 forwarding-class be1
+set class-of-service schedulers SCHED-BE transmit-rate percent 50
+set class-of-service schedulers SCHED-BE1 transmit-rate percent 20
+set class-of-service schedulers SCHED-NC transmit-rate percent 30
