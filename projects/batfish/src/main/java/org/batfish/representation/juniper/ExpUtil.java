@@ -1,6 +1,8 @@
 package org.batfish.representation.juniper;
 
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -11,33 +13,31 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ExpUtil {
 
-  /** Returns the default value for builtin MPLS EXP aliases. */
+  /** Built-in MPLS EXP aliases and their default values. */
   // Aliases and values are from
   // https://www.juniper.net/documentation/us/en/software/junos/cos-security-devices/topics/concept/cos-default-value-alias-security.html
   // Table 40: Standard CoS Aliases and Bit Values
+  private static final Map<String, Integer> DEFAULT_VALUES =
+      Map.ofEntries(
+          Map.entry("be", 0),
+          Map.entry("be1", 1),
+          Map.entry("ef", 2),
+          Map.entry("ef1", 3),
+          Map.entry("af11", 4),
+          Map.entry("af12", 5),
+          Map.entry("nc1", 6),
+          Map.entry("cs6", 6),
+          Map.entry("nc2", 7),
+          Map.entry("cs7", 7));
+
+  /** Returns the default value for builtin MPLS EXP aliases. */
   public static @Nonnull Optional<Integer> defaultValue(String alias) {
-    switch (alias) {
-      case "be":
-        return Optional.of(0);
-      case "be1":
-        return Optional.of(1);
-      case "ef":
-        return Optional.of(2);
-      case "ef1":
-        return Optional.of(3);
-      case "af11":
-        return Optional.of(4);
-      case "af12":
-        return Optional.of(5);
-      case "nc1":
-      case "cs6":
-        return Optional.of(6);
-      case "nc2":
-      case "cs7":
-        return Optional.of(7);
-      default:
-        return Optional.empty();
-    }
+    return Optional.ofNullable(DEFAULT_VALUES.get(alias));
+  }
+
+  /** Returns the set of built-in MPLS EXP alias names. */
+  public static @Nonnull Set<String> builtinNames() {
+    return DEFAULT_VALUES.keySet();
   }
 
   private ExpUtil() {}
