@@ -364,6 +364,7 @@ BOOTP_SUPPORT: 'bootp-support';
 BOOTPC: 'bootpc';
 
 BOOTPS: 'bootps';
+BOTH: 'both';
 
 BRIDGE: 'bridge';
 
@@ -624,6 +625,8 @@ DROP_AND_LOG: 'drop-and-log';
 DROP_PATH_ATTRIBUTES: 'drop-path-attributes';
 
 DROP_PROFILES: 'drop-profiles' -> pushMode(M_Name);
+DROP_PROFILE: 'drop-profile' -> pushMode(M_Name);
+DROP_PROFILE_MAP: 'drop-profile-map';
 
 DSA_SIGNATURES: 'dsa-signatures';
 
@@ -783,6 +786,7 @@ EXTERNAL_ROUTER_ID: 'external-router-id';
 EXTENSION_HEADER: 'extension-header';
 
 EXTENSIONS: 'extensions';
+EXCESS_RATE: 'excess-rate';
 
 FABRIC: 'fabric';
 
@@ -2757,6 +2761,7 @@ SHA1: 'sha1';
 SHARED_BUFFER: 'shared-buffer';
 
 SHARED_IKE_ID: 'shared-ike-id';
+SHAPING_RATE: 'shaping-rate';
 
 SHIM6_HEADER: 'shim6-header';
 
@@ -2887,6 +2892,7 @@ STREAM_OPTION: 'stream-option';
 STRICT_SOURCE_ROUTE: 'strict-source-route';
 
 STRICT_SOURCE_ROUTE_OPTION: 'strict-source-route-option';
+STRICT_HIGH: 'strict-high';
 
 STRUCTURED_DATA: 'structured-data';
 
@@ -2982,6 +2988,7 @@ TEAR_DROP: 'tear-drop';
 TEREDO: 'teredo';
 
 TELNET: 'telnet';
+TEMPORAL: 'temporal' -> pushMode(M_Bandwidth);
 
 TERM: 'term' -> pushMode(M_Name);
 
@@ -3034,7 +3041,7 @@ TRAFFIC_ENGINEERING: 'traffic-engineering';
 
 TRANSLATION_TABLE: 'translation-table';
 
-TRANSMIT_RATE: 'transmit-rate';
+TRANSMIT_RATE: 'transmit-rate' -> pushMode(M_TransmitRate);
 
 TRAP_DESTINATIONS: 'trap-destinations';
 
@@ -4366,6 +4373,53 @@ M_Bandwidth_NEWLINE
 ;
 
 M_Bandwidth_WS
+:
+   F_WhitespaceChar+ -> channel ( HIDDEN )
+;
+
+mode M_TransmitRate;
+
+M_TransmitRate_DEC
+:
+  F_Digit+ -> type ( DEC )
+;
+
+M_TransmitRate_C
+:
+  'c' -> type ( C ) , popMode
+;
+
+M_TransmitRate_G
+:
+  'g' -> type ( G ) , popMode
+;
+
+M_TransmitRate_K
+:
+  'k' -> type ( K ) , popMode
+;
+
+M_TransmitRate_M
+:
+  'm' -> type ( M ) , popMode
+;
+
+M_TransmitRate_PERCENT
+:
+  'percent' -> type ( PERCENT )
+;
+
+M_TransmitRate_REMAINDER
+:
+  'remainder' -> type ( REMAINDER )
+;
+
+M_TransmitRate_NEWLINE
+:
+  F_NewlineChar+ -> type ( NEWLINE ) , popMode
+;
+
+M_TransmitRate_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
 ;

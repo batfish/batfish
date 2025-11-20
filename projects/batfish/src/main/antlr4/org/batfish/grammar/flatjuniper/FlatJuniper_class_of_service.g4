@@ -599,7 +599,10 @@ scos_schedulers
     SCHEDULERS name = junos_name
     (
         scoss_buffer_size
+        | scoss_drop_profile_map
+        | scoss_excess_rate
         | scoss_priority
+        | scoss_shaping_rate
         | scoss_transmit_rate
     )
 ;
@@ -610,6 +613,7 @@ scoss_buffer_size
     (
         scossb_percent
         | scossb_remainder
+        | scossb_temporal
     )
 ;
 
@@ -623,6 +627,11 @@ scossb_remainder
     REMAINDER
 ;
 
+scossb_temporal
+:
+    TEMPORAL size = bandwidth
+;
+
 scoss_priority
 :
     PRIORITY
@@ -631,6 +640,7 @@ scoss_priority
         | LOW
         | MEDIUM_HIGH
         | MEDIUM_LOW
+        | STRICT_HIGH
     )
 ;
 
@@ -638,9 +648,15 @@ scoss_transmit_rate
 :
     TRANSMIT_RATE
     (
-        scosst_percent
+        scosst_explicit
+        | scosst_percent
         | scosst_remainder
     )
+;
+
+scosst_explicit
+:
+    rate = bandwidth
 ;
 
 scosst_percent
@@ -651,6 +667,33 @@ scosst_percent
 scosst_remainder
 :
     REMAINDER (num = dec)?
+;
+
+scoss_drop_profile_map
+:
+    DROP_PROFILE_MAP LOSS_PRIORITY priority = scoss_dpm_loss_priority_value PROTOCOL protocol = scoss_dpm_protocol_value DROP_PROFILE name = junos_name
+;
+
+scoss_dpm_loss_priority_value
+:
+    ANY
+    | scos_loss_priority_value
+;
+
+scoss_dpm_protocol_value
+:
+    ANY
+    | BOTH
+;
+
+scoss_excess_rate
+:
+    EXCESS_RATE PERCENT num = dec
+;
+
+scoss_shaping_rate
+:
+    SHAPING_RATE PERCENT num = dec
 ;
 
 scos_null

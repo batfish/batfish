@@ -56,3 +56,10 @@ set class-of-service schedulers SCHED1 buffer-size percent 15
 set class-of-service schedulers SCHED1 priority high
 set class-of-service schedulers SCHED2 buffer-size remainder
 set class-of-service schedulers SCHED2 transmit-rate remainder
+set class-of-service schedulers SCHED3 buffer-size temporal 4m
+set class-of-service schedulers SCHED3 transmit-rate 20m
+set class-of-service schedulers SCHED3 priority strict-high
+set class-of-service schedulers SCHED3 drop-profile-map loss-priority low protocol any drop-profile LOW-PROF
+set class-of-service schedulers SCHED3 drop-profile-map loss-priority high protocol any drop-profile HIGH-PROF
+set class-of-service schedulers SCHED4 excess-rate percent 40
+set class-of-service schedulers SCHED5 shaping-rate percent 10
