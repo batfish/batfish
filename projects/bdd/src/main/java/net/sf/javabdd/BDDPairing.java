@@ -69,7 +69,8 @@ public abstract class BDDPairing {
    */
   public void set(BDD[] oldvars, BDD[] newBDDs) {
     if (Arrays.stream(oldvars).anyMatch(v -> !v.isVar())) {
-      throw new BDDException();
+      throw new BDDException(
+          "the first argument to BDD::set(BDD[], BDD[]) must be an array of BDD variables");
     }
 
     set(Arrays.stream(oldvars).mapToInt(BDD::var).toArray(), newBDDs);

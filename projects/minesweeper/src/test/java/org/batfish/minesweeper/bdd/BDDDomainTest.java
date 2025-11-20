@@ -109,17 +109,23 @@ public class BDDDomainTest {
   public void testAugmentPairing() {
     BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
     factory.setVarNum(10);
-    BDDDomain<String> x = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
-    BDDDomain<String> valueA = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
 
+    // x represents an unknown element of the set {"a", "b", "c"}
+    BDDDomain<String> x = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
+    // valueA represents the value "a"
+    BDDDomain<String> valueA = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
     valueA.setValue("a");
 
+    // map x to valueA
     BDDPairing pairing1 = factory.makePair();
     valueA.augmentPairing(x, pairing1);
 
+    // map x's underlying BDD integer to valueA's underlying BDD integer
     BDDPairing pairing2 = factory.makePair();
     valueA.getInteger().augmentPairing(x.getInteger(), pairing2);
 
+    // check that these mappings are equivalent by comparing the results of applying the two
+    // mappings to the BDD variables that constitute x (i.e., x's support)
     assertEquals(x.support().veccompose(pairing1), x.support().veccompose(pairing2));
   }
 }

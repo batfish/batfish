@@ -124,6 +124,7 @@ public class BDDRouteTest {
   @Test
   public void testAugmentPairing() {
     BDDFactory factory = JFactory.init(100, 100);
+    // a fresh, unconstrained BDDRoute
     BDDRoute orig =
         new BDDRoute(
             factory,
@@ -139,13 +140,20 @@ public class BDDRouteTest {
 
     // Test adminDist
     BDD adminSupport = orig.getAdminDist().support();
+    // make a BDDRoute whose administrative distance is set to 1
     BDDRoute admin = new BDDRoute(orig);
     admin.getAdminDist().setValue(1);
+    // create a pairing that maps the original unconstrained BDDRoute to this one
     admin.augmentPairing(orig, pairing);
+    // create another pairing that instead directly maps the administrative distances of the two
+    // BDDRoutes
     admin.getAdminDist().augmentPairing(orig.getAdminDist(), attrPairing);
+    // check that these pairings are equivalent on the BDD variables of the administrative distance
     assertEquals(adminSupport.veccompose(pairing), adminSupport.veccompose(attrPairing));
     pairing.reset();
     attrPairing.reset();
+
+    // do the analogous test for all other route attributes
 
     // Test localPref
     BDD localPrefSupport = orig.getLocalPref().support();

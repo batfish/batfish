@@ -794,6 +794,7 @@ public class BasicTest {
     if (_factory.varNum() < 4) {
       _factory.setVarNum(4);
     }
+
     BDD a = _factory.ithVar(0);
     BDD b = _factory.ithVar(1);
     BDD c = _factory.ithVar(2);
@@ -804,30 +805,42 @@ public class BasicTest {
 
     BDDPairing pairing = _factory.makePair();
 
+    // create the trivial pairing that maps variable a to itself and variable b to itself
     pairing.set(new BDD[] {a, b}, new BDD[] {a, b});
+    // applying that pairing to a leaves it unchanged since it maps to itself
     BDD res = a.veccompose(pairing);
     assert res.equals(a);
 
     pairing.reset();
+    // map variable b to (a xor b) and variable c to (c xor d)
     pairing.set(new BDD[] {b, c}, new BDD[] {xorAB, xorCD});
+    // applying that pairing to a leaves it unchanged since it's not part of the pairing's domain
     res = a.veccompose(pairing);
     assert res.equals(a);
 
+    // but applying that pairing to (not b) produces (not (a xor b))
     res = b.not().veccompose(pairing);
     assert res.equals(xorAB.not());
 
     pairing.reset();
+    // map variable a to (a xor b) and variable b to (not (a xor b))
     pairing.set(new BDD[] {a, b}, new BDD[] {xorAB, xorAB.not()});
+    // applying that pairing to (a and b) produces ((a xor b) and (not (a xor b))),
+    // which simplifies to false
     res = a.and(b).veccompose(pairing);
     assert res.equals(_factory.zero());
 
+    // applying that pairing to (a or b) produces ((a xor b) or (not (a xor b))),
+    // which simplifies to true
     res = a.or(b).veccompose(pairing);
     assert res.equals(_factory.one());
 
+    // applying that pairing to (a or (not b)) produces (after simplification) (a xor b)
     res = a.or(b.not()).veccompose(pairing);
     assert res.equals(xorAB);
 
     pairing.reset();
+    // test simultaneous substitution of b for a and a for b
     pairing.set(new BDD[] {a, b}, new BDD[] {b, a});
     res = a.or(b.not()).veccompose(pairing);
     assert res.equals(b.or(a.not()));

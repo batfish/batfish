@@ -38,17 +38,12 @@ public class TransferBDDUtils {
 
     // collect all accepting paths
     Stream<TransferReturn> permits = paths.stream().filter(TransferReturn::getAccepted);
+    // compute the weakest precondition for each path
+    Stream<BDD> pathWPs =
+        permits.map(path -> weakestPreconditionForPath(path, postcondition, postconditionToBDD));
 
-    return tbdd.getFactory()
-        .orAll(
-            permits
-                // for each accepting path, we conjoin its input constraints with the constraint
-                // that the output route on that path satisfies the given postcondition
-                .map(
-                    tr ->
-                        tr.getInputConstraints()
-                            .andWith(postconditionToBDD.apply(postcondition, tr)))
-                .toList());
+    // return the disjunction of the per-path weakest preconditions
+    return tbdd.getFactory().orAll(pathWPs.toList());
   }
 
   /**
@@ -85,5 +80,23 @@ public class TransferBDDUtils {
     route.augmentPairing(freshRoute, pairing);
 
     return pairing;
+  }
+
+  /**
+   * Produces a BDD representing the weakest precondition of a single path that results from
+   * symbolic routing analysis, relative to a given postcondition, which is a predicate on routes.
+   * Logically, the weakest precondition is the weakest predicate on input routes that ensures that
+   * they are permitted by the path and yield a route that satisfies the given postcondition.
+   *
+   * @param path symbolic representation of an execution path through a routing policy
+   * @param postcondition the postcondition in some form
+   * @param postconditionToBDD a function that converts the postcondition and a path to a BDD
+   *     representing the constraint that the path's output routes satisfy the postcondition
+   * @return the weakest precondition as a BDD
+   */
+  private static <T> BDD weakestPreconditionForPath(
+      TransferReturn path, T postcondition, BiFunction<T, TransferReturn, BDD> postconditionToBDD) {
+
+    return path.getInputConstraints().andWith(postconditionToBDD.apply(postcondition, path));
   }
 }
