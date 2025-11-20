@@ -1,6 +1,9 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.DscpType;
@@ -11,58 +14,44 @@ import org.batfish.datamodel.DscpType;
 @ParametersAreNonnullByDefault
 public final class DscpUtil {
 
-  /** Returns the default value for builtin DSCP aliases. */
+  /** Built-in DSCP aliases and their default values. */
   // Aliases and values are from
   // https://www.juniper.net/documentation/us/en/software/junos/cos-security-devices/topics/concept/cos-default-value-alias-security.html
+  private static final Map<String, Integer> DEFAULT_VALUES =
+      ImmutableMap.<String, Integer>builder()
+          .put("ef", DscpType.EF.number())
+          .put("af11", DscpType.AF11.number())
+          .put("af12", DscpType.AF12.number())
+          .put("af13", DscpType.AF13.number())
+          .put("af21", DscpType.AF21.number())
+          .put("af22", DscpType.AF22.number())
+          .put("af23", DscpType.AF23.number())
+          .put("af31", DscpType.AF31.number())
+          .put("af32", DscpType.AF32.number())
+          .put("af33", DscpType.AF33.number())
+          .put("af41", DscpType.AF41.number())
+          .put("af42", DscpType.AF42.number())
+          .put("af43", DscpType.AF43.number())
+          .put("be", DscpType.DEFAULT.number())
+          .put("cs1", DscpType.CS1.number())
+          .put("cs2", DscpType.CS2.number())
+          .put("cs3", DscpType.CS3.number())
+          .put("cs4", DscpType.CS4.number())
+          .put("cs5", DscpType.CS5.number())
+          .put("nc1", DscpType.CS6.number())
+          .put("cs6", DscpType.CS6.number())
+          .put("nc2", DscpType.CS7.number())
+          .put("cs7", DscpType.CS7.number())
+          .build();
+
+  /** Returns the default value for builtin DSCP aliases. */
   public static @Nonnull Optional<Integer> defaultValue(String alias) {
-    switch (alias) {
-      case "ef":
-        return Optional.of(DscpType.EF.number());
-      case "af11":
-        return Optional.of(DscpType.AF11.number());
-      case "af12":
-        return Optional.of(DscpType.AF12.number());
-      case "af13":
-        return Optional.of(DscpType.AF13.number());
-      case "af21":
-        return Optional.of(DscpType.AF21.number());
-      case "af22":
-        return Optional.of(DscpType.AF22.number());
-      case "af23":
-        return Optional.of(DscpType.AF23.number());
-      case "af31":
-        return Optional.of(DscpType.AF31.number());
-      case "af32":
-        return Optional.of(DscpType.AF32.number());
-      case "af33":
-        return Optional.of(DscpType.AF33.number());
-      case "af41":
-        return Optional.of(DscpType.AF41.number());
-      case "af42":
-        return Optional.of(DscpType.AF42.number());
-      case "af43":
-        return Optional.of(DscpType.AF43.number());
-      case "be":
-        return Optional.of(DscpType.DEFAULT.number());
-      case "cs1":
-        return Optional.of(DscpType.CS1.number());
-      case "cs2":
-        return Optional.of(DscpType.CS2.number());
-      case "cs3":
-        return Optional.of(DscpType.CS3.number());
-      case "cs4":
-        return Optional.of(DscpType.CS4.number());
-      case "cs5":
-        return Optional.of(DscpType.CS5.number());
-      case "nc1":
-      case "cs6":
-        return Optional.of(DscpType.CS6.number());
-      case "nc2":
-      case "cs7":
-        return Optional.of(DscpType.CS7.number());
-      default:
-        return Optional.empty();
-    }
+    return Optional.ofNullable(DEFAULT_VALUES.get(alias));
+  }
+
+  /** Returns the set of built-in DSCP alias names. */
+  public static @Nonnull Set<String> builtinNames() {
+    return DEFAULT_VALUES.keySet();
   }
 
   private DscpUtil() {}
