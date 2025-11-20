@@ -2,6 +2,7 @@ package org.batfish.representation.juniper;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -36,6 +37,11 @@ public final class ForwardingClassUtil {
   /** Returns true if the given name is a built-in forwarding class. */
   public static boolean isBuiltin(String forwardingClassName) {
     return DEFAULT_QUEUE_ASSIGNMENTS.containsKey(forwardingClassName);
+  }
+
+  /** Returns the set of built-in forwarding class names. */
+  public static @Nonnull Set<String> builtinNames() {
+    return DEFAULT_QUEUE_ASSIGNMENTS.keySet();
   }
 
   private ForwardingClassUtil() {}

@@ -1,6 +1,9 @@
 package org.batfish.representation.juniper;
 
+import com.google.common.collect.ImmutableMap;
+import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 
@@ -11,33 +14,32 @@ import javax.annotation.ParametersAreNonnullByDefault;
 @ParametersAreNonnullByDefault
 public final class ExpUtil {
 
-  /** Returns the default value for builtin MPLS EXP aliases. */
+  /** Built-in MPLS EXP aliases and their default values. */
   // Aliases and values are from
   // https://www.juniper.net/documentation/us/en/software/junos/cos-security-devices/topics/concept/cos-default-value-alias-security.html
   // Table 40: Standard CoS Aliases and Bit Values
+  private static final Map<String, Integer> DEFAULT_VALUES =
+      ImmutableMap.<String, Integer>builder()
+          .put("be", 0)
+          .put("be1", 1)
+          .put("ef", 2)
+          .put("ef1", 3)
+          .put("af11", 4)
+          .put("af12", 5)
+          .put("nc1", 6)
+          .put("cs6", 6)
+          .put("nc2", 7)
+          .put("cs7", 7)
+          .build();
+
+  /** Returns the default value for builtin MPLS EXP aliases. */
   public static @Nonnull Optional<Integer> defaultValue(String alias) {
-    switch (alias) {
-      case "be":
-        return Optional.of(0);
-      case "be1":
-        return Optional.of(1);
-      case "ef":
-        return Optional.of(2);
-      case "ef1":
-        return Optional.of(3);
-      case "af11":
-        return Optional.of(4);
-      case "af12":
-        return Optional.of(5);
-      case "nc1":
-      case "cs6":
-        return Optional.of(6);
-      case "nc2":
-      case "cs7":
-        return Optional.of(7);
-      default:
-        return Optional.empty();
-    }
+    return Optional.ofNullable(DEFAULT_VALUES.get(alias));
+  }
+
+  /** Returns the set of built-in MPLS EXP alias names. */
+  public static @Nonnull Set<String> builtinNames() {
+    return DEFAULT_VALUES.keySet();
   }
 
   private ExpUtil() {}
