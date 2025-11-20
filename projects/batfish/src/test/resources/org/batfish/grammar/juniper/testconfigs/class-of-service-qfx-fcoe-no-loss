@@ -1,0 +1,13 @@
+set system host-name cos-qfx-fcoe-no-loss
+# Test that built-in fcoe and no-loss forwarding classes can be used without explicit definition
+# Platform: QFX switches
+# Reference: https://www.juniper.net/documentation/us/en/software/junos/traffic-mgmt-qfx/topics/example/forwarding-classes-cos-configuring.html
+# fcoe: Fibre Channel over Ethernet, no-loss: lossless traffic (platform-specific queue assignments)
+set class-of-service classifiers dscp SPECIAL-FC forwarding-class fcoe loss-priority low code-points 011000
+set class-of-service classifiers dscp SPECIAL-FC forwarding-class no-loss loss-priority low code-points 100000
+set class-of-service scheduler-maps SPECIAL-MAP forwarding-class fcoe scheduler SCHED-FCOE
+set class-of-service scheduler-maps SPECIAL-MAP forwarding-class no-loss scheduler SCHED-NO-LOSS
+set class-of-service rewrite-rules dscp SPECIAL-REWRITE forwarding-class fcoe loss-priority low code-point 011000
+set class-of-service rewrite-rules dscp SPECIAL-REWRITE forwarding-class no-loss loss-priority low code-point 100000
+set class-of-service schedulers SCHED-FCOE transmit-rate percent 30
+set class-of-service schedulers SCHED-NO-LOSS transmit-rate percent 70

@@ -1,0 +1,5 @@
+set system host-name cos-default-rewrite-rule
+# Test that built-in "default" rewrite-rule can be used without explicit definition
+# Reference: rewrite-rules can be applied to interfaces
+# https://www.juniper.net/documentation/us/en/software/junos/cos-security-devices/topics/topic-map/cos-qos-rewrite-rules-configuring.html
+set class-of-service interfaces ae1 unit 0 rewrite-rules dscp default
