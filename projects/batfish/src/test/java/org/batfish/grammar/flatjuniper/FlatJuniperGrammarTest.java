@@ -176,6 +176,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.BGP_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureType.BGP_NEIGHBOR;
 import static org.batfish.representation.juniper.JuniperStructureType.BRIDGE_DOMAIN;
 import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_DSCP_CODE_POINT_ALIAS;
+import static org.batfish.representation.juniper.JuniperStructureType.CLASS_OF_SERVICE_FORWARDING_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
@@ -1014,6 +1015,35 @@ public final class FlatJuniperGrammarTest {
   @Test
   public void testClassOfServiceComprehensive() {
     parseJuniperConfig("class-of-service-comprehensive");
+  }
+
+  @Test
+  public void testClassOfServiceBuiltinForwardingClasses() throws IOException {
+    String hostname = "class-of-service-builtin-forwarding-classes";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify built-in forwarding classes don't produce undefined reference warnings when used
+    // without explicit definition
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "best-effort")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "expedited-forwarding")));
+    assertThat(
+        ccae,
+        not(
+            hasUndefinedReference(
+                filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "assured-forwarding")));
+    assertThat(
+        ccae,
+        not(hasUndefinedReference(filename, CLASS_OF_SERVICE_FORWARDING_CLASS, "network-control")));
   }
 
   @Test
