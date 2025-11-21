@@ -4,6 +4,7 @@ import static org.batfish.common.bdd.BDDMatchers.isOne;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThrows;
 import static org.junit.internal.matchers.ThrowableMessageMatcher.hasMessage;
 
@@ -11,6 +12,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.common.bdd.MutableBDDInteger;
@@ -101,5 +103,29 @@ public class BDDDomainTest {
     two.setValue("a");
     BDD s2 = two.support();
     assertThat(s2, equalTo(factory.one()));
+  }
+
+  @Test
+  public void testAugmentPairing() {
+    BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
+    factory.setVarNum(10);
+
+    // x represents an unknown element of the set {"a", "b", "c"}
+    BDDDomain<String> x = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
+    // valueA represents the value "a"
+    BDDDomain<String> valueA = new BDDDomain<>(factory, ImmutableList.of("a", "b", "c"), 0);
+    valueA.setValue("a");
+
+    // map x to valueA
+    BDDPairing pairing1 = factory.makePair();
+    valueA.augmentPairing(x, pairing1);
+
+    // map x's underlying BDD integer to valueA's underlying BDD integer
+    BDDPairing pairing2 = factory.makePair();
+    valueA.getInteger().augmentPairing(x.getInteger(), pairing2);
+
+    // check that these mappings are equivalent by comparing the results of applying the two
+    // mappings to the BDD variables that constitute x (i.e., x's support)
+    assertEquals(x.support().veccompose(pairing1), x.support().veccompose(pairing2));
   }
 }

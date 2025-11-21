@@ -11,6 +11,7 @@ import static org.junit.Assert.assertEquals;
 import java.util.List;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpWildcard;
 import org.batfish.datamodel.Prefix;
@@ -175,6 +176,33 @@ public class MutableBDDIntegerTest {
     MutableBDDInteger constant1 = MutableBDDInteger.makeFromValue(factory, 2, 1);
     assertThat(constant1.and(factory.one()), equalTo(constant1));
     assertThat(constant1.and(factory.zero()), equalTo(constant0));
+  }
+
+  @Test
+  public void testAugmentPairing() {
+    BDDFactory factory = BDDUtils.bddFactory(10);
+    // an unconstrained BDD integer of 5 bits, let's call it x0...x4
+    MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
+    // the value 1 as a 5-variable BDD, i.e. 00001
+    MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 5, 1);
+
+    BDDPairing pairing = factory.makePair();
+
+    // make a mapping from x0...x4 to 00001
+    one.augmentPairing(x, pairing);
+    // applying the mapping to x4 produces the value 1
+    assertEquals(x._bitvec[4].veccompose(pairing), factory.one());
+    // applying the mapping to x3 produces the value 0
+    assertEquals(x._bitvec[3].veccompose(pairing), factory.zero());
+
+    // a BDD integer that symbolically represents the value x+x for any 5-bit integer x
+    MutableBDDInteger xPlusX = x.add(x);
+
+    pairing.reset();
+    // make a mapping from x0...x4 to the BDDs that represent x+x
+    xPlusX.augmentPairing(x, pairing);
+    // since x+x is even for any x, applying the mapping to x4 produces the value 0
+    assertEquals(x._bitvec[4].veccompose(pairing), factory.zero());
   }
 
   @Test

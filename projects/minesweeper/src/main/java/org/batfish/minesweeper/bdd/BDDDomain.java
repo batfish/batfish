@@ -8,6 +8,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.common.bdd.MutableBDDInteger;
 
 /**
@@ -87,6 +88,17 @@ public final class BDDDomain<T> {
         value,
         _values);
     _integer.setValue(idx);
+  }
+
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given BDDDomain with this one. The
+   * BDDs in the given BDDDomain should all be variables.
+   *
+   * @param other the BDDDomain of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(BDDDomain<T> other, BDDPairing pairing) {
+    _integer.augmentPairing(other._integer, pairing);
   }
 
   /** Produces a BDD that represents the support (i.e., the set of BDD variables) of this domain. */
