@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import net.sf.javabdd.JFactory;
 import org.batfish.common.bdd.BDDPacket;
 import org.batfish.datamodel.Ip;
@@ -141,5 +142,35 @@ public class BDDTunnelEncapsulationAttributeTest {
 
     assertThat(alwaysA.support(), equalTo(factory.one()));
     assertThat(aConditional.support(), equalTo(factory.ithVar(4)));
+  }
+
+  @Test
+  public void testAugmentPairing() {
+    BDDFactory factory = BDDPacket.defaultFactory(JFactory::init);
+    factory.setVarNum(10);
+    TunnelEncapsulationAttribute a = new TunnelEncapsulationAttribute(Ip.create(1));
+    TunnelEncapsulationAttribute b = new TunnelEncapsulationAttribute(Ip.create(2));
+
+    // create two symbolic tunnel encapsulation attributes, each of which has four possible values
+    // (the attributes a and b above, plus two defaults that are always included).
+    // they are created respectively at index 0 and 4, so they use different underlying BDD
+    // variables.
+    // because each has four possible values, each uses (log 4) = 2 BDD variables
+    BDDTunnelEncapsulationAttribute x =
+        BDDTunnelEncapsulationAttribute.create(factory, 0, ImmutableList.of(a, b));
+    BDDTunnelEncapsulationAttribute y =
+        BDDTunnelEncapsulationAttribute.create(factory, 4, ImmutableList.of(a, b));
+
+    // create a pairing from x to y
+    BDDPairing pairing1 = factory.makePair();
+    y.augmentPairing(x, pairing1);
+
+    // create a pairing from BDD vars 0 to 4 and 1 to 5
+    BDDPairing pairing2 = factory.makePair();
+    pairing2.set(new int[] {0, 1}, new int[] {4, 5});
+
+    // check that these two pairings are equivalent by comparing the results of applying them to
+    // (var0 and var1) (which is the support of x)
+    assertThat(x.support().veccompose(pairing1), equalTo(x.support().veccompose(pairing2)));
   }
 }

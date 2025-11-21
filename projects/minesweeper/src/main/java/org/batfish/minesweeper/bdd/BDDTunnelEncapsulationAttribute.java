@@ -10,6 +10,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import net.sf.javabdd.BDD;
 import net.sf.javabdd.BDDFactory;
+import net.sf.javabdd.BDDPairing;
 import org.batfish.datamodel.bgp.TunnelEncapsulationAttribute;
 
 /** Represents a symbolic {@link TunnelEncapsulationAttribute} including presence/absence. */
@@ -93,6 +94,18 @@ public final class BDDTunnelEncapsulationAttribute {
    */
   public BDD allDifferences(BDDTunnelEncapsulationAttribute other) {
     return _domain.getInteger().allDifferences(other._domain.getInteger());
+  }
+
+  /**
+   * Augments a given pairing to pair corresponding BDDs from the given
+   * BDDTunnelEncapsulationAttribute with this one. The BDDs in the given
+   * BDDTunnelEncapsulationAttribute should all be variables.
+   *
+   * @param other the BDDTunnelEncapsulationAttribute of variables
+   * @param pairing the existing pairing
+   */
+  public void augmentPairing(BDDTunnelEncapsulationAttribute other, BDDPairing pairing) {
+    _domain.augmentPairing(other._domain, pairing);
   }
 
   /**

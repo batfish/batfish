@@ -28,6 +28,8 @@
  */
 package net.sf.javabdd;
 
+import java.util.Arrays;
+
 /**
  * Encodes a table of variable pairs. This is used for replacing variables in a BDD.
  *
@@ -57,6 +59,21 @@ public abstract class BDDPairing {
     for (int n = 0; n < oldvar.length; n++) {
       set(oldvar[n], newvar[n]);
     }
+  }
+
+  /**
+   * Like set(int[], BDD[]) above but given a BDD[] of BDD variables as the first argument.
+   *
+   * @param oldvars the variables that form the domain of the pairing
+   * @param newBDDs the BDDs that form the range of the pairing
+   */
+  public void set(BDD[] oldvars, BDD[] newBDDs) {
+    if (Arrays.stream(oldvars).anyMatch(v -> !v.isVar())) {
+      throw new BDDException(
+          "the first argument to BDD::set(BDD[], BDD[]) must be an array of BDD variables");
+    }
+
+    set(Arrays.stream(oldvars).mapToInt(BDD::var).toArray(), newBDDs);
   }
 
   /**
