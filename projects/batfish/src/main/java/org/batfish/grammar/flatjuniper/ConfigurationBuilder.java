@@ -984,6 +984,7 @@ import org.batfish.representation.juniper.EvpnEncapsulation;
 import org.batfish.representation.juniper.ExpUtil;
 import org.batfish.representation.juniper.Family;
 import org.batfish.representation.juniper.FirewallFilter;
+import org.batfish.representation.juniper.ForwardingClassUtil;
 import org.batfish.representation.juniper.FwFrom;
 import org.batfish.representation.juniper.FwFromAddress;
 import org.batfish.representation.juniper.FwFromApplicationOrApplicationSet;
@@ -7516,128 +7517,183 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitScosii_forwarding_class(Scosii_forwarding_classContext ctx) {
+    String fcName = toString(ctx.name);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.name),
+        fcName,
         CLASS_OF_SERVICE_INTERFACES_FORWARDING_CLASS,
         getLine(ctx.name.getStart()));
   }
 
   @Override
   public void exitScosiiu_forwarding_class(Scosiiu_forwarding_classContext ctx) {
+    String fcName = toString(ctx.name);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.name),
+        fcName,
         CLASS_OF_SERVICE_INTERFACES_UNIT_FORWARDING_CLASS,
         getLine(ctx.name.getStart()));
   }
 
   @Override
   public void exitScoshob_forwarding_class(Scoshob_forwarding_classContext ctx) {
+    String fcName = toString(ctx.name);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.name),
+        fcName,
         CLASS_OF_SERVICE_HOST_OUTBOUND_TRAFFIC_FORWARDING_CLASS,
         getLine(ctx.name.getStart()));
   }
 
   @Override
   public void exitScoscld_forwarding_class(Scoscld_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_CLASSIFIERS_DSCP_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScoscld6_forwarding_class(Scoscld6_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_CLASSIFIERS_DSCP_IPV6_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScoscle_forwarding_class(Scoscle_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_CLASSIFIERS_EXP_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScoscli_forwarding_class(Scoscli_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_CLASSIFIERS_IEEE_802_1_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosclip_forwarding_class(Scosclip_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_CLASSIFIERS_INET_PRECEDENCE_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosrrd_forwarding_class(Scosrrd_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_REWRITE_RULES_DSCP_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosrrd6_forwarding_class(Scosrrd6_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_REWRITE_RULES_DSCP_IPV6_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosrre_forwarding_class(Scosrre_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_REWRITE_RULES_EXP_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosrri_forwarding_class(Scosrri_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_REWRITE_RULES_IEEE_802_1_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScosrrip_forwarding_class(Scosrrip_forwarding_classContext ctx) {
+    String fcName = toString(ctx.fc);
+    if (ForwardingClassUtil.isBuiltin(fcName)) {
+      return;
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
+        fcName,
         CLASS_OF_SERVICE_REWRITE_RULES_INET_PRECEDENCE_FORWARDING_CLASS,
         getLine(ctx.fc.getStart()));
   }
 
   @Override
   public void exitScossm_forwarding_class(Scossm_forwarding_classContext ctx) {
-    _configuration.referenceStructure(
-        CLASS_OF_SERVICE_FORWARDING_CLASS,
-        toString(ctx.fc),
-        CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS,
-        getLine(ctx.fc.getStart()));
+    String fcName = toString(ctx.fc);
+    if (!ForwardingClassUtil.isBuiltin(fcName)) {
+      _configuration.referenceStructure(
+          CLASS_OF_SERVICE_FORWARDING_CLASS,
+          fcName,
+          CLASS_OF_SERVICE_SCHEDULER_MAPS_FORWARDING_CLASS,
+          getLine(ctx.fc.getStart()));
+    }
     _configuration.referenceStructure(
         CLASS_OF_SERVICE_SCHEDULER,
         toString(ctx.sched),

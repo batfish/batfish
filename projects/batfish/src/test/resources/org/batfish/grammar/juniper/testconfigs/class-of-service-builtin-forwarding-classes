@@ -1,0 +1,31 @@
+set system host-name cos-builtin-fc
+# Test that built-in forwarding classes can be used without explicit definition
+set class-of-service classifiers dscp BUILTIN-CLASSIFIER forwarding-class best-effort loss-priority low code-points 000000
+set class-of-service classifiers dscp BUILTIN-CLASSIFIER forwarding-class expedited-forwarding loss-priority low code-points 101110
+set class-of-service classifiers dscp BUILTIN-CLASSIFIER forwarding-class assured-forwarding loss-priority low code-points 001010
+set class-of-service classifiers dscp BUILTIN-CLASSIFIER forwarding-class network-control loss-priority low code-points 110000
+# Test in scheduler-maps
+set class-of-service scheduler-maps BUILTIN-MAP forwarding-class best-effort scheduler SCHED-BE
+set class-of-service scheduler-maps BUILTIN-MAP forwarding-class expedited-forwarding scheduler SCHED-EF
+set class-of-service scheduler-maps BUILTIN-MAP forwarding-class assured-forwarding scheduler SCHED-AF
+set class-of-service scheduler-maps BUILTIN-MAP forwarding-class network-control scheduler SCHED-NC
+# Test in rewrite-rules
+set class-of-service rewrite-rules dscp BUILTIN-REWRITE forwarding-class best-effort loss-priority low code-point 000000
+set class-of-service rewrite-rules dscp BUILTIN-REWRITE forwarding-class expedited-forwarding loss-priority low code-point 101110
+set class-of-service rewrite-rules dscp BUILTIN-REWRITE forwarding-class assured-forwarding loss-priority low code-point 001010
+set class-of-service rewrite-rules dscp BUILTIN-REWRITE forwarding-class network-control loss-priority low code-point 110000
+# Test in host-outbound-traffic
+set class-of-service host-outbound-traffic forwarding-class best-effort
+# Test on interfaces
+set class-of-service interfaces ae1 forwarding-class expedited-forwarding
+set class-of-service interfaces ae1 unit 0 forwarding-class assured-forwarding
+# Define schedulers
+set class-of-service schedulers SCHED-BE transmit-rate percent 40
+set class-of-service schedulers SCHED-EF transmit-rate percent 20
+set class-of-service schedulers SCHED-AF transmit-rate percent 30
+set class-of-service schedulers SCHED-NC transmit-rate percent 10
+# Test that explicit definition also works (remapping to different queues)
+set class-of-service forwarding-classes class best-effort queue-num 0
+set class-of-service forwarding-classes class expedited-forwarding queue-num 1
+set class-of-service forwarding-classes class assured-forwarding queue-num 2
+set class-of-service forwarding-classes class network-control queue-num 3
