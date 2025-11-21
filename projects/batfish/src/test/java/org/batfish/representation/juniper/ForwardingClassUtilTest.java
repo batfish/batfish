@@ -25,6 +25,19 @@ public class ForwardingClassUtilTest {
     assertThat(ForwardingClassUtil.isBuiltin("network-control"), equalTo(true));
     assertThat(ForwardingClassUtil.defaultQueueNumber("network-control"), equalTo(Optional.of(3)));
 
+    // Test standard abbreviations
+    assertThat(ForwardingClassUtil.isBuiltin("be"), equalTo(true));
+    assertThat(ForwardingClassUtil.defaultQueueNumber("be"), equalTo(Optional.of(0)));
+
+    assertThat(ForwardingClassUtil.isBuiltin("ef"), equalTo(true));
+    assertThat(ForwardingClassUtil.defaultQueueNumber("ef"), equalTo(Optional.of(1)));
+
+    assertThat(ForwardingClassUtil.isBuiltin("af"), equalTo(true));
+    assertThat(ForwardingClassUtil.defaultQueueNumber("af"), equalTo(Optional.of(2)));
+
+    assertThat(ForwardingClassUtil.isBuiltin("nc"), equalTo(true));
+    assertThat(ForwardingClassUtil.defaultQueueNumber("nc"), equalTo(Optional.of(3)));
+
     // Test custom forwarding classes
     assertThat(ForwardingClassUtil.isBuiltin("custom-class"), equalTo(false));
     assertThat(ForwardingClassUtil.defaultQueueNumber("custom-class"), equalTo(Optional.empty()));
