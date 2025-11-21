@@ -521,6 +521,8 @@ popst_accept
    ACCEPT
 ;
 
+popst_aigp_originate: AIGP_ORIGINATE (distance = uint32)?;
+
 popst_as_path_expand
 :
   AS_PATH_EXPAND
@@ -567,6 +569,7 @@ popst_color2
 popst_common
 :
    popst_accept
+   | popst_aigp_originate
    | popst_as_path_expand
    | popst_as_path_prepend
    | popst_bgp_output_queue_priority
