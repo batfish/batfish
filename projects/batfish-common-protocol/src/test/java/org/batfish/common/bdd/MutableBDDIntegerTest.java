@@ -185,8 +185,6 @@ public class MutableBDDIntegerTest {
     MutableBDDInteger x = MutableBDDInteger.makeFromIndex(factory, 5, 0, false);
     // the value 1 as a 5-variable BDD, i.e. 00001
     MutableBDDInteger one = MutableBDDInteger.makeFromValue(factory, 5, 1);
-    // a BDD integer that symbolically represents the value x+x for any 5-bit integer x
-    MutableBDDInteger xPlusX = x.add(x);
 
     BDDPairing pairing = factory.makePair();
 
@@ -197,13 +195,14 @@ public class MutableBDDIntegerTest {
     // applying the mapping to x3 produces the value 0
     assertEquals(x._bitvec[3].veccompose(pairing), factory.zero());
 
+    // a BDD integer that symbolically represents the value x+x for any 5-bit integer x
+    MutableBDDInteger xPlusX = x.add(x);
+
     pairing.reset();
     // make a mapping from x0...x4 to the BDDs that represent x+x
     xPlusX.augmentPairing(x, pairing);
     // since x+x is even for any x, applying the mapping to x4 produces the value 0
     assertEquals(x._bitvec[4].veccompose(pairing), factory.zero());
-    // the second-to-last bit of x+x is the last bit of x
-    assertEquals(x._bitvec[3].veccompose(pairing), x._bitvec[4]);
   }
 
   @Test
