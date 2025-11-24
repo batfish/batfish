@@ -699,6 +699,17 @@ bandwidth
   )?
 ;
 
+burst_size_limit
+:
+  // Burst size in bytes with optional k/m/g suffix
+  base = dec
+  (
+    K
+    | M
+    | G
+  )?
+;
+
 sc_literal
 :
   STANDARD_COMMUNITY

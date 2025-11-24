@@ -1,0 +1,23 @@
+#
+set system host-name firewall-policer
+#
+# Define policers
+set firewall policer 10M if-exceeding bandwidth-limit 10m
+set firewall policer 10M if-exceeding burst-size-limit 15k
+set firewall policer 10M then discard
+#
+set firewall policer 1M if-exceeding bandwidth-limit 1m
+set firewall policer 1M if-exceeding burst-size-limit 2k
+set firewall policer 1M then discard
+#
+# Use policers in filter terms
+set firewall family inet filter COPP-IN term SSH from protocol tcp
+set firewall family inet filter COPP-IN term SSH from destination-port ssh
+set firewall family inet filter COPP-IN term SSH then policer 10M
+set firewall family inet filter COPP-IN term SSH then accept
+#
+set firewall family inet filter COPP-IN term SNMP from protocol udp
+set firewall family inet filter COPP-IN term SNMP from destination-port snmp
+set firewall family inet filter COPP-IN term SNMP then policer 1M
+set firewall family inet filter COPP-IN term SNMP then accept
+#

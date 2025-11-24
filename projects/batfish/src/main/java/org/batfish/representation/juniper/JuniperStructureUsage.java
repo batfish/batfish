@@ -101,6 +101,7 @@ public enum JuniperStructureUsage implements StructureUsage {
   FIREWALL_FILTER_TERM_DEFINITION("firewall filter term"),
   FIREWALL_FILTER_TERM_FROM_INTERFACE("firewall filter term from interface"),
   FIREWALL_FILTER_TERM_FROM_INTERFACE_SET("firewall filter term from interface-set"),
+  FIREWALL_FILTER_THEN_POLICER("firewall filter then policer"),
   FIREWALL_FILTER_THEN_ROUTING_INSTANCE("firewall filter then routing-instance"),
   FIREWALL_INTERFACE_SET_MEMBER("firewall interface-set"),
   FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE("fowarding-options dhcp-relay group interface"),
