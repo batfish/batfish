@@ -1,0 +1,20 @@
+load("@rules_java//java:defs.bzl", "java_binary", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "coderunner",
+    srcs = glob(["src/main/java/**/*.java"]),
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish-common-protocol:common",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_apache_commons_commons_text",
+    ],
+)
+
+java_binary(
+    name = "cli",
+    main_class = "org.batfish.coderunner.CLI",
+    runtime_deps = [":coderunner"],
+)
