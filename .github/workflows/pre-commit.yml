@@ -8,6 +8,10 @@ on:
     - cron: "0 12 * * *" # Daily at 5am Seattle time (12 UTC)
   workflow_dispatch:
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.head_ref || github.run_id }}
+  cancel-in-progress: true
+
 jobs:
   get_date:
     name: ":clock: Get Date"
