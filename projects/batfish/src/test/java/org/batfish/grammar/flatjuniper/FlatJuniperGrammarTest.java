@@ -181,6 +181,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.COMMUNITY;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureType.INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT;
 import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STATEMENT_TERM;
@@ -431,6 +432,7 @@ import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
+import org.batfish.representation.juniper.FwThenPolicer;
 import org.batfish.representation.juniper.IcmpLarge;
 import org.batfish.representation.juniper.InterfaceOspfNeighbor;
 import org.batfish.representation.juniper.InterfaceRange;
@@ -466,6 +468,8 @@ import org.batfish.representation.juniper.NoPortTranslation;
 import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PathSelectionMode;
+import org.batfish.representation.juniper.Policer;
+import org.batfish.representation.juniper.PolicerThen;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PsFromColor;
 import org.batfish.representation.juniper.PsFromCondition;
@@ -9295,6 +9299,79 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         "Term with only 'from' conditions should have hasAtLeastOneFrom=true",
         fromOnlyTerm.hasAtLeastOneFrom());
+  }
+
+  @Test
+  public void testFirewallPolicerExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("firewall-policer");
+    Map<String, Policer> policers = c.getMasterLogicalSystem().getPolicers();
+
+    // Verify policers are extracted
+    assertThat(policers, hasKeys("10M", "1M"));
+
+    // Verify 10M policer details
+    Policer policer10M = policers.get("10M");
+    assertThat(policer10M.getName(), equalTo("10M"));
+    assertThat(policer10M.getIfExceeding(), notNullValue());
+    assertThat(policer10M.getIfExceeding().getBandwidthLimit(), equalTo(10000000L));
+    assertThat(policer10M.getIfExceeding().getBurstSizeLimit(), equalTo(15000L));
+    assertThat(policer10M.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify 1M policer details
+    Policer policer1M = policers.get("1M");
+    assertThat(policer1M.getName(), equalTo("1M"));
+    assertThat(policer1M.getIfExceeding(), notNullValue());
+    assertThat(policer1M.getIfExceeding().getBandwidthLimit(), equalTo(1000000L));
+    assertThat(policer1M.getIfExceeding().getBurstSizeLimit(), equalTo(2000L));
+    assertThat(policer1M.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify filter terms reference policers
+    Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
+    assertThat(filters, hasKey("COPP-IN"));
+    FirewallFilter filter = filters.get("COPP-IN");
+    assertThat(filter, instanceOf(ConcreteFirewallFilter.class));
+    ConcreteFirewallFilter concreteFilter = (ConcreteFirewallFilter) filter;
+    assertThat(concreteFilter.getTerms(), hasKeys("SSH", "SNMP"));
+
+    // Verify SSH term uses 10M policer
+    FwTerm sshTerm = concreteFilter.getTerms().get("SSH");
+    FwThenPolicer sshPolicerAction =
+        sshTerm.getThens().stream()
+            .filter(t -> t instanceof FwThenPolicer)
+            .map(t -> (FwThenPolicer) t)
+            .findFirst()
+            .orElse(null);
+    assertThat(sshPolicerAction, notNullValue());
+    assertThat(sshPolicerAction.getPolicerName(), equalTo("10M"));
+
+    // Verify SNMP term uses 1M policer
+    FwTerm snmpTerm = concreteFilter.getTerms().get("SNMP");
+    FwThenPolicer snmpPolicerAction =
+        snmpTerm.getThens().stream()
+            .filter(t -> t instanceof FwThenPolicer)
+            .map(t -> (FwThenPolicer) t)
+            .findFirst()
+            .orElse(null);
+    assertThat(snmpPolicerAction, notNullValue());
+    assertThat(snmpPolicerAction.getPolicerName(), equalTo("1M"));
+  }
+
+  @Test
+  public void testFirewallPolicerReferences() throws IOException {
+    String hostname = "firewall-policer";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify policer definitions
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "10M"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "1M"));
+
+    // Verify policer references from filter terms
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "10M", 1));
+    assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "1M", 1));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

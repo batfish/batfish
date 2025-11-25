@@ -332,7 +332,7 @@ BAD_OPTION: 'bad-option';
 BACKUP_ROUTER: 'backup-router';
 
 BANDWIDTH: 'bandwidth' -> pushMode ( M_Bandwidth );
-
+BANDWIDTH_LIMIT: 'bandwidth-limit' -> pushMode(M_Bandwidth);
 BASIC: 'basic';
 
 BEFORE: 'before';
@@ -368,7 +368,7 @@ BROADCAST_CLIENT: 'broadcast-client';
 BUFFER_DYNAMIC_THRESHOLD: 'buffer-dynamic-threshold';
 BUFFER_SIZE: 'buffer-size';
 BUNDLE: 'bundle';
-
+BURST_SIZE_LIMIT: 'burst-size-limit' -> pushMode(M_Bandwidth);
 C: 'c';
 
 CALIPSO_OPTION: 'CALIPSO-option';
@@ -987,7 +987,7 @@ IDENT_RESET: 'ident-reset';
 IDLE_TIMEOUT: 'idle-timeout';
 
 IDS_OPTION: 'ids-option' -> pushMode(M_Name);
-
+IF_EXCEEDING: 'if-exceeding';
 IF_ROUTE_EXISTS: 'if-route-exists';
 
 IGMP: 'igmp';
@@ -2202,11 +2202,8 @@ PING_DEATH: 'ping-death';
 POE: 'poe';
 
 POINT_TO_POINT: 'point-to-point';
-
-POLICER: 'policer';
-
+POLICER: 'policer' -> pushMode(M_Name);
 POLICIES: 'policies';
-
 POLICY
 :
   'policy'

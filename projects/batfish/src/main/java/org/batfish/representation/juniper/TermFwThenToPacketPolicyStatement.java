@@ -55,6 +55,12 @@ public final class TermFwThenToPacketPolicyStatement implements FwThenVisitor<St
   }
 
   @Override
+  public @Nullable Statement visitFwThenPolicer(FwThenPolicer policer) {
+    // Policers not currently modeled; treat as no-op
+    return null;
+  }
+
+  @Override
   public @Nullable Statement visitThenRoutingInstance(FwThenRoutingInstance routingInstance) {
     return _skipRest
         ? null

@@ -37,6 +37,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_F
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_FILTER_TERM;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INET6_FILTER;
 import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_INTERFACE_SET;
+import static org.batfish.representation.juniper.JuniperStructureType.FIREWALL_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_GATEWAY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_POLICY;
 import static org.batfish.representation.juniper.JuniperStructureType.IKE_PROPOSAL;
@@ -126,6 +127,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_FROM_INTERFACE_SET;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_POLICER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_THEN_ROUTING_INSTANCE;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_INTERFACE_SET_MEMBER;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FORWARDING_OPTIONS_DHCP_RELAY_GROUP_INTERFACE;
@@ -365,6 +367,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Evo_vrf_targetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Exp_code_pointContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_familyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_filterContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.F_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Ff_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_addressContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_destination_addressContext;
@@ -402,6 +405,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_ipContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_nopContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_routing_instanceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.FilterContext;
@@ -414,6 +418,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fods_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_if_exceedingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpie_bandwidth_limitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpie_burst_size_limitContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpt_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offsetContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fragment_offset_rangeContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Hello_authentication_typeContext;
@@ -1022,6 +1030,7 @@ import org.batfish.representation.juniper.FwThenDiscard;
 import org.batfish.representation.juniper.FwThenNextIp;
 import org.batfish.representation.juniper.FwThenNextTerm;
 import org.batfish.representation.juniper.FwThenNop;
+import org.batfish.representation.juniper.FwThenPolicer;
 import org.batfish.representation.juniper.FwThenRoutingInstance;
 import org.batfish.representation.juniper.GeneratedRoute;
 import org.batfish.representation.juniper.HostProtocol;
@@ -1088,6 +1097,9 @@ import org.batfish.representation.juniper.OspfInterfaceSettings;
 import org.batfish.representation.juniper.OspfInterfaceSettings.OspfInterfaceType;
 import org.batfish.representation.juniper.PatPool;
 import org.batfish.representation.juniper.PathSelectionMode;
+import org.batfish.representation.juniper.Policer;
+import org.batfish.representation.juniper.PolicerIfExceeding;
+import org.batfish.representation.juniper.PolicerThen;
 import org.batfish.representation.juniper.PolicyStatement;
 import org.batfish.representation.juniper.PrefixList;
 import org.batfish.representation.juniper.PsFromAsPath;
@@ -2418,6 +2430,10 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   private FwTerm _currentFwTerm;
 
+  private Policer _currentPolicer;
+
+  private PolicerIfExceeding _currentPolicerIfExceeding;
+
   private GeneratedRoute _currentGeneratedRoute;
 
   private Screen _currentScreen;
@@ -2817,6 +2833,59 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
       assert ctx.iface_wildcard != null;
       warn(ctx, "Interface wildcards are not yet supported in interface-set");
     }
+  }
+
+  @Override
+  public void enterF_policer(F_policerContext ctx) {
+    String name = toString(ctx.name);
+    _currentPolicer = _currentLogicalSystem.getPolicers().computeIfAbsent(name, Policer::new);
+    _configuration.defineFlattenedStructure(FIREWALL_POLICER, name, ctx, _parser);
+  }
+
+  @Override
+  public void exitF_policer(F_policerContext ctx) {
+    _currentPolicer = null;
+  }
+
+  @Override
+  public void enterFp_if_exceeding(Fp_if_exceedingContext ctx) {
+    // Reuse existing if-exceeding or create new one
+    _currentPolicerIfExceeding = _currentPolicer.getIfExceeding();
+    if (_currentPolicerIfExceeding == null) {
+      _currentPolicerIfExceeding = new PolicerIfExceeding();
+      _currentPolicer.setIfExceeding(_currentPolicerIfExceeding);
+    }
+  }
+
+  @Override
+  public void exitFp_if_exceeding(Fp_if_exceedingContext ctx) {
+    _currentPolicerIfExceeding = null;
+  }
+
+  @Override
+  public void exitFpie_bandwidth_limit(Fpie_bandwidth_limitContext ctx) {
+    _currentPolicerIfExceeding.setBandwidthLimit(toBandwidth(ctx.bw_limit));
+  }
+
+  @Override
+  public void exitFpie_burst_size_limit(Fpie_burst_size_limitContext ctx) {
+    long base = toLong(ctx.size.base);
+    long burstSize;
+    if (ctx.size.K() != null) {
+      burstSize = base * 1000L;
+    } else if (ctx.size.M() != null) {
+      burstSize = base * 1000000L;
+    } else if (ctx.size.G() != null) {
+      burstSize = base * 1000000000L;
+    } else {
+      burstSize = base;
+    }
+    _currentPolicerIfExceeding.setBurstSizeLimit(burstSize);
+  }
+
+  @Override
+  public void exitFpt_discard(Fpt_discardContext ctx) {
+    _currentPolicer.setThen(PolicerThen.DISCARD);
   }
 
   @Override
@@ -5146,6 +5215,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftt_nop(Fftt_nopContext ctx) {
     _currentFwTerm.getThens().add(FwThenNop.INSTANCE);
+  }
+
+  @Override
+  public void exitFftt_policer(Fftt_policerContext ctx) {
+    String name = toString(ctx.name);
+    _currentFwTerm.getThens().add(new FwThenPolicer(name));
+    _configuration.referenceStructure(
+        FIREWALL_POLICER, name, FIREWALL_FILTER_THEN_POLICER, getLine(ctx.getStart()));
   }
 
   @Override

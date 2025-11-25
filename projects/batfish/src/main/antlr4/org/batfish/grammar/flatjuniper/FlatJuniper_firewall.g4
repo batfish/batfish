@@ -10,6 +10,7 @@ f_common
 :
    f_filter
    | f_null
+   | f_policer
 ;
 
 f_family
@@ -46,10 +47,48 @@ f_filter
 
 f_null
 :
+   SERVICE_FILTER null_filler
+;
+
+f_policer
+:
+   POLICER name = junos_name
    (
-      POLICER
-      | SERVICE_FILTER
-   ) null_filler
+      fp_if_exceeding
+      | fp_then
+   )
+;
+
+fp_if_exceeding
+:
+   IF_EXCEEDING
+   (
+      fpie_bandwidth_limit
+      | fpie_burst_size_limit
+   )+
+;
+
+fpie_bandwidth_limit
+:
+   BANDWIDTH_LIMIT bw_limit = bandwidth
+;
+
+fpie_burst_size_limit
+:
+   BURST_SIZE_LIMIT size = burst_size_limit
+;
+
+fp_then
+:
+   THEN
+   (
+      fpt_discard
+   )
+;
+
+fpt_discard
+:
+   DISCARD
 ;
 
 ff_interface_specific
@@ -127,6 +166,7 @@ fft_then
       | fftt_next_ip
       | fftt_next_term
       | fftt_nop
+      | fftt_policer
       | fftt_port_mirror
       | fftt_reject
       | fftt_routing_instance
@@ -421,10 +461,14 @@ fftt_nop
       | FORWARDING_CLASS
       | LOG
       | NEXT_IP6
-      | POLICER
       | SAMPLE
       | SYSLOG
    ) null_filler
+;
+
+fftt_policer
+:
+   POLICER name = junos_name
 ;
 
 fftt_port_mirror
