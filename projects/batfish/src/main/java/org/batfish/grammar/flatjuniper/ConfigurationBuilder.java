@@ -618,6 +618,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_thenContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_throughContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsfrf_uptoContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_acceptContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_aigp_originateContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_expandContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_as_path_prependContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_bgp_output_queue_priorityContext;
@@ -1121,6 +1122,7 @@ import org.batfish.representation.juniper.PsFroms;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
+import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpand;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
 import org.batfish.representation.juniper.PsThenAsPathExpandLastAs;
@@ -6265,6 +6267,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_accept(Popst_acceptContext ctx) {
     addPsThen(PsThenAccept.INSTANCE, ctx);
+  }
+
+  @Override
+  public void exitPopst_aigp_originate(Popst_aigp_originateContext ctx) {
+    todo(ctx);
+    Long distance = ctx.distance != null ? toLong(ctx.distance) : null;
+    addPsThen(new PsThenAigpOriginate(distance), ctx);
   }
 
   @Override
