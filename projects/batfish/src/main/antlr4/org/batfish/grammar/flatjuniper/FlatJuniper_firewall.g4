@@ -9,8 +9,8 @@ options {
 f_common
 :
    f_filter
-   | f_null
    | f_policer
+   | f_service_filter_null
 ;
 
 f_family
@@ -43,11 +43,6 @@ f_filter
       | ff_interface_specific
       | ff_term
    )
-;
-
-f_null
-:
-   SERVICE_FILTER null_filler
 ;
 
 f_policer
@@ -89,6 +84,11 @@ fp_then
 fpt_discard
 :
    DISCARD
+;
+
+f_service_filter_null
+:
+   SERVICE_FILTER null_filler
 ;
 
 ff_interface_specific
