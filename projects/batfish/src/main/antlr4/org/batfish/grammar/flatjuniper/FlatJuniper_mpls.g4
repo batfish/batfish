@@ -35,6 +35,7 @@ p_mpls
        | mpls_admin_groups
        | mpls_interface
        | mpls_label_switched_path
+       | mpls_optimize_adaptive_teardown_null
        | mpls_path
        | mpls_statistics_null
        | mpls_traceoptions_null
@@ -321,6 +322,11 @@ mplslspsag_include_any
 mplslsp_to_null
 :
    TO (ip_address | ipv6_address)
+;
+
+mpls_optimize_adaptive_teardown_null
+:
+   OPTIMIZE_ADAPTIVE_TEARDOWN null_filler
 ;
 
 mpls_statistics_null
