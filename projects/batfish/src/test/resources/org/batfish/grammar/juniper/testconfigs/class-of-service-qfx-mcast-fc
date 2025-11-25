@@ -1,0 +1,12 @@
+set system host-name cos-qfx-mcast-fc
+# Test that built-in "mcast" forwarding class can be used without explicit definition
+# Platform: QFX switches (except QFX10000)
+# Reference: https://www.juniper.net/documentation/us/en/software/junos/traffic-mgmt-qfx/topics/example/forwarding-classes-cos-configuring.html
+# mcast is the default multidestination forwarding class on QFX (queue 8)
+set class-of-service classifiers dscp MCAST-CLASSIFIER forwarding-class mcast loss-priority low code-points 000000
+set class-of-service scheduler-maps MCAST-MAP forwarding-class mcast scheduler SCHED-MCAST
+set class-of-service rewrite-rules dscp MCAST-REWRITE forwarding-class mcast loss-priority low code-point 000000
+set class-of-service host-outbound-traffic forwarding-class mcast
+set class-of-service interfaces ae1 forwarding-class mcast
+set class-of-service interfaces ae1 unit 0 forwarding-class mcast
+set class-of-service schedulers SCHED-MCAST transmit-rate percent 10
