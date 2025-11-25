@@ -39,6 +39,7 @@ public enum JuniperStructureType implements StructureType {
   FIREWALL_INET6_FILTER("firewall family inet6 filter"),
   FIREWALL_FILTER_TERM("firewall filter term"),
   FIREWALL_INTERFACE_SET("firewall interface-set"),
+  FIREWALL_POLICER("firewall policer"),
   IKE_GATEWAY("ike gateway"),
   IKE_POLICY("ike policy"),
   IKE_PROPOSAL("ike proposal"),
