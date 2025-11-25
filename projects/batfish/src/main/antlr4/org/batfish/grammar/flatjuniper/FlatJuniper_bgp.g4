@@ -108,7 +108,6 @@ b_common
    | b_damping
    | b_description
    | b_disable_4byte_as
-   | b_drop_path_attributes
    | b_enforce_first_as
    | b_export
    | b_family
@@ -153,7 +152,7 @@ b_disable_4byte_as
 
 b_drop_path_attributes
 :
-   DROP_PATH_ATTRIBUTES attr = dec
+   DROP_PATH_ATTRIBUTES attr = uint8_range
 ;
 
 b_enable
@@ -657,6 +656,7 @@ p_bgp
       | b_bgp_error_tolerance_null
       | b_common
       | b_disable
+      | b_drop_path_attributes
       | b_enable
       | b_forwarding_context_null
       | b_group
