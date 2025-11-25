@@ -6,6 +6,7 @@ import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpAuthenticationAlgorithm;
+import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
 
 public class BgpGroup implements Serializable {
@@ -30,6 +31,7 @@ public class BgpGroup implements Serializable {
   private Ip _clusterId;
   private String _description;
   private @Nullable Boolean _disable;
+  private @Nonnull IntegerSpace _dropPathAttributes;
   private boolean _dynamic;
   private Boolean _ebgpMultihop;
   private Boolean _enforceFirstAs;
@@ -53,6 +55,7 @@ public class BgpGroup implements Serializable {
   private BgpGroupType _type;
 
   public BgpGroup() {
+    _dropPathAttributes = IntegerSpace.EMPTY;
     _exportPolicies = new LinkedList<>();
     _importPolicies = new LinkedList<>();
   }
@@ -92,6 +95,7 @@ public class BgpGroup implements Serializable {
       if (_disable == null) {
         _disable = _parent._disable;
       }
+      // Deliberately do not inherit drop-path-attributes (protocol-level only)
       if (_enforceFirstAs == null) {
         _enforceFirstAs = _parent._enforceFirstAs;
       }
@@ -189,6 +193,10 @@ public class BgpGroup implements Serializable {
 
   public @Nullable Boolean getDisable() {
     return _disable;
+  }
+
+  public @Nonnull IntegerSpace getDropPathAttributes() {
+    return _dropPathAttributes;
   }
 
   public boolean getDynamic() {
@@ -305,6 +313,10 @@ public class BgpGroup implements Serializable {
 
   public void setDisable(boolean disable) {
     _disable = disable;
+  }
+
+  public void setDropPathAttributes(@Nonnull IntegerSpace dropPathAttributes) {
+    _dropPathAttributes = dropPathAttributes;
   }
 
   public void setDynamic(boolean dynamic) {
