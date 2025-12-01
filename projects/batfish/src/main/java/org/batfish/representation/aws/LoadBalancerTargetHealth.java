@@ -83,7 +83,7 @@ public final class LoadBalancerTargetHealth implements AwsVpcEntity, Serializabl
       TargetHealth that = (TargetHealth) o;
       return Objects.equals(_description, that._description)
           && Objects.equals(_reason, that._reason)
-          && _state.equals(that._state);
+          && _state == that._state;
     }
 
     @Override

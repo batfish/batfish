@@ -93,7 +93,7 @@ public class ContainerInstance implements Serializable {
     @Override
     public boolean equals(Object o) {
       if (o instanceof Port other) {
-        return (other.getPort() == getPort() && other.getProtocol().equals(getProtocol()));
+        return (other.getPort() == getPort() && other.getProtocol() == getProtocol());
       }
       return false;
     }

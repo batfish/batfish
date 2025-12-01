@@ -8,7 +8,7 @@ public enum IsisLevel {
   LEVEL_2;
 
   public boolean includes(@Nullable IsisLevel other) {
-    return equals(union(this, other));
+    return this == union(this, other);
   }
 
   public static @Nullable IsisLevel intersection(IsisLevel... levels) {

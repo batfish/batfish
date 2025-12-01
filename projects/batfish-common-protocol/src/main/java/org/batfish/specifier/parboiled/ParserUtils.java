@@ -76,7 +76,7 @@ final class ParserUtils {
   /** Generates a friendly message to explain what might be wrong with a particular partial match */
   @VisibleForTesting
   static String getErrorString(PotentialMatch pm) {
-    if (pm.getAnchorType().equals(Anchor.Type.STRING_LITERAL)) {
+    if (pm.getAnchorType() == Anchor.Type.STRING_LITERAL) {
       return String.format("'%s'", pm.getMatch());
     }
     return String.format("%s", pm.getAnchorType());

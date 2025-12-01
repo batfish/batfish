@@ -312,7 +312,7 @@ public class ModelGeneration {
       LineAction action,
       Environment.Direction direction,
       Result<?, BgpRoute> expectedResult) {
-    if (!expectedResult.getAction().equals(action)) {
+    if (expectedResult.getAction() != action) {
       LOGGER.warn(
           "Mismatched action for input {}: simulation {} model {}",
           expectedResult.getInputRoute(),

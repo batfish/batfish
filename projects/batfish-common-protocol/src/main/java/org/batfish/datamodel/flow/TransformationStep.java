@@ -58,7 +58,7 @@ public final class TransformationStep extends Step<TransformationStepDetail> {
         return false;
       }
       TransformationStepDetail detail = (TransformationStepDetail) o;
-      return _type.equals(detail._type) && _flowDiffs.equals(detail._flowDiffs);
+      return _type == detail._type && _flowDiffs.equals(detail._flowDiffs);
     }
 
     @Override

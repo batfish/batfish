@@ -127,7 +127,7 @@ public class BatfishBDDDifferentialReachabilityTest {
             .flatMap(Collection::stream);
     assertTrue(
         String.format("all traces should have disposition %s in the base environment", disposition),
-        traces.allMatch(trace -> trace.getDisposition().equals(disposition)));
+        traces.allMatch(trace -> trace.getDisposition() == disposition));
 
     traces =
         batfish
@@ -138,7 +138,7 @@ public class BatfishBDDDifferentialReachabilityTest {
             .flatMap(Collection::stream);
     assertTrue(
         String.format("no traces should have disposition %s in the delta environment", disposition),
-        traces.noneMatch(trace -> trace.getDisposition().equals(disposition)));
+        traces.noneMatch(trace -> trace.getDisposition() == disposition));
   }
 
   private static DifferentialReachabilityParameters parameters(

@@ -372,7 +372,7 @@ public final class AsaNat implements Comparable<AsaNat>, Serializable {
      * not be necessary since the source interface requirement is relaxed. A route to
      * _insideInterface for traffic with destination matching _realSourceObject would suffice.
      */
-    if (_section.equals(Section.OBJECT)) {
+    if (_section == Section.OBJECT) {
       Boolean identity = isIdentityObjectNat(this, networkObjects, w);
       if (identity == null) {
         throw new BatfishException(

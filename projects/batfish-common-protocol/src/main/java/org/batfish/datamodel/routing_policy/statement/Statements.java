@@ -49,7 +49,7 @@ public enum Statements {
     @Override
     public boolean equals(Object rhs) {
       if (rhs instanceof StaticStatement) {
-        return _type.equals(((StaticStatement) rhs)._type);
+        return _type == ((StaticStatement) rhs)._type;
       }
       return false;
     }

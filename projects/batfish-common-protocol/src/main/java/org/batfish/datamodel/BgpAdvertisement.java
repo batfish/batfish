@@ -547,7 +547,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (!_srcVrf.equals(other._srcVrf)) {
       return false;
     }
-    if (!_type.equals(other._type)) {
+    if (_type != other._type) {
       return false;
     }
     if (_weight != other._weight) {
