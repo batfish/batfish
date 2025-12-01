@@ -2206,20 +2206,20 @@ public final class CiscoAsaGrammarTest {
     // Check that twice NATs are sorted by line after section
     assertThat(
         nats.stream()
-            .filter(nat2 -> nat2.getSection().equals(Section.BEFORE))
+            .filter(nat2 -> nat2.getSection() == Section.BEFORE)
             .map(AsaNat::getLine)
             .collect(Collectors.toList()),
         contains(2, 3));
     assertThat(
         nats.stream()
-            .filter(nat1 -> nat1.getSection().equals(Section.AFTER))
+            .filter(nat1 -> nat1.getSection() == Section.AFTER)
             .map(AsaNat::getLine)
             .collect(Collectors.toList()),
         contains(1, 4));
 
     List<AsaNat> objectNats =
         nats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
+            .filter(nat -> nat.getSection() == Section.OBJECT)
             .collect(Collectors.toList());
 
     // Check that object NATs are sorted static and then dynamic

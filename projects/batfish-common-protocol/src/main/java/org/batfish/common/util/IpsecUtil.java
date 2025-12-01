@@ -259,17 +259,17 @@ public class IpsecUtil {
       IkePhase1Key initiatorKey,
       IkePhase1Key responderKey,
       IpsecSession.Builder ipsecSessionBuilder) {
-    if (!responderKey.getKeyType().equals(initiatorKey.getKeyType())) {
+    if (responderKey.getKeyType() != initiatorKey.getKeyType()) {
       return;
     }
     IkePhase1Key negotiatedIkePhase1Key = new IkePhase1Key();
     negotiatedIkePhase1Key.setKeyType(initiatorKey.getKeyType());
-    if (responderKey.getKeyType().equals(IkeKeyType.RSA_PUB_KEY)
-        || responderKey.getKeyType().equals(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED)) {
+    if (responderKey.getKeyType() == IkeKeyType.RSA_PUB_KEY
+        || responderKey.getKeyType() == IkeKeyType.PRE_SHARED_KEY_ENCRYPTED) {
       // RSA pub keys and encrypted PSKs will not be equal and there is no common negotiated key
       // so creating an empty negotiated key
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);
-    } else if (responderKey.getKeyType().equals(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED)
+    } else if (responderKey.getKeyType() == IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED
         && responderKey.getKeyHash().equals(initiatorKey.getKeyHash())) {
       negotiatedIkePhase1Key.setKeyHash(initiatorKey.getKeyHash());
       ipsecSessionBuilder.setNegotiatedIkeP1Key(negotiatedIkePhase1Key);

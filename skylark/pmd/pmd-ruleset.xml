@@ -8,6 +8,9 @@
         This ruleset defines the PMD rules for project "batfish".
     </description>
 
+    <!-- Exclude AutoValue-generated classes -->
+    <exclude-pattern>.*/AutoValue_.*\.java</exclude-pattern>
+
     <!--
          If you need to exclude something, see https://pmd.github.io/pmd-6.4.0/pmd_rules_java.html
     -->

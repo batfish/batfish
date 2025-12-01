@@ -107,8 +107,8 @@ public final class PointToPointComputer {
         }
         NodeInterfacePair iface = NodeInterfacePair.of(i);
         if (i.getInterfaceType() == InterfaceType.PHYSICAL
-            || i.getInterfaceType().equals(InterfaceType.AGGREGATED)
-            || i.getInterfaceType().equals(InterfaceType.REDUNDANT)) {
+            || i.getInterfaceType() == InterfaceType.AGGREGATED
+            || i.getInterfaceType() == InterfaceType.REDUNDANT) {
           ret.put(iface, iface);
         } else {
           i.getDependencies().stream()

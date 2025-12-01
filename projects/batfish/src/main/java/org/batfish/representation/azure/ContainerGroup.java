@@ -146,7 +146,7 @@ public class ContainerGroup extends Instance implements Serializable {
     @Override
     public boolean equals(Object o) {
       if (o instanceof Port other) {
-        return (other.getPort() == getPort() && other.getProtocol().equals(getProtocol()));
+        return (other.getPort() == getPort() && other.getProtocol() == getProtocol());
       }
       return false;
     }
@@ -292,13 +292,13 @@ public class ContainerGroup extends Instance implements Serializable {
     // D-NAT
     Set<SubRange> tcpPorts =
         containerInstance.getProperties().getPorts().stream()
-            .filter(port -> port.getProtocol().equals(IpProtocol.TCP))
+            .filter(port -> port.getProtocol() == IpProtocol.TCP)
             .map(port -> new SubRange(port.getPort()))
             .collect(Collectors.toSet());
 
     Set<SubRange> udpPorts =
         containerInstance.getProperties().getPorts().stream()
-            .filter(port -> port.getProtocol().equals(IpProtocol.UDP))
+            .filter(port -> port.getProtocol() == IpProtocol.UDP)
             .map(port -> new SubRange(port.getPort()))
             .collect(Collectors.toSet());
 
