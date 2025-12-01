@@ -95,7 +95,7 @@ bazel_dep(name = "rules_license", version = "1.0.0")
 bazel_dep(name = "bazel_features", version = "1.38.0")
 
 # Java rules and dependencies
-bazel_dep(name = "rules_java", version = "9.0.3")
+bazel_dep(name = "rules_java", version = "9.1.0")
 bazel_dep(name = "rules_jvm_external", version = "6.9")
 
 # Python rules
