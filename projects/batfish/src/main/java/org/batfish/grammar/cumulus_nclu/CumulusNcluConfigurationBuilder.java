@@ -841,7 +841,7 @@ public class CumulusNcluConfigurationBuilder extends CumulusNcluParserBaseListen
             .compute(
                 toInteger(ctx.num),
                 (num, existingEntry) ->
-                    existingEntry != null && existingEntry.getAction().equals(action)
+                    existingEntry != null && existingEntry.getAction() == action
                         ? existingEntry
                         : new RouteMapEntry(num, action));
   }

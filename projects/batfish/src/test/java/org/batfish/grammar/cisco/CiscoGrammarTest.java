@@ -1482,7 +1482,7 @@ public final class CiscoGrammarTest {
 
     List<EigrpRedistributionPolicy> eigrpRedists =
         eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
-            .filter(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.EIGRP))
+            .filter(entry -> entry.getKey().getProtocol() == RoutingProtocol.EIGRP)
             .map(Entry::getValue)
             .collect(Collectors.toList());
     assertSame(eigrpRedists.size(), 2);

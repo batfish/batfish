@@ -90,7 +90,7 @@ public final class InitializationMetadata {
       return false;
     }
     InitializationMetadata rhs = (InitializationMetadata) obj;
-    return _currentStatus.equals(rhs._currentStatus)
+    return _currentStatus == rhs._currentStatus
         && Objects.equals(_errMessage, rhs._errMessage)
         && _statusHistory.equals(rhs._statusHistory);
   }

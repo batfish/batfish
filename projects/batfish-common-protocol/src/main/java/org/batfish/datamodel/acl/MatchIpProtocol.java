@@ -25,7 +25,7 @@ public class MatchIpProtocol extends AclLineMatchExpr {
 
   @Override
   protected boolean exprEquals(Object o) {
-    return _protocol.equals(((MatchIpProtocol) o)._protocol);
+    return _protocol == ((MatchIpProtocol) o)._protocol;
   }
 
   @JsonProperty(PROP_PROTOCOL)

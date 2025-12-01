@@ -525,7 +525,7 @@ public final class LoadBalancer implements AwsVpcEntity, Serializable {
    */
   static @Nullable Ip getTargetIp(
       LoadBalancerTarget target, TargetGroup.Type targetGroupType, Region region) {
-    return targetGroupType.equals(IP)
+    return targetGroupType == IP
         ? Ip.parse(target.getId())
         // instance must exist since this target is valid (see isTargetInAnyEnabledAvailabilityZone)
         : region.getInstances().get(target.getId()).getPrimaryPrivateIpAddress();

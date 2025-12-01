@@ -96,7 +96,7 @@ public final class BgpProtocolHelper {
     builder.setTag(null);
 
     // Set originatorIP
-    if (localSessionProperties.isEbgp() || !routeProtocol.equals(RoutingProtocol.IBGP)) {
+    if (localSessionProperties.isEbgp() || routeProtocol != RoutingProtocol.IBGP) {
       // eBGP session or not iBGP route: override the originator
       builder.setOriginatorIp(localBgpProcess.getRouterId());
     }
@@ -135,7 +135,7 @@ public final class BgpProtocolHelper {
 
     builder.setClusterList(ImmutableSet.of());
     boolean routeOriginatedLocally = route.getReceivedFrom().equals(ReceivedFromSelf.instance());
-    if (routeProtocol.equals(RoutingProtocol.IBGP) && !localSessionProperties.isEbgp()) {
+    if (routeProtocol == RoutingProtocol.IBGP && !localSessionProperties.isEbgp()) {
       /*
        * The remote route is iBGP. The session is iBGP. We consider whether to reflect, and
        * modify the outgoing route as appropriate.
@@ -202,7 +202,7 @@ public final class BgpProtocolHelper {
         return false;
     }
 
-    if (!route.getProtocol().equals(RoutingProtocol.IBGP)) {
+    if (route.getProtocol() != RoutingProtocol.IBGP) {
       return false;
     }
 
@@ -463,7 +463,7 @@ public final class BgpProtocolHelper {
 
       // Remove any confederations if propagating route outside of the confederation border
       AsPath routeAsPath = routeBuilder.getAsPath();
-      if (confedSessionType.equals(ConfedSessionType.ACROSS_CONFED_BORDER)) {
+      if (confedSessionType == ConfedSessionType.ACROSS_CONFED_BORDER) {
         routeAsPath = routeAsPath.removeConfederations();
       }
       routeAsPath =

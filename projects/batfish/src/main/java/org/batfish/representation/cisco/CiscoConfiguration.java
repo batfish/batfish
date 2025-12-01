@@ -1217,7 +1217,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
       RoutingProtocol srcProtocol,
       RoutingPolicy.Builder redistributionPolicy) {
     bgpProcess.getRedistributionPolicies().entrySet().stream()
-        .filter(entry -> entry.getKey().getProtocol().equals(srcProtocol))
+        .filter(entry -> entry.getKey().getProtocol() == srcProtocol)
         .sorted(Entry.comparingByKey())
         .map(Map.Entry::getValue)
         .map(policy -> createRedistributionStatements(bgpProcess, policy))
@@ -2245,7 +2245,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
     // policy map for redistributing bgp routes
     RipRedistributionPolicy rbp =
         proc.getRedistributionPolicies().entrySet().stream()
-            .filter(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.BGP))
+            .filter(entry -> entry.getKey().getProtocol() == RoutingProtocol.BGP)
             .findFirst()
             .map(Map.Entry::getValue)
             .orElse(null);

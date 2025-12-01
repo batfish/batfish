@@ -7583,7 +7583,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       proc.getRedistributionPolicies()
           .entrySet()
-          .removeIf(entry -> entry.getKey().getProtocol().equals(RoutingProtocol.CONNECTED));
+          .removeIf(entry -> entry.getKey().getProtocol() == RoutingProtocol.CONNECTED);
     } else if (_currentIpPeerGroup != null || _currentNamedPeerGroup != null) {
       throw new BatfishException("do not currently handle per-neighbor redistribution policies");
     }

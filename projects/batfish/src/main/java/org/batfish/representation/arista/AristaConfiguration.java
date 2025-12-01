@@ -2452,7 +2452,7 @@ public final class AristaConfiguration extends VendorConfiguration {
     applyVrrp(c);
 
     // convert MLAG configs
-    if (_vendor.equals(ConfigurationFormat.ARISTA)) {
+    if (_vendor == ConfigurationFormat.ARISTA) {
       Mlag viMlag = toMlag(_eosMlagConfiguration);
       if (viMlag != null) {
         c.setMlags(ImmutableMap.of(viMlag.getId(), viMlag));

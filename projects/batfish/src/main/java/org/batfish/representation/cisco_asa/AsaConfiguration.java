@@ -1850,7 +1850,7 @@ public final class AsaConfiguration extends VendorConfiguration {
     // Each NAT rule specifies an outside interface or ANY_INTERFACE
     SortedSet<AsaNat> objectNats =
         nats.stream()
-            .filter(nat -> nat.getSection().equals(Section.OBJECT))
+            .filter(nat -> nat.getSection() == Section.OBJECT)
             .filter(
                 nat ->
                     nat.getOutsideInterface().equals(AsaNat.ANY_INTERFACE)

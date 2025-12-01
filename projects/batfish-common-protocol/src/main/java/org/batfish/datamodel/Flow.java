@@ -515,7 +515,7 @@ public final class Flow implements Comparable<Flow>, Serializable {
         && _ingressNode.equals(other._ingressNode)
         && Objects.equals(_ingressInterface, other._ingressInterface)
         && Objects.equals(_ingressVrf, other._ingressVrf)
-        && _ipProtocol.equals(other._ipProtocol)
+        && _ipProtocol == other._ipProtocol
         && _packetLength == other._packetLength
         && _srcIp.equals(other._srcIp)
         && Objects.equals(_srcPort, other._srcPort)

@@ -121,7 +121,7 @@ final class AsaNatUtil {
    */
   static @Nullable Boolean isIdentityObjectNat(
       AsaNat nat, Map<String, NetworkObject> networkObjects, Warnings w) {
-    checkArgument(nat.getSection().equals(Section.OBJECT), "Only supports object NATs.");
+    checkArgument(nat.getSection() == Section.OBJECT, "Only supports object NATs.");
 
     if (nat.getDynamic()) {
       return false;

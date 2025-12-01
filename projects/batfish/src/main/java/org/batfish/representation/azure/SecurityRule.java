@@ -59,8 +59,8 @@ public class SecurityRule extends Resource implements Serializable {
       headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
 
       // handle port range(s) only if layer 4's protocol is TCP or UDP
-      if ((_properties.getProtocol().equals(IpProtocol.TCP))
-          || _properties.getProtocol().equals(IpProtocol.UDP)) {
+      if ((_properties.getProtocol() == IpProtocol.TCP)
+          || _properties.getProtocol() == IpProtocol.UDP) {
 
         // if there are multiple port range, then we ignore single port range field
 
@@ -76,7 +76,7 @@ public class SecurityRule extends Resource implements Serializable {
           headerSpaceBuilder.setDstPorts(_properties.getDestinationPortRanges());
         }
 
-      } else if (_properties.getProtocol().equals(IpProtocol.ICMP)) {
+      } else if (_properties.getProtocol() == IpProtocol.ICMP) {
         headerSpaceBuilder.setIpProtocols(_properties.getProtocol());
       }
     }

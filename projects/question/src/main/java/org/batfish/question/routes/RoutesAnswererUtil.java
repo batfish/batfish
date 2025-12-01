@@ -701,7 +701,7 @@ public class RoutesAnswererUtil {
       RouteRowAttribute routeRowAttributeBase,
       RouteRowAttribute routeRowAttributeReference) {
     RouteEntryPresenceStatus routeEntryPresenceStatus;
-    if (secondaryKeyStatus.equals(KeyPresenceStatus.IN_BOTH)) {
+    if (secondaryKeyStatus == KeyPresenceStatus.IN_BOTH) {
       if (routeRowAttributeBase != null && routeRowAttributeReference != null) {
         routeEntryPresenceStatus =
             routeRowAttributeBase.equals(routeRowAttributeReference)
