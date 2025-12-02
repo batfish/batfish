@@ -91,8 +91,12 @@ jobs:
           java-version: "17"
       - name: Bazel build and test
         run: |
-          bazel test --test_output=errors --test_tag_filters=-pmd_test --build_tag_filters=-pmd_test -- //...
-          bazel test --test_output=errors --test_tag_filters=pmd_test -- //...
+          # Stop on first test failure for PRs; keep going for scheduled runs to see all failures
+          TEST_KEEP_GOING="false"
+          if [ "${{ github.event_name }}" = "schedule" ]; then
+            TEST_KEEP_GOING="true"
+          fi
+          bazel test --test_output=errors --test_keep_going=$TEST_KEEP_GOING -- //...
       - name: Build JAR
         run: |
           mkdir workspace
