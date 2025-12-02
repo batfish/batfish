@@ -7,7 +7,6 @@ import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.nio.charset.Charset;
 import javax.annotation.Nonnull;
-import org.apache.commons.io.IOUtils;
 
 /** Utility class for reading resources in the classpath */
 public final class Resources {
@@ -24,7 +23,7 @@ public final class Resources {
     try (InputStream is =
         Thread.currentThread().getContextClassLoader().getResourceAsStream(resourcePath)) {
       checkArgument(is != null, "Error opening resource: '%s'", resourcePath);
-      return IOUtils.toByteArray(is);
+      return is.readAllBytes();
     } catch (IOException e) {
       throw new UncheckedIOException("Could not open resource: '" + resourcePath + "'", e);
     }
