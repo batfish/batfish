@@ -158,6 +158,7 @@ java_library(
     deps = [
         ":parser_common",
         "//projects/bdd",
+        "@maven//:at_yawk_lz4_lz4_java",
         "@maven//:com_carrotsearch_hppc",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
@@ -187,7 +188,6 @@ java_library(
         "@maven//:org_glassfish_jersey_containers_jersey_container_grizzly2_http",
         "@maven//:org_glassfish_jersey_core_jersey_server",
         "@maven//:org_jgrapht_jgrapht_core",
-        "@maven//:org_lz4_lz4_java",
         "@maven//:org_skyscreamer_jsonassert",
     ],
 )
