@@ -1,11 +1,9 @@
 package org.batfish.main;
 
-import com.google.common.io.Closer;
 import com.ibm.icu.text.CharsetDetector;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.SequenceInputStream;
 import java.nio.charset.Charset;
 import javax.annotation.Nonnull;
 import org.apache.commons.io.ByteOrderMark;
@@ -24,18 +22,12 @@ final class StreamDecoder {
   static @Nonnull String decodeStreamAndAppendNewline(@Nonnull InputStream inputStream)
       throws IOException {
     byte[] rawBytes = inputStream.readAllBytes();
+    if (rawBytes.length == 0) {
+      return "";
+    }
     Charset cs = Charset.forName(new CharsetDetector().setText(rawBytes).detect().getName());
-    try (Closer closer = Closer.create()) {
-      InputStream inputByteStream =
-          closer.register(bomInputStream(new ByteArrayInputStream(rawBytes)));
-      InputStream finalInputStream =
-          closer.register(
-              rawBytes.length > 0
-                  ? new SequenceInputStream(
-                      inputByteStream,
-                      closer.register(bomInputStream(new ByteArrayInputStream("\n".getBytes(cs)))))
-                  : inputByteStream);
-      return new String(finalInputStream.readAllBytes(), cs);
+    try (BOMInputStream bomStream = bomInputStream(new ByteArrayInputStream(rawBytes))) {
+      return new String(bomStream.readAllBytes(), cs) + "\n";
     }
   }
 
