@@ -9,7 +9,6 @@ import java.io.SequenceInputStream;
 import java.nio.charset.Charset;
 import javax.annotation.Nonnull;
 import org.apache.commons.io.ByteOrderMark;
-import org.apache.commons.io.IOUtils;
 import org.apache.commons.io.input.BOMInputStream;
 
 /** Utility class for decoding streams of unknown charset to strings. */
@@ -24,7 +23,7 @@ final class StreamDecoder {
    */
   static @Nonnull String decodeStreamAndAppendNewline(@Nonnull InputStream inputStream)
       throws IOException {
-    byte[] rawBytes = IOUtils.toByteArray(inputStream);
+    byte[] rawBytes = inputStream.readAllBytes();
     Charset cs = Charset.forName(new CharsetDetector().setText(rawBytes).detect().getName());
     try (Closer closer = Closer.create()) {
       InputStream inputByteStream =
@@ -36,7 +35,7 @@ final class StreamDecoder {
                       inputByteStream,
                       closer.register(bomInputStream(new ByteArrayInputStream("\n".getBytes(cs)))))
                   : inputByteStream);
-      return new String(IOUtils.toByteArray(finalInputStream), cs);
+      return new String(finalInputStream.readAllBytes(), cs);
     }
   }
 
