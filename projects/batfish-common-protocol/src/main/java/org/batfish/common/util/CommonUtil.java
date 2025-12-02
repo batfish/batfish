@@ -6,9 +6,7 @@ import static org.batfish.common.util.Resources.readResource;
 import com.google.common.hash.Hashing;
 import com.ibm.icu.text.CharsetDetector;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
 import java.net.URI;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -205,9 +203,8 @@ public class CommonUtil {
   }
 
   public static void writeFile(Path outputPath, String output) {
-    try (FileOutputStream fs = new FileOutputStream(outputPath.toFile());
-        OutputStreamWriter os = new OutputStreamWriter(fs, UTF_8)) {
-      os.write(output);
+    try {
+      Files.writeString(outputPath, output, UTF_8);
     } catch (FileNotFoundException e) {
       throw new BatfishException("Failed to write file (file not found): " + outputPath, e);
     } catch (IOException e) {
