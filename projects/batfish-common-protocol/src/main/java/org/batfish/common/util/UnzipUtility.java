@@ -2,13 +2,13 @@ package org.batfish.common.util;
 
 import static com.google.common.io.MoreFiles.createParentDirectories;
 
-import com.google.common.io.ByteStreams;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 import java.util.zip.ZipInputStream;
@@ -27,8 +27,8 @@ public final class UnzipUtility {
    * @param filePath The path to write the output file
    */
   private static void extractFile(ZipInputStream zipIn, Path filePath) {
-    try (FileOutputStream fos = new FileOutputStream(filePath.toFile())) {
-      ByteStreams.copy(zipIn, fos);
+    try {
+      Files.copy(zipIn, filePath, StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       throw new BatfishException("Error unzipping to output file: '" + filePath + "'", e);
     }
