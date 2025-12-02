@@ -17,7 +17,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import com.google.common.collect.Sets;
 import com.google.common.collect.Streams;
-import com.google.common.io.ByteStreams;
 import com.google.common.io.Closer;
 import com.google.common.io.MoreFiles;
 import com.google.errorprone.annotations.MustBeClosed;
@@ -36,6 +35,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
+import java.nio.file.NoSuchFileException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
@@ -1226,10 +1226,11 @@ public class FileBasedStorage implements StorageProvider {
    */
   private @Nonnull String readFileToString(Path file, Charset charset) throws IOException {
     Path sanitizedFile = validatePath(file);
-    try (InputStream in = new FileInputStream(sanitizedFile.toFile())) {
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      ByteStreams.copy(in, out);
-      return new String(out.toByteArray(), charset);
+    try {
+      return Files.readString(sanitizedFile, charset);
+    } catch (NoSuchFileException e) {
+      // Convert to FileNotFoundException to maintain API contract
+      throw new FileNotFoundException(sanitizedFile.toString());
     }
   }
 
