@@ -4026,6 +4026,7 @@ public class CiscoXrControlPlaneExtractor extends CiscoXrParserBaseListener
     int line = ctx.start.getLine();
     if (ctx.common_acl != null) {
       String name = toString(ctx.common_acl);
+      _currentInterface.setIncomingFilterCommon(name);
       _configuration.referenceStructure(
           IPV4_ACCESS_LIST, name, INTERFACE_IPV4_ACCESS_GROUP_COMMON, line);
     }
