@@ -58,3 +58,13 @@ jmh_java_benchmarks(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
 )
+
+jmh_java_benchmarks(
+    name = "streamDecoder",
+    srcs = ["BenchmarkStreamDecoder.java"],
+    deps = [
+        "@maven//:com_google_guava_guava",
+        "@maven//:com_ibm_icu_icu4j",
+        "@maven//:commons_io_commons_io",
+    ],
+)
