@@ -47,7 +47,6 @@ Batfish uses Bazel as its build system. Key commands:
 
 - [Building and Running](../building_and_running/README.md): Instructions for building and running Batfish
 - [Contributing](contributing/README.md): Guidelines for contributing to Batfish
-- [Roo](roo.md): Overview of the Roo AI coding assistant used in this project
 
 ## Development Workflow
 
