@@ -190,6 +190,25 @@ Note that some packages are excluded from coverage instrumentation to prevent cr
 - Use Hamcrest matchers for more readable assertions
 - Create custom matchers for domain-specific assertions
 
+#### Testing ACLs and Filters
+
+Use idiomatic matchers for concise, readable ACL tests:
+
+```java
+// Test filter name
+assertThat(c, hasInterface("eth0", hasIncomingFilter(hasName("my-acl"))));
+
+// Test filter behavior with Flow evaluation
+Flow testFlow = Flow.builder()...build();
+assertThat(c, hasInterface("eth0", hasIncomingFilter(accepts(testFlow, "eth0", c))));
+assertThat(c, hasInterface("eth0", hasIncomingFilter(rejects(testFlow, "eth0", c))));
+```
+
+Key matcher classes (see source for full list):
+- `InterfaceMatchers` - interface properties including `hasIncomingFilter`
+- `IpAccessListMatchers` - ACL properties like `hasName`, `accepts`, `rejects`
+- `DataModelMatchers` - general data model matchers
+
 ## Continuous Integration
 
 Batfish uses GitHub Actions for continuous integration. All tests are run on:
