@@ -1,0 +1,34 @@
+!RANCID-CONTENT-TYPE: cisco-xr
+!
+hostname interface-acl-common-abf
+!
+ipv4 access-list common-abf
+ 10 permit tcp any host 10.0.1.1 nexthop1 ipv4 10.0.100.1
+ 20 deny tcp any any eq 23
+!
+ipv4 access-list interface-abf
+ 10 permit tcp any host 10.0.2.1 nexthop1 ipv4 10.0.200.1
+ 20 permit tcp any any eq 80
+!
+ipv4 access-list common-no-abf
+ 10 permit tcp any any eq 22
+!
+ipv4 access-list interface-no-abf
+ 10 permit tcp any any eq 443
+!
+! Chained with ABF in common ACL only
+interface GigabitEthernet0/0/0/0
+ ipv4 access-group common common-abf interface-no-abf ingress
+!
+! Chained with ABF in interface ACL only
+interface GigabitEthernet0/0/0/1
+ ipv4 access-group common common-no-abf interface-abf ingress
+!
+! Chained with ABF in both ACLs
+interface GigabitEthernet0/0/0/2
+ ipv4 access-group common common-abf interface-abf ingress
+!
+! Single ACL with ABF (for comparison)
+interface GigabitEthernet0/0/0/3
+ ipv4 access-group interface-abf ingress
+!

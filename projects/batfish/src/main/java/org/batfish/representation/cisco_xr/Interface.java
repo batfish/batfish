@@ -134,6 +134,8 @@ public class Interface implements Serializable {
 
   private String _incomingFilter;
 
+  private String _incomingFilterCommon;
+
   private @Nullable Long _isisCost;
 
   private @Nullable IsisInterfaceMode _isisInterfaceMode;
@@ -279,6 +281,10 @@ public class Interface implements Serializable {
     return _incomingFilter;
   }
 
+  public String getIncomingFilterCommon() {
+    return _incomingFilterCommon;
+  }
+
   public Long getIsisCost() {
     return _isisCost;
   }
@@ -415,6 +421,10 @@ public class Interface implements Serializable {
 
   public void setIncomingFilter(String accessListName) {
     _incomingFilter = accessListName;
+  }
+
+  public void setIncomingFilterCommon(String accessListName) {
+    _incomingFilterCommon = accessListName;
   }
 
   public void setIsisCost(Long isisCost) {
