@@ -83,6 +83,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.BatfishException;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclAclLine;
+import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.BgpActivePeerConfig;
 import org.batfish.datamodel.BgpPassivePeerConfig;
 import org.batfish.datamodel.BgpPeerConfig;
@@ -138,7 +140,10 @@ import org.batfish.datamodel.ospf.OspfArea;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
 import org.batfish.datamodel.ospf.OspfDefaultOriginateType;
 import org.batfish.datamodel.ospf.StubType;
+import org.batfish.datamodel.packet_policy.FibLookup;
+import org.batfish.datamodel.packet_policy.IngressInterfaceVrf;
 import org.batfish.datamodel.packet_policy.PacketPolicy;
+import org.batfish.datamodel.packet_policy.Return;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
@@ -1224,6 +1229,59 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
     }
   }
 
+  /**
+   * Creates a chained packet policy that evaluates policies in order. Each policy's statements are
+   * inlined in sequence.
+   *
+   * @param name the name for the chained policy
+   * @param policies the policies to chain in evaluation order
+   * @return the chained packet policy
+   */
+  private static PacketPolicy createChainedPacketPolicy(String name, List<PacketPolicy> policies) {
+    return new PacketPolicy(
+        name,
+        policies.stream()
+            .flatMap(policy -> policy.getStatements().stream())
+            .collect(ImmutableList.toImmutableList()),
+        policies.isEmpty()
+            ? new Return(new FibLookup(IngressInterfaceVrf.instance()))
+            : policies.get(policies.size() - 1).getDefaultAction());
+  }
+
+  /**
+   * Creates a chained or single ACL from a list of ACL names. Returns empty if the list is empty.
+   * If the list has one ACL, returns that ACL. If the list has multiple ACLs, creates a chained ACL
+   * that evaluates ACLs in order with fallthrough behavior.
+   *
+   * @param aclNames list of ACL names in evaluation order (must all exist in ipAccessLists)
+   * @param ipAccessLists map of available ACLs
+   * @return the ACL to use, or empty if the list is empty
+   */
+  private static Optional<IpAccessList> getOrCreateIncomingFilter(
+      List<String> aclNames, Map<String, IpAccessList> ipAccessLists) {
+    if (aclNames.isEmpty()) {
+      return Optional.empty();
+    }
+    if (aclNames.size() == 1) {
+      return Optional.of(ipAccessLists.get(aclNames.get(0)));
+    }
+
+    // Chain multiple ACLs
+    String chainedAclName = String.format("~CHAINED~%s~", String.join("~", aclNames));
+    return Optional.of(
+        ipAccessLists.computeIfAbsent(
+            chainedAclName,
+            name ->
+                IpAccessList.builder()
+                    .setName(name)
+                    .setLines(
+                        aclNames.stream()
+                            .map(ipAccessLists::get)
+                            .<AclLine>map(acl -> new AclAclLine(acl.getName(), acl.getName()))
+                            .collect(ImmutableList.toImmutableList()))
+                    .build()));
+  }
+
   private org.batfish.datamodel.Interface toInterface(
       String ifaceName, Interface iface, Map<String, IpAccessList> ipAccessLists, Configuration c) {
     org.batfish.datamodel.Interface newIface =
@@ -1391,16 +1449,35 @@ public final class CiscoXrConfiguration extends VendorConfiguration {
       newIface.setIsis(isisInterfaceSettingsBuilder.build());
     }
 
-    String incomingFilterName = iface.getIncomingFilter();
-    if (incomingFilterName != null) {
-      Ipv4AccessList incomingFilter = _ipv4Acls.get(incomingFilterName);
-      if (incomingFilter != null) {
-        if (isIpv4AclUsedForAbf(incomingFilter)) {
-          newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingFilterName));
-        } else {
-          newIface.setIncomingFilter(ipAccessLists.get(incomingFilterName));
-        }
+    List<String> incomingAclNames =
+        Stream.of(iface.getIncomingFilterCommon(), iface.getIncomingFilter())
+            .filter(Objects::nonNull)
+            .filter(_ipv4Acls::containsKey)
+            .collect(ImmutableList.toImmutableList());
+    boolean anyAbf =
+        incomingAclNames.stream().anyMatch(name -> isIpv4AclUsedForAbf(_ipv4Acls.get(name)));
+    if (anyAbf && incomingAclNames.size() > 1) {
+      // Create chained packet policy for ABF
+      String chainedPolicyName =
+          String.format("~CHAINED_ABF~%s~", String.join("~", incomingAclNames));
+      if (!c.getPacketPolicies().containsKey(chainedPolicyName)) {
+        PacketPolicy chainedPolicy =
+            createChainedPacketPolicy(
+                chainedPolicyName,
+                incomingAclNames.stream()
+                    .map(name -> c.getPacketPolicies().get(computeAbfIpv4PolicyName(name)))
+                    .filter(Objects::nonNull)
+                    .collect(ImmutableList.toImmutableList()));
+        c.getPacketPolicies().put(chainedPolicyName, chainedPolicy);
       }
+      newIface.setPacketPolicy(chainedPolicyName);
+    } else if (anyAbf) {
+      // Single ACL with ABF
+      newIface.setPacketPolicy(computeAbfIpv4PolicyName(incomingAclNames.get(0)));
+    } else {
+      // No ABF, use filter
+      getOrCreateIncomingFilter(incomingAclNames, ipAccessLists)
+          .ifPresent(newIface::setIncomingFilter);
     }
     String outgoingFilterName = iface.getOutgoingFilter();
     if (outgoingFilterName != null) {
