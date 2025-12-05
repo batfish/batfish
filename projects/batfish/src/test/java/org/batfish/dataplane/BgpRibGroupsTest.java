@@ -36,7 +36,7 @@ import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 import org.batfish.datamodel.dataplane.rib.RibGroup;
 import org.batfish.datamodel.dataplane.rib.RibId;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
@@ -105,7 +105,7 @@ public class BgpRibGroupsTest {
                 new If(
                     new MatchProtocol(RoutingProtocol.BGP),
                     ImmutableList.of(
-                        new SetAdministrativeCost(new LiteralInt(ADMIN_OVERWRITE)),
+                        new SetAdministrativeCost(new LiteralAdministrativeCost(ADMIN_OVERWRITE)),
                         Statements.ReturnTrue.toStaticStatement()))))
         .setOwner(c1)
         .build();

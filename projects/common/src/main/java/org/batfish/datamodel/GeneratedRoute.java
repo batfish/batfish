@@ -199,7 +199,7 @@ public final class GeneratedRoute extends AbstractRoute
   @JsonCreator
   private static GeneratedRoute jsonCreator(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long administrativeCost,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
       @JsonProperty(PROP_ATTRIBUTE_POLICY) @Nullable String attributePolicy,
@@ -234,7 +234,7 @@ public final class GeneratedRoute extends AbstractRoute
 
   private GeneratedRoute(
       Prefix network,
-      int administrativeCost,
+      long administrativeCost,
       NextHop nextHop,
       AsPath asPath,
       @Nullable String attributePolicy,

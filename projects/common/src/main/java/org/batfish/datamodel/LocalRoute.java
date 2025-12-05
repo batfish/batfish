@@ -33,11 +33,13 @@ public final class LocalRoute extends AbstractRoute {
   }
 
   @VisibleForTesting
-  LocalRoute(Prefix network, String nextHopInterface, int sourcePrefixLength, int admin, long tag) {
+  LocalRoute(
+      Prefix network, String nextHopInterface, int sourcePrefixLength, long admin, long tag) {
     this(network, NextHopInterface.of(nextHopInterface), sourcePrefixLength, admin, tag);
   }
 
-  private LocalRoute(Prefix network, NextHop nextHop, int sourcePrefixLength, int admin, long tag) {
+  private LocalRoute(
+      Prefix network, NextHop nextHop, int sourcePrefixLength, long admin, long tag) {
     super(network, admin, tag, false, false);
     _nextHop = nextHop;
     _sourcePrefixLength = sourcePrefixLength;
@@ -50,7 +52,7 @@ public final class LocalRoute extends AbstractRoute {
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_SOURCE_PREFIX_LENGTH) int sourcePrefixLength,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long admin,
       @JsonProperty(PROP_TAG) long tag) {
     checkArgument(network != null, "LocalRoute missing %s", PROP_NETWORK);
     checkArgument(nextHopInterface != null, "LocalRoute missing %s", PROP_NEXT_HOP_INTERFACE);

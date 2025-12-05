@@ -32,7 +32,7 @@ public final class StaticRouteTest {
             .build();
     assertThat(sr.getNetwork(), equalTo(Prefix.ZERO));
     assertThat(sr.getNextHop(), equalTo(NextHopVrf.of("otherVrf")));
-    assertThat(sr.getAdministrativeCost(), equalTo(1));
+    assertThat(sr.getAdministrativeCost(), equalTo(1L));
     assertThat(sr.getTag(), equalTo(3L));
     assertThat(sr.getMetric(), equalTo(123L));
   }
@@ -69,7 +69,7 @@ public final class StaticRouteTest {
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
             .build();
-    assertThat(sr.getAdministrativeCost(), equalTo(1));
+    assertThat(sr.getAdministrativeCost(), equalTo(1L));
     assertThat(sr.getTag(), equalTo(Route.UNSET_ROUTE_TAG));
     assertThat(sr.getMetric(), equalTo(StaticRoute.DEFAULT_STATIC_ROUTE_METRIC));
   }
