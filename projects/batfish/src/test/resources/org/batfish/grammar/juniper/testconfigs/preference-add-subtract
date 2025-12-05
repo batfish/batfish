@@ -1,0 +1,14 @@
+set policy-options policy-statement PS1 term T1 from protocol bgp
+set policy-options policy-statement PS1 term T1 then preference 100
+
+set policy-options policy-statement PS2 term T1 from protocol bgp
+set policy-options policy-statement PS2 term T1 then preference add 50
+
+set policy-options policy-statement PS3 term T1 from protocol bgp
+set policy-options policy-statement PS3 term T1 then preference subtract 30
+
+set policy-options policy-statement PS4 term T1 from protocol bgp
+set policy-options policy-statement PS4 term T1 then preference add 4294967200
+
+set policy-options policy-statement PS5 term T1 from protocol bgp
+set policy-options policy-statement PS5 term T1 then preference subtract 4294967200

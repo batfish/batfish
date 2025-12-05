@@ -50,6 +50,7 @@ import org.batfish.datamodel.routing_policy.as_path.MatchAsPath;
 import org.batfish.datamodel.routing_policy.communities.InputCommunities;
 import org.batfish.datamodel.routing_policy.communities.MatchCommunities;
 import org.batfish.datamodel.routing_policy.communities.SetCommunities;
+import org.batfish.datamodel.routing_policy.expr.AdministrativeCostExpr;
 import org.batfish.datamodel.routing_policy.expr.AsExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathListExpr;
 import org.batfish.datamodel.routing_policy.expr.AsPathSetExpr;
@@ -59,6 +60,7 @@ import org.batfish.datamodel.routing_policy.expr.BooleanExprs;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.ConjunctionChain;
+import org.batfish.datamodel.routing_policy.expr.DecrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.DecrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
@@ -67,6 +69,7 @@ import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitAs;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
+import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementLocalPreference;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
@@ -74,6 +77,7 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.IpPrefix;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -887,13 +891,36 @@ public class TransferBDD {
     } else if (stmt instanceof SetAdministrativeCost) {
       curP.debug("SetAdministrativeCost");
       SetAdministrativeCost sac = (SetAdministrativeCost) stmt;
-      IntExpr ie = sac.getAdmin();
-      if (!(ie instanceof LiteralInt)) {
-        throw new UnsupportedOperationException(ie.toString());
+      AdministrativeCostExpr ace = sac.getAdmin();
+      if (ace instanceof LiteralAdministrativeCost) {
+        long val = ((LiteralAdministrativeCost) ace).getValue();
+        // Use 32 bits for BDD representation to support full uint32 range
+        writeRouteAttribute(
+            state, r -> r.setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 32, val)));
+      } else if (ace instanceof IncrementAdministrativeCost) {
+        IncrementAdministrativeCost inc = (IncrementAdministrativeCost) ace;
+        long addend = inc.getAddend();
+        writeRouteAttribute(
+            state,
+            r -> {
+              MutableBDDInteger current = r.getAdminDist();
+              r.setAdminDist(
+                  current.addClipping(MutableBDDInteger.makeFromValue(this._factory, 32, addend)));
+            });
+      } else if (ace instanceof DecrementAdministrativeCost) {
+        DecrementAdministrativeCost dec = (DecrementAdministrativeCost) ace;
+        long subtrahend = dec.getSubtrahend();
+        writeRouteAttribute(
+            state,
+            r -> {
+              MutableBDDInteger current = r.getAdminDist();
+              r.setAdminDist(
+                  current.subClipping(
+                      MutableBDDInteger.makeFromValue(this._factory, 32, subtrahend)));
+            });
+      } else {
+        throw new UnsupportedOperationException(ace.toString());
       }
-      int val = ((LiteralInt) ie).getValue();
-      writeRouteAttribute(
-          state, r -> r.setAdminDist(MutableBDDInteger.makeFromValue(this._factory, 8, val)));
       return ImmutableList.of(toTransferBDDState(curP, result));
 
     } else if (stmt instanceof SetDefaultPolicy) {

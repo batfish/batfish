@@ -27,7 +27,7 @@ public class EigrpExternalRoute extends EigrpRoute {
 
   private EigrpExternalRoute(
       @Nullable Prefix network,
-      int admin,
+      long admin,
       long destinationAsn,
       @Nonnull NextHop nextHop,
       @Nonnull EigrpMetric metric,

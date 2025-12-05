@@ -46,7 +46,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
   public OspfIntraAreaRoute(
       Prefix network,
       NextHop nextHop,
-      int admin,
+      long admin,
       long metric,
       long area,
       long tag,
@@ -137,7 +137,7 @@ public class OspfIntraAreaRoute extends OspfInternalRoute {
     int h = _hashCode;
     if (h == 0) {
       h = _network.hashCode();
-      h = 31 * h + _admin;
+      h = 31 * h + Long.hashCode(_admin);
       h = 31 * h + Long.hashCode(_area);
       h = 31 * h + Long.hashCode(_metric);
       h = 31 * h + _nextHop.hashCode();

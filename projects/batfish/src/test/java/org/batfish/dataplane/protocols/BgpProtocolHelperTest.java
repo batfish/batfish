@@ -254,10 +254,7 @@ public class BgpProtocolHelperTest {
             Ip.parse("169.254.0.1"),
             "eth0");
     assertThat("PeerInterface is set", builder.getNextHopInterface(), equalTo("eth0"));
-    assertThat(
-        "AdminDistance is set",
-        builder.getAdmin(),
-        equalTo(RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS)));
+    assertThat("AdminDistance is set", builder.getAdmin(), equalTo(20L));
   }
 
   @Test

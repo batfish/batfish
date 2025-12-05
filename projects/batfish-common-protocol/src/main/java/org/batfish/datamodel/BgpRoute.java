@@ -494,7 +494,7 @@ public abstract class BgpRoute<B extends Builder<B, R>, R extends BgpRoute<B, R>
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
       @Nullable Integer pathId,
-      int admin,
+      long admin,
       BgpRouteAttributes attributes,
       ReceivedFrom receivedFrom,
       long tag,

@@ -40,6 +40,7 @@ import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
 import org.batfish.datamodel.routing_policy.expr.HasRoute;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralEigrpMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
@@ -140,7 +141,9 @@ public final class AsPathStructuresVerifierTest {
         new PrependAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
     assertNull(
         new ExcludeAsPath(new LiteralAsList(ImmutableList.of())).accept(STATEMENT_VERIFIER, ctx));
-    assertNull(new SetAdministrativeCost(new LiteralInt(1)).accept(STATEMENT_VERIFIER, ctx));
+    assertNull(
+        new SetAdministrativeCost(new LiteralAdministrativeCost(1))
+            .accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetCommunities(InputCommunities.instance()).accept(STATEMENT_VERIFIER, ctx));
     assertNull(new SetDefaultPolicy("a").accept(STATEMENT_VERIFIER, ctx));
     assertNull(
