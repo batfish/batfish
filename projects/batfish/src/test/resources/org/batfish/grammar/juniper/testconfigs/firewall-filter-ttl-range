@@ -1,0 +1,5 @@
+#
+set system host-name firewall-filter-ttl-range
+#
+set firewall family inet filter FILTER term TERM from ttl 10-20
+set firewall family inet filter FILTER term TERM then accept

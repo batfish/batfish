@@ -2970,7 +2970,9 @@ TRUNK: 'trunk';
 
 TRUST: 'trust';
 
-TTL: 'ttl';
+TTL: 'ttl' -> pushMode(M_SubRange);
+
+TTL_EXCEPT: 'ttl-except' -> pushMode(M_SubRange);
 
 TTL_EQ_ZERO_DURING_REASSEMBLY: 'ttl-eq-zero-during-reassembly';
 

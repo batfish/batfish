@@ -1,0 +1,5 @@
+#
+set system host-name firewall-filter-ttl
+#
+set firewall family inet filter FILTER term TERM from ttl 64
+set firewall family inet filter FILTER term TERM then accept

@@ -431,6 +431,7 @@ import org.batfish.representation.juniper.FwFromInterfaceSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
 import org.batfish.representation.juniper.FwFromSourcePort;
+import org.batfish.representation.juniper.FwFromTtl;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
 import org.batfish.representation.juniper.FwThenPolicer;
@@ -9423,6 +9424,72 @@ public final class FlatJuniperGrammarTest {
     assertThat(
         policy2.getStatements().stream().anyMatch(s -> s.toString().contains("POL2")),
         equalTo(true));
+  }
+
+  @Test
+  public void testFirewallFilterTtl() {
+    String hostname = "firewall-filter-ttl";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(filter.getTerms(), hasKey("TERM"));
+
+    FwTerm term = filter.getTerms().get("TERM");
+    Iterator<FwFrom> i = term.getFroms().iterator();
+    assertTrue(i.hasNext());
+
+    FwFrom from = i.next();
+    assertThat(from, instanceOf(FwFromTtl.class));
+    FwFromTtl fromTtl = (FwFromTtl) from;
+    assertThat(fromTtl.getRange(), equalTo(SubRange.singleton(64)));
+    assertThat(fromTtl.getExcept(), equalTo(false));
+    assertFalse(i.hasNext());
+  }
+
+  @Test
+  public void testFirewallFilterTtlRange() {
+    String hostname = "firewall-filter-ttl-range";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(filter.getTerms(), hasKey("TERM"));
+
+    FwTerm term = filter.getTerms().get("TERM");
+    Iterator<FwFrom> i = term.getFroms().iterator();
+    assertTrue(i.hasNext());
+
+    FwFrom from = i.next();
+    assertThat(from, instanceOf(FwFromTtl.class));
+    FwFromTtl fromTtl = (FwFromTtl) from;
+    assertThat(fromTtl.getRange(), equalTo(new SubRange(10, 20)));
+    assertThat(fromTtl.getExcept(), equalTo(false));
+    assertFalse(i.hasNext());
+  }
+
+  @Test
+  public void testFirewallFilterTtlExcept() {
+    String hostname = "firewall-filter-ttl-except";
+    JuniperConfiguration vc = parseJuniperConfig(hostname);
+    Map<String, FirewallFilter> filters = vc.getMasterLogicalSystem().getFirewallFilters();
+
+    assertThat(filters, hasKey("FILTER"));
+    ConcreteFirewallFilter filter = (ConcreteFirewallFilter) filters.get("FILTER");
+    assertThat(filter.getTerms(), hasKey("TERM"));
+
+    FwTerm term = filter.getTerms().get("TERM");
+    Iterator<FwFrom> i = term.getFroms().iterator();
+    assertTrue(i.hasNext());
+
+    FwFrom from = i.next();
+    assertThat(from, instanceOf(FwFromTtl.class));
+    FwFromTtl fromTtl = (FwFromTtl) from;
+    assertThat(fromTtl.getRange(), equalTo(new SubRange(10, 20)));
+    assertThat(fromTtl.getExcept(), equalTo(true));
+    assertFalse(i.hasNext());
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

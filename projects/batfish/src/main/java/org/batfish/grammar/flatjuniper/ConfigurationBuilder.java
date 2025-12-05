@@ -398,6 +398,8 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_prefix_list
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_establishedContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_flagsContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_tcp_initialContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ttlContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_ttl_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftfa_address_mask_prefixContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_acceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftt_decapsulateContext;
@@ -1024,6 +1026,7 @@ import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.FwFromSourcePrefixListExcept;
 import org.batfish.representation.juniper.FwFromTcpFlags;
+import org.batfish.representation.juniper.FwFromTtl;
 import org.batfish.representation.juniper.FwTerm;
 import org.batfish.representation.juniper.FwThenAccept;
 import org.batfish.representation.juniper.FwThenDiscard;
@@ -5186,6 +5189,20 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitFftf_tcp_initial(Fftf_tcp_initialContext ctx) {
     _currentFwTerm.getFroms().add(FwFromTcpFlags.TCP_INITIAL);
+  }
+
+  @Override
+  public void exitFftf_ttl(Fftf_ttlContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    FwFrom from = new FwFromTtl(range, false);
+    _currentFwTerm.getFroms().add(from);
+  }
+
+  @Override
+  public void exitFftf_ttl_except(Fftf_ttl_exceptContext ctx) {
+    SubRange range = toSubRange(ctx.uint8_range());
+    FwFrom from = new FwFromTtl(range, true);
+    _currentFwTerm.getFroms().add(from);
   }
 
   @Override

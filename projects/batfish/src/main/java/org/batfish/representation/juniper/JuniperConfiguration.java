@@ -3061,6 +3061,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
                     case ICMP_TYPE_EXCEPT:
                     case PACKET_LENGTH_EXCEPT:
                     case SOURCE_EXCEPT:
+                    case TTL_EXCEPT:
                       // FOO_EXCEPT is already compiled to a list of (Not(MatchFoo),
                       // so combining them needs an AND.
                       return and(inner);
