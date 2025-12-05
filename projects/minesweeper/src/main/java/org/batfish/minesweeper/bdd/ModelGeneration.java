@@ -415,7 +415,7 @@ public class ModelGeneration {
     builder.setNetwork(Prefix.create(ip, (int) len));
 
     builder.setLocalPreference(bddRoute.getLocalPref().satAssignmentToLong(model));
-    builder.setAdmin(bddRoute.getAdminDist().satAssignmentToInt(model));
+    builder.setAdmin(bddRoute.getAdminDist().satAssignmentToLong(model));
     builder.setMetric(bddRoute.getMed().satAssignmentToLong(model));
     builder.setTag(bddRoute.getTag().satAssignmentToLong(model));
     builder.setWeight(bddRoute.getWeight().satAssignmentToInt(model));

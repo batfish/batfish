@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Result;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.AdministrativeCostExpr;
 
 /**
  * Type of {@link Statement} to set the administrative cost of output route present in the {@link
@@ -19,16 +19,16 @@ import org.batfish.datamodel.routing_policy.expr.IntExpr;
 public final class SetAdministrativeCost extends Statement {
   private static final String PROP_ADMIN = "admin";
 
-  private final @Nonnull IntExpr _admin;
+  private final @Nonnull AdministrativeCostExpr _admin;
 
   @JsonCreator
   private static SetAdministrativeCost jsonCreator(
-      @JsonProperty(PROP_ADMIN) @Nullable IntExpr admin) {
+      @JsonProperty(PROP_ADMIN) @Nullable AdministrativeCostExpr admin) {
     checkArgument(admin != null, "%s must be provided", PROP_ADMIN);
     return new SetAdministrativeCost(admin);
   }
 
-  public SetAdministrativeCost(IntExpr admin) {
+  public SetAdministrativeCost(AdministrativeCostExpr admin) {
     _admin = admin;
   }
 
@@ -51,7 +51,7 @@ public final class SetAdministrativeCost extends Statement {
   @Override
   public Result execute(Environment environment) {
     Result result = new Result();
-    int admin = _admin.evaluate(environment);
+    long admin = _admin.evaluate(environment);
     environment.getOutputRoute().setAdmin(admin);
     if (environment.getWriteToIntermediateBgpAttributes()) {
       environment.getIntermediateBgpAttributes().setAdmin(admin);
@@ -60,15 +60,12 @@ public final class SetAdministrativeCost extends Statement {
   }
 
   @JsonProperty(PROP_ADMIN)
-  public @Nonnull IntExpr getAdmin() {
+  public @Nonnull AdministrativeCostExpr getAdmin() {
     return _admin;
   }
 
   @Override
   public int hashCode() {
-    final int prime = 31;
-    int result = 1;
-    result = prime * result + _admin.hashCode();
-    return result;
+    return _admin.hashCode();
   }
 }
