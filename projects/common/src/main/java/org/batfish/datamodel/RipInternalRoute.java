@@ -19,7 +19,7 @@ public class RipInternalRoute extends RipRoute {
   private static RipInternalRoute create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable int admin,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) @Nullable long admin,
       @JsonProperty(PROP_METRIC) @Nullable long metric,
       @JsonProperty(PROP_TAG) @Nullable long tag) {
     checkArgument(network != null);
@@ -27,12 +27,12 @@ public class RipInternalRoute extends RipRoute {
     return new RipInternalRoute(network, NextHopIp.of(nextHopIp), admin, metric, tag);
   }
 
-  private RipInternalRoute(Prefix network, NextHop nextHop, int admin, long metric, long tag) {
+  private RipInternalRoute(Prefix network, NextHop nextHop, long admin, long metric, long tag) {
     super(network, nextHop, admin, metric, tag);
   }
 
   @VisibleForTesting
-  RipInternalRoute(Prefix network, Ip nextHopIp, int admin, long metric, long tag) {
+  RipInternalRoute(Prefix network, Ip nextHopIp, long admin, long metric, long tag) {
     super(network, NextHopIp.of(nextHopIp), admin, metric, tag);
   }
 

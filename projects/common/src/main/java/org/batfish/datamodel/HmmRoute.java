@@ -85,7 +85,7 @@ public final class HmmRoute extends AbstractRoute {
   private static @Nonnull HmmRoute create(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP) @Nullable NextHop nextHop,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long admin,
       @JsonProperty(PROP_TAG) long tag,
       // unused
       // TODO: stop dumping legacy fields via final JsonProperty getters
@@ -96,7 +96,7 @@ public final class HmmRoute extends AbstractRoute {
     return builder().setNetwork(network).setNextHop(nextHop).setAdmin(admin).setTag(tag).build();
   }
 
-  private HmmRoute(Prefix network, NextHop nextHop, int admin, long tag) {
+  private HmmRoute(Prefix network, NextHop nextHop, long admin, long tag) {
     super(network, admin, tag, false, false);
     _nextHop = nextHop;
   }
@@ -128,7 +128,7 @@ public final class HmmRoute extends AbstractRoute {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _admin;
+      h = Long.hashCode(_admin);
       h = h * 31 + _network.hashCode();
       h = h * 31 + _nextHop.hashCode();
       h = h * 31 + Long.hashCode(_tag);

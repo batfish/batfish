@@ -25,7 +25,7 @@ public final class RibTreeTest {
           @Override
           public int comparePreference(StaticRoute lhs, StaticRoute rhs) {
             // prefer routes with lower admin cost
-            return rhs.getAdministrativeCost() - lhs.getAdministrativeCost();
+            return Long.compare(rhs.getAdministrativeCost(), lhs.getAdministrativeCost());
           }
         };
     RibTree<StaticRoute> ribTree = new RibTree<>(owner);

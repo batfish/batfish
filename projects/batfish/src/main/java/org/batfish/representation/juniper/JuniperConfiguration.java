@@ -171,7 +171,7 @@ import org.batfish.datamodel.routing_policy.expr.DestinationNetwork;
 import org.batfish.datamodel.routing_policy.expr.Disjunction;
 import org.batfish.datamodel.routing_policy.expr.ExplicitPrefixSet;
 import org.batfish.datamodel.routing_policy.expr.FirstMatchChain;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralOrigin;
 import org.batfish.datamodel.routing_policy.expr.MatchLocalRouteSourcePrefixLength;
 import org.batfish.datamodel.routing_policy.expr.MatchPrefixSet;
@@ -724,7 +724,7 @@ public final class JuniperConfiguration extends VendorConfiguration {
       if (ig.getPreference() != null && ig.getPreference() != bgpAdmin) {
         peerImportPolicy
             .getStatements()
-            .add(new SetAdministrativeCost(new LiteralInt(ig.getPreference())));
+            .add(new SetAdministrativeCost(new LiteralAdministrativeCost(ig.getPreference())));
       }
       List<BooleanExpr> importPolicyCalls = new ArrayList<>();
       ig.getImportPolicies()

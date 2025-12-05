@@ -126,7 +126,7 @@ public final class IspModelingUtils {
           Prefix.parse("192.168.0.0/16"));
 
   /** Use this cost to install static routes on ISP nodes for prefixes originated to the Internet */
-  static final int HIGH_ADMINISTRATIVE_COST = AbstractRoute.MAX_ADMIN_DISTANCE;
+  static final long HIGH_ADMINISTRATIVE_COST = AbstractRoute.MAX_ADMIN_DISTANCE;
 
   /** Returns the hostname that will be used for the ISP model with the given ASN. */
   public static String getDefaultIspNodeName(long asn) {

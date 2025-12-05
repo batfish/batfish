@@ -123,8 +123,6 @@ import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMe
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverload;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
@@ -140,8 +138,6 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -383,6 +379,9 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.DecrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -482,6 +481,7 @@ import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
+import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
@@ -3665,7 +3665,7 @@ public final class FlatJuniperGrammarTest {
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
     // Checking admin cost set on the output route
-    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
+    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123L));
   }
 
   @Test
@@ -3688,9 +3688,85 @@ public final class FlatJuniperGrammarTest {
         getOnlyElement(traceableStatement.getInnerStatements()),
         instanceOf(SetAdministrativeCost.class));
 
+    SetAdministrativeCost setAdministrativeCost =
+        (SetAdministrativeCost) getOnlyElement(traceableStatement.getInnerStatements());
+    assertThat(setAdministrativeCost.getAdmin(), instanceOf(LiteralAdministrativeCost.class));
     assertThat(
-        getOnlyElement(traceableStatement.getInnerStatements()),
-        isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
+        ((LiteralAdministrativeCost) setAdministrativeCost.getAdmin()).getValue(), equalTo(123L));
+  }
+
+  @Test
+  public void testPsPreferenceAddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("preference-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal preference
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(100, PsThenPreference.Operator.SET)));
+
+    // Test preference add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(50, PsThenPreference.Operator.ADD)));
+
+    // Test preference subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(30, PsThenPreference.Operator.SUBTRACT)));
+
+    // Test large preference add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(4294967200L, PsThenPreference.Operator.ADD)));
+
+    // Test large preference subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenPreference(4294967200L, PsThenPreference.Operator.SUBTRACT)));
+  }
+
+  @Test
+  public void testPsPreferenceAddSubtractConversion() {
+    Configuration c = parseConfig("preference-add-subtract");
+
+    // Test preference add
+    RoutingPolicy ps2 = c.getRoutingPolicies().get("PS2");
+    assertThat(ps2, notNullValue());
+    assertThat(ps2.getStatements(), hasSize(2));
+    SetAdministrativeCost setAdd =
+        (SetAdministrativeCost)
+            ((TraceableStatement) ((If) ps2.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setAdd.getAdmin(), instanceOf(IncrementAdministrativeCost.class));
+    IncrementAdministrativeCost inc = (IncrementAdministrativeCost) setAdd.getAdmin();
+    assertThat(inc.getAddend(), equalTo(50L));
+    assertThat(inc.getMax(), equalTo(AbstractRoute.MAX_ADMIN_DISTANCE));
+
+    // Test preference subtract
+    RoutingPolicy ps3 = c.getRoutingPolicies().get("PS3");
+    assertThat(ps3, notNullValue());
+    assertThat(ps3.getStatements(), hasSize(2));
+    SetAdministrativeCost setSub =
+        (SetAdministrativeCost)
+            ((TraceableStatement) ((If) ps3.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setSub.getAdmin(), instanceOf(DecrementAdministrativeCost.class));
+    DecrementAdministrativeCost dec = (DecrementAdministrativeCost) setSub.getAdmin();
+    assertThat(dec.getSubtrahend(), equalTo(30L));
+    assertThat(dec.getMin(), equalTo(0L));
   }
 
   @Test

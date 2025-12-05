@@ -53,7 +53,7 @@ public class OspfExternalType1Route extends OspfExternalRoute {
   OspfExternalType1Route(
       Prefix prefix,
       NextHop nextHop,
-      int admin,
+      long admin,
       long metric,
       long lsaMetric,
       long area,

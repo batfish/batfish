@@ -87,7 +87,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   private static Bgpv4Route jsonCreator(
       @JsonProperty(PROP_NETWORK) @Nullable Prefix network,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long admin,
       @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
       @JsonProperty(PROP_COMMUNITIES) @Nullable CommunitySet communities,
       @JsonProperty(PROP_LOCAL_PREFERENCE) long localPreference,
@@ -146,7 +146,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,
       @Nullable Integer pathId,
-      int admin,
+      long admin,
       long tag,
       boolean nonForwarding,
       boolean nonRouting) {
@@ -225,7 +225,7 @@ public final class Bgpv4Route extends BgpRoute<Bgpv4Route.Builder, Bgpv4Route> {
   public int hashCode() {
     int h = _hashCode;
     if (h == 0) {
-      h = _admin;
+      h = Long.hashCode(_admin);
       h = h * 31 + _attributes.hashCode();
       h = h * 31 + _receivedFrom.hashCode();
       h = h * 31 + _network.hashCode();

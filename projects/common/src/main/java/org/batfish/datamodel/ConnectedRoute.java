@@ -36,7 +36,7 @@ public final class ConnectedRoute extends AbstractRoute {
     this(network, nextHopInterface, 0);
   }
 
-  public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost) {
+  public ConnectedRoute(Prefix network, String nextHopInterface, long adminCost) {
     this(network, nextHopInterface, adminCost, Route.UNSET_ROUTE_TAG);
   }
 
@@ -52,7 +52,7 @@ public final class ConnectedRoute extends AbstractRoute {
         + '}';
   }
 
-  public ConnectedRoute(Prefix network, String nextHopInterface, int adminCost, long tag) {
+  public ConnectedRoute(Prefix network, String nextHopInterface, long adminCost, long tag) {
     super(network, adminCost, tag, false, false);
     _nextHop = NextHopInterface.of(nextHopInterface);
   }

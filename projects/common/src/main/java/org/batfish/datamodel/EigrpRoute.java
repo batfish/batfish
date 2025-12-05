@@ -16,7 +16,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   static final String PROP_EIGRP_METRIC_VERSION = "eigrp-metric-version";
   static final String PROP_PROCESS_ASN = "process-asn";
 
-  protected final int _admin;
+  protected final long _admin;
   protected final @Nonnull EigrpMetric _metric;
   protected final @Nonnull EigrpMetricVersion _metricVersion;
 
@@ -24,7 +24,7 @@ public abstract class EigrpRoute extends AbstractRoute {
   final long _processAsn;
 
   EigrpRoute(
-      int admin,
+      long admin,
       Prefix network,
       NextHop nextHop,
       @Nonnull EigrpMetric metric,

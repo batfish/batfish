@@ -67,7 +67,7 @@ import org.batfish.datamodel.routing_policy.communities.SetCommunities;
 import org.batfish.datamodel.routing_policy.expr.BgpPeerAddressNextHop;
 import org.batfish.datamodel.routing_policy.expr.Conjunction;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
-import org.batfish.datamodel.routing_policy.expr.LiteralInt;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchMetric;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
@@ -474,7 +474,7 @@ public class TestRoutePoliciesAnswererTest {
 
     List<Statement> stmts =
         ImmutableList.of(
-            new SetAdministrativeCost(new LiteralInt(255)),
+            new SetAdministrativeCost(new LiteralAdministrativeCost(255)),
             new StaticStatement(Statements.ExitAccept));
     RoutingPolicy policy = _policyBuilder.setStatements(stmts).build();
 
@@ -495,10 +495,10 @@ public class TestRoutePoliciesAnswererTest {
             .setTag(34)
             .setTunnelEncapsulationAttribute(new TunnelEncapsulationAttribute(Ip.parse("2.2.2.2")))
             .setWeight(19)
-            .setAdminDist(0)
+            .setAdminDist(0L)
             .build();
 
-    BgpRoute outputRoute = inputRoute.toBuilder().setAdminDist(255).build();
+    BgpRoute outputRoute = inputRoute.toBuilder().setAdminDist(255L).build();
     BgpRouteDiffs diff =
         new BgpRouteDiffs(
             ImmutableSortedSet.of(

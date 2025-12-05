@@ -5,7 +5,6 @@ import static org.batfish.minesweeper.bdd.BDDDomain.numBits;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.math.IntMath;
 import com.google.common.math.LongMath;
 import java.math.RoundingMode;
 import java.util.ArrayList;
@@ -211,7 +210,8 @@ public final class BDDRoute implements IDeepCopy<BDDRoute> {
       List<TunnelEncapsulationAttribute> tunnelEncapsulationAttributes) {
     _factory = factory;
 
-    int bitsToRepresentAdmin = IntMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
+    int bitsToRepresentAdmin =
+        LongMath.log2(AbstractRoute.MAX_ADMIN_DISTANCE, RoundingMode.CEILING);
     // or else we need to do tricks in the BDDInteger.
     assert LongMath.isPowerOfTwo(1L + AbstractRoute.MAX_ADMIN_DISTANCE);
     int numVars = factory.varNum();
