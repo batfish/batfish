@@ -35,7 +35,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 @ParametersAreNonnullByDefault
 public final class BgpRoute {
 
-  public static final int DEFAULT_AD = 0;
+  public static final long DEFAULT_AD = 0L;
   public static final String PROP_ADMINISTRATIVE_DISTANCE = "adminDistance";
   public static final String PROP_AS_PATH = "asPath";
   public static final String PROP_CLUSTER_LIST = "clusterList";
@@ -56,7 +56,7 @@ public final class BgpRoute {
   public static final String PROP_WEIGHT = "weight";
   public static final String PROP_CLASS = "class";
 
-  private final @Nullable Integer _adminDist;
+  private final @Nullable Long _adminDist;
   private final @Nonnull AsPath _asPath;
   private final @Nonnull Set<Long> _clusterList;
   private final @Nonnull SortedSet<Community> _communities;
@@ -75,7 +75,7 @@ public final class BgpRoute {
   private final int _weight;
 
   private BgpRoute(
-      @Nullable Integer adminDist,
+      @Nullable Long adminDist,
       AsPath asPath,
       Set<Long> clusterList,
       SortedSet<Community> communities,
@@ -113,7 +113,7 @@ public final class BgpRoute {
 
   @JsonCreator
   private static BgpRoute jsonCreator(
-      @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) @Nullable Integer adminDist,
+      @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE) @Nullable Long adminDist,
       @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
       @JsonProperty(PROP_CLUSTER_LIST) @Nullable Set<Long> clusterList,
       @JsonProperty(PROP_COMMUNITIES) @Nullable SortedSet<Community> communities,
@@ -169,7 +169,7 @@ public final class BgpRoute {
   }
 
   @JsonProperty(PROP_ADMINISTRATIVE_DISTANCE)
-  public @Nullable Integer getAdminDist() {
+  public @Nullable Long getAdminDist() {
     return _adminDist;
   }
 
@@ -341,7 +341,7 @@ public final class BgpRoute {
   @ParametersAreNonnullByDefault
   public static final class Builder {
 
-    private @Nullable Integer _adminDist;
+    private @Nullable Long _adminDist;
     private @Nonnull AsPath _asPath;
     private @Nonnull Set<Long> _clusterList;
     private @Nonnull SortedSet<Community> _communities;
@@ -390,7 +390,7 @@ public final class BgpRoute {
           _weight);
     }
 
-    public Builder setAdminDist(@Nullable Integer adminDist) {
+    public Builder setAdminDist(@Nullable Long adminDist) {
       _adminDist = adminDist;
       return this;
     }
