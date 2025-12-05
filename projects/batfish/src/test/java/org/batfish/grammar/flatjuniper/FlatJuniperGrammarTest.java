@@ -18,6 +18,8 @@ import static org.batfish.datamodel.Ip.ZERO;
 import static org.batfish.datamodel.IpProtocol.ICMP;
 import static org.batfish.datamodel.IpProtocol.OSPF;
 import static org.batfish.datamodel.IpProtocol.UDP;
+import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
+import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
@@ -159,7 +161,6 @@ import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_S
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeConditionTrackName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeOspfExportPolicyName;
-import static org.batfish.representation.juniper.JuniperConfiguration.computePeerExportPolicyName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computePolicyStatementTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.computeSecurityPolicyTermName;
 import static org.batfish.representation.juniper.JuniperConfiguration.firewallFilterTermVendorStructureId;
@@ -5670,13 +5671,13 @@ public final class FlatJuniperGrammarTest {
     Configuration c = parseConfig("local-route-export-bgp");
 
     RoutingPolicy peer1RejectAllLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("1.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer1Vrf", "1.0.0.1/32"));
     RoutingPolicy peer2RejectPtpLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("2.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer2Vrf", "2.0.0.1/32"));
     RoutingPolicy peer3RejectLanLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("3.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer3Vrf", "3.0.0.1/32"));
     RoutingPolicy peer4AllowAllLocal =
-        c.getRoutingPolicies().get(computePeerExportPolicyName(Prefix.parse("4.0.0.1/32")));
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("peer4Vrf", "4.0.0.1/32"));
 
     LocalRoute localRoutePtp =
         new LocalRoute(ConcreteInterfaceAddress.parse("10.0.0.0/31"), "ge-0/0/0.0");
@@ -9372,6 +9373,56 @@ public final class FlatJuniperGrammarTest {
     // Verify policer references from filter terms
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "10M", 1));
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "1M", 1));
+  }
+
+  @Test
+  public void testBgpPeerImportPolicyVrfCollision() {
+    Configuration c = parseConfig("bgp-peer-import-policy-vrf-collision");
+
+    // Get VRF configurations
+    org.batfish.datamodel.Vrf vrf1 = c.getVrfs().get("VRF1");
+    org.batfish.datamodel.Vrf vrf2 = c.getVrfs().get("VRF2");
+    assertThat(vrf1, notNullValue());
+    assertThat(vrf2, notNullValue());
+
+    // Get BGP processes
+    org.batfish.datamodel.BgpProcess bgp1 = vrf1.getBgpProcess();
+    org.batfish.datamodel.BgpProcess bgp2 = vrf2.getBgpProcess();
+    assertThat(bgp1, notNullValue());
+    assertThat(bgp2, notNullValue());
+
+    // Get the BGP neighbors - both VRFs have a peer at 10.0.0.1
+    org.batfish.datamodel.BgpActivePeerConfig peer1 =
+        bgp1.getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    org.batfish.datamodel.BgpActivePeerConfig peer2 =
+        bgp2.getActiveNeighbors().get(Ip.parse("10.0.0.1"));
+    assertThat(peer1, notNullValue());
+    assertThat(peer2, notNullValue());
+
+    // Get the import policy names for each peer
+    String importPolicy1 = peer1.getIpv4UnicastAddressFamily().getImportPolicy();
+    String importPolicy2 = peer2.getIpv4UnicastAddressFamily().getImportPolicy();
+    assertThat(importPolicy1, notNullValue());
+    assertThat(importPolicy2, notNullValue());
+
+    // With the fix, policy names should include VRF context and be different
+    assertThat(importPolicy1, equalTo(generatedBgpPeerImportPolicyName("VRF1", "10.0.0.1/32")));
+    assertThat(importPolicy2, equalTo(generatedBgpPeerImportPolicyName("VRF2", "10.0.0.1/32")));
+
+    // Verify both policies exist and are distinct
+    RoutingPolicy policy1 = c.getRoutingPolicies().get(importPolicy1);
+    RoutingPolicy policy2 = c.getRoutingPolicies().get(importPolicy2);
+    assertThat(policy1, notNullValue());
+    assertThat(policy2, notNullValue());
+
+    // Verify the policies call their respective VRF-specific import policies (POL1 and POL2)
+    // Both policies should have a CallExpr to their configured import policy
+    assertThat(
+        policy1.getStatements().stream().anyMatch(s -> s.toString().contains("POL1")),
+        equalTo(true));
+    assertThat(
+        policy2.getStatements().stream().anyMatch(s -> s.toString().contains("POL2")),
+        equalTo(true));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
