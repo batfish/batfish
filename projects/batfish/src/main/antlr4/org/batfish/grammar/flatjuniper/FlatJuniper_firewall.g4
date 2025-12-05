@@ -151,6 +151,8 @@ fft_from
       | fftf_tcp_established
       | fftf_tcp_flags
       | fftf_tcp_initial
+      | fftf_ttl
+      | fftf_ttl_except
       | fftf_vlan
    )
 ;
@@ -410,6 +412,16 @@ fftf_tcp_flags
 fftf_tcp_initial
 :
    TCP_INITIAL
+;
+
+fftf_ttl
+:
+   TTL uint8_range
+;
+
+fftf_ttl_except
+:
+   TTL_EXCEPT uint8_range
 ;
 
 fftf_vlan
