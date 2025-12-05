@@ -726,10 +726,12 @@ public class AsaConversions {
   }
 
   static IpAccessList toIpAccessList(
-      ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups) {
+      ExtendedAccessList eaList,
+      Map<String, ObjectGroup> objectGroups,
+      Map<String, ServiceObject> serviceObjects) {
     List<AclLine> lines =
         eaList.getLines().stream()
-            .map(l -> toIpAccessListLine(l, objectGroups))
+            .map(l -> toIpAccessListLine(l, objectGroups, serviceObjects))
             .collect(ImmutableList.toImmutableList());
     String sourceType =
         eaList.getParent() != null
@@ -744,12 +746,14 @@ public class AsaConversions {
         .build();
   }
 
-  static IpAccessList toIpAccessList(IcmpTypeObjectGroup icmpTypeObjectGroup) {
+  static IpAccessList toIpAccessList(
+      IcmpTypeObjectGroup icmpTypeObjectGroup,
+      Map<String, IcmpTypeObjectGroup> icmpTypeObjectGroups) {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr())
+                    .setMatchCondition(icmpTypeObjectGroup.toAclLineMatchExpr(icmpTypeObjectGroups))
                     .build()))
         .setName(computeIcmpObjectGroupAclName(icmpTypeObjectGroup.getName()))
         .setSourceName(icmpTypeObjectGroup.getName())
@@ -757,12 +761,14 @@ public class AsaConversions {
         .build();
   }
 
-  static IpAccessList toIpAccessList(ProtocolObjectGroup protocolObjectGroup) {
+  static IpAccessList toIpAccessList(
+      ProtocolObjectGroup protocolObjectGroup,
+      Map<String, ProtocolObjectGroup> protocolObjectGroups) {
     return IpAccessList.builder()
         .setLines(
             ImmutableList.of(
                 ExprAclLine.accepting()
-                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr())
+                    .setMatchCondition(protocolObjectGroup.toAclLineMatchExpr(protocolObjectGroups))
                     .build()))
         .setName(computeProtocolObjectGroupAclName(protocolObjectGroup.getName()))
         .setSourceName(protocolObjectGroup.getName())
@@ -1504,10 +1510,13 @@ public class AsaConversions {
   }
 
   private static ExprAclLine toIpAccessListLine(
-      ExtendedAccessListLine line, Map<String, ObjectGroup> objectGroups) {
+      ExtendedAccessListLine line,
+      Map<String, ObjectGroup> objectGroups,
+      Map<String, ServiceObject> serviceObjects) {
     IpSpace srcIpSpace = line.getSourceAddressSpecifier().toIpSpace();
     IpSpace dstIpSpace = line.getDestinationAddressSpecifier().toIpSpace();
-    AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
+    AclLineMatchExpr matchService =
+        line.getServiceSpecifier().toAclLineMatchExpr(objectGroups, serviceObjects);
     AclLineMatchExpr match;
     if (matchService instanceof MatchHeaderSpace) {
       match =

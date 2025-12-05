@@ -5,6 +5,7 @@ import static org.batfish.datamodel.acl.AclLineMatchExprs.or;
 import com.google.common.collect.ImmutableSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
 
 public class IcmpTypeObjectGroup extends ObjectGroup {
@@ -20,10 +21,11 @@ public class IcmpTypeObjectGroup extends ObjectGroup {
     return _lines;
   }
 
-  public AclLineMatchExpr toAclLineMatchExpr() {
+  public AclLineMatchExpr toAclLineMatchExpr(
+      Map<String, IcmpTypeObjectGroup> icmpTypeObjectGroups) {
     return or(
         _lines.stream()
-            .map(IcmpTypeObjectGroupLine::toAclLineMatchExpr)
+            .map(line -> line.toAclLineMatchExpr(icmpTypeObjectGroups))
             .collect(ImmutableSet.toImmutableSet()));
   }
 }
