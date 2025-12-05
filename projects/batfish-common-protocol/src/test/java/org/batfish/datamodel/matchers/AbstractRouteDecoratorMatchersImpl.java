@@ -10,13 +10,13 @@ import org.hamcrest.FeatureMatcher;
 import org.hamcrest.Matcher;
 
 final class AbstractRouteDecoratorMatchersImpl {
-  static final class HasAdministrativeCost extends FeatureMatcher<AbstractRouteDecorator, Integer> {
-    HasAdministrativeCost(@Nonnull Matcher<? super Integer> subMatcher) {
+  static final class HasAdministrativeCost extends FeatureMatcher<AbstractRouteDecorator, Long> {
+    HasAdministrativeCost(@Nonnull Matcher<? super Long> subMatcher) {
       super(subMatcher, "An AbstractRouteDecorator with administrativeCost:", "administrativeCost");
     }
 
     @Override
-    protected Integer featureValueOf(AbstractRouteDecorator actual) {
+    protected Long featureValueOf(AbstractRouteDecorator actual) {
       return actual.getAbstractRoute().getAdministrativeCost();
     }
   }

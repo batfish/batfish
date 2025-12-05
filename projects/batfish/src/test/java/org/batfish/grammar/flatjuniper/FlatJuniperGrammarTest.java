@@ -123,8 +123,6 @@ import static org.batfish.datamodel.matchers.IsisLevelSettingsMatchers.hasWideMe
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasNetAddress;
 import static org.batfish.datamodel.matchers.IsisProcessMatchers.hasOverload;
 import static org.batfish.datamodel.matchers.LineMatchers.hasAuthenticationLoginList;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.hasVal;
-import static org.batfish.datamodel.matchers.LiteralIntMatcher.isLiteralIntThat;
 import static org.batfish.datamodel.matchers.MapMatchers.hasKeys;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasDefaultOriginateType;
 import static org.batfish.datamodel.matchers.NssaSettingsMatchers.hasSuppressType3;
@@ -140,8 +138,6 @@ import static org.batfish.datamodel.matchers.OspfAreaSummaryMatchers.isAdvertise
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasArea;
 import static org.batfish.datamodel.matchers.OspfProcessMatchers.hasRouterId;
 import static org.batfish.datamodel.matchers.RouteFilterListMatchers.permits;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.hasAdmin;
-import static org.batfish.datamodel.matchers.SetAdministrativeCostMatchers.isSetAdministrativeCostThat;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasBgpProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasOspfProcess;
 import static org.batfish.datamodel.matchers.VrfMatchers.hasStaticRoutes;
@@ -387,6 +383,7 @@ import org.batfish.datamodel.routing_policy.Environment;
 import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
@@ -3653,7 +3650,7 @@ public final class FlatJuniperGrammarTest {
         eb.setOriginalRoute(staticRoute).setOutputRoute(OspfExternalType2Route.builder()).build());
 
     // Checking admin cost set on the output route
-    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123));
+    assertThat(eb.build().getOutputRoute().getAdmin(), equalTo(123L));
   }
 
   @Test
@@ -3676,9 +3673,11 @@ public final class FlatJuniperGrammarTest {
         getOnlyElement(traceableStatement.getInnerStatements()),
         instanceOf(SetAdministrativeCost.class));
 
+    SetAdministrativeCost setAdministrativeCost =
+        (SetAdministrativeCost) getOnlyElement(traceableStatement.getInnerStatements());
+    assertThat(setAdministrativeCost.getAdmin(), instanceOf(LiteralAdministrativeCost.class));
     assertThat(
-        getOnlyElement(traceableStatement.getInnerStatements()),
-        isSetAdministrativeCostThat(hasAdmin(isLiteralIntThat(hasVal(123)))));
+        ((LiteralAdministrativeCost) setAdministrativeCost.getAdmin()).getValue(), equalTo(123L));
   }
 
   @Test

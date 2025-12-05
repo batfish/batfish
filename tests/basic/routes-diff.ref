@@ -106,14 +106,14 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Snapshot_Admin_Distance",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Route's Admin distance",
           "isKey" : false,
           "isValue" : true,
           "name" : "Reference_Admin_Distance",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Tag for this route",

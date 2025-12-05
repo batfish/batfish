@@ -183,7 +183,7 @@ public class EigrpRoutingProcessTest {
     assertTrue(maybeRoute.isPresent());
     EigrpInternalRoute route = maybeRoute.get();
     assertThat(route.getNextHopIp(), equalTo(ip));
-    assertThat(route.getAdministrativeCost(), equalTo(_process.getInternalAdminCost()));
+    assertThat(route.getAdministrativeCost(), equalTo((long) _process.getInternalAdminCost()));
     assertThat(route.getEigrpMetric(), equalTo(routeIn.getEigrpMetric().add(_ifaceMetric)));
     assertThat(route.getProcessAsn(), equalTo(_process.getAsn()));
   }
