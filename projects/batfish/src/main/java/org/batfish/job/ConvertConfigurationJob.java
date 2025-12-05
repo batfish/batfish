@@ -71,6 +71,7 @@ import org.batfish.datamodel.UniverseIpSpace;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.VrrpGroup;
 import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclReferencesVerifier;
 import org.batfish.datamodel.acl.AndMatchExpr;
 import org.batfish.datamodel.acl.DeniedByAcl;
 import org.batfish.datamodel.acl.FalseExpr;
@@ -546,6 +547,11 @@ public class ConvertConfigurationJob extends BatfishJob<ConvertConfigurationResu
     c.setInterfaces(
         verifyAndToImmutableMap(
             c.getAllInterfaces(), Interface::getName, w, InterfaceNameComparator.instance()));
+    // TODO(https://github.com/batfish/batfish/issues/9655): Skip ACL reference verification for
+    // ASA; it has known issues with undefined object references.
+    if (c.getConfigurationFormat() != ConfigurationFormat.CISCO_ASA) {
+      AclReferencesVerifier.verify(c);
+    }
     c.setIpAccessLists(verifyAndToImmutableMap(c.getIpAccessLists(), IpAccessList::getName, w));
     c.setIpsecPeerConfigs(toImmutableMap(c.getIpsecPeerConfigs()));
     c.setIpsecPhase2Policies(toImmutableMap(c.getIpsecPhase2Policies()));
