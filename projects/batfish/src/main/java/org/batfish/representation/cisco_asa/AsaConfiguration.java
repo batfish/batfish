@@ -2771,14 +2771,16 @@ public final class AsaConfiguration extends VendorConfiguration {
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
       c.getIpAccessLists()
-          .put(saList.getName(), toIpAccessList(saList.toExtendedAccessList(), _objectGroups));
+          .put(
+              saList.getName(),
+              toIpAccessList(saList.toExtendedAccessList(), _objectGroups, _serviceObjects));
     }
     for (ExtendedAccessList eaList : _extendedAccessLists.values()) {
       if (isAclUsedForRouting(eaList.getName())) {
         RouteFilterList rfList = AsaConversions.toRouteFilterList(eaList, _filename);
         c.getRouteFilterLists().put(rfList.getName(), rfList);
       }
-      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups);
+      IpAccessList ipaList = toIpAccessList(eaList, _objectGroups, _serviceObjects);
       c.getIpAccessLists().put(ipaList.getName(), ipaList);
     }
 
@@ -2842,13 +2844,17 @@ public final class AsaConfiguration extends VendorConfiguration {
     _icmpTypeObjectGroups.forEach(
         (name, icmpTypeObjectGroups) ->
             c.getIpAccessLists()
-                .put(computeIcmpObjectGroupAclName(name), toIpAccessList(icmpTypeObjectGroups)));
+                .put(
+                    computeIcmpObjectGroupAclName(name),
+                    toIpAccessList(icmpTypeObjectGroups, _icmpTypeObjectGroups)));
 
     // convert each ProtocolObjectGroup to IpAccessList
     _protocolObjectGroups.forEach(
         (name, protocolObjectGroup) ->
             c.getIpAccessLists()
-                .put(computeProtocolObjectGroupAclName(name), toIpAccessList(protocolObjectGroup)));
+                .put(
+                    computeProtocolObjectGroupAclName(name),
+                    toIpAccessList(protocolObjectGroup, _protocolObjectGroups)));
 
     // convert each ServiceObject and ServiceObjectGroup to IpAccessList
     _serviceObjectGroups.forEach(
