@@ -25,7 +25,7 @@ public abstract class OspfRoute extends AbstractRoute {
   protected OspfRoute(
       Prefix network,
       NextHop nextHop,
-      int admin,
+      long admin,
       long metric,
       long area,
       long tag,

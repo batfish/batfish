@@ -84,6 +84,7 @@ import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IntComparison;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -758,12 +759,12 @@ public class CompareRoutePoliciesAnswererTest {
 
     RoutingPolicy policy_reference =
         _policyBuilderDelta
-            .addStatement(new SetAdministrativeCost(new LiteralInt(20)))
+            .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(20)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
     RoutingPolicy policy_new =
         _policyBuilderBase
-            .addStatement(new SetAdministrativeCost(new LiteralInt(10)))
+            .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(10)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 

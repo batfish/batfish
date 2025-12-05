@@ -108,7 +108,7 @@ public class IsisRoute extends AbstractRoute {
 
   @JsonCreator
   private static @Nonnull IsisRoute createIsisRoute(
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long administrativeCost,
       @JsonProperty(PROP_AREA) String area,
       @JsonProperty(PROP_ATTACH) boolean attach,
       @JsonProperty(PROP_DOWN) boolean down,
@@ -154,7 +154,7 @@ public class IsisRoute extends AbstractRoute {
   private final String _systemId;
 
   private IsisRoute(
-      int administrativeCost,
+      long administrativeCost,
       @Nonnull String area,
       boolean attach,
       boolean down,
