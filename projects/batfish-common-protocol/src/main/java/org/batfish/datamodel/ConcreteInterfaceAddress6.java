@@ -45,7 +45,7 @@ public final class ConcreteInterfaceAddress6
         "Invalid network mask %s, must be between 1 and %s",
         networkBits,
         Prefix6.MAX_PREFIX_LENGTH);
-    assert Prefix6.create(ip, networkBits).toIp6Space().containsIp(ip, ImmutableMap.of())
+    assert Prefix6.create(ip, networkBits).toIp6Space().containsIp6(ip, ImmutableMap.of())
         : String.format(
             "ConcreteInterfaceAddress6: IP is not a host IP. ip=%s, networkBits=%d",
             ip, networkBits);

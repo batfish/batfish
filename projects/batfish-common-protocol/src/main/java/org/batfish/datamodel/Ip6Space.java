@@ -30,6 +30,10 @@ public abstract class Ip6Space implements Comparable<Ip6Space>, Serializable {
   }
 
   /** Return the {@link Ip6Space} of all IPs not in {@code this}. */
+  public Ip6Space complement() {
+    return AclIp6Space.difference(UniverseIp6Space.INSTANCE, this);
+  }
+
   protected abstract int compareSameClass(Ip6Space o);
 
   @Override
@@ -53,8 +57,4 @@ public abstract class Ip6Space implements Comparable<Ip6Space>, Serializable {
 
   @Override
   public abstract @Nonnull String toString();
-
-  public boolean containsIp(Ip6 ip6, Map<String, Ip6Space> namedIp6Spaces) {
-    return accept(new Ip6SpaceContainsIp(ip6, namedIp6Spaces));
-  }
 }

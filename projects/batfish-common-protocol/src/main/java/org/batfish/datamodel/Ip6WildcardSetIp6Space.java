@@ -1,6 +1,7 @@
 package org.batfish.datamodel;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.github.benmanes.caffeine.cache.Caffeine;
 import com.github.benmanes.caffeine.cache.LoadingCache;
@@ -112,6 +113,7 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
         && _allowlist.equals(rhs._allowlist);
   }
 
+  @JsonIgnore
   public @Nonnull Set<Ip6Wildcard> getBlockList() {
     return _blocklist;
   }
@@ -121,6 +123,7 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
     return ImmutableSortedSet.copyOf(_blocklist);
   }
 
+  @JsonIgnore
   public @Nonnull Set<Ip6Wildcard> getAllowList() {
     return _allowlist;
   }
@@ -141,7 +144,7 @@ public class Ip6WildcardSetIp6Space extends Ip6Space {
   }
 
   @Override
-  public String toString() {
+  public @Nonnull String toString() {
     return MoreObjects.toStringHelper(getClass())
         .add(PROP_BLOCKLIST, _blocklist)
         .add(PROP_ALLOWLIST, _allowlist)

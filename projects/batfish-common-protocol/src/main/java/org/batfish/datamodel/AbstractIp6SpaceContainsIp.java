@@ -14,6 +14,36 @@ public abstract class AbstractIp6SpaceContainsIp implements GenericIp6SpaceVisit
   }
 
   @Override
+  public final Boolean visitAclIp6Space(AclIp6Space aclIp6Space) {
+    for (AclIp6SpaceLine line : aclIp6Space.getLines()) {
+      if (line.getIp6Space().accept(this)) {
+        return line.getAction() == LineAction.PERMIT;
+      }
+    }
+    return false;
+  }
+
+  @Override
+  public final Boolean visitEmptyIp6Space(EmptyIp6Space emptyIp6Space) {
+    return false;
+  }
+
+  @Override
+  public final Boolean visitIp6Ip6Space(Ip6Ip6Space ip6Ip6Space) {
+    return _ip6.equals(ip6Ip6Space.getIp6());
+  }
+
+  @Override
+  public final Boolean visitUniverseIp6Space(UniverseIp6Space universeIp6Space) {
+    return true;
+  }
+
+  @Override
+  public final Boolean visitIp6WildcardIp6Space(Ip6WildcardIp6Space ip6WildcardIp6Space) {
+    return ip6WildcardIp6Space.getIp6Wildcard().contains(_ip6);
+  }
+
+  @Override
   public final Boolean visitIp6WildcardSetIp6Space(Ip6WildcardSetIp6Space ip6WildcardSetIp6Space) {
     for (Ip6Wildcard w : ip6WildcardSetIp6Space.getBlockList()) {
       if (w.contains(_ip6)) {
