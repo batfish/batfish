@@ -651,6 +651,10 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_addContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_expressionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_subtractContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_expressionContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_igpContext;
@@ -1151,6 +1155,7 @@ import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
+import org.batfish.representation.juniper.PsThenMetric2;
 import org.batfish.representation.juniper.PsThenNextHopDiscard;
 import org.batfish.representation.juniper.PsThenNextHopIp;
 import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
@@ -6554,6 +6559,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitPopstm_value(Popstm_valueContext ctx) {
     long metric = toLong(ctx.metric);
     addPsThen(new PsThenMetric(metric, PsThenMetric.Operator.SET), ctx);
+  }
+
+  @Override
+  public void exitPopstm2_add(Popstm2_addContext ctx) {
+    long metric2 = toLong(ctx.metric2);
+    addPsThen(new PsThenMetric2(metric2, PsThenMetric2.Operator.ADD), ctx);
+    todo(ctx); // TODO: implement metric2 in VI model
+  }
+
+  @Override
+  public void exitPopstm2_expression(Popstm2_expressionContext ctx) {
+    // TODO: implement metric2 expression
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopstm2_subtract(Popstm2_subtractContext ctx) {
+    long metric2 = toLong(ctx.metric2);
+    addPsThen(new PsThenMetric2(metric2, PsThenMetric2.Operator.SUBTRACT), ctx);
+    todo(ctx); // TODO: implement metric2 in VI model
+  }
+
+  @Override
+  public void exitPopstm2_value(Popstm2_valueContext ctx) {
+    long metric2 = toLong(ctx.metric2);
+    addPsThen(new PsThenMetric2(metric2, PsThenMetric2.Operator.SET), ctx);
+    todo(ctx); // TODO: implement metric2 in VI model
   }
 
   @Override
