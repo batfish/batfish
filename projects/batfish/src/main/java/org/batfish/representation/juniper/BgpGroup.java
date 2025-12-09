@@ -43,6 +43,7 @@ public class BgpGroup implements Serializable {
   private @Nullable BgpKeepType _keep;
   private Ip _localAddress;
   private Long _localAs;
+  private @Nullable Long _localPreference;
   private Integer _loops;
   private Boolean _multipath;
   private Boolean _multipathMultipleAs;
@@ -116,6 +117,9 @@ public class BgpGroup implements Serializable {
       }
       if (_localAs == null) {
         _localAs = _parent._localAs;
+      }
+      if (_localPreference == null) {
+        _localPreference = _parent._localPreference;
       }
       if (_loops == null) {
         _loops = _parent._loops;
@@ -265,6 +269,22 @@ public class BgpGroup implements Serializable {
 
   public void setPreference(@Nullable Integer preference) {
     _preference = preference;
+  }
+
+  /**
+   * Local preference value to set on routes advertised to this group/neighbor. Distinct from
+   * preference (admin distance) and from local-preference manipulated via routing policy.
+   *
+   * @see <a
+   *     href="https://www.juniper.net/documentation/us/en/software/junos/bgp/topics/ref/statement/local-preference-edit-protocols-bgp.html">local-preference
+   *     (Protocols BGP)</a>
+   */
+  public @Nullable Long getLocalPreference() {
+    return _localPreference;
+  }
+
+  public void setLocalPreference(@Nullable Long localPreference) {
+    _localPreference = localPreference;
   }
 
   public Boolean getRemovePrivate() {
