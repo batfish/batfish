@@ -115,6 +115,7 @@ b_common
    | b_keep
    | b_local_address
    | b_local_as
+   | b_local_preference
    | b_multihop
    | b_multipath
    | b_no_client_reflect
@@ -214,6 +215,11 @@ b_local_address
 b_local_as
 :
    LOCAL_AS bl_number? bl_common*
+;
+
+b_local_preference
+:
+   LOCAL_PREFERENCE localpref = uint32
 ;
 
 b_multihop
