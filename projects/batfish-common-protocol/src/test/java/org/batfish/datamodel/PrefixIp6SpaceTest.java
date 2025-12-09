@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.equalTo;
 import com.google.common.collect.ImmutableList;
 import com.google.common.testing.EqualsTester;
 import java.util.Optional;
+import org.apache.commons.lang3.SerializationUtils;
+import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
 
 public class PrefixIp6SpaceTest {
@@ -46,5 +48,12 @@ public class PrefixIp6SpaceTest {
             "fffg:1:1:1::1/64")) {
       assertThat(Prefix6.tryParse(s), equalTo(Optional.empty()));
     }
+  }
+
+  @Test
+  public void testSerialization() {
+    PrefixIp6Space original = new PrefixIp6Space(Prefix6.parse("2001:db8::/32"));
+    assertThat(BatfishObjectMapper.clone(original, Ip6Space.class), equalTo(original));
+    assertThat(SerializationUtils.clone(original), equalTo(original));
   }
 }

@@ -6,7 +6,6 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.not;
 
 import com.google.common.collect.ImmutableList;
-import java.io.IOException;
 import org.apache.commons.lang3.SerializationUtils;
 import org.batfish.common.util.BatfishObjectMapper;
 import org.junit.Test;
@@ -41,7 +40,7 @@ public class Ip6SpaceTest {
   }
 
   @Test
-  public void testIp6SpaceJacksonSerialization() throws IOException {
+  public void testIp6SpaceJacksonSerialization() {
     for (Ip6Space ip6Space :
         ImmutableList.of(
             Prefix6.parse("1:1:1:1::1/64").toIp6Space(),
