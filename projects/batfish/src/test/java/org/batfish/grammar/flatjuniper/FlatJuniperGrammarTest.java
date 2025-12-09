@@ -380,11 +380,14 @@ import org.batfish.datamodel.routing_policy.Environment.Direction;
 import org.batfish.datamodel.routing_policy.Result;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.DecrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethods;
 import org.batfish.datamodel.transformation.AssignIpAddressFromPool;
@@ -481,6 +484,7 @@ import org.batfish.representation.juniper.PsThenCommunityAdd;
 import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
+import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
@@ -3767,6 +3771,78 @@ public final class FlatJuniperGrammarTest {
     DecrementAdministrativeCost dec = (DecrementAdministrativeCost) setSub.getAdmin();
     assertThat(dec.getSubtrahend(), equalTo(30L));
     assertThat(dec.getMin(), equalTo(0L));
+  }
+
+  @Test
+  public void testPsMetricAddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("metric-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal metric
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(100, PsThenMetric.Operator.SET)));
+
+    // Test metric add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(50, PsThenMetric.Operator.ADD)));
+
+    // Test metric subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(30, PsThenMetric.Operator.SUBTRACT)));
+
+    // Test large metric add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(4294967200L, PsThenMetric.Operator.ADD)));
+
+    // Test large metric subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric(4294967200L, PsThenMetric.Operator.SUBTRACT)));
+  }
+
+  @Test
+  public void testPsMetricAddSubtractConversion() {
+    Configuration c = parseConfig("metric-add-subtract");
+
+    // Test metric add
+    RoutingPolicy ps2 = c.getRoutingPolicies().get("PS2");
+    assertThat(ps2, notNullValue());
+    assertThat(ps2.getStatements(), hasSize(2));
+    SetMetric setAdd =
+        (SetMetric)
+            ((TraceableStatement) ((If) ps2.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setAdd.getMetric(), instanceOf(IncrementMetric.class));
+    IncrementMetric inc = (IncrementMetric) setAdd.getMetric();
+    assertThat(inc.getAddend(), equalTo(50L));
+
+    // Test metric subtract
+    RoutingPolicy ps3 = c.getRoutingPolicies().get("PS3");
+    assertThat(ps3, notNullValue());
+    assertThat(ps3.getStatements(), hasSize(2));
+    SetMetric setSub =
+        (SetMetric)
+            ((TraceableStatement) ((If) ps3.getStatements().get(0)).getTrueStatements().get(0))
+                .getInnerStatements()
+                .get(0);
+    assertThat(setSub.getMetric(), instanceOf(DecrementMetric.class));
+    DecrementMetric dec = (DecrementMetric) setSub.getMetric();
+    assertThat(dec.getSubtrahend(), equalTo(30L));
   }
 
   @Test

@@ -586,9 +586,6 @@ popst_common
    | popst_install_nexthop
    | popst_local_preference
    | popst_metric
-   | popst_metric_add
-   | popst_metric_expression
-   | popst_metric_igp
    | popst_metric2
    | popst_metric2_expression
    | popst_multipath_resolve
@@ -663,29 +660,43 @@ popst_metric
 :
    METRIC
    (
-      metric = dec
+      popstm_add
+      | popstm_expression
+      | popstm_igp
+      | popstm_subtract
+      | popstm_value
       | apply_groups
    )
 ;
 
-popst_metric_add
+popstm_add
 :
-   METRIC ADD metric = dec
+   ADD metric = uint32
+;
+
+popstm_expression
+:
+   EXPRESSION metric_expression
+;
+
+popstm_igp
+:
+   IGP offset = dec?
+;
+
+popstm_subtract
+:
+   SUBTRACT metric = uint32
+;
+
+popstm_value
+:
+   metric = uint32
 ;
 
 popst_metric2
 :
    METRIC2 metric2 = dec
-;
-
-popst_metric_expression
-:
-   METRIC EXPRESSION metric_expression
-;
-
-popst_metric_igp
-:
-   METRIC IGP offset = dec?
 ;
 
 popst_metric2_expression
