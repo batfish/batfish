@@ -587,7 +587,6 @@ popst_common
    | popst_local_preference
    | popst_metric
    | popst_metric2
-   | popst_metric2_expression
    | popst_multipath_resolve
    | popst_next_hop
    | popst_next_policy
@@ -696,12 +695,34 @@ popstm_value
 
 popst_metric2
 :
-   METRIC2 metric2 = dec
+   METRIC2
+   (
+      popstm2_add
+      | popstm2_expression
+      | popstm2_subtract
+      | popstm2_value
+      | apply_groups
+   )
 ;
 
-popst_metric2_expression
+popstm2_add
 :
-   METRIC2 EXPRESSION metric_expression
+   ADD metric2 = uint32
+;
+
+popstm2_expression
+:
+   EXPRESSION metric_expression
+;
+
+popstm2_subtract
+:
+   SUBTRACT metric2 = uint32
+;
+
+popstm2_value
+:
+   metric2 = uint32
 ;
 
 popst_multipath_resolve
