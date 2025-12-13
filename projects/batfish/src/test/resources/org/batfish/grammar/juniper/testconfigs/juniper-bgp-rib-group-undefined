@@ -1,0 +1,15 @@
+set system host-name juniper-bgp-rib-group-undefined
+# no rib group defined
+set interfaces ge-0/0/0 unit 0 family inet address 1.1.1.2/31
+# bgp config
+set routing-options autonomous-system 1
+set routing-options router-id 1.1.1.1
+#
+set protocols bgp group EBGP-GROUP type external
+set protocols bgp group EBGP-GROUP peer-as 2
+# reference undefined rib group
+set protocols bgp group EBGP-GROUP family inet unicast rib-group UNDEFINED_RIB_GROUP
+#
+set protocols bgp group EBGP-GROUP neighbor 1.1.1.3
+#
+
