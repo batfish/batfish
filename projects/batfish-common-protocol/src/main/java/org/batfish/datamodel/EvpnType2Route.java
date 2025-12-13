@@ -110,7 +110,7 @@ public final class EvpnType2Route extends EvpnRoute<EvpnType2Route.Builder, Evpn
 
   @JsonCreator
   private static EvpnType2Route jsonCreator(
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int admin,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long admin,
       @JsonProperty(PROP_AS_PATH) @Nullable AsPath asPath,
       @JsonProperty(PROP_CLUSTER_LIST) @Nullable Set<Long> clusterList,
       @JsonProperty(PROP_COMMUNITIES) @Nullable CommunitySet communities,

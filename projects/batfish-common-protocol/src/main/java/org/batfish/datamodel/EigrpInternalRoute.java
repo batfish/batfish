@@ -18,7 +18,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 public class EigrpInternalRoute extends EigrpRoute {
 
   private EigrpInternalRoute(
-      int admin,
+      long admin,
       long processAsn,
       @Nullable Prefix network,
       @Nonnull NextHop nextHop,

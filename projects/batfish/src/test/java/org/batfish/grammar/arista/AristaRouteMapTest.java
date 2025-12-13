@@ -134,7 +134,7 @@ public class AristaRouteMapTest {
       RoutingPolicy rp = c.getRoutingPolicies().get("SET_DISTANCE");
       assertThat(rp, notNullValue());
       Bgpv4Route processed = processRouteIn(rp, baseBgpRoute);
-      assertThat(processed.getAdministrativeCost(), equalTo(180));
+      assertThat(processed.getAdministrativeCost(), equalTo(180L));
     }
   }
 

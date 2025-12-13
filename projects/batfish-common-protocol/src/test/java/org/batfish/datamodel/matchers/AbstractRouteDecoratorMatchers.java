@@ -27,7 +27,7 @@ public final class AbstractRouteDecoratorMatchers {
    * is {@code expectedAdministrativeCost}.
    */
   public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
-      int expectedAdministrativeCost) {
+      long expectedAdministrativeCost) {
     return new HasAdministrativeCost(equalTo(expectedAdministrativeCost));
   }
 
@@ -36,7 +36,7 @@ public final class AbstractRouteDecoratorMatchers {
    * AbstractRouteDecorator}'s administrative cost.
    */
   public static @Nonnull HasAdministrativeCost hasAdministrativeCost(
-      @Nonnull Matcher<? super Integer> subMatcher) {
+      @Nonnull Matcher<? super Long> subMatcher) {
     return new HasAdministrativeCost(subMatcher);
   }
 
