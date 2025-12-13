@@ -7599,6 +7599,22 @@ public final class FlatJuniperGrammarTest {
         equalTo("RIB_GROUP_2"));
   }
 
+  @Test
+  public void testBgpRibGroupUndefined() throws IOException {
+    String hostname = "juniper-bgp-rib-group-undefined";
+    Configuration c = parseConfig(hostname);
+    BatfishTestUtils.getBatfish(ImmutableSortedMap.of(hostname, c), _folder);
+
+    // Should not crash on undefined rib-group, and neighbor should have no applied rib group
+    assertThat(
+        c.getDefaultVrf()
+            .getBgpProcess()
+            .getActiveNeighbors()
+            .get(Ip.parse("1.1.1.3"))
+            .getAppliedRibGroup(),
+        nullValue());
+  }
+
   /** Throws the creation of {@link FirewallSessionInterfaceInfo} objects for juniper devices. */
   @Test
   public void testFirewallSession() {
