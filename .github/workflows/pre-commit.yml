@@ -29,7 +29,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: google-java-format cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/google-java-format"
           key: google-java-format-${{ hashFiles('tools/fix_java_format.sh') }}
@@ -56,7 +56,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Checkstyle cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/checkstyle"
           key: checkstyle-${{ hashFiles('tools/run_checkstyle.sh') }}
@@ -73,12 +73,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Bazelisk cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/bazelisk"
           key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
       - name: Bazel cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-17-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-test-${{ needs.get_date.outputs.ymd }}
@@ -116,12 +116,12 @@ jobs:
     steps:
       - uses: actions/checkout@v6
       - name: Bazelisk cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/bazelisk"
           key: ${{runner.os}}-bazelisk-${{ hashFiles('.bazelversion') }}
       - name: Bazel cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: "~/.cache/bazel"
           key: ${{runner.os}}-bazel-${{ hashFiles('.bazelversion', 'WORKSPACE', 'maven_install.json') }}-junit-${{ needs.get_date.outputs.ymd }}
