@@ -103,7 +103,7 @@ jobs:
           bazel build //projects/allinone:allinone_main_deploy.jar
           cp bazel-bin/projects/allinone/allinone_main_deploy.jar workspace/allinone.jar
       - name: Save JAR
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v6
         with:
           name: allinone_jar_17
           path: workspace/allinone.jar
