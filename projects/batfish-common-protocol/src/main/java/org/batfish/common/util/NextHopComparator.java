@@ -44,7 +44,9 @@ public final class NextHopComparator implements Comparator<NextHop> {
   private static final Comparator<NextHop> COMPARATOR_DISCARD = (nh1, nh2) -> 0;
 
   private static final Comparator<NextHop> COMPARATOR_VRF =
-      Comparator.comparing(nh -> ((NextHopVrf) nh).getVrfName());
+      Comparator.<NextHop, String>comparing(nh -> ((NextHopVrf) nh).getVrfName())
+          .thenComparing(
+              nh -> ((NextHopVrf) nh).getIp(), Comparator.nullsFirst(Comparator.naturalOrder()));
 
   private static final Comparator<NextHop> COMPARATOR_VTEP =
       Comparator.<NextHop, Integer>comparing(nh -> ((NextHopVtep) nh).getVni())

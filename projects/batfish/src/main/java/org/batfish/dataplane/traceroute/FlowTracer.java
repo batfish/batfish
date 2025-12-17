@@ -158,6 +158,9 @@ class FlowTracer {
         comparing(FibForward::getInterfaceName)
             .thenComparing(
                 fibForward -> fibForward.getArpIp().orElse(null), nullsFirst(Ip::compareTo));
+    private static final Comparator<FibNextVrf> FIB_NEXT_VRF_COMPARATOR =
+        comparing(FibNextVrf::getNextVrf)
+            .thenComparing(FibNextVrf::getIp, nullsFirst(Comparator.naturalOrder()));
 
     /**
      * new FibActionSameTypeComparator(a).visit(b) compares a and b and requires that a.getClass()
@@ -178,7 +181,7 @@ class FlowTracer {
 
       @Override
       public Integer visitFibNextVrf(FibNextVrf fibNextVrf) {
-        return fibNextVrf.getNextVrf().compareTo(((FibNextVrf) _rhs).getNextVrf());
+        return FIB_NEXT_VRF_COMPARATOR.compare(fibNextVrf, (FibNextVrf) _rhs);
       }
 
       @Override
@@ -1551,8 +1554,10 @@ class FlowTracer {
             if (forkedTracer.isAcceptedAtCurrentVrf(dstIp)) {
               forkedTracer.buildAcceptTrace();
             } else {
+              // Use override IP if present, otherwise use packet destination IP
+              Ip lookupIp = firstNonNull(fibNextVrf.getIp(), dstIp);
               forkedTracer.fibLookup(
-                  dstIp,
+                  lookupIp,
                   currentNodeName,
                   nextVrf,
                   _tracerouteContext.getFib(currentNodeName, nextVrf).get(),

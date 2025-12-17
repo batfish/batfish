@@ -47,7 +47,7 @@ public final class LegacyNextHops {
 
         @Override
         public Optional<Ip> visitNextHopVrf(NextHopVrf nextHopVrf) {
-          return Optional.empty();
+          return Optional.ofNullable(nextHopVrf.getIp());
         }
 
         @Override

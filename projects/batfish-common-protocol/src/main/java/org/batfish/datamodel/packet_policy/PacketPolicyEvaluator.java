@@ -1,5 +1,7 @@
 package org.batfish.datamodel.packet_policy;
 
+import static com.google.common.base.MoreObjects.firstNonNull;
+
 import com.google.common.collect.ImmutableList;
 import java.util.List;
 import java.util.Map;
@@ -87,7 +89,11 @@ public final class PacketPolicyEvaluator {
             @Override
             public Boolean visitFibNextVrf(FibNextVrf fibNextVrf) {
               // Recurse and continue interface collection
-              return _fibs.get(fibNextVrf.getNextVrf()).get(_currentFlow.getDstIp()).stream()
+              // Use override IP if present, otherwise use packet destination IP
+              return _fibs
+                  .get(fibNextVrf.getNextVrf())
+                  .get(firstNonNull(fibNextVrf.getIp(), _currentFlow.getDstIp()))
+                  .stream()
                   .anyMatch(entry -> entry.getAction().accept(this));
             }
 

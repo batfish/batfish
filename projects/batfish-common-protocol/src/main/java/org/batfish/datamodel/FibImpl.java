@@ -170,7 +170,7 @@ public final class FibImpl implements Fib {
 
             @Override
             public FibAction visitNextHopVrf(NextHopVrf nextHopVrf) {
-              return FibNextVrf.of(nextHopVrf.getVrfName());
+              return FibNextVrf.of(nextHopVrf.getVrfName(), nextHopVrf.getIp());
             }
 
             @Override
