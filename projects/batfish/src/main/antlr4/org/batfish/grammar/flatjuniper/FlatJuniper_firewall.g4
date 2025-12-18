@@ -155,6 +155,7 @@ fft_from
       | fftf_prefix_list
       | fftf_protocol
       | fftf_source_address
+      | fftf_source_class
       | fftf_source_mac_address
       | fftf_source_port
       | fftf_source_port_except
@@ -394,6 +395,11 @@ fftf_source_address
       | IPV6_ADDRESS
       | IPV6_PREFIX
    ) EXCEPT?
+;
+
+fftf_source_class
+:
+   SOURCE_CLASS name = junos_name
 ;
 
 fftf_source_mac_address
