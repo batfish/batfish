@@ -71,6 +71,7 @@ public enum JuniperStructureType implements StructureType {
   SECURITY_PROFILE("security-profile"),
   SNMP_CLIENT_LIST("snmp client-list"),
   SNMP_CLIENT_LIST_OR_PREFIX_LIST("snmp client-list or prefix-list"),
+  SOURCE_CLASS("source-class"),
   SRLG("srlg"),
   TUNNEL_ATTRIBUTE("tunnel-attribute"),
   VLAN("vlan");
