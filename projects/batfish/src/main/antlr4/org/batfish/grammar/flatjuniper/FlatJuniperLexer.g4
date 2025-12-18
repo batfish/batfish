@@ -776,21 +776,15 @@ FAST_INTERVAL: 'fast-interval';
 FASTETHER_OPTIONS: 'fastether-options';
 
 FILE: 'file';
-
-FILTER: 'filter' -> pushMode(M_Filter);
-
-FILTER_DUPLICATES: 'filter-duplicates';
-
-FILTER_INTERFACES: 'filter-interfaces';
 FILL_LEVEL: 'fill-level';
+FILTER: 'filter' -> pushMode(M_Filter);
+FILTER_DUPLICATES: 'filter-duplicates';
+FILTER_INTERFACES: 'filter-interfaces';
+FILTER_SPECIFIC: 'filter-specific';
 FIN_NO_ACK: 'fin-no-ack';
-
 FINGER: 'finger';
-
 FINGERPRINT_HASH: 'fingerprint-hash';
-
 FIREWALL: 'firewall';
-
 FIRST_FRAGMENT: 'first-fragment';
 
 FLAP_PERIOD: 'period';
@@ -1778,6 +1772,7 @@ LOG_LSP_HISTORY: 'log-lsp-history';
 LOG_OUT_ON_DISCONNECT: 'log-out-on-disconnect';
 LOG_PREFIX: 'log-prefix';
 LOG_UPDOWN: 'log-updown';
+LOGICAL_INTERFACE_POLICER: 'logical-interface-policer';
 LOGICAL_SYSTEM: 'logical-system' -> pushMode(M_Name);
 LOGICAL_SYSTEMS: 'logical-systems' -> pushMode(M_Name);
 LOGIN: 'login';

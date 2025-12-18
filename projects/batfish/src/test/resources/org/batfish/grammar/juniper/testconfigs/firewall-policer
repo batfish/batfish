@@ -10,6 +10,25 @@ set firewall policer 1M if-exceeding bandwidth-limit 1m
 set firewall policer 1M if-exceeding burst-size-limit 2k
 set firewall policer 1M then discard
 #
+# Define policer with filter-specific flag
+set firewall policer FILTER-SPECIFIC-POL filter-specific
+set firewall policer FILTER-SPECIFIC-POL if-exceeding bandwidth-limit 100m
+set firewall policer FILTER-SPECIFIC-POL if-exceeding burst-size-limit 200k
+set firewall policer FILTER-SPECIFIC-POL then discard
+#
+# Define policer with logical-interface-policer flag
+set firewall policer LOGICAL-INTERFACE-POL logical-interface-policer
+set firewall policer LOGICAL-INTERFACE-POL if-exceeding bandwidth-limit 1g
+set firewall policer LOGICAL-INTERFACE-POL if-exceeding burst-size-limit 10m
+set firewall policer LOGICAL-INTERFACE-POL then discard
+#
+# Define policer with both flags
+set firewall policer BOTH-FLAGS-POL filter-specific
+set firewall policer BOTH-FLAGS-POL logical-interface-policer
+set firewall policer BOTH-FLAGS-POL if-exceeding bandwidth-limit 500m
+set firewall policer BOTH-FLAGS-POL if-exceeding burst-size-limit 1m
+set firewall policer BOTH-FLAGS-POL then discard
+#
 # Use policers in filter terms
 set firewall family inet filter COPP-IN term SSH from protocol tcp
 set firewall family inet filter COPP-IN term SSH from destination-port ssh
