@@ -46,6 +46,7 @@ public final class CliUtils {
       return paths
           .filter(Files::isRegularFile)
           .filter(path -> !path.getFileName().toString().startsWith("."))
+          .parallel()
           .map(
               path -> {
                 if (logger != null) {
