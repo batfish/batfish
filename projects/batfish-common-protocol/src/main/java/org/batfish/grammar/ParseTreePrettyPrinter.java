@@ -115,10 +115,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void enterEveryRule(ParserRuleContext ctx) {
     if (ctx != _ctx) {
-      _ptSentences.addSentence("");
-    }
-    for (int i = 0; i < _indent; i++) {
-      _ptSentences.appendToLastSentence("  ");
+      _ptSentences.addSentence(" ".repeat(2 * _indent));
+    } else {
+      _ptSentences.appendToLastSentence(" ".repeat(2 * _indent));
     }
     String ruleName = _ruleNames.get(ctx.getRuleIndex());
 
@@ -149,10 +148,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void visitErrorNode(ErrorNode ctx) {
     String nodeText = BatfishCombinedParser.escape(ctx.getText());
-    _ptSentences.addSentence("");
-    for (int i = 0; i < _indent; i++) {
-      _ptSentences.appendToLastSentence("  ");
-    }
+    _ptSentences.addSentence(" ".repeat(2 * _indent));
     int tokenType = ctx.getSymbol().getType();
     String tokenName;
     if (tokenType == Lexer.EOF) {
@@ -169,10 +165,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void visitTerminal(TerminalNode ctx) {
     String nodeText = BatfishCombinedParser.escape(ctx.getText());
-    _ptSentences.addSentence("");
-    for (int i = 0; i < _indent; i++) {
-      _ptSentences.appendToLastSentence("  ");
-    }
+    _ptSentences.addSentence(" ".repeat(2 * _indent));
     Token t = ctx.getSymbol();
     int tokenType = t.getType();
     int modeAsInt = _combinedParser.getTokenMode(t);
