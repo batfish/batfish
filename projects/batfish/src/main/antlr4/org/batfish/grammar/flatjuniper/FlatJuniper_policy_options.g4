@@ -768,7 +768,11 @@ popst_origin
 
 popst_preference
 :
-   PREFERENCE preference = dec
+   PREFERENCE
+   (
+      (ADD | SUBTRACT)? preference = uint32
+      | apply_groups
+   )
 ;
 
 popst_priority

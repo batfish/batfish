@@ -104,8 +104,8 @@ public class BgpRouteDiffTest {
         routeDiffs(route1, route2).getDiffs(), contains(new BgpRouteDiff(PROP_METRIC, "1", "2")));
 
     // change administrative distance
-    route1 = builder().setAdminDist(1).build();
-    route2 = builder().setAdminDist(2).build();
+    route1 = builder().setAdminDist(1L).build();
+    route2 = builder().setAdminDist(2L).build();
     assertThat(
         routeDiffs(route1, route2).getDiffs(),
         contains(new BgpRouteDiff(PROP_ADMINISTRATIVE_DISTANCE, "1", "2")));
@@ -113,7 +113,7 @@ public class BgpRouteDiffTest {
     // change all properties
     route1 =
         builder()
-            .setAdminDist(1)
+            .setAdminDist(1L)
             .setAsPath(AsPath.ofSingletonAsSets(1L, 2L))
             .setCommunities(ImmutableSet.of(StandardCommunity.of(1L), StandardCommunity.of(2L)))
             .setLocalPreference(1)
@@ -126,7 +126,7 @@ public class BgpRouteDiffTest {
             .build();
     route2 =
         builder()
-            .setAdminDist(2)
+            .setAdminDist(2L)
             .setAsPath(AsPath.ofSingletonAsSets(2L, 3L))
             .setCommunities(ImmutableSet.of(StandardCommunity.of(2L), StandardCommunity.of(3L)))
             .setLocalPreference(2)

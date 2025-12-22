@@ -15,7 +15,7 @@ public abstract class RipRoute extends AbstractRoute {
 
   protected final long _metric;
 
-  protected RipRoute(Prefix network, NextHop nextHop, int admin, long metric, long tag) {
+  protected RipRoute(Prefix network, NextHop nextHop, long admin, long metric, long tag) {
     super(network, admin, tag, false, false);
     checkArgument(
         metric >= 0 && metric <= MAX_ROUTE_METRIC,

@@ -18,7 +18,7 @@ import org.batfish.datamodel.route.nh.NextHopIp;
 public abstract class AbstractRouteBuilder<
     S extends AbstractRouteBuilder<S, T>, T extends AbstractRoute> {
 
-  private int _admin;
+  private long _admin;
   private long _metric;
   private @Nullable Prefix _network;
   protected @Nullable NextHop _nextHop;
@@ -29,13 +29,13 @@ public abstract class AbstractRouteBuilder<
 
   public @Nonnull abstract T build();
 
-  public final int getAdmin() {
+  public final long getAdmin() {
     return _admin;
   }
 
-  public S setAdmin(int admin) {
+  public S setAdmin(long admin) {
     // TODO: too many tests set -1 via Route#UNSET_ADMIN here, so we don't check lower bound.
-    checkAdmin(admin, Integer.MIN_VALUE);
+    checkAdmin(admin, Long.MIN_VALUE);
     _admin = admin;
     return getThis();
   }
