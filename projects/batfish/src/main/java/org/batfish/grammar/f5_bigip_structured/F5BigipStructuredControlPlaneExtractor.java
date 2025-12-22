@@ -104,14 +104,12 @@ public class F5BigipStructuredControlPlaneExtractor implements ControlPlaneExtra
     if (_ptSentences != null) {
       _ptSentences
           .get()
-          .getSentences()
-          .addAll(
+          .addAllSentences(
               ParseTreePrettyPrinter.getParseTreeSentences(
-                      imishCtx,
-                      imishParser,
-                      _printParseTreeLineNums,
-                      ImplementedRules.getImplementedRules(F5BigipImishConfigurationBuilder.class))
-                  .getSentences());
+                  imishCtx,
+                  imishParser,
+                  _printParseTreeLineNums,
+                  ImplementedRules.getImplementedRules(F5BigipImishConfigurationBuilder.class)));
     }
   }
 }
