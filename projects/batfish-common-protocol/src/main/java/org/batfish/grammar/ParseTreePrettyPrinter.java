@@ -3,8 +3,10 @@ package org.batfish.grammar;
 import com.google.common.collect.ImmutableSet;
 import java.lang.reflect.Field;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.Map;
 import java.util.Set;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -25,6 +27,9 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
   private final BatfishCombinedParser<?, ?> _combinedParser;
   private final ParserRuleContext _ctx;
+
+  /** Cache of reflected fields per class to avoid repeated reflection overhead. */
+  private final Map<Class<?>, Field[]> _fieldCache;
 
   /** The current indentation level, based on the depth of the parse tree. */
   private int _indent;
@@ -50,11 +55,21 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     _combinedParser = combinedParser;
     _ruleNames = ruleNames;
     _ctx = ctx;
+    _fieldCache = new HashMap<>();
     _ptSentences = new ParseTreeSentences();
     _printLineNumbers = printLineNumbers;
     _implementedRuleNames =
         implementedRuleNames == null ? null : ImmutableSet.copyOf(implementedRuleNames);
     _indent = 0;
+  }
+
+  /**
+   * Get cached declared fields for a class, computing and caching them if not already present. This
+   * avoids repeated reflection overhead. Uses getDeclaredFields since ANTLR-generated context
+   * classes declare their named fields directly, not through inheritance.
+   */
+  private Field[] getCachedFields(Class<?> clazz) {
+    return _fieldCache.computeIfAbsent(clazz, Class::getDeclaredFields);
   }
 
   public static ParseTreeSentences getParseTreeSentences(
@@ -122,7 +137,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
     String ruleName = _ruleNames.get(ctx.getRuleIndex());
 
     if (ctx.getParent() != null) {
-      for (Field f : ctx.getParent().getClass().getFields()) {
+      for (Field f : getCachedFields(ctx.getParent().getClass())) {
         try {
           if (!f.getName().equals(ruleName) && f.get(ctx.getParent()) == ctx) {
             _ptSentences.appendToLastSentence(f.getName() + " = ");
@@ -180,7 +195,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
 
     // If the parent context has a named field pointing to the token, it is because the user
     // has a defined name. Add it to the output message.
-    for (Field f : ctx.getParent().getClass().getFields()) {
+    for (Field f : getCachedFields(ctx.getParent().getClass())) {
       if (f.getName().equals("start")
           || f.getName().equals("stop")
           || f.getName().startsWith("_t")
