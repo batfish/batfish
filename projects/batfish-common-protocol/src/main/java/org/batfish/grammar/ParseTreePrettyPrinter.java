@@ -115,7 +115,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void enterEveryRule(ParserRuleContext ctx) {
     if (ctx != _ctx) {
-      _ptSentences.getSentences().add("");
+      _ptSentences.addSentence("");
     }
     for (int i = 0; i < _indent; i++) {
       _ptSentences.appendToLastSentence("  ");
@@ -149,8 +149,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void visitErrorNode(ErrorNode ctx) {
     String nodeText = BatfishCombinedParser.escape(ctx.getText());
-    // _sb.append("\n");
-    _ptSentences.getSentences().add("");
+    _ptSentences.addSentence("");
     for (int i = 0; i < _indent; i++) {
       _ptSentences.appendToLastSentence("  ");
     }
@@ -170,7 +169,7 @@ public class ParseTreePrettyPrinter implements ParseTreeListener {
   @Override
   public void visitTerminal(TerminalNode ctx) {
     String nodeText = BatfishCombinedParser.escape(ctx.getText());
-    _ptSentences.getSentences().add("");
+    _ptSentences.addSentence("");
     for (int i = 0; i < _indent; i++) {
       _ptSentences.appendToLastSentence("  ");
     }
