@@ -70,6 +70,8 @@ public abstract class BDDFactory {
     try {
       if (bddpackage.equals("j") || bddpackage.equals("java")) {
         return JFactory.init(nodenum, cachesize);
+      } else if (bddpackage.equals("ndd")) {
+        return NDDFactory.init(nodenum, cachesize);
       }
     } catch (LinkageError e) {
       LOGGER.info("Could not load BDD package {}: {}", bddpackage, e.getLocalizedMessage());
