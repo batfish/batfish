@@ -1,5 +1,0 @@
-package(
-    default_visibility = ["//projects/batfish-common-protocol:__subpackages__"],
-)
-
-exports_files(["salt"])

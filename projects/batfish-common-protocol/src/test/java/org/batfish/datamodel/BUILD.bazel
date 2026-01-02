@@ -1,44 +1,6 @@
-load("@batfish//skylark:junit.bzl", "junit_tests")
-load("@rules_java//java:java_library.bzl", "java_library")
+package(default_visibility = ["//visibility:public"])
 
-package(
-    default_testonly = True,
-    default_visibility = ["//visibility:public"],
-)
-
-java_library(
+alias(
     name = "testlib",
-    srcs = glob(
-        ["*.java"],
-        exclude = ["*Test.java"],
-    ),
-    deps = [
-        "//projects/batfish-common-protocol:common",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
-)
-
-junit_tests(
-    name = "tests",
-    srcs = glob([
-        "**/*Test.java",
-    ]),
-    resources = ["//projects/batfish-common-protocol/src/test/resources/org/batfish/datamodel"],
-    deps = [
-        ":testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/bdd:matchers",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
-        "//projects/bdd",
-        "@maven//:com_fasterxml_jackson_core_jackson_core",
-        "@maven//:com_fasterxml_jackson_core_jackson_databind",
-        "@maven//:com_google_code_findbugs_jsr305",
-        "@maven//:com_google_guava_guava",
-        "@maven//:com_google_guava_guava_testlib",
-        "@maven//:junit_junit",
-        "@maven//:org_apache_commons_commons_lang3",
-        "@maven//:org_hamcrest_hamcrest",
-    ],
+    actual = "//projects/common/src/test/java/org/batfish/datamodel:testlib",
 )

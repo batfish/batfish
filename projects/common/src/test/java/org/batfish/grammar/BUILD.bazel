@@ -1,0 +1,40 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:java_library.bzl", "java_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "mock_grammar_settings",
+    srcs = [":MockGrammarSettings.java"],
+    deps = [
+        "//projects/common:parser_common",
+        "@maven//:com_google_code_findbugs_jsr305",
+    ],
+)
+
+pmd_test(
+    name = "mock_grammar_settings_pmd",
+    lib = ":mock_grammar_settings",
+)
+
+junit_tests(
+    name = "tests",
+    srcs = glob(["*Test.java"]),
+    resources = ["//projects/common/src/test/resources/org/batfish/grammar"],
+    deps = [
+        "//projects/common:common_lib",
+        "//projects/common:common_testlib",
+        "//projects/common:parser_common",
+        "//projects/common/src/test/antlr4/org/batfish/grammar/recovery",
+        "//projects/common/src/test/java/org/batfish/common/matchers",
+        "//projects/common/src/test/java/org/batfish/grammar/recovery:recovery_testlib",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

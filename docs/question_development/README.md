@@ -4,7 +4,7 @@ The high-level architecture of questions is as follows. What is called via pybat
 
 ### Adding a new Java question
 
-Adding a new Java question requires extending three bases classes: (1) [QuestionPlugin](https://github.com/batfish/batfish/blob/master/projects/question/src/main/java/org/batfish/question/QuestionPlugin.java) helps Batfish dynamically find and load the question; (2) [Question](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/questions/Question.java) is the question object along with its parameters; and (3) [Answerer](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/Answerer.java) is the class that produces the answer. 
+Adding a new Java question requires extending three bases classes: (1) [QuestionPlugin](https://github.com/batfish/batfish/blob/master/projects/question/src/main/java/org/batfish/question/QuestionPlugin.java) helps Batfish dynamically find and load the question; (2) [Question](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/questions/Question.java) is the question object along with its parameters; and (3) [Answerer](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/Answerer.java) is the class that produces the answer. 
 
 See existing questions (e.g., [CompareFilters](https://github.com/batfish/batfish/tree/master/projects/question/src/main/java/org/batfish/question/comparefilters)) for example of how to extend these classes. 
 
