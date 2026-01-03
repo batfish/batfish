@@ -2,30 +2,30 @@ package(default_visibility = ["//visibility:public"])
 
 alias(
     name = "parser_common",
-    actual = "//projects/batfish-common-protocol/src/main/java:parser_common",
+    actual = "//projects/common/src/main/java:parser_common",
 )
 
 alias(
     name = "specifier_common",
-    actual = "//projects/batfish-common-protocol/src/main/java:specifier_common",
+    actual = "//projects/common/src/main/java:specifier_common",
 )
 
 alias(
     name = "common_lib",
-    actual = "//projects/batfish-common-protocol/src/main/java:common_lib",
+    actual = "//projects/common/src/main/java:common_lib",
 )
 
 alias(
     name = "common",
-    actual = "//projects/batfish-common-protocol/src/main/java:common",
+    actual = "//projects/common/src/main/java:common",
 )
 
 alias(
     name = "common_testlib",
-    actual = "//projects/batfish-common-protocol/src/test:common_testlib",
+    actual = "//projects/common/src/test:common_testlib",
 )
 
 alias(
     name = "common_properties",
-    actual = "//projects/batfish-common-protocol/src/generated:common_properties",
+    actual = "//projects/common/src/generated:common_properties",
 )
