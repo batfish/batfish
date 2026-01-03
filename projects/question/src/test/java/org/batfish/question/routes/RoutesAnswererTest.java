@@ -338,7 +338,7 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.STRING,
             Schema.LONG,
-            Schema.INTEGER,
+            Schema.LONG,
             Schema.LONG));
   }
 
@@ -460,8 +460,8 @@ public class RoutesAnswererTest {
             Schema.STRING,
             Schema.LONG,
             Schema.LONG,
-            Schema.INTEGER,
-            Schema.INTEGER,
+            Schema.LONG,
+            Schema.LONG,
             Schema.LONG,
             Schema.LONG));
   }

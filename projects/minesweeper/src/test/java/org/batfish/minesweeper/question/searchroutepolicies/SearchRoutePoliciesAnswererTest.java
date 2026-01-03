@@ -91,6 +91,7 @@ import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IntComparator;
 import org.batfish.datamodel.routing_policy.expr.IpNextHop;
 import org.batfish.datamodel.routing_policy.expr.LegacyMatchAsPath;
+import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.LiteralAsList;
 import org.batfish.datamodel.routing_policy.expr.LiteralInt;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -868,7 +869,7 @@ public class SearchRoutePoliciesAnswererTest {
   public void testSetAdministrativeCost() {
     RoutingPolicy policy =
         _policyBuilder
-            .addStatement(new SetAdministrativeCost(new LiteralInt(8)))
+            .addStatement(new SetAdministrativeCost(new LiteralAdministrativeCost(8)))
             .addStatement(new StaticStatement(Statements.ExitAccept))
             .build();
 
@@ -894,7 +895,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
-            .setAdminDist(0)
+            .setAdminDist(0L)
             .build();
 
     BgpRoute outputRoute =
@@ -906,7 +907,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setProtocol(RoutingProtocol.BGP)
             .setNextHopIp(Ip.parse("0.0.0.1"))
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
-            .setAdminDist(8)
+            .setAdminDist(8L)
             .build();
 
     BgpRouteDiffs diff =

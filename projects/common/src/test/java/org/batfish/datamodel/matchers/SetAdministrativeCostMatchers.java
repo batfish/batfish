@@ -3,7 +3,7 @@ package org.batfish.datamodel.matchers;
 import javax.annotation.Nonnull;
 import org.batfish.datamodel.matchers.SetAdministrativeCostMatchersImpl.HasAdmin;
 import org.batfish.datamodel.matchers.SetAdministrativeCostMatchersImpl.IsSetAdministrativeCostThat;
-import org.batfish.datamodel.routing_policy.expr.IntExpr;
+import org.batfish.datamodel.routing_policy.expr.AdministrativeCostExpr;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
 import org.hamcrest.Matcher;
 
@@ -13,7 +13,7 @@ public class SetAdministrativeCostMatchers {
    * Provides a matcher that matches if the provided {@code subMatcher} matches the
    * AdministrativeCost's admin.
    */
-  public static HasAdmin hasAdmin(Matcher<IntExpr> subMatcher) {
+  public static HasAdmin hasAdmin(Matcher<AdministrativeCostExpr> subMatcher) {
     return new SetAdministrativeCostMatchersImpl.HasAdmin(subMatcher);
   }
 

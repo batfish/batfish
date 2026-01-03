@@ -27,8 +27,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
 
   // The maximum (VI) value for admin distance. Most OSes limit it to 255, and so do most networks,
   // but at least one OS (Junos) allows values up to 2^32-1.
-  // TODO(https://github.com/batfish/batfish/issues/8808): update if we need to.
-  public static final int MAX_ADMIN_DISTANCE = Integer.MAX_VALUE;
+  public static final long MAX_ADMIN_DISTANCE = 0xFFFFFFFFL;
 
   static final String PROP_ADMINISTRATIVE_COST = "administrativeCost";
   public static final String PROP_METRIC = "metric";
@@ -39,15 +38,14 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   static final String PROP_TAG = "tag";
 
   protected final @Nonnull Prefix _network;
-  protected final int _admin;
+  protected final long _admin;
   private final boolean _nonRouting;
   private final boolean _nonForwarding;
   protected final long _tag;
   protected @Nonnull NextHop _nextHop = NextHopDiscard.instance();
 
   /** Helper to check admin distance validity. */
-  @SuppressWarnings("ComparisonOutOfRange")
-  static void checkAdmin(int admin, int lower) {
+  static void checkAdmin(long admin, long lower) {
     checkArgument(
         admin >= lower && admin <= MAX_ADMIN_DISTANCE,
         "Invalid admin distance %s is not in [%s,%s]",
@@ -57,7 +55,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
   }
 
   protected AbstractRoute(
-      @Nullable Prefix network, int admin, long tag, boolean nonRouting, boolean nonForwarding) {
+      @Nullable Prefix network, long admin, long tag, boolean nonRouting, boolean nonForwarding) {
     checkArgument(network != null, "Cannot create a route without a %s", PROP_NETWORK);
     checkAdmin(admin, 0);
     _network = network;
@@ -79,7 +77,7 @@ public abstract class AbstractRoute implements AbstractRouteDecorator, Serializa
     return this;
   }
 
-  public final int getAdministrativeCost() {
+  public final long getAdministrativeCost() {
     return _admin;
   }
 

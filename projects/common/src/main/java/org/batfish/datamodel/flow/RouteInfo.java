@@ -43,13 +43,13 @@ public final class RouteInfo {
   private final @Nullable String _nextVrf;
 
   /** Administrative distance for this route */
-  private final int _adminDistance;
+  private final long _adminDistance;
 
   /** Metric for this route */
   private final long _metric;
 
   public RouteInfo(
-      RoutingProtocol protocol, Prefix network, NextHop nextHop, int adminDistance, long metric) {
+      RoutingProtocol protocol, Prefix network, NextHop nextHop, long adminDistance, long metric) {
     _protocol = protocol;
     _network = network;
     _nextHop = nextHop;
@@ -67,7 +67,7 @@ public final class RouteInfo {
       @JsonProperty(PROP_NEXT_HOP) @Nullable NextHop nextHop,
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf,
-      @JsonProperty(PROP_ADMIN_DISTANCE) @Nullable Integer adminDistance,
+      @JsonProperty(PROP_ADMIN_DISTANCE) @Nullable Long adminDistance,
       @JsonProperty(PROP_METRIC) @Nullable Long metric) {
     checkArgument(protocol != null, "Missing %s", PROP_PROTOCOL);
     checkArgument(network != null, "Missing %s", PROP_NETWORK);
@@ -126,7 +126,7 @@ public final class RouteInfo {
   }
 
   @JsonProperty(PROP_ADMIN_DISTANCE)
-  public int getAdminDistance() {
+  public long getAdminDistance() {
     return _adminDistance;
   }
 

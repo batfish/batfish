@@ -118,12 +118,12 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrs() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
-    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
+    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50L).build();
 
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(
@@ -143,9 +143,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsTrailingNulls1() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra1, rra2, rra3), ImmutableList.of(rra1));
@@ -162,9 +162,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsTrailingNulls2() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra1), ImmutableList.of(rra1, rra2, rra3));
@@ -181,9 +181,9 @@ public class RoutesAnswererUtilTest {
 
   @Test
   public void testAlignRtRowAttrsLeadingNulls() {
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
 
     List<List<RouteRowAttribute>> alignedRouteRowattrs =
         alignRouteRowAttributes(ImmutableList.of(rra3), ImmutableList.of(rra1, rra2, rra3));
@@ -465,7 +465,7 @@ public class RoutesAnswererUtilTest {
   public void testBgpRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
         RouteRowAttribute.builder()
-            .setAdminDistance(200)
+            .setAdminDistance(200L)
             .setMetric(2L)
             .setOriginProtocol("bgp")
             .setAsPath(AsPath.ofSingletonAsSets(ImmutableList.of(1L, 2L)))
@@ -566,7 +566,7 @@ public class RoutesAnswererUtilTest {
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.1")), "bgp");
     RouteRowAttribute attrs =
         RouteRowAttribute.builder()
-            .setAdminDistance(200)
+            .setAdminDistance(200L)
             .setNextHopInterface("nhIface")
             .setMetric(1L)
             .setTag(2L)
@@ -810,7 +810,7 @@ public class RoutesAnswererUtilTest {
                 NextHopInterface.of("e0", Ip.parse("1.1.1.2")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
-                    .setAdminDistance(10)
+                    .setAdminDistance(10L)
                     .setMetric(30L)
                     .setNextHopInterface("e0")
                     .build()),
@@ -818,7 +818,7 @@ public class RoutesAnswererUtilTest {
                 NextHopInterface.of("e0", Ip.parse("1.1.1.3")), "ospfE2"),
             ImmutableSortedSet.of(
                 RouteRowAttribute.builder()
-                    .setAdminDistance(10)
+                    .setAdminDistance(10L)
                     .setMetric(20L)
                     .setNextHopInterface("e0")
                     .build()));
@@ -1097,11 +1097,11 @@ public class RoutesAnswererUtilTest {
     RouteRowSecondaryKey rrsk4 =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.4")), "bgp");
 
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20).build();
-    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30).build();
-    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40).build();
-    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(10L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(20L).build();
+    RouteRowAttribute rra3 = RouteRowAttribute.builder().setAdminDistance(30L).build();
+    RouteRowAttribute rra4 = RouteRowAttribute.builder().setAdminDistance(40L).build();
+    RouteRowAttribute rra5 = RouteRowAttribute.builder().setAdminDistance(50L).build();
 
     Map<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>> innerGroupsInBase =
         ImmutableMap.<RouteRowSecondaryKey, SortedSet<RouteRowAttribute>>builder()
@@ -1164,8 +1164,8 @@ public class RoutesAnswererUtilTest {
     RouteRowSecondaryKey rrsk2 =
         new MainRibRouteRowSecondaryKey(NextHopIp.of(Ip.parse("1.1.1.2")), "bgp");
 
-    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11).build();
-    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22).build();
+    RouteRowAttribute rra1 = RouteRowAttribute.builder().setAdminDistance(11L).build();
+    RouteRowAttribute rra2 = RouteRowAttribute.builder().setAdminDistance(22L).build();
 
     List<DiffRoutesOutput> diffRoutesOutputs =
         getRoutesDiff(
@@ -1192,7 +1192,7 @@ public class RoutesAnswererUtilTest {
   @Test
   public void testAbstractRoutesRowDiff() {
     RouteRowAttribute.Builder routeRowAttrBuilder =
-        RouteRowAttribute.builder().setAdminDistance(200).setMetric(2L);
+        RouteRowAttribute.builder().setAdminDistance(200L).setMetric(2L);
 
     List<List<RouteRowAttribute>> diffMatrix = new ArrayList<>();
     diffMatrix.add(Lists.newArrayList(routeRowAttrBuilder.build(), routeRowAttrBuilder.build()));
@@ -1223,7 +1223,7 @@ public class RoutesAnswererUtilTest {
         RouteRowAttribute.builder()
             .setNextHopInterface("nhIface1")
             .setMetric(1L)
-            .setAdminDistance(1)
+            .setAdminDistance(1L)
             .setTag(1L)
             .build();
     Row.RowBuilder rowBuilder = Row.builder();
@@ -1236,7 +1236,7 @@ public class RoutesAnswererUtilTest {
             Row.builder()
                 .put(COL_BASE_PREFIX + COL_NEXT_HOP_INTERFACE, "nhIface1")
                 .put(COL_BASE_PREFIX + COL_METRIC, 1L)
-                .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1)
+                .put(COL_BASE_PREFIX + COL_ADMIN_DISTANCE, 1L)
                 .put(COL_BASE_PREFIX + COL_TAG, 1L)
                 .build()));
   }
