@@ -15,8 +15,8 @@ java_library(
         exclude = ["**/*Test.java"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/datamodel/questions:TestQuestion",
         "//projects/coordinator",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
@@ -43,9 +43,9 @@ junit_tests(
     srcs = glob(["**/*Test.java"]),
     deps = [
         ":coordinator_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/questions:TestQuestion",
+        "//projects/common",
+        "//projects/common/src/test:common_testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel/questions:TestQuestion",
         "//projects/coordinator",
         "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

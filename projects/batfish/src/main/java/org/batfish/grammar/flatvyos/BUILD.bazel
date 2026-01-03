@@ -10,9 +10,9 @@ java_library(
         exclude = ["BUILD.bazel"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/java/org/batfish/representation/vyos",
+        "//projects/common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:org_antlr_antlr4_runtime",
     ],

@@ -14,8 +14,8 @@ java_library(
     srcs = [":palo_alto_generated"],
     javacopts = ["-XepDisableAllChecks"],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto/parsing:palo_alto_base",
+        "//projects/common:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

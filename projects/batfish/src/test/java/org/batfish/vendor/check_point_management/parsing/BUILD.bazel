@@ -12,10 +12,10 @@ junit_tests(
         exclude = ["Test*.java"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/common/matchers",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management",
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/common/matchers",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",

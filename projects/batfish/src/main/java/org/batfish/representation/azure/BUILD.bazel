@@ -10,7 +10,7 @@ java_library(
         exclude = ["BUILD.bazel"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_code_findbugs_jsr305",
