@@ -14,8 +14,8 @@ java_library(
         "//projects/minesweeper:__subpackages__",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/bdd",
+        "//projects/common",
         "//projects/question/src/main/java/org/batfish/question",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_google_auto_service_auto_service_annotations",

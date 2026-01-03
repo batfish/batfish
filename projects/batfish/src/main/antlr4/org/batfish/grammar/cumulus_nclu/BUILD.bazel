@@ -14,8 +14,8 @@ java_library(
     srcs = [":cumulus_nclu_generated"],
     javacopts = ["-XepDisableAllChecks"],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
         "//projects/batfish/src/main/java/org/batfish/grammar/cumulus_nclu/parsing:cumulus_nclu_base_parser",
+        "//projects/common:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

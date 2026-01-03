@@ -13,7 +13,7 @@ java_library(
         "//projects/batfish/src/main/resources/org/batfish/representation/palo_alto/application_definitions:application_definitions.json",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

@@ -9,7 +9,7 @@ java_library(
         ":CiscoNxosBaseParser.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
+        "//projects/common:parser_common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:org_antlr_antlr4_runtime",
     ],

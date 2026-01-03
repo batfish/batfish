@@ -19,7 +19,6 @@ java_library(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/mrv",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/routing_table/eos",
@@ -52,6 +51,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing",
         "//projects/batfish/src/main/java/org/batfish/vendor/sonic/grammar",
         "//projects/bdd",
+        "//projects/common",
         "//projects/symbolic",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

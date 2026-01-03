@@ -15,9 +15,9 @@ junit_tests(
         "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test:common_testlib",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel:testlib",
+        "//projects/common",
+        "//projects/common/src/test:common_testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
         "//projects/question/src/main/java/org/batfish/question",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

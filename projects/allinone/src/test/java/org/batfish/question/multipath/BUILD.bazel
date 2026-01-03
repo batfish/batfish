@@ -7,9 +7,9 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
-        "//projects/batfish-common-protocol:common",
-        "//projects/batfish-common-protocol/src/test/java/org/batfish/datamodel/matchers",
         "//projects/batfish/src/test/java/org/batfish/bddreachability:testlib",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
         "//projects/question/src/main/java/org/batfish/question",
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",

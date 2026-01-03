@@ -15,7 +15,7 @@ java_library(
         exclude = ["**/*Test.java"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_google_guava_guava",
     ],
@@ -33,8 +33,8 @@ junit_tests(
     resources = ["//projects/client/src/test/resources/org/batfish/client"],
     deps = [
         ":client_testlib",
-        "//projects/batfish-common-protocol:common",
         "//projects/client",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",
         "@maven//:com_google_guava_guava",
         "@maven//:io_github_java_diff_utils_java_diff_utils",

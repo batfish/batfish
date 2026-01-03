@@ -14,7 +14,7 @@ java_library(
         "@maven//:org_glassfish_jersey_inject_jersey_hk2",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "//projects/coordinator/src/main/java/org/batfish/coordinator/version",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",

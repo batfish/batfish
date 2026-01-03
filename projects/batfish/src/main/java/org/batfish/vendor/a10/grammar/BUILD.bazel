@@ -9,7 +9,7 @@ java_library(
         ":A10BaseLexer.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:parser_common",
+        "//projects/common:parser_common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:org_antlr_antlr4_runtime",
     ],
@@ -22,9 +22,9 @@ java_library(
         exclude = ["A10BaseLexer.java"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/vendor/a10/grammar",
         "//projects/batfish/src/main/java/org/batfish/vendor/a10/representation",
+        "//projects/common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",
         "@maven//:org_antlr_antlr4_runtime",
