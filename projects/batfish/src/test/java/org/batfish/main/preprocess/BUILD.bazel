@@ -15,7 +15,7 @@ junit_tests(
     ],
     deps = [
         "//projects/batfish",
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:io_github_java_diff_utils_java_diff_utils",
         "@maven//:junit_junit",

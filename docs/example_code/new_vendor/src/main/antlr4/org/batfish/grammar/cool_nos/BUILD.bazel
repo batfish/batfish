@@ -17,7 +17,7 @@ java_library(
     javacopts = ["-XepDisableAllChecks"],
     deps = [
         "//docs/example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos/parsing",
-        "//projects/batfish-common-protocol:parser_common",
+        "//projects/common:parser_common",
         "@maven//:org_antlr_antlr4_runtime",
     ],
 )

@@ -12,9 +12,9 @@ java_library(
         "//:auto_service_plugin",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/vendor/a10/representation",
         "//projects/bdd",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_annotations",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_fasterxml_jackson_core_jackson_databind",

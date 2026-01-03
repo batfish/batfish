@@ -13,7 +13,7 @@ java_library(
         "GroupWildcard.java",
     ],
     deps = [
-        "//projects/batfish-common-protocol:common",
+        "//projects/common",
         "@maven//:com_github_ben_manes_caffeine_caffeine",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

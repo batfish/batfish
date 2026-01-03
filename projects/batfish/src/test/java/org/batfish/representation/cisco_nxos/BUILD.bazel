@@ -11,8 +11,8 @@ junit_tests(
         "**/*Test.java",
     ]),
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco_nxos",
+        "//projects/common",
         "@maven//:com_google_guava_guava",
         "@maven//:com_google_guava_guava_testlib",
         "@maven//:junit_junit",

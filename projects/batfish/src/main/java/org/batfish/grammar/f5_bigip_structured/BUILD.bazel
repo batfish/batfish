@@ -10,10 +10,10 @@ java_library(
         exclude = ["BUILD.bazel"],
     ),
     deps = [
-        "//projects/batfish-common-protocol:common",
         "//projects/batfish/src/main/antlr4/org/batfish/grammar/f5_bigip_structured",
         "//projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_imish",
         "//projects/batfish/src/main/java/org/batfish/representation/f5_bigip",
+        "//projects/common",
         "@maven//:com_fasterxml_jackson_core_jackson_core",
         "@maven//:com_google_code_findbugs_jsr305",
         "@maven//:com_google_guava_guava",

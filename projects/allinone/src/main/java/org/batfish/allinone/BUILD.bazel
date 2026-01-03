@@ -11,8 +11,8 @@ java_library(
     resources = ["//projects/allinone/src/main/resources"],
     deps = [
         "//projects/batfish",
-        "//projects/batfish-common-protocol:common",
         "//projects/client",
+        "//projects/common",
         "//projects/coordinator",
         "@maven//:com_google_guava_guava",
         "@maven//:commons_cli_commons_cli",
