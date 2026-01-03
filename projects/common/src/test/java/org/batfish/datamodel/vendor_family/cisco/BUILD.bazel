@@ -1,0 +1,19 @@
+load("@rules_java//java:java_library.bzl", "java_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "matchers",
+    srcs = glob(
+        ["*.java"],
+        exclude = ["*Test.java"],
+    ),
+    deps = [
+        "//projects/common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

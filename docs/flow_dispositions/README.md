@@ -33,9 +33,9 @@ The following table gives the conditions when each disposition is used. Terminol
 | `NO_ROUTE` | Failure | The flow reached a VRF whose FIB did not have a route matching the destination IP. |
 | `NULL_ROUTE` | Failure | The flow reached a VRF whose FIB had a longest-matching route that was a null route. |
 
-Disposition assignment is implemented in [ForwardingAnalysisImpl](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/ForwardingAnalysisImpl.java).
+Disposition assignment is implemented in [ForwardingAnalysisImpl](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/ForwardingAnalysisImpl.java).
 
 See also:
-* [FlowDisposition](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/FlowDisposition.java): the enum defining the set of dispositions, and categorization into success and failure dispositions.
-* [DispositionSpecifier](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/specifier/DispositionSpecifier.java): specifier used for question inputs (e.g. ). See also the [pybatfish docs](https://pybatfish.readthedocs.io/en/latest/specifiers.html?highlight=specifier#disposition-specifier).
-* [IpOwners](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/topology/IpOwners.java)
+* [FlowDisposition](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/FlowDisposition.java): the enum defining the set of dispositions, and categorization into success and failure dispositions.
+* [DispositionSpecifier](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/specifier/DispositionSpecifier.java): specifier used for question inputs (e.g. ). See also the [pybatfish docs](https://pybatfish.readthedocs.io/en/latest/specifiers.html?highlight=specifier#disposition-specifier).
+* [IpOwners](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/topology/IpOwners.java)

@@ -1,0 +1,21 @@
+package(default_visibility = ["//visibility:public"])
+
+alias(
+    name = "parser_common",
+    actual = "//projects/common/src/main/java:parser_common",
+)
+
+alias(
+    name = "common_lib",
+    actual = "//projects/common/src/main/java:common_lib",
+)
+
+alias(
+    name = "common",
+    actual = "//projects/common/src/main/java:common",
+)
+
+alias(
+    name = "common_testlib",
+    actual = "//projects/common/src/test:common_testlib",
+)

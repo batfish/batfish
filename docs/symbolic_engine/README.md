@@ -68,16 +68,16 @@ For critical information about BDD memory management and best practices, see the
 
 Representation:
 * [`BDDFactory`](https://github.com/batfish/batfish/blob/master/projects/bdd/src/main/java/net/sf/javabdd/BDDFactory.java) and [BDD](https://github.com/batfish/batfish/blob/master/projects/bdd/src/main/java/net/sf/javabdd/BDD.java) are at the core of the symbolic analysis engine.
-* [`BDDInteger`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/BDDInteger.java) and its subclasses represents symbolic integers and IP addresses as BDD bitvectors (i.e. an array of boolean variables).
-* [`PrimedBDDInteger`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/PrimedBDDInteger.java) represents a symbolic integer that can be modified (e.g. by a NAT rule).
-* [`BDDPacket`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/BDDPacket.java) represents a symbolic packet using BDDIntegers and individual BDD variables.
-* [`BDDFiniteDomain`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/BDDFiniteDomain.java) represents a variable over a finite set of values.
+* [`BDDInteger`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/BDDInteger.java) and its subclasses represents symbolic integers and IP addresses as BDD bitvectors (i.e. an array of boolean variables).
+* [`PrimedBDDInteger`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/PrimedBDDInteger.java) represents a symbolic integer that can be modified (e.g. by a NAT rule).
+* [`BDDPacket`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/BDDPacket.java) represents a symbolic packet using BDDIntegers and individual BDD variables.
+* [`BDDFiniteDomain`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/BDDFiniteDomain.java) represents a variable over a finite set of values.
 
 Conversion to BDD constraints:
-* [`BDDInteger`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/BDDInteger.java) has methods to create constraints on symbolic integers and IP address, including equality (`value`), inequality (`leq`, `geq`), etc.
-* [`IpSpaceToBDD`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/IpSpaceToBDD.java) converts Batfish [IpSpaces](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/IpSpace.java) to BDD.
-* [`HeaderSpaceToBDD`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/HeaderSpaceToBDD.java) converts Batfish [Headerspace](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/HeaderSpace.java) constraints (that may occur in filter definitions or question input, for example) to BDD.
-* [`IpAccessListToBdd`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/IpAccessListToBdd.java) converts Batfish's vendor-independent [IpAccessLists](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/IpAccessList.java) (i.e. filters) to BDD.
+* [`BDDInteger`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/BDDInteger.java) has methods to create constraints on symbolic integers and IP address, including equality (`value`), inequality (`leq`, `geq`), etc.
+* [`IpSpaceToBDD`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/IpSpaceToBDD.java) converts Batfish [IpSpaces](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/IpSpace.java) to BDD.
+* [`HeaderSpaceToBDD`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/HeaderSpaceToBDD.java) converts Batfish [Headerspace](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/HeaderSpace.java) constraints (that may occur in filter definitions or question input, for example) to BDD.
+* [`IpAccessListToBdd`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/IpAccessListToBdd.java) converts Batfish's vendor-independent [IpAccessLists](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/IpAccessList.java) (i.e. filters) to BDD.
 
 ## Analyzing forwarding behavior
 Analysis of forwarding behavior (reachability, loop detection, multipath consistency, etc) is implemented as
@@ -90,7 +90,7 @@ it has a transition to `NodeDropAclIn` that adds a constraint that the ingress f
 
 [`BDDReachabilityAnalysisFactory`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/bddreachability/BDDReachabilityAnalysisFactory.java) computes a [BDDReachabilityAnalysis](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/bddreachability/BDDReachabilityAnalysis.java) graph from a set of inputs including:
 * Batfish vendor-independent configurations.
-* [`ForwardingAnalysis`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/ForwardingAnalysis.java) synthesized from the FIBs produced by dataplane simulation.
+* [`ForwardingAnalysis`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/ForwardingAnalysis.java) synthesized from the FIBs produced by dataplane simulation.
 * User-input parameters from
   [`HeaderConstraints`](https://pybatfish.readthedocs.io/en/latest/datamodel.html#pybatfish.datamodel.flow.HeaderConstraints)
  and
@@ -98,9 +98,9 @@ it has a transition to `NodeDropAclIn` that adds a constraint that the ingress f
 
 ### Encoding NAT
 NAT rules are represented as input-output relationships over two integer/IP variables. 
-[`PrimedBDDInteger`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/common/bdd/PrimedBDDInteger.java) defines the two variables,
+[`PrimedBDDInteger`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/common/bdd/PrimedBDDInteger.java) defines the two variables,
 and [`TransformationToTransition`](https://github.com/batfish/batfish/blob/master/projects/batfish/src/main/java/org/batfish/bddreachability/transition/TransformationToTransition.java) converts
-NAT rules ([`Transformation`](https://github.com/batfish/batfish/blob/master/projects/batfish-common-protocol/src/main/java/org/batfish/datamodel/transformation/Transformation.java) objects in Batfish vendor-independent model) to reachability graph transitions.
+NAT rules ([`Transformation`](https://github.com/batfish/batfish/blob/master/projects/common/src/main/java/org/batfish/datamodel/transformation/Transformation.java) objects in Batfish vendor-independent model) to reachability graph transitions.
 
 ## Implementation Architecture
 
