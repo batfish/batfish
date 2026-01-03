@@ -1,6 +1,0 @@
-package(default_visibility = ["//visibility:public"])
-
-alias(
-    name = "common_testlib",
-    actual = "//projects/common/src/test:common_testlib",
-)

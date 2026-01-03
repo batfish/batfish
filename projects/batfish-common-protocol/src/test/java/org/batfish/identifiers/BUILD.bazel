@@ -1,6 +1,0 @@
-package(default_visibility = ["//visibility:public"])
-
-alias(
-    name = "identifiers",
-    actual = "//projects/common/src/test/java/org/batfish/identifiers",
-)
