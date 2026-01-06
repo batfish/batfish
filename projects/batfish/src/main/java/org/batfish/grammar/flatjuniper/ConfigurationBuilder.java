@@ -421,7 +421,9 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fod_server_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fodg_interfaceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fods_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_filter_specificContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_if_exceedingContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fp_logical_interface_policerContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpie_bandwidth_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpie_burst_size_limitContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fpt_discardContext;
@@ -2856,6 +2858,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitF_policer(F_policerContext ctx) {
     _currentPolicer = null;
+  }
+
+  @Override
+  public void exitFp_filter_specific(Fp_filter_specificContext ctx) {
+    _currentPolicer.setFilterSpecific(true);
+  }
+
+  @Override
+  public void exitFp_logical_interface_policer(Fp_logical_interface_policerContext ctx) {
+    _currentPolicer.setLogicalInterfacePolicer(true);
   }
 
   @Override
