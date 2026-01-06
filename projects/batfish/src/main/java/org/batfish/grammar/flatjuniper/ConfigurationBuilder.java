@@ -321,6 +321,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_groupContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_importContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_keepContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_local_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multihopContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_multipathContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.B_neighborContext;
@@ -4691,6 +4692,13 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitB_preference(B_preferenceContext ctx) {
     int preference = toInt(ctx.pref);
     _currentBgpGroup.setPreference(preference);
+  }
+
+  @Override
+  public void exitB_local_preference(B_local_preferenceContext ctx) {
+    long localPreference = toLong(ctx.localpref);
+    _currentBgpGroup.setLocalPreference(localPreference);
+    todo(ctx);
   }
 
   @Override
