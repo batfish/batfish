@@ -479,6 +479,7 @@ import org.batfish.representation.juniper.PsFromCondition;
 import org.batfish.representation.juniper.PsFromExternal;
 import org.batfish.representation.juniper.PsFromLocalPreference;
 import org.batfish.representation.juniper.PsFromTag;
+import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThenAigpOriginate;
 import org.batfish.representation.juniper.PsThenAsPathExpandAsList;
@@ -9893,6 +9894,111 @@ public final class FlatJuniperGrammarTest {
 
     // Verify undefined source-class reference is identified
     assertThat(ccae, hasUndefinedReference(filename, SOURCE_CLASS, "SOURCE-CLASS-UNDEFINED"));
+  }
+
+  @Test
+  public void testPolicyStatementFromProtocol() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-from-protocol");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Helper to extract the single PsFromProtocol from a term
+    java.util.function.Function<String, PsProtocol> getFromProtocol =
+        termName -> {
+          PsTerm term = ps.getTerms().get(termName);
+          assertThat(term.getFroms().getFromProtocols(), hasSize(1));
+          return term.getFroms().getFromProtocols().iterator().next().getProtocol();
+        };
+
+    assertThat(getFromProtocol.apply("ACCESS_INTERNAL"), equalTo(PsProtocol.ACCESS_INTERNAL));
+    assertThat(getFromProtocol.apply("AGGREGATE"), equalTo(PsProtocol.AGGREGATE));
+    assertThat(getFromProtocol.apply("BGP"), equalTo(PsProtocol.BGP));
+    assertThat(getFromProtocol.apply("DIRECT"), equalTo(PsProtocol.DIRECT));
+    assertThat(getFromProtocol.apply("EVPN"), equalTo(PsProtocol.EVPN));
+    assertThat(getFromProtocol.apply("ISIS"), equalTo(PsProtocol.ISIS));
+    assertThat(getFromProtocol.apply("LDP"), equalTo(PsProtocol.LDP));
+    assertThat(getFromProtocol.apply("LOCAL"), equalTo(PsProtocol.LOCAL));
+    assertThat(getFromProtocol.apply("OSPF"), equalTo(PsProtocol.OSPF));
+    assertThat(getFromProtocol.apply("OSPF3"), equalTo(PsProtocol.OSPF3));
+    assertThat(getFromProtocol.apply("RSVP"), equalTo(PsProtocol.RSVP));
+    assertThat(getFromProtocol.apply("STATIC"), equalTo(PsProtocol.STATIC));
+  }
+
+  @Test
+  public void testPolicyStatementToProtocol() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-to-protocol");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Helper to extract the single PsToProtocol from a term
+    java.util.function.Function<String, PsProtocol> getToProtocol =
+        termName -> {
+          PsTerm term = ps.getTerms().get(termName);
+          assertThat(term.getTos().getToProtocols(), hasSize(1));
+          return term.getTos().getToProtocols().iterator().next().getProtocol();
+        };
+
+    assertThat(getToProtocol.apply("ACCESS_INTERNAL"), equalTo(PsProtocol.ACCESS_INTERNAL));
+    assertThat(getToProtocol.apply("AGGREGATE"), equalTo(PsProtocol.AGGREGATE));
+    assertThat(getToProtocol.apply("BGP"), equalTo(PsProtocol.BGP));
+    assertThat(getToProtocol.apply("DIRECT"), equalTo(PsProtocol.DIRECT));
+    assertThat(getToProtocol.apply("EVPN"), equalTo(PsProtocol.EVPN));
+    assertThat(getToProtocol.apply("ISIS"), equalTo(PsProtocol.ISIS));
+    assertThat(getToProtocol.apply("LDP"), equalTo(PsProtocol.LDP));
+    assertThat(getToProtocol.apply("LOCAL"), equalTo(PsProtocol.LOCAL));
+    assertThat(getToProtocol.apply("OSPF"), equalTo(PsProtocol.OSPF));
+    assertThat(getToProtocol.apply("OSPF3"), equalTo(PsProtocol.OSPF3));
+    assertThat(getToProtocol.apply("RSVP"), equalTo(PsProtocol.RSVP));
+    assertThat(getToProtocol.apply("STATIC"), equalTo(PsProtocol.STATIC));
+
+    // Verify hasAtLeastOneTo for all terms
+    for (PsTerm term : ps.getTerms().values()) {
+      assertThat(term.getName(), term.hasAtLeastOneTo(), equalTo(true));
+    }
+
+    // Verify that parse-time todo warnings are generated for all to conditions
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(hasComment("This feature is not currently supported")));
+  }
+
+  @Test
+  public void testPolicyStatementTo() {
+    JuniperConfiguration vc = parseJuniperConfig("policy-statement-to");
+    PolicyStatement ps = vc.getMasterLogicalSystem().getPolicyStatements().get("PS");
+
+    // Verify to level extraction
+    PsTerm levelTerm = ps.getTerms().get("LEVEL");
+    assertThat(levelTerm.getTos().getToLevel(), notNullValue());
+    assertThat(levelTerm.getTos().getToLevel().getLevel(), equalTo(1L));
+
+    PsTerm level2Term = ps.getTerms().get("LEVEL2");
+    assertThat(level2Term.getTos().getToLevel(), notNullValue());
+    assertThat(level2Term.getTos().getToLevel().getLevel(), equalTo(2L));
+
+    // Verify to rib extraction
+    PsTerm ribTerm = ps.getTerms().get("RIB");
+    assertThat(ribTerm.getTos().getToRib(), notNullValue());
+    assertThat(ribTerm.getTos().getToRib().getRibName(), equalTo("inet.0"));
+
+    PsTerm rib6Term = ps.getTerms().get("RIB6");
+    assertThat(rib6Term.getTos().getToRib(), notNullValue());
+    assertThat(rib6Term.getTos().getToRib().getRibName(), equalTo("inet6.0"));
+
+    // Verify to protocol extraction
+    PsTerm protocolTerm = ps.getTerms().get("PROTOCOL");
+    assertThat(protocolTerm.getTos().getToProtocols(), hasSize(1));
+    assertThat(
+        protocolTerm.getTos().getToProtocols().iterator().next().getProtocol(),
+        equalTo(PsProtocol.BGP));
+
+    // Verify hasAtLeastOneTo for all terms
+    for (PsTerm term : ps.getTerms().values()) {
+      assertThat(term.getName(), term.hasAtLeastOneTo(), equalTo(true));
+    }
+
+    // Verify that parse-time todo warnings are generated
+    assertThat(
+        vc.getWarnings().getParseWarnings(),
+        hasItem(hasComment("This feature is not currently supported")));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
