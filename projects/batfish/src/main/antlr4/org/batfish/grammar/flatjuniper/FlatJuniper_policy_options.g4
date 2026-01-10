@@ -220,6 +220,7 @@ pops_to
    TO
    (
       popsto_level
+      | popsto_protocol
       | popsto_rib
    )
 ;
@@ -853,6 +854,25 @@ popstta_set: SET name = junos_name;
 popsto_level
 :
    LEVEL dec
+;
+
+popsto_protocol
+:
+   PROTOCOL
+   (
+     ACCESS_INTERNAL
+     | AGGREGATE
+     | BGP
+     | DIRECT
+     | EVPN
+     | ISIS
+     | LDP
+     | LOCAL
+     | OSPF
+     | OSPF3
+     | RSVP
+     | STATIC
+   )
 ;
 
 popsto_rib

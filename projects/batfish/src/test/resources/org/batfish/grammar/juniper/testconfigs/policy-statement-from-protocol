@@ -1,0 +1,25 @@
+set system host-name policy-statement-from-protocol
+set policy-options policy-statement PS term ACCESS_INTERNAL from protocol access-internal
+set policy-options policy-statement PS term ACCESS_INTERNAL then accept
+set policy-options policy-statement PS term AGGREGATE from protocol aggregate
+set policy-options policy-statement PS term AGGREGATE then accept
+set policy-options policy-statement PS term BGP from protocol bgp
+set policy-options policy-statement PS term BGP then accept
+set policy-options policy-statement PS term DIRECT from protocol direct
+set policy-options policy-statement PS term DIRECT then accept
+set policy-options policy-statement PS term EVPN from protocol evpn
+set policy-options policy-statement PS term EVPN then accept
+set policy-options policy-statement PS term ISIS from protocol isis
+set policy-options policy-statement PS term ISIS then accept
+set policy-options policy-statement PS term LDP from protocol ldp
+set policy-options policy-statement PS term LDP then accept
+set policy-options policy-statement PS term LOCAL from protocol local
+set policy-options policy-statement PS term LOCAL then accept
+set policy-options policy-statement PS term OSPF from protocol ospf
+set policy-options policy-statement PS term OSPF then accept
+set policy-options policy-statement PS term OSPF3 from protocol ospf3
+set policy-options policy-statement PS term OSPF3 then accept
+set policy-options policy-statement PS term RSVP from protocol rsvp
+set policy-options policy-statement PS term RSVP then accept
+set policy-options policy-statement PS term STATIC from protocol static
+set policy-options policy-statement PS term STATIC then accept

@@ -1,0 +1,11 @@
+set system host-name policy-statement-to
+set policy-options policy-statement PS term LEVEL to level 1
+set policy-options policy-statement PS term LEVEL then accept
+set policy-options policy-statement PS term LEVEL2 to level 2
+set policy-options policy-statement PS term LEVEL2 then accept
+set policy-options policy-statement PS term RIB to rib inet.0
+set policy-options policy-statement PS term RIB then accept
+set policy-options policy-statement PS term RIB6 to rib inet6.0
+set policy-options policy-statement PS term RIB6 then accept
+set policy-options policy-statement PS term PROTOCOL to protocol bgp
+set policy-options policy-statement PS term PROTOCOL then accept
