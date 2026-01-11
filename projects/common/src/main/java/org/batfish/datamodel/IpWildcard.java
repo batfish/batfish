@@ -98,7 +98,6 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   public boolean containsIp(Ip ip) {
-    checkArgument(ip.valid(), "Invalid IP address %s", ip);
     long thisMasked = _ip.asLong() | _wildcardMask;
     long ipMasked = ip.asLong() | _wildcardMask;
     return thisMasked == ipMasked;
@@ -212,7 +211,6 @@ public final class IpWildcard implements Serializable, Comparable<IpWildcard> {
   }
 
   private IpWildcard(Ip address, long wildcardMask) {
-    checkArgument(address.valid(), "Invalid IP address %s", address);
     checkArgument(
         (wildcardMask & ALL_BITS_MASKED) == wildcardMask, "Invalid mask %s", wildcardMask);
 

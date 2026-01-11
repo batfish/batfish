@@ -265,8 +265,6 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   public static final long UNSET_LOCAL_PREFERENCE = 0;
 
-  public static final Ip UNSET_ORIGINATOR_IP = Ip.AUTO;
-
   public static final int UNSET_WEIGHT = 0;
 
   private final AsPath _asPath;
@@ -289,7 +287,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   private final Ip _nextHopIp;
 
-  private final Ip _originatorIp;
+  private final @Nullable Ip _originatorIp;
 
   private final OriginType _originType;
 
@@ -348,7 +346,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
         originType,
         firstNonNull(localPreference, UNSET_LOCAL_PREFERENCE),
         firstNonNull(med, 0L),
-        firstNonNull(originatorIp, UNSET_ORIGINATOR_IP),
+        originatorIp,
         asPath,
         firstNonNull(communities, ImmutableSortedSet.of()),
         firstNonNull(clusterList, ImmutableSortedSet.of()),
@@ -369,7 +367,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
       @Nonnull OriginType originType,
       long localPreference,
       long med,
-      @Nonnull Ip originatorIp,
+      @Nullable Ip originatorIp,
       @Nonnull AsPath asPath,
       @Nonnull SortedSet<Community> communities,
       @Nonnull SortedSet<Long> clusterList,
@@ -456,7 +454,10 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (ret != 0) {
       return ret;
     }
-    ret = _originatorIp.compareTo(rhs._originatorIp);
+    ret =
+        _originatorIp == null
+            ? rhs._originatorIp == null ? 0 : -1
+            : rhs._originatorIp == null ? 1 : _originatorIp.compareTo(rhs._originatorIp);
     if (ret != 0) {
       return ret;
     }
@@ -532,7 +533,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
     if (_originType != other._originType) {
       return false;
     }
-    if (!_originatorIp.equals(other._originatorIp)) {
+    if (!Objects.equals(_originatorIp, other._originatorIp)) {
       return false;
     }
     if (!_srcIp.equals(other._srcIp)) {
@@ -607,7 +608,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
   }
 
   @JsonProperty(PROP_ORIGINATOR_IP)
-  public Ip getOriginatorIp() {
+  public @Nullable Ip getOriginatorIp() {
     return _originatorIp;
   }
 
@@ -671,8 +672,7 @@ public class BgpAdvertisement implements Comparable<BgpAdvertisement>, Serializa
 
   @Override
   public String toString() {
-    String originatorIp =
-        _originatorIp.equals(UNSET_ORIGINATOR_IP) ? "N/A" : _originatorIp.toString();
+    String originatorIp = _originatorIp == null ? "N/A" : _originatorIp.toString();
     return "BgpAdvert<"
         + _type
         + ", "

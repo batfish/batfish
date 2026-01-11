@@ -44,7 +44,7 @@ public class NextHopVtep implements NextHop {
 
   private NextHopVtep(int vni, Ip vtepIp) {
     checkArgument(
-        !vtepIp.equals(Ip.AUTO) && !vtepIp.equals(Ip.ZERO) && !vtepIp.equals(Ip.MAX),
+        !vtepIp.equals(Ip.ZERO) && !vtepIp.equals(Ip.MAX),
         "VTEP IP must be a valid concrete IP address. Received %s",
         vtepIp);
     _vni = vni;

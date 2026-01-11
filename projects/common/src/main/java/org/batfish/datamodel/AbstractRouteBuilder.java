@@ -61,19 +61,15 @@ public abstract class AbstractRouteBuilder<
     return getThis();
   }
 
-  public final @Nonnull Ip getNextHopIp() {
+  public final @Nullable Ip getNextHopIp() {
     if (_nextHop == null) {
-      return Route.UNSET_ROUTE_NEXT_HOP_IP;
+      return null;
     }
-    return LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    return LegacyNextHops.getNextHopIp(_nextHop).orElse(null);
   }
 
   public final @Nonnull S setNextHopIp(@Nullable Ip nextHopIp) {
     if (nextHopIp == null) {
-      _nextHop = null;
-      return getThis();
-    }
-    if (nextHopIp.equals(Route.UNSET_ROUTE_NEXT_HOP_IP)) {
       _nextHop = NextHopDiscard.instance();
       return getThis();
     }

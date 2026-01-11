@@ -1,7 +1,5 @@
 package org.batfish.dataplane.protocols;
 
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
-
 import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -111,7 +109,7 @@ public class IsisProtocolHelper {
         .setProtocol(protocol)
         .setLevel(isLevel1 ? IsisLevel.LEVEL_1 : IsisLevel.LEVEL_2)
         .setOverload(process.getOverload())
-        .setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP)
+        .setNextHopIp(null)
         .setSystemId(process.getNetAddress().getSystemIdString())
         .setNonRouting(true);
   }

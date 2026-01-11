@@ -23,8 +23,6 @@ public class Ip implements Comparable<Ip>, Serializable {
   private static final LoadingCache<Ip, Ip> CACHE =
       CacheBuilder.newBuilder().softValues().maximumSize(1 << 20).build(CacheLoader.from(x -> x));
 
-  public static final Ip AUTO = create(-1L);
-
   public static final Ip FIRST_CLASS_A_PRIVATE_IP = parse("10.0.0.0");
 
   public static final Ip FIRST_CLASS_B_PRIVATE_IP = parse("172.16.0.0");
@@ -132,7 +130,7 @@ public class Ip implements Comparable<Ip>, Serializable {
   }
 
   public static Ip create(long ipAsLong) {
-    checkArgument(ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %s", ipAsLong);
+    checkArgument(ipAsLong >= 0L && ipAsLong <= 0xFFFFFFFFL, "Invalid IP value: %s", ipAsLong);
     Ip ip = new Ip(ipAsLong);
     return CACHE.getUnchecked(ip);
   }
@@ -230,25 +228,13 @@ public class Ip implements Comparable<Ip>, Serializable {
   @Override
   @JsonValue
   public String toString() {
-    if (!valid()) {
-      if (_ip == -1L) {
-        return "AUTO/NONE(-1l)";
-      } else {
-        return "INVALID_IP(" + _ip + "l)";
-      }
-    } else {
-      return ((_ip >> 24) & 0xFF)
-          + "."
-          + ((_ip >> 16) & 0xFF)
-          + "."
-          + ((_ip >> 8) & 0xFF)
-          + "."
-          + (_ip & 0xFF);
-    }
-  }
-
-  public boolean valid() {
-    return 0L <= _ip && _ip <= 0xFFFFFFFFL;
+    return ((_ip >> 24) & 0xFF)
+        + "."
+        + ((_ip >> 16) & 0xFF)
+        + "."
+        + ((_ip >> 8) & 0xFF)
+        + "."
+        + (_ip & 0xFF);
   }
 
   public Prefix toPrefix() {

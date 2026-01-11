@@ -296,7 +296,7 @@ public class SearchRoutePoliciesAnswererTest {
             .setLocalPreference(Bgpv4Route.DEFAULT_LOCAL_PREFERENCE)
             .build();
 
-    BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(Ip.AUTO).build();
+    BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(null).build();
 
     BgpRouteDiffs diff =
         new BgpRouteDiffs(

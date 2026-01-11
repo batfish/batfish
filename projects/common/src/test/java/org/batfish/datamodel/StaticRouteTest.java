@@ -2,6 +2,7 @@ package org.batfish.datamodel;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 
 import com.google.common.testing.EqualsTester;
 import org.apache.commons.lang3.SerializationUtils;
@@ -46,7 +47,7 @@ public final class StaticRouteTest {
             .setNextHopIp(null)
             .setNextHopInterface("iface")
             .build();
-    assertThat(sr.getNextHopIp(), equalTo(Route.UNSET_ROUTE_NEXT_HOP_IP));
+    assertThat(sr.getNextHopIp(), nullValue());
   }
 
   @Test

@@ -41,8 +41,6 @@ public final class AddressRangeAddressBookEntry extends AddressBookEntry {
    */
   @VisibleForTesting
   static SortedSet<IpWildcard> rangeToWildcards(Ip low, Ip high) {
-    checkArgument(low.valid(), "Illegal range: %s is not a valid IP", low);
-    checkArgument(high.valid(), "Illegal range: %s is not a valid IP", high);
     checkArgument(low.compareTo(high) <= 0, "Illegal range: %s is larger than %s", low, high);
 
     long lo = low.asLong();

@@ -53,7 +53,7 @@ public final class RouteInfo {
     _protocol = protocol;
     _network = network;
     _nextHop = nextHop;
-    _nextHopIp = LegacyNextHops.getNextHopIp(_nextHop).orElse(Route.UNSET_ROUTE_NEXT_HOP_IP);
+    _nextHopIp = LegacyNextHops.getNextHopIp(_nextHop).orElse(null);
     _nextVrf = LegacyNextHops.getNextVrf(_nextHop).orElse(null);
     _adminDistance = adminDistance;
     _metric = metric;

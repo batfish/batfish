@@ -77,7 +77,6 @@ import org.batfish.datamodel.Prefix;
 import org.batfish.datamodel.ResolutionRestriction;
 import org.batfish.datamodel.RipInternalRoute;
 import org.batfish.datamodel.RipProcess;
-import org.batfish.datamodel.Route;
 import org.batfish.datamodel.RoutingProtocol;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Topology;
@@ -968,7 +967,7 @@ public final class VirtualRouter {
               .setLevel(IsisLevel.LEVEL_1)
               .setMetric(0L)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(Route.UNSET_ROUTE_NEXT_HOP_IP)
+              .setNextHopIp(null)
               .setProtocol(RoutingProtocol.ISIS_L1)
               .setSystemId(proc.getNetAddress().getSystemIdString())
               .build();

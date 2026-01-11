@@ -3727,9 +3727,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .filter(keyring -> !keyring.getLocalInterfaceName().equals(UNSET_LOCAL_INTERFACE))
         .forEach(
             keyring ->
-                keyring.setLocalAddress(
-                    firstNonNull(
-                        ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName()), Ip.AUTO)));
+                keyring.setLocalAddress(ifaceNameToPrimaryIp.get(keyring.getLocalInterfaceName())));
 
     _isakmpProfiles.values().stream()
         .filter(
@@ -3737,8 +3735,7 @@ public final class CiscoConfiguration extends VendorConfiguration {
         .forEach(
             isakmpProfile ->
                 isakmpProfile.setLocalAddress(
-                    firstNonNull(
-                        ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName()), Ip.AUTO)));
+                    ifaceNameToPrimaryIp.get(isakmpProfile.getLocalInterfaceName())));
   }
 
   /** Resolves the addresses of the interfaces used in sourceInterfaceName of Tunnel interfaces */

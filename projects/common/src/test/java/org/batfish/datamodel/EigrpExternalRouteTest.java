@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import org.batfish.datamodel.eigrp.ClassicMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpMetricVersion;
+import org.batfish.datamodel.route.nh.NextHopIp;
 import org.junit.Test;
 
 public class EigrpExternalRouteTest {
@@ -15,6 +16,7 @@ public class EigrpExternalRouteTest {
     EigrpExternalRoute r =
         EigrpExternalRoute.testBuilder()
             .setNetwork(Prefix.parse("1.1.1.0/24"))
+            .setNextHop(NextHopIp.of(Ip.parse("2.2.2.2")))
             .setMetric(1L)
             .setEigrpMetricVersion(EigrpMetricVersion.V1)
             .setDestinationAsn(1L)

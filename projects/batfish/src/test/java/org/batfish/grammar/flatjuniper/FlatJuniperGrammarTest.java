@@ -22,7 +22,6 @@ import static org.batfish.datamodel.Names.generatedBgpPeerExportPolicyName;
 import static org.batfish.datamodel.Names.generatedBgpPeerImportPolicyName;
 import static org.batfish.datamodel.Names.zoneToZoneFilter;
 import static org.batfish.datamodel.OriginMechanism.LEARNED;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.and;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.match;
 import static org.batfish.datamodel.acl.AclLineMatchExprs.matchDst;
@@ -6909,7 +6908,7 @@ public final class FlatJuniperGrammarTest {
         IsisRoute.builder()
             .setArea("area")
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(UNSET_ROUTE_NEXT_HOP_IP)
+            .setNextHopIp(null)
             .setSystemId("systemId");
     IsisRoute isisL1 =
         isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();

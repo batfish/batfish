@@ -2,7 +2,6 @@ package org.batfish.dataplane.protocols;
 
 import static org.batfish.datamodel.AbstractRoute.MAX_TAG;
 import static org.batfish.datamodel.Route.UNSET_NEXT_HOP_INTERFACE;
-import static org.batfish.datamodel.Route.UNSET_ROUTE_NEXT_HOP_IP;
 import static org.batfish.datamodel.Route.UNSET_ROUTE_TAG;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.ALWAYS;
 import static org.batfish.datamodel.bgp.AllowRemoteAsOutMode.EXCEPT_FIRST;
@@ -504,7 +503,7 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
@@ -519,7 +518,7 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.NO_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));
@@ -534,7 +533,7 @@ public class BgpProtocolHelperTest {
         ConfedSessionType.WITHIN_CONFED,
         1,
         nextHopIp,
-        UNSET_ROUTE_NEXT_HOP_IP,
+        null,
         null,
         false);
     assertThat(_baseBgpRouteBuilder.getNextHopIp(), equalTo(nextHopIp));

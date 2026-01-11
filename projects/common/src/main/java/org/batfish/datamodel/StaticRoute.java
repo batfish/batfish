@@ -183,9 +183,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   // The comparator has no impact on route preference in RIBs and should not be used as such
   private static final Comparator<StaticRoute> COMPARATOR =
       comparing(StaticRoute::getNetwork)
-          .thenComparing(StaticRoute::getNextHopIp)
-          .thenComparing(StaticRoute::getNextHopInterface)
-          .thenComparing(StaticRoute::getNextVrf, nullsFirst(String::compareTo))
+          .thenComparing(StaticRoute::getNextHop)
           .thenComparing(StaticRoute::getMetric)
           .thenComparing(StaticRoute::getAdministrativeCost)
           .thenComparing(StaticRoute::getTag)
