@@ -3454,7 +3454,8 @@ public class AristaGrammarTest {
             .setOriginatorIp(Ip.parse("9.8.7.6"))
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP);
-    Bgpv4Route.Builder outputRouteBuilder = Bgpv4Route.testBuilder().setNextHopIp(null);
+    Bgpv4Route.Builder outputRouteBuilder =
+        Bgpv4Route.testBuilder().setNextHop(NextHopDiscard.instance());
 
     Ip sessionPropsHeadIp = Ip.parse("1.1.1.1");
     BgpSessionProperties.Builder sessionProps =

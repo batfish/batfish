@@ -70,7 +70,7 @@ public abstract class AbstractRouteBuilder<
 
   public final @Nonnull S setNextHopIp(@Nullable Ip nextHopIp) {
     if (nextHopIp == null) {
-      _nextHop = NextHopDiscard.instance();
+      _nextHop = null;
       return getThis();
     }
     if (_nextHop instanceof NextHopInterface) {

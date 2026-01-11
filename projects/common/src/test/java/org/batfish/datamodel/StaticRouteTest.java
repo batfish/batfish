@@ -44,7 +44,6 @@ public final class StaticRouteTest {
         StaticRoute.testBuilder()
             .setNetwork(Prefix.ZERO)
             .setAdministrativeCost(1)
-            .setNextHopIp(null)
             .setNextHopInterface("iface")
             .build();
     assertThat(sr.getNextHopIp(), nullValue());

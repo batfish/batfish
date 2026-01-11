@@ -241,7 +241,8 @@ public class TestRoutePoliciesAnswererTest {
 
     TableAnswerElement answer = answerer.answer(_batfish.getSnapshot());
 
-    BgpRoute outputRoute = inputRoute.toBuilder().setNextHopIp(null).build();
+    BgpRoute outputRoute =
+        inputRoute.toBuilder().setNextHopConcrete(NextHopDiscard.instance()).build();
     BgpRouteDiffs diffs =
         new BgpRouteDiffs(
             ImmutableSet.of(

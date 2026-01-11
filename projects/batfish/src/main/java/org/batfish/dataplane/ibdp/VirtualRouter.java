@@ -967,7 +967,7 @@ public final class VirtualRouter {
               .setLevel(IsisLevel.LEVEL_1)
               .setMetric(0L)
               .setNetwork(Prefix.ZERO)
-              .setNextHopIp(null)
+              .setNextHop(NextHopDiscard.instance())
               .setProtocol(RoutingProtocol.ISIS_L1)
               .setSystemId(proc.getNetAddress().getSystemIdString())
               .build();

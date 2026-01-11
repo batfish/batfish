@@ -964,7 +964,8 @@ public final class CiscoNxosGrammarTest {
             .setOriginType(OriginType.EGP)
             .setProtocol(RoutingProtocol.BGP)
             .build();
-    Bgpv4Route.Builder outputRouteBuilder = Bgpv4Route.testBuilder().setNextHopIp(null);
+    Bgpv4Route.Builder outputRouteBuilder =
+        Bgpv4Route.testBuilder().setNextHop(NextHopDiscard.instance());
 
     BgpSessionProperties.Builder sessionProps =
         BgpSessionProperties.builder()
@@ -992,7 +993,7 @@ public final class CiscoNxosGrammarTest {
 
     // Original route has unset next hop IP: leaves unset (and expects pipeline downstream to
     // handle)
-    outputRouteBuilder.setNextHopIp(null);
+    outputRouteBuilder.setNextHop(NextHopDiscard.instance());
     Bgpv4Route noNhipRoute =
         originalRoute.toBuilder().setNextHop(NextHopDiscard.instance()).build();
     boolean shouldExportToEbgpUnsetNextHop =
@@ -9726,7 +9727,7 @@ public final class CiscoNxosGrammarTest {
             .get(
                 Names.generatedBgpPeerExportPolicyName(
                     Configuration.DEFAULT_VRF_NAME, ibgpClientPeerIp.toString()));
-    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder().setNextHopIp(null);
+    Bgpv4Route.Builder outputRoute = inputRoute.toBuilder().setNextHop(NextHopDiscard.instance());
     BgpActivePeerConfig fromConfig =
         c.getDefaultVrf().getBgpProcess().getActiveNeighbors().get(ibgpClientPeerIp);
     BgpActivePeerConfig neighborConfig =

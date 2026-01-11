@@ -6908,7 +6908,7 @@ public final class FlatJuniperGrammarTest {
         IsisRoute.builder()
             .setArea("area")
             .setNetwork(Prefix.ZERO)
-            .setNextHopIp(null)
+            .setNextHop(NextHopDiscard.instance())
             .setSystemId("systemId");
     IsisRoute isisL1 =
         isisBuilder.setLevel(IsisLevel.LEVEL_1).setProtocol(RoutingProtocol.ISIS_L1).build();
