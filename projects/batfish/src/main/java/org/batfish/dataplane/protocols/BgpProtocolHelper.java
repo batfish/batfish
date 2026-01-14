@@ -133,7 +133,6 @@ public final class BgpProtocolHelper {
       return null;
     }
 
-    builder.setClusterList(ImmutableSet.of());
     boolean routeOriginatedLocally = route.getReceivedFrom().equals(ReceivedFromSelf.instance());
     if (routeProtocol == RoutingProtocol.IBGP && !localSessionProperties.isEbgp()) {
       /*
@@ -148,23 +147,39 @@ public final class BgpProtocolHelper {
          */
         return null;
       }
-      builder.addClusterList(route.getClusterList());
-      if (!routeOriginatedLocally) {
-        // we are reflecting, so we need to get the clusterid associated with the
-        // remoteRoute
-        Long newClusterId = localNeighbor.getClusterId();
-        if (newClusterId != null) {
-          builder.addToClusterList(newClusterId);
-        }
-      }
+
+      // Check for cluster loops before building the outgoing cluster list
       Set<Long> localClusterIds = remoteBgpProcess.getClusterIds();
-      Set<Long> outgoingClusterList = builder.getClusterList();
-      if (localClusterIds.stream().anyMatch(outgoingClusterList::contains)) {
+      if (!Collections.disjoint(localClusterIds, route.getClusterList())) {
         /*
-         *  receiver will reject new route if it contains any of its local cluster ids
+         * Receiver will reject new route if it contains any of its local cluster ids
          */
         return null;
       }
+
+      // Start with existing cluster list
+      Set<Long> outgoingClusterList = route.getClusterList();
+
+      if (!routeOriginatedLocally) {
+        // We are reflecting, so we need to get the clusterid associated with the remoteRoute
+        // and add it to the cluster list
+        Long newClusterId = localNeighbor.getClusterId();
+        if (newClusterId != null) {
+          // Check if adding our cluster ID would create a loop
+          if (localClusterIds.contains(newClusterId)) {
+            return null;
+          }
+          outgoingClusterList =
+              ImmutableSet.<Long>builderWithExpectedSize(route.getClusterList().size() + 1)
+                  .addAll(route.getClusterList())
+                  .add(newClusterId)
+                  .build();
+        }
+      }
+
+      builder.setClusterList(outgoingClusterList);
+    } else {
+      builder.setClusterList(ImmutableSet.of());
     }
 
     // Outgoing metric (MED) is preserved only if advertising to IBGP peer, within a confederation,
