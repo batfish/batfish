@@ -12,6 +12,7 @@ public enum ConfigurationFormat {
   CADANT("cadant"),
   CHECK_POINT_GATEWAY("check_point_gateway"),
   CISCO_ASA("cisco"),
+  CISCO_FTD("cisco"),
   CISCO_IOS("cisco"),
   CISCO_IOS_XR("cisco"),
   CISCO_NX("cisco"),
