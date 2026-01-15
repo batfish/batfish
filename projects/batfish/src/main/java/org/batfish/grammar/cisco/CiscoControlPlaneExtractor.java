@@ -335,6 +335,8 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -526,6 +528,9 @@ import org.batfish.grammar.cisco.CiscoParser.Cisprf_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckp_named_keyContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckpn_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckpn_key_stringContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkicc_certificateContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpki_trustpointContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_nullContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_local_addressContext;
 import org.batfish.grammar.cisco.CiscoParser.Ckr_pskContext;
 import org.batfish.grammar.cisco.CiscoParser.Clb_docsis_policyContext;
@@ -1049,6 +1054,14 @@ import org.batfish.grammar.cisco.CiscoParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_encodingContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_filterContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_receiverContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_source_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_source_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_streamContext;
+import org.batfish.grammar.cisco.CiscoParser.Telemetry_subscription_update_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Tip_slaContext;
@@ -1239,9 +1252,11 @@ import org.batfish.representation.cisco.StandardIpv6AccessListLine;
 import org.batfish.representation.cisco.StaticRoute;
 import org.batfish.representation.cisco.StubSettings;
 import org.batfish.representation.cisco.SubnetNetworkObject;
+import org.batfish.representation.cisco.PkiTrustpoint;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
+import org.batfish.representation.cisco.TelemetrySubscription;
 import org.batfish.representation.cisco.Track;
 import org.batfish.representation.cisco.TrackInterface;
 import org.batfish.representation.cisco.TrackIpSla;
@@ -1259,6 +1274,26 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
+  private static final Pattern TELEMETRY_PORT_PATTERN =
+      Pattern.compile("\\bport\\s+(\\d+)\\b", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TELEMETRY_PROTOCOL_PATTERN =
+      Pattern.compile("\\bprotocol\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TELEMETRY_RECEIVER_TYPE_PATTERN =
+      Pattern.compile("\\breceiver-type\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
+  private static final Pattern TELEMETRY_RECEIVER_NAME_IP_PATTERN =
+      Pattern.compile(
+          "\\breceiver\\s+ip\\s+address\\s+\\S+\\s+(\\S+)",
+          Pattern.CASE_INSENSITIVE);
+  private static final Pattern TELEMETRY_RECEIVER_NAME_PATTERN =
+      Pattern.compile("\\breceiver\\s+name\\s+(\\S+)", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PKI_SUBJECT_ALT_NAME_PATTERN =
+      Pattern.compile("\\bsubject-alt-name\\s+(.+)$", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PKI_USAGE_PATTERN =
+      Pattern.compile("\\busage\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PKI_SOURCE_VRF_PATTERN =
+      Pattern.compile("\\bsource\\s+vrf\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
+  private static final Pattern PKI_VRF_PATTERN =
+      Pattern.compile("\\bvrf\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -1451,6 +1486,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Integer _currentCryptoMapSequenceNum;
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
+
+  private PkiTrustpoint _currentPkiTrustpoint;
+
+  private TelemetrySubscription _currentTelemetrySubscription;
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
@@ -10958,6 +10997,192 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return Optional.empty();
     }
     return Optional.of(num);
+  }
+
+  @Override
+  public void enterCpki_trustpoint(Cpki_trustpointContext ctx) {
+    String name = ctx.name.getText();
+    _currentPkiTrustpoint = new PkiTrustpoint(name);
+    _configuration.getPkiTrustpoints().put(name, _currentPkiTrustpoint);
+  }
+
+  @Override
+  public void exitCpki_trustpoint(Cpki_trustpointContext ctx) {
+    _currentPkiTrustpoint = null;
+  }
+
+  @Override
+  public void enterCpkit_null(Cpkit_nullContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    String line = getFullText(ctx).trim();
+    if (ctx.ENROLLMENT() != null) {
+      if (ctx.NO() != null) {
+        _currentPkiTrustpoint.setEnrollment(null);
+        return;
+      }
+      int enrollmentIndex = line.toLowerCase().indexOf("enrollment");
+      String enrollment =
+          enrollmentIndex >= 0 ? line.substring(enrollmentIndex + "enrollment".length()).trim() : "";
+      if (!enrollment.isEmpty()) {
+        _currentPkiTrustpoint.setEnrollment(enrollment);
+      }
+    } else if (ctx.REVOCATION_CHECK() != null) {
+      if (ctx.NO() != null) {
+        _currentPkiTrustpoint.setRevocationCheck(null);
+        return;
+      }
+      _currentPkiTrustpoint.setRevocationCheck(line.contains("none") ? "none" : "crl");
+    }
+    if (ctx.SUBJECT_ALT_NAME() != null) {
+      Matcher matcher = PKI_SUBJECT_ALT_NAME_PATTERN.matcher(line);
+      if (matcher.find()) {
+        _currentPkiTrustpoint.setSubjectAltName(matcher.group(1).trim());
+      }
+    }
+    if (ctx.USAGE() != null) {
+      Matcher matcher = PKI_USAGE_PATTERN.matcher(line);
+      if (matcher.find()) {
+        _currentPkiTrustpoint.setUsage(matcher.group(1));
+      }
+    }
+    if (ctx.SOURCE() != null || ctx.VRF() != null) {
+      Matcher matcher = PKI_SOURCE_VRF_PATTERN.matcher(line);
+      if (matcher.find()) {
+        _currentPkiTrustpoint.setSourceVrf(matcher.group(1));
+      } else {
+        matcher = PKI_VRF_PATTERN.matcher(line);
+        if (matcher.find()) {
+          _currentPkiTrustpoint.setSourceVrf(matcher.group(1));
+        }
+      }
+    }
+  }
+
+  @Override
+  public void enterCpkicc_certificate(Cpkicc_certificateContext ctx) {
+    if (_currentPkiTrustpoint == null || ctx.certificate() == null) {
+      return;
+    }
+    String certText = getFullText(ctx.certificate());
+    for (String line : certText.split("\\n")) {
+      String trimmed = line.trim();
+      if (!trimmed.isEmpty()) {
+        _currentPkiTrustpoint.addCertificateLine(trimmed);
+      }
+    }
+  }
+
+  @Override
+  public void enterTelemetry_stanza(Telemetry_stanzaContext ctx) {
+    int id = toInteger(ctx.id);
+    _currentTelemetrySubscription = new TelemetrySubscription(id);
+    _configuration.getTelemetrySubscriptions().put(id, _currentTelemetrySubscription);
+  }
+
+  @Override
+  public void exitTelemetry_stanza(Telemetry_stanzaContext ctx) {
+    _currentTelemetrySubscription = null;
+  }
+
+  @Override
+  public void enterTelemetry_subscription_encoding(Telemetry_subscription_encodingContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setEncoding("encode-tdl");
+  }
+
+  @Override
+  public void enterTelemetry_subscription_filter(Telemetry_subscription_filterContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String line = getFullText(ctx).trim();
+    String filter =
+        line.toLowerCase().startsWith("filter") ? line.substring("filter".length()).trim() : line;
+    _currentTelemetrySubscription.setFilter(filter);
+    if (!filter.isEmpty()) {
+      String[] parts = filter.split("\\s+", 2);
+      _currentTelemetrySubscription.setFilterType(parts[0]);
+      if (parts.length > 1) {
+        _currentTelemetrySubscription.setFilterValue(parts[1]);
+      }
+    }
+  }
+
+  @Override
+  public void enterTelemetry_subscription_receiver(Telemetry_subscription_receiverContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String line = getFullText(ctx).trim();
+    String name = ctx.receiver_name != null ? ctx.receiver_name.getText() : "";
+    Matcher matcher = TELEMETRY_RECEIVER_NAME_IP_PATTERN.matcher(line);
+    if (matcher.find()) {
+      name = matcher.group(1);
+    } else {
+      matcher = TELEMETRY_RECEIVER_NAME_PATTERN.matcher(line);
+      if (matcher.find()) {
+        name = matcher.group(1);
+      }
+    }
+    TelemetrySubscription.Receiver receiver = new TelemetrySubscription.Receiver(name);
+    if (ctx.ip != null) {
+      receiver.setHost(ctx.ip.getText());
+    }
+    matcher = TELEMETRY_PORT_PATTERN.matcher(line);
+    if (matcher.find()) {
+      receiver.setPort(Integer.parseInt(matcher.group(1)));
+    }
+    matcher = TELEMETRY_PROTOCOL_PATTERN.matcher(line);
+    if (matcher.find()) {
+      receiver.setProtocol(matcher.group(1));
+    }
+    matcher = TELEMETRY_RECEIVER_TYPE_PATTERN.matcher(line);
+    if (matcher.find()) {
+      receiver.setReceiverType(matcher.group(1));
+    }
+    _currentTelemetrySubscription.addReceiver(receiver);
+  }
+
+  @Override
+  public void enterTelemetry_subscription_source_address(
+      Telemetry_subscription_source_addressContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceAddress(ctx.ip.getText());
+  }
+
+  @Override
+  public void enterTelemetry_subscription_source_vrf(Telemetry_subscription_source_vrfContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceVrf(ctx.vrf.getText());
+  }
+
+  @Override
+  public void enterTelemetry_subscription_stream(Telemetry_subscription_streamContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setStream(ctx.stream.getText());
+  }
+
+  @Override
+  public void enterTelemetry_subscription_update_policy(
+      Telemetry_subscription_update_policyContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.PERIODIC() != null) {
+      _currentTelemetrySubscription.setUpdatePolicy("periodic " + ctx.period.getText());
+    } else {
+      _currentTelemetrySubscription.setUpdatePolicy("on-change");
+    }
   }
 
   @Override

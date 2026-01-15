@@ -522,6 +522,8 @@ AUTHORIZE: 'authorize';
 AUTHORIZED: 'authorized';
 AUTHORIZING_METHOD_PRIORITY: 'authorizing-method-priority';
 
+AUTO_ENROLL: 'auto-enroll';
+
 AUTO: 'auto';
 
 AUTO_CERT_ALLOW_ALL: 'auto-cert-allow-all';
@@ -1739,6 +1741,10 @@ ENABLED: 'enabled';
 
 ENCAPSULATION: 'encapsulation';
 
+ENCODE_TDL: 'encode-tdl';
+
+ENCODING: 'encoding';
+
 ENCODING_WEIGHTED: 'encoding-weighted';
 
 ENCR: 'encr';
@@ -2566,6 +2572,8 @@ IDS_PROFILE: 'ids-profile';
 IEC: 'iec';
 
 IEEE_MMS_SSL: 'ieee-mms-ssl';
+
+IETF: 'ietf';
 
 IETF_FORMAT: 'ietf-format';
 
@@ -3878,6 +3886,8 @@ OLSR: 'olsr';
 
 ON: 'on';
 
+ON_CHANGE: 'on-change';
+
 ON_FAILURE: 'on-failure';
 
 ON_PASSIVE: 'on-passive';
@@ -4526,6 +4536,10 @@ RECEIVE_ONLY: 'receive-only';
 RECEIVE_WINDOW: 'receive-window';
 
 RECEIVED: 'received';
+
+RECEIVER: 'receiver';
+
+RECEIVER_TYPE: 'receiver-type';
 
 RECONNECT_INTERVAL: 'reconnect-interval';
 
@@ -5255,6 +5269,8 @@ SOURCE_PROTOCOL: 'source-protocol';
 
 SOURCE_ROUTE: 'source-route';
 
+SOURCE_VRF: 'source-vrf';
+
 SOURCE_ROUTE_FAILED: 'source-route-failed';
 
 SOURCE_QUENCH: 'source-quench';
@@ -5378,6 +5394,8 @@ STORM_CONTROL: 'storm-control';
 
 STP: 'stp';
 
+STREAM: 'stream';
+
 STREAMING: 'streaming';
 
 STREET_ADDRESS: 'street-address';
@@ -5403,6 +5421,8 @@ SUBINTERFACE: 'subinterface';
 
 SUBJECT_NAME: 'subject-name';
 
+SUBJECT_ALT_NAME: 'subject-alt-name';
+
 SUBMGMT: 'submgmt';
 
 SUBNET: 'subnet';
@@ -5426,6 +5446,8 @@ SUBSCRIBE_TO: 'subscribe-to';
 SUBSCRIBE_TO_ALERT_GROUP: 'subscribe-to-alert-group';
 
 SUBSCRIBER: 'subscriber';
+
+SUBSCRIPTION: 'subscription';
 
 SUCCESS: 'success';
 
@@ -5720,6 +5742,8 @@ TCPNETHASPSRV: 'tcpnethaspsrv';
 TCS_LOAD_BALANCE: 'tcs-load-balance';
 
 TELEPHONY_SERVICE: 'telephony-service';
+
+TELEMETRY: 'telemetry';
 
 TELNET: 'telnet';
 
@@ -6046,6 +6070,8 @@ UNTAGGED: 'untagged';
 UP: 'up';
 UPDATE: 'update';
 
+UPDATE_POLICY: 'update-policy';
+
 UPDATE_CALENDAR: 'update-calendar';
 
 UPDATE_DELAY: 'update-delay';
@@ -6176,6 +6202,8 @@ VALID_11G_CHANNEL: 'valid-11g-channel';
 VALID_AND_PROTECTED_SSID: 'valid-and-protected-ssid';
 
 VALID_NETWORK_OUI_PROFILE: 'valid-network-oui-profile';
+
+USAGE: 'usage';
 
 VALIDATION_USAGE: 'validation-usage';
 

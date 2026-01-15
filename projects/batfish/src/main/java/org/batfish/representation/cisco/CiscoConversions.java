@@ -49,6 +49,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -136,6 +137,8 @@ import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackMethod;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
+import org.batfish.datamodel.vendor_family.cisco.Pki;
+import org.batfish.datamodel.vendor_family.cisco.Telemetry;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
 
@@ -2028,6 +2031,61 @@ public class CiscoConversions {
 
   private static @Nonnull String generatedTrackIpSlaStateMethodName(int sla) {
     return String.format("ip sla %d state", sla);
+  }
+
+  static @Nullable Pki toPki(Map<String, PkiTrustpoint> trustpoints, Configuration c) {
+    if (trustpoints.isEmpty()) {
+      return null;
+    }
+    Pki pki = new Pki();
+    SortedMap<String, Pki.Trustpoint> convertedTrustpoints = new TreeMap<>();
+    for (PkiTrustpoint trustpoint : trustpoints.values()) {
+      Pki.Trustpoint converted = new Pki.Trustpoint(trustpoint.getName());
+      converted.setEnrollment(trustpoint.getEnrollment());
+      converted.setRevocationCheck(trustpoint.getRevocationCheck());
+      converted.setSubjectAltName(trustpoint.getSubjectAltName());
+      converted.setUsage(trustpoint.getUsage());
+      converted.setSourceVrf(trustpoint.getSourceVrf());
+      converted.setCertificateChain(new ArrayList<>(trustpoint.getCertificateChain()));
+      convertedTrustpoints.put(trustpoint.getName(), converted);
+    }
+    pki.setTrustpoints(convertedTrustpoints);
+    return pki;
+  }
+
+  static @Nullable Telemetry toTelemetry(
+      Map<Integer, TelemetrySubscription> subscriptions, Configuration c) {
+    if (subscriptions.isEmpty()) {
+      return null;
+    }
+    Telemetry telemetry = new Telemetry();
+    SortedMap<Integer, Telemetry.Subscription> convertedSubscriptions = new TreeMap<>();
+    for (TelemetrySubscription subscription : subscriptions.values()) {
+      Telemetry.Subscription converted = new Telemetry.Subscription();
+      converted.setEncoding(subscription.getEncoding());
+      converted.setFilter(subscription.getFilter());
+      converted.setFilterType(subscription.getFilterType());
+      converted.setFilterValue(subscription.getFilterValue());
+      if (subscription.getSourceAddress() != null) {
+        converted.setSourceAddress(Ip.parse(subscription.getSourceAddress()));
+      }
+      converted.setSourceVrf(subscription.getSourceVrf());
+      converted.setStream(subscription.getStream());
+      converted.setUpdatePolicy(subscription.getUpdatePolicy());
+      for (TelemetrySubscription.Receiver receiver : subscription.getReceivers()) {
+        Telemetry.Receiver convertedReceiver = new Telemetry.Receiver(receiver.getName());
+        convertedReceiver.setHost(receiver.getHost());
+        if (receiver.getPort() > 0) {
+          convertedReceiver.setPort(receiver.getPort());
+        }
+        convertedReceiver.setProtocol(receiver.getProtocol());
+        convertedReceiver.setReceiverType(receiver.getReceiverType());
+        converted.getReceivers().add(convertedReceiver);
+      }
+      convertedSubscriptions.put(subscription.getId(), converted);
+    }
+    telemetry.setSubscriptions(convertedSubscriptions);
+    return telemetry;
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

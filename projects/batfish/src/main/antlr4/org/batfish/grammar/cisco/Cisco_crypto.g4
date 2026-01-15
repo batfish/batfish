@@ -590,12 +590,19 @@ cpkit_null
 :
    NO?
    (
-      ENROLLMENT
+      AUTO
+      | AUTO_ENROLL
+      | ENROLLMENT
+      | FQDN
       | REVOCATION_CHECK
       | RSAKEYPAIR
       | SERIAL_NUMBER
+      | SOURCE
+      | SUBJECT_ALT_NAME
       | SUBJECT_NAME
+      | USAGE
       | VALIDATION_USAGE
+      | VRF
    ) null_rest_of_line
 ;
 

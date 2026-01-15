@@ -3248,6 +3248,7 @@ stanza
    | s_cable
    | s_call_home
    | s_callhome
+   | telemetry_stanza
    | s_call_manager_fallback
    | s_class_map
    | s_class_map_ios
@@ -4264,6 +4265,65 @@ wlan_virtual_ap_null
       | VAP_ENABLE
       | VLAN
    ) null_rest_of_line
+;
+
+telemetry_stanza
+:
+   TELEMETRY IETF SUBSCRIPTION id = dec NEWLINE
+   (
+      telemetry_subscription_encoding
+      | telemetry_subscription_filter
+      | telemetry_subscription_receiver
+      | telemetry_subscription_source_address
+      | telemetry_subscription_source_vrf
+      | telemetry_subscription_stream
+      | telemetry_subscription_update_policy
+      | null_telemetry_subscription
+   )*
+;
+
+telemetry_subscription_encoding
+:
+   ENCODING ENCODE_TDL NEWLINE
+;
+
+telemetry_subscription_filter
+:
+   FILTER null_rest_of_line
+;
+
+telemetry_subscription_receiver
+:
+   RECEIVER
+   (
+      IP ADDRESS ip = IP_ADDRESS receiver_name = variable_permissive
+      | NAME receiver_name = variable_permissive
+   ) null_rest_of_line
+;
+
+telemetry_subscription_source_address
+:
+   SOURCE_ADDRESS ip = IP_ADDRESS NEWLINE
+;
+
+telemetry_subscription_source_vrf
+:
+   SOURCE_VRF vrf = variable NEWLINE
+;
+
+telemetry_subscription_stream
+:
+   STREAM stream = variable_permissive NEWLINE
+;
+
+telemetry_subscription_update_policy
+:
+   UPDATE_POLICY (ON_CHANGE | PERIODIC period = dec) NEWLINE
+;
+
+null_telemetry_subscription
+:
+   null_rest_of_line
 ;
 
 wsma_null
