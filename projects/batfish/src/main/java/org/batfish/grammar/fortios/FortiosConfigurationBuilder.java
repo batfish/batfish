@@ -1112,6 +1112,38 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Speed.TEN_THOUSAND_HALF;
     } else if (ctx.HUNDRED_GFULL() != null) {
       return Speed.HUNDRED_GFULL;
+    } else if (ctx.HUNDRED_AUTO() != null) {
+      return Speed.HUNDRED_AUTO;
+    } else if (ctx.THOUSAND_AUTO() != null) {
+      return Speed.THOUSAND_AUTO;
+    } else if (ctx.TWO_THOUSAND_FIVE_HUNDRED_AUTO() != null) {
+      return Speed.TWO_THOUSAND_FIVE_HUNDRED_AUTO;
+    } else if (ctx.FIVE_THOUSAND_AUTO() != null) {
+      return Speed.FIVE_THOUSAND_AUTO;
+    } else if (ctx.TEN_THOUSAND_AUTO() != null) {
+      return Speed.TEN_THOUSAND_AUTO;
+    } else if (ctx.TWENTY_FIVE_THOUSAND_FULL() != null) {
+      return Speed.TWENTY_FIVE_THOUSAND_FULL;
+    } else if (ctx.TWENTY_FIVE_THOUSAND_AUTO() != null) {
+      return Speed.TWENTY_FIVE_THOUSAND_AUTO;
+    } else if (ctx.FORTY_THOUSAND_FULL() != null) {
+      return Speed.FORTY_THOUSAND_FULL;
+    } else if (ctx.FORTY_THOUSAND_AUTO() != null) {
+      return Speed.FORTY_THOUSAND_AUTO;
+    } else if (ctx.FIFTY_THOUSAND_FULL() != null) {
+      return Speed.FIFTY_THOUSAND_FULL;
+    } else if (ctx.FIFTY_THOUSAND_AUTO() != null) {
+      return Speed.FIFTY_THOUSAND_AUTO;
+    } else if (ctx.HUNDRED_GAUTO() != null) {
+      return Speed.HUNDRED_GAUTO;
+    } else if (ctx.TWO_HUNDRED_GFULL() != null) {
+      return Speed.TWO_HUNDRED_GFULL;
+    } else if (ctx.TWO_HUNDRED_GAUTO() != null) {
+      return Speed.TWO_HUNDRED_GAUTO;
+    } else if (ctx.FOUR_HUNDRED_G_FULL() != null) {
+      return Speed.FOUR_HUNDRED_G_FULL;
+    } else if (ctx.FOUR_HUNDRED_G_AUTO() != null) {
+      return Speed.FOUR_HUNDRED_G_AUTO;
     }
     assert ctx.HUNDRED_GHALF() != null;
     return Speed.HUNDRED_GHALF;
@@ -2545,6 +2577,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Protocol.ICMP6;
     } else if (ctx.IP_UPPER() != null) {
       return Protocol.IP;
+    } else if (ctx.ALL() != null) {
+      return Protocol.ALL;
     } else {
       assert ctx.TCP_UDP_SCTP() != null;
       return Protocol.TCP_UDP_SCTP;
@@ -3088,7 +3122,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         yield null;
       }
       // both ICMP type and ICMP code are allowed to be unset
-      case ICMP, ICMP6, IP ->
+      case ICMP, ICMP6, IP, ALL ->
           // protocol-number is allowed to be unset
           null;
     };
