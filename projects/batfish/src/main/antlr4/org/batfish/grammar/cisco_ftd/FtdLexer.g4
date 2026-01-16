@@ -71,11 +71,15 @@ COMMUNITY_LIST: 'community-list';
 
 CONN_MATCH: 'conn-match';
 
+CONNECTION: 'connection';
+
 COUNTER: 'counter';
 
 CRITICAL: 'critical';
 
 CRYPTO: 'crypto';
+
+CRYPTOCHECKSUM: 'Cryptochecksum';
 
 CTS: 'cts';
 
@@ -98,6 +102,8 @@ DISABLED: 'disabled';
 DOMAIN: 'domain';
 
 DOMAIN_LOOKUP: 'domain-lookup';
+
+DP: 'dp';
 
 DYNAMIC: 'dynamic';
 
@@ -144,6 +150,8 @@ FLASH: 'flash';
 FLOW_END: 'flow-end';
 
 FLOW_NSEL: 'flow-nsel';
+
+FLOW_OFFLOAD: 'flow-offload';
 
 FLOW_START: 'flow-start';
 
@@ -211,6 +219,8 @@ KEEPALIVE_TIMEOUT: 'keepalive-timeout';
 
 LAN: 'lan';
 
+LB: 'lb';
+
 LINE: 'line';
 
 LINK: 'link';
@@ -248,6 +258,8 @@ MASK: 'mask';
 MODE: 'mode';
 
 MONITOR_INTERFACE: 'monitor-interface';
+
+MULTICHANNEL: 'multichannel';
 
 MSEC: 'msec';
 
@@ -290,6 +302,8 @@ NETWORK_OBJECT: 'network-object';
 
 NEWLINE: ('\r'? '\n')+;
 
+NGFW: 'ngfw';
+
 NGIPS: 'ngips';
 
 NO: 'no';
@@ -301,6 +315,8 @@ OBJECT: 'object';
 OBJECT_GROUP: 'object-group';
 
 OBJECT_GROUP_SEARCH: 'object-group-search';
+
+OFFLOAD: 'offload';
 
 ORIGINATE: 'originate';
 
@@ -342,12 +358,15 @@ PREFIX: 'prefix';
 
 PRIMARY: 'primary';
 
+PRESERVE: 'preserve';
+
 PRESERVE_UNTAG: 'preserve-untag';
 
 PROFILE: 'profile';
 
 PROPAGATE: 'propagate';
 
+PROXY: 'proxy';
 
 RANGE: 'range';
 TRANSPORT: 'transport';
@@ -410,6 +429,8 @@ STANDARD: 'standard';
 
 STATIC: 'static';
 
+SNORT: 'snort';
+
 SYSTEM: 'system';
 
 TAG: 'tag';
@@ -452,6 +473,8 @@ UNIT: 'unit';
 VARIABLE: 'variable';
 
 VERSION: 'version';
+
+WHITELIST: 'whitelist';
 
 VLAN: 'vlan';
 

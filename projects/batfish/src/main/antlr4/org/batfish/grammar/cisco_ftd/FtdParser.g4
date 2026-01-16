@@ -58,6 +58,14 @@ stanza
    | icmp_stanza
    | snmp_server_stanza
    | arp_stanza
+   | version_stanza
+   | enable_password_stanza
+   | names_stanza
+   | mac_address_stanza
+   | cts_stanza
+   | snort_stanza
+   | flow_offload_stanza
+   | cryptochecksum_stanza
    | class_map_stanza
    | policy_map_stanza
    | service_policy_stanza
@@ -322,6 +330,36 @@ aaa_stanza
 mac_address_stanza
 :
    NO? MAC_ADDRESS AUTO NEWLINE
+;
+
+version_stanza
+:
+   NGFW VERSION version = ~NEWLINE* NEWLINE
+;
+
+enable_password_stanza
+:
+   ENABLE PASSWORD ~NEWLINE* NEWLINE
+;
+
+cts_stanza
+:
+   CTS null_rest_of_line
+;
+
+snort_stanza
+:
+   SNORT null_rest_of_line
+;
+
+flow_offload_stanza
+:
+   NO? FLOW_OFFLOAD null_rest_of_line
+;
+
+cryptochecksum_stanza
+:
+   CRYPTOCHECKSUM ~NEWLINE* NEWLINE
 ;
 
 // Generic unrecognized line - matches any line

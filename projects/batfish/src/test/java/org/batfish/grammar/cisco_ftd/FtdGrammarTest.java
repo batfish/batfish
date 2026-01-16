@@ -996,4 +996,18 @@ public class FtdGrammarTest {
     assertThat(rule.getServiceTranslation(), notNullValue());
   }
 
+  @Test
+  public void testNewStanzaTypes() {
+    String config = "enable password test pbkdf2\n"
+        + "names\n"
+        + "cts manual\n"
+        + "snort preserve-connection\n"
+        + "flow-offload enable\n"
+        + "Cryptochecksum:test\n";
+    FtdConfiguration vc = parseVendorConfig(config);
+    assertThat(vc, notNullValue());
+    // Test that no warnings were generated for unrecognized lines
+    assertThat(vc.getWarnings().getParseWarnings(), hasSize(0));
+  }
+
 }
