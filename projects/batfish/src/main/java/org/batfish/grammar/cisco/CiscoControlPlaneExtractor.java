@@ -404,6 +404,7 @@ import org.batfish.datamodel.eigrp.EigrpMetric;
 import org.batfish.datamodel.eigrp.EigrpMetricValues;
 import org.batfish.datamodel.eigrp.EigrpProcessMode;
 import org.batfish.datamodel.eigrp.WideMetric;
+import org.batfish.datamodel.hsrp.HsrpGroup;
 import org.batfish.datamodel.isis.IsisInterfaceMode;
 import org.batfish.datamodel.isis.IsisLevel;
 import org.batfish.datamodel.ospf.OspfAreaSummary;
@@ -2452,7 +2453,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
     int priority =
-        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
+        _no ? HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
     _currentHsrpGroups.forEach(h -> h.setPriority(priority));
   }
 
@@ -2461,8 +2462,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int helloTime;
     int holdTime;
     if (_no) {
-      helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
-      holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
+      helloTime = HsrpGroup.DEFAULT_HELLO_TIME;
+      holdTime = HsrpGroup.DEFAULT_HOLD_TIME;
     } else {
       helloTime =
           ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
