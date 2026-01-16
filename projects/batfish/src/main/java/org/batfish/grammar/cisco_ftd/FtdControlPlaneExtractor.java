@@ -5,7 +5,6 @@ import javax.annotation.Nonnull;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.Token;
-import org.antlr.v4.runtime.misc.Interval;
 import java.util.Set;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
@@ -78,6 +77,7 @@ import org.batfish.grammar.cisco_ftd.FtdParser.Nat_destinationContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Nat_serviceContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Nat_service_portContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Access_group_stanzaContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Access_group_tailContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Route_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Router_ospf_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Failover_stanzaContext;
@@ -88,6 +88,7 @@ import org.batfish.grammar.cisco_ftd.FtdParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Class_map_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Policy_map_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Service_policy_stanzaContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Service_policy_scopeContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Crypto_ipsec_transform_setContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Crypto_ipsec_profileContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Cip_setContext;
@@ -416,84 +417,49 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void enterAccess_group_stanza(Access_group_stanzaContext ctx) {
-    // Grammar: ACCESS_GROUP name=... (GLOBAL | IN | ~NEWLINE*) NEWLINE
-    // We rely on string parsing for simplicity due to loose grammar tail
-    int start = ctx.getStart().getTokenIndex();
-    int stop = ctx.getStop().getTokenIndex();
-    String text = _parser.getTokens().getText(new Interval(start, stop)).trim();
-    String[] parts = text.split("\\s+");
-
-    // safe guard
-    if (parts.length < 2) {
-      return;
-    }
-
-    // Access-group usually starts with 'access-group'
-    // parts[0] = access-group
-    // parts[1] = ACL name (usually)
-
-    String aclName = null;
+    String aclName = ctx.name.getText();
+    Access_group_tailContext tail = ctx.access_group_tail();
     String direction = null;
     String interfaceName = null;
 
-    if (parts.length >= 2) {
-      aclName = parts[1];
-    }
-
-    if (aclName != null) {
-      if (text.contains(" global") || (parts.length > 2 && parts[2].equalsIgnoreCase("global"))) {
+    if (tail != null) {
+      if (tail.GLOBAL() != null) {
         direction = "global";
-      } else {
-        // Look for 'in' or 'out' keywords in text
-        boolean hasIn = false;
-        boolean hasOut = false;
-
-        for (int i = 2; i < parts.length; i++) {
-          String p = parts[i];
-          if (p.equalsIgnoreCase("in"))
-            hasIn = true;
-          if (p.equalsIgnoreCase("out"))
-            hasOut = true;
-          if (p.equalsIgnoreCase("interface") && i + 1 < parts.length) {
-            interfaceName = parts[i + 1];
-          }
+      } else if (tail.access_group_direction() != null) {
+        direction = tail.access_group_direction().getText().toLowerCase();
+        if (tail.interface_name_value != null) {
+          interfaceName = tail.interface_name_value.getText();
         }
-
-        if (hasIn)
-          direction = "in";
-        else if (hasOut)
-          direction = "out";
-      }
-
-      if (direction != null) {
-        if (direction.equalsIgnoreCase("global")) {
-          _configuration.getAccessGroups().add(new FtdAccessGroup(aclName, null, "global"));
-        } else if (interfaceName != null) {
-          _configuration.getAccessGroups().add(new FtdAccessGroup(aclName, interfaceName, direction));
-        }
-        referenceStructure(
-            FtdStructureType.ACCESS_LIST,
-            aclName,
-            FtdStructureUsage.ACCESS_GROUP_ACCESS_LIST,
-            ctx.getStart().getLine());
       }
     }
+
+    if (direction == null) {
+      return;
+    }
+    if ("global".equals(direction)) {
+      _configuration.getAccessGroups().add(new FtdAccessGroup(aclName, null, "global"));
+    } else if (interfaceName != null) {
+      _configuration.getAccessGroups().add(new FtdAccessGroup(aclName, interfaceName, direction));
+    }
+    referenceStructure(
+        FtdStructureType.ACCESS_LIST,
+        aclName,
+        FtdStructureUsage.ACCESS_GROUP_ACCESS_LIST,
+        ctx.getStart().getLine());
   }
 
   // ==================== MPF ====================
 
   @Override
   public void enterClass_map_stanza(Class_map_stanzaContext ctx) {
-    String line = getLineText(ctx.getStart().getLine());
-    if (line == null) {
-      line = ctx.getText();
+    String name = ctx.name.getText();
+    FtdClassMap classMap = new FtdClassMap(name);
+    if (ctx.class_map_type() != null && ctx.class_map_type().type != null) {
+      classMap.setType(ctx.class_map_type().type.getText().toLowerCase());
     }
-    FtdClassMap classMap = parseClassMapHeader(line);
-    if (classMap != null) {
-      _configuration.addClassMap(classMap);
-      _currentClassMap = classMap;
-      defineStructure(FtdStructureType.CLASS_MAP, classMap.getName(), ctx);
-    }
+    _configuration.addClassMap(classMap);
+    _currentClassMap = classMap;
+    defineStructure(FtdStructureType.CLASS_MAP, classMap.getName(), ctx);
   }
 
   @Override
@@ -530,18 +496,16 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void enterPolicy_map_stanza(Policy_map_stanzaContext ctx) {
-    String line = getLineText(ctx.getStart().getLine());
-    if (line == null) {
-      line = ctx.getText();
+    String name = ctx.name.getText();
+    FtdPolicyMap policyMap = new FtdPolicyMap(name);
+    if (ctx.policy_map_type() != null && ctx.policy_map_type().type != null) {
+      policyMap.setType(ctx.policy_map_type().type.getText().toLowerCase());
     }
-    FtdPolicyMap policyMap = parsePolicyMapHeader(line);
-    if (policyMap != null) {
-      _configuration.addPolicyMap(policyMap);
-      _currentPolicyMap = policyMap;
-      _currentPolicyMapClassName = null;
-      _currentPolicyMapInParameters = false;
-      defineStructure(FtdStructureType.POLICY_MAP, policyMap.getName(), ctx);
-    }
+    _configuration.addPolicyMap(policyMap);
+    _currentPolicyMap = policyMap;
+    _currentPolicyMapClassName = null;
+    _currentPolicyMapInParameters = false;
+    defineStructure(FtdStructureType.POLICY_MAP, policyMap.getName(), ctx);
   }
 
   @Override
@@ -600,19 +564,27 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void enterService_policy_stanza(Service_policy_stanzaContext ctx) {
-    String line = getLineText(ctx.getStart().getLine());
-    if (line == null) {
-      line = ctx.getText();
+    String policyName = ctx.policy_name.getText();
+    FtdServicePolicy.Scope scope = FtdServicePolicy.Scope.UNKNOWN;
+    String interfaceName = null;
+    Service_policy_scopeContext scopeCtx = ctx.service_policy_scope();
+    if (scopeCtx != null) {
+      if (scopeCtx.GLOBAL() != null) {
+        scope = FtdServicePolicy.Scope.GLOBAL;
+      } else if (scopeCtx.INTERFACE() != null) {
+        scope = FtdServicePolicy.Scope.INTERFACE;
+        if (scopeCtx.interface_name_value != null) {
+          interfaceName = scopeCtx.interface_name_value.getText();
+        }
+      }
     }
-    FtdServicePolicy policy = parseServicePolicy(line);
-    if (policy != null) {
-      _configuration.addServicePolicy(policy);
-      referenceStructure(
-          FtdStructureType.POLICY_MAP,
-          policy.getPolicyMapName(),
-          FtdStructureUsage.SERVICE_POLICY_POLICY_MAP,
-          ctx.getStart().getLine());
-    }
+    FtdServicePolicy policy = new FtdServicePolicy(policyName, scope, interfaceName);
+    _configuration.addServicePolicy(policy);
+    referenceStructure(
+        FtdStructureType.POLICY_MAP,
+        policy.getPolicyMapName(),
+        FtdStructureUsage.SERVICE_POLICY_POLICY_MAP,
+        ctx.getStart().getLine());
   }
 
   @Override
@@ -1342,82 +1314,6 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     StringBuilder sb = new StringBuilder();
     ctx.acl_name().children.forEach(child -> sb.append(child.getText()));
     return sb.toString().trim();
-  }
-
-  private @Nullable FtdClassMap parseClassMapHeader(@Nullable String line) {
-    if (line == null) {
-      return null;
-    }
-    String[] parts = line.trim().split("\\s+");
-    if (parts.length < 2 || !parts[0].equalsIgnoreCase("class-map")) {
-      return null;
-    }
-    int index = 1;
-    String type = null;
-    if (parts.length >= 4 && parts[1].equalsIgnoreCase("type")) {
-      type = parts[2].toLowerCase();
-      index = 3;
-    }
-    if (index >= parts.length) {
-      return null;
-    }
-    String name = joinRemainder(parts, index);
-    FtdClassMap classMap = new FtdClassMap(name);
-    classMap.setType(type);
-    return classMap;
-  }
-
-  private @Nullable FtdPolicyMap parsePolicyMapHeader(@Nullable String line) {
-    if (line == null) {
-      return null;
-    }
-    String[] parts = line.trim().split("\\s+");
-    if (parts.length < 2 || !parts[0].equalsIgnoreCase("policy-map")) {
-      return null;
-    }
-    int index = 1;
-    String type = null;
-    if (parts.length >= 4 && parts[1].equalsIgnoreCase("type")) {
-      type = parts[2].toLowerCase();
-      index = 3;
-    }
-    if (index >= parts.length) {
-      return null;
-    }
-    String name = joinRemainder(parts, index);
-    FtdPolicyMap policyMap = new FtdPolicyMap(name);
-    policyMap.setType(type);
-    return policyMap;
-  }
-
-  private @Nullable FtdServicePolicy parseServicePolicy(@Nullable String line) {
-    if (line == null) {
-      return null;
-    }
-    String[] parts = line.trim().split("\\s+");
-    if (parts.length < 2 || !parts[0].equalsIgnoreCase("service-policy")) {
-      return null;
-    }
-    String policyName = parts[1];
-    FtdServicePolicy.Scope scope = FtdServicePolicy.Scope.UNKNOWN;
-    String interfaceName = null;
-    if (parts.length >= 3) {
-      if (parts[2].equalsIgnoreCase("global")) {
-        scope = FtdServicePolicy.Scope.GLOBAL;
-      } else if (parts[2].equalsIgnoreCase("interface") && parts.length >= 4) {
-        scope = FtdServicePolicy.Scope.INTERFACE;
-        interfaceName = parts[3];
-      }
-    }
-    return new FtdServicePolicy(policyName, scope, interfaceName);
-  }
-
-  private @Nullable String parsePolicyMapClassName(@Nonnull String line) {
-    String[] parts = line.trim().split("\\s+", 2);
-    if (parts.length < 2 || !parts[0].equalsIgnoreCase("class")) {
-      return null;
-    }
-    return parts[1].trim();
   }
 
   private @Nullable String parseClassMapAccessList(@Nonnull String line) {

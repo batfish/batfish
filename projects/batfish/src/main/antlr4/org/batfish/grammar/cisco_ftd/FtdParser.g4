@@ -191,8 +191,24 @@ arp_stanza
 
 class_map_stanza
 :
-   CLASS_MAP null_rest_of_line
+   CLASS_MAP class_map_type? name = class_map_name NEWLINE
    class_map_tail*
+;
+
+class_map_type
+:
+   TYPE type = class_map_type_value
+;
+
+class_map_type_value
+:
+   NAME
+   | WORD
+;
+
+class_map_name
+:
+   name_parts += ~NEWLINE+
 ;
 
 class_map_tail
@@ -206,8 +222,24 @@ class_map_tail
 
 policy_map_stanza
 :
-   POLICY_MAP null_rest_of_line
+   POLICY_MAP policy_map_type? name = policy_map_name NEWLINE
    policy_map_tail*
+;
+
+policy_map_type
+:
+   TYPE type = policy_map_type_value
+;
+
+policy_map_type_value
+:
+   NAME
+   | WORD
+;
+
+policy_map_name
+:
+   name_parts += ~NEWLINE+
 ;
 
 policy_map_tail
@@ -222,9 +254,24 @@ policy_map_tail
 
 service_policy_stanza
 :
-   SERVICE_POLICY null_rest_of_line
+   SERVICE_POLICY policy_name = service_policy_name service_policy_scope? NEWLINE
 ;
 
+service_policy_name
+:
+   name_parts += ~(GLOBAL | INTERFACE | NEWLINE)+
+;
+
+service_policy_scope
+:
+   GLOBAL
+   | INTERFACE interface_name_value = service_policy_interface_name
+;
+
+service_policy_interface_name
+:
+   name_parts += ~NEWLINE+
+;
 threat_detection_stanza
 :
    THREAT_DETECTION null_rest_of_line
@@ -237,7 +284,29 @@ monitor_interface_stanza
 
 access_group_stanza
 :
-   ACCESS_GROUP name = ~(GLOBAL | NEWLINE)+ (GLOBAL | IN | ~NEWLINE*) NEWLINE
+   ACCESS_GROUP name = access_group_name access_group_tail? NEWLINE
+;
+
+access_group_name
+:
+   name_parts += ~(GLOBAL | IN | OUT | INTERFACE | NEWLINE)+
+;
+
+access_group_tail
+:
+   GLOBAL
+   | access_group_direction (INTERFACE interface_name_value = access_group_interface_name)?
+;
+
+access_group_direction
+:
+   IN
+   | OUT
+;
+
+access_group_interface_name
+:
+   name_parts += ~NEWLINE+
 ;
 
 pager_stanza

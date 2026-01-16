@@ -1167,6 +1167,13 @@
       "properties" : null
     },
     {
+      "id" : "node-lhr-border-02",
+      "model" : "CISCO_UNSPECIFIED",
+      "name" : "lhr-border-02",
+      "type" : "ROUTER",
+      "properties" : null
+    },
+    {
       "id" : "node-subnet-1641fa70",
       "model" : "AWS_SUBNET_PUBLIC",
       "name" : "subnet-1641fa70",
@@ -1241,13 +1248,6 @@
       "model" : "AWS_VPC",
       "name" : "vpc-f8fad69d",
       "type" : "SWITCH",
-      "properties" : null
-    },
-    {
-      "id" : "node-lhr-border-02",
-      "model" : "CISCO_UNSPECIFIED",
-      "name" : "lhr-border-02",
-      "type" : "ROUTER",
       "properties" : null
     },
     {
