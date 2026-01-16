@@ -2,9 +2,9 @@ package org.batfish.grammar.cisco_ftd;
 
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.equalTo;
 
 import java.io.IOException;
 import org.batfish.common.Warnings;

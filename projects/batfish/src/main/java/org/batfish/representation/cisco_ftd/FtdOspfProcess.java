@@ -27,27 +27,22 @@ public class FtdOspfProcess implements Serializable {
         _passiveInterfaces = new HashSet<>();
     }
 
-    @Nonnull
     public Map<Long, FtdOspfArea> getAreas() {
         return _areas;
     }
 
-    @Nonnull
     public String getName() {
         return _name;
     }
 
-    @Nonnull
     public List<FtdOspfNetwork> getNetworks() {
         return _networks;
     }
 
-    @Nonnull
     public Set<String> getPassiveInterfaces() {
         return _passiveInterfaces;
     }
 
-    @Nullable
     public Ip getRouterId() {
         return _routerId;
     }

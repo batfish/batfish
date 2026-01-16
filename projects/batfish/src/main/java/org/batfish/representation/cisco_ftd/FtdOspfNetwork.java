@@ -16,12 +16,10 @@ public class FtdOspfNetwork implements Serializable {
     _areaId = areaId;
   }
 
-  @Nonnull
   public Ip getIp() {
     return _ip;
   }
 
-  @Nonnull
   public Ip getMask() {
     return _mask;
   }

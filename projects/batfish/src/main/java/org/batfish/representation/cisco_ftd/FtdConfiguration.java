@@ -1,65 +1,64 @@
 package org.batfish.representation.cisco_ftd;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSortedMap;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
+import org.batfish.datamodel.AclIpSpace;
+import org.batfish.datamodel.AclLine;
+import org.batfish.datamodel.BgpActivePeerConfig;
+import org.batfish.datamodel.BgpProcess;
+import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.DeviceModel;
-import org.batfish.datamodel.StaticRoute;
-import org.batfish.datamodel.route.nh.NextHopIp;
-import org.batfish.vendor.VendorConfiguration;
-import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.ConcreteInterfaceAddress;
-import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
-import org.batfish.datamodel.AclIpSpace;
 import org.batfish.datamodel.HeaderSpace;
-import org.batfish.datamodel.IpProtocol;
-import org.batfish.datamodel.IpSpace;
-import org.batfish.datamodel.SubRange;
-import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.UniverseIpSpace;
-import org.batfish.datamodel.acl.AclLineMatchExpr;
-import org.batfish.datamodel.acl.AclLineMatchExprs;
-import org.batfish.datamodel.ospf.OspfArea;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-import org.batfish.datamodel.Ip;
-import org.batfish.datamodel.Prefix;
-import org.batfish.datamodel.transformation.Transformation;
-import org.batfish.datamodel.transformation.TransformationStep;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import org.batfish.datamodel.BgpActivePeerConfig;
-import org.batfish.datamodel.BgpProcess;
-import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
-import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
-import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
-import org.batfish.datamodel.AclLine;
-import org.batfish.datamodel.LineAction;
-import org.batfish.datamodel.IpRange;
-import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.Zone;
-import org.batfish.datamodel.acl.PermittedByAcl;
-import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.datamodel.vendor_family.cisco.Service;
-import org.batfish.datamodel.ospf.OspfProcess;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
+import org.batfish.datamodel.IntegerSpace;
+import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.IpProtocol;
+import org.batfish.datamodel.IpRange;
+import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
-import com.google.common.collect.ImmutableSortedMap;
-import java.util.TreeMap;
+import org.batfish.datamodel.LineAction;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
+import org.batfish.datamodel.SubRange;
+import org.batfish.datamodel.UniverseIpSpace;
+import org.batfish.datamodel.Vrf;
+import org.batfish.datamodel.Zone;
+import org.batfish.datamodel.acl.AclLineMatchExpr;
+import org.batfish.datamodel.acl.AclLineMatchExprs;
+import org.batfish.datamodel.acl.MatchHeaderSpace;
+import org.batfish.datamodel.acl.PermittedByAcl;
+import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker;
+import org.batfish.datamodel.bgp.NextHopIpTieBreaker;
+import org.batfish.datamodel.ospf.OspfArea;
+import org.batfish.datamodel.ospf.OspfProcess;
+import org.batfish.datamodel.route.nh.NextHopIp;
+import org.batfish.datamodel.transformation.Transformation;
+import org.batfish.datamodel.transformation.TransformationStep;
+import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
+import org.batfish.datamodel.vendor_family.cisco.Service;
+import org.batfish.vendor.VendorConfiguration;
 
 /**
  * Represents a Cisco Firepower Threat Defense (FTD) configuration.
@@ -105,102 +104,82 @@ public class FtdConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
-  @Nonnull
   public Map<String, Interface> getInterfaces() {
     return _interfaces;
   }
 
-  @Nonnull
   public Map<String, FtdAccessList> getAccessLists() {
     return _accessLists;
   }
 
-  @Nonnull
   public Map<String, FtdNetworkObject> getNetworkObjects() {
     return _networkObjects;
   }
 
-  @Nonnull
   public Map<String, FtdNetworkObjectGroup> getNetworkObjectGroups() {
     return _networkObjectGroups;
   }
 
-  @Nonnull
   public Map<String, FtdServiceObjectGroup> getServiceObjectGroups() {
     return _serviceObjectGroups;
   }
 
-  @Nonnull
   public Map<String, FtdOspfProcess> getOspfProcesses() {
     return _ospfProcesses;
   }
 
-  @Nonnull
   public Map<String, Vrf> getVrfs() {
     return _vrfs;
   }
 
-  @Nonnull
   public List<FtdNatRule> getNatRules() {
     return _natRules;
   }
 
-  @Nonnull
   public List<FtdRoute> getRoutes() {
     return _routes;
   }
 
-  @Nonnull
   public List<String> getFailoverLines() {
     return _failoverLines;
   }
 
-  @Nonnull
   public List<FtdAccessGroup> getAccessGroups() {
     return _accessGroups;
   }
 
-  @Nonnull
   public Map<String, FtdClassMap> getClassMaps() {
     return _classMaps;
   }
 
-  @Nonnull
   public Map<String, FtdPolicyMap> getPolicyMaps() {
     return _policyMaps;
   }
 
-  @Nonnull
   public List<FtdServicePolicy> getServicePolicies() {
     return _servicePolicies;
   }
 
-  @Nonnull
   public Map<String, FtdCryptoMapSet> getCryptoMaps() {
     return _cryptoMaps;
   }
 
-  @Nonnull
   public Map<String, Set<String>> getCryptoMapInterfaceBindings() {
     return _cryptoMapInterfaceBindings;
   }
 
-  @Nonnull
   public Map<String, FtdIpsecTransformSet> getIpsecTransformSets() {
     return _ipsecTransformSets;
   }
 
-  @Nonnull
   public Map<String, FtdIpsecProfile> getIpsecProfiles() {
     return _ipsecProfiles;
   }
 
-  @Nonnull
   public Map<Integer, FtdIkev2Policy> getIkev2Policies() {
     return _ikev2Policies;
   }
 
-  @Nonnull
   public Map<String, FtdTunnelGroup> getTunnelGroups() {
     return _tunnelGroups;
   }
@@ -303,26 +282,26 @@ public class FtdConfiguration extends VendorConfiguration {
   // Configuration properties
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _vendor;
-  private final Map<String, Interface> _interfaces;
-  private final Map<String, FtdAccessList> _accessLists;
-  private final Map<String, FtdNetworkObject> _networkObjects;
-  private final Map<String, FtdNetworkObjectGroup> _networkObjectGroups;
-  private final Map<String, FtdServiceObjectGroup> _serviceObjectGroups;
-  private final Map<String, FtdOspfProcess> _ospfProcesses;
-  private final Map<String, Vrf> _vrfs;
-  private final List<FtdNatRule> _natRules;
-  private final List<FtdRoute> _routes;
-  private final List<String> _failoverLines;
-  private final List<FtdAccessGroup> _accessGroups;
-  private final Map<String, FtdClassMap> _classMaps;
-  private final Map<String, FtdPolicyMap> _policyMaps;
-  private final List<FtdServicePolicy> _servicePolicies;
-  private final Map<String, FtdCryptoMapSet> _cryptoMaps;
-  private final Map<String, Set<String>> _cryptoMapInterfaceBindings;
-  private final Map<String, FtdIpsecTransformSet> _ipsecTransformSets;
-  private final Map<String, FtdIpsecProfile> _ipsecProfiles;
-  private final Map<Integer, FtdIkev2Policy> _ikev2Policies;
-  private final Map<String, FtdTunnelGroup> _tunnelGroups;
+  private final @Nonnull Map<String, Interface> _interfaces;
+  private final @Nonnull Map<String, FtdAccessList> _accessLists;
+  private final @Nonnull Map<String, FtdNetworkObject> _networkObjects;
+  private final @Nonnull Map<String, FtdNetworkObjectGroup> _networkObjectGroups;
+  private final @Nonnull Map<String, FtdServiceObjectGroup> _serviceObjectGroups;
+  private final @Nonnull Map<String, FtdOspfProcess> _ospfProcesses;
+  private final @Nonnull Map<String, Vrf> _vrfs;
+  private final @Nonnull List<FtdNatRule> _natRules;
+  private final @Nonnull List<FtdRoute> _routes;
+  private final @Nonnull List<String> _failoverLines;
+  private final @Nonnull List<FtdAccessGroup> _accessGroups;
+  private final @Nonnull Map<String, FtdClassMap> _classMaps;
+  private final @Nonnull Map<String, FtdPolicyMap> _policyMaps;
+  private final @Nonnull List<FtdServicePolicy> _servicePolicies;
+  private final @Nonnull Map<String, FtdCryptoMapSet> _cryptoMaps;
+  private final @Nonnull Map<String, Set<String>> _cryptoMapInterfaceBindings;
+  private final @Nonnull Map<String, FtdIpsecTransformSet> _ipsecTransformSets;
+  private final @Nonnull Map<String, FtdIpsecProfile> _ipsecProfiles;
+  private final @Nonnull Map<Integer, FtdIkev2Policy> _ikev2Policies;
+  private final @Nonnull Map<String, FtdTunnelGroup> _tunnelGroups;
   private @Nullable FtdBgpProcess _bgpProcess;
 
   public @Nullable FtdBgpProcess getBgpProcess() {

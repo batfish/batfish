@@ -12,10 +12,10 @@ public class FtdTunnelGroup implements Serializable {
     }
 
     private final String _name;
-    private Type _type;
-    private String _ikev2Policy;
-    private String _presharedKey;
-    private String _presharedKeyStandby;
+    private @Nullable Type _type;
+    private @Nullable String _ikev2Policy;
+    private @Nullable String _presharedKey;
+    private @Nullable String _presharedKeyStandby;
 
     public FtdTunnelGroup(String name) {
         _name = name;
@@ -25,7 +25,6 @@ public class FtdTunnelGroup implements Serializable {
         return _name;
     }
 
-    @Nullable
     public Type getType() {
         return _type;
     }
@@ -34,7 +33,6 @@ public class FtdTunnelGroup implements Serializable {
         _type = type;
     }
 
-    @Nullable
     public String getIkev2Policy() {
         return _ikev2Policy;
     }
@@ -43,7 +41,6 @@ public class FtdTunnelGroup implements Serializable {
         _ikev2Policy = ikev2Policy;
     }
 
-    @Nullable
     public String getPresharedKey() {
         return _presharedKey;
     }
@@ -52,7 +49,6 @@ public class FtdTunnelGroup implements Serializable {
         _presharedKey = presharedKey;
     }
 
-    @Nullable
     public String getPresharedKeyStandby() {
         return _presharedKeyStandby;
     }
