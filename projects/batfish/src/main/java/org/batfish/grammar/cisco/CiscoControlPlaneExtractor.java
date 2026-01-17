@@ -1612,8 +1612,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private IpSla _currentSla;
 
-  /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
-   * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
+  /*
+   * Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf"
+   * stanza
+   * to correctly retrieve the OSPF process that was being configured prior to
+   * switching stanzas
    */
   private String _lastKnownOspfProcess;
 
@@ -1772,7 +1775,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         }
       } else if (line.getLoginAuthentication() != null
           && line.getLoginAuthentication().equals(name)) {
-        // if not the default list, apply it to lines that have specified this list as it's login
+        // if not the default list, apply it to lines that have specified this list as
+        // it's login
         // list
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
@@ -1801,10 +1805,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRec_address_family(Rec_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
+    // Step into a new address family. This results in a new EIGRP process with a
+    // specified VRF and
     // AS number
 
-    // There may not be an ASN specified here, but it will be specified in this AF context
+    // There may not be an ASN specified here, but it will be specified in this AF
+    // context
     Long asn = ctx.asnum == null ? null : toLong(ctx.asnum);
 
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, ctx.vrf.getText());
@@ -1815,7 +1821,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRen_address_family(Ren_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
+    // Step into a new address family. This results in a new EIGRP process with a
+    // specified VRF and
     // AS number
 
     long asn = toLong(ctx.asnum);
@@ -1927,8 +1934,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     _currentNamedRsaPubKey =
         _configuration.getCryptoNamedRsaPubKeys().computeIfAbsent(keyName, NamedRsaPubKey::new);
     _configuration.defineStructure(NAMED_RSA_PUB_KEY, keyName, ctx);
-    /* RSA pub keys are dynamically matched and not explicitly referenced, so adding a
-    self-reference here */
+    /*
+     * RSA pub keys are dynamically matched and not explicitly referenced, so adding
+     * a
+     * self-reference here
+     */
     _configuration.referenceStructure(
         NAMED_RSA_PUB_KEY, keyName, NAMED_RSA_PUB_KEY_SELF_REF, ctx.name.start.getLine());
   }
@@ -2042,8 +2052,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
     _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
-    /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
-    here */
+    /*
+     * Isakmp policies are checked in order not explicitly referenced, so add a
+     * self-reference
+     * here
+     */
     _configuration.referenceStructure(
         ISAKMP_POLICY,
         priority.toString(),
@@ -2055,8 +2068,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCis_profile(Cis_profileContext ctx) {
     _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText());
     _configuration.defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
-    /* Isakmp profiles are checked against for matches not explicitly referenced, so add a
-    self-reference here */
+    /*
+     * Isakmp profiles are checked against for matches not explicitly referenced, so
+     * add a
+     * self-reference here
+     */
     _configuration.referenceStructure(
         ISAKMP_PROFILE, ctx.name.getText(), ISAKMP_PROFILE_SELF_REF, ctx.name.start.getLine());
   }
@@ -2071,7 +2087,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
     } else if (_format == CISCO_ASA) {
-      // serial line may not be anywhere in the config so add it here to make sure the serial line
+      // serial line may not be anywhere in the config so add it here to make sure the
+      // serial line
       // is in the data model
       _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
     }
@@ -2378,8 +2395,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterStandby_group(Standby_groupContext ctx) {
-    // Hard to determine correct behavior if some interfaces in the current interface range are
-    // version 1 and some are version 2. For now, fail loudly by warning and refusing to update
+    // Hard to determine correct behavior if some interfaces in the current
+    // interface range are
+    // version 1 and some are version 2. For now, fail loudly by warning and
+    // refusing to update
     // groups if any interface is wrong version for provided group number.
     // Note that version 1 is default.
     boolean effectiveVersion2 =
@@ -2613,7 +2632,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
     if (ctx.ip6 != null) {
-      // Remember we are in IPv6 context so that structure references are identified accordingly
+      // Remember we are in IPv6 context so that structure references are identified
+      // accordingly
       _inIpv6BgpPeer = true;
     }
     // do no further processing for unsupported address families / containers
@@ -3452,7 +3472,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_line(S_lineContext ctx) {
     List<String> names = getLineNames(ctx);
 
-    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
+    // get the default list or null if Aaa, AaaAuthentication, or
+    // AaaAuthenticationLogin is null or
     // default list is undefined
     AaaAuthenticationLoginList defaultList =
         Optional.ofNullable(_configuration.getCf().getAaa())
@@ -3713,7 +3734,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .getTracks()
                 .computeIfAbsent(_currentTrack, num -> new TrackInterface(interfaceName));
     assert ctx.ROUTING() != null ^ ctx.LINE_PROTOCOL() != null;
-    // You can change the interface and the subtype, but you can't change to a different top-level
+    // You can change the interface and the subtype, but you can't change to a
+    // different top-level
     // track type.
     trackInterface.setInterfaceName(interfaceName);
     trackInterface.setIpRouting(ctx.ROUTING() != null);
@@ -3733,7 +3755,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         (TrackIpSla)
             _configuration.getTracks().computeIfAbsent(_currentTrack, num -> new TrackIpSla(sla));
     assert ctx.REACHABILITY() == null || ctx.STATE() == null; // inclusive or, STATE is default
-    // You can change the sla and the subtype, but you can't change to a different top-level
+    // You can change the sla and the subtype, but you can't change to a different
+    // top-level
     // track type.
     trackIpSla.setIpSla(sla);
     trackIpSla.setReachability(ctx.REACHABILITY() != null);
@@ -3747,7 +3770,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIp_sla_entry(Ip_sla_entryContext ctx) {
     _currentSlaNumber = toInteger(ctx.num);
     _configuration.defineStructure(IP_SLA, Integer.toString(_currentSlaNumber), ctx);
-    // We need to set this in case we are re-entering an existing sla, since the type line will be
+    // We need to set this in case we are re-entering an existing sla, since the
+    // type line will be
     // absent/rejected on re-entry.
     _currentSla = _configuration.getIpSlas().get(_currentSlaNumber);
   }
@@ -4879,10 +4903,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (proc.getAsn() == null) {
       /*
        * This will happen with the following configuration:
-       *  address-family ... autonomous-system 1
-       *   autonomous-system 2
-       *   no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
+       * address-family ... autonomous-system 1
+       * autonomous-system 2
+       * no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an
+       * invalid EIGRP
        * process with null ASN.
        */
       warn(ctx, "No EIGRP ASN configured");
@@ -5358,7 +5383,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + getFullText(feature));
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " +
+        // getFullText(feature));
       }
     }
     String name = getFullText(ctx).trim();
@@ -6361,9 +6387,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     checkArgument(first.compareTo(last) <= 0, "first pool IP cannot be greater than last");
     Ip effectiveFirst = max(first, subnet.getFirstHostIp());
     Ip effectiveLast = min(last, subnet.getLastHostIp());
-    // intersect the range with the host IPs of the subnet. if the intersection is empty, we get an
+    // intersect the range with the host IPs of the subnet. if the intersection is
+    // empty, we get an
     // empty NAT pool.
-    // TODO we don't model empty nat pools correctly.  in reality they will cause packets to be
+    // TODO we don't model empty nat pools correctly. in reality they will cause
+    // packets to be
     // dropped.
     if (effectiveFirst.compareTo(effectiveLast) > 0) {
       warn(
@@ -6539,7 +6567,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIpnis_static(Ipnis_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global IPs are set
+    // Note that this NAT is not added to the configuration until its local & global
+    // IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
     _currentIosSourceNat.setAction(RuleAction.SOURCE_INSIDE);
   }
@@ -6578,7 +6607,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIpnos_static(Ipnos_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global IPs are set
+    // Note that this NAT is not added to the configuration until its local & global
+    // IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
     _currentIosSourceNat.setAction(RuleAction.SOURCE_OUTSIDE);
   }
@@ -6779,7 +6809,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Invalid list name");
     }
 
-    // get the authentication list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is
+    // get the authentication list or null if Aaa, AaaAuthentication, or
+    // AaaAuthenticationLogin is
     // null or the list is not defined
     AaaAuthenticationLoginList authList =
         Optional.ofNullable(_configuration.getCf().getAaa())
@@ -6789,12 +6820,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             .map(lists -> lists.get(list))
             .orElse(null);
 
-    // if the authentication list has been defined, apply it to all lines in _currentLineNames
+    // if the authentication list has been defined, apply it to all lines in
+    // _currentLineNames
     for (String line : _currentLineNames) {
       if (authList != null) {
         _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
       }
-      // set the name of the login list even if the list hasn't been defined yet because it may be
+      // set the name of the login list even if the list hasn't been defined yet
+      // because it may be
       // defined later
       _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
     }
@@ -7124,7 +7157,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       proc.setMaximumPathsEbgp(maximumPaths);
       proc.setMaximumPathsIbgp(maximumPaths);
     } else {
-      // On IOS and ASA, no type means EBGP only. For other OS'es handled by this parser, we can add
+      // On IOS and ASA, no type means EBGP only. For other OS'es handled by this
+      // parser, we can add
       // configuration checks.
       proc.setMaximumPathsEbgp(maximumPaths);
     }
@@ -7817,7 +7851,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
     if ("class-default".equals(name)) {
-      // This is a hack because there's an implicit class named "class-default" and we don't want
+      // This is a hack because there's an implicit class named "class-default" and we
+      // don't want
       // a false positive undefined reference.
       _configuration.defineSingleLineStructure(
           CLASS_MAP, "class-default", ctx.getStart().getLine());
@@ -8051,7 +8086,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.INTERNAL() != null) {
       return ImmutableSet.of(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA);
     }
-    // TODO: differentiate between EXTERNAL and NSSA_EXTERNAL, currently they are all E1/2 in VI.
+    // TODO: differentiate between EXTERNAL and NSSA_EXTERNAL, currently they are
+    // all E1/2 in VI.
     if (ctx.type != null) {
       int t = toInteger(ctx.type);
       if (t == 1) {
@@ -8529,7 +8565,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
     /*
-     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
+     * CISCO_IOS requires the subnets keyword or only classful routes will be
+     * redistributed.
      *
      * We assume no others does this ridiculous thing. TODO: verify more vendors.
      */
@@ -9087,12 +9124,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterVrfd_address_family(Vrfd_address_familyContext ctx) {
-    // NOTE: following IOS XE conventions here, where UNICAST is optional (i.e., ipv4 == ipv4
+    // NOTE: following IOS XE conventions here, where UNICAST is optional (i.e.,
+    // ipv4 == ipv4
     // unicast)
     if (ctx.IPV4() != null && ctx.MULTICAST() == null) {
       _currentVrfAddressFamily = currentVrf().getOrCreateIpv4UnicastAddressFamily();
     } else {
-      // Everything else (ipv6, multicast) is (so far) unsupported, so make a dummy value
+      // Everything else (ipv6, multicast) is (so far) unsupported, so make a dummy
+      // value
       _currentVrfAddressFamily = new VrfAddressFamily();
     }
   }
@@ -9989,7 +10028,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private @Nonnull EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
-     * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
+     * The other three metrics (reliability, load, and MTU) may be non-zero but are
+     * only used if
      * the K constants are configured.
      * See https://github.com/batfish/batfish/issues/1946
      */
@@ -10276,7 +10316,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int num = toInteger(ctx.num);
       return IpProtocol.fromNumber(num);
     } else if (ctx.AH() != null || ctx.AHP() != null) {
-      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
+      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication
+      // header protocol
       return IpProtocol.AHP;
     } else if (ctx.EIGRP() != null) {
       return IpProtocol.EIGRP;
@@ -10291,7 +10332,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
     } else if (ctx.IGRP() != null) {
-      // Wikipedia: 9 Interior Gateway Protocol (any private interior gateway, for example Cisco's
+      // Wikipedia: 9 Interior Gateway Protocol (any private interior gateway, for
+      // example Cisco's
       // IGRP)
       assert IpProtocol.IGP.number() == 9;
       return IpProtocol.IGP;
@@ -10306,7 +10348,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ND() != null) {
       return IpProtocol.IPV6_ICMP;
     } else if (ctx.NOS() != null) {
-      // Wikipedia: 94  KA9Q NOS compatible IP over IP tunneling
+      // Wikipedia: 94 KA9Q NOS compatible IP over IP tunneling
       assert IpProtocol.IPIP.number() == 94;
       return IpProtocol.IPIP;
     } else if (ctx.OSPF() != null) {
@@ -10425,7 +10467,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.GSHUT() != null) {
       return WellKnownCommunity.GRACEFUL_SHUTDOWN;
     } else if (ctx.LOCAL_AS() != null) {
-      // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
+      // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet
+      // forums.
       return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
@@ -11013,7 +11056,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       }
       int enrollmentIndex = line.toLowerCase().indexOf("enrollment");
       String enrollment =
-          enrollmentIndex >= 0 ? line.substring(enrollmentIndex + "enrollment".length()).trim() : "";
+          enrollmentIndex >= 0
+              ? line.substring(enrollmentIndex + "enrollment".length()).trim()
+              : "";
       if (!enrollment.isEmpty()) {
         _currentPkiTrustpoint.setEnrollment(enrollment);
       }
@@ -11081,7 +11126,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentTelemetrySubscription == null) {
       return;
     }
-    _currentTelemetrySubscription.setEncoding("encode-tdl");
+    if (ctx.ENCODE_TDL() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_TDL);
+    } else if (ctx.ENCODE_KVGPB() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_KVGPB);
+    }
   }
 
   @Override
@@ -11090,12 +11139,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentTelemetrySubscription == null) {
       return;
     }
-    String filterType = ctx.filter_type != null ? ctx.filter_type.getText() : "";
-    String filterValue = ctx.filter_value != null ? ctx.filter_value.getText() : null;
-    String filter =
-        filterValue == null ? filterType : String.format("%s %s", filterType, filterValue);
+    String filterType = "xpath";
+    // filter_value is mandatory in new grammar
+    String filterValue = ctx.filter_value.getText();
+    String filter = String.format("%s %s", filterType, filterValue);
     _currentTelemetrySubscription.setFilter(filter);
-    _currentTelemetrySubscription.setFilterType(filterType.isEmpty() ? null : filterType);
+    _currentTelemetrySubscription.setFilterType(TelemetrySubscription.FilterType.XPATH);
     _currentTelemetrySubscription.setFilterValue(filterValue);
   }
 
@@ -11114,8 +11163,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         ctx.telemetry_ietf_subscription_receiver_attribute()) {
       if (attribute.port_value != null) {
         receiver.setPort(Integer.parseInt(attribute.port_value.getText()));
-      } else if (attribute.protocol_value != null) {
-        receiver.setProtocol(attribute.protocol_value.getText());
+      } else if (attribute.GRPC_TCP() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TCP);
       } else if (attribute.receiver_type_value != null) {
         receiver.setReceiverType(attribute.receiver_type_value.getText());
       }
@@ -11147,7 +11196,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentTelemetrySubscription == null) {
       return;
     }
-    _currentTelemetrySubscription.setStream(ctx.stream.getText());
+    // Only yang-push is supported/enforced now
+    _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
   }
 
   @Override

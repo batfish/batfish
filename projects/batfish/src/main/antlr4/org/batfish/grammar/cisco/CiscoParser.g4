@@ -4299,12 +4299,12 @@ telemetry_ietf_subscription_line
 
 telemetry_ietf_subscription_encoding
 :
-   ENCODING ENCODE_TDL NEWLINE
+   ENCODING (ENCODE_TDL | ENCODE_KVGPB) NEWLINE
 ;
 
 telemetry_ietf_subscription_filter
 :
-   FILTER filter_type = variable_permissive filter_value = variable_permissive? NEWLINE
+   FILTER XPATH filter_value = variable_permissive NEWLINE
 ;
 
 telemetry_ietf_subscription_receiver
@@ -4322,7 +4322,7 @@ telemetry_ietf_subscription_receiver
 telemetry_ietf_subscription_receiver_attribute
 :
    PORT port_value = dec
-   | PROTOCOL protocol_value = variable_permissive
+   | PROTOCOL GRPC_TCP
    | RECEIVER_TYPE receiver_type_value = variable_permissive
 ;
 
@@ -4338,7 +4338,7 @@ telemetry_ietf_subscription_source_vrf
 
 telemetry_ietf_subscription_stream
 :
-   STREAM stream = variable_permissive NEWLINE
+   STREAM YANG_PUSH NEWLINE
 ;
 
 telemetry_ietf_subscription_update_policy

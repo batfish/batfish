@@ -1741,6 +1741,8 @@ ENABLED: 'enabled';
 
 ENCAPSULATION: 'encapsulation';
 
+ENCODE_KVGPB: 'encode-kvgpb';
+
 ENCODE_TDL: 'encode-tdl';
 
 ENCODING: 'encoding';
@@ -2290,6 +2292,8 @@ GROUP21: 'group21';
 GROUP24: 'group24';
 
 GROUP5: 'group5';
+
+GRPC_TCP: 'grpc-tcp';
 
 GSHUT
 :
@@ -6489,6 +6493,11 @@ XNS_CH: 'xns-ch';
 XNS_MAIL: 'xns-mail';
 
 XNS_TIME: 'xns-time';
+
+XPATH: 'xpath';
+
+YANG_PUSH: 'yang-push';
+
 Y1731: 'y1731';
 YELLOW: 'yellow';
 

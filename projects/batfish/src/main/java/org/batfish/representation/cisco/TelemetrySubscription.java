@@ -7,10 +7,31 @@ import javax.annotation.Nullable;
 
 public class TelemetrySubscription implements Serializable {
 
+  public enum EncodingType {
+    ENCODE_KVGPB,
+    ENCODE_TDL
+  }
+
+  public enum FilterType {
+    TDI_URI,
+    XPATH
+  }
+
+  public enum StreamType {
+    NATIVE,
+    YANG_PUSH
+  }
+
+  public enum ProtocolType {
+    GRPC_TCP,
+    GRPC // keeping legacy valid for now, though grammar seems to enforce grpc-tcp or
+    // other
+  }
+
   public static class Receiver implements Serializable {
 
     private final String _name;
-    private String _protocol;
+    private ProtocolType _protocol;
     private String _host;
     private String _receiverType;
     private int _port;
@@ -23,11 +44,11 @@ public class TelemetrySubscription implements Serializable {
       return _name;
     }
 
-    public @Nullable String getProtocol() {
+    public @Nullable ProtocolType getProtocol() {
       return _protocol;
     }
 
-    public void setProtocol(@Nullable String protocol) {
+    public void setProtocol(@Nullable ProtocolType protocol) {
       _protocol = protocol;
     }
 
@@ -57,14 +78,14 @@ public class TelemetrySubscription implements Serializable {
   }
 
   private final int _id;
-  private String _encoding;
+  private EncodingType _encoding;
   private String _filter;
-  private String _filterType;
+  private FilterType _filterType;
   private String _filterValue;
   private String _sourceAddress;
   private String _sourceVrf;
-  private String _stream;
-  private String _updatePolicy;
+  private StreamType _stream;
+  private String _updatePolicy; // periodic <num> is structured, but keeping simple for now
   private final List<Receiver> _receivers;
 
   public TelemetrySubscription(int id) {
@@ -76,11 +97,11 @@ public class TelemetrySubscription implements Serializable {
     return _id;
   }
 
-  public @Nullable String getEncoding() {
+  public @Nullable EncodingType getEncoding() {
     return _encoding;
   }
 
-  public void setEncoding(@Nullable String encoding) {
+  public void setEncoding(@Nullable EncodingType encoding) {
     _encoding = encoding;
   }
 
@@ -92,11 +113,11 @@ public class TelemetrySubscription implements Serializable {
     _filter = filter;
   }
 
-  public @Nullable String getFilterType() {
+  public @Nullable FilterType getFilterType() {
     return _filterType;
   }
 
-  public void setFilterType(@Nullable String filterType) {
+  public void setFilterType(@Nullable FilterType filterType) {
     _filterType = filterType;
   }
 
@@ -124,11 +145,11 @@ public class TelemetrySubscription implements Serializable {
     _sourceVrf = sourceVrf;
   }
 
-  public @Nullable String getStream() {
+  public @Nullable StreamType getStream() {
     return _stream;
   }
 
-  public void setStream(@Nullable String stream) {
+  public void setStream(@Nullable StreamType stream) {
     _stream = stream;
   }
 

@@ -38,12 +38,13 @@ public class CiscoTelemetryPkiTest {
                 "!",
                 "telemetry ietf subscription 602",
                 " encoding encode-tdl",
-                " filter tdl-uri /services;serviceName=foo",
-                " stream native",
+                " filter xpath /services;serviceName=foo",
+                " stream yang-push",
                 " update-policy periodic 360000",
                 " source-address 10.35.1.21",
                 " source-vrf Mgmt",
-                " receiver ip address 10.0.0.1 DNAC_ASSURANCE_RECEIVER port 57000 protocol grpc receiver-type collector",
+                " receiver ip address 10.0.0.1 DNAC_ASSURANCE_RECEIVER port 57000 protocol grpc-tcp"
+                    + " receiver-type collector",
                 "!")
             + "\n";
 
@@ -52,9 +53,14 @@ public class CiscoTelemetryPkiTest {
     Warnings warnings = new Warnings(true, true, true);
     CiscoControlPlaneExtractor extractor =
         new CiscoControlPlaneExtractor(
-            config, ciscoParser, ConfigurationFormat.CISCO_IOS, warnings, new SilentSyntaxCollection());
+            config,
+            ciscoParser,
+            ConfigurationFormat.CISCO_IOS,
+            warnings,
+            new SilentSyntaxCollection());
     ParserRuleContext tree =
-        Batfish.parse(ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+        Batfish.parse(
+            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(BatfishTestUtils.DUMMY_SNAPSHOT_1, tree);
 
     CiscoConfiguration vConfig = (CiscoConfiguration) extractor.getVendorConfiguration();
@@ -75,11 +81,11 @@ public class CiscoTelemetryPkiTest {
     Telemetry telemetry = family.getTelemetry();
     assertThat(telemetry.getSubscriptions(), hasKey(602));
     Telemetry.Subscription sub = telemetry.getSubscriptions().get(602);
-    assertThat(sub.getEncoding(), equalTo("encode-tdl"));
-    assertThat(sub.getFilter(), equalTo("tdl-uri /services;serviceName=foo"));
-    assertThat(sub.getFilterType(), equalTo("tdl-uri"));
+    assertThat(sub.getEncoding(), equalTo(TelemetrySubscription.EncodingType.ENCODE_TDL));
+    assertThat(sub.getFilter(), equalTo("xpath /services;serviceName=foo"));
+    assertThat(sub.getFilterType(), equalTo(TelemetrySubscription.FilterType.XPATH));
     assertThat(sub.getFilterValue(), equalTo("/services;serviceName=foo"));
-    assertThat(sub.getStream(), equalTo("native"));
+    assertThat(sub.getStream(), equalTo(TelemetrySubscription.StreamType.YANG_PUSH));
     assertThat(sub.getUpdatePolicy(), equalTo("periodic 360000"));
     assertThat(sub.getSourceAddress(), equalTo(Ip.parse("10.35.1.21")));
     assertThat(sub.getSourceVrf(), equalTo("Mgmt"));
@@ -88,7 +94,7 @@ public class CiscoTelemetryPkiTest {
     assertThat(receiver.getName(), equalTo("DNAC_ASSURANCE_RECEIVER"));
     assertThat(receiver.getHost(), equalTo("10.0.0.1"));
     assertThat(receiver.getPort(), equalTo(57000));
-    assertThat(receiver.getProtocol(), equalTo("grpc"));
+    assertThat(receiver.getProtocol(), equalTo(TelemetrySubscription.ProtocolType.GRPC_TCP));
     assertThat(receiver.getReceiverType(), equalTo("collector"));
   }
 }
