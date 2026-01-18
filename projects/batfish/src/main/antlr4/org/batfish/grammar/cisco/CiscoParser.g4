@@ -4269,86 +4269,93 @@ wlan_virtual_ap_null
 
 s_telemetry
 :
-   TELEMETRY telemetry_ietf
+   TELEMETRY ti_ietf
 ;
 
-telemetry_ietf
+ti_ietf
 :
-   IETF telemetry_ietf_subscription
+   IETF tis_subscription
 ;
 
-telemetry_ietf_subscription
+tis_subscription
 :
    SUBSCRIPTION id = dec NEWLINE
    (
-      telemetry_ietf_subscription_line
+      tis_line
    )*
 ;
 
-telemetry_ietf_subscription_line
+tis_line
 :
-   telemetry_ietf_subscription_encoding
-   | telemetry_ietf_subscription_filter
-   | telemetry_ietf_subscription_receiver
-   | telemetry_ietf_subscription_source_address
-   | telemetry_ietf_subscription_source_vrf
-   | telemetry_ietf_subscription_stream
-   | telemetry_ietf_subscription_update_policy
-   | telemetry_ietf_subscription_null
+   tis_encoding
+   | tis_filter
+   | tis_receiver
+   | tis_source_address
+   | tis_source_vrf
+   | tis_stream
+   | tis_update_policy
+   | tis_null
 ;
 
-telemetry_ietf_subscription_encoding
+tis_encoding
 :
-   ENCODING (ENCODE_TDL | ENCODE_KVGPB) NEWLINE
+   ENCODING (ENCODE_TDL | ENCODE_KVGPB | ENCODE_XML) NEWLINE
 ;
 
-telemetry_ietf_subscription_filter
+tis_filter
 :
    FILTER XPATH filter_value = variable_permissive NEWLINE
 ;
 
-telemetry_ietf_subscription_receiver
+tis_receiver
 :
    RECEIVER
    (
-      IP ADDRESS ip = IP_ADDRESS receiver_name = variable_permissive
-      | NAME receiver_name = variable_permissive
+      IP ADDRESS ip = IP_ADDRESS receiver_name = tis_receiver_name
+      | NAME receiver_name = tis_receiver_name
    )
    (
-      telemetry_ietf_subscription_receiver_attribute
+      tisr_attribute
    )* NEWLINE
 ;
 
-telemetry_ietf_subscription_receiver_attribute
+tisr_attribute
 :
    PORT port_value = dec
-   | PROTOCOL GRPC_TCP
-   | RECEIVER_TYPE receiver_type_value = variable_permissive
+   | PROTOCOL (GRPC_TCP | GRPC_TLS)
+   | RECEIVER_TYPE (COLLECTOR | receiver_type_value = variable_permissive)
 ;
 
-telemetry_ietf_subscription_source_address
+tis_source_address
 :
    SOURCE_ADDRESS ip = IP_ADDRESS NEWLINE
 ;
 
-telemetry_ietf_subscription_source_vrf
+tis_source_vrf
 :
    SOURCE_VRF vrf = variable NEWLINE
 ;
 
-telemetry_ietf_subscription_stream
+tis_stream
 :
-   STREAM YANG_PUSH NEWLINE
+   STREAM (YANG_PUSH | YANG_NOTIF_NATIVE | NATIVE) NEWLINE
 ;
 
-telemetry_ietf_subscription_update_policy
+tis_update_policy
 :
    UPDATE_POLICY (ON_CHANGE | PERIODIC period = dec) NEWLINE
 ;
 
-telemetry_ietf_subscription_null
+tis_null
 :
    null_rest_of_line
+;
+
+tis_receiver_name
+:
+   (
+      ~( NEWLINE | PORT | PROTOCOL | RECEIVER_TYPE )
+   )+
 ;
 
 wsma_null

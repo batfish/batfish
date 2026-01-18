@@ -1435,7 +1435,6 @@ DETECT_VALID_SSID_MISUSE: 'detect-valid-ssid-misuse';
 DETECT_WIRELESS_BRIDGE: 'detect-wireless-bridge';
 
 DETECT_WIRELESS_HOSTED_NETWORK: 'detect-wireless-hosted-network';
-
 DETERMINISTIC_MED: 'deterministic-med';
 
 DEV
@@ -1746,6 +1745,8 @@ ENCODE_KVGPB: 'encode-kvgpb';
 ENCODE_TDL: 'encode-tdl';
 
 ENCODING: 'encoding';
+
+ENCODE_XML: 'encode-xml';
 
 ENCODING_WEIGHTED: 'encoding-weighted';
 
@@ -2293,7 +2294,11 @@ GROUP24: 'group24';
 
 GROUP5: 'group5';
 
+GROUP_SERVER: 'group-server';
+
 GRPC_TCP: 'grpc-tcp';
+
+GRPC_TLS: 'grpc-tls';
 
 GSHUT
 :
@@ -3634,6 +3639,8 @@ NAT_TRAVERSAL: 'nat-traversal';
 
 NATIVE: 'native';
 
+NATIVE_VLAN_TAG: 'native-vlan-tag';
+
 NBAR: 'nbar';
 
 NCP: 'ncp';
@@ -3885,6 +3892,10 @@ OFDM: 'ofdm';
 OFDM_THROUGHPUT: 'ofdm-throughput';
 
 OFFSET_LIST: 'offset-list';
+
+COLLECTOR: 'collector';
+
+COLOR: 'color';
 
 OLSR: 'olsr';
 
@@ -6495,6 +6506,8 @@ XNS_MAIL: 'xns-mail';
 XNS_TIME: 'xns-time';
 
 XPATH: 'xpath';
+
+YANG_NOTIF_NATIVE: 'yang-notif-native';
 
 YANG_PUSH: 'yang-push';
 
