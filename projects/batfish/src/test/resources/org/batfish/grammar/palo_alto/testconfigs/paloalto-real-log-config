@@ -1,0 +1,90 @@
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname test-real-config;
+        }
+      }
+      vsys {
+        vsys1 {
+          profiles {
+            spyware {
+              anti-spyware-profile-1 {
+                botnet {
+                  configuration {
+                    http {
+                      dynamic-dns {
+                        enabled yes;
+                        threshold 5;
+                      }
+                      malware-sites {
+                        enabled yes;
+                        threshold 5;
+                      }
+                      recent-domains {
+                        enabled yes;
+                        threshold 5;
+                      }
+                      ip-domains {
+                        enabled yes;
+                        threshold 10;
+                      }
+                      executables-from-unknown-sites {
+                        enabled yes;
+                        threshold 5;
+                      }
+                    }
+                    other-applications {
+                      irc yes;
+                    }
+                    unknown-applications {
+                      unknown-tcp {
+                        destinations-per-hour 10;
+                        sessions-per-hour 10;
+                        session-length {
+                          maximum-bytes 100;
+                          minimum-bytes 50;
+                        }
+                      }
+                    }
+                  }
+                  report {
+                    topn 100;
+                    scheduled yes;
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+      shared {
+        server-profile {
+          radius {
+            RAD_NDC {
+              server {
+                rad01 {
+                  ip-address 10.1.1.1;
+                  port 1812;
+                  secret mysecret;
+                }
+              }
+            }
+          }
+          tacplus {
+            Tacacs {
+              server {
+                tac01 {
+                  ip-address 10.2.2.2;
+                  port 49;
+                  secret mysecret2;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

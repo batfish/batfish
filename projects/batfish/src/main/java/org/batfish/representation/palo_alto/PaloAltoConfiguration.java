@@ -1021,10 +1021,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
         ruleToExprAclLine.put(
             name, toIpAccessListLine(rule, ruleVsys, namespaceVsys, appOverrideAcls));
-      } else if (securityRuleApplies(fromZone, toZone, rule, _w) && ruleToExprAclLine.containsKey(name)) {
+      } else if (securityRuleApplies(fromZone, toZone, rule, _w)
+          && ruleToExprAclLine.containsKey(name)) {
         // Rule was skipped due to name conflict with higher-priority rule
         _w.redFlagf(
-            "Security rule '%s' from %s rulebase was skipped for zone pair (%s, %s) due to name conflict with a higher-priority rule",
+            "Security rule '%s' from %s rulebase was skipped for zone pair (%s, %s) due to name"
+                + " conflict with a higher-priority rule",
             name, ruleVsys.getName(), fromZone, toZone);
       }
     }
