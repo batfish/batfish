@@ -560,12 +560,24 @@ cpki_server
 ;
 
 cpki_trustpoint
-:
-   TRUSTPOINT name = variable_permissive NEWLINE
-   (
-      cpkit_null
-   )*
-;
+ :
+    TRUSTPOINT name = variable_permissive NEWLINE
+    (
+       cpkit_auto
+       | cpkit_auto_enroll
+       | cpkit_enrollment
+       | cpkit_fqdn
+       | cpkit_revocation_check
+       | cpkit_rsakeypair
+       | cpkit_serial_number
+       | cpkit_source_vrf
+       | cpkit_subject_alt_name
+       | cpkit_subject_name
+       | cpkit_usage
+       | cpkit_validation_usage
+       | cpkit_vrf
+    )*
+ ;
 
 cpkicc_certificate
 :
@@ -586,25 +598,80 @@ cpkis_null
    ) null_rest_of_line
 ;
 
-cpkit_null
-:
-   NO?
-   (
-      AUTO
-      | AUTO_ENROLL
-      | ENROLLMENT
-      | FQDN
-      | REVOCATION_CHECK
-      | RSAKEYPAIR
-      | SERIAL_NUMBER
-      | SOURCE
-      | SUBJECT_ALT_NAME
-      | SUBJECT_NAME
-      | USAGE
-      | VALIDATION_USAGE
-      | VRF
-   ) null_rest_of_line
-;
+cpkit_auto
+ :
+    NO? AUTO ENROLL? NEWLINE
+ ;
+
+cpkit_auto_enroll
+ :
+    NO? AUTO_ENROLL (percent_val = dec)? NEWLINE
+ ;
+
+cpkit_enrollment
+ :
+    NO? ENROLLMENT (URL url_value = variable_permissive | enrollment_value = variable_permissive) NEWLINE
+ ;
+
+cpkit_fqdn
+ :
+    NO? FQDN fqdn_value = variable_permissive NEWLINE
+ ;
+
+cpkit_revocation_check
+ :
+    NO? REVOCATION_CHECK
+    (
+       | NONE
+       | CRL
+    ) NEWLINE
+ ;
+
+cpkit_rsakeypair
+ :
+    NO? RSAKEYPAIR keypair_name = variable_permissive NEWLINE
+ ;
+
+cpkit_serial_number
+ :
+    NO? SERIAL_NUMBER serial = variable_permissive NEWLINE
+ ;
+
+cpkit_source_vrf
+ :
+    NO? SOURCE VRF vrf_name = variable NEWLINE
+ ;
+
+cpkit_subject_alt_name
+ :
+    NO? SUBJECT_ALT_NAME
+    (
+       | DNS san_dns = variable_permissive
+       | EMAIL san_email = variable_permissive
+       | IPADDRESS san_ip = ip_address
+       | FQDN san_fqdn = variable_permissive
+    ) NEWLINE
+ ;
+
+cpkit_subject_name
+ :
+    NO? SUBJECT_NAME subject_value = variable_permissive NEWLINE
+ ;
+
+cpkit_usage
+ :
+    NO? USAGE usage_value = variable_permissive NEWLINE
+ ;
+
+cpkit_validation_usage
+ :
+    NO? VALIDATION_USAGE validation_usage_value = variable_permissive NEWLINE
+ ;
+
+cpkit_vrf
+ :
+    NO? VRF vrf_name = variable NEWLINE
+ ;
 
 crypto_ca
 :

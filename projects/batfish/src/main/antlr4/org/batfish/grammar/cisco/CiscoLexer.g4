@@ -1789,6 +1789,8 @@ ENGINEID
    ) -> pushMode ( M_COMMENT )
 ;
 
+ENROLL: 'enroll';
+
 ENROLLMENT: 'enrollment';
 
 ENVIRONMENT: 'environment';

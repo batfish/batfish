@@ -335,8 +335,7 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -550,7 +549,19 @@ import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_service_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Cpki_trustpointContext;
 import org.batfish.grammar.cisco.CiscoParser.Cpkicc_certificateContext;
-import org.batfish.grammar.cisco.CiscoParser.Cpkit_nullContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_autoContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_auto_enrollContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_enrollmentContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_fqdnContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_revocation_checkContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_rsakeypairContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_serial_numberContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_source_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_subject_alt_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_subject_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_usageContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_validation_usageContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
@@ -1275,14 +1286,6 @@ import org.batfish.vendor.VendorConfiguration;
 public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
-  private static final Pattern PKI_SUBJECT_ALT_NAME_PATTERN =
-      Pattern.compile("\\bsubject-alt-name\\s+(.+)$", Pattern.CASE_INSENSITIVE);
-  private static final Pattern PKI_USAGE_PATTERN =
-      Pattern.compile("\\busage\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
-  private static final Pattern PKI_SOURCE_VRF_PATTERN =
-      Pattern.compile("\\bsource\\s+vrf\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
-  private static final Pattern PKI_VRF_PATTERN =
-      Pattern.compile("\\bvrf\\s+(\\S+)\\b", Pattern.CASE_INSENSITIVE);
 
   @VisibleForTesting static final String SERIAL_LINE = "serial";
 
@@ -11044,54 +11047,154 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCpkit_null(Cpkit_nullContext ctx) {
+  public void enterCpkit_enrollment(Cpkit_enrollmentContext ctx) {
     if (_currentPkiTrustpoint == null) {
       return;
     }
-    String line = getFullText(ctx).trim();
-    if (ctx.ENROLLMENT() != null) {
-      if (ctx.NO() != null) {
-        _currentPkiTrustpoint.setEnrollment(null);
-        return;
-      }
-      int enrollmentIndex = line.toLowerCase().indexOf("enrollment");
-      String enrollment =
-          enrollmentIndex >= 0
-              ? line.substring(enrollmentIndex + "enrollment".length()).trim()
-              : "";
-      if (!enrollment.isEmpty()) {
-        _currentPkiTrustpoint.setEnrollment(enrollment);
-      }
-    } else if (ctx.REVOCATION_CHECK() != null) {
-      if (ctx.NO() != null) {
-        _currentPkiTrustpoint.setRevocationCheck(null);
-        return;
-      }
-      _currentPkiTrustpoint.setRevocationCheck(line.contains("none") ? "none" : "crl");
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setEnrollment(null);
+      return;
     }
-    if (ctx.SUBJECT_ALT_NAME() != null) {
-      Matcher matcher = PKI_SUBJECT_ALT_NAME_PATTERN.matcher(line);
-      if (matcher.find()) {
-        _currentPkiTrustpoint.setSubjectAltName(matcher.group(1).trim());
-      }
+    String enrollmentValue =
+        ctx.url_value != null
+            ? "url " + ctx.url_value.getText()
+            : (ctx.enrollment_value != null ? ctx.enrollment_value.getText() : "");
+    _currentPkiTrustpoint.setEnrollment(enrollmentValue);
+  }
+
+  @Override
+  public void enterCpkit_revocation_check(Cpkit_revocation_checkContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
     }
-    if (ctx.USAGE() != null) {
-      Matcher matcher = PKI_USAGE_PATTERN.matcher(line);
-      if (matcher.find()) {
-        _currentPkiTrustpoint.setUsage(matcher.group(1));
-      }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setRevocationCheck(null);
+      return;
     }
-    if (ctx.SOURCE() != null || ctx.VRF() != null) {
-      Matcher matcher = PKI_SOURCE_VRF_PATTERN.matcher(line);
-      if (matcher.find()) {
-        _currentPkiTrustpoint.setSourceVrf(matcher.group(1));
-      } else {
-        matcher = PKI_VRF_PATTERN.matcher(line);
-        if (matcher.find()) {
-          _currentPkiTrustpoint.setSourceVrf(matcher.group(1));
-        }
-      }
+    String revocationCheck = ctx.NONE() != null ? "none" : "crl";
+    _currentPkiTrustpoint.setRevocationCheck(revocationCheck);
+  }
+
+  @Override
+  public void enterCpkit_subject_alt_name(Cpkit_subject_alt_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
     }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSubjectAltName(null);
+      return;
+    }
+    String type =
+        ctx.DNS() != null
+            ? "dns"
+            : ctx.EMAIL() != null
+                ? "email"
+                : ctx.FQDN() != null
+                    ? "fqdn"
+                    : ctx.IPADDRESS() != null ? "ipaddress" : "";
+    String value =
+        ctx.san_dns != null
+            ? ctx.san_dns.getText()
+            : ctx.san_email != null
+                ? ctx.san_email.getText()
+                : ctx.san_ip != null
+                    ? ctx.san_ip.getText()
+                    : ctx.san_fqdn != null ? ctx.san_fqdn.getText() : "";
+    if (!type.isEmpty() && !value.isEmpty()) {
+      _currentPkiTrustpoint.setSubjectAltName(type + " " + value);
+    }
+  }
+
+  @Override
+  public void enterCpkit_usage(Cpkit_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setUsage(null);
+      return;
+    }
+    _currentPkiTrustpoint.setUsage(ctx.usage_value.getText());
+  }
+
+  @Override
+  public void enterCpkit_source_vrf(Cpkit_source_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_vrf(Cpkit_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_auto(Cpkit_autoContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle auto enrollment
+  }
+
+  @Override
+  public void enterCpkit_auto_enroll(Cpkit_auto_enrollContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle auto enroll with percentage
+  }
+
+  @Override
+  public void enterCpkit_fqdn(Cpkit_fqdnContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle FQDN
+  }
+
+  @Override
+  public void enterCpkit_rsakeypair(Cpkit_rsakeypairContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle RSA keypair
+  }
+
+  @Override
+  public void enterCpkit_serial_number(Cpkit_serial_numberContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle serial number
+  }
+
+  @Override
+  public void enterCpkit_subject_name(Cpkit_subject_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle subject name
+  }
+
+  @Override
+  public void enterCpkit_validation_usage(Cpkit_validation_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle validation usage
   }
 
   @Override
