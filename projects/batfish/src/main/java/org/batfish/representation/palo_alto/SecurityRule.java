@@ -103,10 +103,11 @@ public final class SecurityRule implements Serializable {
     if (_category.contains(ref)) {
       return;
     }
-    _category = ImmutableSet.<CustomUrlCategoryReference>builderWithExpectedSize(_category.size() + 1)
-        .addAll(_category)
-        .add(ref)
-        .build();
+    _category =
+        ImmutableSet.<CustomUrlCategoryReference>builderWithExpectedSize(_category.size() + 1)
+            .addAll(_category)
+            .add(ref)
+            .build();
   }
 
   public @Nonnull SortedSet<ApplicationOrApplicationGroupReference> getApplications() {
@@ -125,10 +126,11 @@ public final class SecurityRule implements Serializable {
     if (_destination.contains(endpoint)) {
       return;
     }
-    _destination = ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_destination.size() + 1)
-        .addAll(_destination)
-        .add(endpoint)
-        .build();
+    _destination =
+        ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_destination.size() + 1)
+            .addAll(_destination)
+            .add(endpoint)
+            .build();
   }
 
   public @Nonnull Set<RuleEndpoint> getDestination() {
@@ -167,10 +169,11 @@ public final class SecurityRule implements Serializable {
     if (_source.contains(endpoint)) {
       return;
     }
-    _source = ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_source.size() + 1)
-        .addAll(_source)
-        .add(endpoint)
-        .build();
+    _source =
+        ImmutableSet.<RuleEndpoint>builderWithExpectedSize(_source.size() + 1)
+            .addAll(_source)
+            .add(endpoint)
+            .build();
   }
 
   public @Nonnull Set<RuleEndpoint> getSource() {

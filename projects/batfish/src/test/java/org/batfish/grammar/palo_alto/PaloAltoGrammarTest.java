@@ -361,6 +361,7 @@ public final class PaloAltoGrammarTest {
     PaloAltoConfiguration pac = (PaloAltoConfiguration) extractor.getVendorConfiguration();
     pac.setVendor(ConfigurationFormat.PALO_ALTO);
     pac.setFilename(TESTCONFIGS_PREFIX + hostname);
+    pac.setWarnings(w);
     return pac;
   }
 
@@ -756,6 +757,17 @@ public final class PaloAltoGrammarTest {
     // Should result in only one warning
     ParseWarning warning = Iterables.getOnlyElement(c.getWarnings().getParseWarnings());
     assertThat(warning.getComment(), containsStringIgnoringCase("application"));
+  }
+
+  @Test
+  public void testProfilesIgnoredStatements() {
+    PaloAltoConfiguration cNested = parseNestedConfig("paloalto-profiles-hierarchical");
+    assertThat(cNested, notNullValue());
+    assertThat(cNested.getWarnings().getParseWarnings(), empty());
+
+    PaloAltoConfiguration cFlat = parsePaloAltoConfig("paloalto-profiles-ignored");
+    assertThat(cFlat, notNullValue());
+    assertThat(cFlat.getWarnings().getParseWarnings(), empty());
   }
 
   @Test

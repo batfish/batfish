@@ -108,7 +108,7 @@ BGP: 'bgp';
 
 BOTH: 'both';
 
-BOTNET: 'botnet';
+BOTNET: 'botnet' -> pushMode(M_IgnoredConfigBlock);
 
 BOTTOM: 'bottom';
 
@@ -1100,7 +1100,7 @@ M_Url_WS
 // Modes for ignored config blocks
 mode M_IgnoredConfigBlock;
 
-M_IgnoredConfigBlock_OPEN_BRACE: '{' -> pushMode(M_IgnoredConfigBlockInner);
+M_IgnoredConfigBlock_OPEN_BRACE: '{' -> skip, pushMode(M_IgnoredConfigBlockInner);
 
 M_IgnoredConfigBlock_CONTENT: ~[\r\n]+ -> skip;
 
@@ -1109,9 +1109,9 @@ M_IgnoredConfigBlock_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
 // Inside an ignored block, count braces
 mode M_IgnoredConfigBlockInner;
 
-M_IgnoredConfigBlockInner_OPEN_BRACE: '{' -> pushMode(M_IgnoredConfigBlockInner);
+M_IgnoredConfigBlockInner_OPEN_BRACE: '{' -> skip, pushMode(M_IgnoredConfigBlockInner);
 
-M_IgnoredConfigBlockInner_CLOSE_BRACE: '}' -> popMode;
+M_IgnoredConfigBlockInner_CLOSE_BRACE: '}' -> skip, popMode;
 
 M_IgnoredConfigBlockInner_CONTENT: ~[{}]+ -> skip;
 
