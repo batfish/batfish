@@ -335,7 +335,6 @@ import java.util.SortedSet;
 import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.function.BiConsumer;
-
 import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -11089,9 +11088,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
             ? "dns"
             : ctx.EMAIL() != null
                 ? "email"
-                : ctx.FQDN() != null
-                    ? "fqdn"
-                    : ctx.IPADDRESS() != null ? "ipaddress" : "";
+                : ctx.FQDN() != null ? "fqdn" : ctx.IPADDRESS() != null ? "ipaddress" : "";
     String value =
         ctx.san_dns != null
             ? ctx.san_dns.getText()
