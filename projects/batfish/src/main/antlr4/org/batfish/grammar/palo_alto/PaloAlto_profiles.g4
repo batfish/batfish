@@ -62,15 +62,9 @@ sp_spyware
 
 spyware_content
 :
-    BOTNET botnet_content
+    BOTNET
     | REDISTRIBUTION_AGENT
     | RULES null_rest_of_line
-    | SERVER_PROFILE
-;
-
-botnet_content
-:
-    REDISTRIBUTION_AGENT
     | SERVER_PROFILE
 ;
 
