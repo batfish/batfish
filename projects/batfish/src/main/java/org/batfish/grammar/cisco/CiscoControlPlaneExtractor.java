@@ -1054,18 +1054,18 @@ import org.batfish.grammar.cisco.CiscoParser.Switching_mode_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Switchport_trunk_encapsulationContext;
 import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscriptionContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_encodingContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_filterContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_receiverContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_receiver_attributeContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_source_addressContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_source_vrfContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_streamContext;
-import org.batfish.grammar.cisco.CiscoParser.Telemetry_ietf_subscription_update_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Tip_slaContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_encodingContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_filterContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_receiverContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_source_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_source_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_streamContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_subscriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Tis_update_policyContext;
+import org.batfish.grammar.cisco.CiscoParser.Tisr_attributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Tlb_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltw_objectContext;
@@ -11109,20 +11109,19 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription(Telemetry_ietf_subscriptionContext ctx) {
+  public void enterTis_subscription(Tis_subscriptionContext ctx) {
     int id = toInteger(ctx.id);
     _currentTelemetrySubscription = new TelemetrySubscription(id);
     _configuration.getTelemetrySubscriptions().put(id, _currentTelemetrySubscription);
   }
 
   @Override
-  public void exitTelemetry_ietf_subscription(Telemetry_ietf_subscriptionContext ctx) {
+  public void exitTis_subscription(Tis_subscriptionContext ctx) {
     _currentTelemetrySubscription = null;
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_encoding(
-      Telemetry_ietf_subscription_encodingContext ctx) {
+  public void enterTis_encoding(Tis_encodingContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11130,12 +11129,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_TDL);
     } else if (ctx.ENCODE_KVGPB() != null) {
       _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_KVGPB);
+    } else if (ctx.ENCODE_XML() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_XML);
     }
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_filter(
-      Telemetry_ietf_subscription_filterContext ctx) {
+  public void enterTis_filter(Tis_filterContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11149,8 +11149,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_receiver(
-      Telemetry_ietf_subscription_receiverContext ctx) {
+  public void enterTis_receiver(Tis_receiverContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11159,12 +11158,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.ip != null) {
       receiver.setHost(ctx.ip.getText());
     }
-    for (Telemetry_ietf_subscription_receiver_attributeContext attribute :
-        ctx.telemetry_ietf_subscription_receiver_attribute()) {
+    for (Tisr_attributeContext attribute : ctx.tisr_attribute()) {
       if (attribute.port_value != null) {
         receiver.setPort(Integer.parseInt(attribute.port_value.getText()));
       } else if (attribute.GRPC_TCP() != null) {
         receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TCP);
+      } else if (attribute.GRPC_TLS() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TLS);
+      } else if (attribute.COLLECTOR() != null) {
+        receiver.setReceiverType("collector");
       } else if (attribute.receiver_type_value != null) {
         receiver.setReceiverType(attribute.receiver_type_value.getText());
       }
@@ -11173,8 +11175,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_source_address(
-      Telemetry_ietf_subscription_source_addressContext ctx) {
+  public void enterTis_source_address(Tis_source_addressContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11182,8 +11183,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_source_vrf(
-      Telemetry_ietf_subscription_source_vrfContext ctx) {
+  public void enterTis_source_vrf(Tis_source_vrfContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11191,18 +11191,21 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_stream(
-      Telemetry_ietf_subscription_streamContext ctx) {
+  public void enterTis_stream(Tis_streamContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
-    // Only yang-push is supported/enforced now
-    _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
+    if (ctx.YANG_PUSH() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
+    } else if (ctx.YANG_NOTIF_NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_NOTIF_NATIVE);
+    } else if (ctx.NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.NATIVE);
+    }
   }
 
   @Override
-  public void enterTelemetry_ietf_subscription_update_policy(
-      Telemetry_ietf_subscription_update_policyContext ctx) {
+  public void enterTis_update_policy(Tis_update_policyContext ctx) {
     if (_currentTelemetrySubscription == null) {
       return;
     }
@@ -11213,7 +11216,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
   }
 
-  @Override
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
     int line = token.getLine();

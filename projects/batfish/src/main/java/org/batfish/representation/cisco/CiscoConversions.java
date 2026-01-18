@@ -354,7 +354,8 @@ public class CiscoConversions {
               + " configured.");
     }
 
-    // Warnings for references to undefined route-maps and prefix-lists will be surfaced elsewhere.
+    // Warnings for references to undefined route-maps and prefix-lists will be
+    // surfaced elsewhere.
     if (inboundRouteMapName != null) {
       // Inbound route-map is defined. Use that as the BGP import policy.
       return routeMapOrRejectAll(inboundRouteMapName, c);
@@ -370,7 +371,8 @@ public class CiscoConversions {
     }
 
     if (exportRouteFilter != null) {
-      // Inbound prefix-list or distribute-list is defined. Build an import policy around it.
+      // Inbound prefix-list or distribute-list is defined. Build an import policy
+      // around it.
       String generatedImportPolicyName = computeBgpPeerImportPolicyName(vrfName, lpg.getName());
       RoutingPolicy.builder()
           .setOwner(c)
@@ -402,9 +404,12 @@ public class CiscoConversions {
       exportPolicyStatements.add(Statements.RemovePrivateAs.toStaticStatement());
     }
 
-    // If defaultOriginate is set, generate a default route export policy. Default route will match
-    // this policy and get exported without going through the rest of the export policy.
-    // TODO Verify that nextHopSelf and removePrivateAs settings apply to default-originate route.
+    // If defaultOriginate is set, generate a default route export policy. Default
+    // route will match
+    // this policy and get exported without going through the rest of the export
+    // policy.
+    // TODO Verify that nextHopSelf and removePrivateAs settings apply to
+    // default-originate route.
     if (lpg.getDefaultOriginate()) {
       initBgpDefaultRouteExportPolicy(vrfName, lpg.getName(), c);
       exportPolicyStatements.add(
@@ -631,7 +636,7 @@ public class CiscoConversions {
     } else {
       assert hsrpTrackAction instanceof HsrpShutdown;
       // TODO: Support non-participation as an action.
-      //       For now, just use min priority.
+      // For now, just use min priority.
       return new DecrementPriority(255);
     }
   }
@@ -1059,7 +1064,7 @@ public class CiscoConversions {
               .setIcmpCodes(originalHeaderSpace.getIcmpCodes())
               .setTcpFlags(originalHeaderSpace.getTcpFlags())
               .build())) {
-        //  not supported if the access list line contains any more fields
+        // not supported if the access list line contains any more fields
         return null;
       } else {
         HeaderSpace.Builder reversedHeaderSpaceBuilder = originalHeaderSpace.toBuilder();
@@ -1177,7 +1182,8 @@ public class CiscoConversions {
     newProcess.setRouterId(routerId).setMetricVersion(EigrpMetricVersion.V1);
 
     /*
-     * Route redistribution modifies the configuration structure, so do this last to avoid having to
+     * Route redistribution modifies the configuration structure, so do this last to
+     * avoid having to
      * clean up configuration if another conversion step fails
      */
     String redistributionPolicyName = "~EIGRP_EXPORT_POLICY:" + vrfName + ":" + proc.getAsn() + "~";
@@ -1629,14 +1635,17 @@ public class CiscoConversions {
   private static RouteFilterLine toRouteFilterLine(StandardAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
     /*
-     * This cast is safe since the other address specifier (network object group specifier)
+     * This cast is safe since the other address specifier (network object group
+     * specifier)
      * can be used only from extended ACLs.
      */
     IpWildcard srcIpWildcard =
         ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
 
-    // A standard ACL is simply a wildcard on the network address, and does not filter on the
-    // prefix length at all (beyond the prefix length implied by the unmasked bits in wildcard).
+    // A standard ACL is simply a wildcard on the network address, and does not
+    // filter on the
+    // prefix length at all (beyond the prefix length implied by the unmasked bits
+    // in wildcard).
     return new RouteFilterLine(action, srcIpWildcard, new SubRange(0, Prefix.MAX_PREFIX_LENGTH));
   }
 
@@ -1735,15 +1744,18 @@ public class CiscoConversions {
           .forEach(rt -> vrfsByExportRt.put(rt, vrf.getName()));
     }
 
-    // Create VRF leaking configs for each importing VRF that has import RTs defined.
+    // Create VRF leaking configs for each importing VRF that has import RTs
+    // defined.
     for (Vrf importingVrf : vrfsWithIpv4Af) {
       VrfAddressFamily ipv4uaf = importingVrf.getIpv4UnicastAddressFamily();
       assert ipv4uaf != null;
-      // TODO: should instead attach all export RTs in single config per compatible exporter
+      // TODO: should instead attach all export RTs in single config per compatible
+      // exporter
       for (ExtendedCommunity importRt : ipv4uaf.getRouteTargetImport()) {
         org.batfish.datamodel.Vrf viVrf = c.getVrfs().get(importingVrf.getName());
         assert viVrf != null;
-        // Add leak config for every exporting vrf with no export map whose export route-target
+        // Add leak config for every exporting vrf with no export map whose export
+        // route-target
         // matches this vrf's import route-target
         for (String exportingVrf : vrfsByExportRt.get(importRt)) {
           // Take care to prevent self-loops
@@ -1763,7 +1775,8 @@ public class CiscoConversions {
                       .setWeight(BGP_VRF_LEAK_IGP_WEIGHT)
                       .build());
         }
-        // Add leak config for every exporting vrf with an export map, since the map can potentially
+        // Add leak config for every exporting vrf with an export map, since the map can
+        // potentially
         // alter the route-target to match the import route-target.
         for (Vrf mapExportingVrf : vrfsWithExportMap) {
           if (importingVrf == mapExportingVrf) {
@@ -1815,15 +1828,20 @@ public class CiscoConversions {
       Set<ExtendedCommunity> routeTargetImport,
       Configuration c) {
     // Implementation overview:
-    // 1. (Re)write the export route-target to intermediate BGP properties so that they can be read
-    //    later.
-    // 2. Apply the export-map if it exists. This may change properties of the route, but it may not
-    //    reject the route. If the export-map rejects, then it should not modify the route.
-    //    TODO: verify and enforce lack of side effects when export map rejects
-    // 3. Drop the route if does not have a route-target matching the importing VRF's import
-    //    route-target communities.
-    // 4. Apply the import route-map if it exists. This route-map may permit with or without further
-    //    modification, or may reject the route.
+    // 1. (Re)write the export route-target to intermediate BGP properties so that
+    // they can be read
+    // later.
+    // 2. Apply the export-map if it exists. This may change properties of the
+    // route, but it may not
+    // reject the route. If the export-map rejects, then it should not modify the
+    // route.
+    // TODO: verify and enforce lack of side effects when export map rejects
+    // 3. Drop the route if does not have a route-target matching the importing
+    // VRF's import
+    // route-target communities.
+    // 4. Apply the import route-map if it exists. This route-map may permit with or
+    // without further
+    // modification, or may reject the route.
     String policyName = computeVrfExportImportPolicyName(exportingVrf, importingVrf);
     if (c.getRoutingPolicies().containsKey(policyName)) {
       return policyName;
@@ -1853,7 +1871,8 @@ public class CiscoConversions {
                 ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
                 ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
             : Statements.ReturnTrue.toStaticStatement();
-    // TODO: prevent side-effects from a route-map continue that eventually rejects in export map
+    // TODO: prevent side-effects from a route-map continue that eventually rejects
+    // in export map
     RoutingPolicy.builder()
         .setName(policyName)
         .addStatement(Statements.SetWriteIntermediateBgpAttributes.toStaticStatement())
@@ -2062,15 +2081,23 @@ public class CiscoConversions {
     SortedMap<Integer, Telemetry.Subscription> convertedSubscriptions = new TreeMap<>();
     for (TelemetrySubscription subscription : subscriptions.values()) {
       Telemetry.Subscription converted = new Telemetry.Subscription();
-      converted.setEncoding(subscription.getEncoding());
+      if (subscription.getEncoding() != null) {
+        converted.setEncoding(
+            subscription.getEncoding().toString().toLowerCase().replace('_', '-'));
+      }
       converted.setFilter(subscription.getFilter());
-      converted.setFilterType(subscription.getFilterType());
+      if (subscription.getFilterType() != null) {
+        converted.setFilterType(
+            subscription.getFilterType().toString().toLowerCase().replace('_', '-'));
+      }
       converted.setFilterValue(subscription.getFilterValue());
       if (subscription.getSourceAddress() != null) {
         converted.setSourceAddress(Ip.parse(subscription.getSourceAddress()));
       }
       converted.setSourceVrf(subscription.getSourceVrf());
-      converted.setStream(subscription.getStream());
+      if (subscription.getStream() != null) {
+        converted.setStream(subscription.getStream().toString().toLowerCase().replace('_', '-'));
+      }
       converted.setUpdatePolicy(subscription.getUpdatePolicy());
       for (TelemetrySubscription.Receiver receiver : subscription.getReceivers()) {
         Telemetry.Receiver convertedReceiver = new Telemetry.Receiver(receiver.getName());
@@ -2078,7 +2105,10 @@ public class CiscoConversions {
         if (receiver.getPort() > 0) {
           convertedReceiver.setPort(receiver.getPort());
         }
-        convertedReceiver.setProtocol(receiver.getProtocol());
+        if (receiver.getProtocol() != null) {
+          convertedReceiver.setProtocol(
+              receiver.getProtocol().toString().toLowerCase().replace('_', '-'));
+        }
         convertedReceiver.setReceiverType(receiver.getReceiverType());
         converted.getReceivers().add(convertedReceiver);
       }

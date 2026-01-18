@@ -81,11 +81,11 @@ public class CiscoTelemetryPkiTest {
     Telemetry telemetry = family.getTelemetry();
     assertThat(telemetry.getSubscriptions(), hasKey(602));
     Telemetry.Subscription sub = telemetry.getSubscriptions().get(602);
-    assertThat(sub.getEncoding(), equalTo(TelemetrySubscription.EncodingType.ENCODE_TDL));
+    assertThat(sub.getEncoding(), equalTo("encode-tdl"));
     assertThat(sub.getFilter(), equalTo("xpath /services;serviceName=foo"));
-    assertThat(sub.getFilterType(), equalTo(TelemetrySubscription.FilterType.XPATH));
+    assertThat(sub.getFilterType(), equalTo("xpath"));
     assertThat(sub.getFilterValue(), equalTo("/services;serviceName=foo"));
-    assertThat(sub.getStream(), equalTo(TelemetrySubscription.StreamType.YANG_PUSH));
+    assertThat(sub.getStream(), equalTo("yang-push"));
     assertThat(sub.getUpdatePolicy(), equalTo("periodic 360000"));
     assertThat(sub.getSourceAddress(), equalTo(Ip.parse("10.35.1.21")));
     assertThat(sub.getSourceVrf(), equalTo("Mgmt"));
@@ -94,7 +94,7 @@ public class CiscoTelemetryPkiTest {
     assertThat(receiver.getName(), equalTo("DNAC_ASSURANCE_RECEIVER"));
     assertThat(receiver.getHost(), equalTo("10.0.0.1"));
     assertThat(receiver.getPort(), equalTo(57000));
-    assertThat(receiver.getProtocol(), equalTo(TelemetrySubscription.ProtocolType.GRPC_TCP));
+    assertThat(receiver.getProtocol(), equalTo("grpc-tcp"));
     assertThat(receiver.getReceiverType(), equalTo("collector"));
   }
 }

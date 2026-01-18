@@ -9,7 +9,8 @@ public class TelemetrySubscription implements Serializable {
 
   public enum EncodingType {
     ENCODE_KVGPB,
-    ENCODE_TDL
+    ENCODE_TDL,
+    ENCODE_XML
   }
 
   public enum FilterType {
@@ -19,11 +20,13 @@ public class TelemetrySubscription implements Serializable {
 
   public enum StreamType {
     NATIVE,
+    YANG_NOTIF_NATIVE,
     YANG_PUSH
   }
 
   public enum ProtocolType {
     GRPC_TCP,
+    GRPC_TLS,
     GRPC // keeping legacy valid for now, though grammar seems to enforce grpc-tcp or
     // other
   }
