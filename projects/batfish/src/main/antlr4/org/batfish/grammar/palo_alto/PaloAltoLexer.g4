@@ -7,6 +7,7 @@ options {
 tokens {
   BODY,
   DOUBLE_QUOTE,
+  IGNORED_CONFIG_BLOCK,
   SINGLE_QUOTE,
   WORD
 }
@@ -623,8 +624,6 @@ SECURITY: 'security';
 
 SERVER: 'server';
 
-SERVER_PROFILE: 'server-profile';
-
 SERVERS: 'servers';
 
 SERVICE: 'service';
@@ -781,6 +780,11 @@ WILDFIRE_ANALYSIS: 'wildfire-analysis';
 YES: 'yes';
 
 ZONE: 'zone';
+
+// Ignored config blocks
+REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
+
+SERVER_PROFILE: 'server-profile' -> pushMode(M_IgnoredConfigBlock);
 
 // Complex tokens
 
@@ -1092,3 +1096,25 @@ M_Url_WS
 :
     F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+// Modes for ignored config blocks
+mode M_IgnoredConfigBlock;
+
+M_IgnoredConfigBlock_OPEN_BRACE: '{' -> pushMode(M_IgnoredConfigBlockInner);
+
+M_IgnoredConfigBlock_CONTENT: ~[\r\n]+ -> skip;
+
+M_IgnoredConfigBlock_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+// Inside an ignored block, count braces
+mode M_IgnoredConfigBlockInner;
+
+M_IgnoredConfigBlockInner_OPEN_BRACE: '{' -> pushMode(M_IgnoredConfigBlockInner);
+
+M_IgnoredConfigBlockInner_CLOSE_BRACE: '}' -> popMode;
+
+M_IgnoredConfigBlockInner_CONTENT: ~[{}]+ -> skip;
+
+M_IgnoredConfigBlockInner_WS: F_Whitespace+ -> skip;
+
+M_IgnoredConfigBlockInner_NEWLINE: F_Newline+ -> skip;

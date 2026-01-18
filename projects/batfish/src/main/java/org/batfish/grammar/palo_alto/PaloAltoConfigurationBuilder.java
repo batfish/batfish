@@ -323,13 +323,17 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destination_hipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_hip_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_hipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_userContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
@@ -633,8 +637,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     if (ctx.reference != null) {
       referenceStructure(ADDRESS_OBJECT, uniqueName, usage, getLine(ctx.start));
     } else {
-      /* Interface addresses that look like concrete addresses might still be referring to an object
-       * with an ambiguous name. */
+      /*
+       * Interface addresses that look like concrete addresses might still be
+       * referring to an object
+       * with an ambiguous name.
+       */
       referenceStructure(ADDRESS_OBJECT_OR_NONE, uniqueName, usage, getLine(ctx.start));
     }
   }
@@ -1791,7 +1798,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         warn(ctx, "Cannot add an interface to a shared-gateway zone before it is imported");
       }
       referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // Mark reference to zone when it has an interface in it (since the zone if
+      // effectively used
       // at this point)
       // Use constructed object name so same-named refs across vsys are unique
       String zoneName = computeObjectName(_currentVsys, _currentZone.getName());
@@ -1805,8 +1813,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String deviceName = getText(ctx.name);
       _currentDeviceName = firstNonNull(_currentDeviceName, deviceName);
       if (!_currentDeviceName.equals(deviceName)) {
-        /* Do not currently handle multiple device names, which presumably happens only if multiple
-         * physical devices are configured from a single config */
+        /*
+         * Do not currently handle multiple device names, which presumably happens only
+         * if multiple
+         * physical devices are configured from a single config
+         */
         warn(ctx, "Multiple devices encountered: " + deviceName);
       }
     }
@@ -2574,11 +2585,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
-        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // We know this reference doesn't look like a valid constant, so it must be
+        // pointing to an
         // object
         type = ADDRESS_LIKE;
       }
@@ -2600,8 +2614,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
         type = ADDRESS_LIKE;
@@ -2756,11 +2772,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
     // Add reference
     String uniqueName = computeObjectName(_currentVsys, translatedAddress.getValue());
-    // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-    // reference or not.  So mark a reference to a very permissive abstract structure type.
+    // At this time, don't know if something that looks like a constant (e.g. IP
+    // address) is a
+    // reference or not. So mark a reference to a very permissive abstract structure
+    // type.
     PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
     if (translatedAddress.getType() == RuleEndpoint.Type.REFERENCE) {
-      // We know this reference doesn't look like a valid constant, so it must be pointing to an
+      // We know this reference doesn't look like a valid constant, so it must be
+      // pointing to an
       // object/group
       type = ADDRESS_LIKE;
     }
@@ -2791,11 +2810,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
       // Add reference
       String uniqueName = computeObjectName(_currentVsys, translatedAddress.getValue());
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (translatedAddress.getType() == RuleEndpoint.Type.REFERENCE) {
-        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // We know this reference doesn't look like a valid constant, so it must be
+        // pointing to an
         // object/group
         type = ADDRESS_LIKE;
       }
@@ -2812,11 +2834,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
-        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // We know this reference doesn't look like a valid constant, so it must be
+        // pointing to an
         // object/group
         type = ADDRESS_LIKE;
       }
@@ -2832,8 +2857,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
         type = ADDRESS_LIKE;
@@ -2989,15 +3016,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
-        // We know this reference doesn't look like a valid constant, so it must be pointing to an
+        // We know this reference doesn't look like a valid constant, so it must be
+        // pointing to an
         // object/group
         type = ADDRESS_LIKE;
       }
       referenceStructure(type, uniqueName, SECURITY_RULE_DESTINATION, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrs_destination_hip(Srs_destination_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addDestinationHip(getText(var));
     }
   }
 
@@ -3017,6 +3057,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         String uniqueName = computeObjectName(_currentVsys, zoneName);
         referenceStructure(ZONE, uniqueName, SECURITY_RULE_FROM_ZONE, getLine(var.start));
       }
+    }
+  }
+
+  @Override
+  public void exitSrs_hip_profiles(Srs_hip_profilesContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addHipProfile(getText(var));
     }
   }
 
@@ -3047,13 +3097,37 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       // Use constructed object name so same-named refs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, endpoint.getValue());
 
-      // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // At this time, don't know if something that looks like a constant (e.g. IP
+      // address) is a
+      // reference or not. So mark a reference to a very permissive abstract structure
+      // type.
       PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
       if (endpoint.getType() == RuleEndpoint.Type.REFERENCE) {
         type = ADDRESS_LIKE;
       }
       referenceStructure(type, uniqueName, SECURITY_RULE_SOURCE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrs_source_hip(Srs_source_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addSourceHip(getText(var));
+    }
+  }
+
+  @Override
+  public void exitSrs_source_user(Srs_source_userContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    if (ctx.names != null) {
+      for (Variable_list_itemContext var : variables(ctx.names)) {
+        _currentSecurityRule.addSourceUser(getText(var));
+      }
     }
   }
 
@@ -3259,7 +3333,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // Mark reference to zone when it has an interface in it (since the zone if
+      // effectively used
       // at this point)
       // Use constructed object name so same-named refs across vsys are unique
       String zoneName = computeObjectName(_currentVsys, _currentZone.getName());
@@ -3274,7 +3349,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // Mark reference to zone when it has an interface in it (since the zone if
+      // effectively used
       // at this point)
       // Use constructed object name so same-named refs across vsys are unique
       String zoneName = computeObjectName(_currentVsys, _currentZone.getName());
@@ -3289,7 +3365,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // Mark reference to zone when it has an interface in it (since the zone if
+      // effectively used
       // at this point)
       // Use constructed object name so same-named refs across vsys are unique
       String zoneName = computeObjectName(_currentVsys, _currentZone.getName());
@@ -3304,7 +3381,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String name = getText(var);
       _currentZone.getInterfaceNames().add(name);
       referenceStructure(INTERFACE, name, ZONE_INTERFACE, getLine(var.start));
-      // Mark reference to zone when it has an interface in it (since the zone if effectively used
+      // Mark reference to zone when it has an interface in it (since the zone if
+      // effectively used
       // at this point)
       // Use constructed object name so same-named refs across vsys are unique
       String zoneName = computeObjectName(_currentVsys, _currentZone.getName());
