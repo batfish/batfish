@@ -44,7 +44,35 @@ sp_hip_profiles: HIP_PROFILES null_rest_of_line;
 
 sp_sctp: SCTP null_rest_of_line;
 
-sp_spyware: SPYWARE null_rest_of_line;
+sp_spyware
+:
+    SPYWARE
+    // Optional name
+    (
+        ~(
+            BOTNET
+            | NEWLINE
+            | REDISTRIBUTION_AGENT
+            | RULES
+            | SERVER_PROFILE
+        )
+    )?
+    spyware_content?
+;
+
+spyware_content
+:
+    BOTNET botnet_content
+    | REDISTRIBUTION_AGENT
+    | RULES null_rest_of_line
+    | SERVER_PROFILE
+;
+
+botnet_content
+:
+    REDISTRIBUTION_AGENT
+    | SERVER_PROFILE
+;
 
 sp_virus: VIRUS null_rest_of_line;
 
