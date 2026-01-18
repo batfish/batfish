@@ -44,6 +44,34 @@ sr_security_rules
 srs_definition
 :
     name = variable
+    // Optional UUID/identifier
+    (
+      ~(
+        ACTION
+        | APPLICATION
+        | CATEGORY
+        | DESCRIPTION
+        | DESTINATION
+        | DESTINATION_HIP
+        | DISABLED
+        | FROM
+        | HIP_PROFILES
+        | LOG_END
+        | LOG_SETTING
+        | LOG_START
+        | NEGATE_DESTINATION
+        | NEGATE_SOURCE
+        | NEWLINE
+        | RULE_TYPE
+        | SERVICE
+        | SOURCE
+        | SOURCE_HIP
+        | SOURCE_USER
+        | TAG
+        | TARGET
+        | TO
+      )
+    )?
     (
         srs_action
         | srs_application
@@ -67,7 +95,7 @@ srs_definition
         | srs_target
         | srs_to
         | srs_tag
-    )?
+    ) ?
 ;
 
 srs_action
@@ -105,7 +133,11 @@ srs_destination
 
 srs_destination_hip
 :
-    DESTINATION_HIP ANY // only support any
+    DESTINATION_HIP
+    (
+        any = ANY
+        | names = variable_list
+    )
 ;
 
 srs_disabled
@@ -120,7 +152,11 @@ srs_from
 
 srs_hip_profiles
 :
-    HIP_PROFILES ANY // only support any
+    HIP_PROFILES
+    (
+        any = ANY
+        | names = variable_list
+    )
 ;
 
 srs_log_end
@@ -171,12 +207,20 @@ srs_source
 
 srs_source_hip
 :
-    SOURCE_HIP ANY // only support any
+    SOURCE_HIP
+    (
+        any = ANY
+        | names = variable_list
+    )
 ;
 
 srs_source_user
 :
-    SOURCE_USER ANY // only support user any so far
+    SOURCE_USER
+    (
+        any = ANY
+        | names = variable_list
+    )
 ;
 
 srs_tag
