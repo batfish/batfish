@@ -1,0 +1,5 @@
+set switch-options vtep-source-interface lo0.0
+set switch-options route-distinguisher 10.255.1.4:1
+set switch-options vrf-target target:64589:1111
+set switch-options vrf-target auto
+set vlans EXAMPLE_VLAN_3999 vlan-id 3999

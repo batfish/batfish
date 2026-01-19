@@ -856,6 +856,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testVrfTargetAuto() {
+    String hostname = "vrf-target-auto";
+    parseJuniperConfig(hostname);
+  }
+
+  @Test
   public void testAuthenticationKeyChain() throws IOException {
     String hostname = "authentication-key-chain";
     String filename = "configs/" + hostname;

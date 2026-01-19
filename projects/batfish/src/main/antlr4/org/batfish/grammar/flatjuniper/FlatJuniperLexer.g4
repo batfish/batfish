@@ -4619,6 +4619,11 @@ M_VrfTarget_TARGET
    'target' -> type ( TARGET )
 ;
 
+M_VrfTarget_AUTO
+:
+   'auto' -> type ( AUTO )
+;
+
 M_VrfTarget_WS
 :
    F_WhitespaceChar+ -> channel ( HIDDEN )
