@@ -32,8 +32,20 @@ sd_high_availability
 :
     HIGH_AVAILABILITY
     (
-      sdha_group
+      sdha_enabled
+      | sdha_group
+      | sdha_interface
     )
+;
+
+sdha_enabled
+:
+    ENABLED yes_or_no
+;
+
+sdha_interface
+:
+    INTERFACE variable null_rest_of_line
 ;
 
 sdha_group
@@ -42,6 +54,11 @@ sdha_group
     (
       sdhag_group_id
       | sdhag_mode
+      | sdhag_peer_ip
+      | sdhag_peer_ip_backup
+      | sdhag_election_option
+      | sdhag_state_synchronization
+      | sdhag_monitoring
     )
 ;
 
@@ -52,6 +69,7 @@ sdhag_mode
     MODE
     (
       sdhagm_active_active
+      | sdhagm_active_passive
     )
 ;
 
@@ -76,12 +94,15 @@ sd_system
     SYSTEM
     (
         sds_default_gateway
+        | sds_device_telemetry
         | sds_dns_setting
         | sds_domain
         | sds_hostname
         | sds_ip_address
         | sds_netmask
         | sds_ntp_servers
+        | sds_permitted_ip
+        | sds_route
         | sds_null
     )
 ;
@@ -89,6 +110,11 @@ sd_system
 sds_default_gateway
 :
     DEFAULT_GATEWAY ip_address
+;
+
+sds_device_telemetry
+:
+    DEVICE_TELEMETRY null_rest_of_line
 ;
 
 sds_dns_setting
@@ -106,7 +132,7 @@ sds_domain
 
 sds_hostname
 :
-    HOSTNAME name = variable
+    HOSTNAME (name=variable | name_token=HIGH_AVAILABILITY | name_token=TYPE)
 ;
 
 sds_ip_address
@@ -127,7 +153,17 @@ sds_ntp_servers
         | SECONDARY_NTP_SERVER
     )
     (
-        sdsn_ntp_server_address
+        sdsn_authentication_type
+        | sdsn_ntp_server_address
+    )
+;
+
+sdsn_authentication_type
+:
+    AUTHENTICATION_TYPE
+    (
+        NONE
+        | variable
     )
 ;
 
@@ -136,6 +172,7 @@ sds_null
     (
         PANORAMA_SERVER
         | SERVICE
+        | SNMP_SETTING
         | TIMEZONE
         | TYPE
         | UPDATE_SCHEDULE
@@ -158,3 +195,42 @@ sdsn_ntp_server_address
     NTP_SERVER_ADDRESS address = variable
 ;
 
+sds_permitted_ip
+:
+    PERMITTED_IP ip_prefix
+;
+
+sds_route
+:
+    ROUTE null_rest_of_line
+;
+
+sdhag_peer_ip
+:
+    PEER_IP ip_address
+;
+
+sdhag_peer_ip_backup
+:
+    PEER_IP_BACKUP ip_address
+;
+
+sdhag_election_option
+:
+    ELECTION_OPTION null_rest_of_line
+;
+
+sdhag_state_synchronization
+:
+    STATE_SYNCHRONIZATION null_rest_of_line
+;
+
+sdhag_monitoring
+:
+    MONITORING null_rest_of_line
+;
+
+sdhagm_active_passive
+:
+   ACTIVE_PASSIVE null_rest_of_line
+;

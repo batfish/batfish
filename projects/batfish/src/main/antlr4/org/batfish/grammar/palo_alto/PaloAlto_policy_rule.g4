@@ -50,6 +50,7 @@ pr_match
     (
         prm_address_prefix
         | prm_from_peer
+        | prm_route_table
     )
 ;
 
@@ -83,7 +84,7 @@ praa_update
 
 praau_as_path
 :
-    AS_PATH name = variable
+    AS_PATH (name = variable | PREPEND num = uint8)
 ;
 
 praau_community
@@ -119,4 +120,9 @@ prm_address_prefix
 prm_from_peer
 :
     FROM_PEER variable_list
+;
+
+prm_route_table
+:
+    ROUTE_TABLE (UNICAST | MULTICAST | BOTH)
 ;

@@ -307,6 +307,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_active_active_device_bindingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_disabledContext;
@@ -2695,17 +2696,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return Optional.of(NatRule.ActiveActiveDeviceBinding.PRIMARY);
     } else if (deviceBinding.BOTH() != null) {
       return Optional.of(NatRule.ActiveActiveDeviceBinding.BOTH);
+    } else if (deviceBinding.uint8() != null) {
+      int val = Integer.parseInt(deviceBinding.uint8().getText());
+      if (val == 0) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ZERO);
+      } else if (val == 1) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ONE);
+      }
+      warn(ctx, "Invalid active-active-device-binding value: " + val);
+      return Optional.empty();
     } else {
-      assert deviceBinding.uint8() != null;
-      Optional<Integer> maybeId = toInteger(ctx, deviceBinding);
-      return maybeId.map(
-          id -> {
-            if (id == 0) {
-              return NatRule.ActiveActiveDeviceBinding.ZERO;
-            }
-            assert id == 1;
-            return NatRule.ActiveActiveDeviceBinding.ONE;
-          });
+      warn(ctx, "Invalid active-active-device-binding value");
+      return Optional.empty();
     }
   }
 
@@ -2763,6 +2765,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSrn_disabled(Srn_disabledContext ctx) {
     _currentNatRule.setDisabled(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitSrn_description(Srn_descriptionContext ctx) {
+    _currentNatRule.setDescription(getText(ctx.description));
   }
 
   @Override

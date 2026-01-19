@@ -106,7 +106,7 @@ vr_ecmp_enable
 
 vr_interface
 :
-    INTERFACE variable_list
+    INTERFACE variable_list?
 ;
 
 vr_protocol
@@ -115,6 +115,7 @@ vr_protocol
     (
         vrp_bgp
         | vrp_ospf
+        | vrp_ospfv3
         | vrp_redist_profile
         | vrp_rip
     )?

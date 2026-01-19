@@ -8,7 +8,7 @@ options {
 
 s_service_group
 :
-    SERVICE_GROUP s_service_group_definition?
+    'service-group' s_service_group_definition?
 ;
 
 s_service_group_definition
