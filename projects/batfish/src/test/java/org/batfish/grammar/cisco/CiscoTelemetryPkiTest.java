@@ -3,6 +3,7 @@ package org.batfish.grammar.cisco;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.nullValue;
 
 import java.io.IOException;
 import java.util.List;
@@ -96,5 +97,55 @@ public class CiscoTelemetryPkiTest {
     assertThat(receiver.getPort(), equalTo(57000));
     assertThat(receiver.getProtocol(), equalTo("grpc-tcp"));
     assertThat(receiver.getReceiverType(), equalTo("collector"));
+  }
+
+  @Test
+  public void testAutoEnrollment() throws IOException {
+    String config =
+        String.join(
+            "\n",
+            "crypto pki trustpoint tp-auto",
+            " enrollment url http://example.com",
+            " auto-enroll 80",
+            "!",
+            "crypto pki trustpoint tp-auto-no-regen",
+            " enrollment url http://example.com",
+            // "auto-enroll" without percentage
+            " auto-enroll",
+            "!",
+            "");
+
+    Settings settings = new Settings();
+    CiscoCombinedParser ciscoParser = new CiscoCombinedParser(config, settings);
+    Warnings warnings = new Warnings(true, true, true);
+    CiscoControlPlaneExtractor extractor =
+        new CiscoControlPlaneExtractor(
+            config,
+            ciscoParser,
+            ConfigurationFormat.CISCO_IOS,
+            warnings,
+            new SilentSyntaxCollection());
+    ParserRuleContext tree =
+        Batfish.parse(
+            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+    extractor.processParseTree(BatfishTestUtils.DUMMY_SNAPSHOT_1, tree);
+
+    CiscoConfiguration vConfig = (CiscoConfiguration) extractor.getVendorConfiguration();
+    vConfig.setHostname("telemetry-pki-test");
+    List<Configuration> configs = vConfig.toVendorIndependentConfigurations();
+    Configuration c = configs.get(0);
+    CiscoFamily family = c.getVendorFamily().getCisco();
+
+    Pki pki = family.getPki();
+
+    assertThat(pki.getTrustpoints(), hasKey("tp-auto"));
+    Pki.Trustpoint tpAuto = pki.getTrustpoints().get("tp-auto");
+    assertThat(tpAuto.getAutoEnroll(), equalTo(true));
+    assertThat(tpAuto.getAutoEnrollRegenerate(), equalTo(80));
+
+    assertThat(pki.getTrustpoints(), hasKey("tp-auto-no-regen"));
+    Pki.Trustpoint tpAutoNoRegen = pki.getTrustpoints().get("tp-auto-no-regen");
+    assertThat(tpAutoNoRegen.getAutoEnroll(), equalTo(true));
+    assertThat(tpAutoNoRegen.getAutoEnrollRegenerate(), nullValue());
   }
 }
