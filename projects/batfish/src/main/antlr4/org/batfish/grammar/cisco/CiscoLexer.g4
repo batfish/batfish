@@ -1007,6 +1007,10 @@ COLLECT: 'collect';
 
 COLLECT_STATS: 'collect-stats';
 
+COLLECTOR: 'collector';
+
+COLOR: 'color';
+
 COMM_LIST: 'comm-list';
 
 COMMAND
@@ -1744,9 +1748,9 @@ ENCODE_KVGPB: 'encode-kvgpb';
 
 ENCODE_TDL: 'encode-tdl';
 
-ENCODING: 'encoding';
-
 ENCODE_XML: 'encode-xml';
+
+ENCODING: 'encoding';
 
 ENCODING_WEIGHTED: 'encoding-weighted';
 
@@ -3895,9 +3899,6 @@ OFDM_THROUGHPUT: 'ofdm-throughput';
 
 OFFSET_LIST: 'offset-list';
 
-COLLECTOR: 'collector';
-
-COLOR: 'color';
 
 OLSR: 'olsr';
 

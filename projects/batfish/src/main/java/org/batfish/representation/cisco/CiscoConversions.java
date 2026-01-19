@@ -142,12 +142,17 @@ import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
 
-/** Utilities that convert Cisco-specific representations to vendor-independent model. */
+/**
+ * Utilities that convert Cisco-specific representations to vendor-independent
+ * model.
+ */
 @ParametersAreNonnullByDefault
 public class CiscoConversions {
 
-  @VisibleForTesting public static int DEFAULT_HSRP_DECREMENT = 10;
-  @VisibleForTesting public static int DEFAULT_VRRP_DECREMENT = 10;
+  @VisibleForTesting
+  public static int DEFAULT_HSRP_DECREMENT = 10;
+  @VisibleForTesting
+  public static int DEFAULT_VRRP_DECREMENT = 10;
 
   // Defaults from
   // https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
@@ -158,11 +163,10 @@ public class CiscoConversions {
   // Default dead interval is hello interval times 4
   static int OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER = 4;
 
-  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST =
-      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
+  static int DEFAULT_OSPF_DEAD_INTERVAL_P2P_AND_BROADCAST = OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER
+      * DEFAULT_OSPF_HELLO_INTERVAL_P2P_AND_BROADCAST;
 
-  static int DEFAULT_OSPF_DEAD_INTERVAL =
-      OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
+  static int DEFAULT_OSPF_DEAD_INTERVAL = OSPF_DEAD_INTERVAL_HELLO_MULTIPLIER * DEFAULT_OSPF_HELLO_INTERVAL;
 
   static Ip getHighestIp(Map<String, Interface> allInterfaces) {
     Map<String, Interface> interfacesToCheck;
@@ -201,10 +205,9 @@ public class CiscoConversions {
     // TODO: handle as-set
     // TODO: handle suppress-map
     // TODO: verify undefined route-map can be treated as omitted
-    String attributeMap =
-        Optional.ofNullable(vsAggregate.getAttributeMap())
-            .filter(c.getRoutingPolicies()::containsKey)
-            .orElse(null);
+    String attributeMap = Optional.ofNullable(vsAggregate.getAttributeMap())
+        .filter(c.getRoutingPolicies()::containsKey)
+        .orElse(null);
     return BgpAggregate.of(
         vsAggregate.getPrefix(),
         generateSuppressionPolicy(vsAggregate.getSummaryOnly(), c),
@@ -214,7 +217,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Converts a {@link CryptoMapEntry} to an {@link IpsecPhase2Policy} and a list of {@link
+   * Converts a {@link CryptoMapEntry} to an {@link IpsecPhase2Policy} and a list
+   * of {@link
    * IpsecPeerConfig}
    */
   private static void convertCryptoMapEntry(
@@ -235,20 +239,17 @@ public class CiscoConversions {
     }
 
     IpsecPhase2Policy ipsecPhase2Policy = toIpsecPhase2Policy(cryptoMapEntry);
-    String ipsecPhase2PolicyName =
-        String.format("~IPSEC_PHASE2_POLICY:%s~", cryptoMapNameSeqNumber);
+    String ipsecPhase2PolicyName = String.format("~IPSEC_PHASE2_POLICY:%s~", cryptoMapNameSeqNumber);
 
     // add IPSec phase 2 policies to existing ones
-    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder =
-        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPhase2Policy> ipsecPhase2PolicyBuilder = ImmutableSortedMap.naturalOrder();
     c.setIpsecPhase2Policies(
         ipsecPhase2PolicyBuilder
             .putAll(c.getIpsecPhase2Policies())
             .put(ipsecPhase2PolicyName, ipsecPhase2Policy)
             .build());
 
-    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
-        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder = ImmutableSortedMap.naturalOrder();
     c.setIpsecPeerConfigs(
         ipsecPeerConfigsBuilder
             .putAll(c.getIpsecPeerConfigs())
@@ -264,7 +265,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Converts each crypto map entry in all crypto map sets to {@link IpsecPhase2Policy} and {@link
+   * Converts each crypto map entry in all crypto map sets to
+   * {@link IpsecPhase2Policy} and {@link
    * IpsecPeerConfig}s
    */
   static void convertCryptoMapSet(
@@ -276,23 +278,20 @@ public class CiscoConversions {
       return;
     }
     for (CryptoMapEntry cryptoMapEntry : ciscoCryptoMapSet.getCryptoMapEntries()) {
-      String nameSeqNum =
-          String.format("%s:%s", cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
+      String nameSeqNum = String.format("%s:%s", cryptoMapEntry.getName(), cryptoMapEntry.getSequenceNumber());
       if (cryptoMapEntry.getReferredDynamicMapSet() != null) {
-        CryptoMapSet dynamicCryptoMapSet =
-            cryptoMapSets.get(cryptoMapEntry.getReferredDynamicMapSet());
+        CryptoMapSet dynamicCryptoMapSet = cryptoMapSets.get(cryptoMapEntry.getReferredDynamicMapSet());
         if (dynamicCryptoMapSet != null && dynamicCryptoMapSet.getDynamic()) {
           // convert all entries of the referred dynamic crypto map
           dynamicCryptoMapSet
               .getCryptoMapEntries()
               .forEach(
-                  cryptoMap ->
-                      convertCryptoMapEntry(
-                          c,
-                          cryptoMap,
-                          String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
-                          cryptoMapEntry.getName(),
-                          w));
+                  cryptoMap -> convertCryptoMapEntry(
+                      c,
+                      cryptoMap,
+                      String.format("%s:%s", nameSeqNum, cryptoMap.getSequenceNumber()),
+                      cryptoMapEntry.getName(),
+                      w));
         }
       } else {
         convertCryptoMapEntry(c, cryptoMapEntry, nameSeqNum, cryptoMapEntry.getName(), w);
@@ -300,16 +299,18 @@ public class CiscoConversions {
     }
   }
 
-  private static final Statement ROUTE_MAP_DENY_STATEMENT =
-      new If(
-          BooleanExprs.CALL_EXPR_CONTEXT,
-          ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
-          ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+  private static final Statement ROUTE_MAP_DENY_STATEMENT = new If(
+      BooleanExprs.CALL_EXPR_CONTEXT,
+      ImmutableList.of(Statements.ReturnFalse.toStaticStatement()),
+      ImmutableList.of(Statements.ExitReject.toStaticStatement()));
 
   /**
-   * Implements the IOS behavior for undefined route-maps when used in BGP import/export policies.
+   * Implements the IOS behavior for undefined route-maps when used in BGP
+   * import/export policies.
    *
-   * <p>Always returns {@code null} when given a null {@code mapName}, and non-null otherwise.
+   * <p>
+   * Always returns {@code null} when given a null {@code mapName}, and non-null
+   * otherwise.
    */
   private static @Nullable String routeMapOrRejectAll(@Nullable String mapName, Configuration c) {
     if (mapName == null || c.getRoutingPolicies().containsKey(mapName)) {
@@ -328,9 +329,12 @@ public class CiscoConversions {
   }
 
   /**
-   * Returns the name of a {@link RoutingPolicy} to be used as the BGP import policy for the given
-   * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on the peer's inbound
-   * routes. When a nonnull policy name is returned, the corresponding policy is guaranteed to exist
+   * Returns the name of a {@link RoutingPolicy} to be used as the BGP import
+   * policy for the given
+   * {@link LeafBgpPeerGroup}, or {@code null} if no constraints are imposed on
+   * the peer's inbound
+   * routes. When a nonnull policy name is returned, the corresponding policy is
+   * guaranteed to exist
    * in the given configuration's routing policies.
    */
   static @Nullable String generateBgpImportPolicy(
@@ -344,9 +348,8 @@ public class CiscoConversions {
 
     // TODO Support using multiple filters in BGP import policies
     if (Stream.of(inboundRouteMapName, inboundPrefixListName, inboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
+        .filter(Objects::nonNull)
+        .count() > 1) {
       w.redFlag(
           "Batfish does not support configuring more than one filter"
               + " (route-map/prefix-list/distribute-list) for incoming BGP routes. When this"
@@ -391,8 +394,10 @@ public class CiscoConversions {
   }
 
   /**
-   * Creates a {@link RoutingPolicy} to be used as the BGP export policy for the given {@link
-   * LeafBgpPeerGroup}. The generated policy is added to the given configuration's routing policies.
+   * Creates a {@link RoutingPolicy} to be used as the BGP export policy for the
+   * given {@link
+   * LeafBgpPeerGroup}. The generated policy is added to the given configuration's
+   * routing policies.
    */
   static void generateBgpExportPolicy(
       LeafBgpPeerGroup lpg, String vrfName, Configuration c, Warnings w) {
@@ -430,9 +435,8 @@ public class CiscoConversions {
     String outboundRouteMapName = lpg.getOutboundRouteMap();
     String outboundIpAccessListName = lpg.getOutboundIpAccessList();
     if (Stream.of(outboundRouteMapName, outboundPrefixListName, outboundIpAccessListName)
-            .filter(Objects::nonNull)
-            .count()
-        > 1) {
+        .filter(Objects::nonNull)
+        .count() > 1) {
       w.redFlag(
           "Batfish does not support configuring more than one filter"
               + " (route-map/prefix-list/distribute-list) for outgoing BGP routes. When this"
@@ -466,20 +470,19 @@ public class CiscoConversions {
   }
 
   /**
-   * Initializes export policy for IPv4 default routes if it doesn't already exist. This policy is
+   * Initializes export policy for IPv4 default routes if it doesn't already
+   * exist. This policy is
    * the same across BGP processes, so only one is created for each configuration.
    */
   static void initBgpDefaultRouteExportPolicy(String vrfName, String peerName, Configuration c) {
-    SetOrigin setOrigin =
-        new SetOrigin(
-            new LiteralOrigin(
-                c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
-                    ? OriginType.IGP
-                    : OriginType.INCOMPLETE,
-                null));
+    SetOrigin setOrigin = new SetOrigin(
+        new LiteralOrigin(
+            c.getConfigurationFormat() == ConfigurationFormat.CISCO_IOS
+                ? OriginType.IGP
+                : OriginType.INCOMPLETE,
+            null));
     List<Statement> defaultRouteExportStatements;
-    defaultRouteExportStatements =
-        ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
+    defaultRouteExportStatements = ImmutableList.of(setOrigin, Statements.ReturnTrue.toStaticStatement());
 
     RoutingPolicy.builder()
         .setOwner(c)
@@ -495,7 +498,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Computes a mapping of primary {@link Ip}s to the names of interfaces owning them. Filters out
+   * Computes a mapping of primary {@link Ip}s to the names of interfaces owning
+   * them. Filters out
    * the interfaces having no primary {@link ConcreteInterfaceAddress}
    */
   private static Map<Ip, String> computeIpToIfaceNameMap(Map<String, Interface> interfaces) {
@@ -512,7 +516,10 @@ public class CiscoConversions {
     return ipToIfaceNameMap;
   }
 
-  /** Resolves the interface names of the addresses used as local addresses of {@link Keyring} */
+  /**
+   * Resolves the interface names of the addresses used as local addresses of
+   * {@link Keyring}
+   */
   static void resolveKeyringIfaceNames(
       Map<String, Interface> interfaces, Map<String, Keyring> keyrings) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
@@ -521,14 +528,14 @@ public class CiscoConversions {
     keyrings.values().stream()
         .filter(keyring -> keyring.getLocalAddress() != null)
         .forEach(
-            keyring ->
-                keyring.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
+            keyring -> keyring.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(keyring.getLocalAddress()), INVALID_LOCAL_INTERFACE)));
   }
 
   /**
-   * Resolves the interface names of the addresses used as local addresses of {@link IsakmpProfile}
+   * Resolves the interface names of the addresses used as local addresses of
+   * {@link IsakmpProfile}
    */
   static void resolveIsakmpProfileIfaceNames(
       Map<String, Interface> interfaces, Map<String, IsakmpProfile> isakpProfiles) {
@@ -537,14 +544,16 @@ public class CiscoConversions {
     isakpProfiles.values().stream()
         .filter(isakmpProfile -> isakmpProfile.getLocalAddress() != null)
         .forEach(
-            isakmpProfile ->
-                isakmpProfile.setLocalInterfaceName(
-                    firstNonNull(
-                        iptoIfaceName.get(isakmpProfile.getLocalAddress()),
-                        INVALID_LOCAL_INTERFACE)));
+            isakmpProfile -> isakmpProfile.setLocalInterfaceName(
+                firstNonNull(
+                    iptoIfaceName.get(isakmpProfile.getLocalAddress()),
+                    INVALID_LOCAL_INTERFACE)));
   }
 
-  /** Resolves the interface names of the addresses used as source addresses in {@link Tunnel}s */
+  /**
+   * Resolves the interface names of the addresses used as source addresses in
+   * {@link Tunnel}s
+   */
   static void resolveTunnelIfaceNames(Map<String, Interface> interfaces) {
     Map<Ip, String> iptoIfaceName = computeIpToIfaceNameMap(interfaces);
 
@@ -561,10 +570,9 @@ public class CiscoConversions {
   }
 
   static AsPathAccessList toAsPathAccessList(IpAsPathAccessList pathList) {
-    List<AsPathAccessListLine> lines =
-        pathList.getLines().stream()
-            .map(IpAsPathAccessListLine::toAsPathAccessListLine)
-            .collect(ImmutableList.toImmutableList());
+    List<AsPathAccessListLine> lines = pathList.getLines().stream()
+        .map(IpAsPathAccessListLine::toAsPathAccessListLine)
+        .collect(ImmutableList.toImmutableList());
     return new AsPathAccessList(pathList.getName(), lines);
   }
 
@@ -594,17 +602,15 @@ public class CiscoConversions {
       Configuration c) {
     Ip groupIp = hsrpGroup.getIp();
     // HSRP track uses negated value of referenced TrackMethod
-    SortedMap<String, TrackAction> trackActions =
-        hsrpGroup.getTrackActions().entrySet().stream()
-            .filter(
-                actionByTrackMethodId -> trackMethodIds.contains(actionByTrackMethodId.getKey()))
-            .collect(
-                ImmutableSortedMap.toImmutableSortedMap(
-                    Comparator.naturalOrder(),
-                    actionByTrackMethodId ->
-                        createNegatedTrackMethodIfNeededAndReturnName(
-                            actionByTrackMethodId.getKey(), c),
-                    actionByTrackMethodId -> toTrackAction(actionByTrackMethodId.getValue())));
+    SortedMap<String, TrackAction> trackActions = hsrpGroup.getTrackActions().entrySet().stream()
+        .filter(
+            actionByTrackMethodId -> trackMethodIds.contains(actionByTrackMethodId.getKey()))
+        .collect(
+            ImmutableSortedMap.toImmutableSortedMap(
+                Comparator.naturalOrder(),
+                actionByTrackMethodId -> createNegatedTrackMethodIfNeededAndReturnName(
+                    actionByTrackMethodId.getKey(), c),
+                actionByTrackMethodId -> toTrackAction(actionByTrackMethodId.getValue())));
 
     return org.batfish.datamodel.hsrp.HsrpGroup.builder()
         .setAuthentication(hsrpGroup.getAuthentication())
@@ -629,9 +635,8 @@ public class CiscoConversions {
   private static @Nonnull TrackAction toTrackAction(HsrpTrackAction hsrpTrackAction) {
     // skip visitor overhead since there are only two types
     if (hsrpTrackAction instanceof HsrpDecrementPriority) {
-      int decrement =
-          firstNonNull(
-              ((HsrpDecrementPriority) hsrpTrackAction).getDecrement(), DEFAULT_HSRP_DECREMENT);
+      int decrement = firstNonNull(
+          ((HsrpDecrementPriority) hsrpTrackAction).getDecrement(), DEFAULT_HSRP_DECREMENT);
       return new DecrementPriority(decrement);
     } else {
       assert hsrpTrackAction instanceof HsrpShutdown;
@@ -679,9 +684,7 @@ public class CiscoConversions {
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
             .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
+                isakmpPolicy -> isakmpPolicy.getAuthenticationMethod() == IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     if (rsaPubKey.getAddress() != null) {
@@ -702,9 +705,7 @@ public class CiscoConversions {
     ikePhase1Policy.setIkePhase1Proposals(
         oldConfig.getIsakmpPolicies().values().stream()
             .filter(
-                isakmpPolicy ->
-                    isakmpPolicy.getAuthenticationMethod()
-                        == IkeAuthenticationMethod.PRE_SHARED_KEYS)
+                isakmpPolicy -> isakmpPolicy.getAuthenticationMethod() == IkeAuthenticationMethod.PRE_SHARED_KEYS)
             .map(isakmpPolicy -> isakmpPolicy.getName().toString())
             .collect(ImmutableList.toImmutableList()));
     ikePhase1Policy.setRemoteIdentity(isakmpKey.getAddress());
@@ -744,8 +745,10 @@ public class CiscoConversions {
   }
 
   /**
-   * Gets the {@link IkePhase1Key} that can be used for the given {@link IsakmpProfile} based on
-   * {@code remoteIdentity} and {@code localInterfaceName} present in the {@link IkePhase1Key}
+   * Gets the {@link IkePhase1Key} that can be used for the given
+   * {@link IsakmpProfile} based on
+   * {@code remoteIdentity} and {@code localInterfaceName} present in the
+   * {@link IkePhase1Key}
    */
   static IkePhase1Key getMatchingPsk(
       IsakmpProfile isakmpProfile, Warnings w, Map<String, IkePhase1Key> ikePhase1Keys) {
@@ -789,26 +792,22 @@ public class CiscoConversions {
       ExtendedAccessList eaList, Map<String, ObjectGroup> objectGroups, String filename) {
     String aclName = eaList.getName();
     boolean isStandard = eaList.getParent() != null;
-    CiscoStructureType lineType =
-        isStandard
-            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE
-            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
-    List<AclLine> lines =
-        eaList.getLines().stream()
-            .map(
-                l ->
-                    toIpAccessListLine(l, objectGroups)
-                        .setVendorStructureId(
-                            new VendorStructureId(
-                                filename,
-                                lineType.getDescription(),
-                                aclLineStructureName(aclName, l.getName())))
-                        .build())
-            .collect(ImmutableList.toImmutableList());
-    String sourceType =
-        isStandard
-            ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
-            : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
+    CiscoStructureType lineType = isStandard
+        ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD_LINE
+        : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED_LINE;
+    List<AclLine> lines = eaList.getLines().stream()
+        .map(
+            l -> toIpAccessListLine(l, objectGroups)
+                .setVendorStructureId(
+                    new VendorStructureId(
+                        filename,
+                        lineType.getDescription(),
+                        aclLineStructureName(aclName, l.getName())))
+                .build())
+        .collect(ImmutableList.toImmutableList());
+    String sourceType = isStandard
+        ? CiscoStructureType.IPV4_ACCESS_LIST_STANDARD.getDescription()
+        : CiscoStructureType.IPV4_ACCESS_LIST_EXTENDED.getDescription();
     return IpAccessList.builder()
         .setName(aclName)
         .setLines(lines)
@@ -882,7 +881,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Converts a {@link Tunnel} to an {@link IpsecPeerConfig}, or empty optional if it can't be
+   * Converts a {@link Tunnel} to an {@link IpsecPeerConfig}, or empty optional if
+   * it can't be
    * converted
    */
   static Optional<IpsecPeerConfig> toIpsecPeerConfig(
@@ -899,13 +899,12 @@ public class CiscoConversions {
       return Optional.empty();
     }
 
-    IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder =
-        IpsecStaticPeerConfig.builder()
-            .setTunnelInterface(tunnelIfaceName)
-            .setDestinationAddress(tunnel.getDestination())
-            .setLocalAddress(localAddress)
-            .setSourceInterface(tunnel.getSourceInterfaceName())
-            .setIpsecPolicy(tunnel.getIpsecProfileName());
+    IpsecStaticPeerConfig.Builder ipsecStaticPeerConfigBuilder = IpsecStaticPeerConfig.builder()
+        .setTunnelInterface(tunnelIfaceName)
+        .setDestinationAddress(tunnel.getDestination())
+        .setLocalAddress(localAddress)
+        .setSourceInterface(tunnel.getSourceInterfaceName())
+        .setIpsecPolicy(tunnel.getIpsecProfileName());
 
     IpsecProfile ipsecProfile = null;
     if (tunnel.getIpsecProfileName() != null) {
@@ -927,7 +926,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Converts a {@link CryptoMapEntry} to multiple {@link IpsecPeerConfig}(one per interface on
+   * Converts a {@link CryptoMapEntry} to multiple {@link IpsecPeerConfig}(one per
+   * interface on
    * which crypto map is referred)
    */
   private static Map<String, IpsecPeerConfig> toIpsecPeerConfigs(
@@ -938,13 +938,11 @@ public class CiscoConversions {
       String ipsecPhase2Policy,
       Warnings w) {
 
-    List<org.batfish.datamodel.Interface> referencingInterfaces =
-        c.getAllInterfaces().values().stream()
-            .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
-            .collect(Collectors.toList());
+    List<org.batfish.datamodel.Interface> referencingInterfaces = c.getAllInterfaces().values().stream()
+        .filter(iface -> Objects.equals(iface.getCryptoMap(), cryptoMapName))
+        .collect(Collectors.toList());
 
-    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder =
-        ImmutableSortedMap.naturalOrder();
+    ImmutableSortedMap.Builder<String, IpsecPeerConfig> ipsecPeerConfigsBuilder = ImmutableSortedMap.naturalOrder();
 
     for (org.batfish.datamodel.Interface iface : referencingInterfaces) {
       // skipping interfaces with no ip-address
@@ -955,8 +953,7 @@ public class CiscoConversions {
         continue;
       }
       // add one IPSec peer config per interface for the crypto map entry
-      String peerName =
-          String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName());
+      String peerName = String.format("~IPSEC_PEER_CONFIG:%s_%s~", cryptoMapNameSeqNumber, iface.getName());
       toIpsecPeerConfig(c, cryptoMapEntry, iface, ipsecPhase2Policy, w)
           .ifPresent(config -> ipsecPeerConfigsBuilder.put(peerName, config));
     }
@@ -969,10 +966,9 @@ public class CiscoConversions {
       org.batfish.datamodel.Interface iface,
       String ipsecPhase2Policy,
       Warnings w) {
-    Ip localAddress =
-        Optional.ofNullable(iface.getConcreteAddress())
-            .map(ConcreteInterfaceAddress::getIp)
-            .orElse(null);
+    Ip localAddress = Optional.ofNullable(iface.getConcreteAddress())
+        .map(ConcreteInterfaceAddress::getIp)
+        .orElse(null);
     if (localAddress == null || !localAddress.valid()) {
       w.redFlagf(
           "Cannot create IPsec peer on interface %s: no valid interface IP", iface.getName());
@@ -986,13 +982,11 @@ public class CiscoConversions {
     // static crypto maps
     if (cryptoMapEntry.getPeer() != null) {
       if (ikePhase1Policy == null) {
-        ikePhase1Policy =
-            getIkePhase1Policy(c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
+        ikePhase1Policy = getIkePhase1Policy(c.getIkePhase1Policies(), cryptoMapEntry.getPeer(), iface.getName());
       }
-      newIpsecPeerConfigBuilder =
-          IpsecStaticPeerConfig.builder()
-              .setDestinationAddress(cryptoMapEntry.getPeer())
-              .setIkePhase1Policy(ikePhase1Policy);
+      newIpsecPeerConfigBuilder = IpsecStaticPeerConfig.builder()
+          .setDestinationAddress(cryptoMapEntry.getPeer())
+          .setIkePhase1Policy(ikePhase1Policy);
     } else {
       // dynamic crypto maps
       List<String> ikePhase1Policies;
@@ -1002,8 +996,7 @@ public class CiscoConversions {
         ikePhase1Policies = getMatchingIKePhase1Policies(c.getIkePhase1Policies(), iface.getName());
       }
 
-      newIpsecPeerConfigBuilder =
-          IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
+      newIpsecPeerConfigBuilder = IpsecDynamicPeerConfig.builder().setIkePhase1Policies(ikePhase1Policies);
     }
 
     newIpsecPeerConfigBuilder
@@ -1038,7 +1031,8 @@ public class CiscoConversions {
   }
 
   /**
-   * Returns a new symmetrical {@link IpAccessList} by adding mirror image {@link ExprAclLine}s to
+   * Returns a new symmetrical {@link IpAccessList} by adding mirror image
+   * {@link ExprAclLine}s to
    * the original {@link IpAccessList} or null if the conversion is not supported
    */
   @VisibleForTesting
@@ -1051,8 +1045,7 @@ public class CiscoConversions {
         return null;
       }
       ExprAclLine exprAclLine = (ExprAclLine) line;
-      HeaderSpace originalHeaderSpace =
-          HeaderSpaceConverter.convert(exprAclLine.getMatchCondition());
+      HeaderSpace originalHeaderSpace = HeaderSpaceConverter.convert(exprAclLine.getMatchCondition());
 
       if (!originalHeaderSpace.equals(
           HeaderSpace.builder()
@@ -1087,16 +1080,17 @@ public class CiscoConversions {
   }
 
   /**
-   * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress} and {@code
-   * localInterface}, null is returned if no matching {@link IkePhase1Policy} could not be found
+   * Returns the first {@link IkePhase1Policy} name matching {@code remoteAddress}
+   * and {@code
+   * localInterface}, null is returned if no matching {@link IkePhase1Policy}
+   * could not be found
    */
   private static @Nullable String getIkePhase1Policy(
       Map<String, IkePhase1Policy> ikePhase1Policies, Ip remoteAddress, String localInterface) {
     for (Entry<String, IkePhase1Policy> e : ikePhase1Policies.entrySet()) {
       IkePhase1Policy ikePhase1Policy = e.getValue();
       String ikePhase1PolicyLocalInterface = ikePhase1Policy.getLocalInterface();
-      IpSpace remoteAddressSpace =
-          firstNonNull(ikePhase1Policy.getRemoteIdentity(), EmptyIpSpace.INSTANCE);
+      IpSpace remoteAddressSpace = firstNonNull(ikePhase1Policy.getRemoteIdentity(), EmptyIpSpace.INSTANCE);
       if (remoteAddressSpace.containsIp(remoteAddress, ImmutableMap.of())
           && (UNSET_LOCAL_INTERFACE.equals(ikePhase1PolicyLocalInterface)
               || ikePhase1PolicyLocalInterface.equals(localInterface))) {
@@ -1106,7 +1100,9 @@ public class CiscoConversions {
     return null;
   }
 
-  /** Returns all {@link IkePhase1Policy} names matching the {@code localInterface} */
+  /**
+   * Returns all {@link IkePhase1Policy} names matching the {@code localInterface}
+   */
   private static List<String> getMatchingIKePhase1Policies(
       Map<String, IkePhase1Policy> ikePhase1Policies, String localInterface) {
     List<String> filteredIkePhase1Policies = new ArrayList<>();
@@ -1147,8 +1143,7 @@ public class CiscoConversions {
 
   static @Nullable org.batfish.datamodel.eigrp.EigrpProcess toEigrpProcess(
       EigrpProcess proc, String vrfName, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess =
-        org.batfish.datamodel.eigrp.EigrpProcess.builder();
+    org.batfish.datamodel.eigrp.EigrpProcess.Builder newProcess = org.batfish.datamodel.eigrp.EigrpProcess.builder();
 
     if (proc.getAsn() == null) {
       oldConfig.getWarnings().redFlag("Invalid EIGRP process");
@@ -1200,7 +1195,10 @@ public class CiscoConversions {
     return newProcess.build();
   }
 
-  /** Creates a {@link BooleanExpr} statement that matches EIGRP routes with a given ASN */
+  /**
+   * Creates a {@link BooleanExpr} statement that matches EIGRP routes with a
+   * given ASN
+   */
   static @Nonnull BooleanExpr matchOwnAsn(long localAsn) {
     return new Conjunction(
         ImmutableList.of(
@@ -1209,12 +1207,15 @@ public class CiscoConversions {
   }
 
   /**
-   * Converts {@link EigrpRedistributionPolicy}s in an {@link EigrpProcess} to equivalent {@link If}
+   * Converts {@link EigrpRedistributionPolicy}s in an {@link EigrpProcess} to
+   * equivalent {@link If}
    * statements
    *
-   * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the EIGRP process
-   * @param vsEigrpProc Vendor specific {@link EigrpProcess}
-   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
+   * @param eigrpRedistributionPolicies {@link EigrpRedistributionPolicy}s of the
+   *                                    EIGRP process
+   * @param vsEigrpProc                 Vendor specific {@link EigrpProcess}
+   * @param vsConfig                    Vendor specific {@link CiscoConfiguration
+   *                                    configuration}
    * @return {@link List} of {@link If} statements
    */
   static List<If> eigrpRedistributionPoliciesToStatements(
@@ -1247,12 +1248,11 @@ public class CiscoConversions {
       }
       eigrpExportConditions.getConjuncts().add(new MatchProcessAsn(otherAsn));
     } else if (protocol == RoutingProtocol.ISIS_ANY) {
-      matchExpr =
-          new MatchProtocol(
-              RoutingProtocol.ISIS_EL1,
-              RoutingProtocol.ISIS_EL2,
-              RoutingProtocol.ISIS_L1,
-              RoutingProtocol.ISIS_L2);
+      matchExpr = new MatchProtocol(
+          RoutingProtocol.ISIS_EL1,
+          RoutingProtocol.ISIS_EL2,
+          RoutingProtocol.ISIS_L1,
+          RoutingProtocol.ISIS_L2);
     } else {
       matchExpr = new MatchProtocol(protocol);
     }
@@ -1265,10 +1265,9 @@ public class CiscoConversions {
     // Set the metric
     // TODO prefer metric from route map
     // https://github.com/batfish/batfish/issues/2070
-    EigrpMetricValues metric =
-        policy.getMetric() != null
-            ? policy.getMetric()
-            : Optional.ofNullable(proc.getDefaultMetric()).map(EigrpMetric::getValues).orElse(null);
+    EigrpMetricValues metric = policy.getMetric() != null
+        ? policy.getMetric()
+        : Optional.ofNullable(proc.getDefaultMetric()).map(EigrpMetric::getValues).orElse(null);
     if (metric != null) {
       eigrpExportStatements.add(new SetEigrpMetric(new LiteralEigrpMetric(metric)));
     } else if (protocol != RoutingProtocol.EIGRP) {
@@ -1305,8 +1304,7 @@ public class CiscoConversions {
 
   static org.batfish.datamodel.isis.IsisProcess toIsisProcess(
       IsisProcess proc, Configuration c, CiscoConfiguration oldConfig) {
-    org.batfish.datamodel.isis.IsisProcess.Builder newProcess =
-        org.batfish.datamodel.isis.IsisProcess.builder();
+    org.batfish.datamodel.isis.IsisProcess.Builder newProcess = org.batfish.datamodel.isis.IsisProcess.builder();
     if (proc.getNetAddress() == null) {
       oldConfig.getWarnings().redFlag("Cannot create IS-IS process without specifying net-address");
       return null;
@@ -1325,10 +1323,9 @@ public class CiscoConversions {
   }
 
   static RouteFilterList toRouteFilterList(ExtendedAccessList eaList, String vendorConfigFilename) {
-    List<RouteFilterLine> lines =
-        eaList.getLines().stream()
-            .map(CiscoConversions::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList());
+    List<RouteFilterLine> lines = eaList.getLines().stream()
+        .map(CiscoConversions::toRouteFilterLine)
+        .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         eaList.getName(),
         lines,
@@ -1339,10 +1336,9 @@ public class CiscoConversions {
   }
 
   static RouteFilterList toRouteFilterList(StandardAccessList saList, String vendorConfigFilename) {
-    List<RouteFilterLine> lines =
-        saList.getLines().stream()
-            .map(CiscoConversions::toRouteFilterLine)
-            .collect(ImmutableList.toImmutableList());
+    List<RouteFilterLine> lines = saList.getLines().stream()
+        .map(CiscoConversions::toRouteFilterLine)
+        .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         saList.getName(),
         lines,
@@ -1353,13 +1349,11 @@ public class CiscoConversions {
   }
 
   static RouteFilterList toRouteFilterList(PrefixList list, String vendorConfigFilename) {
-    List<RouteFilterLine> newLines =
-        list.getLines().values().stream()
-            .map(
-                l ->
-                    new RouteFilterLine(
-                        l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
-            .collect(ImmutableList.toImmutableList());
+    List<RouteFilterLine> newLines = list.getLines().values().stream()
+        .map(
+            l -> new RouteFilterLine(
+                l.getAction(), IpWildcard.create(l.getPrefix()), l.getLengthRange()))
+        .collect(ImmutableList.toImmutableList());
     return new RouteFilterList(
         list.getName(),
         newLines,
@@ -1397,14 +1391,18 @@ public class CiscoConversions {
   }
 
   /**
-   * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s which use {@link
+   * Populates the {@link RoutingPolicy}s for inbound {@link DistributeList}s
+   * which use {@link
    * PrefixList} as the {@link DistributeList#getFilterType()}. {@link
-   * DistributeListFilterType#ROUTE_MAP} and {@link DistributeListFilterType#ACCESS_LIST} are not
+   * DistributeListFilterType#ROUTE_MAP} and
+   * {@link DistributeListFilterType#ACCESS_LIST} are not
    * supported currently.
    *
-   * @param ospfProcess {@link OspfProcess} for which {@link DistributeList}s are to be processed
-   * @param c {@link Configuration} containing the Vendor Independent representation
-   * @param vrf Id of the {@link Vrf} containing the {@link OspfProcess}
+   * @param ospfProcess   {@link OspfProcess} for which {@link DistributeList}s
+   *                      are to be processed
+   * @param c             {@link Configuration} containing the Vendor Independent
+   *                      representation
+   * @param vrf           Id of the {@link Vrf} containing the {@link OspfProcess}
    * @param ospfProcessId {@link OspfProcess}'s Id
    */
   static void computeDistributeListPolicies(
@@ -1420,28 +1418,24 @@ public class CiscoConversions {
     BooleanExpr globalCondition = null;
     if (globalDistributeList != null
         && sanityCheckDistributeList(globalDistributeList, c, oldConfig, vrf, ospfProcessId)) {
-      globalCondition =
-          new MatchPrefixSet(
-              DestinationNetwork.instance(),
-              new NamedPrefixSet(globalDistributeList.getFilterName()));
+      globalCondition = new MatchPrefixSet(
+          DestinationNetwork.instance(),
+          new NamedPrefixSet(globalDistributeList.getFilterName()));
     }
 
-    Map<String, DistributeList> interfaceDistributeLists =
-        ospfProcess.getInboundInterfaceDistributeLists();
+    Map<String, DistributeList> interfaceDistributeLists = ospfProcess.getInboundInterfaceDistributeLists();
 
-    for (String ifaceName :
-        newOspfProcess.getAreas().values().stream()
-            .flatMap(a -> a.getInterfaces().stream())
-            .collect(Collectors.toList())) {
+    for (String ifaceName : newOspfProcess.getAreas().values().stream()
+        .flatMap(a -> a.getInterfaces().stream())
+        .collect(Collectors.toList())) {
       org.batfish.datamodel.Interface iface = c.getAllInterfaces(vrf).get(ifaceName);
       DistributeList ifaceDistributeList = interfaceDistributeLists.get(ifaceName);
       BooleanExpr ifaceCondition = null;
       if (ifaceDistributeList != null
           && sanityCheckDistributeList(ifaceDistributeList, c, oldConfig, vrf, ospfProcessId)) {
-        ifaceCondition =
-            new MatchPrefixSet(
-                DestinationNetwork.instance(),
-                new NamedPrefixSet(ifaceDistributeList.getFilterName()));
+        ifaceCondition = new MatchPrefixSet(
+            DestinationNetwork.instance(),
+            new NamedPrefixSet(ifaceDistributeList.getFilterName()));
       }
 
       if (globalCondition == null && ifaceCondition == null) {
@@ -1475,11 +1469,15 @@ public class CiscoConversions {
   }
 
   /**
-   * Generate an EIGRP policy from the provided {@param distributeLists} and any additional {@param
+   * Generate an EIGRP policy from the provided {@param distributeLists} and any
+   * additional {@param
    * extraConditions} that must be true for the policy to permit the route
    *
-   * <p>Note that the list of distribute lists is allowed to have {@code null} elements (those will
-   * be skipped). Invalid (e.g., non-existent) distribute lists will be skipped as well.
+   * <p>
+   * Note that the list of distribute lists is allowed to have {@code null}
+   * elements (those will
+   * be skipped). Invalid (e.g., non-existent) distribute lists will be skipped as
+   * well.
    */
   static RoutingPolicy generateEigrpPolicy(
       @Nonnull Configuration c,
@@ -1516,18 +1514,24 @@ public class CiscoConversions {
   }
 
   /**
-   * Checks if the {@link DistributeList distributeList} can be converted to a routing policy.
-   * Returns false if it refers to an extended access list, which is not supported and also returns
+   * Checks if the {@link DistributeList distributeList} can be converted to a
+   * routing policy.
+   * Returns false if it refers to an extended access list, which is not supported
+   * and also returns
    * false if the access-list referred by it does not exist.
    *
-   * <p>Adds appropriate {@link org.batfish.common.Warning} if the {@link DistributeList
+   * <p>
+   * Adds appropriate {@link org.batfish.common.Warning} if the
+   * {@link DistributeList
    * distributeList} is not found to be valid for conversion to routing policy.
    *
-   * @param c Vendor independent {@link Configuration configuration}
+   * @param c              Vendor independent {@link Configuration configuration}
    * @param distributeList {@link DistributeList distributeList} to be validated
-   * @param vsConfig Vendor specific {@link CiscoConfiguration configuration}
-   * @return false if the {@link DistributeList distributeList} cannot be converted to a routing
-   *     policy
+   * @param vsConfig       Vendor specific {@link CiscoConfiguration
+   *                       configuration}
+   * @return false if the {@link DistributeList distributeList} cannot be
+   *         converted to a routing
+   *         policy
    */
   static boolean sanityCheckEigrpDistributeList(
       @Nonnull Configuration c,
@@ -1575,11 +1579,10 @@ public class CiscoConversions {
     if (nextHopInterface != null && nextHopInterface.toLowerCase().startsWith("null")) {
       nextHopInterface = org.batfish.datamodel.Interface.NULL_INTERFACE_NAME;
     }
-    String track =
-        Optional.ofNullable(staticRoute.getTrack())
-            .filter(trackExists)
-            .map(Object::toString)
-            .orElse(null);
+    String track = Optional.ofNullable(staticRoute.getTrack())
+        .filter(trackExists)
+        .map(Object::toString)
+        .orElse(null);
     return org.batfish.datamodel.StaticRoute.builder()
         .setNetwork(staticRoute.getPrefix())
         .setNextHop(NextHop.legacyConverter(nextHopInterface, staticRoute.getNextHopIp()))
@@ -1596,13 +1599,12 @@ public class CiscoConversions {
     AclLineMatchExpr matchService = line.getServiceSpecifier().toAclLineMatchExpr(objectGroups);
     AclLineMatchExpr match;
     if (matchService instanceof MatchHeaderSpace) {
-      match =
-          new MatchHeaderSpace(
-              ((MatchHeaderSpace) matchService)
-                  .getHeaderspace().toBuilder()
-                      .setSrcIps(srcIpSpace)
-                      .setDstIps(dstIpSpace)
-                      .build());
+      match = new MatchHeaderSpace(
+          ((MatchHeaderSpace) matchService)
+              .getHeaderspace().toBuilder()
+              .setSrcIps(srcIpSpace)
+              .setDstIps(dstIpSpace)
+              .build());
     } else {
       match = and(matchService, matchSrc(srcIpSpace), matchDst(dstIpSpace));
     }
@@ -1615,11 +1617,9 @@ public class CiscoConversions {
 
   private static RouteFilterLine toRouteFilterLine(ExtendedAccessListLine fromLine) {
     LineAction action = fromLine.getAction();
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
+    IpWildcard srcIpWildcard = ((WildcardAddressSpecifier) fromLine.getSourceAddressSpecifier()).getIpWildcard();
     Ip ip = srcIpWildcard.getIp();
-    IpWildcard dstIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
+    IpWildcard dstIpWildcard = ((WildcardAddressSpecifier) fromLine.getDestinationAddressSpecifier()).getIpWildcard();
     long minSubnet = dstIpWildcard.getIp().asLong();
     long maxSubnet = minSubnet | dstIpWildcard.getWildcardMask();
     int minPrefixLength = dstIpWildcard.getIp().numSubnetBits();
@@ -1639,8 +1639,7 @@ public class CiscoConversions {
      * specifier)
      * can be used only from extended ACLs.
      */
-    IpWildcard srcIpWildcard =
-        ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
+    IpWildcard srcIpWildcard = ((WildcardAddressSpecifier) fromLine.getSrcAddressSpecifier()).getIpWildcard();
 
     // A standard ACL is simply a wildcard on the network address, and does not
     // filter on the
@@ -1650,9 +1649,12 @@ public class CiscoConversions {
   }
 
   /**
-   * Helper to infer dead interval from configured OSPF settings on an interface. Check explicitly
-   * set dead interval, infer from hello interval, or infer from OSPF network type, in that order.
-   * See https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+   * Helper to infer dead interval from configured OSPF settings on an interface.
+   * Check explicitly
+   * set dead interval, infer from hello interval, or infer from OSPF network
+   * type, in that order.
+   * See
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
    * for more details.
    */
   @VisibleForTesting
@@ -1673,9 +1675,11 @@ public class CiscoConversions {
   }
 
   /**
-   * Helper to infer hello interval from configured OSPF settings on an interface. Check explicitly
+   * Helper to infer hello interval from configured OSPF settings on an interface.
+   * Check explicitly
    * set hello interval or infer from OSPF network type, in that order. See
-   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html for
+   * https://www.cisco.com/c/en/us/support/docs/ip/open-shortest-path-first-ospf/13689-17.html
+   * for
    * more details.
    */
   @VisibleForTesting
@@ -1717,24 +1721,22 @@ public class CiscoConversions {
   }
 
   /**
-   * Convert VRF leaking configs, if needed. Must be called after VRF address family inheritance is
+   * Convert VRF leaking configs, if needed. Must be called after VRF address
+   * family inheritance is
    * completed, and routing policies have been converted.
    *
    * @param c VI {@link Configuration}
    */
   public static void convertVrfLeakingConfig(Collection<Vrf> vrfs, Configuration c) {
-    List<Vrf> vrfsWithIpv4Af =
-        vrfs.stream()
-            .filter(v -> v.getIpv4UnicastAddressFamily() != null)
-            .collect(Collectors.toList());
-    List<Vrf> vrfsWithoutExportMap =
-        vrfsWithIpv4Af.stream()
-            .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() == null)
-            .collect(ImmutableList.toImmutableList());
-    List<Vrf> vrfsWithExportMap =
-        vrfsWithIpv4Af.stream()
-            .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() != null)
-            .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithIpv4Af = vrfs.stream()
+        .filter(v -> v.getIpv4UnicastAddressFamily() != null)
+        .collect(Collectors.toList());
+    List<Vrf> vrfsWithoutExportMap = vrfsWithIpv4Af.stream()
+        .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() == null)
+        .collect(ImmutableList.toImmutableList());
+    List<Vrf> vrfsWithExportMap = vrfsWithIpv4Af.stream()
+        .filter(v -> v.getIpv4UnicastAddressFamily().getExportMap() != null)
+        .collect(ImmutableList.toImmutableList());
     Multimap<ExtendedCommunity, String> vrfsByExportRt = HashMultimap.create();
     // pre-compute RT to VRF name mapping
     for (Vrf vrf : vrfsWithoutExportMap) {
@@ -1816,9 +1818,13 @@ public class CiscoConversions {
     return vrf.getVrfLeakConfig();
   }
 
-  @VisibleForTesting public static final int BGP_VRF_LEAK_IGP_WEIGHT = 32768;
+  @VisibleForTesting
+  public static final int BGP_VRF_LEAK_IGP_WEIGHT = 32768;
 
-  /** Create a policy for exporting from one vrf to another in the presence of an export map. */
+  /**
+   * Create a policy for exporting from one vrf to another in the presence of an
+   * export map.
+   */
   private static @Nonnull String vrfExportImportPolicy(
       String exportingVrf,
       String exportMap,
@@ -1846,31 +1852,27 @@ public class CiscoConversions {
     if (c.getRoutingPolicies().containsKey(policyName)) {
       return policyName;
     }
-    Statement addExportRt =
-        new SetCommunities(
-            CommunitySetUnion.of(
-                InputCommunities.instance(),
-                new LiteralCommunitySet(CommunitySet.of(routeTargetExport))));
-    Statement tryApplyExportMap =
-        new If(new CallExpr(exportMap), ImmutableList.of(), ImmutableList.of());
-    Statement filterImportRt =
-        new If(
-            new MatchCommunities(
-                InputCommunities.instance(),
-                CommunitySetMatchAny.matchAny(
-                    routeTargetImport.stream()
-                        .map(CommunityIs::new)
-                        .map(HasCommunity::new)
-                        .collect(ImmutableList.toImmutableList()))),
-            ImmutableList.of(),
-            ImmutableList.of(Statements.ExitReject.toStaticStatement()));
-    Statement applyImportMap =
-        importMap != null
-            ? new If(
-                new CallExpr(importMap),
-                ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
-                ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
-            : Statements.ReturnTrue.toStaticStatement();
+    Statement addExportRt = new SetCommunities(
+        CommunitySetUnion.of(
+            InputCommunities.instance(),
+            new LiteralCommunitySet(CommunitySet.of(routeTargetExport))));
+    Statement tryApplyExportMap = new If(new CallExpr(exportMap), ImmutableList.of(), ImmutableList.of());
+    Statement filterImportRt = new If(
+        new MatchCommunities(
+            InputCommunities.instance(),
+            CommunitySetMatchAny.matchAny(
+                routeTargetImport.stream()
+                    .map(CommunityIs::new)
+                    .map(HasCommunity::new)
+                    .collect(ImmutableList.toImmutableList()))),
+        ImmutableList.of(),
+        ImmutableList.of(Statements.ExitReject.toStaticStatement()));
+    Statement applyImportMap = importMap != null
+        ? new If(
+            new CallExpr(importMap),
+            ImmutableList.of(Statements.ReturnTrue.toStaticStatement()),
+            ImmutableList.of(Statements.ReturnFalse.toStaticStatement()))
+        : Statements.ReturnTrue.toStaticStatement();
     // TODO: prevent side-effects from a route-map continue that eventually rejects
     // in export map
     RoutingPolicy.builder()
@@ -1893,7 +1895,8 @@ public class CiscoConversions {
   }
 
   /**
-   * The structure name of an ACL line for definition/reference tracking. All lines in a config are
+   * The structure name of an ACL line for definition/reference tracking. All
+   * lines in a config are
    * in the same namespace, so we have to qualify them with the name of the ACL.
    */
   public static @Nonnull String aclLineStructureName(String aclName, String lineName) {

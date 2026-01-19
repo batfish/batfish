@@ -18,7 +18,6 @@ junit_tests(
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
-        "//projects/batfish/src/main/antlr4/org/batfish/grammar/cisco",
         "//projects/batfish/src/main/java/org/batfish/grammar/cisco",
         "//projects/batfish/src/main/java/org/batfish/representation/cisco",
         "//projects/common",

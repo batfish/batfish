@@ -3,9 +3,10 @@ package org.batfish.grammar.cisco;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 
-import java.util.function.Function;
 import org.antlr.v4.runtime.ParserRuleContext;
+import org.batfish.common.BatfishLogger;
 import org.batfish.config.Settings;
+import org.batfish.main.Batfish;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
@@ -13,14 +14,15 @@ import org.junit.runners.JUnit4;
 @RunWith(JUnit4.class)
 public class CiscoTelemetryTest {
 
-  private static void parse(String code, Function<CiscoParser, ParserRuleContext> rule, int mode) {
+  private static void parse(String code) {
     Settings settings = new Settings();
     settings.setDisableUnrecognized(true);
     settings.setThrowOnLexerError(true);
     settings.setThrowOnParserError(true);
 
     CiscoCombinedParser parser = new CiscoCombinedParser(code, settings);
-    ParserRuleContext ctx = rule.apply(parser.getParser());
+    ParserRuleContext ctx =
+        Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     assertThat(ctx, notNullValue());
   }
 
@@ -38,7 +40,7 @@ public class CiscoTelemetryTest {
           receiver ip address 10.28.35.45 57555 protocol grpc-tcp
         """;
 
-    parse(config, CiscoParser::s_telemetry, 1);
+    parse(config);
   }
 
   @Test
@@ -53,6 +55,6 @@ public class CiscoTelemetryTest {
           receiver ip address 10.22.22.45 45000 protocol grpc_tls profile secure_profile
         """;
 
-    parse(config, CiscoParser::s_telemetry, 1);
+    parse(config);
   }
 }

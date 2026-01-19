@@ -3,6 +3,7 @@ package org.batfish.representation.cisco;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.List;
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class PkiTrustpoint implements Serializable {
@@ -15,12 +16,12 @@ public class PkiTrustpoint implements Serializable {
   private String _sourceVrf;
   private final List<String> _certificateChain;
 
-  public PkiTrustpoint(String name) {
+  public PkiTrustpoint(@Nonnull String name) {
     _name = name;
     _certificateChain = new ArrayList<>();
   }
 
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -64,7 +65,7 @@ public class PkiTrustpoint implements Serializable {
     _sourceVrf = sourceVrf;
   }
 
-  public List<String> getCertificateChain() {
+  public @Nonnull List<String> getCertificateChain() {
     return _certificateChain;
   }
 

@@ -4269,15 +4269,15 @@ wlan_virtual_ap_null
 
 s_telemetry
 :
-   TELEMETRY ti_ietf
+   TELEMETRY t_ietf
 ;
 
-ti_ietf
+t_ietf
 :
-   IETF tis_subscription
+   IETF ti_subscription
 ;
 
-tis_subscription
+ti_subscription
 :
    SUBSCRIPTION id = dec NEWLINE
    (
