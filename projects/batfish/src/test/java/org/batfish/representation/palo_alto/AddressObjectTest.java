@@ -65,7 +65,7 @@ public class AddressObjectTest {
     assertThat(a.getType(), equalTo(Type.IP));
 
     // Setting IP to null clears type and members
-    a.setIp(null);
+    a.setIp((Ip) null);
     assertNull(a.getIp());
     assertNull(a.getType());
   }
