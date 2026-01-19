@@ -57,6 +57,7 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
 import java.util.UUID;
+import javax.ws.rs.BadRequestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.batfish.common.AnswerRowsOptions;
@@ -2720,6 +2721,19 @@ public final class WorkMgrTest {
     _idManager.assignQuestion(question, networkId, _idManager.generateQuestionId());
     // After creating both network and question, questionExists should be true
     assertTrue(_manager.checkQuestionExists(network, question));
+  }
+
+  @Test
+  public void testUploadQuestionWithInvalidJson() throws IOException {
+    String network = "network";
+    String question = "question";
+    String invalidQuestionJson = "{\"invalid\": \"json\", \"missing\": \"required fields\"}";
+
+    _manager.initNetwork(network, null);
+
+    _thrown.expect(BadRequestException.class);
+    _thrown.expectMessage(containsString("Invalid question"));
+    _manager.uploadQuestion(network, question, invalidQuestionJson);
   }
 
   @Test
