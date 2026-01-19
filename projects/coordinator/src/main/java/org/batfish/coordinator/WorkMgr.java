@@ -63,6 +63,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import javax.ws.rs.BadRequestException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -1399,7 +1400,7 @@ public class WorkMgr extends AbstractCoordinator {
       try {
         Question.parseQuestion(questionJson);
       } catch (Exception e) {
-        throw new BatfishException(
+        throw new BadRequestException(
             String.format("Invalid question %s/%s: %s", network, question, e.getMessage()), e);
       }
     }
