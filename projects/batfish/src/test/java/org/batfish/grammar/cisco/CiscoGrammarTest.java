@@ -483,7 +483,7 @@ public final class CiscoGrammarTest {
 
   private Batfish getBatfishForConfigurationNames(String... configurationNames) throws IOException {
     String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+            Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.getBatfishForTextConfigs(_folder, names);
   }
 
@@ -493,14 +493,14 @@ public final class CiscoGrammarTest {
     configureBatfishTestSettings(settings);
     CiscoCombinedParser ciscoParser = new CiscoCombinedParser(src, settings);
     CiscoControlPlaneExtractor extractor =
-        new CiscoControlPlaneExtractor(
-            src, ciscoParser, format, new Warnings(), new SilentSyntaxCollection());
+            new CiscoControlPlaneExtractor(
+                    src, ciscoParser, format, new Warnings(), new SilentSyntaxCollection());
     ParserRuleContext tree =
-        Batfish.parse(
-            ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
+            Batfish.parse(
+                    ciscoParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
     CiscoConfiguration vendorConfiguration =
-        (CiscoConfiguration) extractor.getVendorConfiguration();
+            (CiscoConfiguration) extractor.getVendorConfiguration();
     vendorConfiguration.setFilename(TESTCONFIGS_PREFIX + hostname);
     return SerializationUtils.clone(vendorConfiguration);
   }
@@ -548,9 +548,9 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.loadConfigurations(batfish.getSnapshot());
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
-        ccae, hasNumReferrers("configs/" + hostname, IPV4_ACCESS_LIST_STANDARD, "MPLS_ACL", 1));
+            ccae, hasNumReferrers("configs/" + hostname, IPV4_ACCESS_LIST_STANDARD, "MPLS_ACL", 1));
   }
 
   @Test
@@ -558,7 +558,7 @@ public final class CiscoGrammarTest {
     // test IOS config
     Configuration aaaAuthIosConfiguration = parseConfig("aaaAuthenticationIos");
     SortedMap<String, Line> iosLines =
-        aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
+            aaaAuthIosConfiguration.getVendorFamily().getCisco().getLines();
     for (Line line : iosLines.values()) {
       if (line.getLineType() == LineType.AUX) {
         assertThat(line, not(requiresAuthentication()));
@@ -567,35 +567,35 @@ public final class CiscoGrammarTest {
       }
     }
     assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(hasListForKey(hasMethod(GROUP_TACACS), "default")))))));
+            aaaAuthIosConfiguration,
+            hasVendorFamily(
+                    hasCisco(
+                            hasAaa(
+                                    hasAuthentication(
+                                            hasLogin(hasListForKey(hasMethod(GROUP_TACACS), "default")))))));
     assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL), "default")))))));
+            aaaAuthIosConfiguration,
+            hasVendorFamily(
+                    hasCisco(
+                            hasAaa(hasAuthentication(hasLogin(hasListForKey(hasMethod(LOCAL), "default")))))));
     assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(hasListForKey(not(hasMethod(GROUP_RADIUS)), "default")))))));
+            aaaAuthIosConfiguration,
+            hasVendorFamily(
+                    hasCisco(
+                            hasAaa(
+                                    hasAuthentication(
+                                            hasLogin(hasListForKey(not(hasMethod(GROUP_RADIUS)), "default")))))));
     assertThat(
-        aaaAuthIosConfiguration,
-        hasVendorFamily(
-            hasCisco(
-                hasAaa(
-                    hasAuthentication(
-                        hasLogin(not(hasListForKey(hasMethod(GROUP_TACACS), "ssh"))))))));
+            aaaAuthIosConfiguration,
+            hasVendorFamily(
+                    hasCisco(
+                            hasAaa(
+                                    hasAuthentication(
+                                            hasLogin(not(hasListForKey(hasMethod(GROUP_TACACS), "ssh"))))))));
     // test IOS config with no default login list defined
     Configuration aaaAuthIosConfigNoDefault = parseConfig("aaaAuthenticationIosNoDefault");
     SortedMap<String, Line> iosNoDefaultLines =
-        aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
+            aaaAuthIosConfigNoDefault.getVendorFamily().getCisco().getLines();
     for (Line line : iosNoDefaultLines.values()) {
       if (line.getLineType() == LineType.AUX || line.getLineType() == LineType.CON) {
         assertThat(line, not(requiresAuthentication()));
@@ -612,25 +612,25 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     CiscoConfiguration vc =
-        (CiscoConfiguration) batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+            (CiscoConfiguration) batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertTrue(vc.getAaaServerGroups().get("ldap_group") instanceof LdapServerGroup);
     assertTrue(vc.getAaaServerGroups().get("radius_group") instanceof RadiusServerGroup);
     assertTrue(vc.getAaaServerGroups().get("tacacs_group") instanceof TacacsPlusServerGroup);
 
     assertEquals(
-        ImmutableList.of("192.168.2.1", "192.168.2.2"),
-        vc.getAaaServerGroups().get("ldap_group").getServers());
+            ImmutableList.of("192.168.2.1", "192.168.2.2"),
+            vc.getAaaServerGroups().get("ldap_group").getServers());
     assertEquals(
-        ImmutableList.of("192.168.3.1"), vc.getAaaServerGroups().get("radius_group").getServers());
+            ImmutableList.of("192.168.3.1"), vc.getAaaServerGroups().get("radius_group").getServers());
     assertEquals(
-        ImmutableList.of("10.1.1.1", "192.168.1.1"),
-        vc.getAaaServerGroups().get("tacacs_group").getServers());
+            ImmutableList.of("10.1.1.1", "192.168.1.1"),
+            vc.getAaaServerGroups().get("tacacs_group").getServers());
     assertEquals(
-        ImmutableList.of("10.2.2.2"),
-        vc.getAaaServerGroups().get("tacacs_group").getPrivateServers());
+            ImmutableList.of("10.2.2.2"),
+            vc.getAaaServerGroups().get("tacacs_group").getPrivateServers());
 
     assertThat(ccae, hasDefinedStructure(filename, TACACS_SERVER, "192.168.1.1"));
     assertThat(ccae, hasDefinedStructure(filename, AAA_SERVER_GROUP_LDAP, "ldap_group"));
@@ -641,10 +641,9 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, TACACS_SERVER, "10.1.1.1"));
     assertThat(ccae, hasNumReferrers(filename, TACACS_SERVER, "192.168.1.1", 2));
 
-    // global and group-level tacacs servers must be included; radius and ldap
-    // servers shouldn't be
+    // global and group-level tacacs servers must be included; radius and ldap servers shouldn't be
     assertThat(
-        c.getTacacsServers(), equalTo(ImmutableSet.of("192.168.1.1", "10.1.1.1", "10.2.2.2")));
+            c.getTacacsServers(), equalTo(ImmutableSet.of("192.168.1.1", "10.1.1.1", "10.2.2.2")));
   }
 
   @Test
@@ -654,14 +653,14 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // check expected references for {mac,ip}_acl{_unused,}
     assertThat(ccae, hasNumReferrers(filename, MAC_ACCESS_LIST, "mac_acl_unused", 0));
@@ -677,25 +676,25 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of("iosAccessGroupAcl");
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
 
     SortedMap<String, SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>>>
-        undefinedReferences =
+            undefinedReferences =
             batfish
-                .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
-                .getUndefinedReferences();
+                    .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+                    .getUndefinedReferences();
 
     // only mac_acl_udef and ip_acl_udef should be undefined references
     assertThat(undefinedReferences, hasKey(filename));
     SortedMap<String, SortedMap<String, SortedMap<String, SortedSet<Integer>>>> byHost =
-        undefinedReferences.get(filename);
+            undefinedReferences.get(filename);
     assertThat(byHost, hasKey(ACCESS_LIST.getDescription()));
     SortedMap<String, SortedMap<String, SortedSet<Integer>>> byType =
-        byHost.get(ACCESS_LIST.getDescription());
+            byHost.get(ACCESS_LIST.getDescription());
 
     assertThat(byType.keySet(), hasSize(2));
     assertThat(byType, hasKey("ip_acl_udef"));
@@ -709,15 +708,15 @@ public final class CiscoGrammarTest {
     c.getStructureManager().saveInto(ccae, c.getFilename());
     c.setWarnings(new Warnings(true, true, true));
     assertThat(
-        ccae, hasDefinedStructure(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT"));
+            ccae, hasDefinedStructure(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT"));
     assertThat(
-        ccae,
-        hasReferencedStructure(
-            c.getFilename(), EXTCOMMUNITY_LIST, "COM_WITH_RT", ROUTE_MAP_MATCH_EXTCOMMUNITY));
+            ccae,
+            hasReferencedStructure(
+                    c.getFilename(), EXTCOMMUNITY_LIST, "COM_WITH_RT", ROUTE_MAP_MATCH_EXTCOMMUNITY));
     // convert to mark structures.
     c.toVendorIndependentConfigurations();
     assertThat(
-        ccae, hasNumReferrers(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT", 1));
+            ccae, hasNumReferrers(c.getFilename(), EXTCOMMUNITY_LIST_STANDARD, "COM_WITH_RT", 1));
   }
 
   @Test
@@ -740,9 +739,9 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosEncapsulationVlanExtraction() {
     CiscoConfiguration vc =
-        parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ios-encapsulation-vlan", ConfigurationFormat.CISCO_IOS);
     assertThat(
-        vc.getInterfaces().get("GigabitEthernet0/1.203").getEncapsulationVlan(), equalTo(203));
+            vc.getInterfaces().get("GigabitEthernet0/1.203").getEncapsulationVlan(), equalTo(203));
   }
 
   @Test
@@ -784,49 +783,48 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/8"))));
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.1.0.0/16"))));
-    // NB this route-map permits /7 because matching standard ip access-list on a
-    // network
+    // NB this route-map permits /7 because matching standard ip access-list on a network
     // is just matching the network address against the src IP.
     assertThat(c, hasRouteFilterList("10", permits(Prefix.parse("10.0.0.0/7"))));
     assertThat(
-        c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("11.0.0.0/8"))));
+            c, hasRouteFilterList("10", RouteFilterListMatchers.rejects(Prefix.parse("11.0.0.0/8"))));
     assertThat(
-        c,
-        hasIpAccessList(
-            "10",
-            accepts(
-                Flow.builder()
-                    .setSrcIp(Ip.parse("10.1.1.1"))
-                    .setDstIp(Ip.parse("11.1.1.1"))
-                    .setIngressNode(hostname)
-                    .build(),
-                "Ethernet1",
-                c)));
+            c,
+            hasIpAccessList(
+                    "10",
+                    accepts(
+                            Flow.builder()
+                                    .setSrcIp(Ip.parse("10.1.1.1"))
+                                    .setDstIp(Ip.parse("11.1.1.1"))
+                                    .setIngressNode(hostname)
+                                    .build(),
+                            "Ethernet1",
+                            c)));
     assertThat(
-        c,
-        hasIpAccessList(
-            "10",
-            rejects(
-                Flow.builder()
-                    .setSrcIp(Ip.parse("11.1.1.1"))
-                    .setDstIp(Ip.parse("10.1.1.1"))
-                    .setIngressNode(hostname)
-                    .build(),
-                "Ethernet1",
-                c)));
+            c,
+            hasIpAccessList(
+                    "10",
+                    rejects(
+                            Flow.builder()
+                                    .setSrcIp(Ip.parse("11.1.1.1"))
+                                    .setDstIp(Ip.parse("10.1.1.1"))
+                                    .setIngressNode(hostname)
+                                    .build(),
+                            "Ethernet1",
+                            c)));
   }
 
   @Test
   public void testIosBanner() throws IOException {
     Configuration c = parseConfig("ios_banner");
     assertThat(
-        c.getVendorFamily().getCisco().getBanners(),
-        equalTo(
-            ImmutableMap.of(
-                "exec",
-                "First line.\nSecond line, with no ignored text.",
-                "login",
-                "First line.\nSecond line.")));
+            c.getVendorFamily().getCisco().getBanners(),
+            equalTo(
+                    ImmutableMap.of(
+                            "exec",
+                            "First line.\nSecond line, with no ignored text.",
+                            "login",
+                            "First line.\nSecond line.")));
   }
 
   @Test
@@ -849,34 +847,33 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
-     * The produced ACL should permit if source matchers object-group ogn1,
-     * destination matches
+     * The produced ACL should permit if source matchers object-group ogn1, destination matches
      * ogn2, and service matches ogs1.
      */
     assertThat(
-        c,
-        hasIpAccessList(
-            "acl1",
-            hasLines(
-                hasItem(
-                    hasMatchCondition(
-                        isAndMatchExprThat(
-                            hasConjuncts(
-                                containsInAnyOrder(
-                                    equalTo(
-                                        matchDst(
-                                            new IpSpaceReference(
-                                                "ogn2", "Match network object-group: 'ogn2'"))),
-                                    equalTo(
-                                        matchSrc(
-                                            new IpSpaceReference(
-                                                "ogn1", "Match network object-group: 'ogn1'"))),
-                                    isPermittedByAclThat(
-                                        hasAclName(
-                                            computeServiceObjectGroupAclName("ogs1")))))))))));
+            c,
+            hasIpAccessList(
+                    "acl1",
+                    hasLines(
+                            hasItem(
+                                    hasMatchCondition(
+                                            isAndMatchExprThat(
+                                                    hasConjuncts(
+                                                            containsInAnyOrder(
+                                                                    equalTo(
+                                                                            matchDst(
+                                                                                    new IpSpaceReference(
+                                                                                            "ogn2", "Match network object-group: 'ogn2'"))),
+                                                                    equalTo(
+                                                                            matchSrc(
+                                                                                    new IpSpaceReference(
+                                                                                            "ogn1", "Match network object-group: 'ogn1'"))),
+                                                                    isPermittedByAclThat(
+                                                                            hasAclName(
+                                                                                    computeServiceObjectGroupAclName("ogs1")))))))))));
 
     /*
      * We expect only object-groups ogsunused1, ognunused1 to have zero referrers
@@ -888,27 +885,26 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, NETWORK_OBJECT_GROUP, "ognunused1", 0));
 
     /*
-     * We expect undefined references only to object-groups ogsfake, ognfake1,
-     * ognfake2
+     * We expect undefined references only to object-groups ogsfake, ognfake1, ognfake2
      */
     assertThat(ccae, not(hasUndefinedReference(filename, SERVICE_OBJECT_GROUP, "ogs1")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn1")));
     assertThat(ccae, not(hasUndefinedReference(filename, NETWORK_OBJECT_GROUP, "ogn2")));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename,
-            PROTOCOL_OR_SERVICE_OBJECT_GROUP,
-            "ogsfake",
-            EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
+            ccae,
+            hasUndefinedReference(
+                    filename,
+                    PROTOCOL_OR_SERVICE_OBJECT_GROUP,
+                    "ogsfake",
+                    EXTENDED_ACCESS_LIST_PROTOCOL_OR_SERVICE_OBJECT_GROUP));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, NETWORK_OBJECT_GROUP, "ognfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+            ccae,
+            hasUndefinedReference(
+                    filename, NETWORK_OBJECT_GROUP, "ognfake2", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, NETWORK_OBJECT_GROUP, "ognfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
+            ccae,
+            hasUndefinedReference(
+                    filename, NETWORK_OBJECT_GROUP, "ognfake1", EXTENDED_ACCESS_LIST_NETWORK_OBJECT_GROUP));
   }
 
   @Test
@@ -917,7 +913,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     // Confirm reference counts are correct for ACLs
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "AL", 2));
@@ -928,13 +924,13 @@ public final class CiscoGrammarTest {
 
     // Confirm undefined references are detected
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV4_ACCESS_LIST, "AL_UNDEF", ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
+            ccae,
+            hasUndefinedReference(
+                    filename, IPV4_ACCESS_LIST, "AL_UNDEF", ROUTE_MAP_MATCH_IPV4_ACCESS_LIST));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
+            ccae,
+            hasUndefinedReference(
+                    filename, IPV6_ACCESS_LIST, "AL6_UNDEF", ROUTE_MAP_MATCH_IPV6_ACCESS_LIST));
   }
 
   @Test
@@ -949,12 +945,12 @@ public final class CiscoGrammarTest {
       IpAccessList acl = c.getIpAccessLists().get("AL_standard");
       AclLine line = acl.getLines().get(0);
       assertEquals(
-          Optional.of(
-              new VendorStructureId(
-                  filename,
-                  IPV4_ACCESS_LIST_STANDARD_LINE.getDescription(),
-                  aclLineStructureName(acl.getName(), line.getName()))),
-          line.getVendorStructureId());
+              Optional.of(
+                      new VendorStructureId(
+                              filename,
+                              IPV4_ACCESS_LIST_STANDARD_LINE.getDescription(),
+                              aclLineStructureName(acl.getName(), line.getName()))),
+              line.getVendorStructureId());
     }
 
     // extended
@@ -962,12 +958,12 @@ public final class CiscoGrammarTest {
       IpAccessList acl = c.getIpAccessLists().get("AL_extended");
       AclLine line = acl.getLines().get(0);
       assertEquals(
-          Optional.of(
-              new VendorStructureId(
-                  filename,
-                  IPV4_ACCESS_LIST_EXTENDED_LINE.getDescription(),
-                  aclLineStructureName(acl.getName(), line.getName()))),
-          line.getVendorStructureId());
+              Optional.of(
+                      new VendorStructureId(
+                              filename,
+                              IPV4_ACCESS_LIST_EXTENDED_LINE.getDescription(),
+                              aclLineStructureName(acl.getName(), line.getName()))),
+              line.getVendorStructureId());
     }
   }
 
@@ -977,14 +973,14 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-unused", 0));
     assertThat(ccae, hasNumReferrers(filename, BFD_TEMPLATE, "bfd-template-used", 1));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
+            ccae,
+            hasUndefinedReference(
+                    filename, BFD_TEMPLATE, "bfd-template-undefined", INTERFACE_BFD_TEMPLATE));
   }
 
   @Test
@@ -1021,17 +1017,14 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpDefaultInformationOriginate() throws IOException {
     /*
-     * Default-information originate is required for default routes to be
-     * redistributed into BGP via
-     * redistribute statements. It does not affect routes added to BGP via network
-     * statements.
+     * Default-information originate is required for default routes to be redistributed into BGP via
+     * redistribute statements. It does not affect routes added to BGP via network statements.
      *
      * Config contains four VRFs, each of which contains a static default route.
      * - VRF1 redistributes static and has default-information originate configured.
      * - VRF2 redistributes static, but does not have default-information originate.
      * - VRF3 has default-information originate, but does not redistribute static.
-     * - VRF4 has a network statement for 0.0.0.0/0 and does not have
-     * default-information originate.
+     * - VRF4 has a network statement for 0.0.0.0/0 and does not have default-information originate.
      *
      * VRFs 1 and 4 should have a redistributed BGP default route.
      */
@@ -1042,7 +1035,7 @@ public final class CiscoGrammarTest {
 
     // Sanity check: All VRFs' main RIBs should contain static default routes
     Matcher<Iterable<? extends AbstractRouteDecorator>> containsStaticDefaultRoute =
-        contains(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC)));
+            contains(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC)));
     assertThat(dp.getRibs().get(hostname, "VRF1").getRoutes(), containsStaticDefaultRoute);
     assertThat(dp.getRibs().get(hostname, "VRF2").getRoutes(), containsStaticDefaultRoute);
     assertThat(dp.getRibs().get(hostname, "VRF3").getRoutes(), containsStaticDefaultRoute);
@@ -1063,21 +1056,21 @@ public final class CiscoGrammarTest {
   public void testIosBgpEnforceAsExtraction() {
     {
       CiscoConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-disabled", ConfigurationFormat.CISCO_IOS);
+              parseCiscoConfig("ios-bgp-enforce-first-as-disabled", ConfigurationFormat.CISCO_IOS);
       org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), equalTo(Boolean.FALSE));
     }
     {
       CiscoConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-explicit", ConfigurationFormat.CISCO_IOS);
+              parseCiscoConfig("ios-bgp-enforce-first-as-explicit", ConfigurationFormat.CISCO_IOS);
       org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), equalTo(Boolean.TRUE));
     }
     {
       CiscoConfiguration c =
-          parseCiscoConfig("ios-bgp-enforce-first-as-default", ConfigurationFormat.CISCO_IOS);
+              parseCiscoConfig("ios-bgp-enforce-first-as-default", ConfigurationFormat.CISCO_IOS);
       org.batfish.representation.cisco.BgpProcess p = c.getDefaultVrf().getBgpProcess();
       assertThat(p, notNullValue());
       assertThat(p.getEnforceFirstAs(), nullValue());
@@ -1119,7 +1112,7 @@ public final class CiscoGrammarTest {
     String filename = String.format("configs/%s", hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4in", 1));
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pl4out", 1));
@@ -1130,28 +1123,24 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpRedistributionWithRouteMap() throws IOException {
     /*
-     * Config contains two VRFs, each of which has a static route for 1.1.1.1/32.
-     * Both VRFs redistribute
-     * static routes into BGP with a route-map. The redistribution route-map in VRF1
-     * permits 1.1.1.1/32,
-     * so we should see it as a local route in VRF1's BGP RIB. The redistribution
-     * route-map in VRF2 is
-     * undefined, so VRF2's BGP RIB should be empty.
-     */
+     Config contains two VRFs, each of which has a static route for 1.1.1.1/32. Both VRFs redistribute
+     static routes into BGP with a route-map. The redistribution route-map in VRF1 permits 1.1.1.1/32,
+     so we should see it as a local route in VRF1's BGP RIB. The redistribution route-map in VRF2 is
+     undefined, so VRF2's BGP RIB should be empty.
+    */
     String hostname = "bgp_redistribution_with_route_map";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Prefix staticPrefix = Prefix.parse("1.1.1.1/32");
 
-    // Sanity check: Both VRFs' main RIBs should contain the static route to
-    // 1.1.1.1/32
+    // Sanity check: Both VRFs' main RIBs should contain the static route to 1.1.1.1/32
     Set<AbstractRoute> vrf1Routes = dp.getRibs().get(hostname, "VRF1").getRoutes();
     Set<AbstractRoute> vrf2Routes = dp.getRibs().get(hostname, "VRF2").getRoutes();
     assertThat(
-        vrf1Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+            vrf1Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
     assertThat(
-        vrf2Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
+            vrf2Routes, hasItem(allOf(hasPrefix(staticPrefix), hasProtocol(RoutingProtocol.STATIC))));
 
     // Only VRF1 should have 1.1.1.1/32 in BGP
     Set<Bgpv4Route> vrf1BgpRoutes = dp.getBgpRoutes().get(hostname, "VRF1");
@@ -1163,33 +1152,30 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosIbgpMissingUpdateSource() throws IOException {
     /*
-     * r1 is missing update-source, but session should still be established between
-     * r1 and r2. Both
-     * redistribute static routes, so should see BGP routes on both for the other's
-     * static route.
-     */
+    r1 is missing update-source, but session should still be established between r1 and r2. Both
+    redistribute static routes, so should see BGP routes on both for the other's static route.
+    */
     String testrigName = "ibgp-no-update-source";
     List<String> configurationNames = ImmutableList.of("r1", "r2");
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
 
     // Confirm that BGP peer on r1 is missing its local IP, as expected
     Ip r1NeighborPeerAddress = Ip.parse("2.2.2.2");
     Configuration r1 = batfish.loadConfigurations(batfish.getSnapshot()).get("r1");
     Map<Ip, BgpActivePeerConfig> r1Peers =
-        r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
+            r1.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors();
     assertTrue(r1Peers.containsKey(r1NeighborPeerAddress));
     assertThat(r1Peers.get(r1NeighborPeerAddress).getLocalIp(), nullValue());
 
     /*
-     * r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32.
-     * Confirm that both
-     * received a BGP route to the other's static route.
-     */
+    r1 has a static route to 7.7.7.7/32; r2 has a static route to 8.8.8.8/32. Confirm that both
+    received a BGP route to the other's static route.
+    */
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
@@ -1204,39 +1190,39 @@ public final class CiscoGrammarTest {
     String testrigName = "eigrp-distribute-list-wildcard";
     List<String> configurationNames = ImmutableList.of("sender", "receiver");
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<Prefix> receivedEigrpRoutes =
-        dp.getRibs().get("receiver", DEFAULT_VRF_NAME).getRoutes().stream()
-            .filter(r -> r instanceof EigrpRoute)
-            .map(AbstractRoute::getNetwork)
-            .collect(ImmutableSet.toImmutableSet());
+            dp.getRibs().get("receiver", DEFAULT_VRF_NAME).getRoutes().stream()
+                    .filter(r -> r instanceof EigrpRoute)
+                    .map(AbstractRoute::getNetwork)
+                    .collect(ImmutableSet.toImmutableSet());
     assertThat(
-        receivedEigrpRoutes,
-        containsInAnyOrder(
-            Prefix.parse("128.0.64.0/18"),
-            Prefix.parse("128.0.64.0/19"),
-            Prefix.parse("128.0.64.0/20"),
-            Prefix.parse("128.0.64.0/21"),
-            Prefix.parse("128.0.64.0/22"),
-            Prefix.parse("128.0.64.0/23"),
-            Prefix.parse("128.0.64.0/24"),
-            Prefix.parse("128.0.64.1/32"),
-            Prefix.parse("128.0.64.2/31"),
-            Prefix.parse("128.0.64.4/30"),
-            Prefix.parse("128.0.64.8/29"),
-            Prefix.parse("128.0.64.16/28"),
-            Prefix.parse("128.0.64.32/27"),
-            Prefix.parse("128.0.64.64/26"),
-            Prefix.parse("128.0.64.128/25"),
-            Prefix.parse("128.1.64.0/32")));
+            receivedEigrpRoutes,
+            containsInAnyOrder(
+                    Prefix.parse("128.0.64.0/18"),
+                    Prefix.parse("128.0.64.0/19"),
+                    Prefix.parse("128.0.64.0/20"),
+                    Prefix.parse("128.0.64.0/21"),
+                    Prefix.parse("128.0.64.0/22"),
+                    Prefix.parse("128.0.64.0/23"),
+                    Prefix.parse("128.0.64.0/24"),
+                    Prefix.parse("128.0.64.1/32"),
+                    Prefix.parse("128.0.64.2/31"),
+                    Prefix.parse("128.0.64.4/30"),
+                    Prefix.parse("128.0.64.8/29"),
+                    Prefix.parse("128.0.64.16/28"),
+                    Prefix.parse("128.0.64.32/27"),
+                    Prefix.parse("128.0.64.64/26"),
+                    Prefix.parse("128.0.64.128/25"),
+                    Prefix.parse("128.1.64.0/32")));
   }
 
   /**
@@ -1289,11 +1275,11 @@ public final class CiscoGrammarTest {
 
     /* Passive interfaces are configured correctly */
     assertThat(
-        c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+            c, hasInterface("Ethernet0", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
-        c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+            c, hasInterface("Ethernet1", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
-        c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+            c, hasInterface("Ethernet2", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
   /** Test mixing named and classic EIGRP processes in separate VRFs */
@@ -1334,11 +1320,11 @@ public final class CiscoGrammarTest {
 
     /* Passive interfaces are configured correctly */
     assertThat(
-        c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+            c, hasInterface("Ethernet3", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
-        c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
+            c, hasInterface("Ethernet4", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(false))));
     assertThat(
-        c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
+            c, hasInterface("Ethernet5", hasEigrp(EigrpInterfaceSettingsMatchers.hasPassive(true))));
   }
 
   /** Test named EIGRP process with passive interfaces */
@@ -1346,20 +1332,15 @@ public final class CiscoGrammarTest {
   public void testIosPortChannelEigrpMetric() throws IOException {
     Configuration c = parseConfig("ios-portchannel-eigrp");
 
-    /*
-     * Port-channel23 should have EIGRP bandwidth based on member interfaces'
-     * bandwidths
-     */
+    /* Port-channel23 should have EIGRP bandwidth based on member interfaces' bandwidths */
     long expectedBw = (long) 2e9;
     Interface portChannel23 = c.getAllInterfaces().get("Port-channel23");
     assertThat(portChannel23, hasBandwidth(expectedBw));
     assertThat(
-        portChannel23,
-        hasEigrp(
-            EigrpInterfaceSettingsMatchers.hasEigrpMetric(
-                EigrpMetricMatchers.hasBandwidth(expectedBw / 1000)))); // scale
-    // to
-    // kbps
+            portChannel23,
+            hasEigrp(
+                    EigrpInterfaceSettingsMatchers.hasEigrpMetric(
+                            EigrpMetricMatchers.hasBandwidth(expectedBw / 1000)))); // scale to kbps
   }
 
   /**
@@ -1373,38 +1354,37 @@ public final class CiscoGrammarTest {
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(1L))));
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(2L))));
     String exportPolicyName =
-        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getRedistributionPolicy();
+            c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(2L).getRedistributionPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder =
-        EigrpExternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V1);
+            EigrpExternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V1);
     outputRouteBuilder
-        .setDestinationAsn(1L)
-        .setNetwork(Prefix.parse("1.0.0.0/32"))
-        .setProcessAsn(2L);
+            .setDestinationAsn(1L)
+            .setNetwork(Prefix.parse("1.0.0.0/32"))
+            .setProcessAsn(2L);
 
     EigrpMetric originalMetric =
-        ClassicMetric.builder()
-            .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
-            .build();
+            ClassicMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                    .build();
 
     // VirtualEigrpProcess sets metric to route metric by default
     outputRouteBuilder.setEigrpMetric(originalMetric);
 
     EigrpInternalRoute originalRoute =
-        EigrpInternalRoute.testBuilder()
-            .setAdmin(90)
-            .setEigrpMetric(originalMetric)
-            .setEigrpMetricVersion(EigrpMetricVersion.V1)
-            .setNetwork(outputRouteBuilder.getNetwork())
-            .setProcessAsn(1L)
-            .build();
+            EigrpInternalRoute.testBuilder()
+                    .setAdmin(90)
+                    .setEigrpMetric(originalMetric)
+                    .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                    .setNetwork(outputRouteBuilder.getNetwork())
+                    .setProcessAsn(1L)
+                    .build();
     assertNotNull(originalRoute);
 
-    // Check if routingPolicy accepts EIGRP route and sets correct metric from
-    // original route
+    // Check if routingPolicy accepts EIGRP route and sets correct metric from original route
     assertTrue(routingPolicy.process(originalRoute, outputRouteBuilder, Direction.OUT));
     assertThat(outputRouteBuilder.build(), hasEigrpMetric(originalRoute.getEigrpMetric()));
   }
@@ -1420,68 +1400,68 @@ public final class CiscoGrammarTest {
 
     assertThat(c, hasDefaultVrf(hasEigrpProcesses(hasKey(asn))));
     org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess =
-        c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn);
+            c.getVrfs().get(DEFAULT_VRF_NAME).getEigrpProcesses().get(asn);
     String exportPolicyName = eigrpProcess.getRedistributionPolicy();
     assertThat(exportPolicyName, notNullValue());
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(exportPolicyName);
     assertThat(routingPolicy, notNullValue());
 
     EigrpExternalRoute.Builder outputRouteBuilder =
-        EigrpExternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V1);
+            EigrpExternalRoute.testBuilder().setEigrpMetricVersion(EigrpMetricVersion.V1);
     outputRouteBuilder
-        .setDestinationAsn(asn)
-        .setNetwork(Prefix.parse("1.0.0.0/32"))
-        .setProcessAsn(asn);
+            .setDestinationAsn(asn)
+            .setNetwork(Prefix.parse("1.0.0.0/32"))
+            .setProcessAsn(asn);
     ClassicMetric.Builder metricBuilder = ClassicMetric.builder();
 
     // Check if routingPolicy accepts connected route and sets correct metric
     assertTrue(
-        routingPolicy.process(
-            new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
-            outputRouteBuilder,
-            eigrpProcess,
-            Direction.OUT));
+            routingPolicy.process(
+                    new ConnectedRoute(Prefix.parse("1.1.1.1/32"), "Loopback0"),
+                    outputRouteBuilder,
+                    eigrpProcess,
+                    Direction.OUT));
     assertThat(
-        outputRouteBuilder.build(),
-        hasEigrpMetric(
-            metricBuilder
-                .setValues(
-                    EigrpMetricValues.builder().setBandwidth(100).setDelay(100_000_000).build())
-                .build()));
+            outputRouteBuilder.build(),
+            hasEigrpMetric(
+                    metricBuilder
+                            .setValues(
+                                    EigrpMetricValues.builder().setBandwidth(100).setDelay(100_000_000).build())
+                            .build()));
 
     // Check if routingPolicy rejects RIP route
     assertFalse(
-        routingPolicy.process(
-            RipInternalRoute.builder()
-                .setNetwork(Prefix.parse("2.2.2.2/32"))
-                .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
-                .setAdmin(1)
-                .setMetric(1)
-                .build(),
-            outputRouteBuilder,
-            eigrpProcess,
-            Direction.OUT));
+            routingPolicy.process(
+                    RipInternalRoute.builder()
+                            .setNetwork(Prefix.parse("2.2.2.2/32"))
+                            .setNextHop(NextHopIp.of(Ip.parse("3.3.3.3")))
+                            .setAdmin(1)
+                            .setMetric(1)
+                            .build(),
+                    outputRouteBuilder,
+                    eigrpProcess,
+                    Direction.OUT));
 
     // Check if routingPolicy accepts OSPF route and sets correct default metric
     assertTrue(
-        routingPolicy.process(
-            OspfIntraAreaRoute.builder()
-                .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("5.5.5.5")))
-                .setNetwork(Prefix.parse("4.4.4.4/32"))
-                .setAdmin(1)
-                .setMetric(1)
-                .setArea(1L)
-                .build(),
-            outputRouteBuilder,
-            eigrpProcess,
-            Direction.OUT));
+            routingPolicy.process(
+                    OspfIntraAreaRoute.builder()
+                            .setNextHop(NextHopInterface.of("dummyInterface", Ip.parse("5.5.5.5")))
+                            .setNetwork(Prefix.parse("4.4.4.4/32"))
+                            .setAdmin(1)
+                            .setMetric(1)
+                            .setArea(1L)
+                            .build(),
+                    outputRouteBuilder,
+                    eigrpProcess,
+                    Direction.OUT));
     assertThat(
-        outputRouteBuilder.build(),
-        hasEigrpMetric(
-            metricBuilder
-                .setValues(
-                    EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
-                .build()));
+            outputRouteBuilder.build(),
+            hasEigrpMetric(
+                    metricBuilder
+                            .setValues(
+                                    EigrpMetricValues.builder().setBandwidth(200).setDelay(200_000_000L).build())
+                            .build()));
   }
 
   /**
@@ -1496,10 +1476,10 @@ public final class CiscoGrammarTest {
     assertSame(eigrpProc.size(), 3);
 
     List<EigrpRedistributionPolicy> eigrpRedists =
-        eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
-            .filter(entry -> entry.getKey().getProtocol() == RoutingProtocol.EIGRP)
-            .map(Entry::getValue)
-            .collect(Collectors.toList());
+            eigrpProc.get(10L).getRedistributionPolicies().entrySet().stream()
+                    .filter(entry -> entry.getKey().getProtocol() == RoutingProtocol.EIGRP)
+                    .map(Entry::getValue)
+                    .collect(Collectors.toList());
     assertSame(eigrpRedists.size(), 2);
 
     RoutingProtocolInstance instance1 = RoutingProtocolInstance.eigrp(10L);
@@ -1517,9 +1497,9 @@ public final class CiscoGrammarTest {
     assertSame(eigrpProc.get(30L).getRedistributionPolicies().size(), 1);
 
     EigrpRedistributionPolicy eigrpRedist2 =
-        eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
+            eigrpProc.get(20L).getRedistributionPolicies().get(instance1);
     EigrpRedistributionPolicy eigrpRedist3 =
-        eigrpProc.get(30L).getRedistributionPolicies().get(instance1);
+            eigrpProc.get(30L).getRedistributionPolicies().get(instance1);
     assertEquals("RM10", eigrpRedist2.getRouteMap());
     assertEquals("RM10", eigrpRedist3.getRouteMap());
     assertThat(eigrpRedist2.getInstance(), equalTo(instance1));
@@ -1562,50 +1542,50 @@ public final class CiscoGrammarTest {
 
     /* Check that expected traffic is permitted/denied */
     Flow permittedByBoth =
-        Flow.builder()
-            .setSrcIp(Ip.parse("1.1.1.1"))
-            .setDstIp(Ip.parse("2.2.2.2"))
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setDstPort(80)
-            .setIngressNode("internet")
-            .build();
+            Flow.builder()
+                    .setSrcIp(Ip.parse("1.1.1.1"))
+                    .setDstIp(Ip.parse("2.2.2.2"))
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+                    .setDstPort(80)
+                    .setIngressNode("internet")
+                    .build();
     assertThat(eth2Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, accepts(permittedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, accepts(permittedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
 
     Flow permittedThroughEth2Only =
-        Flow.builder()
-            .setSrcIp(Ip.parse("1.1.1.2"))
-            .setDstIp(Ip.parse("2.2.2.2"))
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setDstPort(80)
-            .setIngressNode("internet")
-            .build();
+            Flow.builder()
+                    .setSrcIp(Ip.parse("1.1.1.2"))
+                    .setDstIp(Ip.parse("2.2.2.2"))
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+                    .setDstPort(80)
+                    .setIngressNode("internet")
+                    .build();
     assertThat(
-        eth2Acl,
-        accepts(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+            eth2Acl,
+            accepts(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        eth2Acl,
-        accepts(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+            eth2Acl,
+            accepts(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        eth3Acl,
-        rejects(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
+            eth3Acl,
+            rejects(permittedThroughEth2Only, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(
-        eth3Acl,
-        rejects(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
+            eth3Acl,
+            rejects(permittedThroughEth2Only, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
 
     Flow deniedByBoth =
-        Flow.builder()
-            .setSrcIp(Ip.parse("1.1.1.1"))
-            .setDstIp(Ip.parse("2.2.2.2"))
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
-            .setDstPort(81)
-            .setIngressNode("internet")
-            .build();
+            Flow.builder()
+                    .setSrcIp(Ip.parse("1.1.1.1"))
+                    .setDstIp(Ip.parse("2.2.2.2"))
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(NamedPort.EPHEMERAL_LOWEST.number())
+                    .setDstPort(81)
+                    .setIngressNode("internet")
+                    .build();
     assertThat(eth2Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth2Acl, rejects(deniedByBoth, eth1Name, c.getIpAccessLists(), c.getIpSpaces()));
     assertThat(eth3Acl, rejects(deniedByBoth, eth0Name, c.getIpAccessLists(), c.getIpSpaces()));
@@ -1637,35 +1617,35 @@ public final class CiscoGrammarTest {
     // All delays in picoseconds. For table of values based on bandwidths see
     // https://tools.ietf.org/html/rfc7868#section-5.6.1.2
     assertThat(
-        c,
-        hasInterface(
-            "GigabitEthernet0/0",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
+            c,
+            hasInterface(
+                    "GigabitEthernet0/0",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
     assertThat(
-        c,
-        hasInterface(
-            "GigabitEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000_000L)))));
+            c,
+            hasInterface(
+                    "GigabitEthernet0/1",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000_000L)))));
     assertThat(
-        c,
-        hasInterface(
-            "FastEthernet0/1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(100_000_000L)))));
+            c,
+            hasInterface(
+                    "FastEthernet0/1",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(100_000_000L)))));
     assertThat(
-        c,
-        hasInterface(
-            "Loopback0",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5_000_000_000L)))));
+            c,
+            hasInterface(
+                    "Loopback0",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(5_000_000_000L)))));
     assertThat(
-        c,
-        hasInterface(
-            "Tunnel0",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(50_000_000_000L)))));
+            c,
+            hasInterface(
+                    "Tunnel0",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(50_000_000_000L)))));
     assertThat(
-        c,
-        hasInterface(
-            "Port-channel1",
-            hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
+            c,
+            hasInterface(
+                    "Port-channel1",
+                    hasEigrp(EigrpInterfaceSettingsMatchers.hasEigrpMetric(hasDelay(10_000_000L)))));
   }
 
   @Test
@@ -1673,18 +1653,18 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-speed");
 
     assertThat(
-        c,
-        hasInterfaces(
-            hasKeys(
-                "GigabitEthernet0/0",
-                "GigabitEthernet0/1",
-                "GigabitEthernet0/2",
-                "Loopback0",
-                "Tunnel0",
-                "TwoGigabitEthernet1",
-                "TwoGigabitEthernet2",
-                "TwentyFiveGigE3",
-                "TwentyFiveGigE4")));
+            c,
+            hasInterfaces(
+                    hasKeys(
+                            "GigabitEthernet0/0",
+                            "GigabitEthernet0/1",
+                            "GigabitEthernet0/2",
+                            "Loopback0",
+                            "Tunnel0",
+                            "TwoGigabitEthernet1",
+                            "TwoGigabitEthernet2",
+                            "TwentyFiveGigE3",
+                            "TwentyFiveGigE4")));
     assertThat(c, hasInterface("GigabitEthernet0/0", hasBandwidth(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/0", hasSpeed(1E9D)));
     assertThat(c, hasInterface("GigabitEthernet0/1", hasBandwidth(1E9D)));
@@ -1702,17 +1682,17 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosInterfaceStandbyExtraction() {
     CiscoConfiguration vc =
-        parseCiscoConfig("ios-interface-standby", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ios-interface-standby", ConfigurationFormat.CISCO_IOS);
     assertThat(
-        vc.getInterfaces(), hasKeys("Ethernet0", "Tunnel1", "Ethernet1", "Ethernet2", "Ethernet3"));
+            vc.getInterfaces(), hasKeys("Ethernet0", "Tunnel1", "Ethernet1", "Ethernet2", "Ethernet3"));
     {
       org.batfish.representation.cisco.Interface i = vc.getInterfaces().get("Ethernet0");
       assertThat(i.getHsrpVersion(), equalTo(HsrpVersion.VERSION_2));
       assertThat(i.getHsrpGroups(), hasKeys(4095));
       HsrpGroup h = i.getHsrpGroups().get(4095);
       assertThat(
-          h.getAuthentication(),
-          equalTo(CommonUtil.sha256Digest("012345678901234567890123456789012345678")));
+              h.getAuthentication(),
+              equalTo(CommonUtil.sha256Digest("012345678901234567890123456789012345678")));
       assertThat(h.getIp(), equalTo(Ip.parse("10.0.0.1")));
       assertTrue(h.getPreempt());
       assertThat(h.getPriority(), equalTo(105));
@@ -1775,12 +1755,12 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
 
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+            batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae.getWarnings().get(filename).getParseWarnings(),
-        containsInAnyOrder(
-            hasComment("Expected HSRP version 1 group number in range 0-255, but got '500'"),
-            hasComment("Expected HSRP version 2 group number in range 0-4095, but got '5000'")));
+            pvcae.getWarnings().get(filename).getParseWarnings(),
+            containsInAnyOrder(
+                    hasComment("Expected HSRP version 1 group number in range 0-255, but got '500'"),
+                    hasComment("Expected HSRP version 2 group number in range 0-4095, but got '5000'")));
   }
 
   @Test
@@ -1790,57 +1770,52 @@ public final class CiscoGrammarTest {
     int group = 4095;
 
     assertThat(
-        c,
-        ConfigurationMatchers.hasTrackingGroups(
-            equalTo(
-                ImmutableMap.of(
-                    "1",
-                    interfaceActive("Tunnel1"),
-                    generatedNegatedTrackMethodId("1"),
-                    negatedReference("1"),
-                    "2",
-                    interfaceActive("Tunnel1"),
-                    generatedNegatedTrackMethodId("2"),
-                    negatedReference("2"),
-                    "3",
-                    // undefined interface
-                    alwaysFalse(),
-                    generatedNegatedTrackMethodId("3"),
-                    negatedReference("3"),
-                    "4",
-                    interfaceActive("Tunnel1"),
-                    generatedNegatedTrackMethodId("4"),
-                    negatedReference("4")
-                    // track 5 does not exist
-                    ))));
+            c,
+            ConfigurationMatchers.hasTrackingGroups(
+                    equalTo(
+                            ImmutableMap.of(
+                                    "1",
+                                    interfaceActive("Tunnel1"),
+                                    generatedNegatedTrackMethodId("1"),
+                                    negatedReference("1"),
+                                    "2",
+                                    interfaceActive("Tunnel1"),
+                                    generatedNegatedTrackMethodId("2"),
+                                    negatedReference("2"),
+                                    "3",
+                                    // undefined interface
+                                    alwaysFalse(),
+                                    generatedNegatedTrackMethodId("3"),
+                                    negatedReference("3"),
+                                    "4",
+                                    interfaceActive("Tunnel1"),
+                                    generatedNegatedTrackMethodId("4"),
+                                    negatedReference("4")
+                                    // track 5 does not exist
+                            ))));
     assertThat(
-        i,
-        hasHsrpGroup(
-            group,
-            HsrpGroupMatchers.hasAuthentication(
-                sha256Digest("012345678901234567890123456789012345678"))));
+            i,
+            hasHsrpGroup(
+                    group,
+                    HsrpGroupMatchers.hasAuthentication(
+                            sha256Digest("012345678901234567890123456789012345678"))));
     assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasHelloTime(500)));
     assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasHoldTime(2000)));
     assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasIps(contains(Ip.parse("10.0.0.1")))));
     assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasPriority(105)));
     assertThat(i, hasHsrpGroup(group, HsrpGroupMatchers.hasPreempt()));
     assertThat(
-        i,
-        hasHsrpGroup(
-            group,
-            hasTrackActions(
-                equalTo(
-                    ImmutableMap.of(
-                        generatedNegatedTrackMethodId("1"),
-                        new DecrementPriority(20),
-                        // TODO: support actual
-                        // shutdown
-                        generatedNegatedTrackMethodId("2"),
-                        new DecrementPriority(255),
-                        generatedNegatedTrackMethodId("3"),
-                        new DecrementPriority(20),
-                        generatedNegatedTrackMethodId("4"),
-                        new DecrementPriority(10))))));
+            i,
+            hasHsrpGroup(
+                    group,
+                    hasTrackActions(
+                            equalTo(
+                                    ImmutableMap.of(
+                                            generatedNegatedTrackMethodId("1"), new DecrementPriority(20),
+                                            // TODO: support actual shutdown
+                                            generatedNegatedTrackMethodId("2"), new DecrementPriority(255),
+                                            generatedNegatedTrackMethodId("3"), new DecrementPriority(20),
+                                            generatedNegatedTrackMethodId("4"), new DecrementPriority(10))))));
     assertThat(i, hasHsrpVersion("2"));
   }
 
@@ -1850,14 +1825,14 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ci", 1));
     assertThat(ccae, hasNumReferrers(filename, INSPECT_CLASS_MAP, "ciunused", 0));
     assertThat(
-        ccae,
-        hasUndefinedReference(
-            filename, INSPECT_CLASS_MAP, "ciundefined", INSPECT_POLICY_MAP_INSPECT_CLASS));
+            ccae,
+            hasUndefinedReference(
+                    filename, INSPECT_CLASS_MAP, "ciundefined", INSPECT_POLICY_MAP_INSPECT_CLASS));
   }
 
   @Test
@@ -1867,18 +1842,18 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(
-        c,
-        hasVrfs(
-            hasEntry(
-                equalTo(vrf),
-                hasStaticRoutes(
-                    equalTo(
-                        ImmutableSet.of(
-                            StaticRoute.testBuilder()
-                                .setAdministrativeCost(1)
-                                .setNetwork(Prefix.ZERO)
-                                .setNextHopIp(Ip.parse("1.2.3.4"))
-                                .build()))))));
+            c,
+            hasVrfs(
+                    hasEntry(
+                            equalTo(vrf),
+                            hasStaticRoutes(
+                                    equalTo(
+                                            ImmutableSet.of(
+                                                    StaticRoute.testBuilder()
+                                                            .setAdministrativeCost(1)
+                                                            .setNetwork(Prefix.ZERO)
+                                                            .setNextHopIp(Ip.parse("1.2.3.4"))
+                                                            .build()))))));
   }
 
   /** Tests that Cisco parser doesn't crash in conversion for incomplete ipsec profile. */
@@ -1904,12 +1879,12 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kused", 1));
     assertThat(ccae, hasNumReferrers(filename, KEYRING, "kunused", 0));
     assertThat(
-        ccae, hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
+            ccae, hasUndefinedReference(filename, KEYRING, "kundefined", ISAKMP_PROFILE_KEYRING));
   }
 
   @Test
@@ -1925,47 +1900,38 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosNeighborDefaultOriginateRouteMapsAsGenerationPolicies() throws IOException {
     /*
-     * Listener 2
-     * |
-     * (Peer 2)
-     * Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
-     *
-     * All listeners have EBGP sessions established with the originator, and the
-     * originator has
-     * default-originate configured for all three peers. Some peers also have a
-     * route-map configured
-     * with default-originate, which will act as a generation policy for the default
-     * route.
-     *
-     * - Peer 1: default-originate has no route-map attached, but there is a
-     * route-map configured as
-     * an export policy that denies the default route. However, the
-     * default-originate route doesn't
-     * go through configured export policies, so should reach listener 1.
-     *
-     * - Peer 2: default-originate has a route-map attached that permits routes to
-     * 1.2.3.4; the
-     * originator has a static route to 1.2.3.4, so default route should still be
-     * generated.
-     *
-     * - Peer 3: default-originate has a route-map attached that permits routes to
-     * 5.6.7.8; the
-     * originator has no route to 5.6.7.8, so no default route should appear on
-     * listener 3.
-     */
+                              Listener 2
+                                  |
+                               (Peer 2)
+       Listener 1 -- (Peer 1) Originator (Peer 3) -- Listener 3
+
+     All listeners have EBGP sessions established with the originator, and the originator has
+     default-originate configured for all three peers. Some peers also have a route-map configured
+     with default-originate, which will act as a generation policy for the default route.
+
+      - Peer 1: default-originate has no route-map attached, but there is a route-map configured as
+        an export policy that denies the default route. However, the default-originate route doesn't
+        go through configured export policies, so should reach listener 1.
+
+      - Peer 2: default-originate has a route-map attached that permits routes to 1.2.3.4; the
+      originator has a static route to 1.2.3.4, so default route should still be generated.
+
+      - Peer 3: default-originate has a route-map attached that permits routes to 5.6.7.8; the
+      originator has no route to 5.6.7.8, so no default route should appear on listener 3.
+    */
     String testrigName = "ios-default-originate";
     String originatorName = "originator";
     String l1Name = "listener1";
     String l2Name = "listener2";
     String l3Name = "listener3";
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(
-                    TESTRIGS_PREFIX + testrigName,
-                    ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(
+                                    TESTRIGS_PREFIX + testrigName,
+                                    ImmutableList.of(originatorName, l1Name, l2Name, l3Name))
+                            .build(),
+                    _folder);
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
@@ -1979,27 +1945,27 @@ public final class CiscoGrammarTest {
     Ip originatorIp = Ip.parse("10.1.1.1");
     long originatorAs = 1L;
     Bgpv4Route expected =
-        Bgpv4Route.testBuilder()
-            .setNetwork(Prefix.ZERO)
-            .setNextHopIp(originatorIp)
-            .setAdmin(20)
-            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
-            .setLocalPreference(100)
-            .setOriginatorIp(originatorId)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
-            .build();
+            Bgpv4Route.testBuilder()
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHopIp(originatorIp)
+                    .setAdmin(20)
+                    .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+                    .setLocalPreference(100)
+                    .setOriginatorIp(originatorId)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setReceivedFrom(ReceivedFromIp.of(originatorIp))
+                    .build();
     assertThat(l1Routes, hasItem(expected));
 
     // Listener 2
     originatorIp = Ip.parse("10.2.2.1");
     expected =
-        expected.toBuilder()
-            .setNextHopIp(originatorIp)
-            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
-            .build();
+            expected.toBuilder()
+                    .setNextHopIp(originatorIp)
+                    .setReceivedFrom(ReceivedFromIp.of(originatorIp))
+                    .build();
     assertThat(l2Routes, hasItem(expected));
 
     // Listener 3
@@ -2009,42 +1975,34 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosRedistributeStaticDefaultWithDefaultOriginatePolicy() throws IOException {
     /*
-     * Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
-     *
-     * Both listeners have EBGP sessions established with the originator. The
-     * originator has
-     * default-originate configured on both peers, but with a generation policy that
-     * only matches
-     * routes to 1.2.3.4, so default routes won't be generated. This way both peers'
-     * BGP export
-     * policies include the default route export policy, but we don't have to worry
-     * about the
-     * default-originate route overwriting other default routes in neighbors' RIBs.
-     *
-     * The originator has a static default route which is added to BGP via a network
-     * statement with
-     * a route-map that sets community 50, so we can be certain of the route's
-     * origin in neighbors.
-     *
-     * We should see the redistributed local route in the originator's BGP RIB.
-     *
-     * Peer 1 has no outbound route-map, so the static route should be redistributed
-     * to listener 1.
-     *
-     * Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route
-     * on listener 2.
-     */
+       Listener 1 -- (Peer 1) Originator (Peer 2) -- Listener 2
+
+     Both listeners have EBGP sessions established with the originator. The originator has
+     default-originate configured on both peers, but with a generation policy that only matches
+     routes to 1.2.3.4, so default routes won't be generated. This way both peers' BGP export
+     policies include the default route export policy, but we don't have to worry about the
+     default-originate route overwriting other default routes in neighbors' RIBs.
+
+     The originator has a static default route which is added to BGP via a network statement with
+     a route-map that sets community 50, so we can be certain of the route's origin in neighbors.
+
+     We should see the redistributed local route in the originator's BGP RIB.
+
+     Peer 1 has no outbound route-map, so the static route should be redistributed to listener 1.
+
+     Peer 2 has an outbound route-map that denies 0.0.0.0/0, so no default route on listener 2.
+    */
     String testrigName = "ios-default-originate";
     String originatorName = "originator-static-route";
     String l1Name = "listener1";
     String l2Name = "listener2";
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(
-                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(
+                                    TESTRIGS_PREFIX + testrigName, ImmutableList.of(originatorName, l1Name, l2Name))
+                            .build(),
+                    _folder);
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
@@ -2055,22 +2013,22 @@ public final class CiscoGrammarTest {
 
     Ip originatorId = Ip.parse("1.1.1.1");
     Bgpv4Route redistributedStaticRoute =
-        Bgpv4Route.builder()
-            .setCommunities(ImmutableSet.of(StandardCommunity.of(50)))
-            .setNetwork(Prefix.ZERO)
-            .setNextHop(NextHopDiscard.instance())
-            .setNonRouting(true)
-            .setAdmin(20)
-            .setAsPath(AsPath.empty())
-            .setLocalPreference(100)
-            .setOriginatorIp(originatorId)
-            .setOriginMechanism(REDISTRIBUTE)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .setSrcProtocol(RoutingProtocol.STATIC)
-            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
-            .build();
+            Bgpv4Route.builder()
+                    .setCommunities(ImmutableSet.of(StandardCommunity.of(50)))
+                    .setNetwork(Prefix.ZERO)
+                    .setNextHop(NextHopDiscard.instance())
+                    .setNonRouting(true)
+                    .setAdmin(20)
+                    .setAsPath(AsPath.empty())
+                    .setLocalPreference(100)
+                    .setOriginatorIp(originatorId)
+                    .setOriginMechanism(REDISTRIBUTE)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setSrcProtocol(RoutingProtocol.STATIC)
+                    .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
+                    .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+                    .build();
 
     // Redistributed route should be in originator's BGP RIB as a local route
     assertThat(originatorBgpRoutes, hasItem(redistributedStaticRoute));
@@ -2079,19 +2037,18 @@ public final class CiscoGrammarTest {
     Ip originatorIp = Ip.parse("10.1.1.1");
     long originatorAs = 1L;
     Bgpv4Route exportedRoute =
-        redistributedStaticRoute.toBuilder()
-            .setAsPath(AsPath.of(AsSet.of(originatorAs)))
-            .setNextHop(NextHopIp.of(originatorIp))
-            .setNonRouting(false)
-            .setReceivedFrom(ReceivedFromIp.of(originatorIp))
-            .setSrcProtocol(RoutingProtocol.BGP)
-            .setWeight(0)
-            .setOriginMechanism(LEARNED)
-            .build();
+            redistributedStaticRoute.toBuilder()
+                    .setAsPath(AsPath.of(AsSet.of(originatorAs)))
+                    .setNextHop(NextHopIp.of(originatorIp))
+                    .setNonRouting(false)
+                    .setReceivedFrom(ReceivedFromIp.of(originatorIp))
+                    .setSrcProtocol(RoutingProtocol.BGP)
+                    .setWeight(0)
+                    .setOriginMechanism(LEARNED)
+                    .build();
     assertThat(l1Routes, hasItem(exportedRoute));
 
-    // Listener 2 should not have received the static route since export policy
-    // prevents it
+    // Listener 2 should not have received the static route since export policy prevents it
     assertThat(l2Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -2102,7 +2059,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Ip ognWildcardIp = Ip.parse("1.128.0.0");
     Ip ognHostIp = Ip.parse("2.0.0.1");
     Ip ognUnmatchedIp = Ip.parse("2.0.0.0");
@@ -2125,10 +2082,10 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpSpace(ognNameNetworkObject, not(containsIp(ognUnmatchedIp))));
     assertThat(c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognHostIp, c.getIpSpaces())));
     assertThat(
-        c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
+            c, hasIpSpace(ognNameNetworkObjectIndirect, containsIp(ognWildcardIp, c.getIpSpaces())));
     assertThat(
-        c,
-        hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
+            c,
+            hasIpSpace(ognNameNetworkObjectIndirect, not(containsIp(ognUnmatchedIp, c.getIpSpaces()))));
     assertThat(c, hasIpSpace(ognNameUnused, not(containsIp(ognUnmatchedIp))));
     assertThat(c, hasIpSpace(ognNameWildcard, containsIp(ognWildcardIp)));
     assertThat(c, hasIpSpace(ognNameWildcard, not(containsIp(ognUnmatchedIp))));
@@ -2150,7 +2107,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String ogpIcmpName = "ogp1";
     String ogpTcpUdpName = "ogp2";
     String ogpEmptyName = "ogp3";
@@ -2167,19 +2124,19 @@ public final class CiscoGrammarTest {
     String ogpAclEmptyName = computeProtocolObjectGroupAclName(ogpEmptyName);
     String ogpAclDuplicateName = computeProtocolObjectGroupAclName(ogpDuplicateName);
     Flow icmpFlow =
-        Flow.builder()
-            .setIngressNode("")
-            .setIpProtocol(IpProtocol.ICMP)
-            .setIcmpCode(0)
-            .setIcmpType(0)
-            .build();
+            Flow.builder()
+                    .setIngressNode("")
+                    .setIpProtocol(IpProtocol.ICMP)
+                    .setIcmpCode(0)
+                    .setIcmpType(0)
+                    .build();
     Flow tcpFlow =
-        Flow.builder()
-            .setIngressNode("")
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(0)
-            .setDstPort(0)
-            .build();
+            Flow.builder()
+                    .setIngressNode("")
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(0)
+                    .setDstPort(0)
+                    .build();
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpIcmpName, 1));
@@ -2189,11 +2146,10 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, PROTOCOL_OBJECT_GROUP, ogpUnusedName, 0));
     /* Confirm the undefined reference shows up as such */
     assertThat(
-        ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
+            ccae, hasUndefinedReference(filename, PROTOCOL_OR_SERVICE_OBJECT_GROUP, ogpUndefName));
 
     /*
-     * Icmp protocol object group and the acl referencing it should only accept Icmp
-     * and reject Tcp
+     * Icmp protocol object group and the acl referencing it should only accept Icmp and reject Tcp
      */
     assertThat(c, hasIpAccessList(ogpAclIcmpName, accepts(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclIcmpName, rejects(tcpFlow, null, c)));
@@ -2201,8 +2157,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclIcmpName, rejects(tcpFlow, null, c)));
 
     /*
-     * TcpUdp protocol object group and the acl referencing it should reject Icmp
-     * and accept Tcp
+     * TcpUdp protocol object group and the acl referencing it should reject Icmp and accept Tcp
      */
     assertThat(c, hasIpAccessList(ogpAclTcpUdpName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclTcpUdpName, accepts(tcpFlow, null, c)));
@@ -2210,8 +2165,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclTcpUdpName, accepts(tcpFlow, null, c)));
 
     /*
-     * Empty protocol object group and the acl referencing it should reject
-     * everything
+     * Empty protocol object group and the acl referencing it should reject everything
      */
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclEmptyName, rejects(tcpFlow, null, c)));
@@ -2219,8 +2173,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList(aclEmptyName, rejects(tcpFlow, null, c)));
 
     /*
-     * Empty protocol object group that is erroneously redefined should still reject
-     * everything
+     * Empty protocol object group that is erroneously redefined should still reject everything
      */
     assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(icmpFlow, null, c)));
     assertThat(c, hasIpAccessList(ogpAclDuplicateName, rejects(tcpFlow, null, c)));
@@ -2241,7 +2194,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, IP_PORT_OBJECT_GROUP, "ogipBase", 2));
@@ -2263,20 +2216,15 @@ public final class CiscoGrammarTest {
     assertThat(c, hasIpAccessList("aclBase", accepts(inFlowDst, null, c)));
     assertThat(c, hasIpAccessList("aclBase", rejects(outFlow, null, c)));
 
-    // TODO: The semantics of empty, duplicate, and undefined groups below have not
-    // been lab tested
+    // TODO: The semantics of empty, duplicate, and undefined groups below have not been lab tested
 
     /* The empty acl reject inFlows */
     assertThat(c, hasIpAccessList("aclEmpty", rejects(inFlowSrc, null, c)));
 
-    /*
-     * The duplicate acl rejects inFlows because the earlier (empty) definition wins
-     */
+    /* The duplicate acl rejects inFlows because the earlier (empty) definition wins */
     assertThat(c, hasIpAccessList("aclDuplicate", rejects(inFlowSrc, null, c)));
 
-    /*
-     * The undefined acl rejects inFlows because the earlier (empty) definition wins
-     */
+    /* The undefined acl rejects inFlows because the earlier (empty) definition wins */
     assertThat(c, hasIpAccessList("aclUndefined", rejects(inFlowSrc, null, c)));
   }
 
@@ -2297,7 +2245,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm the used object groups have referrers */
     assertThat(ccae, hasNumReferrers(filename, SERVICE_OBJECT_GROUP, "og-icmp", 2));
@@ -2309,157 +2257,154 @@ public final class CiscoGrammarTest {
 
     /* og-icmp */
     assertThat(
-        c,
-        hasIpAccessList(
-            computeServiceObjectGroupAclName("og-icmp"),
-            hasLines(
-                isExprAclLineThat(hasMatchCondition(equalTo(matchIpProtocol(IpProtocol.ICMP)))))));
+            c,
+            hasIpAccessList(
+                    computeServiceObjectGroupAclName("og-icmp"),
+                    hasLines(
+                            isExprAclLineThat(hasMatchCondition(equalTo(matchIpProtocol(IpProtocol.ICMP)))))));
 
     /* og-icmp-specific */
     Flow.Builder testFlow =
-        Flow.builder()
-            .setIngressNode(c.getHostname())
-            .setSrcIp(Ip.ZERO)
-            .setDstIp(Ip.ZERO)
-            .setIpProtocol(IpProtocol.ICMP);
+            Flow.builder()
+                    .setIngressNode(c.getHostname())
+                    .setSrcIp(Ip.ZERO)
+                    .setDstIp(Ip.ZERO)
+                    .setIpProtocol(IpProtocol.ICMP);
     assertThat(
-        c,
-        hasIpAccessList(
-            computeServiceObjectGroupAclName("og-icmp-specific"),
-            allOf(
-                accepts(
-                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(0).build(), null, c),
-                // echo is both type/code
-                rejects(
-                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(1).build(), null, c),
-                // echo-reply is both type/code
-                accepts(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(0).build(), null, c),
-                rejects(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(1).build(), null, c),
-                // time-exceeded is just type
-                accepts(
-                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(0).build(), null, c),
-                accepts(
-                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(1).build(), null, c),
-                // unreacbale is just type
-                accepts(
-                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(0).build(),
-                    null,
-                    c),
-                accepts(
-                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(1).build(),
-                    null,
-                    c))));
+            c,
+            hasIpAccessList(
+                    computeServiceObjectGroupAclName("og-icmp-specific"),
+                    allOf(
+                            accepts(
+                                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(0).build(), null, c),
+                            // echo is both type/code
+                            rejects(
+                                    testFlow.setIcmpType(IcmpType.ECHO_REQUEST).setIcmpCode(1).build(), null, c),
+                            // echo-reply is both type/code
+                            accepts(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(0).build(), null, c),
+                            rejects(testFlow.setIcmpType(IcmpType.ECHO_REPLY).setIcmpCode(1).build(), null, c),
+                            // time-exceeded is just type
+                            accepts(
+                                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(0).build(), null, c),
+                            accepts(
+                                    testFlow.setIcmpType(IcmpType.TIME_EXCEEDED).setIcmpCode(1).build(), null, c),
+                            // unreacbale is just type
+                            accepts(
+                                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(0).build(),
+                                    null,
+                                    c),
+                            accepts(
+                                    testFlow.setIcmpType(IcmpType.DESTINATION_UNREACHABLE).setIcmpCode(1).build(),
+                                    null,
+                                    c))));
 
     /* og-tcp */
     assertThat(
-        c,
-        hasIpAccessList(
-            computeServiceObjectGroupAclName("og-tcp"),
-            hasLines(
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        isOrMatchExprThat(
-                            hasDisjuncts(
-                                containsInAnyOrder(
-                                    ImmutableList.of(
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.TCP)),
-                                                    hasDstPorts(hasItem(new SubRange(65500)))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.TCP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.DOMAIN.number())))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.TCP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.CMDtcp_OR_SYSLOGudp
-                                                                    .number())))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.TCP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.HTTP
-                                                                    .number())))))))))))))));
+            c,
+            hasIpAccessList(
+                    computeServiceObjectGroupAclName("og-tcp"),
+                    hasLines(
+                            isExprAclLineThat(
+                                    hasMatchCondition(
+                                            isOrMatchExprThat(
+                                                    hasDisjuncts(
+                                                            containsInAnyOrder(
+                                                                    ImmutableList.of(
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.TCP)),
+                                                                                                    hasDstPorts(hasItem(new SubRange(65500)))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.TCP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.DOMAIN.number())))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.TCP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                                                                                    .number())))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.TCP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.HTTP
+                                                                                                                                    .number())))))))))))))));
     /* og-udp */
     assertThat(
-        c,
-        hasIpAccessList(
-            computeServiceObjectGroupAclName("og-udp"),
-            hasLines(
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        isOrMatchExprThat(
-                            hasDisjuncts(
-                                containsInAnyOrder(
-                                    ImmutableList.of(
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.UDP)),
-                                                    hasDstPorts(hasItem(new SubRange(65501)))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.UDP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.NTP.number())))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.UDP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.SNMPTRAP.number())))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.UDP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.CMDtcp_OR_SYSLOGudp
-                                                                    .number())))))),
-                                        isMatchHeaderSpaceThat(
-                                            hasHeaderSpace(
-                                                allOf(
-                                                    hasIpProtocols(contains(IpProtocol.UDP)),
-                                                    hasDstPorts(
-                                                        hasItem(
-                                                            new SubRange(
-                                                                NamedPort.TFTP
-                                                                    .number())))))))))))))));
+            c,
+            hasIpAccessList(
+                    computeServiceObjectGroupAclName("og-udp"),
+                    hasLines(
+                            isExprAclLineThat(
+                                    hasMatchCondition(
+                                            isOrMatchExprThat(
+                                                    hasDisjuncts(
+                                                            containsInAnyOrder(
+                                                                    ImmutableList.of(
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.UDP)),
+                                                                                                    hasDstPorts(hasItem(new SubRange(65501)))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.UDP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.NTP.number())))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.UDP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.SNMPTRAP.number())))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.UDP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.CMDtcp_OR_SYSLOGudp
+                                                                                                                                    .number())))))),
+                                                                            isMatchHeaderSpaceThat(
+                                                                                    hasHeaderSpace(
+                                                                                            allOf(
+                                                                                                    hasIpProtocols(contains(IpProtocol.UDP)),
+                                                                                                    hasDstPorts(
+                                                                                                            hasItem(
+                                                                                                                    new SubRange(
+                                                                                                                            NamedPort.TFTP
+                                                                                                                                    .number())))))))))))))));
   }
 
   @Test
   public void testIosOspfDefaultOriginateAlways() throws IOException {
-    /*
-     * ________ ________ ________
-     * | R1 | | | | R2 |
-     * | Area 0 |----| ABR |----| Area 1 |
-     * | | | | | NSSA |
-     * -------- -------- --------
-     * ABR has `default-information originate always` configured at the process
-     * level, so R1 should
-     * install a default route to the ABR even though the ABR has no default route
-     * of its own. R2
-     * should not install a default route because it's in an NSSA.
-     */
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate always` configured at the process level, so R1 should
+      install a default route to the ABR even though the ABR has no default route of its own. R2
+      should not install a default route because it's in an NSSA.
+    */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2467,18 +2412,17 @@ public final class CiscoGrammarTest {
     String originatorName = "originator-always";
     List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF
-    // process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
+            abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -2486,28 +2430,26 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // R1 should have default route, but the ABR and R2 should not
     assertThat(
-        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+            area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
     assertThat(abrRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
   @Test
   public void testIosOspfDefaultOriginateNoRoute() throws IOException {
-    /*
-     * ________ ________ ________
-     * | R1 | | | | R2 |
-     * | Area 0 |----| ABR |----| Area 1 |
-     * | | | | | NSSA |
-     * -------- -------- --------
-     * ABR has `default-information originate` configured at the process level, but
-     * no default route
-     * in its RIB, so it should not export a default route.
-     */
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level, but no default route
+      in its RIB, so it should not export a default route.
+    */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2515,18 +2457,17 @@ public final class CiscoGrammarTest {
     String originatorName = "originator-no-route";
     List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF
-    // process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
+            abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -2534,7 +2475,7 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // None should have default route
@@ -2545,16 +2486,14 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testIosOspfDefaultOriginateStaticRoute() throws IOException {
-    /*
-     * ________ ________ ________
-     * | R1 | | | | R2 |
-     * | Area 0 |----| ABR |----| Area 1 |
-     * | | | | | NSSA |
-     * -------- -------- --------
-     * ABR has `default-information originate` configured at the process level and a
-     * statically
-     * configured default route, so it should advertise the default route to R1.
-     */
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      ABR has `default-information originate` configured at the process level and a statically
+      configured default route, so it should advertise the default route to R1.
+    */
 
     String testrigName = "ospf-default-originate";
     String area0Name = "ios-area-0";
@@ -2562,18 +2501,17 @@ public final class CiscoGrammarTest {
     String originatorName = "originator-static-route";
     List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, originatorName);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     Configuration abr = configurations.get(originatorName);
 
-    // Sanity check: ensure the ABR has a generated default route in its OSPF
-    // process
+    // Sanity check: ensure the ABR has a generated default route in its OSPF process
     Set<GeneratedRoute> abrOspfGeneratedRoutes =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
+            abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(abrOspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
@@ -2581,49 +2519,46 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> abrRoutes = dp.getRibs().get(originatorName, DEFAULT_VRF_NAME).getRoutes();
 
     // R1 should have default route, but the ABR and R2 should not
     assertThat(
-        area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+            area0Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(area1NssaRoutes, not(hasItem(hasPrefix(Prefix.ZERO))));
     assertThat(
-        abrRoutes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC))));
+            abrRoutes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.STATIC))));
   }
 
   @Test
   public void testIosOspfDefaultOriginateLoop() throws IOException {
     /*
-     * Setup: 2-node network in OSPF area 0.
-     * - R1 has `default-information originate always` configured at the process
-     * level
-     * - R2 has `default-information originate` configured at the process level
-     * R2 should have a default route to R1; R1 shouldn't have a default route in
-     * its main RIB.
-     */
+    Setup: 2-node network in OSPF area 0.
+      - R1 has `default-information originate always` configured at the process level
+      - R2 has `default-information originate` configured at the process level
+    R2 should have a default route to R1; R1 shouldn't have a default route in its main RIB.
+    */
 
     String testrigName = "ospf-default-originate-loop";
     String r1Name = "ios-originator-1-always";
     String r2Name = "ios-originator-2";
     List<String> configurationNames = ImmutableList.of(r1Name, r2Name);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
 
-    // Sanity check: both devices have a generated default route in their OSPF
-    // processes
+    // Sanity check: both devices have a generated default route in their OSPF processes
     Map<String, Configuration> configurations = batfish.loadConfigurations(snapshot);
     Configuration r1 = configurations.get(r1Name);
     Configuration r2 = configurations.get(r2Name);
     Set<GeneratedRoute> r1OspfGeneratedRoutes =
-        r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
+            r1.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     Set<GeneratedRoute> r2OspfGeneratedRoutes =
-        r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
+            r2.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getGeneratedRoutes();
     assertThat(r1OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
     assertThat(r2OspfGeneratedRoutes, contains(hasPrefix(Prefix.ZERO)));
 
@@ -2634,7 +2569,7 @@ public final class CiscoGrammarTest {
 
     // R2 should have default route, R1 should not
     assertThat(
-        r2Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
+            r2Routes, hasItem(allOf(hasPrefix(Prefix.ZERO), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(r1Routes, not(hasItem(hasPrefix(Prefix.ZERO))));
   }
 
@@ -2644,7 +2579,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclin", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "aclout", 1));
@@ -2657,14 +2592,14 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosEigrpDistributeList() {
     CiscoConfiguration c =
-        parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ios-eigrp-distribute-list", ConfigurationFormat.CISCO_IOS);
 
     assertThat(
-        c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
-        equalTo(
-            ImmutableMap.of(
-                "GigabitEthernet0/0",
-                new DistributeList("2", DistributeListFilterType.ACCESS_LIST))));
+            c.getDefaultVrf().getEigrpProcesses().get(1L).getOutboundInterfaceDistributeLists(),
+            equalTo(
+                    ImmutableMap.of(
+                            "GigabitEthernet0/0",
+                            new DistributeList("2", DistributeListFilterType.ACCESS_LIST))));
   }
 
   @Test
@@ -2674,85 +2609,82 @@ public final class CiscoGrammarTest {
     String distListPolicyName = "~EIGRP_EXPORT_POLICY_default_1_GigabitEthernet0/0~";
 
     org.batfish.datamodel.eigrp.EigrpProcess eigrpProcess1 =
-        c.getDefaultVrf().getEigrpProcesses().get(1L);
+            c.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
-        eigrpProcess1.getNeighbors().get("GigabitEthernet0/0").getExportPolicy(),
-        equalTo(distListPolicyName));
+            eigrpProcess1.getNeighbors().get("GigabitEthernet0/0").getExportPolicy(),
+            equalTo(distListPolicyName));
 
     EigrpMetric metric =
-        WideMetric.builder()
-            .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
-            .build();
+            WideMetric.builder()
+                    .setValues(EigrpMetricValues.builder().setBandwidth(1d).setDelay(1d).build())
+                    .build();
 
     // Test redistribution policy allows redistribution from router EIGRP 2
     RoutingPolicy redistrPolicy =
-        c.getRoutingPolicies().get(eigrpProcess1.getRedistributionPolicy());
+            c.getRoutingPolicies().get(eigrpProcess1.getRedistributionPolicy());
     assertTrue(
-        redistrPolicy.process(
-            EigrpExternalRoute.testBuilder()
-                .setNetwork(Prefix.parse("172.21.30.0/24"))
-                .setEigrpMetric(metric)
-                .setEigrpMetricVersion(EigrpMetricVersion.V1)
-                .setProcessAsn(2L)
-                .setDestinationAsn(5L)
-                .build(),
-            EigrpExternalRoute.testBuilder(),
-            eigrpProcess1,
-            Direction.IN));
+            redistrPolicy.process(
+                    EigrpExternalRoute.testBuilder()
+                            .setNetwork(Prefix.parse("172.21.30.0/24"))
+                            .setEigrpMetric(metric)
+                            .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                            .setProcessAsn(2L)
+                            .setDestinationAsn(5L)
+                            .build(),
+                    EigrpExternalRoute.testBuilder(),
+                    eigrpProcess1,
+                    Direction.IN));
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
 
-    // a route (previously) redistributed from router EIGRP 2 and allowed by
-    // distribute list
+    // a route (previously) redistributed from router EIGRP 2 and allowed by distribute list
     assertTrue(
-        routingPolicy.process(
-            EigrpExternalRoute.testBuilder()
-                .setNetwork(Prefix.parse("172.21.30.0/24"))
-                .setEigrpMetric(metric)
-                .setEigrpMetricVersion(EigrpMetricVersion.V1)
-                .setProcessAsn(1L)
-                .setDestinationAsn(5L)
-                .build(),
-            EigrpExternalRoute.testBuilder(),
-            Direction.OUT));
-    // a route (previously) redistributed from router EIGRP 2 and denied by
-    // distribute list
+            routingPolicy.process(
+                    EigrpExternalRoute.testBuilder()
+                            .setNetwork(Prefix.parse("172.21.30.0/24"))
+                            .setEigrpMetric(metric)
+                            .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                            .setProcessAsn(1L)
+                            .setDestinationAsn(5L)
+                            .build(),
+                    EigrpExternalRoute.testBuilder(),
+                    Direction.OUT));
+    // a route (previously) redistributed from router EIGRP 2 and denied by distribute list
     assertFalse(
-        routingPolicy.process(
-            EigrpExternalRoute.testBuilder()
-                .setNetwork(Prefix.parse("172.21.31.0/24"))
-                .setEigrpMetric(metric)
-                .setEigrpMetricVersion(EigrpMetricVersion.V1)
-                .setProcessAsn(1L)
-                .setDestinationAsn(5L)
-                .build(),
-            EigrpExternalRoute.testBuilder(),
-            Direction.OUT));
+            routingPolicy.process(
+                    EigrpExternalRoute.testBuilder()
+                            .setNetwork(Prefix.parse("172.21.31.0/24"))
+                            .setEigrpMetric(metric)
+                            .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                            .setProcessAsn(1L)
+                            .setDestinationAsn(5L)
+                            .build(),
+                    EigrpExternalRoute.testBuilder(),
+                    Direction.OUT));
     // an internal route sent from router EIGRP 1 and allowed by distribute list
     assertTrue(
-        routingPolicy.process(
-            EigrpInternalRoute.testBuilder()
-                .setNetwork(Prefix.parse("172.21.30.0/24"))
-                .setEigrpMetric(metric)
-                .setEigrpMetricVersion(EigrpMetricVersion.V1)
-                .setProcessAsn(1L)
-                .build(),
-            EigrpExternalRoute.testBuilder(),
-            Direction.OUT));
-    // a route matching distribute list but does not have the correct ASN so falls
-    // through till the
+            routingPolicy.process(
+                    EigrpInternalRoute.testBuilder()
+                            .setNetwork(Prefix.parse("172.21.30.0/24"))
+                            .setEigrpMetric(metric)
+                            .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                            .setProcessAsn(1L)
+                            .build(),
+                    EigrpExternalRoute.testBuilder(),
+                    Direction.OUT));
+    // a route matching distribute list but does not have the correct ASN so falls through till the
     // end and gets rejected
     assertFalse(
-        routingPolicy.process(
-            EigrpExternalRoute.testBuilder()
-                .setNetwork(Prefix.parse("172.21.30.0/24"))
-                .setEigrpMetric(metric)
-                .setEigrpMetricVersion(EigrpMetricVersion.V1)
-                .setProcessAsn(3L)
-                .setDestinationAsn(5L)
-                .build(),
-            EigrpExternalRoute.testBuilder(),
-            Direction.OUT));
+            routingPolicy.process(
+                    EigrpExternalRoute.testBuilder()
+                            .setNetwork(Prefix.parse("172.21.30.0/24"))
+                            .setEigrpMetric(metric)
+                            .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                            .setProcessAsn(3L)
+                            .setDestinationAsn(5L)
+                            .build(),
+                    EigrpExternalRoute.testBuilder(),
+                    Direction.OUT));
   }
 
   @Test
@@ -2770,7 +2702,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "2", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "3", 1));
@@ -2786,23 +2718,23 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RM_OUT", 2));
 
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+            batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            filename,
-            containsString("Gateway prefix lists in distribute-list are not supported for EIGRP")));
+            pvcae,
+            hasParseWarning(
+                    filename,
+                    containsString("Gateway prefix lists in distribute-list are not supported for EIGRP")));
     assertThat(
-        pvcae,
-        hasParseWarning(
-            filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
+            pvcae,
+            hasParseWarning(
+                    filename, containsString("Gateways in distribute-list are not supported for EIGRP")));
 
     // Also check that all ACLs used as distribute lists are converted
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c, notNullValue());
     assertThat(
-        c.getRouteFilterLists(),
-        hasKeys("1", "2", "3", "4", "PL_GW_IN", "PL_GW_OUT", "PL_IN", "PL_OUT"));
+            c.getRouteFilterLists(),
+            hasKeys("1", "2", "3", "4", "PL_GW_IN", "PL_GW_OUT", "PL_IN", "PL_OUT"));
   }
 
   @Test
@@ -2811,20 +2743,20 @@ public final class CiscoGrammarTest {
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
-        proc.getInboundGlobalDistributeList(),
-        equalTo(new DistributeList("PL_IN", DistributeListFilterType.PREFIX_LIST)));
+            proc.getInboundGlobalDistributeList(),
+            equalTo(new DistributeList("PL_IN", DistributeListFilterType.PREFIX_LIST)));
     assertThat(
-        proc.getOutboundGlobalDistributeList(),
-        equalTo(new DistributeList("PL_OUT", DistributeListFilterType.PREFIX_LIST)));
+            proc.getOutboundGlobalDistributeList(),
+            equalTo(new DistributeList("PL_OUT", DistributeListFilterType.PREFIX_LIST)));
     String ifaceName = "GigabitEthernet0/0";
     assertThat(
-        proc.getInboundInterfaceDistributeLists(),
-        hasEntry(
-            ifaceName, new DistributeList("PL_IN_IFACE", DistributeListFilterType.PREFIX_LIST)));
+            proc.getInboundInterfaceDistributeLists(),
+            hasEntry(
+                    ifaceName, new DistributeList("PL_IN_IFACE", DistributeListFilterType.PREFIX_LIST)));
     assertThat(
-        proc.getOutboundInterfaceDistributeLists(),
-        hasEntry(
-            ifaceName, new DistributeList("PL_OUT_IFACE", DistributeListFilterType.PREFIX_LIST)));
+            proc.getOutboundInterfaceDistributeLists(),
+            hasEntry(
+                    ifaceName, new DistributeList("PL_OUT_IFACE", DistributeListFilterType.PREFIX_LIST)));
   }
 
   @Test
@@ -2834,14 +2766,14 @@ public final class CiscoGrammarTest {
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
     // helper builder
     EigrpInternalRoute.Builder builder =
-        EigrpInternalRoute.testBuilder()
-            .setAdmin(90)
-            .setEigrpMetric(
-                ClassicMetric.builder()
-                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
-                    .build())
-            .setEigrpMetricVersion(EigrpMetricVersion.V1)
-            .setProcessAsn(1L);
+            EigrpInternalRoute.testBuilder()
+                    .setAdmin(90)
+                    .setEigrpMetric(
+                            ClassicMetric.builder()
+                                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                                    .build())
+                    .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                    .setProcessAsn(1L);
     {
       String ifaceName = "GigabitEthernet0/0";
       EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
@@ -2853,40 +2785,40 @@ public final class CiscoGrammarTest {
       RoutingPolicy importPolicy = policies.get(importPolicyName);
       // Allow routes permitted by both prefix lists
       assertTrue(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       // Block others
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
       // Allow routes permitted by both prefix lists
       assertTrue(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       // Block others
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
     }
     {
       // This interface has no iface-specific distribute lists.
@@ -2900,30 +2832,30 @@ public final class CiscoGrammarTest {
       RoutingPolicy importPolicy = policies.get(importPolicyName);
       // Allow routes permitted by global prefix list
       assertTrue(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       // Block others
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
       // Allow routes permitted by global list
       assertTrue(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       // Block others
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
     }
   }
 
@@ -2933,19 +2865,19 @@ public final class CiscoGrammarTest {
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     EigrpProcess proc = vc.getDefaultVrf().getEigrpProcesses().get(1L);
     assertThat(
-        proc.getInboundGlobalDistributeList(),
-        equalTo(new DistributeList("RM_IN", DistributeListFilterType.ROUTE_MAP)));
+            proc.getInboundGlobalDistributeList(),
+            equalTo(new DistributeList("RM_IN", DistributeListFilterType.ROUTE_MAP)));
     assertThat(
-        proc.getOutboundGlobalDistributeList(),
-        equalTo(new DistributeList("RM_OUT", DistributeListFilterType.ROUTE_MAP)));
+            proc.getOutboundGlobalDistributeList(),
+            equalTo(new DistributeList("RM_OUT", DistributeListFilterType.ROUTE_MAP)));
     String ifaceName = "GigabitEthernet0/0";
     assertThat(
-        proc.getInboundInterfaceDistributeLists(),
-        hasEntry(ifaceName, new DistributeList("RM_IN_IFACE", DistributeListFilterType.ROUTE_MAP)));
+            proc.getInboundInterfaceDistributeLists(),
+            hasEntry(ifaceName, new DistributeList("RM_IN_IFACE", DistributeListFilterType.ROUTE_MAP)));
     assertThat(
-        proc.getOutboundInterfaceDistributeLists(),
-        hasEntry(
-            ifaceName, new DistributeList("RM_OUT_IFACE", DistributeListFilterType.ROUTE_MAP)));
+            proc.getOutboundInterfaceDistributeLists(),
+            hasEntry(
+                    ifaceName, new DistributeList("RM_OUT_IFACE", DistributeListFilterType.ROUTE_MAP)));
   }
 
   @Test
@@ -2955,14 +2887,14 @@ public final class CiscoGrammarTest {
     Map<String, RoutingPolicy> policies = c.getRoutingPolicies();
     // helper builder
     EigrpInternalRoute.Builder builder =
-        EigrpInternalRoute.testBuilder()
-            .setAdmin(90)
-            .setEigrpMetric(
-                ClassicMetric.builder()
-                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
-                    .build())
-            .setEigrpMetricVersion(EigrpMetricVersion.V1)
-            .setProcessAsn(1L);
+            EigrpInternalRoute.testBuilder()
+                    .setAdmin(90)
+                    .setEigrpMetric(
+                            ClassicMetric.builder()
+                                    .setValues(EigrpMetricValues.builder().setBandwidth(2e9).setDelay(4e5).build())
+                                    .build())
+                    .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                    .setProcessAsn(1L);
     {
       String ifaceName = "GigabitEthernet0/0";
       EigrpInterfaceSettings eigrpSettings = c.getAllInterfaces().get(ifaceName).getEigrp();
@@ -2974,40 +2906,40 @@ public final class CiscoGrammarTest {
       RoutingPolicy importPolicy = policies.get(importPolicyName);
       // Allow routes permitted by both prefix lists
       assertTrue(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       // Block others
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
       // Allow routes permitted by both prefix lists
       assertTrue(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       // Block others
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
     }
     {
       // This interface has no iface-specific distribute lists.
@@ -3021,30 +2953,30 @@ public final class CiscoGrammarTest {
       RoutingPolicy importPolicy = policies.get(importPolicyName);
       // Allow routes permitted by global prefix list
       assertTrue(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("1.1.1.1/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
       // Block others
       assertFalse(
-          importPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.IN));
+              importPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/31")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.IN));
 
       RoutingPolicy exportPolicy = policies.get(exportPolicyName);
       // Allow routes permitted by global list
       assertTrue(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("2.2.2.2/26")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
       // Block others
       assertFalse(
-          exportPolicy.process(
-              builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
-              EigrpInternalRoute.testBuilder(),
-              Direction.OUT));
+              exportPolicy.process(
+                      builder.setNetwork(Prefix.parse("5.5.5.5/30")).build(),
+                      EigrpInternalRoute.testBuilder(),
+                      Direction.OUT));
     }
   }
 
@@ -3053,39 +2985,39 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-eigrp-classic");
 
     assertThat(
-        c.getDefaultVrf().getEigrpProcesses().get(1L).getNeighbors(),
-        equalTo(
-            ImmutableMap.of(
-                "Ethernet0",
-                EigrpNeighborConfig.builder()
-                    .setAsn(1L)
-                    .setInterfaceName("Ethernet0")
-                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
-                    .setPassive(false)
-                    .setHostname("ios-eigrp-classic")
-                    .setVrfName("default")
-                    .setIp(Ip.parse("10.0.0.1"))
-                    .build(),
-                "Ethernet1",
-                EigrpNeighborConfig.builder()
-                    .setAsn(1L)
-                    .setInterfaceName("Ethernet1")
-                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
-                    .setPassive(false)
-                    .setHostname("ios-eigrp-classic")
-                    .setVrfName("default")
-                    .setIp(Ip.parse("10.0.1.1"))
-                    .build(),
-                "Ethernet2",
-                EigrpNeighborConfig.builder()
-                    .setAsn(1L)
-                    .setInterfaceName("Ethernet2")
-                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
-                    .setPassive(true)
-                    .setHostname("ios-eigrp-classic")
-                    .setVrfName("default")
-                    .setIp(Ip.parse("10.0.2.1"))
-                    .build())));
+            c.getDefaultVrf().getEigrpProcesses().get(1L).getNeighbors(),
+            equalTo(
+                    ImmutableMap.of(
+                            "Ethernet0",
+                            EigrpNeighborConfig.builder()
+                                    .setAsn(1L)
+                                    .setInterfaceName("Ethernet0")
+                                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
+                                    .setPassive(false)
+                                    .setHostname("ios-eigrp-classic")
+                                    .setVrfName("default")
+                                    .setIp(Ip.parse("10.0.0.1"))
+                                    .build(),
+                            "Ethernet1",
+                            EigrpNeighborConfig.builder()
+                                    .setAsn(1L)
+                                    .setInterfaceName("Ethernet1")
+                                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
+                                    .setPassive(false)
+                                    .setHostname("ios-eigrp-classic")
+                                    .setVrfName("default")
+                                    .setIp(Ip.parse("10.0.1.1"))
+                                    .build(),
+                            "Ethernet2",
+                            EigrpNeighborConfig.builder()
+                                    .setAsn(1L)
+                                    .setInterfaceName("Ethernet2")
+                                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
+                                    .setPassive(true)
+                                    .setHostname("ios-eigrp-classic")
+                                    .setVrfName("default")
+                                    .setIp(Ip.parse("10.0.2.1"))
+                                    .build())));
   }
 
   @Test
@@ -3096,30 +3028,30 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP", 3));
 
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+            batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae, hasParseWarning(filename, containsString("EIGRP stub is not currently supported")));
+            pvcae, hasParseWarning(filename, containsString("EIGRP stub is not currently supported")));
   }
 
   @Test
   public void testIosOspfDistributeList() {
     CiscoConfiguration c = parseCiscoConfig("iosOspfDistributeList", ConfigurationFormat.CISCO_IOS);
     DistributeList globalInPrefix =
-        new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_5", DistributeListFilterType.PREFIX_LIST);
     DistributeList globalOutPrefix =
-        new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_6", DistributeListFilterType.PREFIX_LIST);
     DistributeList dlGig0InPrefix =
-        new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_1", DistributeListFilterType.PREFIX_LIST);
     DistributeList dlGig1InPrefix =
-        new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_2", DistributeListFilterType.PREFIX_LIST);
     DistributeList dlGig0OutPrefix =
-        new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_3", DistributeListFilterType.PREFIX_LIST);
     DistributeList dlGig1OutPrefix =
-        new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
+            new DistributeList("block_4", DistributeListFilterType.PREFIX_LIST);
 
     DistributeList globalInRm = new DistributeList("rm1", DistributeListFilterType.ROUTE_MAP);
     DistributeList globalOutRm = new DistributeList("rm2", DistributeListFilterType.ROUTE_MAP);
@@ -3130,40 +3062,38 @@ public final class CiscoGrammarTest {
     DistributeList dlGig1OutAcl = new DistributeList("acl2", DistributeListFilterType.ACCESS_LIST);
 
     org.batfish.representation.cisco.OspfProcess ospfProcessPrefix =
-        c.getDefaultVrf().getOspfProcesses().get("1");
+            c.getDefaultVrf().getOspfProcesses().get("1");
 
     assertThat(ospfProcessPrefix.getInboundGlobalDistributeList(), equalTo(globalInPrefix));
     assertThat(ospfProcessPrefix.getOutboundGlobalDistributeList(), equalTo(globalOutPrefix));
     assertThat(
-        ospfProcessPrefix.getInboundInterfaceDistributeLists(),
-        equalTo(
-            ImmutableMap.of(
-                "GigabitEthernet0/0", dlGig0InPrefix,
-                "GigabitEthernet1/0", dlGig1InPrefix)));
+            ospfProcessPrefix.getInboundInterfaceDistributeLists(),
+            equalTo(
+                    ImmutableMap.of(
+                            "GigabitEthernet0/0", dlGig0InPrefix, "GigabitEthernet1/0", dlGig1InPrefix)));
     assertThat(
-        ospfProcessPrefix.getOutboundInterfaceDistributeLists(),
-        equalTo(
-            ImmutableMap.of(
-                "GigabitEthernet0/0", dlGig0OutPrefix,
-                "GigabitEthernet1/0", dlGig1OutPrefix)));
+            ospfProcessPrefix.getOutboundInterfaceDistributeLists(),
+            equalTo(
+                    ImmutableMap.of(
+                            "GigabitEthernet0/0", dlGig0OutPrefix, "GigabitEthernet1/0", dlGig1OutPrefix)));
 
     org.batfish.representation.cisco.OspfProcess ospfProcessRouteMap =
-        c.getDefaultVrf().getOspfProcesses().get("2");
+            c.getDefaultVrf().getOspfProcesses().get("2");
 
     assertThat(ospfProcessRouteMap.getInboundGlobalDistributeList(), equalTo(globalInRm));
     assertThat(ospfProcessRouteMap.getOutboundGlobalDistributeList(), equalTo(globalOutRm));
 
     org.batfish.representation.cisco.OspfProcess ospfProcessAcl =
-        c.getDefaultVrf().getOspfProcesses().get("3");
+            c.getDefaultVrf().getOspfProcesses().get("3");
 
     assertThat(ospfProcessAcl.getInboundGlobalDistributeList(), equalTo(globalInAcl));
     assertThat(ospfProcessAcl.getOutboundGlobalDistributeList(), equalTo(globalOutAcl));
     assertThat(
-        ospfProcessAcl.getInboundInterfaceDistributeLists(),
-        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0InAcl)));
+            ospfProcessAcl.getInboundInterfaceDistributeLists(),
+            equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig0InAcl)));
     assertThat(
-        ospfProcessAcl.getOutboundInterfaceDistributeLists(),
-        equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
+            ospfProcessAcl.getOutboundInterfaceDistributeLists(),
+            equalTo(ImmutableMap.of("GigabitEthernet0/0", dlGig1OutAcl)));
   }
 
   @Test
@@ -3175,61 +3105,61 @@ public final class CiscoGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName0));
 
     assertThat(
-        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo(distListPolicyName0));
+            c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+            equalTo(distListPolicyName0));
     assertThat(
-        c.getAllInterfaces().get("GigabitEthernet1/0").getOspfInboundDistributeListPolicy(),
-        equalTo(distListPolicyName1));
+            c.getAllInterfaces().get("GigabitEthernet1/0").getOspfInboundDistributeListPolicy(),
+            equalTo(distListPolicyName1));
 
     RoutingPolicy routingPolicy0 = c.getRoutingPolicies().get(distListPolicyName0);
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
-        routingPolicy0.getStatements();
+            routingPolicy0.getStatements();
 
     assertThat(
-        statements,
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+            statements,
+            equalTo(
+                    ImmutableList.of(
+                            new If(
+                                    new Conjunction(
+                                            ImmutableList.of(
+                                                    new MatchPrefixSet(
+                                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                                                    new MatchPrefixSet(
+                                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     OspfIntraAreaRoute.Builder builder =
-        OspfIntraAreaRoute.builder().setNextHop(NextHopDiscard.instance());
+            OspfIntraAreaRoute.builder().setNextHop(NextHopDiscard.instance());
     assertFalse(
-        routingPolicy0.process(
-            builder.setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy0.process(
+                    builder.setNetwork(Prefix.parse("1.1.1.0/24")).setArea(1L).build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
     assertFalse(
-        routingPolicy0.process(
-            builder.setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy0.process(
+                    builder.setNetwork(Prefix.parse("2.2.2.0/24")).setArea(1L).build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
     assertTrue(
-        routingPolicy0.process(
-            builder.setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy0.process(
+                    builder.setNetwork(Prefix.parse("3.3.3.0/24")).setArea(1L).build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
 
     assertThat(
-        c.getRoutingPolicies().get(distListPolicyName1).getStatements(),
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    new Conjunction(
-                        ImmutableList.of(
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
-                            new MatchPrefixSet(
-                                DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+            c.getRoutingPolicies().get(distListPolicyName1).getStatements(),
+            equalTo(
+                    ImmutableList.of(
+                            new If(
+                                    new Conjunction(
+                                            ImmutableList.of(
+                                                    new MatchPrefixSet(
+                                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                                                    new MatchPrefixSet(
+                                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_1")))),
+                                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
   }
 
   @Test
@@ -3240,42 +3170,42 @@ public final class CiscoGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKey(distListPolicyName));
 
     assertThat(
-        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo(distListPolicyName));
+            c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+            equalTo(distListPolicyName));
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPolicyName);
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
-        routingPolicy.getStatements();
+            routingPolicy.getStatements();
 
     assertThat(
-        statements,
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+            statements,
+            equalTo(
+                    ImmutableList.of(
+                            new If(
+                                    new MatchPrefixSet(
+                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_1")),
+                                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     assertFalse(
-        routingPolicy.process(
-            OspfIntraAreaRoute.builder()
-                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                .setNextHop(NextHopDiscard.instance())
-                .setNextHop(NextHopDiscard.instance())
-                .setArea(1L)
-                .build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy.process(
+                    OspfIntraAreaRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setNextHop(NextHopDiscard.instance())
+                            .setArea(1L)
+                            .build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
     assertTrue(
-        routingPolicy.process(
-            OspfIntraAreaRoute.builder()
-                .setNetwork(Prefix.parse("2.2.2.0/24"))
-                .setNextHop(NextHopDiscard.instance())
-                .setArea(1L)
-                .build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy.process(
+                    OspfIntraAreaRoute.builder()
+                            .setNetwork(Prefix.parse("2.2.2.0/24"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setArea(1L)
+                            .build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
   }
 
   @Test
@@ -3286,41 +3216,41 @@ public final class CiscoGrammarTest {
     assertThat(c.getRoutingPolicies(), hasKey(distListPoicyName));
 
     assertThat(
-        c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
-        equalTo(distListPoicyName));
+            c.getAllInterfaces().get("GigabitEthernet0/0").getOspfInboundDistributeListPolicy(),
+            equalTo(distListPoicyName));
 
     RoutingPolicy routingPolicy = c.getRoutingPolicies().get(distListPoicyName);
     List<org.batfish.datamodel.routing_policy.statement.Statement> statements =
-        routingPolicy.getStatements();
+            routingPolicy.getStatements();
 
     assertThat(
-        statements,
-        equalTo(
-            ImmutableList.of(
-                new If(
-                    new MatchPrefixSet(
-                        DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
-                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
-                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
+            statements,
+            equalTo(
+                    ImmutableList.of(
+                            new If(
+                                    new MatchPrefixSet(
+                                            DestinationNetwork.instance(), new NamedPrefixSet("filter_2")),
+                                    ImmutableList.of(Statements.ExitAccept.toStaticStatement()),
+                                    ImmutableList.of(Statements.ExitReject.toStaticStatement())))));
 
     assertTrue(
-        routingPolicy.process(
-            OspfIntraAreaRoute.builder()
-                .setNetwork(Prefix.parse("1.1.1.0/24"))
-                .setNextHop(NextHopDiscard.instance())
-                .setArea(1L)
-                .build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy.process(
+                    OspfIntraAreaRoute.builder()
+                            .setNetwork(Prefix.parse("1.1.1.0/24"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setArea(1L)
+                            .build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
     assertFalse(
-        routingPolicy.process(
-            OspfIntraAreaRoute.builder()
-                .setNetwork(Prefix.parse("2.2.2.0/24"))
-                .setNextHop(NextHopDiscard.instance())
-                .setArea(1L)
-                .build(),
-            OspfIntraAreaRoute.builder(),
-            Direction.IN));
+            routingPolicy.process(
+                    OspfIntraAreaRoute.builder()
+                            .setNetwork(Prefix.parse("2.2.2.0/24"))
+                            .setNextHop(NextHopDiscard.instance())
+                            .setArea(1L)
+                            .build(),
+                    OspfIntraAreaRoute.builder(),
+                    Direction.IN));
   }
 
   @Test
@@ -3328,8 +3258,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-interface-ospf-network");
 
     /*
-     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not
-     * show up as
+     * Confirm interfaces with ospf network broadcast, non-broadcast, etc do not show up as
      * point-to-point
      */
     assertThat(c, hasInterface("Ethernet0/0", not(isOspfPointToPoint())));
@@ -3347,31 +3276,30 @@ public final class CiscoGrammarTest {
 
     // Confirm interface associated with an OSPF area has expected OSPF properties
     assertThat(
-        c,
-        hasInterface(
-            "Ethernet0/0",
-            hasOspfNetworkType(
-                equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
+            c,
+            hasInterface(
+                    "Ethernet0/0",
+                    hasOspfNetworkType(
+                            equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT))));
 
-    // Confirm interface NOT associated with an OSPF area still has expected OSPF
-    // properties
+    // Confirm interface NOT associated with an OSPF area still has expected OSPF properties
     assertThat(
-        c,
-        hasInterface(
-            "Ethernet0/1",
-            hasOspfNetworkType(equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST))));
+            c,
+            hasInterface(
+                    "Ethernet0/1",
+                    hasOspfNetworkType(equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST))));
   }
 
   @Test
   public void testIosOspfReferenceBandwidth() throws IOException {
     Configuration manual = parseConfig("iosOspfCost");
     assertThat(
-        manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
+            manual.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(), equalTo(10e6d));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
     assertThat(
-        defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
-        equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
+            defaults.getDefaultVrf().getOspfProcesses().get("1").getReferenceBandwidth(),
+            equalTo(getReferenceOspfBandwidth(ConfigurationFormat.CISCO_IOS)));
   }
 
   @Test
@@ -3396,59 +3324,56 @@ public final class CiscoGrammarTest {
 
     // Check for stub subtype settings
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1",
-                hasArea(
-                    1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
+            c,
+            hasDefaultVrf(
+                    hasOspfProcess(
+                            "1",
+                            hasArea(
+                                    1L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.INTER_AREA))))));
     assertThat(
-        c, hasDefaultVrf(hasOspfProcess("1", hasArea(1L, hasNssa(hasSuppressType3(false))))));
+            c, hasDefaultVrf(hasOspfProcess("1", hasArea(1L, hasNssa(hasSuppressType3(false))))));
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1",
-                hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
+            c,
+            hasDefaultVrf(
+                    hasOspfProcess(
+                            "1",
+                            hasArea(2L, hasNssa(hasDefaultOriginateType(OspfDefaultOriginateType.NONE))))));
     assertThat(c, hasDefaultVrf(hasOspfProcess("1", hasArea(2L, hasNssa(hasSuppressType3())))));
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1", hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
+            c,
+            hasDefaultVrf(
+                    hasOspfProcess(
+                            "1", hasArea(3L, hasStub(StubSettingsMatchers.hasSuppressType3(false))))));
     assertThat(
-        c,
-        hasDefaultVrf(
-            hasOspfProcess("1", hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
+            c,
+            hasDefaultVrf(
+                    hasOspfProcess("1", hasArea(4L, hasStub(StubSettingsMatchers.hasSuppressType3())))));
   }
 
   @Test
   public void testIosBgpDistributeList() throws IOException {
     /*
-     * r1 -- advertiser -- r2
-     * The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but
-     * has outbound
-     * distribute-lists configured for both r1 and r2:
-     * - Routes to r1 are filtered by standard access-list 1, which permits
-     * everything but 1.2.3.4
-     * - Routes to r2 are filtered by extended access-list 100, which denies
-     * everything but 5.6.7.8
-     */
+         r1 -- advertiser -- r2
+    The advertiser redistributes static routes 1.2.3.4 and 5.6.7.8 into BGP, but has outbound
+    distribute-lists configured for both r1 and r2:
+    - Routes to r1 are filtered by standard access-list 1, which permits everything but 1.2.3.4
+    - Routes to r2 are filtered by extended access-list 100, which denies everything but 5.6.7.8
+    */
     String testrigName = "bgp-distribute-list";
     String advertiserName = "advertiser";
     String r1Name = "r1";
     String r2Name = "r2";
     List<String> configurationNames = ImmutableList.of(advertiserName, r1Name, r2Name);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
 
     /* Confirm access list uses are counted correctly */
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     String filename = "configs/" + advertiserName;
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_EXTENDED, "100", 1));
@@ -3471,7 +3396,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm prefix list uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, PREFIX_LIST, "pre_list", 3));
@@ -3484,16 +3409,15 @@ public final class CiscoGrammarTest {
     assertThat(ccae, hasUndefinedReference(filename, PREFIX_LIST, "pre_list_undef2"));
 
     /*
-     * Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes.
-     * Test that both
-     * generated policies permit 10.1.1.0/24 and not other routes.
-     */
+     Neighbor 1.2.3.4 uses pre_list to filter both inbound and outbound routes. Test that both
+     generated policies permit 10.1.1.0/24 and not other routes.
+    */
     Ip peerAddress = Ip.parse("1.2.3.4");
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     String generatedImportPolicyName =
-        computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+            computeBgpPeerImportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     String generatedExportPolicyName =
-        generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
+            generatedBgpPeerExportPolicyName(DEFAULT_VRF_NAME, peerAddress.toString());
     RoutingPolicy importPolicy = c.getRoutingPolicies().get(generatedImportPolicyName);
     RoutingPolicy exportPolicy = c.getRoutingPolicies().get(generatedExportPolicyName);
     assertThat(importPolicy, notNullValue());
@@ -3501,24 +3425,24 @@ public final class CiscoGrammarTest {
 
     Prefix permittedPrefix = Prefix.parse("10.1.1.0/24");
     Bgpv4Route.Builder r =
-        Bgpv4Route.testBuilder()
-            .setOriginatorIp(peerAddress)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.IBGP);
+            Bgpv4Route.testBuilder()
+                    .setOriginatorIp(peerAddress)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.IBGP);
     Bgpv4Route permittedRoute = r.setNetwork(permittedPrefix).build();
     Bgpv4Route unmatchedRoute = r.setNetwork(Prefix.parse("10.1.0.0/16")).build();
     assertThat(
-        importPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.IN),
-        equalTo(true));
+            importPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.IN),
+            equalTo(true));
     assertThat(
-        exportPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.OUT),
-        equalTo(true));
+            exportPolicy.process(permittedRoute, permittedRoute.toBuilder(), Direction.OUT),
+            equalTo(true));
     assertThat(
-        importPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.IN),
-        equalTo(false));
+            importPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.IN),
+            equalTo(false));
     assertThat(
-        exportPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.OUT),
-        equalTo(false));
+            exportPolicy.process(unmatchedRoute, unmatchedRoute.toBuilder(), Direction.OUT),
+            equalTo(false));
   }
 
   @Test
@@ -3527,7 +3451,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm route map uses are counted correctly */
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm_if", 1));
@@ -3537,17 +3461,17 @@ public final class CiscoGrammarTest {
 
     /* Confirm that route maps clauses are defined and referred correctly */
     assertThat(
-        ccae,
-        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_if", 10), 1));
+            ccae,
+            hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_if", 10), 1));
     assertThat(
-        ccae,
-        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_ospf", 10), 1));
+            ccae,
+            hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_ospf", 10), 1));
     assertThat(
-        ccae,
-        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_bgp", 10), 1));
+            ccae,
+            hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_bgp", 10), 1));
     assertThat(
-        ccae,
-        hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_unused", 10), 1));
+            ccae,
+            hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm_unused", 10), 1));
 
     /* Confirm undefined route-map is detected */
     assertThat(ccae, hasUndefinedReference(filename, ROUTE_MAP, "rm_undef"));
@@ -3559,22 +3483,22 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "rm", 0));
 
     /* Confirm that route maps clauses are referred correctly */
     assertThat(
-        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 10), 1));
+            ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 10), 1));
     assertThat(
-        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 20), 2));
+            ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 20), 2));
     assertThat(
-        ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 40), 1));
+            ccae, hasNumReferrers(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 40), 1));
 
     /* Undefined continue */
     assertThat(
-        ccae,
-        hasUndefinedReference(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 30)));
+            ccae,
+            hasUndefinedReference(filename, ROUTE_MAP_CLAUSE, computeRouteMapClauseName("rm", 30)));
   }
 
   @Test
@@ -3583,13 +3507,13 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     RoutingPolicy setWeightPolicy = c.getRoutingPolicies().get("SET_LOCAL_PREFERENCE");
     Bgpv4Route r =
-        Bgpv4Route.testBuilder()
-            .setWeight(1)
-            .setNetwork(Prefix.ZERO)
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .build();
+            Bgpv4Route.testBuilder()
+                    .setWeight(1)
+                    .setNetwork(Prefix.ZERO)
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .build();
     Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
     assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
@@ -3601,19 +3525,19 @@ public final class CiscoGrammarTest {
     String hostname = "ios-route-map-set-tag";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setTagPolicy =
-        batfish
-            .loadConfigurations(batfish.getSnapshot())
-            .get(hostname)
-            .getRoutingPolicies()
-            .get("SET_TAG");
+            batfish
+                    .loadConfigurations(batfish.getSnapshot())
+                    .get(hostname)
+                    .getRoutingPolicies()
+                    .get("SET_TAG");
     Bgpv4Route r =
-        Bgpv4Route.testBuilder()
-            .setWeight(1)
-            .setNetwork(Prefix.ZERO)
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .build();
+            Bgpv4Route.testBuilder()
+                    .setWeight(1)
+                    .setNetwork(Prefix.ZERO)
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .build();
     Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
     assertThat(setTagPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
@@ -3626,19 +3550,19 @@ public final class CiscoGrammarTest {
     String hostname = "ios-route-map-set-weight";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     RoutingPolicy setWeightPolicy =
-        batfish
-            .loadConfigurations(batfish.getSnapshot())
-            .get(hostname)
-            .getRoutingPolicies()
-            .get("SET_WEIGHT");
+            batfish
+                    .loadConfigurations(batfish.getSnapshot())
+                    .get(hostname)
+                    .getRoutingPolicies()
+                    .get("SET_WEIGHT");
     Bgpv4Route r =
-        Bgpv4Route.testBuilder()
-            .setWeight(1)
-            .setNetwork(Prefix.ZERO)
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.BGP)
-            .build();
+            Bgpv4Route.testBuilder()
+                    .setWeight(1)
+                    .setNetwork(Prefix.ZERO)
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .build();
     Bgpv4Route.Builder transformedRoute = r.toBuilder();
 
     assertThat(setWeightPolicy.process(r, transformedRoute, Direction.IN), equalTo(true));
@@ -3651,14 +3575,14 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
     /* Confirm community strings are correctly parsed */
     assertThat(
-        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("test$#!@")))));
+            c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("test$#!@")))));
     assertThat(
-        c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("quoted$#!@")))));
+            c, hasDefaultVrf(hasSnmpServer(SnmpServerMatchers.hasCommunities(hasKey("quoted$#!@")))));
 
     /* Confirm ACL is referenced */
     assertThat(ccae, hasNumReferrers(filename, IPV4_ACCESS_LIST_STANDARD, "80", 1));
@@ -3671,7 +3595,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused acl to be aclunused
@@ -3692,7 +3616,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused class-map to be cmunused
@@ -3721,8 +3645,8 @@ public final class CiscoGrammarTest {
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/0"), isProxyArp())));
     assertThat(proxyArpOmitted, hasInterfaces(hasEntry(equalTo("Ethernet0/1"), isProxyArp())));
     assertThat(
-        proxyArpOmitted,
-        hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
+            proxyArpOmitted,
+            hasInterfaces(hasEntry(equalTo("Ethernet0/2"), isProxyArp(equalTo(false)))));
   }
 
   @Test
@@ -3731,7 +3655,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 1));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 0));
@@ -3749,7 +3673,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, TRACK, "1", 3));
     assertThat(ccae, hasNumReferrers(filename, TRACK, "2", 3));
@@ -3763,18 +3687,18 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP:generic:5:withcolons", 1));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "RT_MAP:v4u:5:withcolons", 1));
 
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+            batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae,
-        hasParseWarning(
-            filename,
-            containsString(
-                "Export into non-vpnv4/6-address-family RIBs is not currently supported")));
+            pvcae,
+            hasParseWarning(
+                    filename,
+                    containsString(
+                            "Export into non-vpnv4/6-address-family RIBs is not currently supported")));
   }
 
   @Test
@@ -3784,20 +3708,20 @@ public final class CiscoGrammarTest {
       org.batfish.representation.cisco.Vrf vrf = vc.getVrfs().get("vrf1");
       assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.from(1111, 11L)));
       assertThat(
-          vrf.getGenericAddressFamilyConfig().getRouteTargetImport(),
-          contains(ExtendedCommunity.target(2222, 22)));
+              vrf.getGenericAddressFamilyConfig().getRouteTargetImport(),
+              contains(ExtendedCommunity.target(2222, 22)));
       assertThat(
-          vrf.getGenericAddressFamilyConfig().getRouteTargetExport(),
-          contains(ExtendedCommunity.target(2222, 23)));
+              vrf.getGenericAddressFamilyConfig().getRouteTargetExport(),
+              contains(ExtendedCommunity.target(2222, 23)));
       VrfAddressFamily ipv4UnicastAddressFamily = vrf.getIpv4UnicastAddressFamily();
       assertThat(
-          ipv4UnicastAddressFamily.getRouteTargetImport(),
-          containsInAnyOrder(
-              ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 32)));
+              ipv4UnicastAddressFamily.getRouteTargetImport(),
+              containsInAnyOrder(
+                      ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 32)));
       assertThat(
-          ipv4UnicastAddressFamily.getRouteTargetExport(),
-          containsInAnyOrder(
-              ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 33)));
+              ipv4UnicastAddressFamily.getRouteTargetExport(),
+              containsInAnyOrder(
+                      ExtendedCommunity.target(3333, 31), ExtendedCommunity.target(3333, 33)));
       assertThat(ipv4UnicastAddressFamily.getExportMap(), equalTo("RT_EXPORT_MAP"));
       assertThat(ipv4UnicastAddressFamily.getImportMap(), equalTo("RT_IMPORT_MAP"));
     }
@@ -3825,7 +3749,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /*
      * We expected the only unused zone to be zunreferenced
@@ -3856,28 +3780,28 @@ public final class CiscoGrammarTest {
     Configuration manual = parseConfig("iosOspfCost");
 
     assertThat(
-        manual,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1",
-                hasArea(
-                    1L,
-                    hasSummary(
-                        Prefix.parse("10.0.0.0/16"),
-                        allOf(not(isAdvertised()), not(installsDiscard()), hasMetric(100L)))))));
+            manual,
+            hasDefaultVrf(
+                    hasOspfProcess(
+                            "1",
+                            hasArea(
+                                    1L,
+                                    hasSummary(
+                                            Prefix.parse("10.0.0.0/16"),
+                                            allOf(not(isAdvertised()), not(installsDiscard()), hasMetric(100L)))))));
 
     Configuration defaults = parseConfig("iosOspfCostDefaults");
 
     assertThat(
-        defaults,
-        hasDefaultVrf(
-            hasOspfProcess(
-                "1",
-                hasArea(
-                    1L,
-                    hasSummary(
-                        Prefix.parse("10.0.0.0/16"),
-                        allOf(isAdvertised(), installsDiscard(), hasMetric(nullValue())))))));
+            defaults,
+            hasDefaultVrf(
+                    hasOspfProcess(
+                            "1",
+                            hasArea(
+                                    1L,
+                                    hasSummary(
+                                            Prefix.parse("10.0.0.0/16"),
+                                            allOf(isAdvertised(), installsDiscard(), hasMetric(nullValue())))))));
   }
 
   @Test
@@ -3910,26 +3834,26 @@ public final class CiscoGrammarTest {
     String classMapDropAclName = computeInspectClassMapAclName(classMapDropName);
 
     Flow flowPass =
-        builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.TCP)
-            .setSrcPort(0)
-            .setDstPort(0)
-            .build();
+            builder()
+                    .setIngressNode(c.getHostname())
+                    .setIpProtocol(IpProtocol.TCP)
+                    .setSrcPort(0)
+                    .setDstPort(0)
+                    .build();
     Flow flowInspect =
-        builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.UDP)
-            .setSrcPort(0)
-            .setDstPort(0)
-            .build();
+            builder()
+                    .setIngressNode(c.getHostname())
+                    .setIpProtocol(IpProtocol.UDP)
+                    .setSrcPort(0)
+                    .setDstPort(0)
+                    .build();
     Flow flowDrop =
-        builder()
-            .setIngressNode(c.getHostname())
-            .setIpProtocol(IpProtocol.ICMP)
-            .setIcmpType(0)
-            .setIcmpCode(0)
-            .build();
+            builder()
+                    .setIngressNode(c.getHostname())
+                    .setIpProtocol(IpProtocol.ICMP)
+                    .setIcmpType(0)
+                    .setIcmpCode(0)
+                    .build();
 
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowPass, null, c)));
     assertThat(c, hasIpAccessList(policyMapAclName, accepts(flowInspect, null, c)));
@@ -3956,7 +3880,7 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess bgpProc = vc.getDefaultVrf().getBgpProcess();
     assert bgpProc != null;
     BgpRedistributionPolicy eigrpRedist =
-        bgpProc.getRedistributionPolicies().get(RoutingProtocolInstance.eigrp(1L));
+            bgpProc.getRedistributionPolicies().get(RoutingProtocolInstance.eigrp(1L));
     assert eigrpRedist != null;
     assertThat(eigrpRedist.getRouteMap(), equalTo(redistRmName));
 
@@ -3964,10 +3888,10 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
-        ccae,
-        hasReferencedStructure(filename, ROUTE_MAP, redistRmName, BGP_REDISTRIBUTE_EIGRP_MAP));
+            ccae,
+            hasReferencedStructure(filename, ROUTE_MAP, redistRmName, BGP_REDISTRIBUTE_EIGRP_MAP));
   }
 
   @Test
@@ -3975,7 +3899,7 @@ public final class CiscoGrammarTest {
     // BGP redistributes EIGRP with route-map redist_eigrp, which permits 5.5.5.0/24
     Configuration c = parseConfig("ios-xe-eigrp-to-bgp");
     RoutingPolicy bgpRedistPolicy =
-        c.getRoutingPolicies().get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME));
+            c.getRoutingPolicies().get(generatedBgpRedistributionPolicyName(DEFAULT_VRF_NAME));
     int ebgpAdmin = RoutingProtocol.BGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     int ibgpAdmin = RoutingProtocol.IBGP.getDefaultAdministrativeCost(c.getConfigurationFormat());
     Prefix matchRm = Prefix.parse("5.5.5.0/24");
@@ -3984,125 +3908,125 @@ public final class CiscoGrammarTest {
     Ip bgpPeerId = Ip.parse("2.2.2.2");
     Ip nextHopIp = Ip.parse("3.3.3.3"); // not actually in config, just made up
     BgpSessionProperties.Builder spb =
-        BgpSessionProperties.builder().setLocalAs(1L).setLocalIp(bgpPeerId).setRemoteIp(nextHopIp);
+            BgpSessionProperties.builder().setLocalAs(1L).setLocalIp(bgpPeerId).setRemoteIp(nextHopIp);
     BgpSessionProperties ibgpSessionProps =
-        spb.setRemoteAs(1L).setSessionType(SessionType.IBGP).build();
+            spb.setRemoteAs(1L).setSessionType(SessionType.IBGP).build();
     BgpSessionProperties ebgpSessionProps =
-        spb.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
+            spb.setRemoteAs(2L).setSessionType(SessionType.EBGP_SINGLEHOP).build();
 
     // Create eigrp routes to redistribute
     EigrpInternalRoute.Builder internalRb =
-        EigrpInternalRoute.testBuilder()
-            .setProcessAsn(1L)
-            .setEigrpMetric(
-                ClassicMetric.builder()
-                    .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
-                    .build())
-            .setEigrpMetricVersion(EigrpMetricVersion.V1);
+            EigrpInternalRoute.testBuilder()
+                    .setProcessAsn(1L)
+                    .setEigrpMetric(
+                            ClassicMetric.builder()
+                                    .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                                    .build())
+                    .setEigrpMetricVersion(EigrpMetricVersion.V1);
     EigrpRoute matchEigrp = internalRb.setNetwork(matchRm).build();
     EigrpRoute noMatchEigrp = internalRb.setNetwork(noMatchRm).build();
 
     {
       // Redistribute matching EIGRP route into EBGP
       Bgpv4Route.Builder rb =
-          convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
+              convertNonBgpRouteToBgpRoute(
+                      matchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
-          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+              bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
-          rb.build(),
-          equalTo(
-              Bgpv4Route.testBuilder()
-                  .setNetwork(matchRm)
-                  .setProtocol(RoutingProtocol.BGP)
-                  .setAdmin(ebgpAdmin)
-                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-                  .setMetric(matchEigrp.getMetric())
-                  .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFrom(ReceivedFromSelf.instance())
-                  .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(REDISTRIBUTE)
-                  .setOriginType(OriginType.INCOMPLETE)
-                  .setSrcProtocol(RoutingProtocol.EIGRP)
-                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
-                  .build()));
+              rb.build(),
+              equalTo(
+                      Bgpv4Route.testBuilder()
+                              .setNetwork(matchRm)
+                              .setProtocol(RoutingProtocol.BGP)
+                              .setAdmin(ebgpAdmin)
+                              .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                              .setMetric(matchEigrp.getMetric())
+                              .setNextHop(NextHopIp.of(nextHopIp))
+                              .setReceivedFrom(ReceivedFromSelf.instance())
+                              .setOriginatorIp(bgpRouterId)
+                              .setOriginMechanism(REDISTRIBUTE)
+                              .setOriginType(OriginType.INCOMPLETE)
+                              .setSrcProtocol(RoutingProtocol.EIGRP)
+                              .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+                              .build()));
     }
     {
       // Redistribute nonmatching EIGRP route to EBGP
       Bgpv4Route.Builder rb =
-          convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
+              convertNonBgpRouteToBgpRoute(
+                      noMatchEigrp, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertFalse(
-          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
+              bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ebgpSessionProps, Direction.OUT, null));
     }
     {
       // Redistribute matching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
-          convertNonBgpRouteToBgpRoute(
-              matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
+              convertNonBgpRouteToBgpRoute(
+                      matchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertTrue(
-          bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+              bgpRedistPolicy.processBgpRoute(matchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
       assertThat(
-          rb.build(),
-          equalTo(
-              Bgpv4Route.testBuilder()
-                  .setNetwork(matchRm)
-                  .setProtocol(RoutingProtocol.IBGP)
-                  .setAdmin(ibgpAdmin)
-                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-                  .setMetric(matchEigrp.getMetric())
-                  .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFrom(ReceivedFromSelf.instance())
-                  .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(REDISTRIBUTE)
-                  .setOriginType(OriginType.INCOMPLETE)
-                  .setSrcProtocol(RoutingProtocol.EIGRP)
-                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
-                  .build()));
+              rb.build(),
+              equalTo(
+                      Bgpv4Route.testBuilder()
+                              .setNetwork(matchRm)
+                              .setProtocol(RoutingProtocol.IBGP)
+                              .setAdmin(ibgpAdmin)
+                              .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                              .setMetric(matchEigrp.getMetric())
+                              .setNextHop(NextHopIp.of(nextHopIp))
+                              .setReceivedFrom(ReceivedFromSelf.instance())
+                              .setOriginatorIp(bgpRouterId)
+                              .setOriginMechanism(REDISTRIBUTE)
+                              .setOriginType(OriginType.INCOMPLETE)
+                              .setSrcProtocol(RoutingProtocol.EIGRP)
+                              .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+                              .build()));
     }
     {
       // Redistribute nonmatching EIGRP route to IBGP
       Bgpv4Route.Builder rb =
-          convertNonBgpRouteToBgpRoute(
-              noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
+              convertNonBgpRouteToBgpRoute(
+                      noMatchEigrp, bgpRouterId, nextHopIp, ibgpAdmin, RoutingProtocol.IBGP, REDISTRIBUTE);
       assertFalse(
-          bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
+              bgpRedistPolicy.processBgpRoute(noMatchEigrp, rb, ibgpSessionProps, Direction.OUT, null));
     }
     {
       // Ensure external EIGRP route can also match routing policy
       EigrpRoute matchEigrpEx =
-          EigrpExternalRoute.testBuilder()
-              .setProcessAsn(1L)
-              .setDestinationAsn(2L)
-              .setEigrpMetric(
-                  ClassicMetric.builder()
-                      .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
-                      .build())
-              .setEigrpMetricVersion(EigrpMetricVersion.V1)
-              .setNetwork(matchRm)
-              .build();
+              EigrpExternalRoute.testBuilder()
+                      .setProcessAsn(1L)
+                      .setDestinationAsn(2L)
+                      .setEigrpMetric(
+                              ClassicMetric.builder()
+                                      .setValues(EigrpMetricValues.builder().setDelay(1).setBandwidth(1).build())
+                                      .build())
+                      .setEigrpMetricVersion(EigrpMetricVersion.V1)
+                      .setNetwork(matchRm)
+                      .build();
       Bgpv4Route.Builder rb =
-          convertNonBgpRouteToBgpRoute(
-              matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
+              convertNonBgpRouteToBgpRoute(
+                      matchEigrpEx, bgpRouterId, nextHopIp, ebgpAdmin, RoutingProtocol.BGP, REDISTRIBUTE);
       assertTrue(
-          bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
+              bgpRedistPolicy.processBgpRoute(matchEigrpEx, rb, ebgpSessionProps, Direction.OUT, null));
       assertThat(
-          rb.build(),
-          equalTo(
-              Bgpv4Route.testBuilder()
-                  .setNetwork(matchRm)
-                  .setProtocol(RoutingProtocol.BGP)
-                  .setAdmin(ebgpAdmin)
-                  .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-                  .setMetric(matchEigrpEx.getMetric())
-                  .setNextHop(NextHopIp.of(nextHopIp))
-                  .setReceivedFrom(ReceivedFromSelf.instance())
-                  .setOriginatorIp(bgpRouterId)
-                  .setOriginMechanism(REDISTRIBUTE)
-                  .setOriginType(OriginType.INCOMPLETE)
-                  .setSrcProtocol(RoutingProtocol.EIGRP_EX)
-                  .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
-                  .build()));
+              rb.build(),
+              equalTo(
+                      Bgpv4Route.testBuilder()
+                              .setNetwork(matchRm)
+                              .setProtocol(RoutingProtocol.BGP)
+                              .setAdmin(ebgpAdmin)
+                              .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                              .setMetric(matchEigrpEx.getMetric())
+                              .setNextHop(NextHopIp.of(nextHopIp))
+                              .setReceivedFrom(ReceivedFromSelf.instance())
+                              .setOriginatorIp(bgpRouterId)
+                              .setOriginMechanism(REDISTRIBUTE)
+                              .setOriginType(OriginType.INCOMPLETE)
+                              .setSrcProtocol(RoutingProtocol.EIGRP_EX)
+                              .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+                              .build()));
     }
   }
 
@@ -4124,10 +4048,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, null, c))));
     assertThat(c, hasInterface(e3Name, hasOutgoingFilter(accepts(flow, null, c))));
 
-    /*
-     * Traffic with src and dst interface in same zone should be permitted by
-     * default
-     */
+    /* Traffic with src and dst interface in same zone should be permitted by default */
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
     assertThat(c, hasInterface(e1Name, hasOutgoingFilter(accepts(flow, e2Name, c))));
     assertThat(c, hasInterface(e2Name, hasOutgoingFilter(accepts(flow, e1Name, c))));
@@ -4146,14 +4067,14 @@ public final class CiscoGrammarTest {
     for (String hostname : ImmutableList.of("ios-bgp-procnum-dotted", "ios-bgp-procnum-long")) {
       Configuration c = parseConfig(hostname);
       assertThat(
-          hostname,
-          c.getVrfs()
-              .get(DEFAULT_VRF_NAME)
-              .getBgpProcess()
-              .getActiveNeighbors()
-              .get(Ip.parse("2.2.2.3"))
-              .getLocalAs(),
-          equalTo(4123456789L));
+              hostname,
+              c.getVrfs()
+                      .get(DEFAULT_VRF_NAME)
+                      .getBgpProcess()
+                      .getActiveNeighbors()
+                      .get(Ip.parse("2.2.2.3"))
+                      .getLocalAs(),
+              equalTo(4123456789L));
     }
   }
 
@@ -4171,8 +4092,7 @@ public final class CiscoGrammarTest {
     org.batfish.representation.cisco.BgpProcess defBgp = c.getDefaultVrf().getBgpProcess();
     assertThat(defBgp.getProcnum(), equalTo(1L));
 
-    // VRF keeps local-as from first declaration and overriden router-id from
-    // second.
+    // VRF keeps local-as from first declaration and overriden router-id from second.
     assertThat(c.getVrfs(), hasKey("a"));
     org.batfish.representation.cisco.BgpProcess vrfBgp = c.getVrfs().get("a").getBgpProcess();
     assertThat(vrfBgp.getMasterBgpPeerGroup().getLocalAs(), equalTo(5L));
@@ -4185,7 +4105,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     String neighborIp = bgpNeighborStructureName("1.2.3.4", "default");
     String neighborIp6 = bgpNeighborStructureName("2001:db8:85a3::8a2e:370:7334", "default");
@@ -4193,19 +4113,19 @@ public final class CiscoGrammarTest {
     String neighborPrefix6 = bgpNeighborStructureName("2001:db8::/32", "default");
 
     assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(5)));
+            ccae,
+            hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp, contains(5)));
     assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(6)));
+            ccae,
+            hasDefinedStructureWithDefinitionLines(filename, BGP_NEIGHBOR, neighborIp6, contains(6)));
     assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, BGP_LISTEN_RANGE, neighborPrefix, contains(8)));
+            ccae,
+            hasDefinedStructureWithDefinitionLines(
+                    filename, BGP_LISTEN_RANGE, neighborPrefix, contains(8)));
     assertThat(
-        ccae,
-        hasDefinedStructureWithDefinitionLines(
-            filename, BGP_LISTEN_RANGE, neighborPrefix6, contains(9)));
+            ccae,
+            hasDefinedStructureWithDefinitionLines(
+                    filename, BGP_LISTEN_RANGE, neighborPrefix6, contains(9)));
 
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp, 1));
     assertThat(ccae, hasNumReferrers(filename, BGP_NEIGHBOR, neighborIp6, 1));
@@ -4224,11 +4144,11 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-bgp-origination-space");
 
     assertThat(
-        c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
-        equalTo(
-            new PrefixSpace(
-                PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
-                PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
+            c.getVrfs().get(DEFAULT_VRF_NAME).getBgpProcess().getOriginationSpace(),
+            equalTo(
+                    new PrefixSpace(
+                            PrefixRange.fromPrefix(Prefix.parse("1.1.1.1/32")),
+                            PrefixRange.fromPrefix(Prefix.parse("1.1.2.0/24")))));
   }
 
   @Test
@@ -4237,8 +4157,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
 
-    // Each list should be converted to both a CommunityMatchExpr and a
-    // CommunitySetMatchExpr.
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
       // Test CommunityMatchExpr conversion
       assertThat(c.getCommunityMatchExprs(), hasKeys("cl_test"));
@@ -4265,21 +4184,21 @@ public final class CiscoGrammarTest {
 
         // deny regex _1:1.*2:2_
         assertFalse(
-            expr.accept(
-                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+                expr.accept(
+                        eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
         assertFalse(
-            expr.accept(
-                eval,
-                CommunitySet.of(
-                    StandardCommunity.of(1, 1),
-                    StandardCommunity.of(2, 2),
-                    StandardCommunity.of(3, 3))));
+                expr.accept(
+                        eval,
+                        CommunitySet.of(
+                                StandardCommunity.of(1, 1),
+                                StandardCommunity.of(2, 2),
+                                StandardCommunity.of(3, 3))));
 
         // permit regex _1:1_
         assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
         assertTrue(
-            expr.accept(
-                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+                expr.accept(
+                        eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
         assertFalse(expr.accept(eval, CommunitySet.of(StandardCommunity.of(11, 11))));
 
         // permit regex _2:2_
@@ -4321,8 +4240,7 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
     CommunityContext ctx = CommunityContext.builder().build();
 
-    // Each list should be converted to both a CommunityMatchExpr and a
-    // CommunitySetMatchExpr.
+    // Each list should be converted to both a CommunityMatchExpr and a CommunitySetMatchExpr.
     {
       // Test CommunityMatchExpr conversion
       assertThat(c.getCommunityMatchExprs(), hasKeys("cl_values", "cl_test"));
@@ -4375,21 +4293,21 @@ public final class CiscoGrammarTest {
 
         // deny 1:1 2:2
         assertFalse(
-            expr.accept(
-                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
+                expr.accept(
+                        eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2))));
         assertFalse(
-            expr.accept(
-                eval,
-                CommunitySet.of(
-                    StandardCommunity.of(1, 1),
-                    StandardCommunity.of(2, 2),
-                    StandardCommunity.of(3, 3))));
+                expr.accept(
+                        eval,
+                        CommunitySet.of(
+                                StandardCommunity.of(1, 1),
+                                StandardCommunity.of(2, 2),
+                                StandardCommunity.of(3, 3))));
 
         // permit 1:1
         assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(1, 1))));
         assertTrue(
-            expr.accept(
-                eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
+                expr.accept(
+                        eval, CommunitySet.of(StandardCommunity.of(1, 1), StandardCommunity.of(3, 3))));
 
         // permit 2:2
         assertTrue(expr.accept(eval, CommunitySet.of(StandardCommunity.of(2, 2))));
@@ -4406,18 +4324,18 @@ public final class CiscoGrammarTest {
     {
       StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_values");
       assertThat(
-          cl.getLines().stream()
-              .map(StandardCommunityListLine::getCommunities)
-              .map(Iterables::getOnlyElement)
-              .collect(ImmutableList.toImmutableList()),
-          contains(
-              StandardCommunity.of(4294967295L),
-              StandardCommunity.of(1, 1),
-              StandardCommunity.GRACEFUL_SHUTDOWN,
-              StandardCommunity.INTERNET,
-              StandardCommunity.NO_EXPORT_SUBCONFED,
-              StandardCommunity.NO_ADVERTISE,
-              StandardCommunity.NO_EXPORT));
+              cl.getLines().stream()
+                      .map(StandardCommunityListLine::getCommunities)
+                      .map(Iterables::getOnlyElement)
+                      .collect(ImmutableList.toImmutableList()),
+              contains(
+                      StandardCommunity.of(4294967295L),
+                      StandardCommunity.of(1, 1),
+                      StandardCommunity.GRACEFUL_SHUTDOWN,
+                      StandardCommunity.INTERNET,
+                      StandardCommunity.NO_EXPORT_SUBCONFED,
+                      StandardCommunity.NO_ADVERTISE,
+                      StandardCommunity.NO_EXPORT));
     }
     {
       StandardCommunityList cl = vc.getStandardCommunityLists().get("cl_test");
@@ -4427,7 +4345,7 @@ public final class CiscoGrammarTest {
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.DENY));
       assertThat(
-          line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
+              line.getCommunities(), contains(StandardCommunity.of(1, 1), StandardCommunity.of(2, 2)));
 
       line = lines.next();
       assertThat(line.getAction(), equalTo(LineAction.PERMIT));
@@ -4446,37 +4364,37 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto-map");
     // tests for IPSec phase 2 policies conversion
     assertThat(
-        c,
-        hasIpsecPhase2Policy(
-            "IPSEC-PROFILE1",
-            allOf(
-                IpsecPhase2PolicyMatchers.hasIpsecProposals(
-                    equalTo(ImmutableList.of("ts1", "ts2"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+            c,
+            hasIpsecPhase2Policy(
+                    "IPSEC-PROFILE1",
+                    allOf(
+                            IpsecPhase2PolicyMatchers.hasIpsecProposals(
+                                    equalTo(ImmutableList.of("ts1", "ts2"))),
+                            IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
 
     assertThat(
-        c,
-        hasIpsecPhase2Policy(
-            "~IPSEC_PHASE2_POLICY:mymap:10~",
-            allOf(
-                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
+            c,
+            hasIpsecPhase2Policy(
+                    "~IPSEC_PHASE2_POLICY:mymap:10~",
+                    allOf(
+                            IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                            IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP14)))));
 
     assertThat(
-        c,
-        hasIpsecPhase2Policy(
-            "~IPSEC_PHASE2_POLICY:mymap:30:15~",
-            allOf(
-                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
+            c,
+            hasIpsecPhase2Policy(
+                    "~IPSEC_PHASE2_POLICY:mymap:30:15~",
+                    allOf(
+                            IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts2"))),
+                            IpsecPhase2PolicyMatchers.hasPfsKeyGroups(empty()))));
 
     assertThat(
-        c,
-        hasIpsecPhase2Policy(
-            "~IPSEC_PHASE2_POLICY:mymap:30:5~",
-            allOf(
-                IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
-                IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
+            c,
+            hasIpsecPhase2Policy(
+                    "~IPSEC_PHASE2_POLICY:mymap:30:5~",
+                    allOf(
+                            IpsecPhase2PolicyMatchers.hasIpsecProposals(equalTo(ImmutableList.of("ts1"))),
+                            IpsecPhase2PolicyMatchers.hasPfsKeyGroup(equalTo(DiffieHellmanGroup.GROUP2)))));
   }
 
   @Test
@@ -4490,102 +4408,102 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto-map");
 
     Matcher<IpAccessList> policyAclMatcher =
-        hasLines(
-            contains(
-                isExprAclLineThat(
-                    allOf(
-                        ExprAclLineMatchers.hasName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0"),
-                        hasMatchCondition(
-                            new MatchHeaderSpace(
-                                HeaderSpace.builder()
-                                    .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
-                                    .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
-                                    .build())))),
-                isExprAclLineThat(
-                    hasMatchCondition(
-                        new MatchHeaderSpace(
-                            HeaderSpace.builder()
-                                .setSrcIps(IpWildcard.parse("2.2.2.2").toIpSpace())
-                                .setDstIps(IpWildcard.parse("1.1.1.1").toIpSpace())
-                                .build())))));
+            hasLines(
+                    contains(
+                            isExprAclLineThat(
+                                    allOf(
+                                            ExprAclLineMatchers.hasName("permit ip 1.1.1.1 0.0.0.0 2.2.2.2 0.0.0.0"),
+                                            hasMatchCondition(
+                                                    new MatchHeaderSpace(
+                                                            HeaderSpace.builder()
+                                                                    .setSrcIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                                                                    .setDstIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                                                                    .build())))),
+                            isExprAclLineThat(
+                                    hasMatchCondition(
+                                            new MatchHeaderSpace(
+                                                    HeaderSpace.builder()
+                                                            .setSrcIps(IpWildcard.parse("2.2.2.2").toIpSpace())
+                                                            .setDstIps(IpWildcard.parse("1.1.1.1").toIpSpace())
+                                                            .build())))));
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
-            isIpsecStaticPeerConfigThat(
-                allOf(
-                    hasDestinationAddress(Ip.parse("3.4.5.6")),
-                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(policyAclMatcher),
-                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
+            c,
+            hasIpsecPeerConfig(
+                    "~IPSEC_PEER_CONFIG:mymap:20_TenGigabitEthernet0/0~",
+                    isIpsecStaticPeerConfigThat(
+                            allOf(
+                                    hasDestinationAddress(Ip.parse("3.4.5.6")),
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE-MATCHED"),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:20~"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasPolicyAccessList(policyAclMatcher),
+                                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
-            isIpsecStaticPeerConfigThat(
-                allOf(
-                    hasDestinationAddress(Ip.parse("1.2.3.4")),
-                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(policyAclMatcher),
-                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
+            c,
+            hasIpsecPeerConfig(
+                    "~IPSEC_PEER_CONFIG:mymap:10_TenGigabitEthernet0/0~",
+                    isIpsecStaticPeerConfigThat(
+                            allOf(
+                                    hasDestinationAddress(Ip.parse("1.2.3.4")),
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:10~"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasPolicyAccessList(policyAclMatcher),
+                                    hasLocalAddress(Ip.parse("2.3.4.6"))))));
 
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
-            isIpsecDynamicPeerConfigThat(
-                allOf(
-                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
-                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(policyAclMatcher),
-                    hasLocalAddress(Ip.parse("2.3.4.6")),
-                    hasTunnelInterface(nullValue())))));
+            c,
+            hasIpsecPeerConfig(
+                    "~IPSEC_PEER_CONFIG:mymap:30:15_TenGigabitEthernet0/0~",
+                    isIpsecDynamicPeerConfigThat(
+                            allOf(
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                                            equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:15~"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasPolicyAccessList(policyAclMatcher),
+                                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                                    hasTunnelInterface(nullValue())))));
 
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
-            isIpsecDynamicPeerConfigThat(
-                allOf(
-                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
-                        equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasPolicyAccessList(policyAclMatcher),
-                    hasLocalAddress(Ip.parse("2.3.4.6")),
-                    hasTunnelInterface(nullValue())))));
+            c,
+            hasIpsecPeerConfig(
+                    "~IPSEC_PEER_CONFIG:mymap:30:5_TenGigabitEthernet0/0~",
+                    isIpsecDynamicPeerConfigThat(
+                            allOf(
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policies(
+                                            equalTo(ImmutableList.of("ISAKMP-PROFILE", "ISAKMP-PROFILE-MATCHED"))),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("~IPSEC_PHASE2_POLICY:mymap:30:5~"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasPolicyAccessList(policyAclMatcher),
+                                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                                    hasTunnelInterface(nullValue())))));
 
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "Tunnel1",
-            isIpsecStaticPeerConfigThat(
-                allOf(
-                    hasDestinationAddress(Ip.parse("1.2.3.4")),
-                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasLocalAddress(Ip.parse("2.3.4.6")),
-                    hasTunnelInterface(equalTo("Tunnel1"))))));
+            c,
+            hasIpsecPeerConfig(
+                    "Tunnel1",
+                    isIpsecStaticPeerConfigThat(
+                            allOf(
+                                    hasDestinationAddress(Ip.parse("1.2.3.4")),
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                                    hasTunnelInterface(equalTo("Tunnel1"))))));
 
     assertThat(
-        c,
-        hasIpsecPeerConfig(
-            "Tunnel2",
-            isIpsecStaticPeerConfigThat(
-                allOf(
-                    hasDestinationAddress(Ip.parse("1.2.3.4")),
-                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
-                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
-                    hasSourceInterface("TenGigabitEthernet0/0"),
-                    hasLocalAddress(Ip.parse("2.3.4.6")),
-                    hasTunnelInterface(equalTo("Tunnel2"))))));
+            c,
+            hasIpsecPeerConfig(
+                    "Tunnel2",
+                    isIpsecStaticPeerConfigThat(
+                            allOf(
+                                    hasDestinationAddress(Ip.parse("1.2.3.4")),
+                                    IpsecPeerConfigMatchers.hasIkePhase1Policy("ISAKMP-PROFILE"),
+                                    IpsecPeerConfigMatchers.hasIpsecPolicy("IPSEC-PROFILE1"),
+                                    hasSourceInterface("TenGigabitEthernet0/0"),
+                                    hasLocalAddress(Ip.parse("2.3.4.6")),
+                                    hasTunnelInterface(equalTo("Tunnel2"))))));
   }
 
   @Test
@@ -4593,11 +4511,11 @@ public final class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios-tunnel-mode", ConfigurationFormat.CISCO_IOS);
 
     assertThat(
-        c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
+            c.getInterfaces().get("Tunnel1").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
     assertThat(
-        c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
+            c.getInterfaces().get("Tunnel2").getTunnel().getMode(), equalTo(TunnelMode.GRE_MULTIPOINT));
     assertThat(
-        c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC_IPV4));
+            c.getInterfaces().get("Tunnel3").getTunnel().getMode(), equalTo(TunnelMode.IPSEC_IPV4));
   }
 
   @Test
@@ -4607,11 +4525,11 @@ public final class CiscoGrammarTest {
     Builder builder = TunnelConfiguration.builder().setSourceAddress(Ip.parse("2.3.4.6"));
 
     assertThat(
-        c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
-        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
+            c.getAllInterfaces().get("Tunnel1").getTunnelConfig(),
+            equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.4")).build()));
     assertThat(
-        c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
-        equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
+            c.getAllInterfaces().get("Tunnel2").getTunnelConfig(),
+            equalTo(builder.setDestinationAddress(Ip.parse("1.2.3.5")).build()));
   }
 
   @Test
@@ -4626,15 +4544,15 @@ public final class CiscoGrammarTest {
 
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(
-        ccae,
-        hasRedFlagWarning(
-            hostname,
-            containsString(
-                "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no"
-                    + " ip-address")));
+            ccae,
+            hasRedFlagWarning(
+                    hostname,
+                    containsString(
+                            "Interface TenGigabitEthernet0/1 with declared crypto-map mymap has no"
+                                    + " ip-address")));
   }
 
   @Test
@@ -4642,33 +4560,33 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto");
 
     assertThat(
-        c,
-        hasIkePhase1Policy(
-            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.1.1.0/24}~",
-            allOf(
-                hasIkePhase1Key(
+            c,
+            hasIkePhase1Policy(
+                    "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=1.1.1.0/24}~",
                     allOf(
-                        IkePhase1KeyMatchers.hasKeyHash(
-                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
-                        IkePhase1KeyMatchers.hasRemoteIdentity(
-                            IpWildcard.parse("1.1.1.0/24").toIpSpace()),
-                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED))),
-                hasRemoteIdentity(equalTo(IpWildcard.parse("1.1.1.0/24").toIpSpace())),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+                            hasIkePhase1Key(
+                                    allOf(
+                                            IkePhase1KeyMatchers.hasKeyHash(
+                                                    CommonUtil.sha256Digest("psk1" + CommonUtil.salt())),
+                                            IkePhase1KeyMatchers.hasRemoteIdentity(
+                                                    IpWildcard.parse("1.1.1.0/24").toIpSpace()),
+                                            hasKeyType(IkeKeyType.PRE_SHARED_KEY_UNENCRYPTED))),
+                            hasRemoteIdentity(equalTo(IpWildcard.parse("1.1.1.0/24").toIpSpace())),
+                            hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
 
     assertThat(
-        c,
-        hasIkePhase1Policy(
-            "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=2.2.2.2}~",
-            allOf(
-                hasIkePhase1Key(
+            c,
+            hasIkePhase1Policy(
+                    "~ISAKMP_KEY_IpWildcardIpSpace{ipWildcard=2.2.2.2}~",
                     allOf(
-                        IkePhase1KeyMatchers.hasKeyHash("FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB"),
-                        IkePhase1KeyMatchers.hasRemoteIdentity(
-                            IpWildcard.parse("2.2.2.2").toIpSpace()),
-                        hasKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED))),
-                hasRemoteIdentity(equalTo(IpWildcard.parse("2.2.2.2").toIpSpace())),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
+                            hasIkePhase1Key(
+                                    allOf(
+                                            IkePhase1KeyMatchers.hasKeyHash("FLgBaJHXdYY_AcHZZMgQ_RhTDJXHUBAAB"),
+                                            IkePhase1KeyMatchers.hasRemoteIdentity(
+                                                    IpWildcard.parse("2.2.2.2").toIpSpace()),
+                                            hasKeyType(IkeKeyType.PRE_SHARED_KEY_ENCRYPTED))),
+                            hasRemoteIdentity(equalTo(IpWildcard.parse("2.2.2.2").toIpSpace())),
+                            hasIkePhase1Proposals(equalTo(ImmutableList.of("20"))))));
   }
 
   @Test
@@ -4676,34 +4594,34 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase1 proposals
     assertThat(
-        c,
-        hasIkePhase1Proposal(
-            "10",
-            allOf(
-                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
-                IkePhase1ProposalMatchers.hasAuthenticationMethod(
-                    IkeAuthenticationMethod.RSA_SIGNATURES),
-                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
-                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
-                IkePhase1ProposalMatchers.hasLifeTimeSeconds(14400))));
+            c,
+            hasIkePhase1Proposal(
+                    "10",
+                    allOf(
+                            IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_CBC),
+                            IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                                    IkeAuthenticationMethod.RSA_SIGNATURES),
+                            IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.MD5),
+                            IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP1),
+                            IkePhase1ProposalMatchers.hasLifeTimeSeconds(14400))));
 
     assertThat(
-        c,
-        hasIkePhase1Proposal(
-            "20",
-            allOf(
-                IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
-                IkePhase1ProposalMatchers.hasAuthenticationMethod(
-                    IkeAuthenticationMethod.PRE_SHARED_KEYS),
-                IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
-                IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
-                IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
+            c,
+            hasIkePhase1Proposal(
+                    "20",
+                    allOf(
+                            IkePhase1ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.THREEDES_CBC),
+                            IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                                    IkeAuthenticationMethod.PRE_SHARED_KEYS),
+                            IkePhase1ProposalMatchers.hasHashingAlgorithm(IkeHashingAlgorithm.SHA1),
+                            IkePhase1ProposalMatchers.hasDiffieHellmanGroup(DiffieHellmanGroup.GROUP2),
+                            IkePhase1ProposalMatchers.hasLifeTimeSeconds(86400))));
     assertThat(
-        c,
-        hasIkePhase1Proposal(
-            "30",
-            IkePhase1ProposalMatchers.hasAuthenticationMethod(
-                IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)));
+            c,
+            hasIkePhase1Proposal(
+                    "30",
+                    IkePhase1ProposalMatchers.hasAuthenticationMethod(
+                            IkeAuthenticationMethod.RSA_ENCRYPTED_NONCES)));
   }
 
   @Test
@@ -4711,34 +4629,32 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto");
     // test for IKE phase 1 policy
     assertThat(
-        c,
-        hasIkePhase1Policy(
-            "ISAKMP-PROFILE-ADDRESS",
-            allOf(
-                hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKeyHash(
-                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
-                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                // TODO: filter proposals during conversion so that they
-                // match IKE Phase 1
-                // policy's
-                // key type
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
+            c,
+            hasIkePhase1Policy(
+                    "ISAKMP-PROFILE-ADDRESS",
+                    allOf(
+                            hasIkePhase1Key(
+                                    IkePhase1KeyMatchers.hasKeyHash(
+                                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                            hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                            hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
+                            hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
+                            // TODO: filter proposals during conversion so that they match IKE Phase 1 policy's
+                            // key type
+                            hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
 
     assertThat(
-        c,
-        hasIkePhase1Policy(
-            "ISAKMP-PROFILE-INTERFACE",
-            allOf(
-                hasIkePhase1Key(
-                    IkePhase1KeyMatchers.hasKeyHash(
-                        CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
-                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
-                hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
+            c,
+            hasIkePhase1Policy(
+                    "ISAKMP-PROFILE-INTERFACE",
+                    allOf(
+                            hasIkePhase1Key(
+                                    IkePhase1KeyMatchers.hasKeyHash(
+                                            CommonUtil.sha256Digest("psk1" + CommonUtil.salt()))),
+                            hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                            hasSelfIdentity(equalTo(Ip.parse("2.3.4.6"))),
+                            hasLocalInterface(equalTo("TenGigabitEthernet0/0")),
+                            hasIkePhase1Proposals(equalTo(ImmutableList.of("10", "20", "30"))))));
   }
 
   @Test
@@ -4746,17 +4662,17 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-crypto-rsa");
 
     assertThat(
-        c,
-        hasIkePhase1Policy(
-            "~RSA_PUB_testrsa~",
-            allOf(
-                hasIkePhase1Key(
+            c,
+            hasIkePhase1Policy(
+                    "~RSA_PUB_testrsa~",
                     allOf(
-                        hasKeyType(IkeKeyType.RSA_PUB_KEY),
-                        IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
-                hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
-                hasLocalInterface(equalTo(UNSET_LOCAL_INTERFACE)),
-                hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
+                            hasIkePhase1Key(
+                                    allOf(
+                                            hasKeyType(IkeKeyType.RSA_PUB_KEY),
+                                            IkePhase1KeyMatchers.hasRemoteIdentity(Ip.parse("1.2.3.4").toIpSpace()))),
+                            hasRemoteIdentity(containsIp(Ip.parse("1.2.3.4"))),
+                            hasLocalInterface(equalTo(UNSET_LOCAL_INTERFACE)),
+                            hasIkePhase1Proposals(equalTo(ImmutableList.of("10"))))));
   }
 
   @Test
@@ -4766,8 +4682,8 @@ public final class CiscoGrammarTest {
 
     /* Confirm RSA pubkey is referenced */
     assertThat(
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()),
-        hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot()),
+            hasNumReferrers("configs/" + hostname, NAMED_RSA_PUB_KEY, "testrsa", 1));
   }
 
   @Test
@@ -4798,11 +4714,11 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(host1name, host2name);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     Configuration c1 = configurations.get(host1name);
@@ -4840,8 +4756,7 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.get(iface1Name).getOspfProcess(), equalTo("1"));
     assertThat(ifaces.get(iface2Name).getOspfProcess(), equalTo("2"));
     assertThat(ifaces.get(iface3Name).getOspfProcess(), equalTo("2"));
-    // Should not infer an OSPF process for the interface not overlapping with an
-    // OSPF network
+    // Should not infer an OSPF process for the interface not overlapping with an OSPF network
     assertThat(ifaces.get(iface4Name).getOspfProcess(), nullValue());
   }
 
@@ -4850,7 +4765,7 @@ public final class CiscoGrammarTest {
     String hostname = "ios-ospf-prefix-priority";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers("configs/" + hostname, ROUTE_MAP, "OSPF-MAP", 1));
   }
 
@@ -4858,77 +4773,77 @@ public final class CiscoGrammarTest {
   public void testTransformsetToIpsecphase2Proposal() throws IOException {
     Configuration c = parseConfig("ios-crypto-transform-set");
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts1",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
-                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts1",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_CBC),
+                            IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts2",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
-                    EncryptionAlgorithm.THREEDES_CBC),
-                IpsecPhase2ProposalMatchers.hasProtocols(
-                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts2",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_SHA1_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.THREEDES_CBC),
+                            IpsecPhase2ProposalMatchers.hasProtocols(
+                                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts3",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
-                IpsecPhase2ProposalMatchers.hasProtocols(
-                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts3",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_192_CBC),
+                            IpsecPhase2ProposalMatchers.hasProtocols(
+                                    ImmutableSortedSet.of(IpsecProtocol.ESP, IpsecProtocol.AH)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts4",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
-                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts4",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_128_GCM),
+                            IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
 
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts5",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
-                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts5",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(EncryptionAlgorithm.AES_256_GCM),
+                            IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
 
     assertThat(
-        c,
-        hasIpsecPhase2Proposal(
-            "ts6",
-            allOf(
-                IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
-                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
-                IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
-                    EncryptionAlgorithm.AES_128_GMAC),
-                IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
-                IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
-                    IpsecEncapsulationMode.TUNNEL))));
+            c,
+            hasIpsecPhase2Proposal(
+                    "ts6",
+                    allOf(
+                            IpsecPhase2ProposalMatchers.hasAuthenticationAlgorithm(
+                                    IpsecAuthenticationAlgorithm.HMAC_MD5_96),
+                            IpsecPhase2ProposalMatchers.hasEncryptionAlgorithm(
+                                    EncryptionAlgorithm.AES_128_GMAC),
+                            IpsecPhase2ProposalMatchers.hasProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP)),
+                            IpsecPhase2ProposalMatchers.hasIpsecEncapsulationMode(
+                                    IpsecEncapsulationMode.TUNNEL))));
   }
 
   @Test
@@ -4937,26 +4852,23 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of("r1", "r2", "r3");
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
     ValueGraph<IpsecPeerConfigId, IpsecSession> graph =
-        IpsecUtil.initIpsecTopology(configurations).getGraph();
+            IpsecUtil.initIpsecTopology(configurations).getGraph();
 
     Set<EndpointPair<IpsecPeerConfigId>> edges = graph.edges();
 
-    // there should be six edges in total, two for the static crypto map session
-    // between r1 and r2
-    // two for the dynamic crypto map session from r1->r3 and r2->r3
-    // (unidirectional)
+    // there should be six edges in total, two for the static crypto map session between r1 and r2
+    // two for the dynamic crypto map session from r1->r3 and r2->r3 (unidirectional)
     // two for the tunnel interface IPSec session between r2 and r3
     assertThat(edges, hasSize(6));
 
-    // checking that the negotiated IKE and IPSec proposals are set in all the
-    // sessions
+    // checking that the negotiated IKE and IPSec proposals are set in all the sessions
     for (EndpointPair<IpsecPeerConfigId> edge : edges) {
       IpsecSession ipsecSession = graph.edgeValueOrDefault(edge.nodeU(), edge.nodeV(), null);
 
@@ -4975,14 +4887,14 @@ public final class CiscoGrammarTest {
     String iosMaxMetricCustomName = "ios-max-metric-custom";
     String iosMaxMetricOnStartupName = "ios-max-metric-on-startup";
     List<String> configurationNames =
-        ImmutableList.of(iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName);
+            ImmutableList.of(iosMaxMetricName, iosMaxMetricCustomName, iosMaxMetricOnStartupName);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     Configuration iosMaxMetric = configurations.get(iosMaxMetricName);
@@ -4992,12 +4904,12 @@ public final class CiscoGrammarTest {
     OspfProcess procCustom = iosMaxMetricCustom.getDefaultVrf().getOspfProcesses().get("1");
     OspfProcess procOnStartup = iosMaxMetricOnStartup.getDefaultVrf().getOspfProcesses().get("1");
     long expectedMaxMetricRouterLsa =
-        org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
+            org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
     long expectedMaxMetricStub = org.batfish.representation.cisco.OspfProcess.MAX_METRIC_ROUTER_LSA;
     long expectedMaxMetricExternal =
-        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA;
+            org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_EXTERNAL_LSA;
     long expectedMaxMetricSummary =
-        org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA;
+            org.batfish.representation.cisco.OspfProcess.DEFAULT_MAX_METRIC_SUMMARY_LSA;
     long expectedCustomMaxMetricExternal = 12345L;
     long expectedCustomMaxMetricSummary = 23456L;
 
@@ -5017,20 +4929,16 @@ public final class CiscoGrammarTest {
 
   @Test
   public void testOspfNoRedistribution() throws IOException {
-    /*
-     * ________ ________ ________
-     * | R1 | | | | R2 |
-     * | Area 0 |----| ABR |----| Area 1 |
-     * | | | | | NSSA |
-     * -------- -------- --------
-     * Will run this setup with two versions of the ABR, one where it has
-     * no-redistribution
-     * configured for area 1 and one where it doesn't. In both cases, the ABR is
-     * configured to
-     * redistribute connected subnets, so we should always see its loopback prefix
-     * on R1 and should
-     * also see it on R2 when no-redistribution is not configured.
-     */
+    /*   ________      ________      ________
+        |   R1   |    |        |    |   R2   |
+        | Area 0 |----|  ABR   |----| Area 1 |
+        |        |    |        |    |  NSSA  |
+         --------      --------      --------
+      Will run this setup with two versions of the ABR, one where it has no-redistribution
+      configured for area 1 and one where it doesn't. In both cases, the ABR is configured to
+      redistribute connected subnets, so we should always see its loopback prefix on R1 and should
+      also see it on R2 when no-redistribution is not configured.
+    */
 
     // First snapshot: no-redistribution is not configured
     String testrigName = "ospf-no-redistribution";
@@ -5040,11 +4948,11 @@ public final class CiscoGrammarTest {
     Prefix abrLoopbackPrefix = Prefix.parse("10.10.10.10/32");
     List<String> configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     NetworkSnapshot snapshot = batfish.getSnapshot();
     Map<String, Configuration> configurations = batfish.loadConfigurations(snapshot);
     Configuration abr = configurations.get(abrName);
@@ -5052,35 +4960,34 @@ public final class CiscoGrammarTest {
     // Sanity check: ensure the ABR does not have suppressType7 set for area 1
     Long areaNum = abr.getAllInterfaces().get("Ethernet1").getOspfAreaName();
     OspfArea abrToArea1 =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
+            abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(false));
 
     batfish.computeDataPlane(snapshot);
     DataPlane dp = batfish.loadDataPlane(snapshot);
     Set<AbstractRoute> area0Routes = dp.getRibs().get(area0Name, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> area1NssaRoutes =
-        dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(area1NssaName, DEFAULT_VRF_NAME).getRoutes();
     Set<AbstractRoute> abrRoutes = dp.getRibs().get(abrName, DEFAULT_VRF_NAME).getRoutes();
 
     // All the devices should have a route to the ABR's loopback
     assertThat(
-        area0Routes,
-        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+            area0Routes,
+            hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(
-        area1NssaRoutes,
-        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+            area1NssaRoutes,
+            hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
 
-    // Second snapshot: run the same song and dance with no-redistribution
-    // configured on the ABR
+    // Second snapshot: run the same song and dance with no-redistribution configured on the ABR
     abrName = "ios-abr-no-redistribution";
     configurationNames = ImmutableList.of(area0Name, area1NssaName, abrName);
     batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     snapshot = batfish.getSnapshot();
     configurations = batfish.loadConfigurations(snapshot);
     abr = configurations.get(abrName);
@@ -5088,7 +4995,7 @@ public final class CiscoGrammarTest {
     // This time the ABR should have suppressType7 set for area 1
     areaNum = abr.getAllInterfaces().get("Ethernet1").getOspfAreaName();
     abrToArea1 =
-        abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
+            abr.getVrfs().get(DEFAULT_VRF_NAME).getOspfProcesses().get("1").getAreas().get(areaNum);
     assertThat(abrToArea1.getNssa(), hasSuppressType7(true));
 
     batfish.computeDataPlane(snapshot);
@@ -5099,8 +5006,8 @@ public final class CiscoGrammarTest {
 
     // Now the device in area 1 should not have a route to the ABR's loopback
     assertThat(
-        area0Routes,
-        hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
+            area0Routes,
+            hasItem(allOf(hasPrefix(abrLoopbackPrefix), hasProtocol(RoutingProtocol.OSPF_E2))));
     assertThat(area1NssaRoutes, not(hasItem(hasPrefix(abrLoopbackPrefix))));
     assertThat(abrRoutes, hasItem(hasPrefix(abrLoopbackPrefix)));
   }
@@ -5112,11 +5019,11 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(iosOspfPointToPoint);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
     String eth0 = "Ethernet0/0";
@@ -5130,23 +5037,23 @@ public final class CiscoGrammarTest {
 
     assertThat(ifaces.get(eth0).getOspfNetworkType(), nullValue());
     assertThat(
-        ifaces.get(eth1).getOspfNetworkType(),
-        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
+            ifaces.get(eth1).getOspfNetworkType(),
+            equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_POINT));
     assertThat(
-        ifaces.get(eth2).getOspfNetworkType(),
-        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
+            ifaces.get(eth2).getOspfNetworkType(),
+            equalTo(org.batfish.datamodel.ospf.OspfNetworkType.BROADCAST));
     assertThat(
-        ifaces.get(eth3).getOspfNetworkType(),
-        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
+            ifaces.get(eth3).getOspfNetworkType(),
+            equalTo(org.batfish.datamodel.ospf.OspfNetworkType.NON_BROADCAST_MULTI_ACCESS));
     assertThat(
-        ifaces.get(eth4).getOspfNetworkType(),
-        equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT));
+            ifaces.get(eth4).getOspfNetworkType(),
+            equalTo(org.batfish.datamodel.ospf.OspfNetworkType.POINT_TO_MULTIPOINT));
   }
 
   @Test
   public void testCiscoOspfNetworkTypes() {
     CiscoConfiguration config =
-        parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ospf-network-types", ConfigurationFormat.CISCO_IOS);
 
     String eth0 = "Ethernet0/0";
     String eth1 = "Ethernet0/1";
@@ -5165,8 +5072,8 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.get(eth3).getOspfNetworkType(), equalTo(OspfNetworkType.NON_BROADCAST));
     assertThat(ifaces.get(eth4).getOspfNetworkType(), equalTo(OspfNetworkType.POINT_TO_MULTIPOINT));
     assertThat(
-        ifaces.get(eth5).getOspfNetworkType(),
-        equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
+            ifaces.get(eth5).getOspfNetworkType(),
+            equalTo(OspfNetworkType.POINT_TO_MULTIPOINT_NON_BROADCAST));
   }
 
   @Test
@@ -5203,11 +5110,11 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
@@ -5221,9 +5128,9 @@ public final class CiscoGrammarTest {
     assertThat("Loopback3", in(iosRecoveryInterfaceNames));
 
     Set<ConcreteInterfaceAddress> l3Prefixes =
-        iosRecoveryInterfaces.get("Loopback3").getAllConcreteAddresses();
+            iosRecoveryInterfaces.get("Loopback3").getAllConcreteAddresses();
     Set<ConcreteInterfaceAddress> l4Prefixes =
-        iosRecoveryInterfaces.get("Loopback4").getAllConcreteAddresses();
+            iosRecoveryInterfaces.get("Loopback4").getAllConcreteAddresses();
 
     assertThat(ConcreteInterfaceAddress.parse("10.0.0.1/32"), not(in(l3Prefixes)));
     assertThat(ConcreteInterfaceAddress.parse("10.0.0.2/32"), in(l3Prefixes));
@@ -5240,11 +5147,11 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
@@ -5261,8 +5168,7 @@ public final class CiscoGrammarTest {
     assertThat(ifaces.keySet(), contains(eth0));
     Interface iface = ifaces.get(eth0);
 
-    // Confirm OSPF settings are associated with interface even though it is
-    // shutdown
+    // Confirm OSPF settings are associated with interface even though it is shutdown
     assertThat(iface.getOspfEnabled(), equalTo(false));
     assertThat(iface.getOspfAreaName(), equalTo(0L));
     assertThat(iface.getOspfProcess(), equalTo("1"));
@@ -5276,11 +5182,11 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
@@ -5295,19 +5201,16 @@ public final class CiscoGrammarTest {
     List<String> configurationNames = ImmutableList.of(hostname);
 
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + testrigName, configurationNames)
+                            .build(),
+                    _folder);
     batfish.getSettings().setDisableUnrecognized(false);
     batfish.getSettings().setThrowOnParserError(false);
     Map<String, Configuration> configurations = batfish.loadConfigurations(batfish.getSnapshot());
 
-    /*
-     * Parser should not crash, and configuration with hostname from file should be
-     * generated
-     */
+    /* Parser should not crash, and configuration with hostname from file should be generated */
     assertThat(configurations, hasKey(hostname));
   }
 
@@ -5321,9 +5224,9 @@ public final class CiscoGrammarTest {
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
-      throws IOException {
+          throws IOException {
     String[] names =
-        Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
+            Arrays.stream(configurationNames).map(s -> TESTCONFIGS_PREFIX + s).toArray(String[]::new);
     return BatfishTestUtils.parseTextConfigs(_folder, names);
   }
 
@@ -5331,44 +5234,44 @@ public final class CiscoGrammarTest {
   public void testPrefixListSeq() {
     CiscoConfiguration c = parseCiscoConfig("prefix-list-seq", ConfigurationFormat.CISCO_IOS);
     assertThat(
-        c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
+            c.getPrefixLists(), hasKeys("NOSEQ", "NOSEQ_THEN_SEQ", "SEQ_NO_SEQ", "OUT_OF_ORDER"));
     {
       PrefixList pl = c.getPrefixLists().get("NOSEQ");
       assertThat(pl.getLines(), hasKeys(10L));
       assertThat(
-          pl.getLines().values().stream()
-              .map(PrefixListLine::getPrefix)
-              .collect(ImmutableList.toImmutableList()),
-          contains(Prefix.parse("10.0.0.0/8")));
+              pl.getLines().values().stream()
+                      .map(PrefixListLine::getPrefix)
+                      .collect(ImmutableList.toImmutableList()),
+              contains(Prefix.parse("10.0.0.0/8")));
     }
     {
       PrefixList pl = c.getPrefixLists().get("NOSEQ_THEN_SEQ");
       assertThat(pl.getLines(), hasKeys(10L, 20L));
       assertThat(
-          pl.getLines().values().stream()
-              .map(PrefixListLine::getPrefix)
-              .collect(ImmutableList.toImmutableList()),
-          contains(Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8")));
+              pl.getLines().values().stream()
+                      .map(PrefixListLine::getPrefix)
+                      .collect(ImmutableList.toImmutableList()),
+              contains(Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8")));
     }
     {
       PrefixList pl = c.getPrefixLists().get("SEQ_NO_SEQ");
       assertThat(pl.getLines(), hasKeys(15L, 25L, 30L));
       assertThat(
-          pl.getLines().values().stream()
-              .map(PrefixListLine::getPrefix)
-              .collect(ImmutableList.toImmutableList()),
-          contains(
-              Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
+              pl.getLines().values().stream()
+                      .map(PrefixListLine::getPrefix)
+                      .collect(ImmutableList.toImmutableList()),
+              contains(
+                      Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
     }
     {
       PrefixList pl = c.getPrefixLists().get("OUT_OF_ORDER");
       assertThat(pl.getLines(), hasKeys(10L, 20L, 30L));
       assertThat(
-          pl.getLines().values().stream()
-              .map(PrefixListLine::getPrefix)
-              .collect(ImmutableList.toImmutableList()),
-          contains(
-              Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
+              pl.getLines().values().stream()
+                      .map(PrefixListLine::getPrefix)
+                      .collect(ImmutableList.toImmutableList()),
+              contains(
+                      Prefix.parse("10.0.0.0/8"), Prefix.parse("20.0.0.0/8"), Prefix.parse("30.0.0.0/8")));
     }
   }
 
@@ -5379,7 +5282,7 @@ public final class CiscoGrammarTest {
     String prefixListName = "SET_COMMUNITY_65535:200";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     /* Confirm prefix-list with correct name was defined */
     assertThat(ccae, hasDefinedStructure(filename, PREFIX_LIST, prefixListName));
@@ -5391,7 +5294,7 @@ public final class CiscoGrammarTest {
   @Test
   public void testRfc1583Compatible() throws IOException {
     String[] configurationNames =
-        new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
+            new String[] {"rfc1583Compatible", "rfc1583NoCompatible", "rfc1583Unconfigured"};
     Map<String, Configuration> configurations = parseTextConfigs(configurationNames);
 
     Boolean[] expectedResults = new Boolean[] {Boolean.TRUE, Boolean.FALSE, null};
@@ -5483,7 +5386,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
     AclLineMatchExpr matchInsideSources =
-        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
+            or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5506,28 +5409,28 @@ public final class CiscoGrammarTest {
       Interface outside = c.getAllInterfaces().get(outsideIntf);
 
       Transformation inTransformation =
-          when(permittedByAcl(outsideSrcPoolAcl))
-              .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
-              .build();
+              when(permittedByAcl(outsideSrcPoolAcl))
+                      .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
+                      .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation destTransformation =
-          when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
-              .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
-              .build();
+              when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
+                      .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
+                      .build();
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
-              .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
-              .setAndThen(destTransformation)
-              .setOrElse(
-                  when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
-                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+              when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
+                      .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
                       .setAndThen(destTransformation)
-                      .setOrElse(destTransformation)
-                      .build())
-              .build();
+                      .setOrElse(
+                              when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
+                                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+                                      .setAndThen(destTransformation)
+                                      .setOrElse(destTransformation)
+                                      .build())
+                      .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
@@ -5547,16 +5450,16 @@ public final class CiscoGrammarTest {
       Interface outside = c.getAllInterfaces().get(vrfOutsideIntf);
 
       Transformation inTransformation =
-          when(permittedByAcl(outsideAclName))
-              .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
-              .build();
+              when(permittedByAcl(outsideAclName))
+                      .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
+                      .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideAclName), matchInsideSources))
-              .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
-              .build();
+              when(and(permittedByAcl(insideAclName), matchInsideSources))
+                      .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
+                      .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
@@ -5565,7 +5468,7 @@ public final class CiscoGrammarTest {
   @Test
   public void testIosDynamicNatRouteMapsExtraction() throws IOException {
     CiscoConfiguration c =
-        parseCiscoConfig("ios-nat-dynamic-route-maps", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ios-nat-dynamic-route-maps", ConfigurationFormat.CISCO_IOS);
     assertThat(c.getCiscoIosNats(), hasSize(6));
     List<CiscoIosNat> nats = c.getCiscoIosNats();
     {
@@ -5590,8 +5493,7 @@ public final class CiscoGrammarTest {
       assertFalse(nat.getOverload());
       assertThat(nat.getVrf(), nullValue());
     }
-    // note, the indices skip 2 because there's an inside dest rule that's only
-    // present to test how
+    // note, the indices skip 2 because there's an inside dest rule that's only present to test how
     // it gets incorporated in the converted transformations
     {
       assertThat(nats.get(3), instanceOf(CiscoIosDynamicNat.class));
@@ -5642,7 +5544,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(vrfInsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
     AclLineMatchExpr matchInsideSources =
-        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
+            or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5666,42 +5568,39 @@ public final class CiscoGrammarTest {
       Interface outside1 = c.getAllInterfaces().get(outsideIntf1);
 
       Transformation inTransformation =
-          when(and(
-                  permittedByAcl(outsideSrcPoolAcl),
-                  // copied from CiscoIosNatUtil#toExpr, which is not visible from this package
-                  new TrueExpr(
-                      TraceElement.of(
-                          String.format("Matched outside interface %s", outsideIntf0)))))
-              .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
-              .build();
+              when(and(
+                      permittedByAcl(outsideSrcPoolAcl),
+                      // copied from CiscoIosNatUtil#toExpr, which is not visible from this package
+                      new TrueExpr(
+                              TraceElement.of(
+                                      String.format("Matched outside interface %s", outsideIntf0)))))
+                      .apply(assignSourceIp(outsideSrcPoolFirst, outsideSrcPoolLast))
+                      .build();
 
       assertThat(outside0.getIncomingTransformation(), equalTo(inTransformation));
 
-      // The route-map used for the outside source rule specifies "match interface
-      // Ethernet2/0",
-      // i.e. outside0. Since it will never match traffic forwarded out outside1, that
-      // interface
+      // The route-map used for the outside source rule specifies "match interface Ethernet2/0",
+      // i.e. outside0. Since it will never match traffic forwarded out outside1, that interface
       // should have no incoming transformation.
       assertNull(outside1.getIncomingTransformation());
 
       Transformation destTransformation =
-          when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
-              .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
-              .build();
+              when(and(permittedByAcl(insideDstPoolAcl), matchInsideSources))
+                      .apply(assignDestinationIp(insideDstPoolFirst, insideDstPoolLast))
+                      .build();
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
-              .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
-              .setAndThen(destTransformation)
-              .setOrElse(
-                  when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
-                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+              when(and(permittedByAcl(insideSrcPoolAcl), matchInsideSources))
+                      .apply(assignSourceIp(insideSrcPoolFirst, insideSrcPoolLast))
                       .setAndThen(destTransformation)
-                      .setOrElse(destTransformation)
-                      .build())
-              .build();
-      // both interfaces should have the same outgoing transformation since the
-      // route-maps used for
+                      .setOrElse(
+                              when(and(permittedByAcl(insideSrcIfaceAcl), matchInsideSources))
+                                      .apply(assignSourceIp(insideSrcIfaceAddr, insideSrcIfaceAddr))
+                                      .setAndThen(destTransformation)
+                                      .setOrElse(destTransformation)
+                                      .build())
+                      .build();
+      // both interfaces should have the same outgoing transformation since the route-maps used for
       // inside source rules don't specify match interfaces
       assertThat(outside0.getOutgoingTransformation(), equalTo(outTransformation));
       assertThat(outside1.getOutgoingTransformation(), equalTo(outTransformation));
@@ -5722,16 +5621,16 @@ public final class CiscoGrammarTest {
       Interface outside = c.getAllInterfaces().get(vrfOutsideIntf);
 
       Transformation inTransformation =
-          when(permittedByAcl(outsideAclName))
-              .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
-              .build();
+              when(permittedByAcl(outsideAclName))
+                      .apply(assignSourceIp(outsidePoolFirst, outsidePoolLast))
+                      .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outTransformation =
-          when(and(permittedByAcl(insideAclName), matchInsideSources))
-              .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
-              .build();
+              when(and(permittedByAcl(insideAclName), matchInsideSources))
+                      .apply(assignSourceIp(insidePoolFirst, insidePoolLast))
+                      .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
@@ -5749,7 +5648,7 @@ public final class CiscoGrammarTest {
     assertThat(c, hasInterface(outsideIntf, notNullValue()));
     assertThat(c, hasInterface(vrfOutsideIntf, notNullValue()));
     AclLineMatchExpr matchInsideSources =
-        or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
+            or(matchSrcInterface(insideIntf, vrfInsideIntf), OriginatingFromDevice.INSTANCE);
 
     {
       // NAT in default VRF
@@ -5770,46 +5669,46 @@ public final class CiscoGrammarTest {
       Interface outside = c.getAllInterfaces().get(outsideIntf);
 
       Transformation inDestinationTransformation =
-          when(and(matchDst(nat1Global), permittedByAcl(nat1Acl)))
-              .apply(shiftDestinationIp(nat1Local))
-              .setOrElse(
-                  when(matchDst(nat3Global))
-                      .apply(shiftDestinationIp(nat3Local))
+              when(and(matchDst(nat1Global), permittedByAcl(nat1Acl)))
+                      .apply(shiftDestinationIp(nat1Local))
                       .setOrElse(
-                          when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
-                      .build())
-              .build();
+                              when(matchDst(nat3Global))
+                                      .apply(shiftDestinationIp(nat3Local))
+                                      .setOrElse(
+                                              when(matchDst(nat2Global)).apply(shiftDestinationIp(nat2Local)).build())
+                                      .build())
+                      .build();
 
       Transformation inTransformation =
-          when(matchSrc(nat4Global))
-              .apply(shiftSourceIp(nat4Local))
-              .setAndThen(inDestinationTransformation)
-              .setOrElse(inDestinationTransformation)
-              .build();
+              when(matchSrc(nat4Global))
+                      .apply(shiftSourceIp(nat4Local))
+                      .setAndThen(inDestinationTransformation)
+                      .setOrElse(inDestinationTransformation)
+                      .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outDestinationTransformation =
-          when(and(matchDst(nat4Local), matchInsideSources))
-              .apply(shiftDestinationIp(nat4Global))
-              .build();
+              when(and(matchDst(nat4Local), matchInsideSources))
+                      .apply(shiftDestinationIp(nat4Global))
+                      .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchInsideSources))
-              .apply(shiftSourceIp(nat1Global))
-              .setAndThen(outDestinationTransformation)
-              .setOrElse(
-                  when(and(matchSrc(nat3Local), matchInsideSources))
-                      .apply(shiftSourceIp(nat3Global))
+              when(and(matchSrc(nat1Local), permittedByAcl(nat1Acl), matchInsideSources))
+                      .apply(shiftSourceIp(nat1Global))
                       .setAndThen(outDestinationTransformation)
                       .setOrElse(
-                          when(and(matchSrc(nat2Local), matchInsideSources))
-                              .apply(shiftSourceIp(nat2Global))
-                              .setAndThen(outDestinationTransformation)
-                              .setOrElse(outDestinationTransformation)
-                              .build())
-                      .build())
-              .build();
+                              when(and(matchSrc(nat3Local), matchInsideSources))
+                                      .apply(shiftSourceIp(nat3Global))
+                                      .setAndThen(outDestinationTransformation)
+                                      .setOrElse(
+                                              when(and(matchSrc(nat2Local), matchInsideSources))
+                                                      .apply(shiftSourceIp(nat2Global))
+                                                      .setAndThen(outDestinationTransformation)
+                                                      .setOrElse(outDestinationTransformation)
+                                                      .build())
+                                      .build())
+                      .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
@@ -5829,28 +5728,28 @@ public final class CiscoGrammarTest {
       assertThat(outside.getOutgoingTransformation(), notNullValue());
 
       Transformation inDestinationTransformation =
-          when(matchDst(insideGlobal)).apply(shiftDestinationIp(insideLocal)).build();
+              when(matchDst(insideGlobal)).apply(shiftDestinationIp(insideLocal)).build();
 
       Transformation inTransformation =
-          when(matchSrc(outsideGlobal))
-              .apply(shiftSourceIp(outsideLocal))
-              .setAndThen(inDestinationTransformation)
-              .setOrElse(inDestinationTransformation)
-              .build();
+              when(matchSrc(outsideGlobal))
+                      .apply(shiftSourceIp(outsideLocal))
+                      .setAndThen(inDestinationTransformation)
+                      .setOrElse(inDestinationTransformation)
+                      .build();
 
       assertThat(outside.getIncomingTransformation(), equalTo(inTransformation));
 
       Transformation outDestinationTransformation =
-          when(and(matchDst(outsideLocal), matchInsideSources))
-              .apply(shiftDestinationIp(outsideGlobal))
-              .build();
+              when(and(matchDst(outsideLocal), matchInsideSources))
+                      .apply(shiftDestinationIp(outsideGlobal))
+                      .build();
 
       Transformation outTransformation =
-          when(and(matchSrc(insideLocal), matchInsideSources))
-              .apply(shiftSourceIp(insideGlobal))
-              .setAndThen(outDestinationTransformation)
-              .setOrElse(outDestinationTransformation)
-              .build();
+              when(and(matchSrc(insideLocal), matchInsideSources))
+                      .apply(shiftSourceIp(insideGlobal))
+                      .setAndThen(outDestinationTransformation)
+                      .setOrElse(outDestinationTransformation)
+                      .build();
 
       assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
     }
@@ -5869,18 +5768,17 @@ public final class CiscoGrammarTest {
 
     Interface outside = c.getAllInterfaces().get(outsideIntf);
     AclLineMatchExpr matchInsideSources =
-        or(matchSrcInterface(insideIntf), OriginatingFromDevice.INSTANCE);
+            or(matchSrcInterface(insideIntf), OriginatingFromDevice.INSTANCE);
 
-    // Check that the inside-to-outside transformation evaluates the static NAT
-    // first
+    // Check that the inside-to-outside transformation evaluates the static NAT first
     Transformation outTransformation =
-        when(and(matchSrc(staticNatLocal), matchInsideSources))
-            .apply(shiftSourceIp(staticNatGlobal))
-            .setOrElse(
-                when(and(permittedByAcl(dynamicNatAcl), matchInsideSources))
-                    .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
-                    .build())
-            .build();
+            when(and(matchSrc(staticNatLocal), matchInsideSources))
+                    .apply(shiftSourceIp(staticNatGlobal))
+                    .setOrElse(
+                            when(and(permittedByAcl(dynamicNatAcl), matchInsideSources))
+                                    .apply(assignSourceIp(dynamicNatStart, dynamicNatEnd))
+                                    .build())
+                    .build();
     assertThat(outside.getOutgoingTransformation(), equalTo(outTransformation));
   }
 
@@ -5899,18 +5797,16 @@ public final class CiscoGrammarTest {
     Prefix global2 = Prefix.parse("2.2.2.2/32");
     Prefix local2 = Prefix.parse("3.3.3.3/32");
     StaticRoute.Builder rb =
-        StaticRoute.builder().setAdmin(DEFAULT_STATIC_ROUTE_DISTANCE).setTag(-1L);
+            StaticRoute.builder().setAdmin(DEFAULT_STATIC_ROUTE_DISTANCE).setTag(-1L);
     StaticRoute rule1Route = rb.setNetwork(local1).setNextHopIp(global1.getStartIp()).build();
     StaticRoute rule2Route = rb.setNetwork(local2).setNextHopIp(global2.getStartIp()).build();
     Set<StaticRoute> defaultVrfStaticRoutes = c.getDefaultVrf().getStaticRoutes();
     assertThat(defaultVrfStaticRoutes, allOf(hasItem(rule1Route), hasItem(rule2Route)));
 
-    // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP
-    // isn't.
-    // The RIB should therefore have a route corresponding to rule 1, but none for
-    // rule 2.
+    // Rule 1's global IP is routable (via iface Ethernet2), but rule 2's global IP isn't.
+    // The RIB should therefore have a route corresponding to rule 1, but none for rule 2.
     Set<AbstractRoute> routes =
-        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(routes, allOf(hasItem(rule1Route), not(hasItem(rule2Route))));
 
     // Should see that add-route has no effect outside the default VRF.
@@ -5927,7 +5823,7 @@ public final class CiscoGrammarTest {
     Batfish batfish = getBatfishForConfigurationNames(hostname);
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipniss", 4));
     assertThat(ccae, hasNumReferrers(filename, ROUTE_MAP, "ipnisr", 8));
@@ -5951,16 +5847,16 @@ public final class CiscoGrammarTest {
   public void testIosInterfaceShowRunAll() throws IOException {
     Configuration c = parseConfig("ios_interface_show_run_all");
     assertThat(
-        c.getAllInterfaces(),
-        hasKeys(
-            "GigabitEthernet0/0/0",
-            "Loopback1",
-            "Port-channel1",
-            "Port-channel1.10",
-            "vasileft1",
-            "vasiright1"));
+            c.getAllInterfaces(),
+            hasKeys(
+                    "GigabitEthernet0/0/0",
+                    "Loopback1",
+                    "Port-channel1",
+                    "Port-channel1.10",
+                    "vasileft1",
+                    "vasiright1"));
     assertThat(
-        c, hasInterface("GigabitEthernet0/0/0", hasDescription("GigabitEthernet0/0/0 desc")));
+            c, hasInterface("GigabitEthernet0/0/0", hasDescription("GigabitEthernet0/0/0 desc")));
     assertThat(c, hasInterface("Loopback1", hasDescription("Loopback1 desc")));
     assertThat(c, hasInterface("Port-channel1", hasDescription("Port-channel1 desc")));
     assertThat(c, hasInterface("Port-channel1.10", hasDescription("Port-channel1.10 desc")));
@@ -5973,8 +5869,8 @@ public final class CiscoGrammarTest {
     CiscoConfiguration c = parseCiscoConfig("ios_vrfd_show_run_all", ConfigurationFormat.CISCO_IOS);
     assertThat(c.getVrfs(), hasKeys("default", "VRF2"));
     assertThat(
-        c.getVrfs().get("VRF2").getRouteDistinguisher(),
-        equalTo(RouteDistinguisher.parse("65000:1")));
+            c.getVrfs().get("VRF2").getRouteDistinguisher(),
+            equalTo(RouteDistinguisher.parse("65000:1")));
   }
 
   @Test
@@ -6025,39 +5921,39 @@ public final class CiscoGrammarTest {
     assertThat(config, hasInterface("Ethernet1", hasBandwidth(eth1Bandwidth)));
     assertThat(config, hasInterface("Port-channel1", hasBandwidth(eth1Bandwidth)));
     assertThat(
-        config,
-        hasInterface(
-            "Port-channel1.1",
-            allOf(
-                hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
-                isActive(true),
-                hasBandwidth(eth1Bandwidth))));
+            config,
+            hasInterface(
+                    "Port-channel1.1",
+                    allOf(
+                            hasInterfaceType(InterfaceType.AGGREGATE_CHILD),
+                            isActive(true),
+                            hasBandwidth(eth1Bandwidth))));
   }
 
   @Test
   public void testIosAdvertiseInactive() throws IOException {
     Configuration config = parseConfig("ios-advertise-inactive");
     assertTrue(
-        config
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getActiveNeighbors()
-            .get(Ip.parse("1.1.1.1"))
-            .getIpv4UnicastAddressFamily()
-            .getAddressFamilyCapabilities()
-            .getAdvertiseInactive());
+            config
+                    .getDefaultVrf()
+                    .getBgpProcess()
+                    .getActiveNeighbors()
+                    .get(Ip.parse("1.1.1.1"))
+                    .getIpv4UnicastAddressFamily()
+                    .getAddressFamilyCapabilities()
+                    .getAdvertiseInactive());
   }
 
   @Test
   public void testTunnelTopologyNoReachability() throws IOException {
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "ios-tunnels",
-                    ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(
+                                    TESTRIGS_PREFIX + "ios-tunnels",
+                                    ImmutableList.of("n1-no-static-route", "n2-no-static-route"))
+                            .build(),
+                    _folder);
 
     Edge overlayEdge = Edge.of("n1-no-static-route", "Tunnel1", "n2-no-static-route", "Tunnel1");
 
@@ -6065,8 +5961,8 @@ public final class CiscoGrammarTest {
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.loadConfigurations(snapshot);
     assertThat(
-        batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
-        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+            batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
+            containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
 
     // NO overlay edge in final L3 topology
     batfish.computeDataPlane(snapshot);
@@ -6076,50 +5972,50 @@ public final class CiscoGrammarTest {
   @Test
   public void testTunnelTopologyWithReachability() throws IOException {
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "ios-tunnels",
-                    ImmutableList.of("n1-static-route", "n2-static-route"))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(
+                                    TESTRIGS_PREFIX + "ios-tunnels",
+                                    ImmutableList.of("n1-static-route", "n2-static-route"))
+                            .build(),
+                    _folder);
 
     Edge underlayEdge =
-        Edge.of(
-            "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
+            Edge.of(
+                    "n1-static-route", "TenGigabitEthernet0/1", "n2-static-route", "TenGigabitEthernet0/1");
     Edge overlayEdge = Edge.of("n1-static-route", "Tunnel1", "n2-static-route", "Tunnel1");
 
     // Overlay edge present in initial tunnel topology
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
     assertThat(
-        batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
-        containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
+            batfish.getTopologyProvider().getInitialTunnelTopology(snapshot).asEdgeSet(),
+            containsInAnyOrder(overlayEdge, overlayEdge.reverse()));
 
     // overlay edge in final L3 topology as well
     assertThat(
-        batfish.getTopologyProvider().getLayer3Topology(snapshot).getEdges(),
-        containsInAnyOrder(
-            overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
+            batfish.getTopologyProvider().getLayer3Topology(snapshot).getEdges(),
+            containsInAnyOrder(
+                    overlayEdge, overlayEdge.reverse(), underlayEdge, underlayEdge.reverse()));
   }
 
   @Test
   public void testRenterBgpStanza() throws IOException {
     Configuration c = parseConfig("ios-bgp-reenter-process");
     assertThat(
-        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.3"), hasRemoteAs(3L)))));
+            c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.3"), hasRemoteAs(3L)))));
     assertThat(
-        c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.4"), hasRemoteAs(4L)))));
+            c, hasDefaultVrf(hasBgpProcess(hasActiveNeighbor(Ip.parse("2.2.2.4"), hasRemoteAs(4L)))));
   }
 
   @Test
   public void testRouteMapMatchAcl() throws IOException {
     Configuration c = parseConfig("ios-route-map-match-acl");
     Bgpv4Route.Builder builder =
-        Bgpv4Route.testBuilder()
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP);
+            Bgpv4Route.testBuilder()
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP);
 
     Prefix prefix10 = Prefix.parse("10.0.0.0/8");
     Prefix prefix11 = Prefix.parse("11.0.0.0/8");
@@ -6127,57 +6023,57 @@ public final class CiscoGrammarTest {
     Bgpv4Route route11 = builder.setNetwork(prefix11).build();
 
     assertThat(
-        c,
-        hasRouteFilterList(
-            "ACL_PERMIT", allOf(permits(prefix10), RouteFilterListMatchers.rejects(prefix11))));
+            c,
+            hasRouteFilterList(
+                    "ACL_PERMIT", allOf(permits(prefix10), RouteFilterListMatchers.rejects(prefix11))));
     assertThat(
-        c,
-        hasRouteFilterList(
-            "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
+            c,
+            hasRouteFilterList(
+                    "ACL_DENY", allOf(permits(prefix11), RouteFilterListMatchers.rejects(prefix10))));
 
     assertTrue(
-        "Route 10/8 permitted",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_permit")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 10/8 permitted",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_permit")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(
-        "Route 11/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 11/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_permit")
+                    .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
 
     assertFalse(
-        "Route 10/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_deny_permit")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 10/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_deny_permit")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(
-        "Route 11/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 11/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_permit")
+                    .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
 
     assertFalse(
-        "Route 10/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_deny")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 10/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_deny")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(
-        "Route 11/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 11/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_permit")
+                    .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
 
     assertFalse(
-        "Route 10/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_deny_deny")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 10/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_deny_deny")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertFalse(
-        "Route 11/8 denied",
-        c.getRoutingPolicies()
-            .get("rm_standard_permit_permit")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 11/8 denied",
+            c.getRoutingPolicies()
+                    .get("rm_standard_permit_permit")
+                    .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
   }
 
   @Test
@@ -6187,30 +6083,30 @@ public final class CiscoGrammarTest {
 
     // Ensure warning was filed regarding lack of match interface support
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(
-        ccae,
-        hasRedFlagWarning(
-            hostname,
-            containsString(
-                "Route-map match interface is not fully supported. Batfish will ignore clauses"
-                    + " using match interface for route filtering.")));
+            ccae,
+            hasRedFlagWarning(
+                    hostname,
+                    containsString(
+                            "Route-map match interface is not fully supported. Batfish will ignore clauses"
+                                    + " using match interface for route filtering.")));
 
     // Ensure the converted route-map ignores the match-interface clause
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     RoutingPolicy rm = c.getRoutingPolicies().get("rm");
     assertThat(
-        rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
+            rm.getStatements(), contains(Statements.ReturnLocalDefaultAction.toStaticStatement()));
   }
 
   @Test
   public void testRouteMapUndefinedAcl() throws IOException {
     Configuration c = parseConfig("ios-route-map-undefined-acl");
     Bgpv4Route.Builder builder =
-        Bgpv4Route.testBuilder()
-            .setOriginatorIp(Ip.parse("1.1.1.1"))
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP);
+            Bgpv4Route.testBuilder()
+                    .setOriginatorIp(Ip.parse("1.1.1.1"))
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP);
 
     Prefix prefix10 = Prefix.parse("10.0.0.0/8");
     Prefix prefix11 = Prefix.parse("11.0.0.0/8");
@@ -6218,32 +6114,32 @@ public final class CiscoGrammarTest {
     Bgpv4Route route11 = builder.setNetwork(prefix11).build();
 
     assertTrue(
-        "All (single) ACLs are undefined -> the match is ignored",
-        c.getRoutingPolicies()
-            .get("rm_single_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "All (single) ACLs are undefined -> the match is ignored",
+            c.getRoutingPolicies()
+                    .get("rm_single_undefined")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertTrue(
-        "All (single) ACLs are undefined -> the match is ignored",
-        c.getRoutingPolicies()
-            .get("rm_all_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "All (single) ACLs are undefined -> the match is ignored",
+            c.getRoutingPolicies()
+                    .get("rm_all_undefined")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
 
     assertTrue(
-        "Some undefined, some defined -> only defined matter",
-        c.getRoutingPolicies()
-            .get("rm_mixed_defined_undefined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Some undefined, some defined -> only defined matter",
+            c.getRoutingPolicies()
+                    .get("rm_mixed_defined_undefined")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
 
     assertTrue(
-        "Route 10/8 permitted by first defined ACL",
-        c.getRoutingPolicies()
-            .get("rm_multiple_defined")
-            .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 10/8 permitted by first defined ACL",
+            c.getRoutingPolicies()
+                    .get("rm_multiple_defined")
+                    .process(route10, Bgpv4Route.testBuilder(), Direction.OUT));
     assertTrue(
-        "Route 11/8 permitted by second defined ACL",
-        c.getRoutingPolicies()
-            .get("rm_multiple_defined")
-            .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
+            "Route 11/8 permitted by second defined ACL",
+            c.getRoutingPolicies()
+                    .get("rm_multiple_defined")
+                    .process(route11, Bgpv4Route.testBuilder(), Direction.OUT));
   }
 
   @Test
@@ -6252,27 +6148,27 @@ public final class CiscoGrammarTest {
 
     // get the real statements past the traceable wrapper
     List<Statement> statements =
-        ((TraceableStatement)
-                Iterables.getOnlyElement(
-                    c.getRoutingPolicies().get("rm_set_metric").getStatements()))
-            .getInnerStatements();
+            ((TraceableStatement)
+                    Iterables.getOnlyElement(
+                            c.getRoutingPolicies().get("rm_set_metric").getStatements()))
+                    .getInnerStatements();
     assertThat(
-        statements,
-        // Being intentionally lax here because pretty sure conversion is busted.
-        // TODO: update when convinced eigrp settings have correct values
-        hasItem(instanceOf(SetEigrpMetric.class)));
+            statements,
+            // Being intentionally lax here because pretty sure conversion is busted.
+            // TODO: update when convinced eigrp settings have correct values
+            hasItem(instanceOf(SetEigrpMetric.class)));
   }
 
   @Test
   public void testEigrpOverTunnels() throws IOException {
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(
-                    TESTRIGS_PREFIX + "ios-tunnels-eigrp",
-                    ImmutableList.of("advertiser", "receiver"))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(
+                                    TESTRIGS_PREFIX + "ios-tunnels-eigrp",
+                                    ImmutableList.of("advertiser", "receiver"))
+                            .build(),
+                    _folder);
 
     NetworkSnapshot snapshot = batfish.getSnapshot();
     batfish.computeDataPlane(snapshot);
@@ -6302,18 +6198,18 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("ios-eigrp-match-acl");
     assertThat(c, hasRouteFilterList("ACL", anything()));
     assertTrue(
-        c.getRoutingPolicies()
-            .get("REDISTRIBUTE_MAP")
-            .process(
-                new ConnectedRoute(Prefix.ZERO, "dummy", 0),
-                EigrpExternalRoute.testBuilder(),
-                org.batfish.datamodel.eigrp.EigrpProcess.builder()
-                    .setAsNumber(1)
-                    .setMode(EigrpProcessMode.CLASSIC)
-                    .setMetricVersion(EigrpMetricVersion.V1)
-                    .setRouterId(Ip.ZERO)
-                    .build(),
-                Direction.OUT));
+            c.getRoutingPolicies()
+                    .get("REDISTRIBUTE_MAP")
+                    .process(
+                            new ConnectedRoute(Prefix.ZERO, "dummy", 0),
+                            EigrpExternalRoute.testBuilder(),
+                            org.batfish.datamodel.eigrp.EigrpProcess.builder()
+                                    .setAsNumber(1)
+                                    .setMode(EigrpProcessMode.CLASSIC)
+                                    .setMetricVersion(EigrpMetricVersion.V1)
+                                    .setRouterId(Ip.ZERO)
+                                    .build(),
+                            Direction.OUT));
   }
 
   @Test
@@ -6325,19 +6221,19 @@ public final class CiscoGrammarTest {
     Interface outside2 = c.getAllInterfaces().get("Ethernet1/4");
     Interface neitherInsideNorOutside = c.getAllInterfaces().get("Ethernet1/5");
     FirewallSessionInterfaceInfo insideInfo =
-        new FirewallSessionInterfaceInfo(
-            Action.PRE_NAT_FIB_LOOKUP,
-            ImmutableSet.of(inside1.getName(), inside2.getName()),
-            ImmutableSet.of(outside1.getName(), outside2.getName()),
-            null,
-            null);
+            new FirewallSessionInterfaceInfo(
+                    Action.PRE_NAT_FIB_LOOKUP,
+                    ImmutableSet.of(inside1.getName(), inside2.getName()),
+                    ImmutableSet.of(outside1.getName(), outside2.getName()),
+                    null,
+                    null);
     FirewallSessionInterfaceInfo outsideInfo =
-        new FirewallSessionInterfaceInfo(
-            Action.POST_NAT_FIB_LOOKUP,
-            ImmutableSet.of(outside1.getName(), outside2.getName()),
-            ImmutableSet.of(inside1.getName(), inside2.getName(), SOURCE_ORIGINATING_FROM_DEVICE),
-            null,
-            null);
+            new FirewallSessionInterfaceInfo(
+                    Action.POST_NAT_FIB_LOOKUP,
+                    ImmutableSet.of(outside1.getName(), outside2.getName()),
+                    ImmutableSet.of(inside1.getName(), inside2.getName(), SOURCE_ORIGINATING_FROM_DEVICE),
+                    null,
+                    null);
     assertThat(inside1.getFirewallSessionInterfaceInfo(), equalTo(insideInfo));
     assertThat(inside2.getFirewallSessionInterfaceInfo(), equalTo(insideInfo));
     assertThat(outside1.getFirewallSessionInterfaceInfo(), equalTo(outsideInfo));
@@ -6358,48 +6254,48 @@ public final class CiscoGrammarTest {
       String hostname = "ios-bgp-redistribute-ospf";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf()
-              .getBgpProcess()
-              .getRedistributionPolicies()
-              .get(RoutingProtocolInstance.ospf());
+              vc.getDefaultVrf()
+                      .getBgpProcess()
+                      .getRedistributionPolicies()
+                      .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
-          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          nullValue());
+              redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+              nullValue());
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-various";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf()
-              .getBgpProcess()
-              .getRedistributionPolicies()
-              .get(RoutingProtocolInstance.ospf());
+              vc.getDefaultVrf()
+                      .getBgpProcess()
+                      .getRedistributionPolicies()
+                      .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), equalTo("ospf2bgp"));
       assertThat(redistributionPolicy.getMetric(), equalTo(10000L));
       assertThat(
-          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(
-              new MatchProtocol(
-                  RoutingProtocol.OSPF,
-                  RoutingProtocol.OSPF_IA,
-                  RoutingProtocol.OSPF_E1,
-                  RoutingProtocol.OSPF_E2)));
+              redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+              equalTo(
+                      new MatchProtocol(
+                              RoutingProtocol.OSPF,
+                              RoutingProtocol.OSPF_IA,
+                              RoutingProtocol.OSPF_E1,
+                              RoutingProtocol.OSPF_E2)));
     }
     {
       String hostname = "ios-bgp-redistribute-ospf-match-internal";
       CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
       BgpRedistributionPolicy redistributionPolicy =
-          vc.getDefaultVrf()
-              .getBgpProcess()
-              .getRedistributionPolicies()
-              .get(RoutingProtocolInstance.ospf());
+              vc.getDefaultVrf()
+                      .getBgpProcess()
+                      .getRedistributionPolicies()
+                      .get(RoutingProtocolInstance.ospf());
       assertThat(redistributionPolicy.getRouteMap(), nullValue());
       assertThat(redistributionPolicy.getMetric(), nullValue());
       assertThat(
-          redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
-          equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
+              redistributionPolicy.getSpecialAttributes().get(BgpRedistributionPolicy.OSPF_ROUTE_TYPES),
+              equalTo(new MatchProtocol(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA)));
     }
   }
 
@@ -6416,14 +6312,14 @@ public final class CiscoGrammarTest {
   public void testEigrpShutdownConversion() throws IOException {
     Configuration c = parseConfig("ios-eigrp-shutdown");
     Map<Long, org.batfish.datamodel.eigrp.EigrpProcess> procs =
-        c.getDefaultVrf().getEigrpProcesses();
+            c.getDefaultVrf().getEigrpProcesses();
     assertThat(procs, hasKeys(1L, 2L));
   }
 
   @Test
   public void testEigrpRouterIdExtraction() {
     CiscoConfiguration vc =
-        parseCiscoConfig("ios-eigrp-classic-routerid", ConfigurationFormat.CISCO_IOS);
+            parseCiscoConfig("ios-eigrp-classic-routerid", ConfigurationFormat.CISCO_IOS);
     Map<Long, EigrpProcess> procs = vc.getDefaultVrf().getEigrpProcesses();
     assertThat(procs.get(1L).getRouterId(), equalTo(Ip.parse("1.1.1.1")));
     assertThat(procs.get(2L).getRouterId(), nullValue());
@@ -6437,7 +6333,7 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
 
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
     assertThat(ccae, hasNumReferrers(filename, POLICY_MAP, "PM", 2));
   }
 
@@ -6446,45 +6342,45 @@ public final class CiscoGrammarTest {
     String hostname = "ios-vrf-leaking";
     Configuration c = parseConfig(hostname);
     BgpVrfLeakConfig.Builder builder =
-        BgpVrfLeakConfig.builder()
-            .setAdmin(
-                RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
-            .setAttachRouteTargets(ExtendedCommunity.target(65003, 11))
-            .setWeight(BGP_VRF_LEAK_IGP_WEIGHT);
+            BgpVrfLeakConfig.builder()
+                    .setAdmin(
+                            RoutingProtocol.BGP.getDefaultAdministrativeCost(ConfigurationFormat.CISCO_IOS))
+                    .setAttachRouteTargets(ExtendedCommunity.target(65003, 11))
+                    .setWeight(BGP_VRF_LEAK_IGP_WEIGHT);
     Vrf dstVrf = c.getVrfs().get("DST_VRF");
     assertNotNull(dstVrf.getVrfLeakConfig());
     assertThat(
-        dstVrf.getVrfLeakConfig().getBgpVrfLeakConfigs(),
-        containsInAnyOrder(
-            builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build(),
-            builder
-                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
-                .setImportPolicy(
-                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_VRF"))
-                .build()));
+            dstVrf.getVrfLeakConfig().getBgpVrfLeakConfigs(),
+            containsInAnyOrder(
+                    builder.setImportFromVrf("SRC_VRF").setImportPolicy("IMPORT_MAP").build(),
+                    builder
+                            .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                            .setImportPolicy(
+                                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_VRF"))
+                            .build()));
     Vrf notUnderRouterBgp = c.getVrfs().get("NOT_UNDER_ROUTER_BGP");
     assertNotNull(notUnderRouterBgp.getVrfLeakConfig());
     assertThat(
-        notUnderRouterBgp.getVrfLeakConfig().getBgpVrfLeakConfigs(),
-        containsInAnyOrder(
-            builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build(),
-            builder
-                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
-                .setImportPolicy(
-                    computeVrfExportImportPolicyName(
-                        "SRC_VRF_WITH_EXPORT_MAP", "NOT_UNDER_ROUTER_BGP"))
-                .build()));
+            notUnderRouterBgp.getVrfLeakConfig().getBgpVrfLeakConfigs(),
+            containsInAnyOrder(
+                    builder.setImportFromVrf("SRC_VRF").setImportPolicy(null).build(),
+                    builder
+                            .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                            .setImportPolicy(
+                                    computeVrfExportImportPolicyName(
+                                            "SRC_VRF_WITH_EXPORT_MAP", "NOT_UNDER_ROUTER_BGP"))
+                            .build()));
     Vrf dstImpossible = c.getVrfs().get("DST_IMPOSSIBLE");
     assertNotNull(dstImpossible.getVrfLeakConfig());
     assertThat(
-        dstImpossible.getVrfLeakConfig().getBgpVrfLeakConfigs(),
-        containsInAnyOrder(
-            builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build(),
-            builder
-                .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
-                .setImportPolicy(
-                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_IMPOSSIBLE"))
-                .build()));
+            dstImpossible.getVrfLeakConfig().getBgpVrfLeakConfigs(),
+            containsInAnyOrder(
+                    builder.setImportFromVrf("SRC_VRF").setImportPolicy("UNDEFINED~undefined").build(),
+                    builder
+                            .setImportFromVrf("SRC_VRF_WITH_EXPORT_MAP")
+                            .setImportPolicy(
+                                    computeVrfExportImportPolicyName("SRC_VRF_WITH_EXPORT_MAP", "DST_IMPOSSIBLE"))
+                            .build()));
   }
 
   @Test
@@ -6499,58 +6395,55 @@ public final class CiscoGrammarTest {
     Table<String, String, FinalMainRib> ribs = dp.getRibs();
     Set<AbstractRoute> dstVrfRoutes = ribs.get(hostname, "DST_VRF").getRoutes();
     Set<AbstractRoute> dstVrfNoImportMapRoutes =
-        ribs.get(hostname, "DST_VRF_NO_IMPORT_MAP").getRoutes();
+            ribs.get(hostname, "DST_VRF_NO_IMPORT_MAP").getRoutes();
     Matcher<AbstractRoute> leakedRouteMatcher1111 =
-        isBgpv4RouteThat(
-            allOf(
-                hasPrefix(Prefix.parse("1.1.1.1/32")),
-                hasProtocol(RoutingProtocol.BGP),
-                hasNextHop(NextHopVrf.of("SRC_VRF")),
-                hasCommunities(ExtendedCommunity.target(65003, 11))));
+            isBgpv4RouteThat(
+                    allOf(
+                            hasPrefix(Prefix.parse("1.1.1.1/32")),
+                            hasProtocol(RoutingProtocol.BGP),
+                            hasNextHop(NextHopVrf.of("SRC_VRF")),
+                            hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher2220 =
-        isBgpv4RouteThat(
-            allOf(
-                hasPrefix(Prefix.parse("2.2.2.0/24")),
-                hasProtocol(RoutingProtocol.BGP),
-                hasNextHop(NextHopVrf.of("SRC_VRF")),
-                hasCommunities(ExtendedCommunity.target(65003, 11))));
+            isBgpv4RouteThat(
+                    allOf(
+                            hasPrefix(Prefix.parse("2.2.2.0/24")),
+                            hasProtocol(RoutingProtocol.BGP),
+                            hasNextHop(NextHopVrf.of("SRC_VRF")),
+                            hasCommunities(ExtendedCommunity.target(65003, 11))));
     Matcher<AbstractRoute> leakedRouteMatcher3330 =
-        isBgpv4RouteThat(
-            allOf(
-                hasPrefix(Prefix.parse("3.3.3.0/24")),
-                hasProtocol(RoutingProtocol.BGP),
-                hasNextHop(NextHopVrf.of("SRC_VRF_WITH_EXPORT_MAP")),
-                hasCommunities(ExtendedCommunity.target(65003, 11))));
+            isBgpv4RouteThat(
+                    allOf(
+                            hasPrefix(Prefix.parse("3.3.3.0/24")),
+                            hasProtocol(RoutingProtocol.BGP),
+                            hasNextHop(NextHopVrf.of("SRC_VRF_WITH_EXPORT_MAP")),
+                            hasCommunities(ExtendedCommunity.target(65003, 11))));
     assertThat(
-        dstVrfRoutes,
-        // 1.1.1.1/32 is denied by import map
-        // 2.2.2.0/24 is expected to be leaked from SRC_VRF
-        // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
-        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be
-        // imported
-        containsInAnyOrder(leakedRouteMatcher2220, leakedRouteMatcher3330));
+            dstVrfRoutes,
+            // 1.1.1.1/32 is denied by import map
+            // 2.2.2.0/24 is expected to be leaked from SRC_VRF
+            // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
+            // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+            containsInAnyOrder(leakedRouteMatcher2220, leakedRouteMatcher3330));
     assertThat(
-        dstVrfNoImportMapRoutes,
-        // 1.1.1.1/32 is expected to be leaked from SRC_VRF
-        // 2.2.2.0/24 is expected to be leaked from SRC_VRF
-        // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
-        // 4.4.4.0/24 has its route-target changed by export-map causing it not to be
-        // imported
-        containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
-    // VRF not defined under router bgp should still have a process, and get both
-    // routes
+            dstVrfNoImportMapRoutes,
+            // 1.1.1.1/32 is expected to be leaked from SRC_VRF
+            // 2.2.2.0/24 is expected to be leaked from SRC_VRF
+            // 3.3.3.0/24 is expected to be leaked from SRC_VRF_WITH_EXPORT_MAP
+            // 4.4.4.0/24 has its route-target changed by export-map causing it not to be imported
+            containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
+    // VRF not defined under router bgp should still have a process, and get both routes
     // (because no import map is defined)
     assertThat(
-        batfish
-            .loadConfigurations(snapshot)
-            .get(hostname)
-            .getVrfs()
-            .get("NOT_UNDER_ROUTER_BGP")
-            .getBgpProcess(),
-        notNullValue());
+            batfish
+                    .loadConfigurations(snapshot)
+                    .get(hostname)
+                    .getVrfs()
+                    .get("NOT_UNDER_ROUTER_BGP")
+                    .getBgpProcess(),
+            notNullValue());
     assertThat(
-        ribs.get(hostname, "NOT_UNDER_ROUTER_BGP").getRoutes(),
-        containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
+            ribs.get(hostname, "NOT_UNDER_ROUTER_BGP").getRoutes(),
+            containsInAnyOrder(leakedRouteMatcher1111, leakedRouteMatcher2220, leakedRouteMatcher3330));
     assertThat(ribs.get(hostname, "DST_IMPOSSIBLE").getRoutes(), empty());
   }
 
@@ -6560,11 +6453,11 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ParseVendorConfigurationAnswerElement pvcae =
-        batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
+            batfish.loadParseVendorConfigurationAnswerElement(batfish.getSnapshot());
     assertThat(
-        pvcae, hasParseWarning(filename, containsString("Skipping malformed NAT pool SNOOKER.")));
+            pvcae, hasParseWarning(filename, containsString("Skipping malformed NAT pool SNOOKER.")));
     assertThat(
-        pvcae, hasParseWarning(filename, containsString("Skipping empty NAT pool SNOOKER2.")));
+            pvcae, hasParseWarning(filename, containsString("Skipping empty NAT pool SNOOKER2.")));
   }
 
   @Test
@@ -6578,15 +6471,15 @@ public final class CiscoGrammarTest {
       RouteMapClause c = Iterables.getOnlyElement(rm.getClauses().values());
       assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtLine.class)));
       RouteMapSetExtcommunityRtLine line =
-          (RouteMapSetExtcommunityRtLine) Iterables.getOnlyElement(c.getSetList());
+              (RouteMapSetExtcommunityRtLine) Iterables.getOnlyElement(c.getSetList());
       assertThat(
-          line.getCommunities(),
-          contains(
-              ExtendedCommunity.target(65000, 1),
-              ExtendedCommunity.target(65000, 1048576),
-              ExtendedCommunity.target(1048576, 1),
-              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-              ExtendedCommunity.target((12 << 16) | 34, 5)));
+              line.getCommunities(),
+              contains(
+                      ExtendedCommunity.target(65000, 1),
+                      ExtendedCommunity.target(65000, 1048576),
+                      ExtendedCommunity.target(1048576, 1),
+                      ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+                      ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
     {
       RouteMap rm = vc.getRouteMaps().get("rm2");
@@ -6594,15 +6487,15 @@ public final class CiscoGrammarTest {
       RouteMapClause c = Iterables.getOnlyElement(rm.getClauses().values());
       assertThat(c.getSetList(), contains(instanceOf(RouteMapSetExtcommunityRtAdditiveLine.class)));
       RouteMapSetExtcommunityRtAdditiveLine line =
-          (RouteMapSetExtcommunityRtAdditiveLine) Iterables.getOnlyElement(c.getSetList());
+              (RouteMapSetExtcommunityRtAdditiveLine) Iterables.getOnlyElement(c.getSetList());
       assertThat(
-          line.getCommunities(),
-          contains(
-              ExtendedCommunity.target(65000, 1),
-              ExtendedCommunity.target(65000, 1048576),
-              ExtendedCommunity.target(1048576, 1),
-              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-              ExtendedCommunity.target((12 << 16) | 34, 5)));
+              line.getCommunities(),
+              contains(
+                      ExtendedCommunity.target(65000, 1),
+                      ExtendedCommunity.target(65000, 1048576),
+                      ExtendedCommunity.target(1048576, 1),
+                      ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+                      ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
   }
 
@@ -6611,13 +6504,13 @@ public final class CiscoGrammarTest {
     String hostname = "ios-route-map-set-extcommunity-rt";
     Configuration c = parseConfig(hostname);
     Bgpv4Route input =
-        Bgpv4Route.testBuilder()
-            .setNetwork(Prefix.ZERO)
-            .setProtocol(RoutingProtocol.BGP)
-            .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
-            .setCommunities(
-                CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.target(99, 99)))
-            .build();
+            Bgpv4Route.testBuilder()
+                    .setNetwork(Prefix.ZERO)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setLocalPreference(DEFAULT_LOCAL_PREFERENCE)
+                    .setCommunities(
+                            CommunitySet.of(StandardCommunity.of(1L), ExtendedCommunity.target(99, 99)))
+                    .build();
     {
       String policyName = "rm1";
       assertThat(c.getRoutingPolicies(), hasKey(policyName));
@@ -6627,14 +6520,14 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // old target community should be removed, standard community should be retained
       assertThat(
-          output,
-          hasCommunities(
-              StandardCommunity.of(1L),
-              ExtendedCommunity.target(65000, 1),
-              ExtendedCommunity.target(65000, 1048576),
-              ExtendedCommunity.target(1048576, 1),
-              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-              ExtendedCommunity.target((12 << 16) | 34, 5)));
+              output,
+              hasCommunities(
+                      StandardCommunity.of(1L),
+                      ExtendedCommunity.target(65000, 1),
+                      ExtendedCommunity.target(65000, 1048576),
+                      ExtendedCommunity.target(1048576, 1),
+                      ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+                      ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
     {
       String policyName = "rm2";
@@ -6645,15 +6538,15 @@ public final class CiscoGrammarTest {
       assertTrue(result);
       // all old communities should still be present
       assertThat(
-          output,
-          hasCommunities(
-              StandardCommunity.of(1L),
-              ExtendedCommunity.target(99, 99),
-              ExtendedCommunity.target(65000, 1),
-              ExtendedCommunity.target(65000, 1048576),
-              ExtendedCommunity.target(1048576, 1),
-              ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
-              ExtendedCommunity.target((12 << 16) | 34, 5)));
+              output,
+              hasCommunities(
+                      StandardCommunity.of(1L),
+                      ExtendedCommunity.target(99, 99),
+                      ExtendedCommunity.target(65000, 1),
+                      ExtendedCommunity.target(65000, 1048576),
+                      ExtendedCommunity.target(1048576, 1),
+                      ExtendedCommunity.target(Ip.parse("10.0.0.1").asLong(), 2),
+                      ExtendedCommunity.target((12 << 16) | 34, 5)));
     }
   }
 
@@ -6667,15 +6560,15 @@ public final class CiscoGrammarTest {
 
     // Policy should accept non-default routes
     assertTrue(
-        r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder()
-                .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
-                .build()));
+            r.processReadOnly(
+                    org.batfish.datamodel.StaticRoute.testBuilder()
+                            .setNetwork(Prefix.create(Ip.parse("10.10.10.10"), 24))
+                            .build()));
 
     // Policy should not accept default routes
     assertFalse(
-        r.processReadOnly(
-            org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
+            r.processReadOnly(
+                    org.batfish.datamodel.StaticRoute.testBuilder().setNetwork(Prefix.ZERO).build()));
   }
 
   @Test
@@ -6687,15 +6580,13 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     Set<AbstractRoute> routes = dp.getRibs().get(hostname, "default").getRoutes();
 
-    // Rib should have the static route whose NHI is determined from a non-default
-    // route
+    // Rib should have the static route whose NHI is determined from a non-default route
     assertThat(
-        routes,
-        hasItem(
-            allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
+            routes,
+            hasItem(
+                    allOf(hasPrefix(Prefix.parse("10.101.1.1/32")), hasNextHopIp(Ip.parse("10.0.1.100")))));
 
-    // Rib should NOT have the static route whose NHI is determined from the default
-    // route
+    // Rib should NOT have the static route whose NHI is determined from the default route
     assertThat(routes, not(hasItem(hasPrefix(Prefix.parse("10.103.3.1/32")))));
   }
 
@@ -6719,76 +6610,76 @@ public final class CiscoGrammarTest {
     String hostname = "ios-aggregate-address";
     CiscoConfiguration vc = parseCiscoConfig(hostname, ConfigurationFormat.CISCO_IOS);
     Map<Prefix, BgpAggregateIpv4Network> aggs =
-        vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
+            vc.getDefaultVrf().getBgpProcess().getAggregateNetworks();
     assertThat(aggs, aMapWithSize(9));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("1.1.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("1.1.0.0/16"), false, null, null, null, false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("1.1.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("1.1.0.0/16"), false, null, null, null, false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("1.2.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("1.2.0.0/16"), false, null, null, "atm1", false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("1.2.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("1.2.0.0/16"), false, null, null, "atm1", false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.1.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("2.1.0.0/16"), true, null, null, null, false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.1.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("2.1.0.0/16"), true, null, null, null, false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.2.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("2.2.0.0/16"), true, null, "adm", null, false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.2.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("2.2.0.0/16"), true, null, "adm", null, false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.3.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("2.3.0.0/16"), true, null, null, "atm2", false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.3.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("2.3.0.0/16"), true, null, null, "atm2", false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.1.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("3.1.0.0/16"), false, null, null, null, true))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.1.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("3.1.0.0/16"), false, null, null, null, true))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.2.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("3.2.0.0/16"), false, "sm1", null, null, false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.2.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("3.2.0.0/16"), false, "sm1", null, null, false))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.3.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("3.3.0.0/16"), false, "sm2", null, null, true))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.3.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("3.3.0.0/16"), false, "sm2", null, null, true))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("4.0.0.0/16")),
-            equalTo(
-                new BgpAggregateIpv4Network(
-                    Prefix.parse("4.0.0.0/16"),
-                    false,
-                    "undefined",
-                    "undefined",
-                    "undefined",
-                    false))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("4.0.0.0/16")),
+                    equalTo(
+                            new BgpAggregateIpv4Network(
+                                    Prefix.parse("4.0.0.0/16"),
+                                    false,
+                                    "undefined",
+                                    "undefined",
+                                    "undefined",
+                                    false))));
   }
 
   @Test
@@ -6799,92 +6690,87 @@ public final class CiscoGrammarTest {
     Map<Prefix, BgpAggregate> aggs = c.getDefaultVrf().getBgpProcess().getAggregates();
     assertThat(aggs, aMapWithSize(9));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("1.1.0.0/16")),
-            equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("1.1.0.0/16")),
+                    equalTo(BgpAggregate.of(Prefix.parse("1.1.0.0/16"), null, null, null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("1.2.0.0/16")),
-            equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1"))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("1.2.0.0/16")),
+                    equalTo(BgpAggregate.of(Prefix.parse("1.2.0.0/16"), null, null, "atm1"))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.1.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("2.1.0.0/16"),
-                    null,
-                    // TODO: generation policy should
-                    // incorporate as-set
-                    null,
-                    null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.1.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("2.1.0.0/16"),
+                                    null,
+                                    // TODO: generation policy should incorporate as-set
+                                    null,
+                                    null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.2.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("2.2.0.0/16"),
-                    null,
-                    // TODO: generation policy should
-                    // incorporate as-set and advertise-map
-                    null,
-                    null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.2.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("2.2.0.0/16"),
+                                    null,
+                                    // TODO: generation policy should incorporate as-set and advertise-map
+                                    null,
+                                    null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("2.3.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("2.3.0.0/16"),
-                    null,
-                    // TODO: generation policy should
-                    // incorporate as-set
-                    null,
-                    "atm2"))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("2.3.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("2.3.0.0/16"),
+                                    null,
+                                    // TODO: generation policy should incorporate as-set
+                                    null,
+                                    "atm2"))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.1.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("3.1.0.0/16"),
-                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
-                    null,
-                    null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.1.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("3.1.0.0/16"),
+                                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                                    null,
+                                    null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.2.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("3.2.0.0/16"),
-                    // TODO: suppression policy should
-                    // incorporate suppress-map
-                    null,
-                    null,
-                    null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.2.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("3.2.0.0/16"),
+                                    // TODO: suppression policy should incorporate suppress-map
+                                    null,
+                                    null,
+                                    null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("3.3.0.0/16")),
-            equalTo(
-                BgpAggregate.of(
-                    Prefix.parse("3.3.0.0/16"),
-                    // TODO: suppression policy should
-                    // incorporate suppress-map and ignore
-                    // summary-only.
-                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
-                    null,
-                    null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("3.3.0.0/16")),
+                    equalTo(
+                            BgpAggregate.of(
+                                    Prefix.parse("3.3.0.0/16"),
+                                    // TODO: suppression policy should incorporate suppress-map and ignore
+                                    //       summary-only.
+                                    SUMMARY_ONLY_SUPPRESSION_POLICY_NAME,
+                                    null,
+                                    null))));
     assertThat(
-        aggs,
-        hasEntry(
-            equalTo(Prefix.parse("4.0.0.0/16")),
-            // TODO: verify undefined route-map can be treated as omitted
-            equalTo(BgpAggregate.of(Prefix.parse("4.0.0.0/16"), null, null, null))));
+            aggs,
+            hasEntry(
+                    equalTo(Prefix.parse("4.0.0.0/16")),
+                    // TODO: verify undefined route-map can be treated as omitted
+                    equalTo(BgpAggregate.of(Prefix.parse("4.0.0.0/16"), null, null, null))));
   }
 
   @Test
@@ -6893,18 +6779,18 @@ public final class CiscoGrammarTest {
     String filename = "configs/" + hostname;
     Batfish batfish = getBatfishForConfigurationNames(hostname);
     ConvertConfigurationAnswerElement ccae =
-        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+            batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
 
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm1", BGP_AGGREGATE_ATTRIBUTE_MAP));
+            ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm1", BGP_AGGREGATE_ATTRIBUTE_MAP));
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "adm", BGP_AGGREGATE_ADVERTISE_MAP));
+            ccae, hasReferencedStructure(filename, ROUTE_MAP, "adm", BGP_AGGREGATE_ADVERTISE_MAP));
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm2", BGP_AGGREGATE_ATTRIBUTE_MAP));
+            ccae, hasReferencedStructure(filename, ROUTE_MAP, "atm2", BGP_AGGREGATE_ATTRIBUTE_MAP));
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm1", BGP_AGGREGATE_SUPPRESS_MAP));
+            ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm1", BGP_AGGREGATE_SUPPRESS_MAP));
     assertThat(
-        ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm2", BGP_AGGREGATE_SUPPRESS_MAP));
+            ccae, hasReferencedStructure(filename, ROUTE_MAP, "sm2", BGP_AGGREGATE_SUPPRESS_MAP));
   }
 
   @Test
@@ -6929,12 +6815,11 @@ public final class CiscoGrammarTest {
      * In the BGP RIB, we should see:
      * - all local routes
      * - the 3 aggregate routes with more specific local routes:
-     * - 1.1.0/0/16
-     * - 2.2.0.0/16
-     * - 4.4.0.0/16
+     *   - 1.1.0/0/16
+     *   - 2.2.0.0/16
+     *   - 4.4.0.0/16
      *
-     * In the main RIB, we should see the static routes and the 3 aggregates
-     * activated in the BGP RIB.
+     * In the main RIB, we should see the static routes and the 3 aggregates activated in the BGP RIB.
      */
     String hostname = "bgp-aggregate";
     Batfish batfish = getBatfishForConfigurationNames(hostname);
@@ -6942,12 +6827,12 @@ public final class CiscoGrammarTest {
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     // TODO: change to local bgp cost once supported
     int aggAdmin =
-        batfish
-            .loadConfigurations(batfish.getSnapshot())
-            .get(hostname)
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getAdminCost(RoutingProtocol.IBGP);
+            batfish
+                    .loadConfigurations(batfish.getSnapshot())
+                    .get(hostname)
+                    .getDefaultVrf()
+                    .getBgpProcess()
+                    .getAdminCost(RoutingProtocol.IBGP);
     Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(hostname, Configuration.DEFAULT_VRF_NAME);
     Ip routerId = Ip.parse("1.1.1.1");
     Prefix staticPrefix1 = Prefix.parse("1.1.1.0/24");
@@ -6959,54 +6844,54 @@ public final class CiscoGrammarTest {
     Prefix aggPrefix2 = Prefix.parse("2.2.0.0/16");
     Prefix aggPrefix4General = Prefix.parse("4.4.0.0/16");
     Bgpv4Route localRoute1 =
-        Bgpv4Route.builder()
-            .setNetwork(staticPrefix1)
-            .setNonRouting(true)
-            .setAdmin(20)
-            .setLocalPreference(100)
-            .setNextHop(NextHopDiscard.instance())
-            .setOriginatorIp(routerId)
-            .setOriginMechanism(REDISTRIBUTE)
-            .setOriginType(OriginType.INCOMPLETE)
-            .setProtocol(RoutingProtocol.BGP)
-            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
-            .setSrcProtocol(RoutingProtocol.STATIC)
-            .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
-            .build();
+            Bgpv4Route.builder()
+                    .setNetwork(staticPrefix1)
+                    .setNonRouting(true)
+                    .setAdmin(20)
+                    .setLocalPreference(100)
+                    .setNextHop(NextHopDiscard.instance())
+                    .setOriginatorIp(routerId)
+                    .setOriginMechanism(REDISTRIBUTE)
+                    .setOriginType(OriginType.INCOMPLETE)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
+                    .setSrcProtocol(RoutingProtocol.STATIC)
+                    .setWeight(DEFAULT_LOCAL_BGP_WEIGHT)
+                    .build();
     Bgpv4Route localRoute2 = localRoute1.toBuilder().setNetwork(staticPrefix2).build();
     Bgpv4Route localRoute3 = localRoute1.toBuilder().setNetwork(staticPrefix3).build();
     Bgpv4Route localRoute4 = localRoute1.toBuilder().setNetwork(staticPrefix4).build();
     Bgpv4Route localRoute5 = localRoute1.toBuilder().setNetwork(staticPrefix5).build();
     Bgpv4Route aggRoute1 =
-        Bgpv4Route.builder()
-            .setNetwork(aggPrefix1)
-            .setAdmin(aggAdmin)
-            .setLocalPreference(100)
-            .setNextHop(NextHopDiscard.instance())
-            .setOriginatorIp(routerId)
-            .setOriginMechanism(GENERATED)
-            .setOriginType(OriginType.IGP)
-            .setProtocol(RoutingProtocol.AGGREGATE)
-            .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
-            .setSrcProtocol(RoutingProtocol.AGGREGATE)
-            .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
-            .build();
+            Bgpv4Route.builder()
+                    .setNetwork(aggPrefix1)
+                    .setAdmin(aggAdmin)
+                    .setLocalPreference(100)
+                    .setNextHop(NextHopDiscard.instance())
+                    .setOriginatorIp(routerId)
+                    .setOriginMechanism(GENERATED)
+                    .setOriginType(OriginType.IGP)
+                    .setProtocol(RoutingProtocol.AGGREGATE)
+                    .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
+                    .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                    .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
+                    .build();
     Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
     Bgpv4Route aggRoute4General = aggRoute1.toBuilder().setNetwork(aggPrefix4General).build();
     assertThat(
-        bgpRibRoutes,
-        containsInAnyOrder(
-            localRoute1,
-            localRoute2,
-            localRoute3,
-            localRoute4,
-            localRoute5,
-            aggRoute1,
-            aggRoute2,
-            aggRoute4General));
+            bgpRibRoutes,
+            containsInAnyOrder(
+                    localRoute1,
+                    localRoute2,
+                    localRoute3,
+                    localRoute4,
+                    localRoute5,
+                    aggRoute1,
+                    aggRoute2,
+                    aggRoute4General));
 
     Set<AbstractRoute> mainRibRoutes =
-        dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
+            dp.getRibs().get(hostname, Configuration.DEFAULT_VRF_NAME).getRoutes();
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix1)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix2)));
     assertThat(mainRibRoutes, hasItem(hasPrefix(aggPrefix4General)));
@@ -7015,16 +6900,12 @@ public final class CiscoGrammarTest {
   @Test
   public void testBgpAggregateWithLearnedSuppressedRoutes() throws IOException {
     /*
-     * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16
-     * and 2.2.2.0/16
-     * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not
-     * summary-only) and
-     * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3
-     * (not
+     * Snapshot contains c1, c2, and c3. c1 redistributes static routes 1.1.1.0/16 and 2.2.2.0/16
+     * into BGP and advertises them to c2. c2 has aggregates 1.1.0.0/16 (not summary-only) and
+     * 2.2.0.0/16 (summary-only). c2 advertises both aggregates and 1.1.1.0/16 to c3 (not
      * 2.2.2.0/16, which is suppressed by the summary-only aggregate).
      *
-     * c1 should also receive c2's aggregate routes. Worth checking in addition to
-     * c3's routes
+     * c1 should also receive c2's aggregate routes. Worth checking in addition to c3's routes
      * because the c1-c2 peering is IBGP, whereas the c2-c3 peering is EBGP.
      */
     String snapshotName = "bgp-agg-learned-contributors";
@@ -7032,21 +6913,21 @@ public final class CiscoGrammarTest {
     String c2 = "c2";
     String c3 = "c3";
     Batfish batfish =
-        BatfishTestUtils.getBatfishFromTestrigText(
-            TestrigText.builder()
-                .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
-                .build(),
-            _folder);
+            BatfishTestUtils.getBatfishFromTestrigText(
+                    TestrigText.builder()
+                            .setConfigurationFiles(TESTRIGS_PREFIX + snapshotName, ImmutableList.of(c1, c2, c3))
+                            .build(),
+                    _folder);
     batfish.computeDataPlane(batfish.getSnapshot());
     DataPlane dp = batfish.loadDataPlane(batfish.getSnapshot());
     // TODO: change to local bgp cost once supported
     int aggAdmin =
-        batfish
-            .loadConfigurations(batfish.getSnapshot())
-            .get(c1)
-            .getDefaultVrf()
-            .getBgpProcess()
-            .getAdminCost(RoutingProtocol.IBGP);
+            batfish
+                    .loadConfigurations(batfish.getSnapshot())
+                    .get(c1)
+                    .getDefaultVrf()
+                    .getBgpProcess()
+                    .getAdminCost(RoutingProtocol.IBGP);
 
     Prefix learnedPrefix1 = Prefix.parse("1.1.1.0/24");
     Prefix learnedPrefix2 = Prefix.parse("2.2.2.0/24");
@@ -7056,31 +6937,30 @@ public final class CiscoGrammarTest {
       // Check c2 routes.
       Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c2, Configuration.DEFAULT_VRF_NAME);
       Bgpv4Route aggRoute1 =
-          Bgpv4Route.builder()
-              .setNetwork(aggPrefix1)
-              .setAdmin(aggAdmin)
-              .setLocalPreference(100)
-              .setNextHop(NextHopDiscard.instance())
-              .setOriginatorIp(Ip.parse("2.2.2.2"))
-              .setOriginMechanism(GENERATED)
-              .setOriginType(OriginType.IGP)
-              .setProtocol(RoutingProtocol.AGGREGATE)
-              .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
-              .setSrcProtocol(RoutingProtocol.AGGREGATE)
-              .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
-              .build();
+              Bgpv4Route.builder()
+                      .setNetwork(aggPrefix1)
+                      .setAdmin(aggAdmin)
+                      .setLocalPreference(100)
+                      .setNextHop(NextHopDiscard.instance())
+                      .setOriginatorIp(Ip.parse("2.2.2.2"))
+                      .setOriginMechanism(GENERATED)
+                      .setOriginType(OriginType.IGP)
+                      .setProtocol(RoutingProtocol.AGGREGATE)
+                      .setReceivedFrom(ReceivedFromSelf.instance()) // indicates local origination
+                      .setSrcProtocol(RoutingProtocol.AGGREGATE)
+                      .setWeight(BgpRoute.DEFAULT_LOCAL_WEIGHT)
+                      .build();
       Bgpv4Route aggRoute2 = aggRoute1.toBuilder().setNetwork(aggPrefix2).build();
       assertThat(
-          bgpRibRoutes,
-          containsInAnyOrder(
-              hasPrefix(learnedPrefix1),
-              // TODO Once we mark routes as suppressed, assert this one is
-              // suppressed
-              hasPrefix(learnedPrefix2),
-              equalTo(aggRoute1),
-              equalTo(aggRoute2)));
+              bgpRibRoutes,
+              containsInAnyOrder(
+                      hasPrefix(learnedPrefix1),
+                      // TODO Once we mark routes as suppressed, assert this one is suppressed
+                      hasPrefix(learnedPrefix2),
+                      equalTo(aggRoute1),
+                      equalTo(aggRoute2)));
       Set<AbstractRoute> mainRibRoutes =
-          dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
+              dp.getRibs().get(c2, Configuration.DEFAULT_VRF_NAME).getRoutes();
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix1)));
       // Suppressed routes still go in the main RIB and are used for forwarding
       assertThat(mainRibRoutes, hasItem(hasPrefix(learnedPrefix2)));
@@ -7091,20 +6971,20 @@ public final class CiscoGrammarTest {
       // Check c1 routes. (Has both learned routes because it originates them itself.)
       Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c1, Configuration.DEFAULT_VRF_NAME);
       assertThat(
-          bgpRibRoutes,
-          containsInAnyOrder(
-              hasPrefix(learnedPrefix1),
-              hasPrefix(learnedPrefix2),
-              hasPrefix(aggPrefix1),
-              hasPrefix(aggPrefix2)));
+              bgpRibRoutes,
+              containsInAnyOrder(
+                      hasPrefix(learnedPrefix1),
+                      hasPrefix(learnedPrefix2),
+                      hasPrefix(aggPrefix1),
+                      hasPrefix(aggPrefix2)));
     }
     {
       // Check c3 routes.
       Set<Bgpv4Route> bgpRibRoutes = dp.getBgpRoutes().get(c3, Configuration.DEFAULT_VRF_NAME);
       assertThat(
-          bgpRibRoutes,
-          containsInAnyOrder(
-              hasPrefix(learnedPrefix1), hasPrefix(aggPrefix1), hasPrefix(aggPrefix2)));
+              bgpRibRoutes,
+              containsInAnyOrder(
+                      hasPrefix(learnedPrefix1), hasPrefix(aggPrefix1), hasPrefix(aggPrefix2)));
     }
   }
 
@@ -7210,31 +7090,31 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig(hostname);
 
     assertThat(
-        c.getTrackingGroups(),
-        hasKeys(
-            "1",
-            "2",
-            "3",
-            "4",
-            "ip sla 1 reachability",
-            "ip sla 1 state",
-            "ip sla 1",
-            "ip sla 2",
-            "ip sla 3",
-            "ip sla 10",
-            "ip sla 11",
-            "ip sla 12",
-            "ip sla 13",
-            "ip sla 14",
-            "ip sla 15",
-            "ip sla 16"));
+            c.getTrackingGroups(),
+            hasKeys(
+                    "1",
+                    "2",
+                    "3",
+                    "4",
+                    "ip sla 1 reachability",
+                    "ip sla 1 state",
+                    "ip sla 1",
+                    "ip sla 2",
+                    "ip sla 3",
+                    "ip sla 10",
+                    "ip sla 11",
+                    "ip sla 12",
+                    "ip sla 13",
+                    "ip sla 14",
+                    "ip sla 15",
+                    "ip sla 16"));
 
     // tracking groups for track ip sla
     assertThat(c.getTrackingGroups().get("1"), equalTo(reference("ip sla 1 reachability")));
     assertThat(c.getTrackingGroups().get("2"), equalTo(reference("ip sla 1 state")));
     assertThat(c.getTrackingGroups().get("3"), equalTo(reference("ip sla 1 state")));
-    assertThat(c.getTrackingGroups().get("4"), equalTo(alwaysFalse())); // because ip sla 999 is
-    // undefined
+    assertThat(
+            c.getTrackingGroups().get("4"), equalTo(alwaysFalse())); // because ip sla 999 is undefined
 
     // generated tracks for reachability/state
     // TODO: incorporate default-state
@@ -7244,34 +7124,34 @@ public final class CiscoGrammarTest {
 
     // tracking groups for ip sla
     assertThat(
-        c.getTrackingGroups().get("ip sla 1"),
-        equalTo(reachability(Ip.parse("10.0.0.2"), "v1", Ip.parse("10.100.0.1"))));
+            c.getTrackingGroups().get("ip sla 1"),
+            equalTo(reachability(Ip.parse("10.0.0.2"), "v1", Ip.parse("10.100.0.1"))));
     assertThat(
-        c.getTrackingGroups().get("ip sla 2"),
-        equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME, Ip.parse("10.5.5.5"))));
+            c.getTrackingGroups().get("ip sla 2"),
+            equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME, Ip.parse("10.5.5.5"))));
     assertThat(
-        c.getTrackingGroups().get("ip sla 3"),
-        equalTo(alwaysFalse())); // because source-interface does not exist
+            c.getTrackingGroups().get("ip sla 3"),
+            equalTo(alwaysFalse())); // because source-interface does not exist
     assertThat(
-        c.getTrackingGroups().get("ip sla 10"),
-        equalTo(alwaysFalse())); // because start-time pending
+            c.getTrackingGroups().get("ip sla 10"),
+            equalTo(alwaysFalse())); // because start-time pending
     assertThat(
-        c.getTrackingGroups().get("ip sla 11"),
-        equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME)));
+            c.getTrackingGroups().get("ip sla 11"),
+            equalTo(reachability(Ip.parse("10.0.0.2"), DEFAULT_VRF_NAME)));
     assertThat(c.getTrackingGroups().get("ip sla 12"), equalTo(alwaysFalse())); // because no life
     assertThat(c.getTrackingGroups().get("ip sla 13"), equalTo(alwaysFalse())); // because no life
     assertThat(c.getTrackingGroups().get("ip sla 14"), equalTo(alwaysFalse())); // because no life
     assertThat(
-        c.getTrackingGroups().get("ip sla 15"), equalTo(alwaysFalse())); // because limited life
-    assertThat(c.getTrackingGroups().get("ip sla 16"), equalTo(alwaysFalse())); // because not
-    // scheduled
+            c.getTrackingGroups().get("ip sla 15"), equalTo(alwaysFalse())); // because limited life
+    assertThat(
+            c.getTrackingGroups().get("ip sla 16"), equalTo(alwaysFalse())); // because not scheduled
 
     // static routes with tracks
     assertThat(
-        Iterables.getOnlyElement(c.getVrfs().get("v1").getStaticRoutes()).getTrack(), equalTo("1"));
+            Iterables.getOnlyElement(c.getVrfs().get("v1").getStaticRoutes()).getTrack(), equalTo("1"));
     assertThat(
-        // null because track does not exist
-        Iterables.getOnlyElement(c.getDefaultVrf().getStaticRoutes()).getTrack(), nullValue());
+            // null because track does not exist
+            Iterables.getOnlyElement(c.getDefaultVrf().getStaticRoutes()).getTrack(), nullValue());
   }
 
   @Test
@@ -7279,30 +7159,30 @@ public final class CiscoGrammarTest {
     Configuration c = parseConfig("route-map-set-as-path-replace");
     long localAs = 100;
     BgpSessionProperties ebgpSession =
-        BgpSessionProperties.builder()
-            .setSessionType(SessionType.EBGP_SINGLEHOP)
-            .setLocalAs(localAs)
-            .setRemoteAs(12345L)
-            .setLocalIp(Ip.ZERO)
-            .setRemoteIp(Ip.ZERO)
-            .build();
+            BgpSessionProperties.builder()
+                    .setSessionType(SessionType.EBGP_SINGLEHOP)
+                    .setLocalAs(localAs)
+                    .setRemoteAs(12345L)
+                    .setLocalIp(Ip.ZERO)
+                    .setRemoteIp(Ip.ZERO)
+                    .build();
     Bgpv4Route inputRoute =
-        Bgpv4Route.builder()
-            .setAsPath(AsPath.ofSingletonAsSets(1L, 2L, 3L, 4L))
-            .setOriginatorIp(Ip.ZERO)
-            .setOriginMechanism(LEARNED)
-            .setOriginType(OriginType.IGP)
-            .setNetwork(Prefix.ZERO)
-            .setProtocol(RoutingProtocol.BGP)
-            .setNextHop(NextHopDiscard.instance())
-            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
-            .build();
+            Bgpv4Route.builder()
+                    .setAsPath(AsPath.ofSingletonAsSets(1L, 2L, 3L, 4L))
+                    .setOriginatorIp(Ip.ZERO)
+                    .setOriginMechanism(LEARNED)
+                    .setOriginType(OriginType.IGP)
+                    .setNetwork(Prefix.ZERO)
+                    .setProtocol(RoutingProtocol.BGP)
+                    .setNextHop(NextHopDiscard.instance())
+                    .setReceivedFrom(ReceivedFromIp.of(Ip.parse("192.0.2.1")))
+                    .build();
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
       rp.processBgpRoute(inputRoute, outputRoute, ebgpSession, Direction.IN, null);
       assertThat(
-          outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(100L, 100L, 100L, 100L)));
+              outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(100L, 100L, 100L, 100L)));
     }
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-seq");
@@ -7313,20 +7193,20 @@ public final class CiscoGrammarTest {
     {
       RoutingPolicy rp = c.getRoutingPolicies().get("prepend-and-replace-seq");
       Bgpv4Route.Builder outputRoute =
-          inputRoute.toBuilder().setAsPath(AsPath.ofSingletonAsSets(5L, 1L));
+              inputRoute.toBuilder().setAsPath(AsPath.ofSingletonAsSets(5L, 1L));
       rp.processBgpRoute(inputRoute, outputRoute, ebgpSession, Direction.IN, null);
       // the prepended as should not be replaced
       assertThat(outputRoute.getAsPath(), equalTo(AsPath.ofSingletonAsSets(1L, 5L, 100L)));
     }
     {
       BgpSessionProperties ibgpSession =
-          BgpSessionProperties.builder()
-              .setSessionType(SessionType.IBGP)
-              .setLocalAs(localAs)
-              .setRemoteAs(localAs)
-              .setLocalIp(Ip.ZERO)
-              .setRemoteIp(Ip.ZERO)
-              .build();
+              BgpSessionProperties.builder()
+                      .setSessionType(SessionType.IBGP)
+                      .setLocalAs(localAs)
+                      .setRemoteAs(localAs)
+                      .setLocalIp(Ip.ZERO)
+                      .setRemoteIp(Ip.ZERO)
+                      .build();
       RoutingPolicy rp = c.getRoutingPolicies().get("replace-any");
       Bgpv4Route.Builder outputRoute = inputRoute.toBuilder();
       rp.processBgpRoute(inputRoute, outputRoute, ibgpSession, Direction.IN, null);

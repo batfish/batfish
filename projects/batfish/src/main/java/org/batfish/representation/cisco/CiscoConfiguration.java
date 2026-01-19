@@ -200,8 +200,6 @@ import org.batfish.datamodel.vendor_family.cisco.Aaa;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthentication;
 import org.batfish.datamodel.vendor_family.cisco.AaaAuthenticationLogin;
 import org.batfish.datamodel.vendor_family.cisco.CiscoFamily;
-import org.batfish.representation.cisco.PkiTrustpoint;
-import org.batfish.representation.cisco.TelemetrySubscription;
 import org.batfish.representation.cisco.Tunnel.TunnelMode;
 import org.batfish.vendor.VendorConfiguration;
 import org.batfish.vendor.VendorStructureId;

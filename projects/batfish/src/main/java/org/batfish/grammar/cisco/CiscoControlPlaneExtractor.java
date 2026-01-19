@@ -1286,8 +1286,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     implements SilentSyntaxListener, ControlPlaneExtractor {
   private static final String INLINE_SERVICE_OBJECT_NAME = "~INLINE_SERVICE_OBJECT~";
 
-  @VisibleForTesting
-  static final String SERIAL_LINE = "serial";
+  @VisibleForTesting static final String SERIAL_LINE = "serial";
 
   @Override
   public String getInputText() {
@@ -1357,8 +1356,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static String toInterfaceName(Interface_nameContext ctx) {
     String prefix = ctx.name_prefix_alpha.getText();
-    StringBuilder name = new StringBuilder(
-        CiscoConfiguration.getCanonicalInterfaceNamePrefix(prefix).orElse(prefix));
+    StringBuilder name =
+        new StringBuilder(
+            CiscoConfiguration.getCanonicalInterfaceNamePrefix(prefix).orElse(prefix));
     for (Token part : ctx.name_middle_parts) {
       name.append(part.getText());
     }
@@ -1614,10 +1614,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private IpSla _currentSla;
 
-  /*
-   * Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf"
-   * stanza to correctly retrieve the OSPF process that was being configured prior
-   * to switching stanzas
+  /* Set this when moving to different stanzas (e.g., ro_vrf) inside "router ospf" stanza
+   * to correctly retrieve the OSPF process that was being configured prior to switching stanzas
    */
   private String _lastKnownOspfProcess;
 
@@ -1701,7 +1699,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterAaa_accounting_commands_line(Aaa_accounting_commands_lineContext ctx) {
-    Map<String, AaaAccountingCommands> commands = _configuration.getCf().getAaa().getAccounting().getCommands();
+    Map<String, AaaAccountingCommands> commands =
+        _configuration.getCf().getAaa().getAccounting().getCommands();
     Set<String> levels = new TreeSet<>();
     if (ctx.levels != null) {
       List<SubRange> range = toRange(ctx.levels);
@@ -1761,8 +1760,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       methods.add(AuthenticationMethod.toAuthenticationMethod(method.getText()));
     }
 
-    _currentAaaAuthenticationLoginList = login.getLists().computeIfAbsent(name,
-        k -> new AaaAuthenticationLoginList(methods));
+    _currentAaaAuthenticationLoginList =
+        login.getLists().computeIfAbsent(name, k -> new AaaAuthenticationLoginList(methods));
 
     // apply the list to each line
     SortedMap<String, Line> lines = _configuration.getCf().getLines();
@@ -1775,8 +1774,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         }
       } else if (line.getLoginAuthentication() != null
           && line.getLoginAuthentication().equals(name)) {
-        // if not the default list, apply it to lines that have specified this list as
-        // it's login
+        // if not the default list, apply it to lines that have specified this list as it's login
         // list
         line.setAaaAuthenticationLoginList(_currentAaaAuthenticationLoginList);
       }
@@ -1805,12 +1803,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRec_address_family(Rec_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a
-    // specified VRF and
+    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
     // AS number
 
-    // There may not be an ASN specified here, but it will be specified in this AF
-    // context
+    // There may not be an ASN specified here, but it will be specified in this AF context
     Long asn = ctx.asnum == null ? null : toLong(ctx.asnum);
 
     EigrpProcess proc = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, ctx.vrf.getText());
@@ -1821,8 +1817,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterRen_address_family(Ren_address_familyContext ctx) {
-    // Step into a new address family. This results in a new EIGRP process with a
-    // specified VRF and
+    // Step into a new address family. This results in a new EIGRP process with a specified VRF and
     // AS number
 
     long asn = toLong(ctx.asnum);
@@ -1931,13 +1926,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCkp_named_key(Ckp_named_keyContext ctx) {
     String keyName = ctx.name.getText();
-    _currentNamedRsaPubKey = _configuration.getCryptoNamedRsaPubKeys().computeIfAbsent(keyName, NamedRsaPubKey::new);
+    _currentNamedRsaPubKey =
+        _configuration.getCryptoNamedRsaPubKeys().computeIfAbsent(keyName, NamedRsaPubKey::new);
     _configuration.defineStructure(NAMED_RSA_PUB_KEY, keyName, ctx);
-    /*
-     * RSA pub keys are dynamically matched and not explicitly referenced, so adding
-     * a
-     * self-reference here
-     */
+    /* RSA pub keys are dynamically matched and not explicitly referenced, so adding a
+    self-reference here */
     _configuration.referenceStructure(
         NAMED_RSA_PUB_KEY, keyName, NAMED_RSA_PUB_KEY_SELF_REF, ctx.name.start.getLine());
   }
@@ -2051,11 +2044,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     _currentIsakmpPolicy.setLifetimeSeconds(86400);
     _configuration.defineStructure(ISAKMP_POLICY, priority.toString(), ctx);
-    /*
-     * Isakmp policies are checked in order not explicitly referenced, so add a
-     * self-reference
-     * here
-     */
+    /* Isakmp policies are checked in order not explicitly referenced, so add a self-reference
+    here */
     _configuration.referenceStructure(
         ISAKMP_POLICY,
         priority.toString(),
@@ -2067,11 +2057,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterCis_profile(Cis_profileContext ctx) {
     _currentIsakmpProfile = new IsakmpProfile(ctx.name.getText());
     _configuration.defineStructure(ISAKMP_PROFILE, ctx.name.getText(), ctx);
-    /*
-     * Isakmp profiles are checked against for matches not explicitly referenced, so
-     * add a
-     * self-reference here
-     */
+    /* Isakmp profiles are checked against for matches not explicitly referenced, so add a
+    self-reference here */
     _configuration.referenceStructure(
         ISAKMP_PROFILE, ctx.name.getText(), ISAKMP_PROFILE_SELF_REF, ctx.name.start.getLine());
   }
@@ -2086,8 +2073,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       logging.setOn(true);
       _configuration.getCf().setLogging(logging);
     } else if (_format == CISCO_ASA) {
-      // serial line may not be anywhere in the config so add it here to make sure the
-      // serial line
+      // serial line may not be anywhere in the config so add it here to make sure the serial line
       // is in the data model
       _configuration.getCf().getLines().computeIfAbsent(SERIAL_LINE, Line::new);
     }
@@ -2205,11 +2191,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterClb_docsis_policy(Clb_docsis_policyContext ctx) {
     String name = ctx.policy.getText();
     String rule = ctx.rulenum.getText();
-    DocsisPolicy policy = _configuration
-        .getCf()
-        .getCable()
-        .getDocsisPolicies()
-        .computeIfAbsent(name, DocsisPolicy::new);
+    DocsisPolicy policy =
+        _configuration
+            .getCf()
+            .getCable()
+            .getDocsisPolicies()
+            .computeIfAbsent(name, DocsisPolicy::new);
     _configuration.defineStructure(DOCSIS_POLICY, name, ctx);
     policy.getRules().add(rule);
     _configuration.referenceStructure(
@@ -2230,6 +2217,173 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
     _no = (ctx.NO() != null);
+  }
+
+  @Override
+  public void enterCpki_trustpoint(Cpki_trustpointContext ctx) {
+      String name = ctx.name.getText();
+      _currentPkiTrustpoint = new PkiTrustpoint(name);
+      _configuration.getPkiTrustpoints().put(name, _currentPkiTrustpoint);
+  }
+
+  @Override
+  public void enterCpkit_enrollment(Cpkit_enrollmentContext ctx) {
+      if (_currentPkiTrustpoint == null) {
+          return;
+      }
+      if (ctx.NO() != null) {
+          _currentPkiTrustpoint.setEnrollment(null);
+          return;
+      }
+      String enrollmentValue = ctx.url_value != null
+              ? "url " + ctx.url_value.getText()
+              : (ctx.enrollment_value != null ? ctx.enrollment_value.getText() : "");
+      _currentPkiTrustpoint.setEnrollment(enrollmentValue);
+  }
+
+  @Override
+  public void exitCpkit_revocation_check(Cpkit_revocation_checkContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setRevocationCheck(null);
+      return;
+    }
+    String revocationCheck = ctx.NONE() != null ? "none" : "crl";
+    _currentPkiTrustpoint.setRevocationCheck(revocationCheck);
+  }
+
+  @Override
+  public void enterCpkit_subject_alt_name(Cpkit_subject_alt_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSubjectAltName(null);
+      return;
+    }
+    String type = ctx.DNS() != null
+            ? "dns"
+            : ctx.EMAIL() != null
+            ? "email"
+            : ctx.FQDN() != null ? "fqdn" : ctx.IPADDRESS() != null ? "ipaddress" : "";
+    String value = ctx.san_dns != null
+            ? ctx.san_dns.getText()
+            : ctx.san_email != null
+            ? ctx.san_email.getText()
+            : ctx.san_ip != null
+            ? ctx.san_ip.getText()
+            : ctx.san_fqdn != null ? ctx.san_fqdn.getText() : "";
+    if (!type.isEmpty() && !value.isEmpty()) {
+      _currentPkiTrustpoint.setSubjectAltName(type + " " + value);
+    }
+  }
+
+  @Override
+  public void enterCpkit_usage(Cpkit_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setUsage(null);
+      return;
+    }
+    _currentPkiTrustpoint.setUsage(ctx.usage_value.getText());
+  }
+
+  @Override
+  public void enterCpkit_source_vrf(Cpkit_source_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_vrf(Cpkit_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_auto(Cpkit_autoContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle auto enrollment
+  }
+
+  @Override
+  public void enterCpkit_auto_enroll(Cpkit_auto_enrollContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle auto enroll with percentage
+  }
+
+  @Override
+  public void enterCpkit_fqdn(Cpkit_fqdnContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle FQDN
+  }
+
+  @Override
+  public void enterCpkit_rsakeypair(Cpkit_rsakeypairContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle RSA keypair
+  }
+
+  @Override
+  public void enterCpkit_serial_number(Cpkit_serial_numberContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle serial number
+  }
+
+  @Override
+  public void enterCpkit_subject_name(Cpkit_subject_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle subject name
+  }
+
+  @Override
+  public void enterCpkit_validation_usage(Cpkit_validation_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle validation usage
+  }
+
+  @Override
+  public void enterCpkicc_certificate(Cpkicc_certificateContext ctx) {
+    if (_currentPkiTrustpoint == null || ctx.certificate() == null) {
+      return;
+    }
+    String certText = getFullText(ctx.certificate());
+    for (String line : certText.split("\\n")) {
+      String trimmed = line.trim();
+      if (!trimmed.isEmpty()) {
+        _currentPkiTrustpoint.addCertificateLine(trimmed);
+      }
+    }
   }
 
   @Override
@@ -2275,7 +2429,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterCrypto_map_t_ipsec_isakmp(Crypto_map_t_ipsec_isakmpContext ctx) {
-    _currentCryptoMapEntry = new CryptoMapEntry(_currentCryptoMapName, _currentCryptoMapSequenceNum);
+    _currentCryptoMapEntry =
+        new CryptoMapEntry(_currentCryptoMapName, _currentCryptoMapSequenceNum);
 
     CryptoMapSet cryptoMapSet = _configuration.getCryptoMapSets().get(_currentCryptoMapName);
     // if this is the first crypto map entry in the crypto map set
@@ -2308,11 +2463,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCs_class(Cs_classContext ctx) {
     String number = ctx.num.getText();
-    _currentServiceClass = _configuration
-        .getCf()
-        .getCable()
-        .getServiceClasses()
-        .computeIfAbsent(number, ServiceClass::new);
+    _currentServiceClass =
+        _configuration
+            .getCf()
+            .getCable()
+            .getServiceClasses()
+            .computeIfAbsent(number, ServiceClass::new);
     _configuration.defineStructure(SERVICE_CLASS, number, ctx);
   }
 
@@ -2341,14 +2497,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       assert ctx.num != null;
       name = ctx.num.getText();
     }
-    _currentExtendedAcl = _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
+    _currentExtendedAcl =
+        _configuration.getExtendedAcls().computeIfAbsent(name, ExtendedAccessList::new);
     _configuration.defineStructure(IPV4_ACCESS_LIST_EXTENDED, name, ctx);
   }
 
   @Override
   public void enterExtended_ipv6_access_list_stanza(Extended_ipv6_access_list_stanzaContext ctx) {
     String name = toString(ctx.name);
-    _currentExtendedIpv6Acl = _configuration.getExtendedIpv6Acls().computeIfAbsent(name, ExtendedIpv6AccessList::new);
+    _currentExtendedIpv6Acl =
+        _configuration.getExtendedIpv6Acls().computeIfAbsent(name, ExtendedIpv6AccessList::new);
     _configuration.defineStructure(IPV6_ACCESS_LIST_EXTENDED, name, ctx);
   }
 
@@ -2389,13 +2547,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterStandby_group(Standby_groupContext ctx) {
-    // Hard to determine correct behavior if some interfaces in the current
-    // interface range are
-    // version 1 and some are version 2. For now, fail loudly by warning and
-    // refusing to update
+    // Hard to determine correct behavior if some interfaces in the current interface range are
+    // version 1 and some are version 2. For now, fail loudly by warning and refusing to update
     // groups if any interface is wrong version for provided group number.
     // Note that version 1 is default.
-    boolean effectiveVersion2 = _currentInterfaces.stream().allMatch(i -> i.getHsrpVersion() == HsrpVersion.VERSION_2);
+    boolean effectiveVersion2 =
+        _currentInterfaces.stream().allMatch(i -> i.getHsrpVersion() == HsrpVersion.VERSION_2);
     Optional<Integer> maybeGroup = toInteger(ctx, ctx.group, effectiveVersion2);
     if (!maybeGroup.isPresent()) {
       // already warned
@@ -2403,9 +2560,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     int group = maybeGroup.get();
-    _currentHsrpGroups = _currentInterfaces.stream()
-        .map(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new))
-        .collect(ImmutableList.toImmutableList());
+    _currentHsrpGroups =
+        _currentInterfaces.stream()
+            .map(i -> i.getHsrpGroups().computeIfAbsent(group, HsrpGroup::new))
+            .collect(ImmutableList.toImmutableList());
   }
 
   @Override
@@ -2462,7 +2620,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitStandby_group_priority(Standby_group_priorityContext ctx) {
-    int priority = _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
+    int priority =
+        _no ? org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_PRIORITY : toInteger(ctx.priority);
     _currentHsrpGroups.forEach(h -> h.setPriority(priority));
   }
 
@@ -2474,7 +2633,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       helloTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HELLO_TIME;
       holdTime = org.batfish.datamodel.hsrp.HsrpGroup.DEFAULT_HOLD_TIME;
     } else {
-      helloTime = ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
+      helloTime =
+          ctx.hello_ms != null ? toInteger(ctx.hello_ms) : (toInteger(ctx.hello_sec) * 1000);
       holdTime = ctx.hold_ms != null ? toInteger(ctx.hold_ms) : (toInteger(ctx.hold_sec) * 1000);
     }
     _currentHsrpGroups.forEach(
@@ -2534,7 +2694,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterIp_as_path_access_list_stanza(Ip_as_path_access_list_stanzaContext ctx) {
     String name = ctx.name.getText();
-    _currentAsPathAcl = _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
+    _currentAsPathAcl =
+        _configuration.getAsPathAccessLists().computeIfAbsent(name, IpAsPathAccessList::new);
     _configuration.defineStructure(AS_PATH_ACCESS_LIST, name, ctx);
   }
 
@@ -2547,9 +2708,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       assert ctx.name != null;
       name = ctx.name.getText();
     }
-    _currentExpandedCommunityList = _configuration
-        .getExpandedCommunityLists()
-        .computeIfAbsent(name, ExpandedCommunityList::new);
+    _currentExpandedCommunityList =
+        _configuration
+            .getExpandedCommunityLists()
+            .computeIfAbsent(name, ExpandedCommunityList::new);
     _configuration.defineStructure(COMMUNITY_LIST_EXPANDED, name, ctx);
   }
 
@@ -2564,9 +2726,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       assert ctx.name_cl != null;
       name = ctx.name_cl.getText();
     }
-    _currentStandardCommunityList = _configuration
-        .getStandardCommunityLists()
-        .computeIfAbsent(name, StandardCommunityList::new);
+    _currentStandardCommunityList =
+        _configuration
+            .getStandardCommunityLists()
+            .computeIfAbsent(name, StandardCommunityList::new);
     _configuration.defineStructure(COMMUNITY_LIST_STANDARD, name, ctx);
   }
 
@@ -2619,8 +2782,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterNeighbor_flat_rb_stanza(Neighbor_flat_rb_stanzaContext ctx) {
     if (ctx.ip6 != null) {
-      // Remember we are in IPv6 context so that structure references are identified
-      // accordingly
+      // Remember we are in IPv6 context so that structure references are identified accordingly
       _inIpv6BgpPeer = true;
     }
     // do no further processing for unsupported address families / containers
@@ -2631,11 +2793,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     BgpProcess proc = currentVrf().getBgpProcess();
     // we must create peer group if it does not exist and this is a remote_as
     // declaration
-    boolean create = ctx.remote_as_bgp_tail() != null || ctx.inherit_peer_session_bgp_tail() != null;
+    boolean create =
+        ctx.remote_as_bgp_tail() != null || ctx.inherit_peer_session_bgp_tail() != null;
     if (ctx.ip != null) {
       Ip ip = toIp(ctx.ip);
       _currentIpPeerGroup = proc.getIpPeerGroups().get(ip);
-      String bgpNeighborStructName = bgpNeighborStructureName(ip.toString(), currentVrf().getName());
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(ip.toString(), currentVrf().getName());
       if (_currentIpPeerGroup == null) {
         if (create) {
           _currentIpPeerGroup = proc.addIpPeerGroup(ip);
@@ -2660,7 +2824,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ip6 != null) {
       Ip6 ip6 = toIp6(ctx.ip6);
       Ipv6BgpPeerGroup pg6 = proc.getIpv6PeerGroups().get(ip6);
-      String bgpNeighborStructName = bgpNeighborStructureName(ip6.toString(), currentVrf().getName());
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(ip6.toString(), currentVrf().getName());
       if (pg6 == null) {
         if (create) {
           pg6 = proc.addIpv6PeerGroup(ip6);
@@ -2743,7 +2908,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterO_service(O_serviceContext ctx) {
     String name = ctx.name.getText();
-    _currentServiceObject = _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
+    _currentServiceObject =
+        _configuration.getServiceObjects().computeIfAbsent(name, ServiceObject::new);
     _configuration.defineStructure(SERVICE_OBJECT, name, ctx);
   }
 
@@ -2759,8 +2925,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentIcmpTypeObjectGroup = new IcmpTypeObjectGroup(name);
       warnObjectGroupRedefinition(ctx.name);
     } else {
-      _currentIcmpTypeObjectGroup = _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name,
-          IcmpTypeObjectGroup::new);
+      _currentIcmpTypeObjectGroup =
+          _configuration.getIcmpTypeObjectGroups().computeIfAbsent(name, IcmpTypeObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentIcmpTypeObjectGroup);
       _configuration.defineStructure(ICMP_TYPE_OBJECT_GROUP, name, ctx);
     }
@@ -2900,7 +3066,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentPortObjectGroup = new PortObjectGroup(name);
       warnObjectGroupRedefinition(ctx.name);
     } else {
-      _currentPortObjectGroup = _configuration.getPortObjectGroups().computeIfAbsent(name, PortObjectGroup::new);
+      _currentPortObjectGroup =
+          _configuration.getPortObjectGroups().computeIfAbsent(name, PortObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentPortObjectGroup);
       _configuration.defineStructure(IP_PORT_OBJECT_GROUP, name, ctx);
     }
@@ -2919,8 +3086,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentNetworkObjectGroup = new NetworkObjectGroup(name);
       warnObjectGroupRedefinition(ctx.name);
     } else {
-      _currentNetworkObjectGroup = _configuration.getNetworkObjectGroups().computeIfAbsent(name,
-          NetworkObjectGroup::new);
+      _currentNetworkObjectGroup =
+          _configuration.getNetworkObjectGroups().computeIfAbsent(name, NetworkObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentNetworkObjectGroup);
       _configuration.defineStructure(NETWORK_OBJECT_GROUP, name, ctx);
     }
@@ -2940,9 +3107,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentServiceObjectGroup = new ServiceObjectGroup(name, protocol);
       warnObjectGroupRedefinition(ctx.name);
     } else {
-      _currentServiceObjectGroup = _configuration
-          .getServiceObjectGroups()
-          .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
+      _currentServiceObjectGroup =
+          _configuration
+              .getServiceObjectGroups()
+              .computeIfAbsent(name, (groupName) -> new ServiceObjectGroup(groupName, protocol));
       _configuration.getObjectGroups().put(name, _currentServiceObjectGroup);
       _configuration.defineStructure(SERVICE_OBJECT_GROUP, name, ctx);
     }
@@ -2961,8 +3129,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentProtocolObjectGroup = new ProtocolObjectGroup(name);
       warnObjectGroupRedefinition(ctx.name);
     } else {
-      _currentProtocolObjectGroup = _configuration.getProtocolObjectGroups().computeIfAbsent(name,
-          ProtocolObjectGroup::new);
+      _currentProtocolObjectGroup =
+          _configuration.getProtocolObjectGroups().computeIfAbsent(name, ProtocolObjectGroup::new);
       _configuration.getObjectGroups().put(name, _currentProtocolObjectGroup);
       _configuration.defineStructure(PROTOCOL_OBJECT_GROUP, name, ctx);
     }
@@ -3007,9 +3175,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       ipSpace = IpWildcard.parse(ctx.prefix.getText()).toIpSpace();
     } else if (ctx.wildcard_address != null && ctx.wildcard_mask != null) {
       // Mask needs to be inverted since zeros are don't-cares in this context
-      ipSpace = IpWildcard.ipWithWildcardMask(
-          toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
-          .toIpSpace();
+      ipSpace =
+          IpWildcard.ipWithWildcardMask(
+                  toIp(ctx.wildcard_address), toIp(ctx.wildcard_mask).inverted())
+              .toIpSpace();
     } else if (ctx.address != null) {
       ipSpace = IpWildcard.parse(ctx.address.getText()).toIpSpace();
     } else if (ctx.name != null) {
@@ -3209,15 +3378,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip routerId = _currentOspfProcess.getRouterId();
     _lastKnownOspfProcess = _currentOspfProcess.getName();
     _currentVrf = ctx.name.getText();
-    _currentOspfProcess = currentVrf()
-        .getOspfProcesses()
-        .computeIfAbsent(
-            _currentOspfProcess.getName(),
-            (procName) -> {
-              OspfProcess p = new OspfProcess(procName, _format);
-              p.setRouterId(routerId);
-              return p;
-            });
+    _currentOspfProcess =
+        currentVrf()
+            .getOspfProcesses()
+            .computeIfAbsent(
+                _currentOspfProcess.getName(),
+                (procName) -> {
+                  OspfProcess p = new OspfProcess(procName, _format);
+                  p.setRouterId(routerId);
+                  return p;
+                });
   }
 
   @Override
@@ -3273,7 +3443,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterRe_classic(Re_classicContext ctx) {
     // Create a classic EIGRP process with ASN
     long asn = toLong(ctx.asnum);
-    _currentEigrpProcess = new EigrpProcess(asn, EigrpProcessMode.CLASSIC, Configuration.DEFAULT_VRF_NAME);
+    _currentEigrpProcess =
+        new EigrpProcess(asn, EigrpProcessMode.CLASSIC, Configuration.DEFAULT_VRF_NAME);
   }
 
   @Override
@@ -3353,8 +3524,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterDtr_policy(Dtr_policyContext ctx) {
     String name = ctx.name.getText();
     _configuration.defineStructure(DEVICE_TRACKING_POLICY, name, ctx);
-    _currentDeviceTrackingPolicy = _configuration.getDeviceTrackingPolicies().computeIfAbsent(name,
-        DeviceTrackingPolicy::new);
+    _currentDeviceTrackingPolicy =
+        _configuration.getDeviceTrackingPolicies().computeIfAbsent(name, DeviceTrackingPolicy::new);
   }
 
   @Override
@@ -3396,7 +3567,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterS_interface_definition(S_interface_definitionContext ctx) {
     String nameAlpha = ctx.iname.name_prefix_alpha.getText();
-    String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
+    String canonicalNamePrefix =
+        CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
     StringBuilder namePrefix = new StringBuilder(canonicalNamePrefix);
     for (Token part : ctx.iname.name_middle_parts) {
       namePrefix.append(part.getText());
@@ -3449,15 +3621,15 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterS_line(S_lineContext ctx) {
     List<String> names = getLineNames(ctx);
 
-    // get the default list or null if Aaa, AaaAuthentication, or
-    // AaaAuthenticationLogin is null or
+    // get the default list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is null or
     // default list is undefined
-    AaaAuthenticationLoginList defaultList = Optional.ofNullable(_configuration.getCf().getAaa())
-        .map(Aaa::getAuthentication)
-        .map(AaaAuthentication::getLogin)
-        .map(AaaAuthenticationLogin::getLists)
-        .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
-        .orElse(null);
+    AaaAuthenticationLoginList defaultList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(AaaAuthenticationLogin.DEFAULT_LIST_NAME))
+            .orElse(null);
 
     for (String name : names) {
       if (_configuration.getCf().getLines().get(name) == null) {
@@ -3604,9 +3776,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.vrf != null) {
       _currentVrf = ctx.vrf.getText();
     }
-    _currentOspfProcess = currentVrf()
-        .getOspfProcesses()
-        .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
+    _currentOspfProcess =
+        currentVrf()
+            .getOspfProcesses()
+            .computeIfAbsent(procName, (pName) -> new OspfProcess(pName, _format));
   }
 
   @Override
@@ -3694,6 +3867,114 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
+  public void enterTi_subscription(Ti_subscriptionContext ctx) {
+    int id = toInteger(ctx.id);
+    _currentTelemetrySubscription = new TelemetrySubscription(id);
+    _configuration.getTelemetrySubscriptions().put(id, _currentTelemetrySubscription);
+  }
+
+  @Override
+  public void exitTi_subscription(Ti_subscriptionContext ctx) {
+    _currentTelemetrySubscription = null;
+  }
+
+  @Override
+  public void enterTis_encoding(Tis_encodingContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.ENCODE_TDL() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_TDL);
+    } else if (ctx.ENCODE_KVGPB() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_KVGPB);
+    } else if (ctx.ENCODE_XML() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_XML);
+    }
+  }
+
+  @Override
+  public void enterTis_filter(Tis_filterContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String filterType = "xpath";
+    // filter_value is mandatory in new grammar
+    String filterValue = ctx.filter_value.getText();
+    String filter = String.format("%s %s", filterType, filterValue);
+    _currentTelemetrySubscription.setFilter(filter);
+    _currentTelemetrySubscription.setFilterType(TelemetrySubscription.FilterType.XPATH);
+    _currentTelemetrySubscription.setFilterValue(filterValue);
+  }
+
+  @Override
+  public void enterTis_receiver(Tis_receiverContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String name = ctx.receiver_name != null ? ctx.receiver_name.getText() : "";
+    TelemetrySubscription.Receiver receiver = new TelemetrySubscription.Receiver(name);
+    if (ctx.ip != null) {
+      receiver.setHost(ctx.ip.getText());
+    }
+    for (Tisr_attributeContext attribute : ctx.tisr_attribute()) {
+      if (attribute.port_value != null) {
+        receiver.setPort(Integer.parseInt(attribute.port_value.getText()));
+      } else if (attribute.GRPC_TCP() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TCP);
+      } else if (attribute.GRPC_TLS() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TLS);
+      } else if (attribute.COLLECTOR() != null) {
+        receiver.setReceiverType("collector");
+      } else if (attribute.receiver_type_value != null) {
+        receiver.setReceiverType(attribute.receiver_type_value.getText());
+      }
+    }
+    _currentTelemetrySubscription.addReceiver(receiver);
+  }
+
+  @Override
+  public void enterTis_source_address(Tis_source_addressContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceAddress(ctx.ip.getText());
+  }
+
+  @Override
+  public void enterTis_source_vrf(Tis_source_vrfContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceVrf(ctx.vrf.getText());
+  }
+
+  @Override
+  public void enterTis_stream(Tis_streamContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.YANG_PUSH() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
+    } else if (ctx.YANG_NOTIF_NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_NOTIF_NATIVE);
+    } else if (ctx.NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.NATIVE);
+    }
+  }
+
+  @Override
+  public void enterTis_update_policy(Tis_update_policyContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.PERIODIC() != null) {
+      _currentTelemetrySubscription.setUpdatePolicy("periodic " + ctx.period.getText());
+    } else {
+      _currentTelemetrySubscription.setUpdatePolicy("on-change");
+    }
+  }
+
+  @Override
   public void enterTrack_interface(Track_interfaceContext ctx) {
     String interfaceName = toInterfaceName(ctx.interface_name());
     _configuration.referenceStructure(
@@ -3703,12 +3984,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "Cannot change track type");
       return;
     }
-    TrackInterface trackInterface = (TrackInterface) _configuration
-        .getTracks()
-        .computeIfAbsent(_currentTrack, num -> new TrackInterface(interfaceName));
+    TrackInterface trackInterface =
+        (TrackInterface)
+            _configuration
+                .getTracks()
+                .computeIfAbsent(_currentTrack, num -> new TrackInterface(interfaceName));
     assert ctx.ROUTING() != null ^ ctx.LINE_PROTOCOL() != null;
-    // You can change the interface and the subtype, but you can't change to a
-    // different top-level
+    // You can change the interface and the subtype, but you can't change to a different top-level
     // track type.
     trackInterface.setInterfaceName(interfaceName);
     trackInterface.setIpRouting(ctx.ROUTING() != null);
@@ -3724,11 +4006,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "Cannot change track type");
       return;
     }
-    TrackIpSla trackIpSla = (TrackIpSla) _configuration.getTracks().computeIfAbsent(_currentTrack,
-        num -> new TrackIpSla(sla));
+    TrackIpSla trackIpSla =
+        (TrackIpSla)
+            _configuration.getTracks().computeIfAbsent(_currentTrack, num -> new TrackIpSla(sla));
     assert ctx.REACHABILITY() == null || ctx.STATE() == null; // inclusive or, STATE is default
-    // You can change the sla and the subtype, but you can't change to a different
-    // top-level
+    // You can change the sla and the subtype, but you can't change to a different top-level
     // track type.
     trackIpSla.setIpSla(sla);
     trackIpSla.setReachability(ctx.REACHABILITY() != null);
@@ -3742,8 +4024,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void enterIp_sla_entry(Ip_sla_entryContext ctx) {
     _currentSlaNumber = toInteger(ctx.num);
     _configuration.defineStructure(IP_SLA, Integer.toString(_currentSlaNumber), ctx);
-    // We need to set this in case we are re-entering an existing sla, since the
-    // type line will be
+    // We need to set this in case we are re-entering an existing sla, since the type line will be
     // absent/rejected on re-entry.
     _currentSla = _configuration.getIpSlas().get(_currentSlaNumber);
   }
@@ -3883,8 +4164,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitService_specifier_protocol(Service_specifier_protocolContext ctx) {
-    @Nullable
-    IpProtocol protocol = toIpProtocol(ctx.protocol());
+    @Nullable IpProtocol protocol = toIpProtocol(ctx.protocol());
     if (protocol != null) {
       _currentServiceObject.addProtocol(protocol);
     }
@@ -3952,7 +4232,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Invalid standard access-list name");
     }
-    _currentStandardAcl = _configuration.getStandardAcls().computeIfAbsent(name, StandardAccessList::new);
+    _currentStandardAcl =
+        _configuration.getStandardAcls().computeIfAbsent(name, StandardAccessList::new);
     _configuration.defineStructure(IPV4_ACCESS_LIST_STANDARD, name, ctx);
   }
 
@@ -3964,7 +4245,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       throw new BatfishException("Invalid standard access-list name");
     }
-    _currentStandardIpv6Acl = _configuration.getStandardIpv6Acls().computeIfAbsent(name, StandardIpv6AccessList::new);
+    _currentStandardIpv6Acl =
+        _configuration.getStandardIpv6Acls().computeIfAbsent(name, StandardIpv6AccessList::new);
     _configuration.defineStructure(IPV6_ACCESS_LIST_STANDARD, name, ctx);
   }
 
@@ -4006,7 +4288,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitAaa_accounting_default_group(Aaa_accounting_default_groupContext ctx) {
-    List<String> groups = ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     _configuration.getCf().getAaa().getAccounting().getDefault().setGroups(groups);
     for (String group : groups) {
       _configuration.referenceStructure(
@@ -4024,7 +4307,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.groups == null) {
       return;
     }
-    List<String> groups = ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     for (String group : groups) {
       _configuration.referenceStructure(
           AAA_SERVER_GROUP, group, AAA_ACCOUNTING_GROUP, ctx.getStart().getLine());
@@ -4041,7 +4325,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.groups == null) {
       return;
     }
-    List<String> groups = ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
+    List<String> groups =
+        ctx.groups.stream().map(CiscoControlPlaneExtractor::toString).collect(Collectors.toList());
     for (String group : groups) {
       _configuration.referenceStructure(
           AAA_SERVER_GROUP, group, AAA_AUTHENTICATION_GROUP, ctx.getStart().getLine());
@@ -4332,7 +4617,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
-      String bgpNeighborStructName = bgpNeighborStructureName(prefix.toString(), currentVrf().getName());
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(prefix.toString(), currentVrf().getName());
       _configuration.defineStructure(BGP_LISTEN_RANGE, bgpNeighborStructName, ctx);
       _configuration.referenceStructure(
           BGP_LISTEN_RANGE,
@@ -4347,7 +4633,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
         long remoteAs = toAsNum(ctx.bgp_asn());
         pg.setRemoteAs(remoteAs);
       }
-      String bgpNeighborStructName = bgpNeighborStructureName(prefix6.toString(), currentVrf().getName());
+      String bgpNeighborStructName =
+          bgpNeighborStructureName(prefix6.toString(), currentVrf().getName());
       _configuration.defineStructure(BGP_LISTEN_RANGE, bgpNeighborStructName, ctx);
       _configuration.referenceStructure(
           BGP_LISTEN_RANGE,
@@ -4411,11 +4698,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCm_ios_inspect(Cm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    _currentInspectClassMap = _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
+    _currentInspectClassMap =
+        _configuration.getInspectClassMaps().computeIfAbsent(name, InspectClassMap::new);
     _configuration.defineStructure(INSPECT_CLASS_MAP, name, ctx);
-    MatchSemantics matchSemantics = ctx.match_semantics() != null
-        ? toMatchSemantics(ctx.match_semantics())
-        : MatchSemantics.MATCH_ALL;
+    MatchSemantics matchSemantics =
+        ctx.match_semantics() != null
+            ? toMatchSemantics(ctx.match_semantics())
+            : MatchSemantics.MATCH_ALL;
     _currentInspectClassMap.setMatchSemantics(matchSemantics);
   }
 
@@ -4451,10 +4740,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int dstLine = ctx.destination.getStart().getLine();
     _configuration.referenceStructure(SECURITY_ZONE, dstName, ZONE_PAIR_DESTINATION_ZONE, dstLine);
     _configuration.defineStructure(SECURITY_ZONE_PAIR, name, ctx);
-    _currentSecurityZonePair = _configuration
-        .getSecurityZonePairs()
-        .computeIfAbsent(dstName, n -> new TreeMap<>())
-        .computeIfAbsent(srcName, n -> new SecurityZonePair(name, srcName, dstName));
+    _currentSecurityZonePair =
+        _configuration
+            .getSecurityZonePairs()
+            .computeIfAbsent(dstName, n -> new TreeMap<>())
+            .computeIfAbsent(srcName, n -> new SecurityZonePair(name, srcName, dstName));
   }
 
   @Override
@@ -4664,9 +4954,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitCp_service_policy(Cp_service_policyContext ctx) {
-    CiscoStructureUsage usage = ctx.INPUT() != null
-        ? CONTROL_PLANE_SERVICE_POLICY_INPUT
-        : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
+    CiscoStructureUsage usage =
+        ctx.INPUT() != null
+            ? CONTROL_PLANE_SERVICE_POLICY_INPUT
+            : CONTROL_PLANE_SERVICE_POLICY_OUTPUT;
     _configuration.referenceStructure(
         POLICY_MAP, ctx.name.getText(), usage, ctx.name.getStart().getLine());
   }
@@ -4865,11 +5156,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (proc.getAsn() == null) {
       /*
        * This will happen with the following configuration:
-       * address-family ... autonomous-system 1
-       * autonomous-system 2
-       * no autonomous-system
-       * The result should be a process with ASN 1, but instead the result is an
-       * invalid EIGRP
+       *  address-family ... autonomous-system 1
+       *   autonomous-system 2
+       *   no autonomous-system
+       * The result should be a process with ASN 1, but instead the result is an invalid EIGRP
        * process with null ASN.
        */
       warn(ctx, "No EIGRP ASN configured");
@@ -4890,9 +5180,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Pop process if nested
     _currentEigrpProcess = _parentEigrpProcess;
     _parentEigrpProcess = null;
-    _currentVrf = _currentEigrpProcess != null
-        ? _currentEigrpProcess.getVrf()
-        : Configuration.DEFAULT_VRF_NAME;
+    _currentVrf =
+        _currentEigrpProcess != null
+            ? _currentEigrpProcess.getVrf()
+            : Configuration.DEFAULT_VRF_NAME;
   }
 
   @Override
@@ -4919,13 +5210,14 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     AccessListAddressSpecifier dstAddressSpecifier = toAccessListAddressSpecifier(ctx.dstipr);
     AccessListServiceSpecifier serviceSpecifier = computeExtendedAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
-    ExtendedAccessListLine line = ExtendedAccessListLine.builder()
-        .setAction(action)
-        .setDstAddressSpecifier(dstAddressSpecifier)
-        .setName(name)
-        .setServiceSpecifier(serviceSpecifier)
-        .setSrcAddressSpecifier(srcAddressSpecifier)
-        .build();
+    ExtendedAccessListLine line =
+        ExtendedAccessListLine.builder()
+            .setAction(action)
+            .setDstAddressSpecifier(dstAddressSpecifier)
+            .setName(name)
+            .setServiceSpecifier(serviceSpecifier)
+            .setSrcAddressSpecifier(srcAddressSpecifier)
+            .build();
     _currentExtendedAcl.addLine(line);
 
     // definition tracking
@@ -4942,8 +5234,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private AccessListServiceSpecifier computeExtendedAccessListServiceSpecifier(
       Extended_access_list_tailContext ctx) {
     if (ctx.prot != null) {
-      @Nullable
-      IpProtocol protocol = toIpProtocol(ctx.prot);
+      @Nullable IpProtocol protocol = toIpProtocol(ctx.prot);
       PortSpec srcPorts = ctx.alps_src != null ? toPortSpec(ctx.alps_src) : null;
       PortSpec dstPorts = ctx.alps_dst != null ? toPortSpec(ctx.alps_dst) : null;
       Integer icmpType = null;
@@ -5235,8 +5526,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip6 dstWildcard = getWildcard(ctx.dstipr);
     String srcAddressGroup = getAddressGroup(ctx.srcipr);
     String dstAddressGroup = getAddressGroup(ctx.dstipr);
-    List<SubRange> srcPortRanges = ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
-    List<SubRange> dstPortRanges = ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.emptyList();
+    List<SubRange> srcPortRanges =
+        ctx.alps_src != null ? toPortRanges(ctx.alps_src) : Collections.emptyList();
+    List<SubRange> dstPortRanges =
+        ctx.alps_dst != null ? toPortRanges(ctx.alps_dst) : Collections.emptyList();
     Integer icmpType = null;
     Integer icmpCode = null;
     List<TcpFlagsMatchConditions> tcpFlags = new ArrayList<>();
@@ -5342,26 +5635,26 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
                 .setUseUrg(true)
                 .build());
       } else {
-        // warn(ctx, "Unsupported clause in IPv6 extended access list: " +
-        // getFullText(feature));
+        // warn(ctx, "Unsupported clause in IPv6 extended access list: " + getFullText(feature));
       }
     }
     String name = getFullText(ctx).trim();
-    ExtendedIpv6AccessListLine line = new ExtendedIpv6AccessListLine(
-        name,
-        action,
-        protocol,
-        new Ip6Wildcard(srcIp, srcWildcard),
-        srcAddressGroup,
-        new Ip6Wildcard(dstIp, dstWildcard),
-        dstAddressGroup,
-        srcPortRanges,
-        dstPortRanges,
-        dscps,
-        ecns,
-        icmpType,
-        icmpCode,
-        tcpFlags);
+    ExtendedIpv6AccessListLine line =
+        new ExtendedIpv6AccessListLine(
+            name,
+            action,
+            protocol,
+            new Ip6Wildcard(srcIp, srcWildcard),
+            srcAddressGroup,
+            new Ip6Wildcard(dstIp, dstWildcard),
+            dstAddressGroup,
+            srcPortRanges,
+            dstPortRanges,
+            dscps,
+            ecns,
+            icmpType,
+            icmpCode,
+            tcpFlags);
     _currentExtendedIpv6Acl.addLine(line);
   }
 
@@ -5481,7 +5774,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     if (ctx.STANDBY() != null) {
       Ip standbyIp = toIp(ctx.standby_address);
-      ConcreteInterfaceAddress standbyAddress = ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
+      ConcreteInterfaceAddress standbyAddress =
+          ConcreteInterfaceAddress.create(standbyIp, address.getNetworkBits());
       for (Interface currentInterface : _currentInterfaces) {
         currentInterface.setStandbyAddress(standbyAddress);
       }
@@ -5696,7 +5990,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIf_ipv6_traffic_filter(If_ipv6_traffic_filterContext ctx) {
-    CiscoStructureUsage usage = ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
+    CiscoStructureUsage usage =
+        ctx.IN() != null ? INTERFACE_IPV6_TRAFFIC_FILTER_IN : INTERFACE_IPV6_TRAFFIC_FILTER_OUT;
     _configuration.referenceStructure(
         IPV6_ACCESS_LIST, ctx.acl.getText(), usage, ctx.acl.getStart().getLine());
   }
@@ -6028,14 +6323,16 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitIfvrrp_authentication(Ifvrrp_authenticationContext ctx) {
-    String hashedAuthenticationText = CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
+    String hashedAuthenticationText =
+        CommonUtil.sha256Digest(ctx.text.getText() + CommonUtil.salt());
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setAuthenticationTextHash(hashedAuthenticationText);
     }
   }
@@ -6049,11 +6346,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setVirtualAddress(ip);
     }
   }
@@ -6063,11 +6361,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip ip = toIp(ctx.ip);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setVirtualAddress(ip);
     }
   }
@@ -6076,11 +6375,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitIfvrrp_preempt(Ifvrrp_preemptContext ctx) {
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setPreempt(true);
     }
   }
@@ -6090,11 +6390,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int priority = toInteger(ctx.priority);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setPriority(priority);
     }
   }
@@ -6104,11 +6405,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int priority = toInteger(ctx.priority);
     for (Interface iface : _currentInterfaces) {
       String ifaceName = iface.getName();
-      VrrpGroup vrrpGroup = _configuration
-          .getVrrpGroups()
-          .computeIfAbsent(ifaceName, n -> new VrrpInterface())
-          .getVrrpGroups()
-          .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
+      VrrpGroup vrrpGroup =
+          _configuration
+              .getVrrpGroups()
+              .computeIfAbsent(ifaceName, n -> new VrrpInterface())
+              .getVrrpGroups()
+              .computeIfAbsent(_currentVrrpGroupNum, VrrpGroup::new);
       vrrpGroup.setPriority(priority);
     }
   }
@@ -6325,27 +6627,20 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   /**
-   * Check that the pool IPs are contained in the subnet, and warn if not. Then
-   * create the pool,
-   * while excluding the network/broadcast IPs. This means that if specified first
-   * pool IP is
-   * numerically less than the first host IP in the subnet, use the first host IP
-   * instead.
-   * Similarly, if the specified last pool IP is greater than the last host IP in
-   * the subnet, use
-   * the last host IP instead. This can result in an empty pool, which would cause
-   * natted traffic to
+   * Check that the pool IPs are contained in the subnet, and warn if not. Then create the pool,
+   * while excluding the network/broadcast IPs. This means that if specified first pool IP is
+   * numerically less than the first host IP in the subnet, use the first host IP instead.
+   * Similarly, if the specified last pool IP is greater than the last host IP in the subnet, use
+   * the last host IP instead. This can result in an empty pool, which would cause natted traffic to
    * be dropped.
    */
   private void createNatPool(String name, Ip first, Ip last, Prefix subnet, ParserRuleContext ctx) {
     checkArgument(first.compareTo(last) <= 0, "first pool IP cannot be greater than last");
     Ip effectiveFirst = max(first, subnet.getFirstHostIp());
     Ip effectiveLast = min(last, subnet.getLastHostIp());
-    // intersect the range with the host IPs of the subnet. if the intersection is
-    // empty, we get an
+    // intersect the range with the host IPs of the subnet. if the intersection is empty, we get an
     // empty NAT pool.
-    // TODO we don't model empty nat pools correctly. in reality they will cause
-    // packets to be
+    // TODO we don't model empty nat pools correctly.  in reality they will cause packets to be
     // dropped.
     if (effectiveFirst.compareTo(effectiveLast) > 0) {
       warn(
@@ -6521,8 +6816,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIpnis_static(Ipnis_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global
-    // IPs are set
+    // Note that this NAT is not added to the configuration until its local & global IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
     _currentIosSourceNat.setAction(RuleAction.SOURCE_INSIDE);
   }
@@ -6561,8 +6855,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterIpnos_static(Ipnos_staticContext ctx) {
-    // Note that this NAT is not added to the configuration until its local & global
-    // IPs are set
+    // Note that this NAT is not added to the configuration until its local & global IPs are set
     _currentIosSourceNat = new CiscoIosStaticNat();
     _currentIosSourceNat.setAction(RuleAction.SOURCE_OUTSIDE);
   }
@@ -6653,7 +6946,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _configuration.referenceStructure(
           TRACK, Integer.toString(track), STATIC_ROUTE_TRACK, ctx.track.getStart().getLine());
     }
-    StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+    StaticRoute route =
+        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
     currentVrf().getStaticRoutes().add(route);
   }
 
@@ -6762,24 +7056,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       throw new BatfishException("Invalid list name");
     }
 
-    // get the authentication list or null if Aaa, AaaAuthentication, or
-    // AaaAuthenticationLogin is
+    // get the authentication list or null if Aaa, AaaAuthentication, or AaaAuthenticationLogin is
     // null or the list is not defined
-    AaaAuthenticationLoginList authList = Optional.ofNullable(_configuration.getCf().getAaa())
-        .map(Aaa::getAuthentication)
-        .map(AaaAuthentication::getLogin)
-        .map(AaaAuthenticationLogin::getLists)
-        .map(lists -> lists.get(list))
-        .orElse(null);
+    AaaAuthenticationLoginList authList =
+        Optional.ofNullable(_configuration.getCf().getAaa())
+            .map(Aaa::getAuthentication)
+            .map(AaaAuthentication::getLogin)
+            .map(AaaAuthenticationLogin::getLists)
+            .map(lists -> lists.get(list))
+            .orElse(null);
 
-    // if the authentication list has been defined, apply it to all lines in
-    // _currentLineNames
+    // if the authentication list has been defined, apply it to all lines in _currentLineNames
     for (String line : _currentLineNames) {
       if (authList != null) {
         _configuration.getCf().getLines().get(line).setAaaAuthenticationLoginList(authList);
       }
-      // set the name of the login list even if the list hasn't been defined yet
-      // because it may be
+      // set the name of the login list even if the list hasn't been defined yet because it may be
       // defined later
       _configuration.getCf().getLines().get(line).setLoginAuthentication(list);
     }
@@ -6787,7 +7079,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void exitL_transport(L_transportContext ctx) {
-    SortedSet<String> protocols = ctx.prot.stream().map(RuleContext::getText).collect(toCollection(TreeSet::new));
+    SortedSet<String> protocols =
+        ctx.prot.stream().map(RuleContext::getText).collect(toCollection(TreeSet::new));
     BiConsumer<Line, SortedSet<String>> setter;
     if (ctx.INPUT() != null) {
       setter = Line::setTransportInput;
@@ -7108,8 +7401,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       proc.setMaximumPathsEbgp(maximumPaths);
       proc.setMaximumPathsIbgp(maximumPaths);
     } else {
-      // On IOS and ASA, no type means EBGP only. For other OS'es handled by this
-      // parser, we can add
+      // On IOS and ASA, no type means EBGP only. For other OS'es handled by this parser, we can add
       // configuration checks.
       proc.setMaximumPathsEbgp(maximumPaths);
     }
@@ -7286,9 +7578,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     }
     long as = toAsNum(ctx.asn);
     RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7310,9 +7603,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7336,9 +7630,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
     long asn = toLong(ctx.asn);
     RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(asn);
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7371,9 +7666,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     RoutingProtocolInstance instance = RoutingProtocolInstance.ospf();
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
     int procNum = toInteger(ctx.proc);
     r.getSpecialAttributes().put(EigrpRedistributionPolicy.OSPF_PROCESS_NUMBER, procNum);
 
@@ -7401,9 +7697,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     RoutingProtocolInstance instance = RoutingProtocolInstance.rip();
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7425,9 +7722,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
-    EigrpRedistributionPolicy r = _currentEigrpProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
+    EigrpRedistributionPolicy r =
+        _currentEigrpProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new EigrpRedistributionPolicy(instance));
 
     if (!ctx.METRIC().isEmpty()) {
       r.setMetric(toEigrpMetricValues(ctx.metric));
@@ -7784,7 +8082,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterPm_ios_inspect(Pm_ios_inspectContext ctx) {
     String name = ctx.name.getText();
-    _currentInspectPolicyMap = _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
+    _currentInspectPolicyMap =
+        _configuration.getInspectPolicyMaps().computeIfAbsent(name, InspectPolicyMap::new);
     _configuration.defineStructure(INSPECT_POLICY_MAP, name, ctx);
   }
 
@@ -7795,8 +8094,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     _configuration.referenceStructure(CLASS_MAP, name, POLICY_MAP_CLASS, ctx.getStart().getLine());
     if ("class-default".equals(name)) {
-      // This is a hack because there's an implicit class named "class-default" and we
-      // don't want
+      // This is a hack because there's an implicit class named "class-default" and we don't want
       // a false positive undefined reference.
       _configuration.defineSingleLineStructure(
           CLASS_MAP, "class-default", ctx.getStart().getLine());
@@ -7835,9 +8133,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     int line = ctx.name.getStart().getLine();
     _configuration.referenceStructure(
         INSPECT_CLASS_MAP, name, INSPECT_POLICY_MAP_INSPECT_CLASS, line);
-    _currentInspectPolicyMapInspectClass = _currentInspectPolicyMap
-        .getInspectClasses()
-        .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
+    _currentInspectPolicyMapInspectClass =
+        _currentInspectPolicyMap
+            .getInspectClasses()
+            .computeIfAbsent(name, n -> new InspectPolicyMapInspectClass());
   }
 
   @Override
@@ -7919,8 +8218,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
-      BgpRedistributionPolicy r = proc.getRedistributionPolicies()
-          .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7940,8 +8240,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRedistribute_connected_is_stanza(Redistribute_connected_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
     RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
-    IsisRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
+    IsisRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -7969,8 +8270,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(toLong(ctx.id));
-      BgpRedistributionPolicy r = proc.getRedistributionPolicies()
-          .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -7992,8 +8294,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       RoutingProtocolInstance instance = RoutingProtocolInstance.ospf();
-      BgpRedistributionPolicy r = proc.getRedistributionPolicies()
-          .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -8025,8 +8328,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (ctx.INTERNAL() != null) {
       return ImmutableSet.of(RoutingProtocol.OSPF, RoutingProtocol.OSPF_IA);
     }
-    // TODO: differentiate between EXTERNAL and NSSA_EXTERNAL, currently they are
-    // all E1/2 in VI.
+    // TODO: differentiate between EXTERNAL and NSSA_EXTERNAL, currently they are all E1/2 in VI.
     if (ctx.type != null) {
       int t = toInteger(ctx.type);
       if (t == 1) {
@@ -8056,8 +8358,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       RoutingProtocolInstance instance = RoutingProtocolInstance.rip();
-      BgpRedistributionPolicy r = proc.getRedistributionPolicies()
-          .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         int metric = toInteger(ctx.metric);
         r.setMetric(metric);
@@ -8079,8 +8382,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     // Intentional identity comparison
     if (_currentPeerGroup == proc.getMasterBgpPeerGroup()) {
       RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
-      BgpRedistributionPolicy r = proc.getRedistributionPolicies()
-          .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
+      BgpRedistributionPolicy r =
+          proc.getRedistributionPolicies()
+              .computeIfAbsent(instance, key -> new BgpRedistributionPolicy(instance));
       if (ctx.metric != null) {
         long metric = toLong(ctx.metric);
         r.setMetric(metric);
@@ -8100,8 +8404,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRedistribute_static_is_stanza(Redistribute_static_is_stanzaContext ctx) {
     IsisProcess proc = currentVrf().getIsisProcess();
     RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
-    IsisRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
+    IsisRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8166,7 +8471,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoa_nssa(Roa_nssaContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    NssaSettings settings = proc.getNssas().computeIfAbsent(_currentOspfArea, a -> new NssaSettings());
+    NssaSettings settings =
+        proc.getNssas().computeIfAbsent(_currentOspfArea, a -> new NssaSettings());
     if (ctx.default_information_originate != null) {
       settings.setDefaultInformationOriginate(true);
     }
@@ -8189,8 +8495,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     boolean advertise = ctx.NOT_ADVERTISE() == null;
     Long cost = ctx.cost == null ? null : toLong(ctx.cost);
 
-    Map<Prefix, OspfAreaSummary> area = _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea,
-        k -> new TreeMap<>());
+    Map<Prefix, OspfAreaSummary> area =
+        _currentOspfProcess.getSummaries().computeIfAbsent(_currentOspfArea, k -> new TreeMap<>());
     area.put(
         prefix,
         new OspfAreaSummary(
@@ -8203,7 +8509,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitRoa_stub(Roa_stubContext ctx) {
     OspfProcess proc = _currentOspfProcess;
-    StubSettings settings = proc.getStubs().computeIfAbsent(_currentOspfArea, a -> new StubSettings());
+    StubSettings settings =
+        proc.getStubs().computeIfAbsent(_currentOspfArea, a -> new StubSettings());
     if (ctx.no_summary != null) {
       settings.setNoSummary(true);
     }
@@ -8253,7 +8560,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String ifaceName = ctx.iname == null ? null : getCanonicalInterfaceName(ctx.iname.getText());
     String filterName = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
-    DistributeList distributeList = new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST);
+    DistributeList distributeList =
+        new DistributeList(filterName, DistributeListFilterType.ACCESS_LIST);
     if (ctx.IN() != null) {
       _configuration.referenceStructure(
           IP_ACCESS_LIST, filterName, EIGRP_DISTRIBUTE_LIST_ACCESS_LIST_IN, line);
@@ -8300,7 +8608,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx.getParent(), "Gateway prefix lists in distribute-list are not supported for EIGRP");
     }
 
-    DistributeList distributeList = new DistributeList(prefixListName, DistributeListFilterType.PREFIX_LIST);
+    DistributeList distributeList =
+        new DistributeList(prefixListName, DistributeListFilterType.PREFIX_LIST);
     if (ctx.iname != null) {
       String ifaceName = getCanonicalInterfaceName(ctx.iname.getText());
       _configuration.referenceStructure(
@@ -8352,7 +8661,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       return;
     }
     String routeMapName = ctx.name.getText();
-    DistributeList distributeList = new DistributeList(routeMapName, DistributeListFilterType.ROUTE_MAP);
+    DistributeList distributeList =
+        new DistributeList(routeMapName, DistributeListFilterType.ROUTE_MAP);
     _configuration.referenceStructure(
         ROUTE_MAP,
         routeMapName,
@@ -8496,8 +8806,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private static boolean ospfRedistributeSubnetsByDefault(ConfigurationFormat format) {
     /*
-     * CISCO_IOS requires the subnets keyword or only classful routes will be
-     * redistributed.
+     * CISCO_IOS requires the subnets keyword or only classful routes will be redistributed.
      *
      * We assume no others does this ridiculous thing. TODO: verify more vendors.
      */
@@ -8520,8 +8829,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfProcess proc = _currentOspfProcess;
     long as = toAsNum(ctx.bgp_asn());
     RoutingProtocolInstance instance = RoutingProtocolInstance.bgp(as);
-    OspfRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8550,8 +8860,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_redistribute_connected(Ro_redistribute_connectedContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocolInstance instance = RoutingProtocolInstance.connected();
-    OspfRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8581,8 +8892,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     OspfProcess proc = _currentOspfProcess;
     long asn = toLong(ctx.tag);
     RoutingProtocolInstance instance = RoutingProtocolInstance.eigrp(asn);
-    OspfRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
 
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
@@ -8613,8 +8925,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitRo_redistribute_static(Ro_redistribute_staticContext ctx) {
     OspfProcess proc = _currentOspfProcess;
     RoutingProtocolInstance instance = RoutingProtocolInstance.staticRoutingProtocol();
-    OspfRedistributionPolicy r = proc.getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
+    OspfRedistributionPolicy r =
+        proc.getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new OspfRedistributionPolicy(instance));
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
       r.setMetric(metric);
@@ -8662,7 +8975,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     String name = ctx.name.getText();
     int line = ctx.name.getStart().getLine();
     boolean in = ctx.IN() != null;
-    CiscoStructureUsage usage = in ? OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
+    CiscoStructureUsage usage =
+        in ? OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_IN : OSPF6_DISTRIBUTE_LIST_PREFIX_LIST_OUT;
     _configuration.referenceStructure(PREFIX6_LIST, name, usage, line);
 
     if (ctx.iname != null) {
@@ -8748,7 +9062,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       warn(ctx, "Interface default tunnel gateway option not yet supported.");
     }
 
-    StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
+    StaticRoute route =
+        new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, null, track, false);
     currentVrf().getStaticRoutes().add(route);
   }
 
@@ -8848,7 +9163,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       if (ctx.track != null) {
         // TODO: handle named instead of numbered track
       }
-      StaticRoute route = new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
+      StaticRoute route =
+          new StaticRoute(prefix, nextHopIp, nextHopInterface, distance, tag, track, permanent);
       currentVrf().getStaticRoutes().add(route);
     } else if (ctx.prefix6 != null) {
       // TODO: ipv6 static route
@@ -9048,14 +9364,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   @Override
   public void enterVrfd_address_family(Vrfd_address_familyContext ctx) {
-    // NOTE: following IOS XE conventions here, where UNICAST is optional (i.e.,
-    // ipv4 == ipv4
+    // NOTE: following IOS XE conventions here, where UNICAST is optional (i.e., ipv4 == ipv4
     // unicast)
     if (ctx.IPV4() != null && ctx.MULTICAST() == null) {
       _currentVrfAddressFamily = currentVrf().getOrCreateIpv4UnicastAddressFamily();
     } else {
-      // Everything else (ipv6, multicast) is (so far) unsupported, so make a dummy
-      // value
+      // Everything else (ipv6, multicast) is (so far) unsupported, so make a dummy value
       _currentVrfAddressFamily = new VrfAddressFamily();
     }
   }
@@ -9157,9 +9471,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       _currentRouteMapClause.addSetLine(RouteMapSetAsPathReplaceAnyLine.instance());
     } else {
       assert !ctx.seq.isEmpty();
-      List<Long> sequence = ctx.seq.stream()
-          .map(CiscoControlPlaneExtractor::toLong)
-          .collect(ImmutableList.toImmutableList());
+      List<Long> sequence =
+          ctx.seq.stream()
+              .map(CiscoControlPlaneExtractor::toLong)
+              .collect(ImmutableList.toImmutableList());
       _currentRouteMapClause.addSetLine(new RouteMapSetAsPathReplaceSequenceLine(sequence));
     }
   }
@@ -9217,9 +9532,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitSet_extcommunity_rm_stanza_rt(Set_extcommunity_rm_stanza_rtContext ctx) {
     List<ExtendedCommunity> communities = toExtendedCommunities(ctx.communities);
-    RouteMapSetLine line = ctx.ADDITIVE() != null
-        ? new RouteMapSetExtcommunityRtAdditiveLine(communities)
-        : new RouteMapSetExtcommunityRtLine(communities);
+    RouteMapSetLine line =
+        ctx.ADDITIVE() != null
+            ? new RouteMapSetExtcommunityRtAdditiveLine(communities)
+            : new RouteMapSetExtcommunityRtLine(communities);
     _currentRouteMapClause.addSetLine(line);
   }
 
@@ -9236,7 +9552,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private @Nonnull List<ExtendedCommunity> toExtendedCommunities(
       List<Extended_community_route_targetContext> communities) {
-    ImmutableList.Builder<ExtendedCommunity> builder = ImmutableList.builderWithExpectedSize(communities.size());
+    ImmutableList.Builder<ExtendedCommunity> builder =
+        ImmutableList.builderWithExpectedSize(communities.size());
     for (Extended_community_route_targetContext communityCtx : communities) {
       builder.add(toExtendedCommunity(communityCtx));
     }
@@ -9393,8 +9710,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitSs_enable_traps(Ss_enable_trapsContext ctx) {
     if (ctx.snmp_trap_type != null) {
       String trapName = ctx.snmp_trap_type.getText();
-      SortedSet<String> subfeatureNames = ctx.subfeature.stream().map(RuleContext::getText)
-          .collect(toCollection(TreeSet::new));
+      SortedSet<String> subfeatureNames =
+          ctx.subfeature.stream().map(RuleContext::getText).collect(toCollection(TreeSet::new));
       SortedMap<String, SortedSet<String>> traps = _configuration.getSnmpServer().getTraps();
       SortedSet<String> subfeatures = traps.get(trapName);
       if (subfeatures == null) {
@@ -9518,9 +9835,11 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   public void exitStandard_access_list_tail(Standard_access_list_tailContext ctx) {
     LineAction action = toLineAction(ctx.ala);
     AccessListAddressSpecifier srcAddressSpecifier = toAccessListAddressSpecifier(ctx.ipr);
-    StandardAccessListServiceSpecifier serviceSpecifer = computeStandardAccessListServiceSpecifier(ctx);
+    StandardAccessListServiceSpecifier serviceSpecifer =
+        computeStandardAccessListServiceSpecifier(ctx);
     String name = getFullText(ctx).trim();
-    StandardAccessListLine line = new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
+    StandardAccessListLine line =
+        new StandardAccessListLine(action, name, serviceSpecifer, srcAddressSpecifier);
     _currentStandardAcl.addLine(line);
 
     // definition tracking
@@ -9577,8 +9896,9 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else {
       name = getFullText(ctx).trim();
     }
-    StandardIpv6AccessListLine line = new StandardIpv6AccessListLine(
-        name, action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
+    StandardIpv6AccessListLine line =
+        new StandardIpv6AccessListLine(
+            name, action, new Ip6Wildcard(srcIp, srcWildcard), dscps, ecns);
     _currentStandardIpv6Acl.addLine(line);
   }
 
@@ -9607,9 +9927,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     Ip mask = toIp(ctx.mask);
     Prefix prefix = Prefix.create(ip, mask);
     RoutingProtocolInstance instance = RoutingProtocolInstance.isis_l1();
-    IsisRedistributionPolicy r = _currentIsisProcess
-        .getRedistributionPolicies()
-        .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
+    IsisRedistributionPolicy r =
+        _currentIsisProcess
+            .getRedistributionPolicies()
+            .computeIfAbsent(instance, key -> new IsisRedistributionPolicy(instance));
     r.setSummaryPrefix(prefix);
     if (ctx.metric != null) {
       int metric = toInteger(ctx.metric);
@@ -9883,10 +10204,12 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private void initInterface(Interface iface, Interface_nameContext ctx) {
     String nameAlpha = ctx.name_prefix_alpha.getText();
-    String canonicalNamePrefix = CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
-    String vrf = canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
-        ? CiscoConfiguration.MANAGEMENT_VRF_NAME
-        : Configuration.DEFAULT_VRF_NAME;
+    String canonicalNamePrefix =
+        CiscoConfiguration.getCanonicalInterfaceNamePrefix(nameAlpha).orElse(nameAlpha);
+    String vrf =
+        canonicalNamePrefix.equals(CiscoConfiguration.MANAGEMENT_INTERFACE_PREFIX)
+            ? CiscoConfiguration.MANAGEMENT_VRF_NAME
+            : Configuration.DEFAULT_VRF_NAME;
     int mtu = Interface.getDefaultMtu();
     iface.setVrf(vrf);
     initVrf(vrf);
@@ -9943,8 +10266,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   private @Nonnull EigrpMetric toEigrpMetric(Eigrp_metricContext ctx, EigrpProcessMode mode) {
     /*
-     * The other three metrics (reliability, load, and MTU) may be non-zero but are
-     * only used if
+     * The other three metrics (reliability, load, and MTU) may be non-zero but are only used if
      * the K constants are configured.
      * See https://github.com/batfish/batfish/issues/1946
      */
@@ -10231,8 +10553,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
       int num = toInteger(ctx.num);
       return IpProtocol.fromNumber(num);
     } else if (ctx.AH() != null || ctx.AHP() != null) {
-      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication
-      // header protocol
+      // Different Cisco variants use `ahp` or `ah` to mean the IPSEC authentication header protocol
       return IpProtocol.AHP;
     } else if (ctx.EIGRP() != null) {
       return IpProtocol.EIGRP;
@@ -10247,8 +10568,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.IGMP() != null) {
       return IpProtocol.IGMP;
     } else if (ctx.IGRP() != null) {
-      // Wikipedia: 9 Interior Gateway Protocol (any private interior gateway, for
-      // example Cisco's
+      // Wikipedia: 9 Interior Gateway Protocol (any private interior gateway, for example Cisco's
       // IGRP)
       assert IpProtocol.IGP.number() == 9;
       return IpProtocol.IGP;
@@ -10263,7 +10583,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.ND() != null) {
       return IpProtocol.IPV6_ICMP;
     } else if (ctx.NOS() != null) {
-      // Wikipedia: 94 KA9Q NOS compatible IP over IP tunneling
+      // Wikipedia: 94  KA9Q NOS compatible IP over IP tunneling
       assert IpProtocol.IPIP.number() == 94;
       return IpProtocol.IPIP;
     } else if (ctx.OSPF() != null) {
@@ -10382,8 +10702,7 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     } else if (ctx.GSHUT() != null) {
       return WellKnownCommunity.GRACEFUL_SHUTDOWN;
     } else if (ctx.LOCAL_AS() != null) {
-      // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet
-      // forums.
+      // Cisco LOCAL_AS is interpreted as RFC1997 NO_EXPORT_SUBCONFED: internet forums.
       return WellKnownCommunity.NO_EXPORT_SUBCONFED;
     } else if (ctx.NO_ADVERTISE() != null) {
       return WellKnownCommunity.NO_ADVERTISE;
@@ -10932,10 +11251,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a
-   * valid signed 32-bit
-   * decimal integer to an {@link Integer} if it is contained in the provided
-   * {@code space}, or else
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
    * {@link Optional#empty}.
    */
   private @Nonnull Optional<Integer> toIntegerInSpace(
@@ -10949,285 +11266,6 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   }
 
   @Override
-  public void enterCpki_trustpoint(Cpki_trustpointContext ctx) {
-    String name = ctx.name.getText();
-    _currentPkiTrustpoint = new PkiTrustpoint(name);
-    _configuration.getPkiTrustpoints().put(name, _currentPkiTrustpoint);
-  }
-
-  @Override
-  public void exitCpki_trustpoint(Cpki_trustpointContext ctx) {
-    _currentPkiTrustpoint = null;
-  }
-
-  @Override
-  public void enterCpkit_enrollment(Cpkit_enrollmentContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setEnrollment(null);
-      return;
-    }
-    String enrollmentValue = ctx.url_value != null
-        ? "url " + ctx.url_value.getText()
-        : (ctx.enrollment_value != null ? ctx.enrollment_value.getText() : "");
-    _currentPkiTrustpoint.setEnrollment(enrollmentValue);
-  }
-
-  @Override
-  public void exitCpkit_revocation_check(Cpkit_revocation_checkContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setRevocationCheck(null);
-      return;
-    }
-    String revocationCheck = ctx.NONE() != null ? "none" : "crl";
-    _currentPkiTrustpoint.setRevocationCheck(revocationCheck);
-  }
-
-  @Override
-  public void enterCpkit_subject_alt_name(Cpkit_subject_alt_nameContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setSubjectAltName(null);
-      return;
-    }
-    String type = ctx.DNS() != null
-        ? "dns"
-        : ctx.EMAIL() != null
-            ? "email"
-            : ctx.FQDN() != null ? "fqdn" : ctx.IPADDRESS() != null ? "ipaddress" : "";
-    String value = ctx.san_dns != null
-        ? ctx.san_dns.getText()
-        : ctx.san_email != null
-            ? ctx.san_email.getText()
-            : ctx.san_ip != null
-                ? ctx.san_ip.getText()
-                : ctx.san_fqdn != null ? ctx.san_fqdn.getText() : "";
-    if (!type.isEmpty() && !value.isEmpty()) {
-      _currentPkiTrustpoint.setSubjectAltName(type + " " + value);
-    }
-  }
-
-  @Override
-  public void enterCpkit_usage(Cpkit_usageContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setUsage(null);
-      return;
-    }
-    _currentPkiTrustpoint.setUsage(ctx.usage_value.getText());
-  }
-
-  @Override
-  public void enterCpkit_source_vrf(Cpkit_source_vrfContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setSourceVrf(null);
-      return;
-    }
-    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
-  }
-
-  @Override
-  public void enterCpkit_vrf(Cpkit_vrfContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    if (ctx.NO() != null) {
-      _currentPkiTrustpoint.setSourceVrf(null);
-      return;
-    }
-    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
-  }
-
-  @Override
-  public void enterCpkit_auto(Cpkit_autoContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle auto enrollment
-  }
-
-  @Override
-  public void enterCpkit_auto_enroll(Cpkit_auto_enrollContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle auto enroll with percentage
-  }
-
-  @Override
-  public void enterCpkit_fqdn(Cpkit_fqdnContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle FQDN
-  }
-
-  @Override
-  public void enterCpkit_rsakeypair(Cpkit_rsakeypairContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle RSA keypair
-  }
-
-  @Override
-  public void enterCpkit_serial_number(Cpkit_serial_numberContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle serial number
-  }
-
-  @Override
-  public void enterCpkit_subject_name(Cpkit_subject_nameContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle subject name
-  }
-
-  @Override
-  public void enterCpkit_validation_usage(Cpkit_validation_usageContext ctx) {
-    if (_currentPkiTrustpoint == null) {
-      return;
-    }
-    // TODO: handle validation usage
-  }
-
-  @Override
-  public void enterCpkicc_certificate(Cpkicc_certificateContext ctx) {
-    if (_currentPkiTrustpoint == null || ctx.certificate() == null) {
-      return;
-    }
-    String certText = getFullText(ctx.certificate());
-    for (String line : certText.split("\\n")) {
-      String trimmed = line.trim();
-      if (!trimmed.isEmpty()) {
-        _currentPkiTrustpoint.addCertificateLine(trimmed);
-      }
-    }
-  }
-
-  @Override
-  public void enterTi_subscription(Ti_subscriptionContext ctx) {
-    int id = toInteger(ctx.id);
-    _currentTelemetrySubscription = new TelemetrySubscription(id);
-    _configuration.getTelemetrySubscriptions().put(id, _currentTelemetrySubscription);
-  }
-
-  @Override
-  public void exitTi_subscription(Ti_subscriptionContext ctx) {
-    _currentTelemetrySubscription = null;
-  }
-
-  @Override
-  public void enterTis_encoding(Tis_encodingContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    if (ctx.ENCODE_TDL() != null) {
-      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_TDL);
-    } else if (ctx.ENCODE_KVGPB() != null) {
-      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_KVGPB);
-    } else if (ctx.ENCODE_XML() != null) {
-      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_XML);
-    }
-  }
-
-  @Override
-  public void enterTis_filter(Tis_filterContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    String filterType = "xpath";
-    // filter_value is mandatory in new grammar
-    String filterValue = ctx.filter_value.getText();
-    String filter = String.format("%s %s", filterType, filterValue);
-    _currentTelemetrySubscription.setFilter(filter);
-    _currentTelemetrySubscription.setFilterType(TelemetrySubscription.FilterType.XPATH);
-    _currentTelemetrySubscription.setFilterValue(filterValue);
-  }
-
-  @Override
-  public void enterTis_receiver(Tis_receiverContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    String name = ctx.receiver_name != null ? ctx.receiver_name.getText() : "";
-    TelemetrySubscription.Receiver receiver = new TelemetrySubscription.Receiver(name);
-    if (ctx.ip != null) {
-      receiver.setHost(ctx.ip.getText());
-    }
-    for (Tisr_attributeContext attribute : ctx.tisr_attribute()) {
-      if (attribute.port_value != null) {
-        receiver.setPort(Integer.parseInt(attribute.port_value.getText()));
-      } else if (attribute.GRPC_TCP() != null) {
-        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TCP);
-      } else if (attribute.GRPC_TLS() != null) {
-        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TLS);
-      } else if (attribute.COLLECTOR() != null) {
-        receiver.setReceiverType("collector");
-      } else if (attribute.receiver_type_value != null) {
-        receiver.setReceiverType(attribute.receiver_type_value.getText());
-      }
-    }
-    _currentTelemetrySubscription.addReceiver(receiver);
-  }
-
-  @Override
-  public void enterTis_source_address(Tis_source_addressContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    _currentTelemetrySubscription.setSourceAddress(ctx.ip.getText());
-  }
-
-  @Override
-  public void enterTis_source_vrf(Tis_source_vrfContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    _currentTelemetrySubscription.setSourceVrf(ctx.vrf.getText());
-  }
-
-  @Override
-  public void enterTis_stream(Tis_streamContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    if (ctx.YANG_PUSH() != null) {
-      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
-    } else if (ctx.YANG_NOTIF_NATIVE() != null) {
-      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_NOTIF_NATIVE);
-    } else if (ctx.NATIVE() != null) {
-      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.NATIVE);
-    }
-  }
-
-  @Override
-  public void enterTis_update_policy(Tis_update_policyContext ctx) {
-    if (_currentTelemetrySubscription == null) {
-      return;
-    }
-    if (ctx.PERIODIC() != null) {
-      _currentTelemetrySubscription.setUpdatePolicy("periodic " + ctx.period.getText());
-    } else {
-      _currentTelemetrySubscription.setUpdatePolicy("on-change");
-    }
-  }
-
   public void visitErrorNode(ErrorNode errorNode) {
     Token token = errorNode.getSymbol();
     int line = token.getLine();
@@ -11258,6 +11296,8 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
 
   // See
   // https://www.cisco.com/c/en/us/td/docs/ios-xml/ios/ipapp_fhrp/configuration/15-mt/fhp-15-mt-book/fhp-hsrp-v2.pdf
-  private static final IntegerSpace HSRP_VERSION_1_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 255));
-  private static final IntegerSpace HSRP_VERSION_2_GROUP_RANGE = IntegerSpace.of(Range.closed(0, 4095));
+  private static final IntegerSpace HSRP_VERSION_1_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 255));
+  private static final IntegerSpace HSRP_VERSION_2_GROUP_RANGE =
+      IntegerSpace.of(Range.closed(0, 4095));
 }
