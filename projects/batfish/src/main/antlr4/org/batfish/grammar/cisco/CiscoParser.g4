@@ -4281,77 +4281,77 @@ ti_subscription
 :
    SUBSCRIPTION id = dec NEWLINE
    (
-      tis_line
+      ti_line
    )*
 ;
 
-tis_line
+ti_line
 :
-   tis_encoding
-   | tis_filter
-   | tis_receiver
-   | tis_source_address
-   | tis_source_vrf
-   | tis_stream
-   | tis_update_policy
-   | tis_null
+   ti_encoding
+   | ti_filter
+   | ti_receiver
+   | ti_source_address
+   | ti_source_vrf
+   | ti_stream
+   | ti_update_policy
+   | ti_null
 ;
 
-tis_encoding
+ti_encoding
 :
    ENCODING (ENCODE_TDL | ENCODE_KVGPB | ENCODE_XML) NEWLINE
 ;
 
-tis_filter
+ti_filter
 :
    FILTER XPATH filter_value = variable_permissive NEWLINE
 ;
 
-tis_receiver
+ti_receiver
 :
    RECEIVER
    (
-      IP ADDRESS ip = IP_ADDRESS receiver_name = tis_receiver_name
-      | NAME receiver_name = tis_receiver_name
+      IP ADDRESS ip = IP_ADDRESS receiver_name = ti_receiver_name
+      | NAME receiver_name = ti_receiver_name
    )
    (
-      tisr_attribute
+      tir_attribute
    )* NEWLINE
 ;
 
-tisr_attribute
+tir_attribute
 :
    PORT port_value = dec
    | PROTOCOL (GRPC_TCP | GRPC_TLS)
    | RECEIVER_TYPE (COLLECTOR | receiver_type_value = variable_permissive)
 ;
 
-tis_source_address
+ti_source_address
 :
    SOURCE_ADDRESS ip = IP_ADDRESS NEWLINE
 ;
 
-tis_source_vrf
+ti_source_vrf
 :
    SOURCE_VRF vrf = variable NEWLINE
 ;
 
-tis_stream
+ti_stream
 :
    STREAM (YANG_PUSH | YANG_NOTIF_NATIVE | NATIVE) NEWLINE
 ;
 
-tis_update_policy
+ti_update_policy
 :
    UPDATE_POLICY (ON_CHANGE | PERIODIC period = dec) NEWLINE
 ;
 
-tis_null
+ti_null
 :
    null_rest_of_line
 ;
 
-tis_receiver_name
+ti_receiver_name
 :
    (
       ~( NEWLINE | PORT | PROTOCOL | RECEIVER_TYPE )

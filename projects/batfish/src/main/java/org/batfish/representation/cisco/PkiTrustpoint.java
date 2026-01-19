@@ -7,13 +7,15 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class PkiTrustpoint implements Serializable {
-
-  private final String _name;
+  private final @Nonnull String _name;
   private String _enrollment;
   private String _revocationCheck;
   private String _subjectAltName;
   private String _usage;
   private String _sourceVrf;
+  private Boolean _autoEnroll;
+  private Integer _autoEnrollRegenerate;
+
   private final List<String> _certificateChain;
 
   public PkiTrustpoint(@Nonnull String name) {
@@ -21,7 +23,7 @@ public class PkiTrustpoint implements Serializable {
     _certificateChain = new ArrayList<>();
   }
 
-  public @Nonnull String getName() {
+  public String getName() {
     return _name;
   }
 
@@ -63,6 +65,22 @@ public class PkiTrustpoint implements Serializable {
 
   public void setSourceVrf(@Nullable String sourceVrf) {
     _sourceVrf = sourceVrf;
+  }
+
+  public @Nullable Boolean getAutoEnroll() {
+    return _autoEnroll;
+  }
+
+  public void setAutoEnroll(@Nullable Boolean autoEnroll) {
+    _autoEnroll = autoEnroll;
+  }
+
+  public @Nullable Integer getAutoEnrollRegenerate() {
+    return _autoEnrollRegenerate;
+  }
+
+  public void setAutoEnrollRegenerate(@Nullable Integer autoEnrollRegenerate) {
+    _autoEnrollRegenerate = autoEnrollRegenerate;
   }
 
   public @Nonnull List<String> getCertificateChain() {

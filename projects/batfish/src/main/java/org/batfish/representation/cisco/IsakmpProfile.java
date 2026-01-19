@@ -18,6 +18,8 @@ public class IsakmpProfile implements Serializable {
 
   private IpWildcard _matchIdentity;
 
+  private @Nullable String _matchVrf;
+
   private final String _name;
 
   private @Nullable String _vrf;
@@ -47,6 +49,14 @@ public class IsakmpProfile implements Serializable {
 
   public String getName() {
     return _name;
+  }
+
+  public @Nullable String getMatchVrf() {
+    return _matchVrf;
+  }
+
+  public void setMatchVrf(@Nullable String matchVrf) {
+    _matchVrf = matchVrf;
   }
 
   public Ip getSelfIdentity() {

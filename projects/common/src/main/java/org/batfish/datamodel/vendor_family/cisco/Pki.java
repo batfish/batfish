@@ -40,6 +40,8 @@ public final class Pki implements Serializable {
     private static final String PROP_SUBJECT_ALT_NAME = "subjectAltName";
     private static final String PROP_USAGE = "usage";
     private static final String PROP_SOURCE_VRF = "sourceVrf";
+    private static final String PROP_AUTO_ENROLL = "autoEnroll";
+    private static final String PROP_AUTO_ENROLL_REGENERATE = "autoEnrollRegenerate";
     private static final String PROP_CERTIFICATE_CHAIN = "certificateChain";
 
     private @Nonnull String _name;
@@ -48,6 +50,8 @@ public final class Pki implements Serializable {
     private @Nullable String _subjectAltName;
     private @Nullable String _usage;
     private @Nullable String _sourceVrf;
+    private @Nullable Boolean _autoEnroll;
+    private @Nullable Integer _autoEnrollRegenerate;
     private @Nonnull List<String> _certificateChain;
 
     public Trustpoint(@Nonnull String name) {
@@ -121,6 +125,26 @@ public final class Pki implements Serializable {
       _sourceVrf = sourceVrf;
     }
 
+    @JsonProperty(PROP_AUTO_ENROLL)
+    public @Nullable Boolean getAutoEnroll() {
+      return _autoEnroll;
+    }
+
+    @JsonProperty(PROP_AUTO_ENROLL)
+    public void setAutoEnroll(@Nullable Boolean autoEnroll) {
+      _autoEnroll = autoEnroll;
+    }
+
+    @JsonProperty(PROP_AUTO_ENROLL_REGENERATE)
+    public @Nullable Integer getAutoEnrollRegenerate() {
+      return _autoEnrollRegenerate;
+    }
+
+    @JsonProperty(PROP_AUTO_ENROLL_REGENERATE)
+    public void setAutoEnrollRegenerate(@Nullable Integer autoEnrollRegenerate) {
+      _autoEnrollRegenerate = autoEnrollRegenerate;
+    }
+
     @JsonProperty(PROP_CERTIFICATE_CHAIN)
     public @Nonnull List<String> getCertificateChain() {
       return _certificateChain;
@@ -146,6 +170,8 @@ public final class Pki implements Serializable {
           && Objects.equals(_subjectAltName, that._subjectAltName)
           && Objects.equals(_usage, that._usage)
           && Objects.equals(_sourceVrf, that._sourceVrf)
+          && Objects.equals(_autoEnroll, that._autoEnroll)
+          && Objects.equals(_autoEnrollRegenerate, that._autoEnrollRegenerate)
           && Objects.equals(_certificateChain, that._certificateChain);
     }
 
@@ -158,6 +184,8 @@ public final class Pki implements Serializable {
           _subjectAltName,
           _usage,
           _sourceVrf,
+          _autoEnroll,
+          _autoEnrollRegenerate,
           _certificateChain);
     }
   }
