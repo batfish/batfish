@@ -496,7 +496,7 @@
     "@@rules_python+//python/uv:uv.bzl%uv": {
       "general": {
         "bzlTransitiveDigest": "zyNsrbgVKwpA0B3zI84imAfuC424VSzYNPgjr/HJy5M=",
-        "usagesDigest": "H8dQoNZcoqP+Mu0tHZTi4KHATzvNkM5ePuEqoQdklIU=",
+        "usagesDigest": "yXvWfXAzpBeW71mWgwU3AqAzXX/dFACnx12eYvBsJ8w=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
         "envVariables": {},
