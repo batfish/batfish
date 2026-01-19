@@ -3458,7 +3458,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
-      return Optional.empty();
     }
     return Optional.of(ip.getIp());
   }
