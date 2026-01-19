@@ -602,7 +602,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return unquote(t.getText());
   }
 
-  /** Return text corresponding to value context with enclosing quotes removed, if applicable */
+  /**
+   * Return text corresponding to value context with enclosing quotes removed, if
+   * applicable
+   */
   private String getText(ValueContext ctx) {
     return unquote(ctx.getText());
   }
@@ -617,7 +620,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     _mainConfiguration.defineStructure(type, name, ctx);
   }
 
-  /** Shallow wrapper to define flattened structures in the correct configuration. */
+  /**
+   * Shallow wrapper to define flattened structures in the correct configuration.
+   */
   private void defineFlattenedStructure(StructureType type, String name, ParserRuleContext ctx) {
     _mainConfiguration.defineFlattenedStructure(type, name, ctx, _parser);
   }
@@ -628,9 +633,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /**
-   * Add interface address reference. Adds a different type of reference based on the format of the
-   * address (e.g. something that looks like an IP address might but does not have to refer to an
-   * object, however something that looks like an object name must refer to an object).
+   * Add interface address reference. Adds a different type of reference based on
+   * the format of the
+   * address (e.g. something that looks like an IP address might but does not have
+   * to refer to an
+   * object, however something that looks like an object name must refer to an
+   * object).
    */
   private void referenceInterfaceAddress(
       Interface_address_or_referenceContext ctx, PaloAltoStructureUsage usage) {
@@ -648,8 +656,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /**
-   * Helper function to add the correct service reference type for a given reference. For references
-   * that may be pointing to built-in services, this is needed to make sure we don't create false
+   * Helper function to add the correct service reference type for a given
+   * reference. For references
+   * that may be pointing to built-in services, this is needed to make sure we
+   * don't create false
    * positive undefined references.
    */
   private void referenceService(Variable_list_itemContext var, PaloAltoStructureUsage usage) {
@@ -799,7 +809,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return text;
   }
 
-  /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
+  /**
+   * Return the rulebase based on the {@link #_currentRuleScope current rulebase
+   * scope}
+   */
   private @Nonnull Rulebase getRulebase() {
     Rulebase rulebase;
     if (_currentRuleScope == RulebaseId.DEFAULT) {
@@ -821,7 +834,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return ctx.variable_list_item();
   }
 
-  /** A helper function to extract all variables from an optional list of prefixes. */
+  /**
+   * A helper function to extract all variables from an optional list of prefixes.
+   */
   private static List<Ip_prefixContext> prefixes(@Nullable Ip_prefix_listContext ctx) {
     if (ctx == null || ctx.ip_prefix() == null) {
       return ImmutableList.of();
@@ -857,10 +872,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterBgp_policy_rule(Bgp_policy_ruleContext ctx) {
-    _currentPolicyRule =
-        _currentPolicyRuleImport
-            ? _currentBgpVr.getOrCreateImportPolicyRule(getText(ctx.name))
-            : _currentBgpVr.getOrCreateExportPolicyRule(getText(ctx.name));
+    _currentPolicyRule = _currentPolicyRuleImport
+        ? _currentBgpVr.getOrCreateImportPolicyRule(getText(ctx.name))
+        : _currentBgpVr.getOrCreateExportPolicyRule(getText(ctx.name));
   }
 
   @Override
@@ -937,10 +951,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterBgppg_definition(Bgppg_definitionContext ctx) {
-    _currentBgpPeerGroup =
-        toString(ctx, ctx.name)
-            .map(_currentBgpVr::getOrCreatePeerGroup)
-            .orElseGet(() -> new BgpPeerGroup("dummy")); // create dummy if the name is invalid.
+    _currentBgpPeerGroup = toString(ctx, ctx.name)
+        .map(_currentBgpVr::getOrCreatePeerGroup)
+        .orElseGet(() -> new BgpPeerGroup("dummy")); // create dummy if the name is invalid.
   }
 
   @Override
@@ -955,10 +968,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterBgppg_peer(Bgppg_peerContext ctx) {
-    _currentBgpPeer =
-        toString(ctx, ctx.name)
-            .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
-            .orElseGet(() -> new BgpPeer("dummy")); // create dummy if the name is invalid.
+    _currentBgpPeer = toString(ctx, ctx.name)
+        .map(_currentBgpPeerGroup::getOrCreatePeerGroup)
+        .orElseGet(() -> new BgpPeer("dummy")); // create dummy if the name is invalid.
   }
 
   @Override
@@ -1132,15 +1144,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterBgprr_prefix(Bgprr_prefixContext ctx) {
-    _currentRedistRule =
-        _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix)));
+    _currentRedistRule = _currentBgpVr.getOrCreateRedistRule(new RedistRuleRefNameOrPrefix(toPrefix(ctx.prefix)));
   }
 
   @Override
   public void enterBgprr_ip_address(Bgprr_ip_addressContext ctx) {
-    _currentRedistRule =
-        _currentBgpVr.getOrCreateRedistRule(
-            new RedistRuleRefNameOrPrefix(toIp(ctx.ip_address()).toPrefix()));
+    _currentRedistRule = _currentBgpVr.getOrCreateRedistRule(
+        new RedistRuleRefNameOrPrefix(toIp(ctx.ip_address()).toPrefix()));
   }
 
   @Override
@@ -1234,8 +1244,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitCp_encryption(Cp_encryptionContext ctx) {
-    List<EncryptionAlgorithm> algos =
-        ctx.algo.stream().map(this::toEncryptionAlgo).collect(Collectors.toList());
+    List<EncryptionAlgorithm> algos = ctx.algo.stream().map(this::toEncryptionAlgo).collect(Collectors.toList());
     _currentCrytoProfile.setEncryptionAlgorithms(algos);
   }
 
@@ -1280,11 +1289,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterOspf_area(Ospf_areaContext ctx) {
-    _currentOspfArea =
-        toIp(ctx, ctx.addr, "OSPF area-id")
-            .map(_currentOspfVr::getOrCreateOspfArea)
-            // dummy area with Ip MAX
-            .orElseGet(() -> new OspfArea(Ip.MAX));
+    _currentOspfArea = toIp(ctx, ctx.addr, "OSPF area-id")
+        .map(_currentOspfVr::getOrCreateOspfArea)
+        // dummy area with Ip MAX
+        .orElseGet(() -> new OspfArea(Ip.MAX));
   }
 
   @Override
@@ -1355,17 +1363,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterOspfat_stub(Ospfat_stubContext ctx) {
-    _currentOspfStubAreaType =
-        Optional.ofNullable(_currentOspfArea.getTypeSettings())
-            .filter(OspfAreaStub.class::isInstance)
-            .map(OspfAreaStub.class::cast)
-            .orElseGet(
-                () -> {
-                  // overwrite if missing or a different area type
-                  OspfAreaStub newStubArea = new OspfAreaStub();
-                  _currentOspfArea.setTypeSettings(newStubArea);
-                  return newStubArea;
-                });
+    _currentOspfStubAreaType = Optional.ofNullable(_currentOspfArea.getTypeSettings())
+        .filter(OspfAreaStub.class::isInstance)
+        .map(OspfAreaStub.class::cast)
+        .orElseGet(
+            () -> {
+              // overwrite if missing or a different area type
+              OspfAreaStub newStubArea = new OspfAreaStub();
+              _currentOspfArea.setTypeSettings(newStubArea);
+              return newStubArea;
+            });
   }
 
   @Override
@@ -1395,17 +1402,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterOspfat_nssa(Ospfat_nssaContext ctx) {
-    _currentOspfNssaAreaType =
-        Optional.ofNullable(_currentOspfArea.getTypeSettings())
-            .filter(OspfAreaNssa.class::isInstance)
-            .map(OspfAreaNssa.class::cast)
-            .orElseGet(
-                () -> {
-                  // overwrite if missing or a different area type
-                  OspfAreaNssa newNssaArea = new OspfAreaNssa();
-                  _currentOspfArea.setTypeSettings(newNssaArea);
-                  return newNssaArea;
-                });
+    _currentOspfNssaAreaType = Optional.ofNullable(_currentOspfArea.getTypeSettings())
+        .filter(OspfAreaNssa.class::isInstance)
+        .map(OspfAreaNssa.class::cast)
+        .orElseGet(
+            () -> {
+              // overwrite if missing or a different area type
+              OspfAreaNssa newNssaArea = new OspfAreaNssa();
+              _currentOspfArea.setTypeSettings(newNssaArea);
+              return newNssaArea;
+            });
   }
 
   @Override
@@ -1461,8 +1467,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void enterPalo_alto_configuration(Palo_alto_configurationContext ctx) {
     _mainConfiguration = new PaloAltoConfiguration();
     _currentConfiguration = _mainConfiguration;
-    _defaultVsys =
-        _mainConfiguration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
+    _defaultVsys = _mainConfiguration.getVirtualSystems().computeIfAbsent(DEFAULT_VSYS_NAME, Vsys::new);
     _currentVsys = _defaultVsys;
     _currentDeviceGroup = null;
   }
@@ -1499,8 +1504,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
               name));
       _currentAddressObject = new AddressObject(name);
     } else {
-      _currentAddressObject =
-          _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
+      _currentAddressObject = _currentVsys.getAddressObjects().computeIfAbsent(name, AddressObject::new);
 
       // Use constructed name so same-named defs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, name);
@@ -1562,8 +1566,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
               name));
       _currentAddressGroup = new AddressGroup(name);
     } else {
-      _currentAddressGroup =
-          _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
+      _currentAddressGroup = _currentVsys.getAddressGroups().computeIfAbsent(name, AddressGroup::new);
 
       // Use constructed name so same-named defs across vsys are unique
       String uniqueName = computeObjectName(_currentVsys, name);
@@ -1579,10 +1582,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterS_application_definition(S_application_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentApplication =
-        _currentVsys
-            .getApplications()
-            .computeIfAbsent(name, n -> Application.builder(name).build());
+    _currentApplication = _currentVsys
+        .getApplications()
+        .computeIfAbsent(name, n -> Application.builder(name).build());
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys, name);
     defineFlattenedStructure(APPLICATION, uniqueName, ctx);
@@ -1596,8 +1598,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSappg_definition(Sappg_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentApplicationGroup =
-        _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
+    _currentApplicationGroup = _currentVsys.getApplicationGroups().computeIfAbsent(name, ApplicationGroup::new);
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys, name);
     defineFlattenedStructure(APPLICATION_GROUP, uniqueName, ctx);
@@ -1938,7 +1939,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         });
   }
 
-  /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
+  /**
+   * Apply the ip-netmask (ip addr or prefix) to the specified
+   * {@link AddressObject}.
+   */
   private void applyIpNetmask(AddressObject addressObject, PaloAltoParser.Ip_netmaskContext ctx) {
     if (ctx.ip_address() != null) {
       addressObject.setIp(toIp(ctx.ip_address()));
@@ -2011,8 +2015,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterVr_definition(Vr_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentVirtualRouter =
-        _currentConfiguration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
+    _currentVirtualRouter = _currentConfiguration.getVirtualRouters().computeIfAbsent(name, VirtualRouter::new);
     defineFlattenedStructure(VIRTUAL_ROUTER, name, ctx);
     referenceStructure(
         VIRTUAL_ROUTER, name, VIRTUAL_ROUTER_SELF_REFERENCE, getLine(ctx.name.getStart()));
@@ -2033,10 +2036,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSni_aggregate_ethernet_definition(Sni_aggregate_ethernet_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentParentInterface =
-        _currentConfiguration
-            .getInterfaces()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.AGGREGATED_ETHERNET));
+    _currentParentInterface = _currentConfiguration
+        .getInterfaces()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.AGGREGATED_ETHERNET));
     _currentInterface = _currentParentInterface;
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2050,10 +2052,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSni_ethernet_definition(Sni_ethernet_definitionContext ctx) {
     String name = getText(ctx.name);
-    _currentParentInterface =
-        _currentConfiguration
-            .getInterfaces()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.PHYSICAL));
+    _currentParentInterface = _currentConfiguration
+        .getInterfaces()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.PHYSICAL));
     _currentInterface = _currentParentInterface;
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2067,10 +2068,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSni_loopback(Sni_loopbackContext ctx) {
     String name = getText(ctx.LOOPBACK());
-    _currentParentInterface =
-        _currentConfiguration
-            .getInterfaces()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
+    _currentParentInterface = _currentConfiguration
+        .getInterfaces()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
     _currentInterface = _currentParentInterface;
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2084,10 +2084,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSni_tunnel(Sni_tunnelContext ctx) {
     String name = getText(ctx.TUNNEL());
-    _currentParentInterface =
-        _currentConfiguration
-            .getInterfaces()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL));
+    _currentParentInterface = _currentConfiguration
+        .getInterfaces()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL));
     _currentInterface = _currentParentInterface;
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2101,10 +2100,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSni_vlan(Sni_vlanContext ctx) {
     String name = getText(ctx.VLAN());
-    _currentParentInterface =
-        _currentConfiguration
-            .getInterfaces()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN));
+    _currentParentInterface = _currentConfiguration
+        .getInterfaces()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN));
     _currentInterface = _currentParentInterface;
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2118,8 +2116,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSnicp_global_protect(Snicp_global_protectContext ctx) {
     String name = getText(ctx.name);
-    _currentCrytoProfile =
-        _currentConfiguration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
+    _currentCrytoProfile = _currentConfiguration.getCryptoProfileOrCreate(name, Type.GLOBAL_PROTECT_APP);
   }
 
   @Override
@@ -2169,10 +2166,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSniel2_unit(Sniel2_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface =
-        _currentParentInterface
-            .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER2));
+    _currentInterface = _currentParentInterface
+        .getUnits()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER2));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2197,10 +2193,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSniel3_unit(Sniel3_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface =
-        _currentParentInterface
-            .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER3));
+    _currentInterface = _currentParentInterface
+        .getUnits()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LAYER3));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2220,10 +2215,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSnil_unit(Snil_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface =
-        _currentParentInterface
-            .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
+    _currentInterface = _currentParentInterface
+        .getUnits()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.LOOPBACK));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2236,10 +2230,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSnit_unit(Snit_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface =
-        _currentParentInterface
-            .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL_UNIT));
+    _currentInterface = _currentParentInterface
+        .getUnits()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.TUNNEL_UNIT));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
   }
@@ -2252,10 +2245,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void enterSniv_unit(Sniv_unitContext ctx) {
     String name = getText(ctx.name);
-    _currentInterface =
-        _currentParentInterface
-            .getUnits()
-            .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
+    _currentInterface = _currentParentInterface
+        .getUnits()
+        .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
     // TODO: convert vlan ID for created vlan units
@@ -2364,10 +2356,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterVr_routing_table(Vr_routing_tableContext ctx) {
-    _currentStaticRoute =
-        _currentVirtualRouter
-            .getStaticRoutes()
-            .computeIfAbsent(getText(ctx.name), StaticRoute::new);
+    _currentStaticRoute = _currentVirtualRouter
+        .getStaticRoutes()
+        .computeIfAbsent(getText(ctx.name), StaticRoute::new);
   }
 
   @Override
@@ -2524,8 +2515,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void enterSrao_definition(Srao_definitionContext ctx) {
     String name = getText(ctx.name);
     Rulebase rulebase = getRulebase();
-    _currentApplicationOverrideRule =
-        rulebase.getApplicationOverrideRules().computeIfAbsent(name, ApplicationOverrideRule::new);
+    _currentApplicationOverrideRule = rulebase.getApplicationOverrideRules().computeIfAbsent(name,
+        ApplicationOverrideRule::new);
 
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys, name);
@@ -2711,8 +2702,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     }
   }
 
-  private static final IntegerSpace HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE =
-      IntegerSpace.of(Range.closed(0, 1));
+  private static final IntegerSpace HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE = IntegerSpace.of(Range.closed(0, 1));
 
   private Optional<Integer> toInteger(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_idContext deviceId) {
@@ -2723,8 +2713,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         "high-availability active-active device-id");
   }
 
-  private static final IntegerSpace ACTIVE_ACTIVE_DEVICE_BINDING_SPACE =
-      IntegerSpace.of(Range.closed(0, 1));
+  private static final IntegerSpace ACTIVE_ACTIVE_DEVICE_BINDING_SPACE = IntegerSpace.of(Range.closed(0, 1));
 
   private Optional<Integer> toInteger(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
@@ -2751,9 +2740,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterSrn_destination_translation(Srn_destination_translationContext ctx) {
-    _currentNatRuleDestinationTranslation =
-        Optional.ofNullable(_currentNatRule.getDestinationTranslation())
-            .orElseGet(DestinationTranslation::new);
+    _currentNatRuleDestinationTranslation = Optional.ofNullable(_currentNatRule.getDestinationTranslation())
+        .orElseGet(DestinationTranslation::new);
   }
 
   @Override
@@ -2810,8 +2798,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       dynamicIpAndPort = new DynamicIpAndPort();
       sourceTranslation.setDynamicIpAndPort(dynamicIpAndPort);
     }
-    for (Translated_address_list_itemContext var :
-        ctx.srnst_translated_address().translated_address_list().translated_address_list_item()) {
+    for (Translated_address_list_itemContext var : ctx.srnst_translated_address().translated_address_list()
+        .translated_address_list_item()) {
       RuleEndpoint translatedAddress = toRuleEndpoint(var);
       dynamicIpAndPort.addTranslatedAddress(translatedAddress);
 
@@ -2913,8 +2901,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void enterSrs_definition(Srs_definitionContext ctx) {
     String name = getText(ctx.name);
     Rulebase rulebase = getRulebase();
-    _currentSecurityRule =
-        rulebase.getSecurityRules().computeIfAbsent(name, n -> new SecurityRule(n, _currentVsys));
+    _currentSecurityRule = rulebase.getSecurityRules().computeIfAbsent(name, n -> new SecurityRule(n, _currentVsys));
 
     // Use constructed name so same-named defs across vsys are unique
     String uniqueName = computeObjectName(_currentVsys, name);
@@ -2972,29 +2959,27 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
-    PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
-            /*
-             * Since the name matches a builtin, we'll add a reference if the user defined
-             * over the builtin, but it's okay if they did not.
-             */
-            ? APPLICATION_GROUP_OR_APPLICATION_OR_NONE
-            /* This is not a pre-defined name, the application must be defined in config. */
-            : APPLICATION_GROUP_OR_APPLICATION;
+    PaloAltoStructureType type = name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
+        /*
+         * Since the name matches a builtin, we'll add a reference if the user defined
+         * over the builtin, but it's okay if they did not.
+         */
+        ? APPLICATION_GROUP_OR_APPLICATION_OR_NONE
+        /* This is not a pre-defined name, the application must be defined in config. */
+        : APPLICATION_GROUP_OR_APPLICATION;
     referenceStructure(type, uniqueName, usage, getLine(var.start));
   }
 
   private void referenceApplicationLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
-    PaloAltoStructureType type =
-        name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
-            /*
-             * Since the name matches a builtin, we'll add a reference if the user defined
-             * over the builtin, but it's okay if they did not.
-             */
-            ? APPLICATION_OR_NONE
-            /* This is not a pre-defined name, the application must be defined in config. */
-            : APPLICATION;
+    PaloAltoStructureType type = name.equals(CATCHALL_APPLICATION_NAME) || isBuiltInApp(name)
+        /*
+         * Since the name matches a builtin, we'll add a reference if the user defined
+         * over the builtin, but it's okay if they did not.
+         */
+        ? APPLICATION_OR_NONE
+        /* This is not a pre-defined name, the application must be defined in config. */
+        : APPLICATION;
     referenceStructure(type, uniqueName, usage, getLine(var.start));
   }
 
@@ -3282,8 +3267,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterSls_server(Sls_serverContext ctx) {
-    _currentSyslogServer =
-        _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
+    _currentSyslogServer = _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
 
   @Override
@@ -3298,8 +3282,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterS_vsys_definition(S_vsys_definitionContext ctx) {
-    _currentVsys =
-        _currentConfiguration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
+    _currentVsys = _currentConfiguration.getVirtualSystems().computeIfAbsent(getText(ctx.name), Vsys::new);
   }
 
   @Override
@@ -3458,7 +3441,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
-      return Optional.empty();
     }
     return Optional.of(ip.getIp());
   }
@@ -3494,13 +3476,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return Integer.parseInt(getText(t));
   }
 
-  private static final IntegerSpace OSPF_AREA_DEFAULT_ROUTE_ADVERTISE_METRIC =
-      IntegerSpace.of(Range.closed(1, 255));
+  private static final IntegerSpace OSPF_AREA_DEFAULT_ROUTE_ADVERTISE_METRIC = IntegerSpace.of(Range.closed(1, 255));
 
   private static final IntegerSpace PORT_NUMBER_SPACE = IntegerSpace.of(Range.closed(0, 65535));
 
-  private static final IntegerSpace PROTOCOL_ADMIN_DISTANCE_SPACE =
-      IntegerSpace.of(Range.closed(10, 240));
+  private static final IntegerSpace PROTOCOL_ADMIN_DISTANCE_SPACE = IntegerSpace.of(Range.closed(10, 240));
 
   private Optional<Integer> toInteger(ParserRuleContext ctx, Ospf_area_metricContext metric) {
     return toIntegerInSpace(
@@ -3525,8 +3505,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 32-bit
-   * decimal integer to an {@link Integer} if it is contained in the provided {@code space}, or else
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a
+   * valid signed 32-bit
+   * decimal integer to an {@link Integer} if it is contained in the provided
+   * {@code space}, or else
    * {@link Optional#empty}.
    */
   private @Nonnull Optional<Integer> toIntegerInSpace(
@@ -3564,8 +3546,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /**
-   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a valid signed 64-bit
-   * decimal integer to a {@link Long} if it is contained in the provided {@code space}, or else
+   * Convert a {@link ParserRuleContext} whose text is guaranteed to represent a
+   * valid signed 64-bit
+   * decimal integer to a {@link Long} if it is contained in the provided
+   * {@code space}, or else
    * {@link Optional#empty}.
    */
   private @Nonnull Optional<Long> toLongInSpace(
@@ -3581,8 +3565,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return Optional.of(num);
   }
 
-  private static final Pattern TEMPLATE_VARIABLE_NAME_PATTERN =
-      Pattern.compile("^\\$[A-Za-z0-9._-]{1,62}$");
+  private static final Pattern TEMPLATE_VARIABLE_NAME_PATTERN = Pattern.compile("^\\$[A-Za-z0-9._-]{1,62}$");
 
   private Optional<String> toString(
       ParserRuleContext messageCtx, PaloAltoParser.Variable_nameContext ctx) {
@@ -3608,22 +3591,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     return Optional.of(text);
   }
 
-  private static final IntegerSpace BGP_PEER_GROUP_NAME_LENGTH_SPACE =
-      IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace BGP_PEER_GROUP_NAME_LENGTH_SPACE = IntegerSpace.of(Range.closed(1, 31));
 
   private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_group_nameContext pg) {
     return toStringWithLengthInSpace(ctx, pg, BGP_PEER_GROUP_NAME_LENGTH_SPACE, "bgp peer-group");
   }
 
-  private static final IntegerSpace BGP_PEER_NAME_LENGTH_SPACE =
-      IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace BGP_PEER_NAME_LENGTH_SPACE = IntegerSpace.of(Range.closed(1, 31));
 
   private @Nonnull Optional<String> toString(ParserRuleContext ctx, Bgp_peer_nameContext peer) {
     return toStringWithLengthInSpace(ctx, peer, BGP_PEER_NAME_LENGTH_SPACE, "bgp peer");
   }
 
-  private static final IntegerSpace CUSTOM_URL_CATEGORY_NAME_LENGTH_SPACE =
-      IntegerSpace.of(Range.closed(1, 31));
+  private static final IntegerSpace CUSTOM_URL_CATEGORY_NAME_LENGTH_SPACE = IntegerSpace.of(Range.closed(1, 31));
 
   private @Nonnull Optional<String> toString(
       ParserRuleContext ctx, PaloAltoParser.Custom_url_category_nameContext name) {
@@ -3632,7 +3612,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   /**
-   * Return the text of the provided {@code ctx} if its length is within the provided {@link
+   * Return the text of the provided {@code ctx} if its length is within the
+   * provided {@link
    * IntegerSpace lengthSpace}, or else {@link Optional#empty}.
    */
   private @Nonnull Optional<String> toStringWithLengthInSpace(
