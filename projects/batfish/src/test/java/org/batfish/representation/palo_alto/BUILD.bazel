@@ -24,5 +24,8 @@ junit_tests(
         "@maven//:com_google_guava_guava",
         "@maven//:junit_junit",
         "@maven//:org_hamcrest_hamcrest",
+        "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto:palo_alto",
+        "//projects/batfish",
+        "@maven//:org_antlr_antlr4_runtime",
     ],
 )
