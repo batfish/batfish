@@ -1,0 +1,6 @@
+set network virtual-wire vw1 interface1 ethernet1/1
+set network virtual-wire vw1 interface2 ethernet1/2
+set network virtual-wire vw1 link-state-pass-through enable
+set network virtual-wire vw1 multicast-firewalling yes
+set network virtual-wire vw1 tag [ tag1 tag2 ]
+

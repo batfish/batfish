@@ -109,6 +109,7 @@ statement_config_devices
     | s_address_group
     | s_application
     | s_application_group
+    | s_dynamic_user_group
     | s_deviceconfig
     | s_network
     | s_null

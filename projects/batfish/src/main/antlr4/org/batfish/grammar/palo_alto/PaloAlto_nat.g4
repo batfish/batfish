@@ -46,7 +46,7 @@ srn_uuid
     | FROM
     | SOURCE
     | DESTINATION
-    | 'service'
+    | SERVICE
     | DISABLED
     | NEWLINE
  )
@@ -108,7 +108,7 @@ srn_source
 
 srn_service
 :
-    'service' service = variable
+    SERVICE service = variable
 ;
 
 srn_disabled

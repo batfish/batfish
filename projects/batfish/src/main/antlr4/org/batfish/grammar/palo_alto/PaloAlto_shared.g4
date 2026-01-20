@@ -28,6 +28,7 @@ ss_common
     | s_application
     | s_application_filter
     | s_application_group
+    | s_dynamic_user_group
     | s_external_list
     | s_log_settings
     | s_profiles
@@ -44,6 +45,11 @@ ss_common
 s_local_user_database
 :
     LOCAL_USER_DATABASE variable
+;
+
+s_dynamic_user_group
+:
+    DYNAMIC_USER_GROUP name=variable null_rest_of_line
 ;
 
 s_external_list

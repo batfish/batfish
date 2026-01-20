@@ -132,6 +132,12 @@ ALLOWAS_IN: 'allowas-in';
 
 AND_ALSO_TO: 'and-also-to';
 
+ALTERNATE_USER_NAME_1: 'alternate-user-name-1';
+
+ALTERNATE_USER_NAME_2: 'alternate-user-name-2';
+
+ALTERNATE_USER_NAME_3: 'alternate-user-name-3';
+
 ALWAYS_COMPARE_MED: 'always-compare-med';
 
 ANY: 'any';
@@ -292,6 +298,8 @@ DNS: 'dns';
 
 DNS_SETTING: 'dns-setting';
 
+DYNAMIC_USER_GROUP: 'dynamic-user-group';
+
 DYNAMIC_IP: 'dynamic-ip';
 
 DYNAMIC_IP_AND_PORT: 'dynamic-ip-and-port';
@@ -312,6 +320,8 @@ EMAIL_SCHEDULER: 'email-scheduler';
 
 ENABLE_MP_BGP: 'enable-mp-bgp';
 
+ENABLE_PACKET_BUFFER_PROTECTION: 'enable-packet-buffer-protection';
+
 ECMP: 'ecmp';
 
 EGP: 'egp';
@@ -319,6 +329,8 @@ EGP: 'egp';
 ENABLE: 'enable';
 
 ENABLE_SENDER_SIDE_LOOP_DETECTION: 'enable-sender-side-loop-detection';
+
+ENABLE_USER_IDENTIFICATION: 'enable-user-identification';
 
 ENABLED: 'enabled';
 
@@ -337,6 +349,8 @@ ENC_ALGO_AES_CHACHA20_POLY1305: 'enc-algo-aes-chacha20-poly1305';
 ESP: 'esp';
 
 EVASIVE: 'evasive';
+
+EXCLUDE_LIST: 'exclude-list';
 
 EXCEPTION_LIST: 'exception-list';
 
@@ -406,7 +420,19 @@ GROUP19: 'group19';
 
 GROUP20: 'group20';
 
+GROUP_EMAIL: 'group-email';
+
 GROUP_ID: 'group-id';
+
+GROUP_INCLUDE_LIST: 'group-include-list';
+
+GROUP_MAPPING: 'group-mapping';
+
+GROUP_MEMBER: 'group-member';
+
+GROUP_NAME: 'group-name';
+
+GROUP_OBJECT: 'group-object';
 
 GTP: 'gtp';
 
@@ -458,6 +484,8 @@ IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
 IMPORT: 'import';
 
 IMPORT_NEXTHOP: 'import-nexthop';
+
+INCLUDE_LIST: 'include-list';
 
 INCOMING_BGP_CONNECTION: 'incoming-bgp-connection';
 
@@ -511,6 +539,8 @@ LINK_DUPLEX: 'link-duplex';
 LINK_SPEED: 'link-speed';
 
 LINK_STATE: 'link-state';
+
+LINK_STATE_PASS_THROUGH: 'link-state-pass-through';
 
 LINK_TYPE: 'link-type';
 
@@ -569,6 +599,8 @@ MINUTES: 'minutes';
 MODE: 'mode';
 
 MEMBERS: 'members';
+
+MULTICAST_FIREWALLING: 'multicast-firewalling';
 
 METRIC: 'metric';
 
@@ -866,6 +898,12 @@ TCP
     'tcp'
 ;
 
+TCP_HALF_CLOSED_TIMEOUT: 'tcp-half-closed-timeout';
+
+TCP_TIMEOUT: 'tcp-timeout';
+
+TCP_TIME_WAIT_TIMEOUT: 'tcp-time-wait-timeout';
+
 TECHNOLOGY: 'technology';
 
 TEMPLATE: 'template';
@@ -907,6 +945,8 @@ UDP
     'udp'
 ;
 
+UDP_TIMEOUT: 'udp-timeout';
+
 UNSPECIFIED: 'unspecified';
 
 UNICAST: 'unicast';
@@ -941,9 +981,17 @@ USED_BY_MALWARE: 'used-by-malware';
 
 USERID: 'userid';
 
+USER_ACL: 'user-acl';
+
 USER_ID_COLLECTOR: 'user-id-collector';
 
+USER_EMAIL: 'user-email';
+
 USER_ID_AGENT: 'user-id-agent';
+
+USER_NAME: 'user-name';
+
+USER_OBJECT: 'user-object';
 
 USERNAME: 'username';
 
@@ -976,7 +1024,7 @@ UUID: [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-
 // Ignored config blocks
 REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
 
-SERVER_PROFILE: 'server-profile' -> pushMode(M_IgnoredConfigBlock);
+SERVER_PROFILE: 'server-profile';
 
 // Complex tokens
 
@@ -1018,6 +1066,11 @@ IP_ADDRESS
     F_IpAddress
 ;
 
+IP_ADDRESS_V6
+:
+    F_Ipv6Address
+;
+
 IP_PREFIX
 :
     F_IpPrefix
@@ -1026,6 +1079,7 @@ IP_PREFIX
 IP_RANGE
 :
     F_IpAddress '-' F_IpAddress
+    | F_Ipv6Address '-' F_Ipv6Address
 ;
 
 // Handle developer and RANCID-header-style line comments
@@ -1126,17 +1180,161 @@ F_IpPrefixLength
 ;
 
 fragment
-F_Ipv6Address
+F_HexDigit
 :
-    F_Ipv6Hex (':' (F_Ipv6Hex | ':'))+
-    | '::' F_Ipv6Hex? (':' F_Ipv6Hex)*
+  [0-9a-f]
 ;
 
 fragment
-F_Ipv6Hex
+F_HexWord
 :
-    [0-9a-f]+
+  F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit?
 ;
+
+fragment
+F_HexWord2
+:
+  F_HexWord ':' F_HexWord
+;
+
+fragment
+F_HexWord3
+:
+  F_HexWord2 ':' F_HexWord
+;
+
+fragment
+F_HexWord4
+:
+  F_HexWord3 ':' F_HexWord
+;
+
+fragment
+F_HexWord5
+:
+  F_HexWord4 ':' F_HexWord
+;
+
+fragment
+F_HexWord6
+:
+  F_HexWord5 ':' F_HexWord
+;
+
+fragment
+F_HexWord7
+:
+  F_HexWord6 ':' F_HexWord
+;
+
+fragment
+F_HexWord8
+:
+  F_HexWord6 ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal2
+:
+  F_HexWord2
+  | F_IpAddress
+;
+
+fragment
+F_HexWordFinal3
+:
+  F_HexWord ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal4
+:
+  F_HexWord ':' F_HexWordFinal3
+;
+
+fragment
+F_HexWordFinal5
+:
+  F_HexWord ':' F_HexWordFinal4
+;
+
+fragment
+F_HexWordFinal6
+:
+  F_HexWord ':' F_HexWordFinal5
+;
+
+fragment
+F_HexWordFinal7
+:
+  F_HexWord ':' F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE1
+:
+  F_HexWord?
+;
+
+fragment
+F_HexWordLE2
+:
+  F_HexWordLE1
+  | F_HexWordFinal2
+;
+
+fragment
+F_HexWordLE3
+:
+  F_HexWordLE2
+  | F_HexWordFinal3
+;
+
+fragment
+F_HexWordLE4
+:
+  F_HexWordLE3
+  | F_HexWordFinal4
+;
+
+fragment
+F_HexWordLE5
+:
+  F_HexWordLE4
+  | F_HexWordFinal5
+;
+
+fragment
+F_HexWordLE6
+:
+  F_HexWordLE5
+  | F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE7
+:
+  F_HexWordLE6
+  | F_HexWordFinal7
+;
+
+fragment
+F_Ipv6Address
+:
+  (
+    '::' F_HexWordLE7
+    | F_HexWord '::' F_HexWordLE6
+    | F_HexWord2 '::' F_HexWordLE5
+    | F_HexWord3 '::' F_HexWordLE4
+    | F_HexWord4 '::' F_HexWordLE3
+    | F_HexWord5 '::' F_HexWordLE2
+    | F_HexWord6 '::' F_HexWordLE1
+    | F_HexWord7 '::'
+    | F_HexWord8
+  )
+  ( '%' [0-9a-z]+ )?
+;
+
 fragment
 F_Ipv6PrefixLength
 :
