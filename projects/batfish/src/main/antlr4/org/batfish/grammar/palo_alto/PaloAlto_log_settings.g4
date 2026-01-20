@@ -74,7 +74,8 @@ sls_server
 :
     SERVER name = variable
     (
-        slss_and_also_to
+        slss_address
+        | slss_and_also_to
         | slss_community
         | slss_facility
         | slss_format
@@ -87,6 +88,13 @@ sls_server
         | slss_transport
         | slss_version
     )
+;
+
+
+
+slss_address
+:
+    ADDRESS address = variable
 ;
 
 slss_and_also_to

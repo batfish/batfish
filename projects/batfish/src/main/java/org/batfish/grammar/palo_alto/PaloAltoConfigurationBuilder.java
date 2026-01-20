@@ -105,6 +105,7 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
@@ -420,6 +421,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.HighAvailability;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
+import org.batfish.representation.palo_alto.Ip6Prefix;
 import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -1439,6 +1441,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspf_enable(Ospf_enableContext ctx) {
+    if (_currentOspfVr == null) {
+      return;
+    }
     _currentOspfVr.setEnable(toBoolean(ctx.yn));
   }
 
@@ -1660,7 +1665,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    String rangeStr = ctx.ip_range().getText();
+    if (rangeStr.contains(":")) {
+      String[] ips = rangeStr.split("-");
+      Ip6 lowIp = Ip6.parse(stripZoneIndex(ips[0]));
+      Ip6 highIp = Ip6.parse(stripZoneIndex(ips[1]));
+      if (lowIp.compareTo(highIp) >= 0) {
+        warn(ctx, "Invalid IPv6 address range");
+      } else {
+        _currentAddressObject.setIpRange6(Range.closed(lowIp, highIp));
+      }
+    } else {
+      toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    }
   }
 
   @Override
@@ -1734,6 +1751,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterS_external_list(S_external_listContext ctx) {
+    if (ctx.name == null) {
+      return;
+    }
     _currentExternalListName = getFullText(ctx.name);
   }
 
@@ -1941,11 +1961,30 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
   private void applyIpNetmask(AddressObject addressObject, PaloAltoParser.Ip_netmaskContext ctx) {
     if (ctx.ip_address() != null) {
-      addressObject.setIp(toIp(ctx.ip_address()));
+      String ipStr = ctx.ip_address().getText();
+      if (ipStr.contains(":")) {
+        // Strip zone index if present
+        int percentIdx = ipStr.indexOf('%');
+        String baseIp = percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
+        addressObject.setIp(Ip6.parse(baseIp));
+      } else {
+        addressObject.setIp(Ip.parse(ipStr));
+      }
       return;
     }
     assert ctx.ip_prefix() != null;
-    addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    String prefixStr = ctx.ip_prefix().getText();
+    if (prefixStr.contains(":")) {
+      // IPv6 Prefix. Splitting on / to handle base IP possibly having a zone index
+      String[] parts = prefixStr.split("/", 2);
+      String baseIp = parts[0];
+      int percentIdx = baseIp.indexOf('%');
+      String strippedBaseIp = percentIdx != -1 ? baseIp.substring(0, percentIdx) : baseIp;
+      String strippedPrefixStr = strippedBaseIp + (parts.length > 1 ? "/" + parts[1] : "");
+      addressObject.setPrefix(Ip6Prefix.parse(strippedPrefixStr));
+    } else {
+      addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    }
   }
 
   @Override
@@ -3282,6 +3321,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterSls_server(Sls_serverContext ctx) {
+    if (_currentSyslogServerGroupName == null) {
+      return;
+    }
     _currentSyslogServer =
         _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
@@ -3293,6 +3335,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSlss_server(Slss_serverContext ctx) {
+    if (_currentSyslogServer == null) {
+      return;
+    }
     _currentSyslogServer.setAddress(getText(ctx.address));
   }
 
@@ -3460,6 +3505,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
     }
     return Optional.of(ip.getIp());
+  }
+
+  private static @Nonnull String stripZoneIndex(String ipStr) {
+    int percentIdx = ipStr.indexOf('%');
+    return percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
   }
 
   private @Nonnull Optional<Range<Ip>> toIpRange(Ip_rangeContext ctx) {

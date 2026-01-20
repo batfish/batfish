@@ -1,0 +1,5 @@
+set vsys vsys1 redistribution-agent Agent-01 host-port host 192.0.2.5
+set vsys vsys1 redistribution-agent Agent-01 host-port port 5007
+set vsys vsys1 redistribution-agent Agent-01 ip-user-mappings yes
+set vsys vsys1 server-profile radius Radius-01 server primary ip-address 192.0.2.1
+set vsys vsys1 server-profile tacplus Tacacs-01 server primary address 192.0.2.2

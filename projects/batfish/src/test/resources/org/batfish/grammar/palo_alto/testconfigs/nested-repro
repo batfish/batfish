@@ -1,0 +1,14 @@
+config {
+  mgt-config {
+    users {
+      admin {
+        phash dummy_phash;
+        permissions {
+          role-based {
+            superuser yes;
+          }
+        }
+      }
+    }
+  }
+}

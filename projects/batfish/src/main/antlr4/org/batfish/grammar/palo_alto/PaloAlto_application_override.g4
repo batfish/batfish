@@ -13,12 +13,9 @@ sr_application_override
 
 sr_ao_rules
 :
-    RULES srao_definition?
+    RULES srao_definition+
 ;
-
-srao_definition
-:
-    name = variable
+srao_definition : name = variable srao_uuid?
     (
         srao_application
         | srao_description
@@ -32,8 +29,8 @@ srao_definition
         | srao_source
         | srao_tag
         | srao_to
-    )?
-;
+    )?;
+
 
 srao_application
 :
@@ -94,3 +91,20 @@ srao_to
 :
     TO variable_list
 ;
+
+srao_uuid : UUID
+ | ~(
+    APPLICATION
+    | DESCRIPTION
+    | DISABLED
+    | NEGATE_DESTINATION
+    | NEGATE_SOURCE
+    | PORT
+    | PROTOCOL
+    | DESTINATION
+    | FROM
+    | SOURCE
+    | TAG
+    | TO
+    | NEWLINE
+ );
