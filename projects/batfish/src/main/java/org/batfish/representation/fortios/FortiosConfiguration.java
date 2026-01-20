@@ -63,6 +63,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _routeMaps = new HashMap<>();
     _services = new HashMap<>();
     _serviceGroups = new HashMap<>();
+    _ippools = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _zones = new HashMap<>();
   }
@@ -96,6 +97,10 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Addrgrp> getAddrgrps() {
     return _addrgrps;
+  }
+
+  public @Nonnull Map<String, Ippool> getIppools() {
+    return _ippools;
   }
 
   public @Nullable BgpProcess getBgpProcess() {
@@ -174,6 +179,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
+  private final @Nonnull Map<String, Ippool> _ippools;
 
   private @Nullable BgpProcess _bgpProcess;
 

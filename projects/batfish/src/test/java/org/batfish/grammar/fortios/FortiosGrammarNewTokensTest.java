@@ -3,6 +3,9 @@ package org.batfish.grammar.fortios;
 import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.main.BatfishTestUtils.configureBatfishTestSettings;
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.notNullValue;
 
 import org.antlr.v4.runtime.ParserRuleContext;
@@ -10,18 +13,24 @@ import org.batfish.common.BatfishException;
 import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
+import org.batfish.datamodel.Ip;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.representation.fortios.FortiosConfiguration;
+import org.batfish.representation.fortios.Ippool;
+import org.batfish.representation.fortios.Policy;
 import org.junit.Test;
 
 public class FortiosGrammarNewTokensTest {
+  private static final String IPPOOL1 = "ippool1";
+
   private FortiosConfiguration parseConfig(String src) {
     Settings settings = new Settings();
     configureBatfishTestSettings(settings);
     FortiosCombinedParser parser = new FortiosCombinedParser(src, settings);
+    Warnings warnings = new Warnings();
     FortiosControlPlaneExtractor extractor =
-        new FortiosControlPlaneExtractor(src, parser, new Warnings(), new SilentSyntaxCollection());
+        new FortiosControlPlaneExtractor(src, parser, warnings, new SilentSyntaxCollection());
     ParserRuleContext tree =
         Batfish.parse(parser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
     if (!parser.getErrors().isEmpty()) {
@@ -157,6 +166,83 @@ public class FortiosGrammarNewTokensTest {
         end
         """;
     assertThat(parseConfig(config), notNullValue());
+  }
+
+  @Test
+  public void testIppool() {
+    String config =
+        """
+        config firewall ippool
+            edit "ippool1"
+                set type overload
+                set startip 1.1.1.1
+                set endip 1.1.1.10
+                set comments "test pool"
+                set associated-interface "port1"
+            next
+        end
+        """;
+    FortiosConfiguration c = parseConfig(config);
+    assertThat(c.getIppools(), hasKey(IPPOOL1));
+    Ippool pool = c.getIppools().get(IPPOOL1);
+    assertThat(pool.getType(), equalTo(Ippool.Type.OVERLOAD));
+    assertThat(pool.getStartip(), equalTo(Ip.parse("1.1.1.1")));
+    assertThat(pool.getEndip(), equalTo(Ip.parse("1.1.1.10")));
+    assertThat(pool.getComments(), equalTo("test pool"));
+    assertThat(pool.getAssociatedInterface(), equalTo("port1"));
+  }
+
+  @Test
+  public void testPolicyNatIppool() {
+    String config =
+        """
+        config system interface
+            edit "port1"
+                set type physical
+            next
+            edit "port2"
+                set type physical
+            next
+        end
+        config firewall address
+            edit "all"
+                set type ipmask
+                set subnet 0.0.0.0 0.0.0.0
+            next
+        end
+        config firewall service custom
+            edit "ALL"
+                set protocol TCP/UDP/SCTP
+                set tcp-portrange 1-65535
+                set udp-portrange 1-65535
+                set sctp-portrange 1-65535
+            next
+        end
+        config firewall ippool
+            edit "ippool1"
+                set startip 1.1.1.1
+                set endip 1.1.1.1
+            next
+        end
+        config firewall policy
+            edit 1
+                set srcintf "port1"
+                set dstintf "port2"
+                set srcaddr "all"
+                set dstaddr "all"
+                set service "ALL"
+                set nat enable
+                set ippool enable
+                set poolname "ippool1"
+            next
+        end
+        """;
+    FortiosConfiguration c = parseConfig(config);
+    assertThat(c.getPolicies(), hasKey("1"));
+    Policy p = c.getPolicies().get("1");
+    assertThat(p.getNat(), equalTo(true));
+    assertThat(p.getIppool(), equalTo(true));
+    assertThat(p.getPoolnames(), contains(IPPOOL1));
   }
 
   @Test

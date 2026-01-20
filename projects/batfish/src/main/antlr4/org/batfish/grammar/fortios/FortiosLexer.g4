@@ -231,6 +231,7 @@ EMAIL_SERVER: 'email-server' {
 ENABLE: 'enable';
 END: 'end';
 END_IP: 'end-ip';
+ENDIP: 'endip';
 EXACT_MATCH: 'exact-match';
 EXCLUDE: 'exclude';
 EXCLUDE_MEMBER: 'exclude-member' -> pushMode(M_Str);
@@ -253,6 +254,7 @@ FILE_FILTER: 'file-filter' {
 };
 FILE_FILTER_PROFILE: 'file-filter-profile' -> pushMode(M_Str);
 FIREWALL: 'firewall';
+FIXED_PORT_RANGE: 'fixed-port-range';
 FOLDER: 'folder';
 FORTIGUARD: 'fortiguard' {
   // ignore config system fortiguard
@@ -350,13 +352,7 @@ IPAM: 'ipam' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
-IPPOOL: 'ippool' {
-  // ignore config firewall ippool
-  if (lastTokenType() == FIREWALL && secondToLastTokenType() == CONFIG) {
-    setType(IGNORED_CONFIG_BLOCK);
-    pushMode(M_IgnoredConfigBlock);
-  }
-};
+IPPOOL: 'ippool';
 IPSEC: 'ipsec';
 ISIS: 'isis' {
   if (lastTokenType() == ROUTER && secondToLastTokenType() == CONFIG) {
@@ -428,6 +424,8 @@ NETFLOW: 'netflow' {
   }
 };
 NEXT: 'next';
+ONE_TO_ONE: 'one-to-one';
+OVERLOAD: 'overload';
 NP_QUEUES: 'np-queues' {
   // ignore config np-queues
   if (lastTokenType() == CONFIG) {
@@ -501,6 +499,7 @@ PHYSICAL_SWITCH: 'physical-switch' {
 };
 POLICY: 'policy';
 POOLNAME: 'poolname' -> pushMode(M_Str);
+PORT_BLOCK_ALLOCATION: 'port-block-allocation';
 PREFIX: 'prefix';
 PRE_LOGIN_BANNER: 'pre-login-banner' -> pushMode(M_Str);
 PROTOCOL: 'protocol';
@@ -681,6 +680,7 @@ SSO_ADMIN: 'sso-admin' {
   }
 };
 START_IP: 'start-ip';
+STARTIP: 'startip';
 STATIC: 'static';
 STATUS: 'status';
 STORAGE: 'storage' {
