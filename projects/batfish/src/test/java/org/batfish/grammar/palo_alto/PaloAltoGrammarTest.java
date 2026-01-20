@@ -195,6 +195,7 @@ import org.batfish.datamodel.Interface.Dependency;
 import org.batfish.datamodel.Interface.DependencyType;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpRange;
@@ -4904,5 +4905,87 @@ public final class PaloAltoGrammarTest {
   @Test
   public void testUserExample2() {
     parsePaloAltoConfig("user-example-2");
+  }
+
+  @Test
+  public void testNestedConfigRepro() {
+    PaloAltoConfiguration c = parseNestedConfig("nested-repro");
+    assertThat(c, notNullValue());
+  }
+
+  @Test
+  public void testNestedGhIssues() {
+    PaloAltoConfiguration c = parseNestedConfig("nested-gh-issues");
+    assertThat(c, notNullValue());
+  }
+
+  @Test
+  public void testVirtualWire() {
+    parsePaloAltoConfig("virtual-wire");
+  }
+
+  @Test
+  public void testGroupMapping() {
+    parsePaloAltoConfig("group-mapping");
+  }
+
+  @Test
+  public void testDynamicUserGroup() {
+    parsePaloAltoConfig("dynamic-user-group");
+  }
+
+  @Test
+  public void testHaMonitoring() {
+    parsePaloAltoConfig("ha-monitoring");
+  }
+
+  @Test
+  public void testSecurityRuleUuid() {
+    parsePaloAltoConfig("security-rule-uuid");
+  }
+
+  @Test
+  public void testDataTypesComprehensive() {
+    parsePaloAltoConfig("data-types-comprehensive");
+  }
+
+  @Test
+  public void testNestedSourceUser() {
+    parseNestedConfig("nested-source-user");
+  }
+
+  @Test
+  public void testNestedRedistributionAgentServerProfile() {
+    parseNestedConfig("nested-redistribution-agent-server-profile");
+  }
+
+  @Test
+  public void testFlatRedistributionAgentServerProfile() {
+    parsePaloAltoConfig("flat-redistribution-agent-server-profile");
+  }
+
+  @Test
+  public void testIpv6() {
+    parsePaloAltoConfig("ipv6-test");
+  }
+
+  @Test
+  public void testIpv6Range() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("testIpv6Range");
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // Standard IPv6 range
+    AddressObject r1 = addressObjects.get("r1");
+    assertThat(r1, not(nullValue()));
+    assertThat(
+        r1.getIpRange6(),
+        equalTo(Range.closed(Ip6.parse("2001:db8::1"), Ip6.parse("2001:db8::10"))));
+
+    // IPv6 range with zone index
+    AddressObject r2 = addressObjects.get("r2");
+    assertThat(r2, not(nullValue()));
+    assertThat(
+        r2.getIpRange6(), equalTo(Range.closed(Ip6.parse("fe80::1"), Ip6.parse("fe80::ff"))));
   }
 }

@@ -1,0 +1,31 @@
+set deviceconfig system hostname data-types-test
+# Test UUIDs in security rules  
+set vsys vsys1 rulebase security rules "uuid-rule-1" 12345678-1234-5678-1234-567812345678 action allow
+set vsys vsys1 rulebase security rules "uuid-rule-2" abcdef01-2345-6789-abcd-ef0123456789 action deny
+# Test IP addresses (IPv4)
+set address ipv4-host ip-netmask 192.0.2.100/32
+set address ipv4-network ip-netmask 192.0.2.0/24
+set address ipv4-range ip-range 192.0.2.10-192.0.2.20
+# Test FQDNs
+set address fqdn-web fqdn www.example.com
+set address fqdn-api fqdn api.service.example.net
+set address fqdn-wildcard fqdn *.example.org
+set address fqdn-subdomain fqdn sub.domain.example.co.uk
+# Test URL filtering profiles  
+set profiles url-filtering example-profile action block
+set profiles url-filtering strict-profile alert [ malware phishing ]
+# Test Email addresses in group mapping
+set vsys vsys1 group-mapping email-test user-email admin@example.com
+set vsys vsys1 group-mapping email-test group-email security-team@example.org
+set vsys vsys1 group-mapping email-test user-email support+tag@subdomain.example.net
+# Test LDAP DNs with various complexity
+set vsys vsys1 group-mapping ldap-simple group-object "cn=admins,dc=example,dc=com"
+set vsys vsys1 group-mapping ldap-complex group-object "cn=administrators,ou=groups,dc=corp,dc=example,dc=com"
+set vsys vsys1 group-mapping ldap-user user-object "cn=john doe,ou=users,dc=corp,dc=example,dc=com"
+set vsys vsys1 group-mapping ldap-nested group-object "cn=security team,ou=it,ou=departments,dc=example,dc=org"
+# Test combinations in security rules
+set vsys vsys1 rulebase security rules "combined-test" fedcba98-7654-3210-fedc-ba9876543210 source [ 10.1.1.0/24 192.0.2.50 ]
+set vsys vsys1 rulebase security rules "combined-test" fedcba98-7654-3210-fedc-ba9876543210 destination [ FQDN-api.example.com FQDN-service.example.net ]
+set vsys vsys1 rulebase security rules "combined-test" fedcba98-7654-3210-fedc-ba9876543210 application [ web-browsing ssl ]
+set vsys vsys1 rulebase security rules "combined-test" fedcba98-7654-3210-fedc-ba9876543210 action allow
+set vsys vsys1 rulebase security rules "combined-test" fedcba98-7654-3210-fedc-ba9876543210 description "Test rule with UUID and mixed data types"

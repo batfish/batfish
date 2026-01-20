@@ -21,6 +21,7 @@ sp
     | sp_hip_profiles
     | sp_sctp
     | sp_spyware
+    | sp_url_filtering
     | sp_virus
     | sp_vulnerability
     | sp_wildfire_analysis
@@ -73,6 +74,8 @@ sp_virus: VIRUS null_rest_of_line;
 sp_vulnerability: VULNERABILITY null_rest_of_line;
 
 sp_wildfire_analysis: WILDFIRE_ANALYSIS null_rest_of_line;
+
+sp_url_filtering: URL_FILTERING null_rest_of_line;
 
 sp_custom_url_category: CUSTOM_URL_CATEGORY custom_url_category_name spc_definition;
 

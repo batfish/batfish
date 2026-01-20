@@ -1,0 +1,41 @@
+shared {
+  log-settings {
+    email email-profile {
+      server smtp-server {
+        address 1.2.3.4;
+      }
+    }
+  }
+  external-list;
+}
+network {
+  virtual-router vr1 {
+    protocol {
+      ospf {
+        enable yes;
+      }
+    }
+  }
+}
+vsys {
+  vsys1 {
+    rulebase {
+      security {
+        rules {
+          "multiline-test" a1b2c3d4-e5f6-7890-abcd-ef1234567890 {
+            from Internal;
+            to External;
+            source any;
+            destination any;
+            application any;
+            service any;
+            action allow;
+            description "First line of description
+Second line with more details
+Third line for completeness";
+          }
+        }
+      }
+    }
+  }
+}

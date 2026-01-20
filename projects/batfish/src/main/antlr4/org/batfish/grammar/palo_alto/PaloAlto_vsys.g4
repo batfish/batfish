@@ -1,6 +1,6 @@
 parser grammar PaloAlto_vsys;
 
-import PaloAlto_address, PaloAlto_common, PaloAlto_rulebase, PaloAlto_shared, PaloAlto_zone;
+import PaloAlto_address, PaloAlto_common, PaloAlto_group_mapping, PaloAlto_rulebase, PaloAlto_shared, PaloAlto_zone;
 
 options {
     tokenVocab = PaloAltoLexer;
@@ -31,6 +31,7 @@ s_vsys_definition
         | sv_setting
         | sv_threats
         | sv_user_id_agent
+        | svg_group_mapping
     )?
 ;
 
