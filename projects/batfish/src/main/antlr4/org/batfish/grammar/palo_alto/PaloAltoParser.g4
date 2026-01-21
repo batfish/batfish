@@ -80,6 +80,8 @@ s_null
         LOG_COLLECTOR
         | LOG_COLLECTOR_GROUP
         | MGT_CONFIG
+        | SCHEDULE
+        | USER_ID_COLLECTOR
     )
     null_rest_of_line
 ;
@@ -165,7 +167,7 @@ set_line
 
 set_line_template
 :
-    TEMPLATE name = variable statement_template
+    TEMPLATE name = variable statement_template?
 ;
 
 set_line_template_stack
@@ -175,7 +177,7 @@ set_line_template_stack
 
 set_line_device_group
 :
-    DEVICE_GROUP name = variable statement_device_group
+    DEVICE_GROUP name = variable statement_device_group?
 ;
 
 set_line_readonly
@@ -226,7 +228,13 @@ set_line_tail
     | set_line_response
     | set_line_template
     | set_line_template_stack
+    | s_import
     | s_policy
+;
+
+s_import
+:
+    IMPORT NETWORK INTERFACE variable_list
 ;
 
 s_policy

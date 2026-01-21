@@ -163,6 +163,11 @@ variable
     ~NEWLINE
 ;
 
+dotted_variable
+:
+    variable (DOT variable)*
+;
+
 vlan_tag
 :
 // 1-4094
