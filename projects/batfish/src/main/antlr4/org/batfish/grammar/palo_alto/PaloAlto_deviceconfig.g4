@@ -23,7 +23,7 @@ s_deviceconfig
     DEVICECONFIG
     (
         sd_high_availability
-        | sd_null
+        | sd_setting
         | sd_system
     )
 ;
@@ -83,9 +83,62 @@ sdhagm_active_active
 
 sdhagmaa_device_id: DEVICE_ID id = active_active_device_id;
 
-sd_null
+sd_setting
 :
     SETTING
+    (
+        sds_config
+        | sds_management
+        | sds_auto_mac_detect
+        | sd_setting_null
+    )
+;
+
+sds_config
+:
+    CONFIG REMATCH yes_or_no
+;
+
+sds_management
+:
+    MANAGEMENT
+    (
+        sds_management_hostname_type
+        | sds_management_disable_predefined_reports
+        | sds_management_null
+    )
+;
+
+sds_management_hostname_type
+:
+    HOSTNAME_TYPE_IN_SYSLOG variable
+;
+
+sds_management_disable_predefined_reports
+:
+    DISABLE_PREDEFINED_REPORTS
+    (
+        OPEN_BRACKET
+        (
+            variable
+        )*
+        CLOSE_BRACKET
+        | variable
+    )
+;
+
+sds_management_null
+:
+    null_rest_of_line
+;
+
+sds_auto_mac_detect
+:
+    AUTO_MAC_DETECT yes_or_no
+;
+
+sd_setting_null
+:
     null_rest_of_line
 ;
 
@@ -103,6 +156,11 @@ sd_system
         | sds_ntp_servers
         | sds_permitted_ip
         | sds_route
+        | sds_service
+        | sds_timezone
+        | sds_type
+        | sds_update_schedule
+        | sds_update_server
         | sds_null
     )
 ;
@@ -167,16 +225,36 @@ sdsn_authentication_type
     )
 ;
 
+sds_service
+:
+    SERVICE ( DISABLE_TELNET | DISABLE_HTTP ) yes_or_no
+;
+
+sds_timezone
+:
+    TIMEZONE variable
+;
+
+sds_type
+:
+    TYPE variable
+;
+
+sds_update_schedule
+:
+    UPDATE_SCHEDULE null_rest_of_line
+;
+
+sds_update_server
+:
+    UPDATE_SERVER variable
+;
+
 sds_null
 :
     (
         PANORAMA_SERVER
-        | SERVICE
         | SNMP_SETTING
-        | TIMEZONE
-        | TYPE
-        | UPDATE_SCHEDULE
-        | UPDATE_SERVER
     )
     null_rest_of_line
 ;
