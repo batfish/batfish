@@ -20,11 +20,13 @@ public class CiscoFamily implements Serializable {
   private static final String PROP_LINES = "lines";
   private static final String PROP_LOGGING = "logging";
   private static final String PROP_NTP = "ntp";
+  private static final String PROP_PKI = "pki";
   private static final String PROP_PROXY_ARP = "proxyArp";
   private static final String PROP_SERVICES = "services";
   private static final String PROP_SNTP = "sntp";
   private static final String PROP_SOURCE_ROUTE = "sourceRoute";
   private static final String PROP_SSH = "ssh";
+  private static final String PROP_TELEMETRY = "telemetry";
   private static final String PROP_USERS = "users";
 
   private Aaa _aaa;
@@ -51,6 +53,8 @@ public class CiscoFamily implements Serializable {
 
   private Ntp _ntp;
 
+  private Pki _pki;
+
   private Boolean _proxyArp;
 
   private SortedMap<String, Service> _services;
@@ -60,6 +64,8 @@ public class CiscoFamily implements Serializable {
   private Boolean _sourceRoute;
 
   private SshSettings _ssh;
+
+  private Telemetry _telemetry;
 
   private SortedMap<String, User> _users;
 
@@ -133,6 +139,11 @@ public class CiscoFamily implements Serializable {
     return _ntp;
   }
 
+  @JsonProperty(PROP_PKI)
+  public Pki getPki() {
+    return _pki;
+  }
+
   @JsonProperty(PROP_PROXY_ARP)
   public Boolean getProxyArp() {
     return _proxyArp;
@@ -156,6 +167,11 @@ public class CiscoFamily implements Serializable {
   @JsonProperty(PROP_SSH)
   public SshSettings getSsh() {
     return _ssh;
+  }
+
+  @JsonProperty(PROP_TELEMETRY)
+  public Telemetry getTelemetry() {
+    return _telemetry;
   }
 
   @JsonProperty(PROP_USERS)
@@ -223,6 +239,11 @@ public class CiscoFamily implements Serializable {
     _ntp = ntp;
   }
 
+  @JsonProperty(PROP_PKI)
+  public void setPki(Pki pki) {
+    _pki = pki;
+  }
+
   @JsonProperty(PROP_PROXY_ARP)
   public void setProxyArp(Boolean proxyArp) {
     _proxyArp = proxyArp;
@@ -246,6 +267,11 @@ public class CiscoFamily implements Serializable {
   @JsonProperty(PROP_SSH)
   public void setSsh(SshSettings ssh) {
     _ssh = ssh;
+  }
+
+  @JsonProperty(PROP_TELEMETRY)
+  public void setTelemetry(Telemetry telemetry) {
+    _telemetry = telemetry;
   }
 
   @JsonProperty(PROP_USERS)

@@ -546,6 +546,21 @@ import org.batfish.grammar.cisco.CiscoParser.Continue_rm_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Copsl_access_listContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_ip_access_groupContext;
 import org.batfish.grammar.cisco.CiscoParser.Cp_service_policyContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpki_trustpointContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkicc_certificateContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_autoContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_auto_enrollContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_enrollmentContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_fqdnContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_revocation_checkContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_rsakeypairContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_serial_numberContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_source_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_subject_alt_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_subject_nameContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_usageContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_validation_usageContext;
+import org.batfish.grammar.cisco.CiscoParser.Cpkit_vrfContext;
 import org.batfish.grammar.cisco.CiscoParser.Cqer_service_classContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_dynamic_mapContext;
 import org.batfish.grammar.cisco.CiscoParser.Crypto_keyringContext;
@@ -1051,7 +1066,16 @@ import org.batfish.grammar.cisco.CiscoParser.T_serverContext;
 import org.batfish.grammar.cisco.CiscoParser.T_source_interfaceContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_policy_rb_stanzaContext;
 import org.batfish.grammar.cisco.CiscoParser.Template_peer_session_rb_stanzaContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_encodingContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_filterContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_receiverContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_source_addressContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_source_vrfContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_streamContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_subscriptionContext;
+import org.batfish.grammar.cisco.CiscoParser.Ti_update_policyContext;
 import org.batfish.grammar.cisco.CiscoParser.Tip_slaContext;
+import org.batfish.grammar.cisco.CiscoParser.Tir_attributeContext;
 import org.batfish.grammar.cisco.CiscoParser.Tlb_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltp_objectContext;
 import org.batfish.grammar.cisco.CiscoParser.Tltw_objectContext;
@@ -1171,6 +1195,7 @@ import org.batfish.representation.cisco.OspfNetworkType;
 import org.batfish.representation.cisco.OspfProcess;
 import org.batfish.representation.cisco.OspfRedistributionPolicy;
 import org.batfish.representation.cisco.OspfWildcardNetwork;
+import org.batfish.representation.cisco.PkiTrustpoint;
 import org.batfish.representation.cisco.PolicyMapClassAction;
 import org.batfish.representation.cisco.PortObjectGroup;
 import org.batfish.representation.cisco.PortObjectGroupLine;
@@ -1242,6 +1267,7 @@ import org.batfish.representation.cisco.SubnetNetworkObject;
 import org.batfish.representation.cisco.TacacsPlusServerGroup;
 import org.batfish.representation.cisco.TcpServiceObjectGroupLine;
 import org.batfish.representation.cisco.TcpUdpServiceObjectGroupLine;
+import org.batfish.representation.cisco.TelemetrySubscription;
 import org.batfish.representation.cisco.Track;
 import org.batfish.representation.cisco.TrackInterface;
 import org.batfish.representation.cisco.TrackIpSla;
@@ -1451,6 +1477,10 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   private Integer _currentCryptoMapSequenceNum;
 
   private NamedRsaPubKey _currentNamedRsaPubKey;
+
+  private PkiTrustpoint _currentPkiTrustpoint;
+
+  private TelemetrySubscription _currentTelemetrySubscription;
 
   private DynamicIpBgpPeerGroup _currentDynamicIpPeerGroup;
 
@@ -2187,6 +2217,197 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void enterCntlr_rf_channel(Cntlr_rf_channelContext ctx) {
     _no = (ctx.NO() != null);
+  }
+
+  @Override
+  public void enterCpki_trustpoint(Cpki_trustpointContext ctx) {
+    String name = ctx.name.getText();
+    _currentPkiTrustpoint = new PkiTrustpoint(name);
+    _configuration.getPkiTrustpoints().put(name, _currentPkiTrustpoint);
+  }
+
+  @Override
+  public void enterCpkit_enrollment(Cpkit_enrollmentContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setEnrollment(null);
+      return;
+    }
+    String enrollmentValue =
+        ctx.url_value != null
+            ? "url " + ctx.url_value.getText()
+            : (ctx.enrollment_value != null ? ctx.enrollment_value.getText() : "");
+    _currentPkiTrustpoint.setEnrollment(enrollmentValue);
+  }
+
+  @Override
+  public void exitCpkit_revocation_check(Cpkit_revocation_checkContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setRevocationCheck(null);
+      return;
+    }
+    String revocationCheck = ctx.NONE() != null ? "none" : "crl";
+    _currentPkiTrustpoint.setRevocationCheck(revocationCheck);
+  }
+
+  @Override
+  public void enterCpkit_subject_alt_name(Cpkit_subject_alt_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSubjectAltName(null);
+      return;
+    }
+    String type =
+        ctx.DNS() != null
+            ? "dns"
+            : ctx.EMAIL() != null
+                ? "email"
+                : ctx.FQDN() != null ? "fqdn" : ctx.IPADDRESS() != null ? "ipaddress" : "";
+    String value =
+        ctx.san_dns != null
+            ? ctx.san_dns.getText()
+            : ctx.san_email != null
+                ? ctx.san_email.getText()
+                : ctx.san_ip != null
+                    ? ctx.san_ip.getText()
+                    : ctx.san_fqdn != null ? ctx.san_fqdn.getText() : "";
+    if (!type.isEmpty() && !value.isEmpty()) {
+      _currentPkiTrustpoint.setSubjectAltName(type + " " + value);
+    }
+  }
+
+  @Override
+  public void enterCpkit_usage(Cpkit_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setUsage(null);
+      return;
+    }
+    _currentPkiTrustpoint.setUsage(ctx.usage_value.getText());
+  }
+
+  @Override
+  public void enterCpkit_source_vrf(Cpkit_source_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_vrf(Cpkit_vrfContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setSourceVrf(null);
+      return;
+    }
+    _currentPkiTrustpoint.setSourceVrf(ctx.vrf_name.getText());
+  }
+
+  @Override
+  public void enterCpkit_auto(Cpkit_autoContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setAutoEnroll(false);
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      return;
+    }
+    _currentPkiTrustpoint.setAutoEnroll(true);
+    _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+  }
+
+  @Override
+  public void enterCpkit_auto_enroll(Cpkit_auto_enrollContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setAutoEnroll(false);
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      return;
+    }
+    _currentPkiTrustpoint.setAutoEnroll(true);
+    if (ctx.percent_val != null) {
+      try {
+        _currentPkiTrustpoint.setAutoEnrollRegenerate(Integer.parseInt(ctx.percent_val.getText()));
+      } catch (NumberFormatException e) {
+        warn(ctx, "Invalid auto-enroll percentage: " + ctx.percent_val.getText());
+        _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      }
+    } else {
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+    }
+  }
+
+  @Override
+  public void enterCpkit_fqdn(Cpkit_fqdnContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle FQDN
+  }
+
+  @Override
+  public void enterCpkit_rsakeypair(Cpkit_rsakeypairContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle RSA keypair
+  }
+
+  @Override
+  public void enterCpkit_serial_number(Cpkit_serial_numberContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle serial number
+  }
+
+  @Override
+  public void enterCpkit_subject_name(Cpkit_subject_nameContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle subject name
+  }
+
+  @Override
+  public void enterCpkit_validation_usage(Cpkit_validation_usageContext ctx) {
+    if (_currentPkiTrustpoint == null) {
+      return;
+    }
+    // TODO: handle validation usage
+  }
+
+  @Override
+  public void enterCpkicc_certificate(Cpkicc_certificateContext ctx) {
+    if (_currentPkiTrustpoint == null || ctx.certificate() == null) {
+      return;
+    }
+    String certText = getFullText(ctx.certificate());
+    for (String line : certText.split("\\n")) {
+      String trimmed = line.trim();
+      if (!trimmed.isEmpty()) {
+        _currentPkiTrustpoint.addCertificateLine(trimmed);
+      }
+    }
   }
 
   @Override
@@ -3667,6 +3888,114 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
   @Override
   public void exitS_track(S_trackContext ctx) {
     _currentTrack = null;
+  }
+
+  @Override
+  public void enterTi_subscription(Ti_subscriptionContext ctx) {
+    int id = toInteger(ctx.id);
+    _currentTelemetrySubscription = new TelemetrySubscription(id);
+    _configuration.getTelemetrySubscriptions().put(id, _currentTelemetrySubscription);
+  }
+
+  @Override
+  public void exitTi_subscription(Ti_subscriptionContext ctx) {
+    _currentTelemetrySubscription = null;
+  }
+
+  @Override
+  public void enterTi_encoding(Ti_encodingContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.ENCODE_TDL() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_TDL);
+    } else if (ctx.ENCODE_KVGPB() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_KVGPB);
+    } else if (ctx.ENCODE_XML() != null) {
+      _currentTelemetrySubscription.setEncoding(TelemetrySubscription.EncodingType.ENCODE_XML);
+    }
+  }
+
+  @Override
+  public void enterTi_filter(Ti_filterContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String filterType = "xpath";
+    // filter_value is mandatory in new grammar
+    String filterValue = ctx.filter_value.getText();
+    String filter = String.format("%s %s", filterType, filterValue);
+    _currentTelemetrySubscription.setFilter(filter);
+    _currentTelemetrySubscription.setFilterType(TelemetrySubscription.FilterType.XPATH);
+    _currentTelemetrySubscription.setFilterValue(filterValue);
+  }
+
+  @Override
+  public void enterTi_receiver(Ti_receiverContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    String name = ctx.receiver_name != null ? ctx.receiver_name.getText() : "";
+    TelemetrySubscription.Receiver receiver = new TelemetrySubscription.Receiver(name);
+    if (ctx.ip != null) {
+      receiver.setHost(ctx.ip.getText());
+    }
+    for (Tir_attributeContext attribute : ctx.tir_attribute()) {
+      if (attribute.port_value != null) {
+        receiver.setPort(Integer.parseInt(attribute.port_value.getText()));
+      } else if (attribute.GRPC_TCP() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TCP);
+      } else if (attribute.GRPC_TLS() != null) {
+        receiver.setProtocol(TelemetrySubscription.ProtocolType.GRPC_TLS);
+      } else if (attribute.COLLECTOR() != null) {
+        receiver.setReceiverType("collector");
+      } else if (attribute.receiver_type_value != null) {
+        receiver.setReceiverType(attribute.receiver_type_value.getText());
+      }
+    }
+    _currentTelemetrySubscription.addReceiver(receiver);
+  }
+
+  @Override
+  public void enterTi_source_address(Ti_source_addressContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceAddress(ctx.ip.getText());
+  }
+
+  @Override
+  public void enterTi_source_vrf(Ti_source_vrfContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    _currentTelemetrySubscription.setSourceVrf(ctx.vrf.getText());
+  }
+
+  @Override
+  public void enterTi_stream(Ti_streamContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.YANG_PUSH() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_PUSH);
+    } else if (ctx.YANG_NOTIF_NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.YANG_NOTIF_NATIVE);
+    } else if (ctx.NATIVE() != null) {
+      _currentTelemetrySubscription.setStream(TelemetrySubscription.StreamType.NATIVE);
+    }
+  }
+
+  @Override
+  public void enterTi_update_policy(Ti_update_policyContext ctx) {
+    if (_currentTelemetrySubscription == null) {
+      return;
+    }
+    if (ctx.PERIODIC() != null) {
+      _currentTelemetrySubscription.setUpdatePolicy("periodic " + ctx.period.getText());
+    } else {
+      _currentTelemetrySubscription.setUpdatePolicy("on-change");
+    }
   }
 
   @Override

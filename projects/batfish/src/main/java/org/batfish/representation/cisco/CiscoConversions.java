@@ -49,6 +49,7 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.SortedMap;
+import java.util.TreeMap;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -135,6 +136,8 @@ import org.batfish.datamodel.routing_policy.statement.Statements;
 import org.batfish.datamodel.tracking.DecrementPriority;
 import org.batfish.datamodel.tracking.TrackAction;
 import org.batfish.datamodel.tracking.TrackMethod;
+import org.batfish.datamodel.vendor_family.cisco.Pki;
+import org.batfish.datamodel.vendor_family.cisco.Telemetry;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
 import org.batfish.representation.cisco.DistributeList.DistributeListFilterType;
 import org.batfish.vendor.VendorStructureId;
@@ -628,7 +631,7 @@ public class CiscoConversions {
     } else {
       assert hsrpTrackAction instanceof HsrpShutdown;
       // TODO: Support non-participation as an action.
-      //       For now, just use min priority.
+      // For now, just use min priority.
       return new DecrementPriority(255);
     }
   }
@@ -1056,7 +1059,7 @@ public class CiscoConversions {
               .setIcmpCodes(originalHeaderSpace.getIcmpCodes())
               .setTcpFlags(originalHeaderSpace.getTcpFlags())
               .build())) {
-        //  not supported if the access list line contains any more fields
+        // not supported if the access list line contains any more fields
         return null;
       } else {
         HeaderSpace.Builder reversedHeaderSpaceBuilder = originalHeaderSpace.toBuilder();
@@ -1813,14 +1816,14 @@ public class CiscoConversions {
       Configuration c) {
     // Implementation overview:
     // 1. (Re)write the export route-target to intermediate BGP properties so that they can be read
-    //    later.
+    // later.
     // 2. Apply the export-map if it exists. This may change properties of the route, but it may not
     //    reject the route. If the export-map rejects, then it should not modify the route.
-    //    TODO: verify and enforce lack of side effects when export map rejects
+    // TODO: verify and enforce lack of side effects when export map rejects
     // 3. Drop the route if does not have a route-target matching the importing VRF's import
-    //    route-target communities.
+    // route-target communities.
     // 4. Apply the import route-map if it exists. This route-map may permit with or without further
-    //    modification, or may reject the route.
+    // modification, or may reject the route.
     String policyName = computeVrfExportImportPolicyName(exportingVrf, importingVrf);
     if (c.getRoutingPolicies().containsKey(policyName)) {
       return policyName;
@@ -2028,6 +2031,74 @@ public class CiscoConversions {
 
   private static @Nonnull String generatedTrackIpSlaStateMethodName(int sla) {
     return String.format("ip sla %d state", sla);
+  }
+
+  static @Nullable Pki toPki(Map<String, PkiTrustpoint> trustpoints, Configuration c) {
+    if (trustpoints.isEmpty()) {
+      return null;
+    }
+    Pki pki = new Pki();
+    SortedMap<String, Pki.Trustpoint> convertedTrustpoints = new TreeMap<>();
+    for (PkiTrustpoint trustpoint : trustpoints.values()) {
+      Pki.Trustpoint converted = new Pki.Trustpoint(trustpoint.getName());
+      converted.setEnrollment(trustpoint.getEnrollment());
+      converted.setRevocationCheck(trustpoint.getRevocationCheck());
+      converted.setSubjectAltName(trustpoint.getSubjectAltName());
+      converted.setUsage(trustpoint.getUsage());
+      converted.setSourceVrf(trustpoint.getSourceVrf());
+      converted.setAutoEnroll(trustpoint.getAutoEnroll());
+      converted.setAutoEnrollRegenerate(trustpoint.getAutoEnrollRegenerate());
+      converted.setCertificateChain(new ArrayList<>(trustpoint.getCertificateChain()));
+      convertedTrustpoints.put(trustpoint.getName(), converted);
+    }
+    pki.setTrustpoints(convertedTrustpoints);
+    return pki;
+  }
+
+  static @Nullable Telemetry toTelemetry(
+      Map<Integer, TelemetrySubscription> subscriptions, Configuration c) {
+    if (subscriptions.isEmpty()) {
+      return null;
+    }
+    Telemetry telemetry = new Telemetry();
+    SortedMap<Integer, Telemetry.Subscription> convertedSubscriptions = new TreeMap<>();
+    for (TelemetrySubscription subscription : subscriptions.values()) {
+      Telemetry.Subscription converted = new Telemetry.Subscription();
+      if (subscription.getEncoding() != null) {
+        converted.setEncoding(
+            subscription.getEncoding().toString().toLowerCase().replace('_', '-'));
+      }
+      converted.setFilter(subscription.getFilter());
+      if (subscription.getFilterType() != null) {
+        converted.setFilterType(
+            subscription.getFilterType().toString().toLowerCase().replace('_', '-'));
+      }
+      converted.setFilterValue(subscription.getFilterValue());
+      if (subscription.getSourceAddress() != null) {
+        converted.setSourceAddress(Ip.parse(subscription.getSourceAddress()));
+      }
+      converted.setSourceVrf(subscription.getSourceVrf());
+      if (subscription.getStream() != null) {
+        converted.setStream(subscription.getStream().toString().toLowerCase().replace('_', '-'));
+      }
+      converted.setUpdatePolicy(subscription.getUpdatePolicy());
+      for (TelemetrySubscription.Receiver receiver : subscription.getReceivers()) {
+        Telemetry.Receiver convertedReceiver = new Telemetry.Receiver(receiver.getName());
+        convertedReceiver.setHost(receiver.getHost());
+        if (receiver.getPort() > 0) {
+          convertedReceiver.setPort(receiver.getPort());
+        }
+        if (receiver.getProtocol() != null) {
+          convertedReceiver.setProtocol(
+              receiver.getProtocol().toString().toLowerCase().replace('_', '-'));
+        }
+        convertedReceiver.setReceiverType(receiver.getReceiverType());
+        converted.getReceivers().add(convertedReceiver);
+      }
+      convertedSubscriptions.put(subscription.getId(), converted);
+    }
+    telemetry.setSubscriptions(convertedSubscriptions);
+    return telemetry;
   }
 
   private CiscoConversions() {} // prevent instantiation of utility class

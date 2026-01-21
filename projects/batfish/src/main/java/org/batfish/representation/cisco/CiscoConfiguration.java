@@ -403,6 +403,10 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   private final CiscoFamily _cf;
 
+  private final Map<String, PkiTrustpoint> _pkiTrustpoints;
+
+  private final Map<Integer, TelemetrySubscription> _telemetrySubscriptions;
+
   private final Map<String, CryptoMapSet> _cryptoMapSets;
 
   private final Map<String, NamedRsaPubKey> _cryptoNamedRsaPubKeys;
@@ -514,6 +518,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
   public CiscoConfiguration() {
     _asPathAccessLists = new TreeMap<>();
     _cf = new CiscoFamily();
+    _pkiTrustpoints = new TreeMap<>();
+    _telemetrySubscriptions = new TreeMap<>();
     _cryptoNamedRsaPubKeys = new TreeMap<>();
     _cryptoMapSets = new HashMap<>();
     _deviceTrackingPolicies = new TreeMap<>();
@@ -663,6 +669,14 @@ public final class CiscoConfiguration extends VendorConfiguration {
 
   public CiscoFamily getCf() {
     return _cf;
+  }
+
+  public Map<String, PkiTrustpoint> getPkiTrustpoints() {
+    return _pkiTrustpoints;
+  }
+
+  public Map<Integer, TelemetrySubscription> getTelemetrySubscriptions() {
+    return _telemetrySubscriptions;
   }
 
   public Map<String, CryptoMapSet> getCryptoMapSets() {
@@ -2478,6 +2492,8 @@ public final class CiscoConfiguration extends VendorConfiguration {
     if (_vendor == ConfigurationFormat.CISCO_IOS) {
       c.setDeviceModel(DeviceModel.CISCO_UNSPECIFIED);
     }
+    _cf.setPki(CiscoConversions.toPki(_pkiTrustpoints, c));
+    _cf.setTelemetry(CiscoConversions.toTelemetry(_telemetrySubscriptions, c));
     c.getVendorFamily().setCisco(_cf);
     c.setDefaultInboundAction(LineAction.PERMIT);
     c.setDefaultCrossZoneAction(LineAction.PERMIT);
