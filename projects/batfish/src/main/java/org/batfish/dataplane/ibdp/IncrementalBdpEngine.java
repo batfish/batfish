@@ -804,6 +804,10 @@ final class IncrementalBdpEngine {
     LOGGER.info("Initialize for IGP computation");
     vrs.parallelStream().forEach(vr -> vr.initForIgpComputation(topologyContext));
 
+    // Apply rib-groups sequentially to avoid concurrent writes to same destination RIB
+    LOGGER.info("Apply rib-groups for IGP");
+    vrs.stream().forEach(VirtualRouter::applyRibGroupsForIgp);
+
     // OSPF internal routes
     numOspfInternalIterations = initOspfInternalRoutes(nodes, topologyContext.getOspfTopology());
 

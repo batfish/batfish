@@ -291,6 +291,10 @@ public final class VirtualRouter {
   /**
    * Initializes helper data structures and easy-to-compute RIBs that are not affected by BDP
    * iterations (e.g., static route RIB, connected route RIB, etc.)
+   *
+   * <p>This method initializes only local RIBs (no cross-VRF writes). Call {@link
+   * #applyRibGroupsForIgp()} after all VRFs complete this phase to avoid concurrent writes to
+   * shared RIBs.
    */
   @VisibleForTesting
   void initForIgpComputation(TopologyContext topologyContext) {
@@ -303,17 +307,7 @@ public final class VirtualRouter {
     importRib(_independentRib, _localRib);
     importRib(_independentRib, _staticUnconditionalRib, _name);
     importRib(_mainRib, _independentRib);
-
-    // Now check whether any rib groups are applied
-    RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
     importRib(_mainRib, _connectedRib);
-    if (connectedRibGroup != null) {
-      applyRibGroup(connectedRibGroup, _connectedRib);
-    }
-    RibGroup localRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.LOCAL);
-    if (localRibGroup != null) {
-      applyRibGroup(localRibGroup, _localRib);
-    }
 
     _ospfProcesses =
         _vrf.getOspfProcesses().entrySet().stream()
@@ -327,6 +321,25 @@ public final class VirtualRouter {
 
     initEigrp();
     initBaseRipRoutes();
+  }
+
+  /**
+   * Apply rib-groups to export routes to other VRFs.
+   *
+   * <p>Must be called after all VRFs complete {@link #initForIgpComputation(TopologyContext)} to
+   * avoid concurrent writes to shared RIBs. Should be called sequentially (not in parallel) since
+   * multiple VRFs may export to the same destination RIB.
+   */
+  void applyRibGroupsForIgp() {
+    // Apply rib groups for connected and local routes
+    RibGroup connectedRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.CONNECTED);
+    if (connectedRibGroup != null) {
+      applyRibGroup(connectedRibGroup, _connectedRib);
+    }
+    RibGroup localRibGroup = _vrf.getAppliedRibGroups().get(RoutingProtocol.LOCAL);
+    if (localRibGroup != null) {
+      applyRibGroup(localRibGroup, _localRib);
+    }
   }
 
   /** Recompute HMM routes, and import delta into main RIB. */
