@@ -4988,4 +4988,11 @@ public final class PaloAltoGrammarTest {
     assertThat(
         r2.getIpRange6(), equalTo(Range.closed(Ip6.parse("fe80::1"), Ip6.parse("fe80::ff"))));
   }
+
+  @Test
+  public void testSharedServiceConfigs() {
+    // Test parsing of set config shared service, log-settings, and ssl-tls-service-profile
+    // These commands should parse without errors
+    parsePaloAltoConfig("paloalto-shared-service-configs");
+  }
 }

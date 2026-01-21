@@ -50,10 +50,16 @@ public final class PaloAltoGroupTagTest {
     assertThat(c, notNullValue());
     // Should have no warnings
     assertThat(c.getWarnings().getParseWarnings(), empty());
-    
+
     // Verify the group-tag was extracted
     // Structure: vsys -> vsys1 -> rulebase -> security -> rules -> test-rule
-    assertThat(c.getVirtualSystems().get("vsys1").getRulebase().getSecurityRules().get("test-rule").getGroupTag(),
+    assertThat(
+        c.getVirtualSystems()
+            .get("vsys1")
+            .getRulebase()
+            .getSecurityRules()
+            .get("test-rule")
+            .getGroupTag(),
         org.hamcrest.Matchers.equalTo("REDACTED TAG"));
   }
 }
