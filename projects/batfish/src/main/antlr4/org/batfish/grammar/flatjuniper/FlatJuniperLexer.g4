@@ -4621,7 +4621,7 @@ M_VrfTarget_TARGET
 
 M_VrfTarget_AUTO
 :
-   'auto' -> type ( AUTO )
+   'auto' -> type ( AUTO ), popMode
 ;
 
 M_VrfTarget_WS
