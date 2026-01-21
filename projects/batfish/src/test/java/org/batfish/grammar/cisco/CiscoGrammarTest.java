@@ -2994,35 +2994,35 @@ public final class CiscoGrammarTest {
         equalTo(
             ImmutableMap.of(
                 "Ethernet0",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet0")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
-                        .setPassive(false)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.0.1"))
-                        .build(),
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet0")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet0~")
+                    .setPassive(false)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.0.1"))
+                    .build(),
                 "Ethernet1",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet1")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
-                        .setPassive(false)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.1.1"))
-                        .build(),
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet1")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet1~")
+                    .setPassive(false)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.1.1"))
+                    .build(),
                 "Ethernet2",
-                    EigrpNeighborConfig.builder()
-                        .setAsn(1L)
-                        .setInterfaceName("Ethernet2")
-                        .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
-                        .setPassive(true)
-                        .setHostname("ios-eigrp-classic")
-                        .setVrfName("default")
-                        .setIp(Ip.parse("10.0.2.1"))
-                        .build())));
+                EigrpNeighborConfig.builder()
+                    .setAsn(1L)
+                    .setInterfaceName("Ethernet2")
+                    .setExportPolicy("~EIGRP_EXPORT_POLICY_default_1_Ethernet2~")
+                    .setPassive(true)
+                    .setHostname("ios-eigrp-classic")
+                    .setVrfName("default")
+                    .setIp(Ip.parse("10.0.2.1"))
+                    .build())));
   }
 
   @Test
