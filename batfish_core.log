@@ -1,0 +1,31 @@
+Starting local Bazel server (8.5.1) and connecting to it...
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //projects/allinone:allinone_main (1 packages loaded, 0 targets configured)
+Analyzing: target //projects/allinone:allinone_main (1 packages loaded, 0 targets configured)
+
+Analyzing: target //projects/allinone:allinone_main (57 packages loaded, 10 targets configured)
+
+Analyzing: target //projects/allinone:allinone_main (376 packages loaded, 7225 targets configured)
+
+INFO: Analyzed target //projects/allinone:allinone_main (378 packages loaded, 9708 targets configured).
+[12 / 493] checking cached actions
+[301 / 493] [Prepa] Generating ANTLR parser for org.batfish.grammar.palo_alto
+[484 / 493] [Prepa] Compiling Java headers projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto/libpalo_alto-hjar.jar (4 source files)
+[487 / 493] Building projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto/libpalo_alto.jar (4 source files); 1s multiplex-worker ... (4 actions running)
+[489 / 493] Building projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto/libpalo_alto.jar (4 source files); 2s multiplex-worker ... (3 actions running)
+[490 / 493] Building projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto/libpalo_alto.jar (4 source files); 3s multiplex-worker ... (2 actions running)
+[491 / 493] Building projects/batfish/src/main/java/org/batfish/libbatfish-class.jar (169 source files) and running annotation processors (AutoServiceProcessor); 4s multiplex-worker
+INFO: From Building projects/batfish/src/main/java/org/batfish/libbatfish-class.jar (169 source files) and running annotation processors (AutoServiceProcessor):
+projects/batfish/src/main/java/org/batfish/main/Driver.java:215: warning: [removal] stop() in Thread has been deprecated and marked for removal
+        thread.stop();
+              ^
+INFO: Found 1 target...
+Target //projects/allinone:allinone_main up-to-date:
+  bazel-bin/projects/allinone/allinone_main
+  bazel-bin/projects/allinone/allinone_main.jar
+INFO: Elapsed time: 19.554s, Critical Path: 9.09s
+INFO: 8 processes: 486 action cache hit, 1 internal, 3 darwin-sandbox, 4 worker.
+INFO: Build completed successfully, 8 total actions
+INFO: Running command line: bazel-bin/projects/allinone/allinone_main <args omitted>

@@ -1,0 +1,21 @@
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured)
+Analyzing: target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured)
+
+INFO: Analyzed target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured).
+ERROR: /Users/nat/dev/batfish/projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto/BUILD.bazel:6:14: Generating ANTLR parser for org.batfish.grammar.palo_alto failed: (Exit 1): java failed: error executing AntlrGeneration command (from target //projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto:palo_alto_generated) external/rules_java++toolchains+local_jdk/bin/java -cp bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external++maven+maven/org/antlr/antlr4/4.13.2/processed_antlr4-4.13.2-complete.jar ... (remaining 11 arguments skipped)
+
+Use --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging
+warning(125): PaloAltoParser.g4:96:10: implicit definition of token OPTION in parser
+error(10):  warning treated as error
+warning(125): PaloAltoParser.g4:196:8: implicit definition of token DISABLE_SERVER_RESPONSE_INSPECTION in parser
+Target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests failed to build
+Use --verbose_failures to see the command lines of failed build steps.
+ERROR: /Users/nat/dev/batfish/projects/batfish/src/test/java/org/batfish/grammar/palo_alto/BUILD.bazel:8:12 Building projects/batfish/src/test/java/org/batfish/grammar/palo_alto/tests-class.jar (1 source file) failed: (Exit 1): java failed: error executing AntlrGeneration command (from target //projects/batfish/src/main/antlr4/org/batfish/grammar/palo_alto:palo_alto_generated) external/rules_java++toolchains+local_jdk/bin/java -cp bazel-out/darwin_arm64-fastbuild/bin/external/rules_jvm_external++maven+maven/org/antlr/antlr4/4.13.2/processed_antlr4-4.13.2-complete.jar ... (remaining 11 arguments skipped)
+
+Use --sandbox_debug to see verbose messages from the sandbox and retain the sandbox build root for debugging
+INFO: Elapsed time: 1.136s, Critical Path: 0.73s
+INFO: 2 processes: 2 internal.
+ERROR: Build did NOT complete successfully

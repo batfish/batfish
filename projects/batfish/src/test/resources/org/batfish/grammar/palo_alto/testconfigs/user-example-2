@@ -133,7 +133,7 @@ set address addr2 ip-netmask 10.0.0.2
 set address addr3 ip-netmask 10.0.0.3
 set address addr4 ip-netmask 10.0.0.4
 set address addr5 ip-netmask 10.0.0.5
-set mgt-config users admin phash $1$fniyibcj$0tm9SixJw/wOkFkDnEqVw/
+set mgt-config users admin phash $1$REDACTED$REDACTEDFORTHISSAMPLECONFIG
 set mgt-config users admin permissions role-based superuser yes
 set mgt-config users adminr permissions role-based superreader yes
-set mgt-config users adminr phash $1$rhprpgfp$JiYMvTDuUUWW4F7ND06JI1
+set mgt-config users adminr phash $1$REDACTED$REDACTEDFORTHISSAMPLECONFIG

@@ -1,0 +1,15 @@
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "cumulus_nclu_base_parser",
+    srcs = [
+        ":CumulusNcluBaseParser.java",
+    ],
+    deps = [
+        "//projects/common:parser_common",
+        "@maven//:com_google_guava_guava",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)

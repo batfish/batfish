@@ -1,0 +1,20 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//projects/symbolic:__subpackages__"])
+
+java_library(
+    name = "state",
+    srcs = glob([
+        "*.java",
+    ]),
+    deps = [
+        "//projects/common",
+        "@maven//:com_google_code_findbugs_jsr305",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":state",
+)

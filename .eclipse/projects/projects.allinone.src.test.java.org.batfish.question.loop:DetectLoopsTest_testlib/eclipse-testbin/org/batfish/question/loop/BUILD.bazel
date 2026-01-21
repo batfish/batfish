@@ -1,0 +1,19 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+junit_tests(
+    name = "DetectLoopsTest",
+    size = "small",
+    srcs = [
+        "DetectLoopsTest.java",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/common",
+        "//projects/common/src/test:common_testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/question/src/main/java/org/batfish/question",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

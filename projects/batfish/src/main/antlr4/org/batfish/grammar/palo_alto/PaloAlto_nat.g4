@@ -43,6 +43,7 @@ srn_uuid
     | DESTINATION_TRANSLATION
     | SOURCE_TRANSLATION
     | TO
+    | TO_INTERFACE
     | FROM
     | SOURCE
     | DESTINATION

@@ -1,0 +1,109 @@
+Computing main repo mapping: 
+Loading: 
+Loading: 0 packages loaded
+Analyzing: target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured)
+Analyzing: target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured)
+
+INFO: Analyzed target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (0 packages loaded, 0 targets configured).
+[1 / 2] Testing //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests; 1s darwin-sandbox
+FAIL: //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests (Exit 1) (see /private/var/tmp/_bazel_nat/6b7b6b852c2ccd3348c86cc4171c5b74/execroot/_main/bazel-out/darwin_arm64-fastbuild/testlogs/projects/batfish/src/test/java/org/batfish/grammar/palo_alto/tests/test.log)
+[1 / 2] 1 / 1 tests, 1 failed; Testing //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests; 11s darwin-sandbox
+INFO: From Testing //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests:
+==================== Test output for //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests:
+JUnit4 Test Runner
+...........................E.E....................................................................I............................I......................................................................I........
+Time: 10.781
+There were 2 failures:
+1) testUserExample2(org.batfish.grammar.palo_alto.PaloAltoGrammarTest)
+org.batfish.main.ParserBatfishException: Parser error
+	at org.batfish.main.Batfish.parse(Batfish.java:409)
+	at org.batfish.grammar.palo_alto.PaloAltoGrammarTest.parsePaloAltoConfig(PaloAltoGrammarTest.java:330)
+	at org.batfish.grammar.palo_alto.PaloAltoGrammarTest.testUserExample2(PaloAltoGrammarTest.java:4906)
+	... 34 trimmed
+Caused by: org.batfish.common.DebugBatfishException: 
+parser: PaloAltoParser: line 100:4: mismatched input 'user-id-collector' expecting {'address', 'address-group', 'application', 'application-group', 'config', 'device-group', 'deviceconfig', 'import', 'log-collector', 'log-collector-group', 'mgt-config', 'network', 'policy', 'profiles', 'readonly', 'response', 'rulebase', 'service', 'service-group', 'shared', 'tag', 'template', 'template-stack', 'vsys', 'zone'}
+Offending Token:  line 100:4  USER_ID_COLLECTOR:'user-id-collector'
+Error parsing top (leftmost) parser rule in stack: '[set_line_tail set_line palo_alto_configuration]'.
+Parse tree of current rule:
+(set_line_tail)
+Unconsumed tokens:
+ line 100:4  USER_ID_COLLECTOR:'user-id-collector'
+ line 100:21 (HIDDEN)  WS:' '
+ line 100:22  SETTING:'setting'
+Previous 10 tokens:
+ line 99:9  WORD:'untrust'
+ line 99:16 (HIDDEN)  WS:' '
+ line 99:17  NETWORK:'network'
+ line 99:24 (HIDDEN)  WS:' '
+ line 99:25  VIRTUAL_WIRE:'virtual-wire'
+ line 99:37 (HIDDEN)  WS:' '
+ line 99:38  VARIABLE:'ethernet1/1'
+ line 99:49  NEWLINE:'\n'
+ line 100:0  SET:'set'
+ line 100:3 (HIDDEN)  WS:' '
+Error context lines:
+   90:     set shared botnet configuration unknown-applications unknown-udp session-length maximum-bytes 100
+   91:     set shared botnet configuration unknown-applications unknown-udp session-length minimum-bytes 50
+   92:     set shared botnet report topn 100
+   93:     set shared botnet report scheduled yes
+   94:     set shared content-preview application
+   95:     set shared content-preview application-type category
+   96:     set shared content-preview application-type technology
+   97:     set shared local-user-database user-group
+   98:     set zone trust network virtual-wire ethernet1/2
+   99:     set zone untrust network virtual-wire ethernet1/1
+>>>100:    set user-id-collector setting enable-mapping-timeout yes
+   101:    set user-id-collector setting ip-user-mapping-timeout 45
+   102:    set service-group
+   103:    set service
+   104:    set schedule
+   105:    set rulebase security rules rule2 to untrust
+   106:    set rulebase security rules rule2 from trust
+   107:    set rulebase security rules rule2 source any
+   108:    set rulebase security rules rule2 source-user any
+   109:    set rulebase security rules rule2 category any
+   110:    set rulebase security rules rule2 application any
+
+	at org.batfish.grammar.BatfishParserErrorListener.syntaxError(BatfishParserErrorListener.java:129)
+	at org.batfish.grammar.BatfishParserErrorListener.syntaxError(BatfishParserErrorListener.java:144)
+	at org.antlr.v4.runtime.ProxyErrorListener.syntaxError(ProxyErrorListener.java:41)
+	at org.antlr.v4.runtime.Parser.notifyErrorListeners(Parser.java:544)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportInputMismatch(DefaultErrorStrategy.java:327)
+	at org.antlr.v4.runtime.DefaultErrorStrategy.reportError(DefaultErrorStrategy.java:139)
+	at org.batfish.grammar.palo_alto.PaloAltoParser.set_line_tail(PaloAltoParser.java:2528)
+	at org.batfish.grammar.palo_alto.PaloAltoParser.set_line(PaloAltoParser.java:1956)
+	at org.batfish.grammar.palo_alto.PaloAltoParser.palo_alto_configuration(PaloAltoParser.java:817)
+	at org.batfish.grammar.palo_alto.PaloAltoCombinedParser.parse(PaloAltoCombinedParser.java:31)
+	at org.batfish.grammar.palo_alto.PaloAltoCombinedParser.parse(PaloAltoCombinedParser.java:12)
+	at org.batfish.main.Batfish.parse(Batfish.java:407)
+	... 37 more
+2) testUserExamples(org.batfish.grammar.palo_alto.PaloAltoGrammarTest)
+java.lang.AssertionError: 
+Expected: "PA-NAT-Testing"
+     but: was "pa-nat-testing"
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:20)
+	at org.hamcrest.MatcherAssert.assertThat(MatcherAssert.java:6)
+	at org.batfish.grammar.palo_alto.PaloAltoGrammarTest.testUserExamples(PaloAltoGrammarTest.java:4901)
+
+FAILURES!!!
+Tests run: 202,  Failures: 2
+
+
+BazelTestRunner exiting with a return value of 1
+JVM shutdown hooks (if any) will run now.
+The JVM will exit once they complete.
+
+-- JVM shutdown starting at 2026-01-19 10:06:27 --
+
+================================================================================
+INFO: Found 1 test target...
+Target //projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests up-to-date:
+  bazel-bin/projects/batfish/src/test/java/org/batfish/grammar/palo_alto/tests
+  bazel-bin/projects/batfish/src/test/java/org/batfish/grammar/palo_alto/tests.jar
+INFO: Elapsed time: 11.853s, Critical Path: 11.47s
+INFO: 2 processes: 1 internal, 1 darwin-sandbox.
+INFO: Build completed, 1 test FAILED, 2 total actions
+//projects/batfish/src/test/java/org/batfish/grammar/palo_alto:tests     FAILED in 11.4s
+  /private/var/tmp/_bazel_nat/6b7b6b852c2ccd3348c86cc4171c5b74/execroot/_main/bazel-out/darwin_arm64-fastbuild/testlogs/projects/batfish/src/test/java/org/batfish/grammar/palo_alto/tests/test.log
+
+Executed 1 out of 1 test: 1 fails locally.

@@ -26,7 +26,7 @@ vr_definition
         | vr_interface
         | vr_protocol
         | vr_routing_table
-    )?
+    )*
 ;
 
 vr_admin_dists
@@ -42,7 +42,7 @@ vr_admin_dists
         | vrad_rip
         | vrad_static
         | vrad_static_ipv6
-    )?
+    )*
 ;
 
 vrad_ebgp
@@ -118,7 +118,7 @@ vr_protocol
         | vrp_ospfv3
         | vrp_redist_profile
         | vrp_rip
-    )?
+    )*
 ;
 
 vr_routing_table

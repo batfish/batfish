@@ -32,7 +32,7 @@ s_vsys_definition
         | sv_threats
         | sv_user_id_agent
         | svg_group_mapping
-    )?
+    )*
 ;
 
 sv_region

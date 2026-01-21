@@ -1,0 +1,21 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "f5_bigip_structured_base",
+    srcs = [
+        ":F5BigipStructuredBaseLexer.java",
+    ],
+    deps = [
+        "//projects/common:parser_common",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":f5_bigip_structured_base",
+)

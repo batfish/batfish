@@ -27,7 +27,7 @@ bgp_policy_rule
         | pr_enable
         | pr_match
         | pr_used_by
-    )?
+    )*
 ;
 
 pr_action

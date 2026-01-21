@@ -63,6 +63,8 @@ public final class SecurityRule implements Serializable {
   private final @Nonnull SortedSet<String> _destinationHips;
   private final @Nonnull SortedSet<String> _hipProfiles;
 
+  private @Nullable String _groupTag;
+
   private final @Nonnull Set<String> _tags;
 
   public SecurityRule(String name, Vsys vsys) {
@@ -242,5 +244,13 @@ public final class SecurityRule implements Serializable {
 
   public void addSourceHip(String hip) {
     _sourceHips.add(hip);
+  }
+
+  public @Nullable String getGroupTag() {
+    return _groupTag;
+  }
+
+  public void setGroupTag(String groupTag) {
+    _groupTag = groupTag;
   }
 }

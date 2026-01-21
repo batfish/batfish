@@ -87,7 +87,7 @@ sls_server
         | slss_to
         | slss_transport
         | slss_version
-    )
+    )*
 ;
 
 

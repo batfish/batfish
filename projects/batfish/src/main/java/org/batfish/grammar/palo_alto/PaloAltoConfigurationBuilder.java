@@ -3009,6 +3009,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     }
   }
 
+  @Override
+  public void exitSrs_group_tag(PaloAltoParser.Srs_group_tagContext ctx) {
+    String groupTag = getText((ParserRuleContext) ctx.getChild(1));
+    _currentSecurityRule.setGroupTag(groupTag);
+  }
+
   private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
