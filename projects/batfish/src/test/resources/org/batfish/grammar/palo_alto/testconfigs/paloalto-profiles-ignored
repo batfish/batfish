@@ -1,6 +1,6 @@
 set deviceconfig system hostname paloalto-profiles-ignored
 
-set profiles spyware botnet redistribution-agent PanAgent-DC1 host-port host 10.34.1.34
+set profiles spyware botnet redistribution-agent PanAgent-DC1 host-port host 192.0.2.1
 set profiles spyware botnet redistribution-agent PanAgent-DC1 host-port port 5007
 set profiles spyware botnet redistribution-agent PanAgent-DC1 ip-user-mappings yes
 set profiles spyware botnet redistribution-agent PanAgent-DC1 ip-tags yes

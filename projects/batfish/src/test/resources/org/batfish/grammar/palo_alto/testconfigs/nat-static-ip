@@ -1,0 +1,29 @@
+set deviceconfig system hostname nat-static-ip-test
+
+# NAT rule with static-ip source translation
+set rulebase nat rules NAT1 to external-zone
+set rulebase nat rules NAT1 from internal-zone
+set rulebase nat rules NAT1 source 10.0.0.0/8
+set rulebase nat rules NAT1 destination any
+set rulebase nat rules NAT1 service any
+set rulebase nat rules NAT1 source-translation static-ip translated-address 203.0.113.10
+set rulebase nat rules NAT1 source-translation static-ip bi-directional yes
+set rulebase nat rules NAT1 description Test static IP NAT with bi-directional
+
+# NAT rule with dynamic-ip-and-port (existing functionality)
+set rulebase nat rules NAT2 to external-zone  
+set rulebase nat rules NAT2 from internal-zone
+set rulebase nat rules NAT2 source 192.168.0.0/16
+set rulebase nat rules NAT2 destination any
+set rulebase nat rules NAT2 service any
+set rulebase nat rules NAT2 source-translation dynamic-ip-and-port translated-address 203.0.113.20
+set rulebase nat rules NAT2 description Dynamic NAT rule
+
+# NAT rule with static-ip and no bi-directional
+set rulebase nat rules NAT3 to dmz-zone
+set rulebase nat rules NAT3 from internal-zone
+set rulebase nat rules NAT3 source 172.16.0.100
+set rulebase nat rules NAT3 destination any
+set rulebase nat rules NAT3 service any
+set rulebase nat rules NAT3 source-translation static-ip translated-address 203.0.113.30
+set rulebase nat rules NAT3 description Single host static NAT
