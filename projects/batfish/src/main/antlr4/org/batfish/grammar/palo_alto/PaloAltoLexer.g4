@@ -775,6 +775,9 @@ REDIST_PROFILE: 'redist-profile';
 
 REDIST_RULES: 'redist-rules';
 
+// Ignored config blocks
+REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
+
 REFLECTOR_CLIENT: 'reflector-client';
 
 REFLECTOR_CLUSTER_ID: 'reflector-cluster-id';
@@ -847,6 +850,10 @@ SECONDS: 'seconds';
 SECURITY: 'security';
 
 SERVER: 'server';
+
+SERVER_MONITOR: 'server-monitor';
+
+SERVER_PROFILE: 'server-profile';
 
 SERVERS: 'servers';
 
@@ -1055,12 +1062,6 @@ UUID:
     a-f0-9
   ] [a-f0-9] [a-f0-9] [a-f0-9]
 ;
-
-// Ignored config blocks
-REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
-
-SERVER_MONITOR: 'server-monitor';
-SERVER_PROFILE: 'server-profile';
 
 // Complex tokens
 
