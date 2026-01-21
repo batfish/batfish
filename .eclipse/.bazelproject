@@ -1,0 +1,12 @@
+
+# The project view file (.bazelproject) is used to import targets into the IDE.
+#
+# See: https://ij.bazel.build/docs/project-views.html
+#
+# This files provides a default experience for developers working with the project.
+# You should customize it to suite your needs.
+
+directories:
+  .  # import everything (remove the dot if this is too much)
+
+derive_targets_from_directories: true

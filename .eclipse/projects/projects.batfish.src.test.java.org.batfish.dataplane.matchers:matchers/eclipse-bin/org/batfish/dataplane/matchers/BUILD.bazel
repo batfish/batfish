@@ -1,0 +1,24 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//visibility:public"],
+)
+
+java_library(
+    name = "matchers",
+    srcs = glob(
+        ["*.java"],
+    ),
+    deps = [
+        "//projects/batfish",
+        "//projects/common",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":matchers",
+)

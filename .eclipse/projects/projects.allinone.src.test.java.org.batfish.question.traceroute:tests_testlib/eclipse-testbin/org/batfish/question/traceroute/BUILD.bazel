@@ -1,0 +1,22 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+junit_tests(
+    name = "tests",
+    size = "small",
+    srcs = glob(["**/*Test.java"]),
+    resources = [
+        "//projects/allinone/src/test/resources/org/batfish/allinone/testconfigs",
+        "//projects/allinone/src/test/resources/org/batfish/allinone/testrigs/specifiers-reachability",
+    ],
+    deps = [
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/datamodel:testlib",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
+        "//projects/question/src/main/java/org/batfish/question",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

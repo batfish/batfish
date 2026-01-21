@@ -1,0 +1,37 @@
+load("@batfish//skylark:junit.bzl", "junit_tests")
+
+package(
+    default_testonly = True,
+    default_visibility = ["//docs/example_code:__subpackages__"],
+)
+
+junit_tests(
+    name = "tests",
+    srcs = glob([
+        "**/*Test.java",
+    ]),
+    resources = [
+        "//docs/example_code/new_vendor/src/test/resources/org/batfish/grammar/cool_nos/testconfigs",
+        "//projects/batfish/src/test/resources:log4j_config",
+    ],
+    tags = ["cpu:4"],
+    runtime_deps = [
+        "@maven//:org_apache_logging_log4j_log4j_core",
+        "@maven//:org_apache_logging_log4j_log4j_slf4j_impl",
+    ],
+    deps = [
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/grammar/cool_nos",
+        "//docs/example_code/new_vendor/src/main/java/org/batfish/vendor/cool_nos",
+        "//projects/batfish",
+        "//projects/batfish:batfish_testlib",
+        "//projects/common",
+        "//projects/common/src/test/java/org/batfish/common/matchers",
+        "//projects/common/src/test/java/org/batfish/datamodel/matchers",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+        "@maven//:junit_junit",
+        "@maven//:org_antlr_antlr4_runtime",
+        "@maven//:org_apache_commons_commons_lang3",
+        "@maven//:org_hamcrest_hamcrest",
+    ],
+)

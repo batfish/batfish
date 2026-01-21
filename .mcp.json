@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "antlr4": {
+      "command": "node",
+      "args": ["/Users/nat/dev/antlr4-mcp/dist/index.js"]
+    }
+  }
+}

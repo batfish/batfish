@@ -1,0 +1,40 @@
+#NB: prompt only works in interactive mode
+show-testrig
+
+echo [Will list nodes]
+prompt
+get nodes
+
+echo [Will check for unique IP assignments now]
+prompt
+get uniqueIpAssignments
+
+echo [Will check for self adjacencies now]
+prompt
+get selfAdjacencies
+
+echo [Will check for BGP sessions now]
+prompt
+get bgpSessionCheck
+
+echo [Will check for VPN sessions now]
+prompt
+get ipsecVpnCheck
+
+echo [Will check for ISIS loopbacks now]
+prompt
+get isisLoopbacks
+
+echo [Will check for OSPF loopbacks now]
+prompt
+get ospfLoopbacks
+
+echo [Will check that nodes originate mutually exclusive prefix spaces]
+prompt
+get uniqueBgpPrefixOrigination
+
+echo [Will compare same name structures now]
+prompt
+get compareSameNameStructure
+
+

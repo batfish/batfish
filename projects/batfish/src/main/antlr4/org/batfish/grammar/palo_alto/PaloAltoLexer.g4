@@ -1020,6 +1020,8 @@ USER_OBJECT: 'user-object';
 
 USERNAME: 'username';
 
+USERNAME_REGEX: 'username-regex';
+
 VERSION: 'version';
 
 VIRTUAL_ROUTER: 'virtual-router';
@@ -1044,8 +1046,15 @@ YES: 'yes';
 
 ZONE: 'zone';
 
-USERNAME_REGEX: 'username-regex';
-UUID: [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9];
+UUID:
+  [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [
+    a-f0-9
+  ] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [
+    a-f0-9
+  ] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [
+    a-f0-9
+  ] [a-f0-9] [a-f0-9] [a-f0-9]
+;
 
 // Ignored config blocks
 REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
@@ -1055,27 +1064,13 @@ SERVER_PROFILE: 'server-profile';
 
 // Complex tokens
 
-CLOSE_BRACKET
-:
-    ']'
-;
+CLOSE_BRACKET: ']';
 
+UINT8: F_Uint8;
 
+UINT16: F_Uint16;
 
-UINT8
-:
-    F_Uint8
-;
-
-UINT16
-:
-    F_Uint16
-;
-
-COMMA
-:
-    ','
-;
+COMMA: ',';
 
 DASH: '-';
 

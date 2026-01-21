@@ -1,0 +1,76 @@
+name: Lab Validation for PR
+
+on:
+  pull_request:
+    types: [labeled, synchronize]
+
+jobs:
+  # Add PR comment before running lab validation  
+  add-starting-comment:
+    runs-on: ubuntu-latest
+    if: contains(github.event.pull_request.labels.*.name, 'lab-validation')
+    steps:
+    - name: Add PR comment - Starting validation
+      run: |
+        gh api repos/batfish/batfish/issues/${{ github.event.pull_request.number }}/comments \
+          --method POST \
+          --field body="🧪 **Lab Validation Started** (Run ${{ github.run_number }})
+
+        Running lab validation for PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+        Branch: \`${{ github.event.pull_request.head.ref }}\`
+        Testing: All available lab scenarios
+
+        [View workflow run](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})"
+      env:
+        GH_TOKEN: ${{ github.token }}
+
+  # Run lab validation using the PR branch
+  lab-validation:
+    needs: [add-starting-comment]
+    if: contains(github.event.pull_request.labels.*.name, 'lab-validation')
+    uses: batfish/lab-validation/.github/workflows/reusable-lab-validation.yml@main
+    with:
+      batfish_ref: ${{ github.event.pull_request.head.ref }}
+
+  # Post results as PR comment
+  post-results:
+    runs-on: ubuntu-latest
+    needs: [add-starting-comment, lab-validation]
+    if: always() && contains(github.event.pull_request.labels.*.name, 'lab-validation')
+    steps:
+    - name: Add PR comment - Results
+      run: |
+        if [ "${{ needs.lab-validation.result }}" == "success" ]; then
+          STATUS="✅ **Lab Validation Passed**"
+          EMOJI="🎉"
+        else
+          STATUS="❌ **Lab Validation Failed**"
+          EMOJI="⚠️"
+        fi
+
+        gh api repos/batfish/batfish/issues/${{ github.event.pull_request.number }}/comments \
+          --method POST \
+          --field body="$EMOJI $STATUS (Run ${{ github.run_number }})
+
+        PR #${{ github.event.pull_request.number }}: ${{ github.event.pull_request.title }}
+        Branch: \`${{ github.event.pull_request.head.ref }}\`
+        Tested: All available lab scenarios
+
+        [View detailed results](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})
+
+        <details>
+        <summary>How to interpret results</summary>
+
+        - ✅ **Success**: All lab tests passed against your changes
+        - ❌ **Failure**: Some lab tests failed - check the workflow logs for details
+        - Expected failures are tracked in sickbay files and should be listed in the logs
+
+        If you see unexpected failures, your changes may have introduced a regression in Batfish's network modeling.
+        </details>
+
+        ---
+
+        **💡 How to trigger lab validation:**
+        Add the \`lab-validation\` label to this PR. Validation will rerun automatically when you push new commits."
+      env:
+        GH_TOKEN: ${{ github.token }}

@@ -1,0 +1,17 @@
+name: Bazel Steward
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '07 12 * * 1-5' # runs every weekday at 1207 UTC which is sensible US/Pacific
+
+jobs:
+  bazel-steward:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: VirtusLab/bazel-steward@latest
+        with:
+          configuration-path: "./.bazel-steward.yaml"
