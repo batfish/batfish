@@ -24,6 +24,7 @@ import
     PaloAlto_tag,
     PaloAlto_template,
     PaloAlto_template_stack,
+    PaloAlto_user_id_collector,
     PaloAlto_virtual_router,
     PaloAlto_virtual_wire,
     PaloAlto_vlan,
@@ -81,7 +82,6 @@ s_null
         | LOG_COLLECTOR_GROUP
         | MGT_CONFIG
         | SCHEDULE
-        | USER_ID_COLLECTOR
     )
     null_rest_of_line
 ;
@@ -113,6 +113,7 @@ statement_config_devices
     | s_deviceconfig
     | s_network
     | s_null
+    | s_user_id_collector
     | s_profiles
     | s_rulebase
     | s_service

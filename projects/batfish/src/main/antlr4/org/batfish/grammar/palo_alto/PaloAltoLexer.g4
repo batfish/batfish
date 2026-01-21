@@ -20,6 +20,8 @@ ANTI_REPLAY: 'anti-replay';
 
 AUTO_KEY: 'auto-key';
 
+AUTO_MAC_DETECT: 'auto-mac-detect';
+
 IPSEC: 'ipsec';
 
 TUNNEL_INTERFACE: 'tunnel-interface';
@@ -88,6 +90,7 @@ ADDRESS_PREFIX: 'address-prefix';
 
 ADDRESS_FAMILY_IDENTIFIER: 'address-family-identifier';
 
+ADDRESS_REGEX: 'address-regex';
 ADJUST_TCP_MSS: 'adjust-tcp-mss';
 
 ADMIN_DIST: 'admin-dist';
@@ -219,6 +222,7 @@ CONFIG: 'config';
 
 CONNECTION_OPTIONS: 'connection-options';
 
+CONNECTION_TYPE: 'connection-type';
 CONTENT_PREVIEW: 'content-preview';
 
 COPY_TOS: 'copy-tos';
@@ -284,9 +288,15 @@ DH_GROUP: 'dh-group';
 
 DISABLE: 'disable';
 
+DISABLE_HTTP: 'disable-http';
+
 DISABLE_IF_UNREACHABLE: 'disable-if-unreachable';
 
+DISABLE_PREDEFINED_REPORTS: 'disable-predefined-reports';
+
 DISABLE_SERVER_RESPONSE_INSPECTION: 'disable-server-response-inspection';
+
+DISABLE_TELNET: 'disable-telnet';
 
 DISABLED: 'disabled';
 
@@ -319,6 +329,8 @@ EMAIL: 'email';
 EMAIL_SCHEDULER: 'email-scheduler';
 
 ENABLE_MP_BGP: 'enable-mp-bgp';
+
+ENABLE_MAPPING_TIMEOUT: 'enable-mapping-timeout';
 
 ENABLE_PACKET_BUFFER_PROTECTION: 'enable-packet-buffer-protection';
 
@@ -354,6 +366,8 @@ EXCLUDE_LIST: 'exclude-list';
 
 EXCEPTION_LIST: 'exception-list';
 
+EVENT_REGEX: 'event-regex';
+EVENT_TYPE: 'event-type';
 EXACT: 'exact';
 
 EXCESSIVE_BANDWIDTH_USE: 'excessive-bandwidth-use';
@@ -460,6 +474,8 @@ HOLD_TIME:
 
 HOSTNAME: 'hostname';
 
+HOSTNAME_TYPE_IN_SYSLOG: 'hostname-type-in-syslog';
+
 HOURLY: 'hourly';
 
 HOURS: 'hours';
@@ -513,6 +529,8 @@ IP_NETMASK: 'ip-netmask';
 
 IP_RANGE_LITERAL: 'ip-range';
 
+IP_USER_MAPPING_TIMEOUT: 'ip-user-mapping-timeout';
+
 IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
 
 IPV4: 'ipv4';
@@ -528,6 +546,8 @@ LAYER2: 'layer2';
 LAYER3: 'layer3';
 
 LIFETIME: 'lifetime';
+
+MANAGEMENT: 'management';
 
 LINK
 :
@@ -606,6 +626,7 @@ METRIC: 'metric';
 
 MIN_VERSION: 'min-version';
 
+MGMT_INTERFACE: 'mgmt-interface';
 MGT_CONFIG: 'mgt-config';
 
 
@@ -766,7 +787,10 @@ REMOVE_PRIVATE_AS: 'remove-private-as';
 
 REPORTS: 'reports';
 
+REGEX_IDENTIFIER: 'regex-identifier';
 REGION: 'region';
+
+REMATCH: 'rematch';
 
 RESET_BOTH: 'reset-both';
 
@@ -883,6 +907,7 @@ SYSLOG: 'syslog';
 
 SSL_TLS_SERVICE_PROFILE: 'ssl-tls-service-profile';
 
+SYSLOG_PARSE_PROFILE: 'syslog-parse-profile';
 SYSTEM: 'system';
 
 TAG: 'tag';
@@ -1019,11 +1044,13 @@ YES: 'yes';
 
 ZONE: 'zone';
 
+USERNAME_REGEX: 'username-regex';
 UUID: [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9];
 
 // Ignored config blocks
 REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
 
+SERVER_MONITOR: 'server-monitor';
 SERVER_PROFILE: 'server-profile';
 
 // Complex tokens
