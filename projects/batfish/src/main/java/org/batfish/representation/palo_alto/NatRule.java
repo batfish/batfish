@@ -24,6 +24,9 @@ public final class NatRule implements Serializable {
   // Name of the rule
   private final @Nonnull String _name;
 
+  // Description of the rule
+  private @Nullable String _description;
+
   // Zones (both required to commit)
   private final @Nonnull SortedSet<String> _from;
   private @Nullable String _to;
@@ -78,6 +81,10 @@ public final class NatRule implements Serializable {
     return _name;
   }
 
+  public @Nullable String getDescription() {
+    return _description;
+  }
+
   public @Nullable ServiceOrServiceGroupReference getService() {
     return _service;
   }
@@ -100,6 +107,10 @@ public final class NatRule implements Serializable {
 
   public void setDisabled(boolean disabled) {
     _disabled = disabled;
+  }
+
+  public void setDescription(@Nullable String description) {
+    _description = description;
   }
 
   public void setService(ServiceOrServiceGroupReference service) {
