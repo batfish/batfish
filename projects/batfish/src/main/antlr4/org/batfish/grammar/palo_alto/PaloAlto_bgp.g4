@@ -58,8 +58,45 @@ bgp_local_as
 
 bgp_null
 :
-    DAMPENING_PROFILE
-    null_rest_of_line
+    DAMPENING_PROFILE name = variable
+    (
+        bgpnd_cutoff
+        | bgpnd_decay_half_life_reachable
+        | bgpnd_decay_half_life_unreachable
+        | bgpnd_enable
+        | bgpnd_max_hold_time
+        | bgpnd_reuse
+    )?
+;
+
+bgpnd_cutoff
+:
+    CUTOFF val = variable
+;
+
+bgpnd_decay_half_life_reachable
+:
+    DECAY_HALF_LIFE_REACHABLE val = variable
+;
+
+bgpnd_decay_half_life_unreachable
+:
+    DECAY_HALF_LIFE_UNREACHABLE val = variable
+;
+
+bgpnd_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+bgpnd_max_hold_time
+:
+    MAX_HOLD_TIME val = variable
+;
+
+bgpnd_reuse
+:
+    REUSE val = variable
 ;
 
 bgp_peer_group
@@ -82,9 +119,17 @@ bgppg_definition
     name = bgp_peer_group_name
     (
         bgppg_enable
+        | bgppg_enable_mp_bgp_null
         | bgppg_peer
         | bgppg_type
+        | bgppgte_aggregated_confed_as_path_null
+        | bgppgp_soft_reset_with_stored_info_null
     )?
+;
+
+bgppg_enable_mp_bgp_null
+:
+    ENABLE_MP_BGP yn = yes_or_no
 ;
 
 bgppg_enable
@@ -96,22 +141,72 @@ bgppg_peer
 :
     PEER name = bgp_peer_name
     (
-        bgppgp_bfd
+        bgppgp_address_family_identifier
+        | bgppgp_bfd
         | bgppgp_connection_options
         | bgppgp_enable
+        | bgppgp_enable_mp_bgp_null
         | bgppgp_enable_sender_side_loop_detection
         | bgppgp_local_address
         | bgppgp_max_prefixes
         | bgppgp_peer_address
         | bgppgp_peer_as
-//        | bgppgp_peering_type
+        | bgppgp_peering_type_null
         | bgppgp_reflector_client
+        | bgppgp_soft_reset_with_stored_info_null
+        | bgppgp_subsequent_address_family_identifier
     )?
+;
+
+bgppgp_address_family_identifier
+:
+    ADDRESS_FAMILY_IDENTIFIER (IPV4 | IPV6)
+;
+
+bgppgp_subsequent_address_family_identifier
+:
+    SUBSEQUENT_ADDRESS_FAMILY_IDENTIFIER (MULTICAST | UNICAST) yn = yes_or_no
+;
+
+bgppgp_peering_type_null
+:
+    PEERING_TYPE (UNSPECIFIED)
+;
+
+bgppgp_soft_reset_with_stored_info_null
+:
+    SOFT_RESET_WITH_STORED_INFO yn = yes_or_no
 ;
 
 bgppgp_bfd
 :
-    BFD null_rest_of_line
+    BFD
+    (
+        bgppgp_bfd_profile
+        | bgppgp_bfd_min_tx_interval
+        | bgppgp_bfd_min_rx_interval
+        | bgppgp_bfd_multiplier
+    )?
+;
+
+bgppgp_bfd_profile
+:
+    PROFILE name = variable
+;
+
+bgppgp_bfd_min_tx_interval
+:
+    MINIMUM_TRANSMIT_INTERVAL val = uint16
+;
+
+bgppgp_bfd_min_rx_interval
+:
+    MINIMUM_RECEIVE_INTERVAL val = uint16
+;
+
+bgppgp_bfd_multiplier
+:
+    MULTIPLIER val = uint8
 ;
 
 bgppgp_connection_options
@@ -152,13 +247,37 @@ bgppgp_co_multihop
 bgppgp_co_null
 :
     (
-       HOLD_TIME
-       | IDLE_HOLD_TIME
-       | KEEP_ALIVE_INTERVAL
-       | MIN_ROUTE_ADV_INTERVAL
-       | OPEN_DELAY_TIME
+       bgppgp_co_hold_time
+       | bgppgp_co_idle_hold_time
+       | bgppgp_co_keep_alive_interval
+       | bgppgp_co_min_route_adv_interval
+       | bgppgp_co_open_delay_time
     )
-    null_rest_of_line
+;
+
+bgppgp_co_hold_time
+:
+    HOLD_TIME val = uint16
+;
+
+bgppgp_co_idle_hold_time
+:
+    IDLE_HOLD_TIME val = uint16
+;
+
+bgppgp_co_keep_alive_interval
+:
+    KEEP_ALIVE_INTERVAL val = uint16
+;
+
+bgppgp_co_min_route_adv_interval
+:
+    MIN_ROUTE_ADV_INTERVAL val = uint16
+;
+
+bgppgp_co_open_delay_time
+:
+    OPEN_DELAY_TIME val = uint16
 ;
 
 bgppgp_co_outgoing_bgp_connection
@@ -183,6 +302,11 @@ bgppgp_coo_local_port
 bgppgp_enable
 :
     ENABLE yn = yes_or_no
+;
+
+bgppgp_enable_mp_bgp_null
+:
+    ENABLE_MP_BGP yn = yes_or_no
 ;
 
 bgppgp_enable_sender_side_loop_detection
@@ -242,10 +366,16 @@ bgppgt_ebgp
 :
     EBGP
     (
-        bgppgte_export_nexthop
+        bgppgte_aggregated_confed_as_path_null
+        | bgppgte_export_nexthop
         | bgppgte_import_nexthop
         | bgppgte_remove_private_as
     )?
+;
+
+bgppgte_aggregated_confed_as_path_null
+:
+    AGGREGATED_CONFED_AS_PATH yn = yes_or_no
 ;
 
 bgppgte_export_nexthop
@@ -266,7 +396,32 @@ bgppgte_remove_private_as
 bgppgt_ibgp
 :
     IBGP
-    // TODO ibgp-specific options
+    (
+        bgppgti_allowas_in
+        | bgppgti_multipath
+        | bgppgti_next_hop_self
+        | bgppgti_soften_inbound
+    )?
+;
+
+bgppgti_allowas_in
+:
+    ALLOWAS_IN (ENABLE | DISABLE)
+;
+
+bgppgti_multipath
+:
+    MULTIPATH yn = yes_or_no
+;
+
+bgppgti_next_hop_self
+:
+    NEXT_HOP_SELF yn = yes_or_no
+;
+
+bgppgti_soften_inbound
+:
+    SOFTEN_INBOUND yn = yes_or_no
 ;
 
 bgp_policy
@@ -416,4 +571,3 @@ bgprr_profile_name
 :
     name = variable bgprr_general
 ;
-
