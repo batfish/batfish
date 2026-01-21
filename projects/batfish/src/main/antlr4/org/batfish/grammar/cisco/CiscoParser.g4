@@ -944,7 +944,8 @@ ip_as_path_regex_mode_stanza
 ip_dhcp_null
 :
    (
-      EXCLUDED_ADDRESS
+      BOOTP
+      | EXCLUDED_ADDRESS
       | PACKET
       | SMART_RELAY
       | SNOOPING
@@ -3243,11 +3244,13 @@ stanza
    | s_arp_access_list_extended
    | s_authentication
    | s_banner_ios
+   | s_bare
    | s_bfd
    | s_bfd_template
    | s_cable
    | s_call_home
    | s_callhome
+   | s_telemetry
    | s_call_manager_fallback
    | s_class_map
    | s_class_map_ios
@@ -3287,9 +3290,7 @@ stanza
    | s_hostname
    | s_ids
    | s_ifmap
-   |
-   // do not move below s_interface
-   s_interface_line
+   | s_interface_line
    | s_interface
    | s_ip
    | s_ip_access_list_eth
@@ -3347,6 +3348,7 @@ stanza
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
+   | s_quit
    | s_radius_server
    | s_redundancy
    | s_rf
@@ -4266,6 +4268,97 @@ wlan_virtual_ap_null
    ) null_rest_of_line
 ;
 
+s_telemetry
+:
+   TELEMETRY t_ietf
+;
+
+t_ietf
+:
+   IETF ti_subscription
+;
+
+ti_subscription
+:
+   SUBSCRIPTION id = dec NEWLINE
+   (
+      ti_line
+   )*
+;
+
+ti_line
+:
+   ti_encoding
+   | ti_filter
+   | ti_receiver
+   | ti_source_address
+   | ti_source_vrf
+   | ti_stream
+   | ti_update_policy
+   | ti_null
+;
+
+ti_encoding
+:
+   ENCODING (ENCODE_TDL | ENCODE_KVGPB | ENCODE_XML) NEWLINE
+;
+
+ti_filter
+:
+   FILTER XPATH filter_value = variable_permissive NEWLINE
+;
+
+ti_receiver
+:
+   RECEIVER
+   (
+      IP ADDRESS ip = IP_ADDRESS receiver_name = ti_receiver_name
+      | NAME receiver_name = ti_receiver_name
+   )
+   (
+      tir_attribute
+   )* NEWLINE
+;
+
+tir_attribute
+:
+   PORT port_value = dec
+   | PROTOCOL (GRPC_TCP | GRPC_TLS)
+   | RECEIVER_TYPE (COLLECTOR | receiver_type_value = variable_permissive)
+;
+
+ti_source_address
+:
+   SOURCE_ADDRESS ip = IP_ADDRESS NEWLINE
+;
+
+ti_source_vrf
+:
+   SOURCE_VRF vrf = variable NEWLINE
+;
+
+ti_stream
+:
+   STREAM (YANG_PUSH | YANG_NOTIF_NATIVE | NATIVE) NEWLINE
+;
+
+ti_update_policy
+:
+   UPDATE_POLICY (ON_CHANGE | PERIODIC period = dec) NEWLINE
+;
+
+ti_null
+:
+   null_rest_of_line
+;
+
+ti_receiver_name
+:
+   (
+      ~( NEWLINE | PORT | PROTOCOL | RECEIVER_TYPE )
+   )+
+;
+
 wsma_null
 :
    NO?
@@ -4273,4 +4366,9 @@ wsma_null
       PROFILE
       | TRANSPORT
    ) null_rest_of_line
+;
+
+s_bare: NEWLINE
+;
+s_quit: QUIT NEWLINE
 ;

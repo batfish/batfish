@@ -51,7 +51,7 @@ tokens {
    VALUE,
    WIRED,
    WISPR
-} 
+}
 
 // Cisco Keywords
 
@@ -521,6 +521,8 @@ AUTHORIZATION_SERVER_GROUP: 'authorization-server-group';
 AUTHORIZE: 'authorize';
 AUTHORIZED: 'authorized';
 AUTHORIZING_METHOD_PRIORITY: 'authorizing-method-priority';
+
+AUTO_ENROLL: 'auto-enroll';
 
 AUTO: 'auto';
 
@@ -1005,6 +1007,10 @@ COLLECT: 'collect';
 
 COLLECT_STATS: 'collect-stats';
 
+COLLECTOR: 'collector';
+
+COLOR: 'color';
+
 COMM_LIST: 'comm-list';
 
 COMMAND
@@ -1433,7 +1439,6 @@ DETECT_VALID_SSID_MISUSE: 'detect-valid-ssid-misuse';
 DETECT_WIRELESS_BRIDGE: 'detect-wireless-bridge';
 
 DETECT_WIRELESS_HOSTED_NETWORK: 'detect-wireless-hosted-network';
-
 DETERMINISTIC_MED: 'deterministic-med';
 
 DEV
@@ -1739,6 +1744,14 @@ ENABLED: 'enabled';
 
 ENCAPSULATION: 'encapsulation';
 
+ENCODE_KVGPB: 'encode-kvgpb';
+
+ENCODE_TDL: 'encode-tdl';
+
+ENCODE_XML: 'encode-xml';
+
+ENCODING: 'encoding';
+
 ENCODING_WEIGHTED: 'encoding-weighted';
 
 ENCR: 'encr';
@@ -1779,6 +1792,8 @@ ENGINEID
       | 'engineID'
    ) -> pushMode ( M_COMMENT )
 ;
+
+ENROLL: 'enroll';
 
 ENROLLMENT: 'enrollment';
 
@@ -2285,6 +2300,12 @@ GROUP24: 'group24';
 
 GROUP5: 'group5';
 
+GROUP_SERVER: 'group-server';
+
+GRPC_TCP: 'grpc-tcp';
+
+GRPC_TLS: 'grpc-tls';
+
 GSHUT
 :
    [Gg][Ss][Hh][Uu][Tt]
@@ -2566,6 +2587,8 @@ IDS_PROFILE: 'ids-profile';
 IEC: 'iec';
 
 IEEE_MMS_SSL: 'ieee-mms-ssl';
+
+IETF: 'ietf';
 
 IETF_FORMAT: 'ietf-format';
 
@@ -3622,6 +3645,8 @@ NAT_TRAVERSAL: 'nat-traversal';
 
 NATIVE: 'native';
 
+NATIVE_VLAN_TAG: 'native-vlan-tag';
+
 NBAR: 'nbar';
 
 NCP: 'ncp';
@@ -3659,6 +3684,8 @@ NET
 :
    'net' -> pushMode ( M_ISO_Address )
 ;
+
+NESTED_URI: 'nested-uri';
 
 NET_REDIRECT: 'net-redirect';
 
@@ -3874,9 +3901,12 @@ OFDM_THROUGHPUT: 'ofdm-throughput';
 
 OFFSET_LIST: 'offset-list';
 
+
 OLSR: 'olsr';
 
 ON: 'on';
+
+ON_CHANGE: 'on-change';
 
 ON_FAILURE: 'on-failure';
 
@@ -4527,6 +4557,10 @@ RECEIVE_WINDOW: 'receive-window';
 
 RECEIVED: 'received';
 
+RECEIVER: 'receiver';
+
+RECEIVER_TYPE: 'receiver-type';
+
 RECONNECT_INTERVAL: 'reconnect-interval';
 
 RECORD: 'record';
@@ -4687,6 +4721,8 @@ REVERTIVE: 'revertive';
 REVISION: 'revision';
 
 REVOCATION_CHECK: 'revocation-check';
+
+REGENERATE: 'regenerate';
 
 REWRITE: 'rewrite';
 
@@ -5255,6 +5291,8 @@ SOURCE_PROTOCOL: 'source-protocol';
 
 SOURCE_ROUTE: 'source-route';
 
+SOURCE_VRF: 'source-vrf';
+
 SOURCE_ROUTE_FAILED: 'source-route-failed';
 
 SOURCE_QUENCH: 'source-quench';
@@ -5378,6 +5416,8 @@ STORM_CONTROL: 'storm-control';
 
 STP: 'stp';
 
+STREAM: 'stream';
+
 STREAMING: 'streaming';
 
 STREET_ADDRESS: 'street-address';
@@ -5403,6 +5443,8 @@ SUBINTERFACE: 'subinterface';
 
 SUBJECT_NAME: 'subject-name';
 
+SUBJECT_ALT_NAME: 'subject-alt-name';
+
 SUBMGMT: 'submgmt';
 
 SUBNET: 'subnet';
@@ -5426,6 +5468,8 @@ SUBSCRIBE_TO: 'subscribe-to';
 SUBSCRIBE_TO_ALERT_GROUP: 'subscribe-to-alert-group';
 
 SUBSCRIBER: 'subscriber';
+
+SUBSCRIPTION: 'subscription';
 
 SUCCESS: 'success';
 
@@ -5719,7 +5763,11 @@ TCPNETHASPSRV: 'tcpnethaspsrv';
 
 TCS_LOAD_BALANCE: 'tcs-load-balance';
 
+TDL_URI: 'tdl-uri';
+
 TELEPHONY_SERVICE: 'telephony-service';
+
+TELEMETRY: 'telemetry';
 
 TELNET: 'telnet';
 
@@ -6046,6 +6094,8 @@ UNTAGGED: 'untagged';
 UP: 'up';
 UPDATE: 'update';
 
+UPDATE_POLICY: 'update-policy';
+
 UPDATE_CALENDAR: 'update-calendar';
 
 UPDATE_DELAY: 'update-delay';
@@ -6176,6 +6226,8 @@ VALID_11G_CHANNEL: 'valid-11g-channel';
 VALID_AND_PROTECTED_SSID: 'valid-and-protected-ssid';
 
 VALID_NETWORK_OUI_PROFILE: 'valid-network-oui-profile';
+
+USAGE: 'usage';
 
 VALIDATION_USAGE: 'validation-usage';
 
@@ -6461,6 +6513,13 @@ XNS_CH: 'xns-ch';
 XNS_MAIL: 'xns-mail';
 
 XNS_TIME: 'xns-time';
+
+XPATH: 'xpath';
+
+YANG_NOTIF_NATIVE: 'yang-notif-native';
+
+YANG_PUSH: 'yang-push';
+
 Y1731: 'y1731';
 YELLOW: 'yellow';
 

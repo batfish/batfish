@@ -1551,6 +1551,7 @@ if_vrrp
       | ifvrrp_preempt
       | ifvrrp_priority
       | ifvrrp_priority_level
+      | ifvrrp_track
    )
 ;
 
@@ -1911,4 +1912,6 @@ if_inner
  
    | if_null_single
    | if_null_block
+;
+ifvrrp_track: TRACK num = dec (DECREMENT dec_val = dec)? NEWLINE
 ;

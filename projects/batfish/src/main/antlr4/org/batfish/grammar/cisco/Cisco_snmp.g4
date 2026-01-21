@@ -127,20 +127,17 @@ ss_host_generic
       | ip6 = IPV6_ADDRESS
       | host = variable
    )
+   (ss_host_use_vrf)?
    (
-      ss_host_use_vrf
-      |
       (
-         (
-            ss_host_informs
-            | ss_host_traps
-            | ss_host_version
-         )* comm_or_username = variable_snmp_host
-         (
-            traps += variable_snmp_host
-         )*
-      )
-   ) NEWLINE
+         ss_host_informs
+         | ss_host_traps
+         | ss_host_version
+      )* comm_or_username = variable_snmp_host
+      (
+         traps += variable_snmp_host
+      )*
+   )? NEWLINE
 ;
 
 ss_host_informs
