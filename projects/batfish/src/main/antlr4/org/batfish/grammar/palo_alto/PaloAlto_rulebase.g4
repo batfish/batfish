@@ -50,7 +50,7 @@ sr_pbf
 
 srp_rules
 :
-    RULES srp_definition?
+    RULES srp_definition*
 ;
 
 srp_definition
@@ -75,7 +75,7 @@ srp_definition
         | srp_source_user
         | srp_tag
         | srp_null
-    )?
+    )*
 ;
 
 srp_uuid_null
@@ -83,17 +83,23 @@ srp_uuid_null
     UUID
     | ~(
         ACTION
-        | FROM
-        | SOURCE
-        | DESTINATION
+        | ANY
         | APPLICATION
-        | SERVICE
+        | DESTINATION
+        | DISABLED
         | ENFORCE_SYMMETRIC_RETURN
+        | FROM
+        | GROUP_TAG
         | LOG_END
         | LOG_START
         | NEGATE_DESTINATION
         | NEGATE_SOURCE
         | OPTION
+        | SERVICE
+        | SOURCE
+        | SOURCE_USER
+        | TAG
+        | UUID
         | NEWLINE
     )
 ;
@@ -184,7 +190,7 @@ srp_disabled
 
 srp_group_tag
 :
-    GROUP_TAG variable
+    GROUP_TAG value
 ;
 
 
@@ -219,7 +225,7 @@ srp_negate_source
 
 sr_security_rules
 :
-    RULES srs_definition?
+    RULES srs_definition*
 ;
 
 srs_definition
@@ -235,7 +241,6 @@ srs_definition
         | srs_destination
         | srs_destination_hip
         | srs_disabled
-        | srs_from
         | srs_from
         | srs_group_tag
         | srs_hip_profiles
@@ -255,7 +260,7 @@ srs_definition
         | srs_target_null
         | srs_to
         | srs_tag
-    ) ?
+    ) *
 ;
 
 srs_uuid_null
@@ -263,6 +268,7 @@ srs_uuid_null
     UUID
     | ~(
         ACTION
+        | ANY
         | APPLICATION
         | CATEGORY
         | DESCRIPTION
@@ -270,6 +276,7 @@ srs_uuid_null
         | DESTINATION_HIP
         | DISABLED
         | FROM
+        | GROUP_TAG
         | HIP_PROFILES
         | LOG_END
         | LOG_SETTING
@@ -277,8 +284,9 @@ srs_uuid_null
         | NEGATE_DESTINATION
         | NEGATE_SOURCE
         | OPTION
-        | NEWLINE
+        | PROFILE_SETTING
         | RULE_TYPE
+        | SCHEDULE
         | SERVICE
         | SOURCE
         | SOURCE_HIP
@@ -286,6 +294,8 @@ srs_uuid_null
         | TAG
         | TARGET
         | TO
+        | UUID
+        | NEWLINE
     )
 ;
 

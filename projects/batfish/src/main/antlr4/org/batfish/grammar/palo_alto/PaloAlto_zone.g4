@@ -18,7 +18,7 @@ s_zone_definition
         sz_enable_user_identification
         | sz_network
         | sz_user_acl
-    )?
+    )*
 ;
 
 sz_network
@@ -31,7 +31,7 @@ sz_network
         | szn_layer3
         | szn_tap
         | szn_virtual_wire
-    )?
+    )*
 ;
 
 szn_external
