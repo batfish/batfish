@@ -2324,7 +2324,13 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentPkiTrustpoint == null) {
       return;
     }
-    // TODO: handle auto enrollment
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setAutoEnroll(false);
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      return;
+    }
+    _currentPkiTrustpoint.setAutoEnroll(true);
+    _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
   }
 
   @Override
@@ -2332,7 +2338,22 @@ public class CiscoControlPlaneExtractor extends CiscoParserBaseListener
     if (_currentPkiTrustpoint == null) {
       return;
     }
-    // TODO: handle auto enroll with percentage
+    if (ctx.NO() != null) {
+      _currentPkiTrustpoint.setAutoEnroll(false);
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      return;
+    }
+    _currentPkiTrustpoint.setAutoEnroll(true);
+    if (ctx.percent_val != null) {
+      try {
+        _currentPkiTrustpoint.setAutoEnrollRegenerate(Integer.parseInt(ctx.percent_val.getText()));
+      } catch (NumberFormatException e) {
+        warn(ctx, "Invalid auto-enroll percentage: " + ctx.percent_val.getText());
+        _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+      }
+    } else {
+      _currentPkiTrustpoint.setAutoEnrollRegenerate(null);
+    }
   }
 
   @Override

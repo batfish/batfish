@@ -187,6 +187,11 @@ import static org.batfish.representation.cisco.CiscoConversions.aclLineStructure
 import static org.batfish.representation.cisco.CiscoConversions.computeVrfExportImportPolicyName;
 import static org.batfish.representation.cisco.CiscoIosDynamicNat.computeDynamicDestinationNatAclName;
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_LDAP;
+import static org.batfish.representation.cisco.CiscoStructureType.BGP_TEMPLATE_PEER_SESSION;
+import static org.batfish.representation.cisco.CiscoStructureType.DEVICE_TRACKING_POLICY;
+
+import org.batfish.representation.cisco.DeviceTrackingPolicy;
+import org.batfish.representation.cisco.DeviceTrackingSecurityLevel;
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_RADIUS;
 import static org.batfish.representation.cisco.CiscoStructureType.AAA_SERVER_GROUP_TACACS_PLUS;
 import static org.batfish.representation.cisco.CiscoStructureType.ACCESS_LIST;
@@ -225,6 +230,7 @@ import static org.batfish.representation.cisco.CiscoStructureType.SERVICE_OBJECT
 import static org.batfish.representation.cisco.CiscoStructureType.TACACS_SERVER;
 import static org.batfish.representation.cisco.CiscoStructureType.TRACK;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ADVERTISE_MAP;
+import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_INHERITED_SESSION;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_ATTRIBUTE_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_AGGREGATE_SUPPRESS_MAP;
 import static org.batfish.representation.cisco.CiscoStructureUsage.BGP_REDISTRIBUTE_EIGRP_MAP;

@@ -944,7 +944,8 @@ ip_as_path_regex_mode_stanza
 ip_dhcp_null
 :
    (
-      EXCLUDED_ADDRESS
+      BOOTP
+      | EXCLUDED_ADDRESS
       | PACKET
       | SMART_RELAY
       | SNOOPING
@@ -3243,6 +3244,7 @@ stanza
    | s_arp_access_list_extended
    | s_authentication
    | s_banner_ios
+   | s_bare
    | s_bfd
    | s_bfd_template
    | s_cable
@@ -3288,9 +3290,7 @@ stanza
    | s_hostname
    | s_ids
    | s_ifmap
-   |
-   // do not move below s_interface
-   s_interface_line
+   | s_interface_line
    | s_interface
    | s_ip
    | s_ip_access_list_eth
@@ -3348,6 +3348,7 @@ stanza
    | s_privilege
    | s_process_max_time
    | s_qos_mapping
+   | s_quit
    | s_radius_server
    | s_redundancy
    | s_rf
@@ -4365,4 +4366,9 @@ wsma_null
       PROFILE
       | TRANSPORT
    ) null_rest_of_line
+;
+
+s_bare: NEWLINE
+;
+s_quit: QUIT NEWLINE
 ;

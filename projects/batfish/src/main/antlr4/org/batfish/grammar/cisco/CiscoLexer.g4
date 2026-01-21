@@ -51,7 +51,7 @@ tokens {
    VALUE,
    WIRED,
    WISPR
-} 
+}
 
 // Cisco Keywords
 
@@ -3685,6 +3685,8 @@ NET
    'net' -> pushMode ( M_ISO_Address )
 ;
 
+NESTED_URI: 'nested-uri';
+
 NET_REDIRECT: 'net-redirect';
 
 NET_TOS_REDIRECT: 'net-tos-redirect';
@@ -4719,6 +4721,8 @@ REVERTIVE: 'revertive';
 REVISION: 'revision';
 
 REVOCATION_CHECK: 'revocation-check';
+
+REGENERATE: 'regenerate';
 
 REWRITE: 'rewrite';
 
@@ -5758,6 +5762,8 @@ TCPMUX: 'tcpmux';
 TCPNETHASPSRV: 'tcpnethaspsrv';
 
 TCS_LOAD_BALANCE: 'tcs-load-balance';
+
+TDL_URI: 'tdl-uri';
 
 TELEPHONY_SERVICE: 'telephony-service';
 

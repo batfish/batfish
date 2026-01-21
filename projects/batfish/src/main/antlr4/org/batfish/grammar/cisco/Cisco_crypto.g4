@@ -605,7 +605,7 @@ cpkit_auto
 
 cpkit_auto_enroll
  :
-    NO? AUTO_ENROLL (percent_val = dec)? NEWLINE
+    NO? AUTO_ENROLL (percent_val = dec)? (REGENERATE)? NEWLINE
  ;
 
 cpkit_enrollment
@@ -622,9 +622,9 @@ cpkit_revocation_check
  :
     NO? REVOCATION_CHECK
     (
-       | NONE
-       | CRL
-    ) NEWLINE
+       NONE
+       | CRL (NONE)?
+    )? NEWLINE
  ;
 
 cpkit_rsakeypair
@@ -634,7 +634,7 @@ cpkit_rsakeypair
 
 cpkit_serial_number
  :
-    NO? SERIAL_NUMBER serial = variable_permissive NEWLINE
+    NO? SERIAL_NUMBER serial = variable_permissive? NEWLINE
  ;
 
 cpkit_source_vrf
@@ -646,10 +646,11 @@ cpkit_subject_alt_name
  :
     NO? SUBJECT_ALT_NAME
     (
-       | DNS san_dns = variable_permissive
+       DNS san_dns = variable_permissive
        | EMAIL san_email = variable_permissive
        | IPADDRESS san_ip = ip_address
        | FQDN san_fqdn = variable_permissive
+       | san_fqdn = variable_permissive
     ) NEWLINE
  ;
 
