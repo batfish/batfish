@@ -34,11 +34,12 @@ ss_common
     | s_profiles
     | s_post_rulebase
     | s_pre_rulebase
+    | ss_service_override
     | s_service
     | s_service_group
     | s_tag
-    | ss_service_override
     | s_local_user_database
+    | ss_ssl_tls_service_profile
     | ss_null
 ;
 
@@ -164,12 +165,56 @@ ss_null
         | PROFILES
         | SCHEDULE
         | SERVER_PROFILE
-        | SSL_TLS_SERVICE_PROFILE
         | USER_ID_COLLECTOR
     )
     null_rest_of_line
 ;
 
+ss_ssl_tls_service_profile
+:
+    SSL_TLS_SERVICE_PROFILE name = variable
+    (
+        sslp_protocol_settings
+        | sslp_certificate
+    )*
+;
+
+sslp_protocol_settings
+:
+    PROTOCOL_SETTINGS
+    (
+        sslps_min_version
+        | sslps_max_version
+    )
+;
+
+sslps_min_version
+:
+    MIN_VERSION variable
+;
+
+sslps_max_version
+:
+    MAX_VERSION variable
+;
+
+sslp_certificate
+:
+    CERTIFICATE variable
+;
+
 ss_service_override
- : SERVICE name = variable PROTOCOL (TCP | UDP) OVERRIDE yn = yes_or_no
- ;
+: SERVICE name = variable
+   (
+       sso_protocol
+       | sso_override
+   )*
+;
+
+sso_protocol
+: PROTOCOL (TCP | UDP)
+;
+
+sso_override
+: OVERRIDE yn = yes_or_no
+;
