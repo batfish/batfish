@@ -8,7 +8,7 @@ options {
 
 s_service
 :
-    SERVICE s_service_definition?
+    'service' s_service_definition?
 ;
 
 s_service_definition

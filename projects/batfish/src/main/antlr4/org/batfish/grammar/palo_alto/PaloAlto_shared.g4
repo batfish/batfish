@@ -1,6 +1,8 @@
 parser grammar PaloAlto_shared;
 
 import
+    PaloAlto_address,
+    PaloAlto_address_group,
     PaloAlto_application,
     PaloAlto_common,
     PaloAlto_log_settings,
@@ -34,15 +36,25 @@ ss_common
     | s_service
     | s_service_group
     | s_tag
+    | ss_service_override
+    | s_local_user_database
     | ss_null
+;
+
+s_local_user_database
+:
+    LOCAL_USER_DATABASE variable
 ;
 
 s_external_list
 :
-    EXTERNAL_LIST name = variable
+    EXTERNAL_LIST
     (
-      sel_type
-    )
+        name = variable
+        (
+            sel_type
+        )
+    )?
 ;
 
 sel_type
@@ -50,6 +62,7 @@ sel_type
     TYPE
     (
       selt_ip
+      | selt_url
     )
 ;
 
@@ -59,6 +72,7 @@ selt_ip
     (
       seltip_auth
       | seltip_certificate_profile
+      | seltip_exception_list
       | seltip_recurring
       | seltip_url
     )
@@ -92,11 +106,40 @@ seltip_recurring
 :
     RECURRING
     (
-      HOURLY
+      FIVE_MINUTE
+      | HOURLY
     )
 ;
 
 seltip_url
+:
+    URL url = variable
+;
+
+seltip_exception_list
+:
+    EXCEPTION_LIST ip_prefix_list
+;
+
+selt_url
+:
+    URL
+    (
+      selturl_recurring
+      | selturl_url
+    )
+;
+
+selturl_recurring
+:
+    RECURRING
+    (
+      FIVE_MINUTE
+      | HOURLY
+    )
+;
+
+selturl_url
 :
     URL url = variable
 ;
@@ -106,14 +149,21 @@ ss_null
     (
         ADMIN_ROLE
         | AUTHENTICATION_PROFILE
-
+        | AUTHENTICATION_SEQUENCE
         | BOTNET
         | CERTIFICATE
         | CERTIFICATE_PROFILE
         | CONTENT_PREVIEW
         | PROFILE_GROUP
         | PROFILES
+        | SCHEDULE
         | SERVER_PROFILE
+        | SSL_TLS_SERVICE_PROFILE
+        | USER_ID_COLLECTOR
     )
     null_rest_of_line
 ;
+
+ss_service_override
+ : SERVICE name = variable PROTOCOL (TCP | UDP) OVERRIDE yn = yes_or_no
+ ;

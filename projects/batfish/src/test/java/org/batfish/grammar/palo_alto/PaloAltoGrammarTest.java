@@ -2509,7 +2509,7 @@ public final class PaloAltoGrammarTest {
             allOf(
                 ParseWarningMatchers.hasText("active-active-device-binding primary"),
                 hasComment("Batfish currently models this as active-active-device-binding both")),
-            hasComment("Expected active-active-device-binding in range 0-1, but got '2'")));
+            hasComment("Invalid active-active-device-binding value: 2")));
 
     // Make sure the active-active-device-binding isn't set to an invalid number
     Map<String, NatRule> natRules =
@@ -4884,5 +4884,25 @@ public final class PaloAltoGrammarTest {
     assertThat(rule.getSourceHips(), containsInAnyOrder("cn=user,ou=groups,dc=example,dc=com"));
     assertThat(rule.getDestinationHips(), containsInAnyOrder("hip 3"));
     assertThat(rule.getHipProfiles(), containsInAnyOrder("profile 1"));
+  }
+
+  @Test
+  public void testUserIdCollector() {
+    parsePaloAltoConfig("user-id-collector-setting");
+  }
+
+  @Test
+  public void testUserExamples() {
+    // Test comprehensive user-provided configuration examples
+    // This covers: hostname, interfaces, IKE profiles, virtual router, tunnel
+    // ipsec,
+    // zones, security rules, NAT rules
+    PaloAltoConfiguration c = parsePaloAltoConfig("user-examples");
+    assertThat(c.getHostname(), equalTo("pa-nat-testing"));
+  }
+
+  @Test
+  public void testUserExample2() {
+    parsePaloAltoConfig("user-example-2");
   }
 }

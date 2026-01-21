@@ -18,7 +18,7 @@ sro_statement
 
 sro_device_group
 :
-    DEVICE_GROUP name = variable
+    'device-group' name = variable
     (
         sdg_parent_dg
         // null rule must come last
