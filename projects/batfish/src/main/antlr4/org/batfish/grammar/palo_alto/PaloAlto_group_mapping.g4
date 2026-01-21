@@ -23,7 +23,7 @@ svg_group_mapping
         | svgm_alternate_user_name_2
         | svgm_alternate_user_name_3
         | svgm_disabled
-    )?
+    )*
 ;
 
 svgm_group_object

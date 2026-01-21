@@ -17,7 +17,7 @@ sn_virtual_wire
             | snvw_link_state_pass_through
             | snvw_multicast_firewalling
             | snvw_tag
-        )?
+        )*
     )?
 ;
 
