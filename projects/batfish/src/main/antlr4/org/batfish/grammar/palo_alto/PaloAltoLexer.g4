@@ -16,8 +16,6 @@ SET: 'set';
 
 // Keywords
 
-ACCESS_SETTING: 'access-setting';
-
 ANTI_REPLAY: 'anti-replay';
 
 AUTO_KEY: 'auto-key';
@@ -33,6 +31,22 @@ TUNNEL_MONITOR: 'tunnel-monitor';
 DEVICE_TELEMETRY: 'device-telemetry';
 
 SNMP_SETTING: 'snmp-setting';
+
+SNMP_SYSTEM: 'snmp-system';
+
+ACCESS_SETTING: 'access-setting';
+
+AUTHPRIV: 'authpriv';
+
+AUTHPWD: 'authpwd';
+
+PRIVPWD: 'privpwd';
+
+USERS: 'users';
+
+OID: 'oid';
+
+LOCATION: 'location';
 
 PERMITTED_IP: 'permitted-ip';
 
@@ -164,10 +178,6 @@ AS_PATH: 'as-path';
 AUTH: 'auth';
 
 AUTH_PROFILE: 'auth-profile';
-
-AUTHPRIV: 'authpriv';
-
-AUTHPWD: 'authpwd';
 
 AUTHENTICATION: 'authentication';
 
@@ -583,8 +593,6 @@ LINK_TYPE: 'link-type';
 
 LIST: 'list';
 
-LOCATION: 'location';
-
 LLDP: 'lldp';
 
 LOCAL_ADDRESS: 'local-address';
@@ -702,8 +710,6 @@ NULL: 'null';
 
 OPTION: 'option';
 
-OID: 'oid';
-
 OPEN_DELAY_TIME: 'open-delay-time';
 
 ORIGIN: 'origin';
@@ -755,8 +761,6 @@ PEER_GROUP: 'peer-group';
 PEERING_TYPE: 'peering-type';
 
 PERVASIVE: 'pervasive';
-
-PRIVPWD: 'privpwd';
 
 POLICY: 'policy';
 
@@ -833,8 +837,6 @@ SMTP: 'smtp';
 SOFT_RESET_WITH_STORED_INFO: 'soft-reset-with-stored-info';
 
 SOFTEN_INBOUND: 'soften-inbound';
-
-SNMP_SYSTEM: 'snmp-system';
 
 SNMPTRAP: 'snmptrap';
 
@@ -1055,8 +1057,6 @@ USER_OBJECT: 'user-object';
 USERNAME: 'username';
 
 USERNAME_REGEX: 'username-regex';
-
-USERS: 'users';
 
 VERSION: 'version';
 
