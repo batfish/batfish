@@ -1,0 +1,2 @@
+set switch-options vrf-target target:64589:1111
+set switch-options vrf-target auto

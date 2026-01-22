@@ -8976,6 +8976,12 @@ public final class FlatJuniperGrammarTest {
   }
 
   @Test
+  public void testVrfTargetAuto() throws IOException {
+    // Should not crash.
+    parseJuniperConfig("switch-options-vrf-target-auto");
+  }
+
+  @Test
   public void testJuniperAsPathExclamationRegex() {
     Configuration c = parseConfig("juniper-as-path-exclamation-regex");
     RoutingPolicy asPathGroupPolicy1 = c.getRoutingPolicies().get("AS_PATH_GROUP_POLICY1");
