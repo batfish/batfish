@@ -259,6 +259,8 @@ IFILE: 'ifile';
 
 INHERIT_CERTKEYCHAIN: 'inherit-certkeychain';
 
+INHERITED_TRAFFIC_GROUP: 'inherited-traffic-group';
+
 ILX: 'ilx';
 
 INTERFACE: 'interface';
@@ -541,6 +543,8 @@ SESSION_TICKET: 'session-ticket';
 
 SESSION_TICKET_TIMEOUT: 'session-ticket-timeout';
 
+SESSION: 'session';
+
 SET: 'set';
 
 SET_SYNC_LEADER: 'set-sync-leader';
@@ -580,6 +584,8 @@ SOURCE_ADDR: 'source-addr';
 SOURCE_ADDRESS_TRANSLATION: 'source-address-translation';
 
 SOURCE_MASK: 'source-mask';
+
+SOURCE_PORT: 'source-port';
 
 SERVERSSL_USE_SNI: 'serverssl-use-sni';
 

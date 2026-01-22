@@ -11,7 +11,8 @@ s_analytics
   ANALYTICS
   (
     a_gui_widget
-  )
+    | unrecognized
+  )+
 ;
 
 a_gui_widget

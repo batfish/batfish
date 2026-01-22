@@ -1658,10 +1658,12 @@ l_virtual
       | lv_profiles
       | lv_reject
       | lv_rules
+      | lv_session
       | lv_serverssl_use_sni
       | lv_source
       | lv_source6
       | lv_source_address_translation
+      | lv_source_port
       | lv_translate_address
       | lv_translate_port
       | lv_vlans
@@ -1704,7 +1706,7 @@ lv_ip_protocol
 
 lv_mask
 :
-  MASK mask = ip_address NEWLINE
+  MASK (mask = ip_address | ANY) NEWLINE
 ;
 
 lv_mask6
@@ -1778,6 +1780,11 @@ lvr_rule
   name = structure_name NEWLINE
 ;
 
+lv_session
+:
+  SESSION value = word NEWLINE
+;
+
 lv_source
 :
   SOURCE source = ip_prefix NEWLINE
@@ -1809,6 +1816,11 @@ lvsat_pool
 lvsat_type
 :
   TYPE source_address_translation_type NEWLINE
+;
+
+lv_source_port
+:
+  SOURCE_PORT value = word NEWLINE
 ;
 
 lv_translate_address
