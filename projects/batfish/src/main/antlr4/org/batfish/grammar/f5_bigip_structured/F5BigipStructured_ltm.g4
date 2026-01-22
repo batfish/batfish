@@ -1658,6 +1658,7 @@ l_virtual
       | lv_profiles
       | lv_reject
       | lv_rules
+      | lv_serverssl_use_sni
       | lv_source
       | lv_source6
       | lv_source_address_translation
@@ -1849,6 +1850,15 @@ lv_vlans_disabled
 lv_vlans_enabled
 :
   VLANS_ENABLED NEWLINE
+;
+
+lv_serverssl_use_sni
+:
+  SERVERSSL_USE_SNI
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 l_virtual_address

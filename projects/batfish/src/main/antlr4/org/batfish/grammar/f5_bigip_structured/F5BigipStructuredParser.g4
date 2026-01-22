@@ -32,11 +32,17 @@ imish_chunk
 
 statement
 :
-  s_cm
+  s_analytics
+  | s_cm
   | s_ltm
   | s_net
   | s_security
   | s_sys
+;
+
+s_analytics
+:
+  ANALYTICS ignored
 ;
 
 s_security

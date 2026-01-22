@@ -559,6 +559,8 @@ SOURCE_ADDRESS_TRANSLATION: 'source-address-translation';
 
 SOURCE_MASK: 'source-mask';
 
+SERVERSSL_USE_SNI: 'serverssl-use-sni';
+
 SPLITSESSIONCLIENT: 'splitsessionclient';
 
 SPLITSESSIONSERVER: 'splitsessionserver';
