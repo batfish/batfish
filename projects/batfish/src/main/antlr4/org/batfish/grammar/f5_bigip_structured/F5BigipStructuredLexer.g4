@@ -207,6 +207,8 @@ FPGA: 'fpga';
 
 FTP: 'ftp';
 
+FW_ENFORCED_POLICY: 'fw-enforced-policy';
+
 GATEWAY_ICMP: 'gateway-icmp';
 
 GENERIC_ALERT: 'generic-alert';
@@ -365,6 +367,8 @@ MODULE: 'module';
 
 MONITOR: 'monitor';
 
+NAT: 'nat';
+
 NEIGHBOR: 'neighbor';
 
 NET: 'net';
@@ -516,6 +520,8 @@ SCTP: 'sctp';
 SECURE_RENEGOTIATION: 'secure-renegotiation';
 
 SECURITY: 'security';
+
+SECURITY_LOG_PROFILES: 'security-log-profiles';
 
 SELECTIVE: 'selective';
 
