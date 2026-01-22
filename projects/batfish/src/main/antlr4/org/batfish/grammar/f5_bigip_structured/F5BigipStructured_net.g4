@@ -40,6 +40,7 @@ net_route
       | nroute_gw6
       | nroute_network
       | nroute_network6
+      | nroute_pool
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -67,6 +68,11 @@ nroute_network
 nroute_network6
 :
   NETWORK network6 = ipv6_prefix NEWLINE
+;
+
+nroute_pool
+:
+  POOL pool = structure_name NEWLINE
 ;
 
 net_routing
