@@ -185,7 +185,8 @@ sslp_protocol_settings
     (
         sslps_min_version
         | sslps_max_version
-    )
+        | sslps_algorithm_setting
+    )*
 ;
 
 sslps_min_version
@@ -196,6 +197,24 @@ sslps_min_version
 sslps_max_version
 :
     MAX_VERSION variable
+;
+
+sslps_algorithm_setting
+:
+    (
+        AUTH_ALGO_SHA1
+        | AUTH_ALGO_SHA256
+        | AUTH_ALGO_SHA384
+        | ENC_ALGO_AES_128_CBC
+        | ENC_ALGO_AES_128_GCM
+        | ENC_ALGO_AES_256_CBC
+        | ENC_ALGO_AES_256_GCM
+        | ENC_ALGO_AES_CHACHA20_POLY1305
+        | KEYXCHG_ALGO_DHE
+        | KEYXCHG_ALGO_ECDHE
+        | KEYXCHG_ALGO_RSA
+    )
+    variable
 ;
 
 sslp_certificate

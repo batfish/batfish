@@ -11,7 +11,12 @@ st_description
     DESCRIPTION description = value
 ;
 
-st_variable: (VARIABLE | WORD) variable_name stv_type;
+st_variable
+:
+    (VARIABLE | WORD)
+    variable_name
+    stv_type
+;
 
 stv_type
 :
@@ -22,8 +27,20 @@ stv_type
     )
 ;
 
-stvt_ip_netmask: IP_NETMASK ip_netmask;
+stvt_ip_netmask
+:
+    IP_NETMASK
+    ip_netmask
+;
 
-stvt_ip_range: IP_RANGE_LITERAL ip_range;
+stvt_ip_range
+:
+    IP_RANGE_LITERAL
+    ip_range
+;
 
-variable_name: variable | TYPE;
+variable_name
+:
+    variable
+    | TYPE
+;

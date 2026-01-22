@@ -77,9 +77,14 @@ sp_wildfire_analysis: WILDFIRE_ANALYSIS null_rest_of_line;
 
 sp_url_filtering: URL_FILTERING null_rest_of_line;
 
-sp_custom_url_category: CUSTOM_URL_CATEGORY custom_url_category_name spc_definition;
+sp_custom_url_category: CUSTOM_URL_CATEGORY custom_url_category_name spc_definition*;
 
-spc_definition: spc_description | spc_list | spc_type;
+spc_definition
+:
+    spc_description
+    | spc_list
+    | spc_type
+;
 
 spc_description: DESCRIPTION description = value;
 

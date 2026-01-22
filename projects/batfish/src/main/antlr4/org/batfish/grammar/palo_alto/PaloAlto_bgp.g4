@@ -155,7 +155,7 @@ bgppg_peer
         | bgppgp_reflector_client
         | bgppgp_soft_reset_with_stored_info_null
         | bgppgp_subsequent_address_family_identifier
-    )?
+    )*
 ;
 
 bgppgp_address_family_identifier

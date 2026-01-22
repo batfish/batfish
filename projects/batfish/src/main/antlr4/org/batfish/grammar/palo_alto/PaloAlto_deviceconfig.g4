@@ -157,6 +157,7 @@ sd_system
         | sds_permitted_ip
         | sds_route
         | sds_service
+        | sds_snmp_setting
         | sds_timezone
         | sds_type
         | sds_update_schedule
@@ -227,7 +228,7 @@ sdsn_authentication_type
 
 sds_service
 :
-    SERVICE ( DISABLE_TELNET | DISABLE_HTTP ) yes_or_no
+    SERVICE ( DISABLE_TELNET | DISABLE_HTTP | DISABLE_SNMP ) yes_or_no
 ;
 
 sds_timezone
@@ -252,11 +253,61 @@ sds_update_server
 
 sds_null
 :
-    (
-        PANORAMA_SERVER
-        | SNMP_SETTING
-    )
+    PANORAMA_SERVER
     null_rest_of_line
+;
+
+sds_snmp_setting
+:
+    SNMP_SETTING
+    (
+        sdss_access_setting
+        | sdss_snmp_system
+    )*
+;
+
+sdss_access_setting
+:
+    ACCESS_SETTING
+    sdssa_definition*
+;
+
+sdssa_definition
+:
+    VERSION variable
+    | VIEWS variable sdssav_definition*
+    | USERS variable sdssau_definition*
+;
+
+sdssav_definition
+:
+    VIEW variable
+    (
+        OID variable
+        | OPTION variable
+        | MASK variable
+    )
+;
+
+sdssau_definition
+:
+    AUTHPRIV variable sdssaua_definition*
+;
+
+sdssaua_definition
+:
+    AUTHPWD variable
+    | PRIVPWD variable
+    | VIEW variable
+;
+
+sdss_snmp_system
+:
+    SNMP_SYSTEM
+    (
+        LOCATION variable
+        | CONTACT variable
+    )
 ;
 
 sdsd_servers
