@@ -121,6 +121,10 @@ COMPATIBILITY: 'compatibility';
 
 CONSOLE_INACTIVITY_TIMEOUT: 'console-inactivity-timeout';
 
+CENT_REPORT_DESTINATION_TYPE: 'cent-report-destination-type';
+
+CREATION_TIME: 'creation-time';
+
 CONFIGSYNC_IP: 'configsync-ip';
 
 COOKIE: 'cookie';
@@ -136,6 +140,10 @@ DEFAULTS_FROM: 'defaults-from';
 DENY: 'deny';
 
 DESCRIPTION: 'description';
+
+DRILLDOWN_ENTITIES: 'drilldown-entities';
+
+DRILLDOWN_VALUES: 'drilldown-values';
 
 DESTINATION: 'destination';
 
@@ -209,6 +217,10 @@ GTP: 'gtp';
 
 GUI_SECURITY_BANNER_TEXT: 'gui-security-banner-text';
 
+GUI_PAGECODE: 'gui-pagecode';
+
+GUI_WIDGET: 'gui-widget';
+
 GUI_SETUP: 'gui-setup';
 
 GUID: 'guid';
@@ -279,6 +291,8 @@ KEY: 'key';
 
 LACP: 'lacp';
 
+LAST_MODIFIED_TIME: 'last-modified-time';
+
 LDAP: 'ldap';
 
 LIMIT_TYPE: 'limit-type';
@@ -335,6 +349,8 @@ MAXIMUM_RECORD_SIZE: 'maximum-record-size';
 
 MEMBERS: 'members';
 
+METRICS: 'metrics';
+
 MIN_ACTIVE_MEMBERS: 'min-active-members';
 
 MOD_SSL_METHODS: 'mod-ssl-methods';
@@ -342,6 +358,8 @@ MOD_SSL_METHODS: 'mod-ssl-methods';
 MODE: 'mode';
 
 MQTT: 'mqtt';
+
+MODULE: 'module';
 
 MONITOR: 'monitor';
 
@@ -374,6 +392,8 @@ OPTIONAL_MODULES
 
 OPTIONS: 'options';
 
+ORDER_ON_PAGE: 'order-on-page';
+
 ORIGINS: 'origins';
 
 OUT: 'out';
@@ -387,6 +407,8 @@ PCP: 'pcp';
 PASSPHRASE: 'passphrase';
 
 PEER_NO_RENEGOTIATE_TIMEOUT: 'peer-no-renegotiate-timeout';
+
+PERIOD: 'period';
 
 PERMIT: 'permit';
 
@@ -647,9 +669,13 @@ UNIT_ID: 'unit-id';
 
 UPDATE_SOURCE: 'update-source';
 
+USERNAME: 'username';
+
 VALUE: 'value';
 
 VERSION: 'version';
+
+VIEW_BY: 'view-by';
 
 VIRTUAL: 'virtual';
 
@@ -670,6 +696,8 @@ WEB_SECURITY: 'web-security';
 WEBSOCKET: 'websocket';
 
 WEIGHT: 'weight';
+
+WIDGET_TYPE: 'widget-type';
 
 XML: 'xml';
 

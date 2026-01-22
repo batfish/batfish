@@ -2,6 +2,7 @@ parser grammar F5BigipStructuredParser;
 
 /* This is only needed if parser grammar is spread across files */
 import
+  F5BigipStructured_analytics,
   F5BigipStructured_common,
   F5BigipStructured_cm,
   F5BigipStructured_ltm,
@@ -38,11 +39,6 @@ statement
   | s_net
   | s_security
   | s_sys
-;
-
-s_analytics
-:
-  ANALYTICS ignored
 ;
 
 s_security
