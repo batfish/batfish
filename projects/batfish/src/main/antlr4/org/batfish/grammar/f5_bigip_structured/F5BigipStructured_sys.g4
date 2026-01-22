@@ -14,7 +14,8 @@ sgs_hostname
 sgs_null
 :
   (
-    GUI_SECURITY_BANNER_TEXT
+    CONSOLE_INACTIVITY_TIMEOUT
+    | GUI_SECURITY_BANNER_TEXT
     | GUI_SETUP
   ) ignored
 ;
@@ -148,9 +149,12 @@ sys_null
     | FPGA
     | HTTPD
     | MANAGEMENT_DHCP
+    | OUTBOUND_SMTP
     | PROVISION
     | SFLOW
-    | TURBOFLEX 
+    | SSHD
+    | SYSLOG
+    | TURBOFLEX
   ) ignored
 ;
 

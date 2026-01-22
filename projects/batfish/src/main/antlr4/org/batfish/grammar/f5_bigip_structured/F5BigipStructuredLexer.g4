@@ -119,6 +119,8 @@ COMMUNITY: 'community';
 
 COMPATIBILITY: 'compatibility';
 
+CONSOLE_INACTIVITY_TIMEOUT: 'console-inactivity-timeout';
+
 CONFIGSYNC_IP: 'configsync-ip';
 
 COOKIE: 'cookie';
@@ -378,6 +380,8 @@ OUT: 'out';
 
 OVERRIDE_CONNECTION_LIMIT: 'override-connection-limit';
 
+OUTBOUND_SMTP: 'outbound-smtp';
+
 PCP: 'pcp';
 
 PASSPHRASE: 'passphrase';
@@ -540,6 +544,10 @@ SNI_DEFAULT: 'sni-default';
 SNI_REQUIRE: 'sni-require';
 
 SNMP: 'snmp';
+
+SSHD: 'sshd';
+
+SYSLOG: 'syslog';
 
 SOCKS: 'socks';
 
