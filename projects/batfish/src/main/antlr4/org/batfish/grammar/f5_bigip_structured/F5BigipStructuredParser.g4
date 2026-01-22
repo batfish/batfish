@@ -34,14 +34,44 @@ imish_chunk
 statement
 :
   s_analytics
+  | s_apm
+  | s_auth
   | s_cm
+  | s_ilx
   | s_ltm
   | s_net
+  | s_pem
   | s_security
   | s_sys
+  | s_wom
 ;
 
 s_security
 :
   SECURITY ignored
+;
+
+s_apm
+:
+  APM ignored
+;
+
+s_auth
+:
+  AUTH ignored
+;
+
+s_ilx
+:
+  ILX ignored
+;
+
+s_pem
+:
+  PEM ignored
+;
+
+s_wom
+:
+  WOM ignored
 ;

@@ -57,9 +57,13 @@ ANY: 'any';
 
 APP_SERVICE: 'app-service';
 
+APM: 'apm';
+
 ARP: 'arp';
 
 AUTO_SYNC: 'auto-sync';
+
+AUTH: 'auth';
 
 BASE_MAC: 'base-mac';
 
@@ -420,6 +424,8 @@ PEER_NO_RENEGOTIATE_TIMEOUT: 'peer-no-renegotiate-timeout';
 
 PERIOD: 'period';
 
+PEM: 'pem';
+
 PERMIT: 'permit';
 
 PERSIST: 'persist';
@@ -710,6 +716,8 @@ WEB_ACCELERATION: 'web-acceleration';
 WEB_SECURITY: 'web-security';
 
 WEBSOCKET: 'websocket';
+
+WOM: 'wom';
 
 WEIGHT: 'weight';
 
