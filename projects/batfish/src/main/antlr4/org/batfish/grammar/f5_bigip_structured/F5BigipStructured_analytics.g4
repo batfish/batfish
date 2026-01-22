@@ -21,23 +21,50 @@ a_gui_widget
   (
     NEWLINE
     (
-      agw_null
+      agw_drilldown_entities
+      | agw_drilldown_values
+      | agw_metrics
+      | agw_simple_value
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
-agw_null
+agw_metrics
+:
+  METRICS BRACE_LEFT
+  (
+    value = word
+  )*
+  BRACE_RIGHT NEWLINE
+;
+
+agw_drilldown_entities
+:
+  DRILLDOWN_ENTITIES BRACE_LEFT
+  (
+    value = word
+  )*
+  BRACE_RIGHT NEWLINE
+;
+
+agw_drilldown_values
+:
+  DRILLDOWN_VALUES BRACE_LEFT
+  (
+    value = word
+  )*
+  BRACE_RIGHT NEWLINE
+;
+
+agw_simple_value
 :
   (
     CENT_REPORT_DESTINATION_TYPE
     | CREATION_TIME
     | DESCRIPTION
-    | DRILLDOWN_ENTITIES
-    | DRILLDOWN_VALUES
     | GUI_PAGECODE
     | LAST_MODIFIED_TIME
-    | METRICS
     | MODULE
     | ORDER_ON_PAGE
     | PERIOD
