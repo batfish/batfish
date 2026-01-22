@@ -16,6 +16,8 @@ SET: 'set';
 
 // Keywords
 
+ACCESS_SETTING: 'access-setting';
+
 ANTI_REPLAY: 'anti-replay';
 
 AUTO_KEY: 'auto-key';
@@ -163,6 +165,10 @@ AUTH: 'auth';
 
 AUTH_PROFILE: 'auth-profile';
 
+AUTHPRIV: 'authpriv';
+
+AUTHPWD: 'authpwd';
+
 AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_PROFILE: 'authentication-profile';
@@ -174,6 +180,12 @@ AUTH_ALGO_SHA1: 'auth-algo-sha1';
 AUTH_ALGO_SHA256: 'auth-algo-sha256';
 
 AUTH_ALGO_SHA384: 'auth-algo-sha384';
+
+KEYXCHG_ALGO_DHE: 'keyxchg-algo-dhe';
+
+KEYXCHG_ALGO_ECDHE: 'keyxchg-algo-ecdhe';
+
+KEYXCHG_ALGO_RSA: 'keyxchg-algo-rsa';
 
 AUTO: 'auto';
 
@@ -223,6 +235,9 @@ CONFIG: 'config';
 CONNECTION_OPTIONS: 'connection-options';
 
 CONNECTION_TYPE: 'connection-type';
+
+CONTACT: 'contact';
+
 CONTENT_PREVIEW: 'content-preview';
 
 COPY_TOS: 'copy-tos';
@@ -297,6 +312,8 @@ DISABLE_PREDEFINED_REPORTS: 'disable-predefined-reports';
 DISABLE_SERVER_RESPONSE_INSPECTION: 'disable-server-response-inspection';
 
 DISABLE_TELNET: 'disable-telnet';
+
+DISABLE_SNMP: 'disable-snmp';
 
 DISABLED: 'disabled';
 
@@ -566,6 +583,8 @@ LINK_TYPE: 'link-type';
 
 LIST: 'list';
 
+LOCATION: 'location';
+
 LLDP: 'lldp';
 
 LOCAL_ADDRESS: 'local-address';
@@ -601,6 +620,8 @@ MAX_PATH: 'max-path';
 MAX_PREFIXES: 'max-prefixes';
 
 MAX_VERSION: 'max-version';
+
+MASK: 'mask';
 
 MD5: 'md5';
 
@@ -681,6 +702,8 @@ NULL: 'null';
 
 OPTION: 'option';
 
+OID: 'oid';
+
 OPEN_DELAY_TIME: 'open-delay-time';
 
 ORIGIN: 'origin';
@@ -733,6 +756,8 @@ PEERING_TYPE: 'peering-type';
 
 PERVASIVE: 'pervasive';
 
+PRIVPWD: 'privpwd';
+
 POLICY: 'policy';
 
 PORT: 'port';
@@ -775,6 +800,11 @@ REDIST_PROFILE: 'redist-profile';
 
 REDIST_RULES: 'redist-rules';
 
+// Ignored config blocks
+REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
+
+SERVER_PROFILE: 'server-profile' -> pushMode(M_IgnoredConfigBlock);
+
 REFLECTOR_CLIENT: 'reflector-client';
 
 REFLECTOR_CLUSTER_ID: 'reflector-cluster-id';
@@ -803,6 +833,8 @@ SMTP: 'smtp';
 SOFT_RESET_WITH_STORED_INFO: 'soft-reset-with-stored-info';
 
 SOFTEN_INBOUND: 'soften-inbound';
+
+SNMP_SYSTEM: 'snmp-system';
 
 SNMPTRAP: 'snmptrap';
 
@@ -847,6 +879,8 @@ SECONDS: 'seconds';
 SECURITY: 'security';
 
 SERVER: 'server';
+
+SERVER_MONITOR: 'server-monitor';
 
 SERVERS: 'servers';
 
@@ -1022,11 +1056,17 @@ USERNAME: 'username';
 
 USERNAME_REGEX: 'username-regex';
 
+USERS: 'users';
+
 VERSION: 'version';
 
 VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_WIRE: 'virtual-wire';
+
+VIEW: 'view';
+
+VIEWS: 'views';
 
 VIRUS: 'virus';
 
@@ -1046,23 +1086,16 @@ YES: 'yes';
 
 ZONE: 'zone';
 
-UUID:
-  [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [
-    a-f0-9
-  ] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-' [a-f0-9] [a-f0-9] [
-    a-f0-9
-  ] [a-f0-9] '-' [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [
-    a-f0-9
-  ] [a-f0-9] [a-f0-9] [a-f0-9]
-;
-
-// Ignored config blocks
-REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
-
-SERVER_MONITOR: 'server-monitor';
-SERVER_PROFILE: 'server-profile';
-
 // Complex tokens
+
+UUID
+:
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9]
+;
 
 CLOSE_BRACKET: ']';
 
