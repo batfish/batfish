@@ -200,6 +200,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.Optional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -495,6 +496,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_gw
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_gwContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_network6Context;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_networkContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nroute_poolContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrp_route_domainContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpe_entryContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Nrpee_actionContext;
@@ -2893,13 +2895,31 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
         .map(Self::getAddress)
         .filter(Objects::nonNull)
         .map(ConcreteInterfaceAddress::getPrefix)
-        .anyMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
+        .noneMatch(directlyConnectedNetwork -> directlyConnectedNetwork.containsIp(ip))) {
       _w.redFlagf(
           "Cannot set gateway IP '%s' for route '%s' that is not on a directly-connected"
               + " network in: %s",
           ip, _currentRoute.getName(), getFullText(ctx));
     }
     _currentRoute.setGw(ip);
+  }
+
+  @Override
+  public void exitNroute_pool(Nroute_poolContext ctx) {
+    String poolName = toName(ctx.pool);
+    Pool pool = _c.getPools().get(poolName);
+    if (pool == null) {
+      _w.redFlagf("Route '%s' references missing pool '%s'", _currentRoute.getName(), poolName);
+      return;
+    }
+    // Use the first member's address as the gateway
+    // This is a simplification; F5 might load balance but for static analysis a single next-hop is usually sufficient representation
+    Optional<PoolMember> member = pool.getMembers().values().stream().findFirst();
+    if (member.isPresent() && member.get().getAddress() != null) {
+      _currentRoute.setGw(member.get().getAddress());
+    } else {
+       _w.redFlagf("Route '%s' references pool '%s' with no valid IPv4 members", _currentRoute.getName(), poolName);
+    }
   }
 
   @Override

@@ -259,6 +259,8 @@ IDLE_TIMEOUT_OVERRIDE: 'idle-timeout-override';
 
 IFILE: 'ifile';
 
+IKE_DAEMON: 'ike-daemon';
+
 INHERIT_CERTKEYCHAIN: 'inherit-certkeychain';
 
 INHERITED_TRAFFIC_GROUP: 'inherited-traffic-group';
@@ -282,6 +284,8 @@ IP_FORWARD: 'ip-forward';
 IP_PROTOCOL: 'ip-protocol';
 
 IPOTHER: 'ipother';
+
+IPSEC: 'ipsec';
 
 IPSECALG: 'ipsecalg';
 

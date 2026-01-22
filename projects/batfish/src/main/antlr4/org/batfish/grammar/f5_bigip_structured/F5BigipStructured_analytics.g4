@@ -8,11 +8,7 @@ options {
 
 s_analytics
 :
-  ANALYTICS
-  (
-    a_gui_widget
-    | unrecognized
-  )+
+  ANALYTICS a_gui_widget
 ;
 
 a_gui_widget

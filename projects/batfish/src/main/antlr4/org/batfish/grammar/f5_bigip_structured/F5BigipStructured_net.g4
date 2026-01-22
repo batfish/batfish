@@ -239,7 +239,9 @@ s_net
 :
   NET
   (
-    net_interface
+    net_dns_resolver
+    | net_interface
+    | net_ipsec
     | net_null
     | net_route
     | net_route_domain
@@ -251,6 +253,25 @@ s_net
     | net_vlan
     | unrecognized
   )
+;
+
+net_dns_resolver
+:
+  DNS_RESOLVER ignored
+;
+
+net_ipsec
+:
+  (IPSEC | IPSECALG)
+  (
+    ipsec_ike_daemon
+    | unrecognized
+  )
+;
+
+ipsec_ike_daemon
+:
+  IKE_DAEMON ignored
 ;
 
 net_null
