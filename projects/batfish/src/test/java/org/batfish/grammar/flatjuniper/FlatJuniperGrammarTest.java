@@ -509,7 +509,6 @@ import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
 import org.hamcrest.Matchers;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.ExpectedException;
@@ -8980,52 +8979,6 @@ public final class FlatJuniperGrammarTest {
   public void testVrfTargetAuto() throws IOException {
     // Should not crash.
     parseJuniperConfig("switch-options-vrf-target-auto");
-  }
-
-  @Ignore("Bug: parser error in M_VrfTarget lexer mode causes parse error on next line.")
-  @Test
-  public void testVrfTargetErrorRecovery() throws IOException {
-    // Scenario: switch-options-unkown contains a syntax error
-    // within a "switch-options vrf-target" section.
-    String hostname = "switch-options-unknown";
-
-    // Enable parser error recovery
-    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
-    Settings settings = new Settings();
-    settings.setLogger(new BatfishLogger("debug", false));
-    settings.setDisableUnrecognized(false);
-    settings.setHaltOnConvertError(false);
-    settings.setHaltOnParseError(false);
-    settings.setThrowOnLexerError(false);
-    settings.setThrowOnParserError(false);
-    settings.setVerboseParse(true);
-
-    FlatJuniperCombinedParser flatJuniperParser =
-        new FlatJuniperCombinedParser(src, settings, null);
-    Warnings w = new Warnings();
-    FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(
-            src, flatJuniperParser, w, new SilentSyntaxCollection());
-    ParserRuleContext tree =
-        Batfish.parse(
-            flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
-    JuniperConfiguration jc =
-        SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
-    jc.setWarnings(w);
-
-    // Observation: after recovering from an unrecognized token in "switch-options vrf-target",
-    // the following line is incorrectly parsed.
-    // In this case, EXAMPLE_VLAN_3998 VLAN is defined on the following line.
-
-    assertThat(jc.getMasterLogicalSystem().getNamedVlans(), hasKey("EXAMPLE_VLAN_3999"));
-    assertThat(
-        jc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3999").getVlanId(),
-        equalTo(3999));
-    assertThat(jc.getMasterLogicalSystem().getNamedVlans(), hasKey("EXAMPLE_VLAN_3998"));
-    assertThat(
-        jc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3998").getVlanId(),
-        equalTo(3998));
   }
 
   @Test
