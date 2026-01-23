@@ -1,4 +1,4 @@
-set system host-name cos-test
+set system host-name class-of-service-comprehensive
 set class-of-service code-point-aliases dscp ALIAS1 001000
 set class-of-service code-point-aliases dscp-ipv6 ALIAS2 000000
 set class-of-service code-point-aliases exp ALIAS3 001

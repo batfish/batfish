@@ -1,2 +1,3 @@
+set system host-name switch-options-vrf-target-auto
 set switch-options vrf-target target:64589:1111
 set switch-options vrf-target auto
