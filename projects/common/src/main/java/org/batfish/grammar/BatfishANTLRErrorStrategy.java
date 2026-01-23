@@ -230,7 +230,32 @@ public class BatfishANTLRErrorStrategy extends DefaultErrorStrategy {
     Token separatorToken = recognizer.getCurrentToken();
 
     ParserRuleContext ctx = recognizer.getContext();
-    recognizer.consume();
+    ParserRuleContext parent = ctx.getParent();
+
+    // Check if parent expects the separator after current child completes.
+    // Different grammars structure rules differently:
+    // - Junos style: parent owns separator (e.g., set_line: SET set_line_tail NEWLINE)
+    // - NX-OS style: child owns separator (e.g., banner_exec: ... NEWLINE)
+    // Heuristic: Only skip consuming separator if:
+    // 1. Parent exists and started on the same line (single-line parent rule)
+    // 2. Parent expects separator in its production
+    // Note: For flattened configs (Junos, Palo Alto), line numbers refer to the flattened
+    // output, not the original hierarchical config.
+    boolean shouldConsumeSeparator = true;
+    if (parent != null
+        && parent.getStart() != null
+        && parent.getStart().getLine() == separatorToken.getLine()) {
+      IntervalSet expected = recognizer.getExpectedTokens();
+      if (expected.contains(_separatorToken)) {
+        // Parent started on same line and expects separator - don't consume it (Junos style)
+        shouldConsumeSeparator = false;
+      }
+    }
+
+    if (shouldConsumeSeparator) {
+      recognizer.consume();
+    }
+
     createErrorNode(recognizer, ctx, separatorToken);
     if (recognizer.getInputStream().LA(1) == Lexer.EOF) {
       recover(recognizer);

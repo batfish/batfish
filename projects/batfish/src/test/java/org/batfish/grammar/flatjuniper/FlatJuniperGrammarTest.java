@@ -155,7 +155,6 @@ import static org.batfish.datamodel.transformation.TransformationStep.assignSour
 import static org.batfish.datamodel.transformation.TransformationStep.assignSourcePort;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.AUXILIARY_LINE_NAME;
 import static org.batfish.datamodel.vendor_family.juniper.JuniperFamily.CONSOLE_LINE_NAME;
-import static org.batfish.main.BatfishTestUtils.DUMMY_SNAPSHOT_1;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_GLOBAL_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.ACL_NAME_SECURITY_POLICY;
 import static org.batfish.representation.juniper.JuniperConfiguration.DEFAULT_ISIS_COST;
@@ -252,10 +251,7 @@ import java.util.Set;
 import java.util.SortedMap;
 import java.util.SortedSet;
 import java.util.stream.Collectors;
-import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.apache.commons.lang3.SerializationUtils;
-import org.batfish.common.BatfishLogger;
 import org.batfish.common.Warning;
 import org.batfish.common.Warnings;
 import org.batfish.common.Warnings.ParseWarning;
@@ -401,7 +397,6 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.dataplane.ibdp.IncrementalDataPlane;
 import org.batfish.grammar.BatfishParseTreeWalker;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Flat_juniper_configurationContext;
-import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.Batfish;
 import org.batfish.main.BatfishTestUtils;
 import org.batfish.main.TestrigText;
@@ -508,6 +503,7 @@ import org.batfish.representation.juniper.VlanRange;
 import org.batfish.representation.juniper.VlanReference;
 import org.batfish.representation.juniper.VrrpGroup;
 import org.batfish.representation.juniper.Zone;
+import org.batfish.vendor.VendorConfiguration;
 import org.hamcrest.Matchers;
 import org.junit.Rule;
 import org.junit.Test;
@@ -565,23 +561,39 @@ public final class FlatJuniperGrammarTest {
   }
 
   private JuniperConfiguration parseJuniperConfig(String hostname) {
-    String src = readResource(TESTCONFIGS_PREFIX + hostname, UTF_8);
-    Settings settings = new Settings();
-    BatfishTestUtils.configureBatfishTestSettings(settings);
-    FlatJuniperCombinedParser flatJuniperParser =
-        new FlatJuniperCombinedParser(src, settings, null);
-    Warnings w = new Warnings();
-    FlatJuniperControlPlaneExtractor extractor =
-        new FlatJuniperControlPlaneExtractor(
-            src, flatJuniperParser, w, new SilentSyntaxCollection());
-    ParserRuleContext tree =
-        Batfish.parse(
-            flatJuniperParser, new BatfishLogger(BatfishLogger.LEVELSTR_FATAL, false), settings);
-    extractor.processParseTree(DUMMY_SNAPSHOT_1, tree);
-    JuniperConfiguration ret =
-        SerializationUtils.clone((JuniperConfiguration) extractor.getVendorConfiguration());
-    ret.setWarnings(w);
-    return ret;
+    return parseJuniperConfig(hostname, false);
+  }
+
+  /** Parse a Juniper config with optional error recovery. */
+  private JuniperConfiguration parseJuniperConfig(String hostname, boolean allowErrors) {
+    try {
+      Batfish batfish = getBatfishForConfigurationNames(hostname);
+      Settings settings = batfish.getSettings();
+      if (allowErrors) {
+        settings.setDisableUnrecognized(false);
+        settings.setHaltOnConvertError(false);
+        settings.setHaltOnParseError(false);
+        settings.setThrowOnLexerError(false);
+        settings.setThrowOnParserError(false);
+      }
+      Map<String, VendorConfiguration> vendorConfigs =
+          batfish.loadVendorConfigurations(batfish.getSnapshot());
+      assertThat(vendorConfigs, hasKey(hostname));
+      String filename = "configs/" + hostname;
+      Warnings w =
+          batfish
+              .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+              .getWarnings()
+              .get(filename);
+      if (w == null) {
+        w = new Warnings(Warnings.Settings.fromLogger(batfish.getLogger()));
+      }
+      JuniperConfiguration ret = (JuniperConfiguration) vendorConfigs.get(hostname);
+      ret.setWarnings(w);
+      return ret;
+    } catch (IOException e) {
+      throw new AssertionError("Failed to parse " + hostname, e);
+    }
   }
 
   private Map<String, Configuration> parseTextConfigs(String... configurationNames)
@@ -9496,6 +9508,26 @@ public final class FlatJuniperGrammarTest {
       assertThat(fromTtl.getExcept(), equalTo(true));
       assertFalse(i.hasNext());
     }
+  }
+
+  @Test
+  public void testNextLineRecoveryGh9718() {
+    String hostname = "next-line-recovery-gh-9718";
+    JuniperConfiguration vc = parseJuniperConfig(hostname, /* allowErrors= */ true);
+
+    // Both VLANs should be parsed despite error on line 4
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans(),
+        hasKeys("EXAMPLE_VLAN_3998", "EXAMPLE_VLAN_3999", "EXAMPLE_VLAN_4000"));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3998").getVlanId(),
+        equalTo(3998));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_3999").getVlanId(),
+        equalTo(3999));
+    assertThat(
+        vc.getMasterLogicalSystem().getNamedVlans().get("EXAMPLE_VLAN_4000").getVlanId(),
+        equalTo(4000));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
