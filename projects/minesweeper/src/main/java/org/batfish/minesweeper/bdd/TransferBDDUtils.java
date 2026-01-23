@@ -97,6 +97,6 @@ public class TransferBDDUtils {
   private static <T> BDD weakestPreconditionForPath(
       TransferReturn path, T postcondition, BiFunction<T, TransferReturn, BDD> postconditionToBDD) {
 
-    return path.getInputConstraints().andWith(postconditionToBDD.apply(postcondition, path));
+    return path.getInputConstraints().and(postconditionToBDD.apply(postcondition, path));
   }
 }
