@@ -1,5 +1,6 @@
 package org.batfish.minesweeper.bdd;
 
+import com.google.common.annotations.VisibleForTesting;
 import java.util.List;
 import java.util.function.BiFunction;
 import java.util.stream.Stream;
@@ -94,7 +95,8 @@ public class TransferBDDUtils {
    *     representing the constraint that the path's output routes satisfy the postcondition
    * @return the weakest precondition as a BDD
    */
-  private static <T> BDD weakestPreconditionForPath(
+  @VisibleForTesting
+  static <T> BDD weakestPreconditionForPath(
       TransferReturn path, T postcondition, BiFunction<T, TransferReturn, BDD> postconditionToBDD) {
 
     return path.getInputConstraints().and(postconditionToBDD.apply(postcondition, path));

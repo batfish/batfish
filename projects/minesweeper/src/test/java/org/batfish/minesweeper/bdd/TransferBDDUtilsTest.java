@@ -1,11 +1,13 @@
 package org.batfish.minesweeper.bdd;
 
 import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import net.sf.javabdd.BDD;
+import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.minesweeper.CommunityVar;
@@ -141,5 +143,21 @@ public class TransferBDDUtilsTest {
     // Test 3: The pairing affects the BDD
     BDD bdd3 = commAPs[0].and(commAPs[1]);
     assertEquals(bdd3.veccompose(pairing2), commAPs[0]);
+  }
+
+  @Test
+  public void testWeakestPreconditionForPathBDDConsumption() {
+    BDDFactory factory = _tbdd.getFactory();
+
+    // make sure the postcondition is not consumed by the function
+    TransferReturn path = new TransferReturn(_freshRoute, factory.one(), true);
+    BDD postCond = factory.ithVar(0).and(factory.nithVar(1));
+    TransferBDDUtils.weakestPreconditionForPath(path, postCond, (post, p) -> post);
+    try {
+      postCond.toString();
+    } catch (BDDException e) {
+      // the postcondition was consumed
+      fail();
+    }
   }
 }
