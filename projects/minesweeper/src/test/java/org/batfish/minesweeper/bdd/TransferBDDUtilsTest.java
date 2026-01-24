@@ -154,7 +154,7 @@ public class TransferBDDUtilsTest {
     BDD postCond = factory.ithVar(0).and(factory.nithVar(1));
     TransferBDDUtils.weakestPreconditionForPath(path, postCond, (post, p) -> post);
     try {
-      postCond.toString();
+      var unused = postCond.toString();
     } catch (BDDException e) {
       // the postcondition was consumed
       fail();
