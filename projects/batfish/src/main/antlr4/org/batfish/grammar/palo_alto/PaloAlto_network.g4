@@ -87,6 +87,7 @@ s_network
         | sn_profiles
         | sn_qos
         | sn_shared_gateway
+        | sn_tunnel
         | sn_virtual_router
         | sn_virtual_wire
         | sn_vlan
@@ -220,4 +221,73 @@ snicp_ipsec_crypto_profiles
         | cp_dh_group
         | cp_lifetime
     )
+;
+
+sn_tunnel
+:
+    TUNNEL IPSEC? sn_tunnel_definition?
+;
+
+sn_tunnel_definition
+:
+    name = variable
+    (
+        snt_anti_replay
+        | snt_auto_key
+        | snt_comment
+        | snt_copy_tos
+        | snt_disabled
+        | snt_ipv6
+        | snt_tunnel_interface
+        | snt_tunnel_monitor
+    )?
+;
+
+snt_anti_replay
+:
+    ANTI_REPLAY yn = yes_or_no
+;
+
+snt_auto_key
+:
+    AUTO_KEY null_rest_of_line
+;
+
+snt_comment
+:
+    COMMENT null_rest_of_line
+;
+
+// TODO: extract
+snt_copy_tos
+:
+    COPY_TOS yn = yes_or_no
+;
+
+snt_disabled
+:
+    DISABLED yn = yes_or_no
+;
+
+snt_ipv6
+:
+     IPV6
+     (
+        snti_enabled
+     )
+;
+
+snti_enabled
+:
+    ENABLED yn = yes_or_no
+;
+
+snt_tunnel_interface
+:
+    TUNNEL_INTERFACE null_rest_of_line
+;
+
+snt_tunnel_monitor
+:
+    TUNNEL_MONITOR null_rest_of_line
 ;

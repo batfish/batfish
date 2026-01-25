@@ -1,0 +1,139 @@
+### User provided example 2
+set deviceconfig system type static
+set deviceconfig system update-server updates.paloaltonetworks.com
+set deviceconfig system update-schedule
+set deviceconfig system timezone US/Pacific
+set deviceconfig system service disable-telnet yes
+set deviceconfig system service disable-http yes
+set deviceconfig system hostname PA-VM
+set deviceconfig system ip-address 192.168.1.103
+set deviceconfig system netmask 255.255.255.0
+set deviceconfig system default-gateway 192.168.1.254
+set deviceconfig system dns-setting servers primary 8.8.8.8
+set deviceconfig system ntp-servers primary-ntp-server ntp-server-address us.pool.ntp.org
+set deviceconfig system ntp-servers primary-ntp-server authentication-type none
+set deviceconfig system ntp-servers secondary-ntp-server ntp-server-address north-america.pool.ntp.org
+set deviceconfig system ntp-servers secondary-ntp-server authentication-type none
+set deviceconfig setting config rematch yes
+set deviceconfig setting management hostname-type-in-syslog FQDN
+set deviceconfig setting management disable-predefined-reports [ spyware-infected-hosts top-application-categories top-technology-categories bandwidth-trend risk-trend threat-trend top-users top-attacker-sources top-attacker-destinations top-victim-sources top-victim-destinations top-attackers-by-source-countries top-attackers-by-destination-countries top-victims-by-source-countries top-victims-by-destination-countries top-sources top-destinations top-destination-countries top-source-countries top-connections top-ingress-interfaces top-egress-interfaces top-ingress-zones top-egress-zones top-applications top-http-applications top-rules top-attacks top-spyware-threats top-viruses top-vulnerabilities wildfire-file-digests top-websites top-url-categories top-url-users top-url-user-behavior top-blocked-websites top-blocked-url-categories top-blocked-url-users top-blocked-url-user-behavior blocked-credential-post unknown-tcp-connections unknown-udp-connections top-denied-sources top-denied-destinations top-denied-applications risky-users "SaaS Application Usage" gtp-events-summary gtp-malicious-wildfire-submissions gtp-security-events gtp-v1-causes gtp-v2-causes gtp-users-visiting-malicious-url top-gtp-attacker-destinations top-gtp-attacker-sources top-gtp-victim-destinations top-gtp-victim-sources sctp-error-causes sctp-events-summary sctp-security-events ]
+set deviceconfig setting auto-mac-detect yes
+set network interface ethernet ethernet1/1 virtual-wire
+set network interface ethernet ethernet1/2 virtual-wire
+set network profiles monitor-profile default interval 3
+set network profiles monitor-profile default threshold 5
+set network profiles monitor-profile default action wait-recover
+set network ike crypto-profiles ike-crypto-profiles default encryption [ aes-128-cbc 3des ]
+set network ike crypto-profiles ike-crypto-profiles default hash sha1
+set network ike crypto-profiles ike-crypto-profiles default dh-group group2
+set network ike crypto-profiles ike-crypto-profiles default lifetime hours 8
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-128 encryption aes-128-cbc
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-128 hash sha256
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-128 dh-group group19
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-128 lifetime hours 8
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-256 encryption aes-256-cbc
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-256 hash sha384
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-256 dh-group group20
+set network ike crypto-profiles ike-crypto-profiles Suite-B-GCM-256 lifetime hours 8
+set network ike crypto-profiles ipsec-crypto-profiles default esp encryption [ aes-128-cbc 3des ]
+set network ike crypto-profiles ipsec-crypto-profiles default esp authentication sha1
+set network ike crypto-profiles ipsec-crypto-profiles default dh-group group2
+set network ike crypto-profiles ipsec-crypto-profiles default lifetime hours 1
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-128 esp encryption aes-128-gcm
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-128 esp authentication none
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-128 dh-group group19
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-128 lifetime hours 1
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-256 esp encryption aes-256-gcm
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-256 esp authentication none
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-256 dh-group group20
+set network ike crypto-profiles ipsec-crypto-profiles Suite-B-GCM-256 lifetime hours 1
+set network ike crypto-profiles global-protect-app-crypto-profiles default encryption aes-128-cbc
+set network ike crypto-profiles global-protect-app-crypto-profiles default authentication sha1
+set network qos profile default class-bandwidth-type mbps class class1 priority real-time
+set network qos profile default class-bandwidth-type mbps class class2 priority high
+set network qos profile default class-bandwidth-type mbps class class3 priority high
+set network qos profile default class-bandwidth-type mbps class class4 priority medium
+set network qos profile default class-bandwidth-type mbps class class5 priority medium
+set network qos profile default class-bandwidth-type mbps class class6 priority low
+set network qos profile default class-bandwidth-type mbps class class7 priority low
+set network qos profile default class-bandwidth-type mbps class class8 priority low
+set network virtual-router default protocol bgp enable no
+set network virtual-router default protocol bgp dampening-profile default cutoff 1.25
+set network virtual-router default protocol bgp dampening-profile default reuse 0.5
+set network virtual-router default protocol bgp dampening-profile default max-hold-time 900
+set network virtual-router default protocol bgp dampening-profile default decay-half-life-reachable 300
+set network virtual-router default protocol bgp dampening-profile default decay-half-life-unreachable 900
+set network virtual-router default protocol bgp dampening-profile default enable yes
+set network virtual-wire default-vwire interface1 ethernet1/1
+set network virtual-wire default-vwire interface2 ethernet1/2
+set shared application
+set shared application-group
+set shared service
+set shared service-group
+set shared botnet configuration http dynamic-dns enabled yes
+set shared botnet configuration http dynamic-dns threshold 5
+set shared botnet configuration http malware-sites enabled yes
+set shared botnet configuration http malware-sites threshold 5
+set shared botnet configuration http recent-domains enabled yes
+set shared botnet configuration http recent-domains threshold 5
+set shared botnet configuration http ip-domains enabled yes
+set shared botnet configuration http ip-domains threshold 10
+set shared botnet configuration http executables-from-unknown-sites enabled yes
+set shared botnet configuration http executables-from-unknown-sites threshold 5
+set shared botnet configuration other-applications irc yes
+set shared botnet configuration unknown-applications unknown-tcp destinations-per-hour 10
+set shared botnet configuration unknown-applications unknown-tcp sessions-per-hour 10
+set shared botnet configuration unknown-applications unknown-tcp session-length maximum-bytes 100
+set shared botnet configuration unknown-applications unknown-tcp session-length minimum-bytes 50
+set shared botnet configuration unknown-applications unknown-udp destinations-per-hour 10
+set shared botnet configuration unknown-applications unknown-udp sessions-per-hour 10
+set shared botnet configuration unknown-applications unknown-udp session-length maximum-bytes 100
+set shared botnet configuration unknown-applications unknown-udp session-length minimum-bytes 50
+set shared botnet report topn 100
+set shared botnet report scheduled yes
+set shared content-preview application
+set shared content-preview application-type category
+set shared content-preview application-type technology
+set shared local-user-database user-group
+set zone trust network virtual-wire ethernet1/2
+set zone untrust network virtual-wire ethernet1/1
+set user-id-collector setting enable-mapping-timeout yes
+set user-id-collector setting ip-user-mapping-timeout 45
+set service-group
+set service
+set schedule
+set rulebase security rules rule2 to untrust
+set rulebase security rules rule2 from trust
+set rulebase security rules rule2 source any
+set rulebase security rules rule2 source-user any
+set rulebase security rules rule2 category any
+set rulebase security rules rule2 application any
+set rulebase security rules rule2 service application-default
+set rulebase security rules rule2 hip-profiles any
+set rulebase security rules rule2 action deny
+set rulebase security rules rule2 destination group2
+set rulebase security rules rule1 to untrust
+set rulebase security rules rule1 from trust
+set rulebase security rules rule1 source any
+set rulebase security rules rule1 destination any
+set rulebase security rules rule1 source-user any
+set rulebase security rules rule1 category any
+set rulebase security rules rule1 application any
+set rulebase security rules rule1 service any
+set rulebase security rules rule1 hip-profiles any
+set rulebase security rules rule1 action allow
+set import network interface [ ethernet1/1 ethernet1/2 ]
+set dynamic-user-group dug1 filter '"tag01" or "tag02"'
+set application-group
+set application
+set address-group group1 static [ addr1 addr2 addr3 ]
+set address-group group2 dynamic filter '"tag01" or "tag02"'
+set address addr1 ip-netmask 10.0.0.1
+set address addr2 ip-netmask 10.0.0.2
+set address addr3 ip-netmask 10.0.0.3
+set address addr4 ip-netmask 10.0.0.4
+set address addr5 ip-netmask 10.0.0.5
+set mgt-config users admin phash $1$fniyibcj$0tm9SixJw/wOkFkDnEqVw/
+set mgt-config users admin permissions role-based superuser yes
+set mgt-config users adminr permissions role-based superreader yes
+set mgt-config users adminr phash $1$rhprpgfp$JiYMvTDuUUWW4F7ND06JI1

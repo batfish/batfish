@@ -1,0 +1,34 @@
+set deviceconfig system hostname pbf-test
+
+# Policy Based Forwarding rules
+set rulebase pbf rules PBF-RULE1 from zone1
+set rulebase pbf rules PBF-RULE1 source 10.0.1.0/24
+set rulebase pbf rules PBF-RULE1 destination any
+set rulebase pbf rules PBF-RULE1 application any
+set rulebase pbf rules PBF-RULE1 service any
+set rulebase pbf rules PBF-RULE1 action forward
+set rulebase pbf rules PBF-RULE1 action forward egress-interface ethernet1/1
+set rulebase pbf rules PBF-RULE1 action forward nexthop 10.0.0.1
+set rulebase pbf rules PBF-RULE1 action forward monitor profile monitor-prof1
+
+# PBF with symmetric return
+set rulebase pbf rules PBF-RULE2 from zone2
+set rulebase pbf rules PBF-RULE2 source any
+set rulebase pbf rules PBF-RULE2 destination 192.168.1.0/24
+set rulebase pbf rules PBF-RULE2 application web-browsing
+set rulebase pbf rules PBF-RULE2 service application-default
+set rulebase pbf rules PBF-RULE2 action forward
+set rulebase pbf rules PBF-RULE2 action forward nexthop 192.168.0.1
+set rulebase pbf rules PBF-RULE2 enforce-symmetric-return enabled
+
+# PBF with disabled and tags
+set rulebase pbf rules PBF-RULE3 from any
+set rulebase pbf rules PBF-RULE3 source any
+set rulebase pbf rules PBF-RULE3 destination any
+set rulebase pbf rules PBF-RULE3 application any
+set rulebase pbf rules PBF-RULE3 service any
+set rulebase pbf rules PBF-RULE3 action forward
+set rulebase pbf rules PBF-RULE3 action forward nexthop 10.1.1.1
+set rulebase pbf rules PBF-RULE3 tag TEST-TAG
+set rulebase pbf rules PBF-RULE3 disabled yes
+set rulebase pbf rules PBF-RULE3 group-tag TESTING

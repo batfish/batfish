@@ -18,7 +18,9 @@ public abstract class PaloAltoNestedBaseLexer extends BatfishLexer {
   @Override
   public void emit(Token token) {
     super.emit(token);
-    _lastTokenType = token.getType(); // note this includes HIDDEN channel
+    if (token.getChannel() != HIDDEN || token.getText().matches("[\\r\\n]+")) {
+      _lastTokenType = token.getType();
+    }
   }
 
   /**

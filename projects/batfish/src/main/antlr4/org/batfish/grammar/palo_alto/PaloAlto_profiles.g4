@@ -21,6 +21,7 @@ sp
     | sp_hip_profiles
     | sp_sctp
     | sp_spyware
+    | sp_url_filtering
     | sp_virus
     | sp_vulnerability
     | sp_wildfire_analysis
@@ -44,7 +45,29 @@ sp_hip_profiles: HIP_PROFILES null_rest_of_line;
 
 sp_sctp: SCTP null_rest_of_line;
 
-sp_spyware: SPYWARE null_rest_of_line;
+sp_spyware
+:
+    SPYWARE
+    // Optional name
+    (
+        ~(
+            BOTNET
+            | NEWLINE
+            | REDISTRIBUTION_AGENT
+            | RULES
+            | SERVER_PROFILE
+        )
+    )?
+    spyware_content?
+;
+
+spyware_content
+:
+    BOTNET
+    | REDISTRIBUTION_AGENT
+    | RULES null_rest_of_line
+    | SERVER_PROFILE
+;
 
 sp_virus: VIRUS null_rest_of_line;
 
@@ -52,9 +75,16 @@ sp_vulnerability: VULNERABILITY null_rest_of_line;
 
 sp_wildfire_analysis: WILDFIRE_ANALYSIS null_rest_of_line;
 
-sp_custom_url_category: CUSTOM_URL_CATEGORY custom_url_category_name spc_definition;
+sp_url_filtering: URL_FILTERING null_rest_of_line;
 
-spc_definition: spc_description | spc_list | spc_type;
+sp_custom_url_category: CUSTOM_URL_CATEGORY custom_url_category_name spc_definition*;
+
+spc_definition
+:
+    spc_description
+    | spc_list
+    | spc_type
+;
 
 spc_description: DESCRIPTION description = value;
 
