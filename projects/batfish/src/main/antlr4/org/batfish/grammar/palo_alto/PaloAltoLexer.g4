@@ -2,16 +2,75 @@ lexer grammar PaloAltoLexer;
 
 options {
   superClass = 'org.batfish.grammar.palo_alto.parsing.PaloAltoBaseLexer';
+  caseInsensitive = true;
 }
 
 tokens {
   BODY,
   DOUBLE_QUOTE,
-  SINGLE_QUOTE,
-  WORD
+  IGNORED_CONFIG_BLOCK,
+  SINGLE_QUOTE
 }
 
+SET: 'set';
+
 // Keywords
+
+ANTI_REPLAY: 'anti-replay';
+
+AUTO_KEY: 'auto-key';
+
+AUTO_MAC_DETECT: 'auto-mac-detect';
+
+IPSEC: 'ipsec';
+
+TUNNEL_INTERFACE: 'tunnel-interface';
+
+TUNNEL_MONITOR: 'tunnel-monitor';
+
+DEVICE_TELEMETRY: 'device-telemetry';
+
+SNMP_SETTING: 'snmp-setting';
+
+SNMP_SYSTEM: 'snmp-system';
+
+ACCESS_SETTING: 'access-setting';
+
+AUTHPRIV: 'authpriv';
+
+AUTHPWD: 'authpwd';
+
+PRIVPWD: 'privpwd';
+
+USERS: 'users';
+
+OID: 'oid';
+
+LOCATION: 'location';
+
+PERMITTED_IP: 'permitted-ip';
+
+ROUTE: 'route';
+
+AUTHENTICATION_TYPE: 'authentication-type';
+
+PEER_IP_BACKUP: 'peer-ip-backup';
+
+PEER_IP: 'peer-ip';
+
+ELECTION_OPTION: 'election-option';
+
+STATE_SYNCHRONIZATION: 'state-synchronization';
+
+MONITORING: 'monitoring';
+
+ACTIVE_PASSIVE: 'active-passive';
+
+PROFILE_SETTING: 'profile-setting';
+
+GROUP_TAG: 'group-tag';
+
+SCHEDULE: 'schedule';
 
 TWO_BYTE: '2-byte';
 
@@ -20,6 +79,20 @@ FOUR_BYTE: '4-byte';
 ACCEPT_SUMMARY: 'accept-summary';
 
 ACTION: 'action';
+
+FORWARD: 'forward';
+
+EGRESS_INTERFACE: 'egress-interface';
+
+ENFORCE_SYMMETRIC_RETURN: 'enforce-symmetric-return';
+
+MONITOR: 'monitor';
+
+ACTIVE: 'active';
+
+DEFAULT_SECURITY_RULES: 'default-security-rules';
+
+PBF: 'pbf';
 
 ACTIVE_ACTIVE: 'active-active';
 
@@ -33,6 +106,7 @@ ADDRESS_PREFIX: 'address-prefix';
 
 ADDRESS_FAMILY_IDENTIFIER: 'address-family-identifier';
 
+ADDRESS_REGEX: 'address-regex';
 ADJUST_TCP_MSS: 'adjust-tcp-mss';
 
 ADMIN_DIST: 'admin-dist';
@@ -57,17 +131,31 @@ AFTER: 'after';
 
 AGGREGATE: 'aggregate';
 
+AGGREGATED_CONFED_AS_PATH: 'aggregated-confed-as-path';
+
 AGGREGATE_ETHERNET: 'aggregate-ethernet';
 
 AGGREGATE_GROUP: 'aggregate-group';
 
 AGGREGATE_MED: 'aggregate-med';
 
+ALG: 'alg';
+
 ALGORITHM: 'algorithm';
 
 ALL: 'all';
 
 ALLOW: 'allow';
+
+ALLOWAS_IN: 'allowas-in';
+
+AND_ALSO_TO: 'and-also-to';
+
+ALTERNATE_USER_NAME_1: 'alternate-user-name-1';
+
+ALTERNATE_USER_NAME_2: 'alternate-user-name-2';
+
+ALTERNATE_USER_NAME_3: 'alternate-user-name-3';
 
 ALWAYS_COMPARE_MED: 'always-compare-med';
 
@@ -95,7 +183,19 @@ AUTHENTICATION: 'authentication';
 
 AUTHENTICATION_PROFILE: 'authentication-profile';
 
-AUTHENTICATION_TYPE: 'authentication-type';
+AUTHENTICATION_SEQUENCE: 'authentication-sequence';
+
+AUTH_ALGO_SHA1: 'auth-algo-sha1';
+
+AUTH_ALGO_SHA256: 'auth-algo-sha256';
+
+AUTH_ALGO_SHA384: 'auth-algo-sha384';
+
+KEYXCHG_ALGO_DHE: 'keyxchg-algo-dhe';
+
+KEYXCHG_ALGO_ECDHE: 'keyxchg-algo-ecdhe';
+
+KEYXCHG_ALGO_RSA: 'keyxchg-algo-rsa';
 
 AUTO: 'auto';
 
@@ -105,9 +205,11 @@ BFD: 'bfd';
 
 BGP: 'bgp';
 
+BI_DIRECTIONAL: 'bi-directional';
+
 BOTH: 'both';
 
-BOTNET: 'botnet';
+BOTNET: 'botnet' -> pushMode(M_IgnoredConfigBlock);
 
 BOTTOM: 'bottom';
 
@@ -115,7 +217,7 @@ BROADCAST: 'broadcast';
 
 BSD
 :
-    [Bb][Ss][Dd]
+    'bsd'
 ;
 
 CATEGORY: 'category';
@@ -123,6 +225,8 @@ CATEGORY: 'category';
 CERTIFICATE: 'certificate';
 
 CERTIFICATE_PROFILE: 'certificate-profile';
+
+CUTOFF: 'cutoff';
 
 CLIENT: 'client';
 
@@ -140,7 +244,13 @@ CONFIG: 'config';
 
 CONNECTION_OPTIONS: 'connection-options';
 
+CONNECTION_TYPE: 'connection-type';
+
+CONTACT: 'contact';
+
 CONTENT_PREVIEW: 'content-preview';
+
+COPY_TOS: 'copy-tos';
 
 CRYPTO_PROFILES: 'crypto-profiles';
 
@@ -161,6 +271,10 @@ DECRYPTION: 'decryption';
 DEFAULT: 'default';
 
 DEFAULT_GATEWAY: 'default-gateway';
+
+DEVICE_GROUP: 'device-group';
+
+DOMAIN: 'domain';
 
 DEFAULT_LOCAL_PREFERENCE: 'default-local-preference';
 
@@ -183,11 +297,13 @@ DESTINATION_HIP: 'destination-hip';
 
 DESTINATION_TRANSLATION: 'destination-translation';
 
+DECAY_HALF_LIFE_REACHABLE: 'decay-half-life-reachable';
+
+DECAY_HALF_LIFE_UNREACHABLE: 'decay-half-life-unreachable';
+
 DETERMINISTIC_MED_COMPARISON: 'deterministic-med-comparison';
 
 DEVICES: 'devices';
-
-DEVICE_GROUP: 'device-group';
 
 DEVICE_ID: 'device-id';
 
@@ -196,6 +312,18 @@ DEVICECONFIG: 'deviceconfig';
 DH_GROUP: 'dh-group';
 
 DISABLE: 'disable';
+
+DISABLE_HTTP: 'disable-http';
+
+DISABLE_IF_UNREACHABLE: 'disable-if-unreachable';
+
+DISABLE_PREDEFINED_REPORTS: 'disable-predefined-reports';
+
+DISABLE_SERVER_RESPONSE_INSPECTION: 'disable-server-response-inspection';
+
+DISABLE_TELNET: 'disable-telnet';
+
+DISABLE_SNMP: 'disable-snmp';
 
 DISABLED: 'disabled';
 
@@ -207,7 +335,11 @@ DNS: 'dns';
 
 DNS_SETTING: 'dns-setting';
 
-DOMAIN: 'domain';
+DYNAMIC_USER_GROUP: 'dynamic-user-group';
+
+DYNAMIC_IP: 'dynamic-ip';
+
+DYNAMIC_IP_AND_PORT: 'dynamic-ip-and-port';
 
 DOS_PROTECTION: 'dos-protection';
 
@@ -217,9 +349,17 @@ DROP: 'drop';
 
 DYNAMIC: 'dynamic';
 
-DYNAMIC_IP_AND_PORT: 'dynamic-ip-and-port';
-
 EBGP: 'ebgp';
+
+EMAIL: 'email';
+
+EMAIL_SCHEDULER: 'email-scheduler';
+
+ENABLE_MP_BGP: 'enable-mp-bgp';
+
+ENABLE_MAPPING_TIMEOUT: 'enable-mapping-timeout';
+
+ENABLE_PACKET_BUFFER_PROTECTION: 'enable-packet-buffer-protection';
 
 ECMP: 'ecmp';
 
@@ -229,12 +369,32 @@ ENABLE: 'enable';
 
 ENABLE_SENDER_SIDE_LOOP_DETECTION: 'enable-sender-side-loop-detection';
 
+ENABLE_USER_IDENTIFICATION: 'enable-user-identification';
+
+ENABLED: 'enabled';
+
 ENCRYPTION: 'encryption';
+
+ENC_ALGO_AES_128_CBC: 'enc-algo-aes-128-cbc';
+
+ENC_ALGO_AES_128_GCM: 'enc-algo-aes-128-gcm';
+
+ENC_ALGO_AES_256_CBC: 'enc-algo-aes-256-cbc';
+
+ENC_ALGO_AES_256_GCM: 'enc-algo-aes-256-gcm';
+
+ENC_ALGO_AES_CHACHA20_POLY1305: 'enc-algo-aes-chacha20-poly1305';
 
 ESP: 'esp';
 
 EVASIVE: 'evasive';
 
+EXCLUDE_LIST: 'exclude-list';
+
+EXCEPTION_LIST: 'exception-list';
+
+EVENT_REGEX: 'event-regex';
+EVENT_TYPE: 'event-type';
 EXACT: 'exact';
 
 EXCESSIVE_BANDWIDTH_USE: 'excessive-bandwidth-use';
@@ -257,9 +417,13 @@ ETHERNET: 'ethernet';
 
 FACILITY: 'facility';
 
+FAST: 'fast';
+
 FAILURE_CONDITION: 'failure-condition';
 
 FILE_BLOCKING: 'file-blocking';
+
+FIVE_MINUTE: 'five-minute';
 
 FILTER: 'filter';
 
@@ -297,7 +461,19 @@ GROUP19: 'group19';
 
 GROUP20: 'group20';
 
+GROUP_EMAIL: 'group-email';
+
 GROUP_ID: 'group-id';
+
+GROUP_INCLUDE_LIST: 'group-include-list';
+
+GROUP_MAPPING: 'group-mapping';
+
+GROUP_MEMBER: 'group-member';
+
+GROUP_NAME: 'group-name';
+
+GROUP_OBJECT: 'group-object';
 
 GTP: 'gtp';
 
@@ -325,6 +501,8 @@ HOLD_TIME:
 
 HOSTNAME: 'hostname';
 
+HOSTNAME_TYPE_IN_SYSLOG: 'hostname-type-in-syslog';
+
 HOURLY: 'hourly';
 
 HOURS: 'hours';
@@ -337,7 +515,7 @@ IDLE_HOLD_TIME: 'idle-hold-time';
 
 IETF
 :
-    [Ii][Ee][Tt][Ff]
+    'ietf'
 ;
 
 IGP: 'igp';
@@ -350,6 +528,8 @@ IMPORT: 'import';
 
 IMPORT_NEXTHOP: 'import-nexthop';
 
+INCLUDE_LIST: 'include-list';
+
 INCOMING_BGP_CONNECTION: 'incoming-bgp-connection';
 
 INCOMPLETE: 'incomplete';
@@ -357,6 +537,12 @@ INCOMPLETE: 'incomplete';
 INSTALL_ROUTE: 'install-route';
 
 INTERFACE: 'interface';
+
+INTERFACE1: 'interface1';
+
+INTERFACE2: 'interface2';
+
+INTERFACE_MANAGEMENT_PROFILE: 'interface-management-profile';
 
 INTERZONE: 'interzone';
 
@@ -370,6 +556,8 @@ IP_NETMASK: 'ip-netmask';
 
 IP_RANGE_LITERAL: 'ip-range';
 
+IP_USER_MAPPING_TIMEOUT: 'ip-user-mapping-timeout';
+
 IPSEC_CRYPTO_PROFILES: 'ipsec-crypto-profiles';
 
 IPV4: 'ipv4';
@@ -378,11 +566,15 @@ IPV6: 'ipv6';
 
 KEEP_ALIVE_INTERVAL: 'keep-alive-interval';
 
+LACP: 'lacp';
+
 LAYER2: 'layer2';
 
 LAYER3: 'layer3';
 
 LIFETIME: 'lifetime';
+
+MANAGEMENT: 'management';
 
 LINK
 :
@@ -395,6 +587,8 @@ LINK_SPEED: 'link-speed';
 
 LINK_STATE: 'link-state';
 
+LINK_STATE_PASS_THROUGH: 'link-state-pass-through';
+
 LINK_TYPE: 'link-type';
 
 LIST: 'list';
@@ -406,6 +600,8 @@ LOCAL_ADDRESS: 'local-address';
 LOCAL_AS: 'local-as';
 
 LOCAL_PORT: 'local-port';
+
+LOCAL_USER_DATABASE: 'local-user-database';
 
 LOG_COLLECTOR: 'log-collector';
 
@@ -423,9 +619,17 @@ LOOPBACK: 'loopback';
 
 MATCH: 'match';
 
+MANAGER: 'manager';
+
+MAX_HOLD_TIME: 'max-hold-time';
+
 MAX_PATH: 'max-path';
 
 MAX_PREFIXES: 'max-prefixes';
+
+MAX_VERSION: 'max-version';
+
+MASK: 'mask';
 
 MD5: 'md5';
 
@@ -433,17 +637,28 @@ MED: 'med';
 
 MESHED_CLIENT: 'meshed-client';
 
+MINIMUM_RECEIVE_INTERVAL: 'minimum-receive-interval';
+
+MINIMUM_TRANSMIT_INTERVAL: 'minimum-transmit-interval';
+
 MIN_ROUTE_ADV_INTERVAL: 'min-route-adv-interval';
 
 MINUTES: 'minutes';
 
+MODE: 'mode';
+
 MEMBERS: 'members';
+
+MULTICAST_FIREWALLING: 'multicast-firewalling';
 
 METRIC: 'metric';
 
+MIN_VERSION: 'min-version';
+
+MGMT_INTERFACE: 'mgmt-interface';
 MGT_CONFIG: 'mgt-config';
 
-MODE: 'mode';
+
 
 MOVE: 'move';
 
@@ -452,6 +667,10 @@ MTU: 'mtu';
 MULTICAST: 'multicast';
 
 MULTIHOP: 'multihop';
+
+MULTIPATH: 'multipath';
+
+MULTIPLIER: 'multiplier';
 
 NAT: 'nat';
 
@@ -468,6 +687,8 @@ NETWORK: 'network';
 NEXT_VR: 'next-vr';
 
 NEXTHOP: 'nexthop';
+
+NEXT_HOP_SELF: 'next-hop-self';
 
 NO: 'no';
 
@@ -486,6 +707,8 @@ NTP_SERVER_ADDRESS: 'ntp-server-address';
 NTP_SERVERS: 'ntp-servers';
 
 NULL: 'null';
+
+OPTION: 'option';
 
 OPEN_DELAY_TIME: 'open-delay-time';
 
@@ -507,6 +730,8 @@ OSPFV3_INT: 'ospfv3-int';
 
 OUTGOING_BGP_CONNECTION: 'outgoing-bgp-connection';
 
+OVERRIDE: 'override';
+
 P2P: 'p2p';
 
 P2MP: 'p2mp';
@@ -518,6 +743,8 @@ PANORAMA_SERVER: 'panorama-server';
 PARENT_DG: 'parent-dg';
 
 PASSIVE: 'passive';
+
+PASSIVE_PRE_NEGOTIATION: 'passive-pre-negotiation';
 
 PASSWORD: 'password';
 
@@ -531,15 +758,21 @@ PEER_AS: 'peer-as';
 
 PEER_GROUP: 'peer-group';
 
+PEERING_TYPE: 'peering-type';
+
 PERVASIVE: 'pervasive';
 
 POLICY: 'policy';
 
 PORT: 'port';
 
+PORT_PRIORITY: 'port-priority';
+
 POST_RULEBASE: 'post-rulebase';
 
 PRE_RULEBASE: 'pre-rulebase';
+
+PREPEND: 'prepend';
 
 PRIMARY: 'primary';
 
@@ -557,6 +790,8 @@ PRONE_TO_MISUSE: 'prone-to-misuse';
 
 PROTOCOL: 'protocol';
 
+PROTOCOL_SETTINGS: 'protocol-settings';
+
 QOS: 'qos';
 
 READONLY: 'readonly';
@@ -569,6 +804,11 @@ REDIST_PROFILE: 'redist-profile';
 
 REDIST_RULES: 'redist-rules';
 
+// Ignored config blocks
+REDISTRIBUTION_AGENT: 'redistribution-agent' -> pushMode(M_IgnoredConfigBlock);
+
+SERVER_PROFILE: 'server-profile' -> pushMode(M_IgnoredConfigBlock);
+
 REFLECTOR_CLIENT: 'reflector-client';
 
 REFLECTOR_CLUSTER_ID: 'reflector-cluster-id';
@@ -579,17 +819,36 @@ REMOTE_PORT: 'remote-port';
 
 REMOVE_PRIVATE_AS: 'remove-private-as';
 
+REPORTS: 'reports';
+
+REGEX_IDENTIFIER: 'regex-identifier';
+REGION: 'region';
+
+REMATCH: 'rematch';
+
 RESET_BOTH: 'reset-both';
 
 RESET_CLIENT: 'reset-client';
 
 RESET_SERVER: 'reset-server';
 
+SMTP: 'smtp';
+
+SOFT_RESET_WITH_STORED_INFO: 'soft-reset-with-stored-info';
+
+SOFTEN_INBOUND: 'soften-inbound';
+
+SNMPTRAP: 'snmptrap';
+
 RESOLVE: 'resolve';
 
 RESPONSE: 'response';
 
 RESULT: 'result';
+
+REUSE: 'reuse';
+
+SCHEDULE_TYPE: 'schedule-type';
 
 RETRANSMIT_INTERVAL: 'retransmit-interval';
 
@@ -623,15 +882,13 @@ SECURITY: 'security';
 
 SERVER: 'server';
 
-SERVER_PROFILE: 'server-profile';
+SERVER_MONITOR: 'server-monitor';
 
 SERVERS: 'servers';
 
 SERVICE: 'service';
 
 SERVICE_GROUP: 'service-group';
-
-SET: 'set';
 
 SET_ORIGIN: 'set-origin';
 
@@ -663,10 +920,14 @@ SPYWARE: 'spyware';
 
 SSL
 :
-    [Ss][Ss][Ll]
+    'ssl'
 ;
 
+SUBSEQUENT_ADDRESS_FAMILY_IDENTIFIER: 'subsequent-address-family-identifier';
+
 STATIC: 'static';
+
+STATIC_IP: 'static-ip';
 
 STATIC_IPV6: 'static-ipv6';
 
@@ -680,6 +941,9 @@ SUBCATEGORY: 'subcategory';
 
 SYSLOG: 'syslog';
 
+SSL_TLS_SERVICE_PROFILE: 'ssl-tls-service-profile';
+
+SYSLOG_PARSE_PROFILE: 'syslog-parse-profile';
 SYSTEM: 'system';
 
 TAG: 'tag';
@@ -688,24 +952,34 @@ TAP: 'tap';
 
 TARGET: 'target';
 
+THREATS: 'threats';
+
 TCP
 :
-    [Tt][Cc][Pp]
+    'tcp'
 ;
+
+TCP_HALF_CLOSED_TIMEOUT: 'tcp-half-closed-timeout';
+
+TCP_TIMEOUT: 'tcp-timeout';
+
+TCP_TIME_WAIT_TIMEOUT: 'tcp-time-wait-timeout';
 
 TECHNOLOGY: 'technology';
 
 TEMPLATE: 'template';
 
-TEMPLATES: 'templates';
-
 TEMPLATE_STACK: 'template-stack';
+
+TEMPLATES: 'templates';
 
 THREE_DES: '3des';
 
 TIMEZONE: 'timezone';
 
 TO: 'to';
+
+TO_INTERFACE: 'to-interface';
 
 TOP: 'top';
 
@@ -719,6 +993,8 @@ TRANSLATED_PORT: 'translated-port';
 
 TRANSPORT: 'transport';
 
+TRANSMISSION_RATE: 'transmission-rate';
+
 TUNNEL: 'tunnel';
 
 TUNNELS_OTHER_APPS: 'tunnels-other-apps';
@@ -727,8 +1003,12 @@ TYPE: 'type';
 
 UDP
 :
-    [Uu][Dd][Pp]
+    'udp'
 ;
+
+UDP_TIMEOUT: 'udp-timeout';
+
+UNSPECIFIED: 'unspecified';
 
 UNICAST: 'unicast';
 
@@ -750,19 +1030,43 @@ URL_FILTERING: 'url-filtering';
 
 USE_PEER: 'use-peer';
 
+USE_SAME_SYSTEM_MAC: 'use-same-system-mac';
+
 USE_SELF: 'use-self';
 
 USED_BY: 'used-by';
+
+
 
 USED_BY_MALWARE: 'used-by-malware';
 
 USERID: 'userid';
 
+USER_ACL: 'user-acl';
+
+USER_ID_COLLECTOR: 'user-id-collector';
+
+USER_EMAIL: 'user-email';
+
+USER_ID_AGENT: 'user-id-agent';
+
+USER_NAME: 'user-name';
+
+USER_OBJECT: 'user-object';
+
 USERNAME: 'username';
+
+USERNAME_REGEX: 'username-regex';
+
+VERSION: 'version';
 
 VIRTUAL_ROUTER: 'virtual-router';
 
 VIRTUAL_WIRE: 'virtual-wire';
+
+VIEW: 'view';
+
+VIEWS: 'views';
 
 VIRUS: 'virus';
 
@@ -784,17 +1088,28 @@ ZONE: 'zone';
 
 // Complex tokens
 
-CLOSE_BRACKET
+UUID
 :
-    ']'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] '-'
+    [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9]
 ;
 
-COMMA
-:
-    ','
-;
+CLOSE_BRACKET: ']';
+
+UINT8: F_Uint8;
+
+UINT16: F_Uint16;
+
+COMMA: ',';
 
 DASH: '-';
+
+DOT: '.';
+
+UNDERSCORE: '_';
 
 DOUBLE_QUOTED_STRING
 :
@@ -806,6 +1121,11 @@ IP_ADDRESS
     F_IpAddress
 ;
 
+IP_ADDRESS_V6
+:
+    F_Ipv6Address
+;
+
 IP_PREFIX
 :
     F_IpPrefix
@@ -814,6 +1134,7 @@ IP_PREFIX
 IP_RANGE
 :
     F_IpAddress '-' F_IpAddress
+    | F_Ipv6Address '-' F_Ipv6Address
 ;
 
 // Handle developer and RANCID-header-style line comments
@@ -846,19 +1167,19 @@ SINGLE_QUOTED_STRING
     '\'' ~'\''* '\''
 ;
 
-UINT8
-:
-    F_Uint8
-;
 
-UINT16
-:
-    F_Uint16
-;
 
 UINT32
 :
     F_Uint32
+;
+
+
+
+fragment
+F_Variable_VarChar
+:
+    ~[ \t\n\r;,{}[\]&|()"']
 ;
 
 VARIABLE
@@ -899,6 +1220,7 @@ fragment
 F_IpPrefix
 :
     F_IpAddress '/' F_IpPrefixLength
+    | F_Ipv6Address '/' F_Ipv6PrefixLength
 ;
 
 fragment
@@ -907,6 +1229,171 @@ F_IpPrefixLength
     F_Digit
     | [12] F_Digit
     | [3] [012]
+;
+
+fragment
+F_HexDigit
+:
+  [0-9a-f]
+;
+
+fragment
+F_HexWord
+:
+  F_HexDigit F_HexDigit? F_HexDigit? F_HexDigit?
+;
+
+fragment
+F_HexWord2
+:
+  F_HexWord ':' F_HexWord
+;
+
+fragment
+F_HexWord3
+:
+  F_HexWord2 ':' F_HexWord
+;
+
+fragment
+F_HexWord4
+:
+  F_HexWord3 ':' F_HexWord
+;
+
+fragment
+F_HexWord5
+:
+  F_HexWord4 ':' F_HexWord
+;
+
+fragment
+F_HexWord6
+:
+  F_HexWord5 ':' F_HexWord
+;
+
+fragment
+F_HexWord7
+:
+  F_HexWord6 ':' F_HexWord
+;
+
+fragment
+F_HexWord8
+:
+  F_HexWord6 ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal2
+:
+  F_HexWord2
+  | F_IpAddress
+;
+
+fragment
+F_HexWordFinal3
+:
+  F_HexWord ':' F_HexWordFinal2
+;
+
+fragment
+F_HexWordFinal4
+:
+  F_HexWord ':' F_HexWordFinal3
+;
+
+fragment
+F_HexWordFinal5
+:
+  F_HexWord ':' F_HexWordFinal4
+;
+
+fragment
+F_HexWordFinal6
+:
+  F_HexWord ':' F_HexWordFinal5
+;
+
+fragment
+F_HexWordFinal7
+:
+  F_HexWord ':' F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE1
+:
+  F_HexWord?
+;
+
+fragment
+F_HexWordLE2
+:
+  F_HexWordLE1
+  | F_HexWordFinal2
+;
+
+fragment
+F_HexWordLE3
+:
+  F_HexWordLE2
+  | F_HexWordFinal3
+;
+
+fragment
+F_HexWordLE4
+:
+  F_HexWordLE3
+  | F_HexWordFinal4
+;
+
+fragment
+F_HexWordLE5
+:
+  F_HexWordLE4
+  | F_HexWordFinal5
+;
+
+fragment
+F_HexWordLE6
+:
+  F_HexWordLE5
+  | F_HexWordFinal6
+;
+
+fragment
+F_HexWordLE7
+:
+  F_HexWordLE6
+  | F_HexWordFinal7
+;
+
+fragment
+F_Ipv6Address
+:
+  (
+    '::' F_HexWordLE7
+    | F_HexWord '::' F_HexWordLE6
+    | F_HexWord2 '::' F_HexWordLE5
+    | F_HexWord3 '::' F_HexWordLE4
+    | F_HexWord4 '::' F_HexWordLE3
+    | F_HexWord5 '::' F_HexWordLE2
+    | F_HexWord6 '::' F_HexWordLE1
+    | F_HexWord7 '::'
+    | F_HexWord8
+  )
+  ( '%' [0-9a-z]+ )?
+;
+
+fragment
+F_Ipv6PrefixLength
+:
+    F_Digit
+    | F_Digit F_Digit
+    | '1' [01] F_Digit
+    | '12' [0-8]
 ;
 
 fragment
@@ -977,7 +1464,7 @@ F_Url
 
 F_UrlStart
 :
-    [a-zA-Z]
+    [a-z]
 ;
 
 F_UrlInner
@@ -989,7 +1476,7 @@ F_UrlInner
 
 F_UrlInnerAlphaNum
 :
-    [a-zA-Z0-9]
+    [a-z0-9]
 ;
 
 F_UrlInnerReserved
@@ -1006,12 +1493,6 @@ fragment
 F_Whitespace
 :
     [ \t\u000C] // tab or space or unicode 0x000C
-;
-
-fragment
-F_Variable_VarChar
-:
-    ~[ \t\n\r;,{}[\]&|()"']
 ;
 
 fragment
@@ -1085,10 +1566,32 @@ M_Url_NEWLINE
 
 M_Url_WORD
 :
-    F_Url -> type ( WORD ) , popMode
+    F_Url -> type ( VARIABLE ) , popMode
 ;
 
 M_Url_WS
 :
     F_Whitespace+ -> channel ( HIDDEN )
 ;
+
+// Modes for ignored config blocks
+mode M_IgnoredConfigBlock;
+
+M_IgnoredConfigBlock_OPEN_BRACE: '{' -> skip, pushMode(M_IgnoredConfigBlockInner);
+
+M_IgnoredConfigBlock_CONTENT: ~[\r\n]+ -> skip;
+
+M_IgnoredConfigBlock_NEWLINE: F_Newline+ -> type(NEWLINE), popMode;
+
+// Inside an ignored block, count braces
+mode M_IgnoredConfigBlockInner;
+
+M_IgnoredConfigBlockInner_OPEN_BRACE: '{' -> skip, pushMode(M_IgnoredConfigBlockInner);
+
+M_IgnoredConfigBlockInner_CLOSE_BRACE: '}' -> skip, popMode;
+
+M_IgnoredConfigBlockInner_CONTENT: ~[{}]+ -> skip;
+
+M_IgnoredConfigBlockInner_WS: F_Whitespace+ -> skip;
+
+M_IgnoredConfigBlockInner_NEWLINE: F_Newline+ -> skip;
