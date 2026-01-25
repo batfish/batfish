@@ -35,6 +35,7 @@ ADMIN:
 ;
 ADMINTIMEOUT: 'admintimeout' -> pushMode(M_Str);
 ADMIN_HTTPS_SSL_VERSIONS: 'admin-https-ssl-versions' -> pushMode(M_Str);
+ADMIN_SERVER_CERT: 'admin-server-cert' -> pushMode(M_Str);
 ACCEPT: 'accept';
 ACCESS_LIST: 'access-list';
 ACTION: 'action';
@@ -98,6 +99,7 @@ AUTOMATION: 'automation' {
   }
 };
 AUTO: 'auto';
+AUTORUN_LOG_FSCK: 'autorun-log-fsck' -> pushMode(M_Str);
 AUTOMATION_ACTION: 'automation-action' {
   // ignore config system automation-action
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
@@ -164,6 +166,7 @@ CUSTOM_LANGUAGE: 'custom-language' {
 
 DEFAULT: 'default';
 DEDICATED_TO: 'dedicated-to' -> pushMode(M_Str);
+DEDICATED_MANAGEMENT_CPU: 'dedicated-management-cpu' -> pushMode(M_Str);
 DELETE: 'delete' -> pushMode(M_Str);
 DENY: 'deny';
 DESCRIPTION: 'description' -> pushMode(M_Str);
@@ -287,6 +290,7 @@ GEOGRAPHY: 'geography';
 GLOBAL: 'global';
 GROUP: 'group';
 GUI_AUTO_UPGRADE_SETUP_WARNING: 'gui-auto-upgrade-setup-warning' -> pushMode(M_Str);
+GUI_LOCAL_OUT: 'gui-local-out' -> pushMode(M_Str);
 HA: 'ha' {
   // ignore config system ha
   if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
