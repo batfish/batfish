@@ -762,6 +762,8 @@ PEERING_TYPE: 'peering-type';
 
 PERVASIVE: 'pervasive';
 
+SPECIFIED: 'specified';
+
 POLICY: 'policy';
 
 PORT: 'port';
