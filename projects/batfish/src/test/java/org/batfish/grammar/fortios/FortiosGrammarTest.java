@@ -155,6 +155,13 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testSystemGlobalIgnoredBlocks() {
+    FortiosConfiguration c = parseVendorConfig("fortios_system_ignored");
+    assertThat(c.getHostname(), equalTo("fg-ignored"));
+    assertThat(c.getAddresses(), hasKeys("addr1"));
+  }
+
+  @Test
   public void testHostnameExtraction() {
     String filename = "fortios_hostname";
     String hostname = "my_fortios-hostname1";

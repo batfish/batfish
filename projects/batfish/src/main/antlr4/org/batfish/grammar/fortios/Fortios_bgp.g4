@@ -32,6 +32,7 @@ crb_config
         crbc_neighbor
         | crbc_network
         | crbc_redistribute
+        | IGNORED_CONFIG_BLOCK
     ) END NEWLINE
 ;
 
