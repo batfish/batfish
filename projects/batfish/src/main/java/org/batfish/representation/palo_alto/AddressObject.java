@@ -26,10 +26,11 @@ import org.batfish.datamodel.Prefix;
 public final class AddressObject implements Serializable {
 
   public enum Type {
-    FQDN,
     IP,
     IP_RANGE,
-    PREFIX
+    IP_LOCATION,
+    PREFIX,
+    FQDN
   }
 
   private @Nullable String _description;
@@ -38,13 +39,14 @@ public final class AddressObject implements Serializable {
   private @Nullable Type _type;
 
   // Only one can be set
-  private @Nullable String _fqdn;
   private @Nullable Ip _ip;
   private @Nullable Ip6 _ip6;
   private @Nullable Range<Ip> _ipRange;
   private @Nullable Range<Ip6> _ipRange6;
   private @Nullable IpPrefix _prefix;
   private @Nullable Ip6Prefix _prefix6;
+  private @Nullable String _fqdn;
+  private @Nullable String _ipLocation;
 
   public AddressObject(String name) {
     _name = name;
@@ -52,13 +54,14 @@ public final class AddressObject implements Serializable {
   }
 
   private void clearAddress() {
-    _fqdn = null;
     _ip = null;
     _ip6 = null;
     _ipRange = null;
     _ipRange6 = null;
     _prefix = null;
     _prefix6 = null;
+    _fqdn = null;
+    _ipLocation = null;
   }
 
   public @Nullable String getDescription() {
@@ -66,8 +69,9 @@ public final class AddressObject implements Serializable {
   }
 
   public @Nonnull IpSpace getIpSpace() {
-    if (_fqdn != null) {
-      // FQDN addresses resolve dynamically and cannot be converted to static IpSpace
+    if (_fqdn != null || _ipLocation != null) {
+      // FQDN and IP_LOCATION addresses resolve dynamically and cannot be converted to static
+      // IpSpace
       return EmptyIpSpace.INSTANCE;
     } else if (_ip != null) {
       return _ip.toIpSpace();
@@ -201,13 +205,23 @@ public final class AddressObject implements Serializable {
     _prefix6 = prefix;
   }
 
+  public @Nullable String getFqdn() {
+    return _fqdn;
+  }
+
   public void setFqdn(@Nullable String fqdn) {
     _type = fqdn == null ? null : Type.FQDN;
     clearAddress();
     _fqdn = fqdn;
   }
 
-  public @Nullable String getFqdn() {
-    return _fqdn;
+  public @Nullable String getIpLocation() {
+    return _ipLocation;
+  }
+
+  public void setIpLocation(@Nullable String ipLocation) {
+    _type = ipLocation == null ? null : Type.IP_LOCATION;
+    clearAddress();
+    _ipLocation = ipLocation;
   }
 }

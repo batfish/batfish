@@ -766,6 +766,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     } else if (ctx.range != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
+    // Check if this is a geolocation code (2-letter ISO country code or special codes)
+    if (isGeolocationCode(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.IP_LOCATION, text);
+    }
+    // Check if this looks like an FQDN (contains dots and domain-like characters)
+    if (isFqdn(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.FQDN, text);
+    }
     return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
   }
 
@@ -778,6 +786,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
     } else if (ctx.range != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
+    }
+    // Check if this is a geolocation code (2-letter ISO country code or special codes)
+    if (isGeolocationCode(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.IP_LOCATION, text);
+    }
+    // Check if this looks like an FQDN (contains dots and domain-like characters)
+    if (isFqdn(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.FQDN, text);
     }
     return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
   }
@@ -796,6 +812,46 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       }
     }
     return text;
+  }
+
+  /**
+   * Check if a string is a valid geolocation code (ISO 3166-1 alpha-2 country code or special codes
+   * like A1, A2, EU, AP, etc.)
+   */
+  private boolean isGeolocationCode(String text) {
+    if (text == null || text.length() != 2) {
+      return false;
+    }
+    // Check for special geolocation codes
+    if ("A1".equals(text)
+        || "A2".equals(text)
+        || "EU".equals(text)
+        || "AP".equals(text)
+        || "CE".equals(text)
+        || "DN".equals(text)
+        || "LN".equals(text)) {
+      return true;
+    }
+    // Check for ISO 3166-1 alpha-2 country code pattern (two uppercase letters)
+    return text.length() == 2
+        && Character.isUpperCase(text.charAt(0))
+        && Character.isUpperCase(text.charAt(1));
+  }
+
+  /**
+   * Check if a string looks like an FQDN (contains dots and domain-like characters). This is a
+   * heuristic check - real FQDNs would be validated by the firewall.
+   */
+  private boolean isFqdn(String text) {
+    if (text == null || text.isEmpty()) {
+      return false;
+    }
+    // FQDNs typically contain dots and alphanumeric characters with hyphens
+    // This is a simple heuristic - valid FQDNs can be more complex
+    return text.contains(".")
+        && text.matches("^[a-zA-Z0-9.-]+$")
+        && !text.startsWith(".")
+        && !text.endsWith(".");
   }
 
   /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
@@ -1653,9 +1709,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_fqdn(Sa_fqdnContext ctx) {
-    // Extract the FQDN value (everything after "FQDN" keyword)
-    String fqdnText = ctx.getText().substring("FQDN".length()).trim();
-    _currentAddressObject.setFqdn(fqdnText);
+    String fqdn = getText(ctx.null_rest_of_line());
+    if (fqdn != null && !fqdn.trim().isEmpty()) {
+      _currentAddressObject.setFqdn(fqdn.trim());
+    }
   }
 
   @Override

@@ -2024,6 +2024,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case REFERENCE ->
               // Rely on undefined references to surface this issue (endpoint reference not defined)
               EmptyIpSpace.INSTANCE;
+          case FQDN ->
+              // FQDN cannot be resolved statically - treat as empty space with a warning
+              EmptyIpSpace.INSTANCE;
+          case IP_LOCATION ->
+              // Geolocation codes (e.g., country codes) cannot be mapped to IP spaces without
+              // additional geolocation data - treat as empty space with a warning
+              EmptyIpSpace.INSTANCE;
         };
     }
   }
@@ -2095,6 +2102,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case REFERENCE ->
               // Unresolved reference or unhandled type
               null;
+          case FQDN, IP_LOCATION ->
+              // FQDN and geolocation endpoints cannot be traced statically
+              null;
         };
     }
   }
@@ -2145,6 +2155,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           case REFERENCE ->
               // Rely on undefined references to surface this issue (endpoint reference not defined)
+              ImmutableRangeSet.of();
+          case FQDN, IP_LOCATION ->
+              // FQDN and geolocation endpoints cannot be converted to IP range sets statically
               ImmutableRangeSet.of();
         };
     }
