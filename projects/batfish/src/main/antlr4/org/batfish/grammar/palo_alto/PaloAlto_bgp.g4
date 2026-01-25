@@ -145,12 +145,15 @@ bgppg_peer
         | bgppgp_bfd
         | bgppgp_connection_options
         | bgppgp_enable
+        | bgppgp_enable_mp_bgp
         | bgppgp_enable_sender_side_loop_detection
         | bgppgp_local_address
         | bgppgp_max_prefixes
         | bgppgp_peer_address
         | bgppgp_peer_as
+        | bgppgp_peering_type
         | bgppgp_reflector_client
+        | bgppgp_subsequent_address_family_identifier
     )?
 ;
 
@@ -277,6 +280,35 @@ bgppgp_peer_as
 bgppgp_reflector_client
 :
     REFLECTOR_CLIENT (CLIENT | MESHED_CLIENT | NON_CLIENT)
+;
+
+bgppgp_enable_mp_bgp
+:
+    ENABLE_MP_BGP yn = yes_or_no
+;
+
+bgppgp_peering_type
+:
+    PEERING_TYPE (SPECIFIED | UNSPECIFIED)
+;
+
+bgppgp_subsequent_address_family_identifier
+:
+    SUBSEQUENT_ADDRESS_FAMILY_IDENTIFIER
+    (
+        bgppgpsafi_unicast
+        | bgppgpsafi_multicast
+    )
+;
+
+bgppgpsafi_unicast
+:
+    UNICAST yn = yes_or_no
+;
+
+bgppgpsafi_multicast
+:
+    MULTICAST yn = yes_or_no
 ;
 
 bgppg_type
