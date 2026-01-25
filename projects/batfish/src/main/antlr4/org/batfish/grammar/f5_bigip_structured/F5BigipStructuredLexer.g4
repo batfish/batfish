@@ -57,9 +57,13 @@ ANY: 'any';
 
 APP_SERVICE: 'app-service';
 
+APM: 'apm';
+
 ARP: 'arp';
 
 AUTO_SYNC: 'auto-sync';
+
+AUTH: 'auth';
 
 BASE_MAC: 'base-mac';
 
@@ -119,6 +123,12 @@ COMMUNITY: 'community';
 
 COMPATIBILITY: 'compatibility';
 
+CONSOLE_INACTIVITY_TIMEOUT: 'console-inactivity-timeout';
+
+CENT_REPORT_DESTINATION_TYPE: 'cent-report-destination-type';
+
+CREATION_TIME: 'creation-time';
+
 CONFIGSYNC_IP: 'configsync-ip';
 
 COOKIE: 'cookie';
@@ -134,6 +144,10 @@ DEFAULTS_FROM: 'defaults-from';
 DENY: 'deny';
 
 DESCRIPTION: 'description';
+
+DRILLDOWN_ENTITIES: 'drilldown-entities';
+
+DRILLDOWN_VALUES: 'drilldown-values';
 
 DESTINATION: 'destination';
 
@@ -197,6 +211,8 @@ FPGA: 'fpga';
 
 FTP: 'ftp';
 
+FW_ENFORCED_POLICY: 'fw-enforced-policy';
+
 GATEWAY_ICMP: 'gateway-icmp';
 
 GENERIC_ALERT: 'generic-alert';
@@ -206,6 +222,10 @@ GLOBAL_SETTINGS: 'global-settings';
 GTP: 'gtp';
 
 GUI_SECURITY_BANNER_TEXT: 'gui-security-banner-text';
+
+GUI_PAGECODE: 'gui-pagecode';
+
+GUI_WIDGET: 'gui-widget';
 
 GUI_SETUP: 'gui-setup';
 
@@ -243,7 +263,11 @@ IDLE_TIMEOUT_OVERRIDE: 'idle-timeout-override';
 
 IFILE: 'ifile';
 
+IKE_DAEMON: 'ike-daemon';
+
 INHERIT_CERTKEYCHAIN: 'inherit-certkeychain';
+
+INHERITED_TRAFFIC_GROUP: 'inherited-traffic-group';
 
 ILX: 'ilx';
 
@@ -265,6 +289,8 @@ IP_PROTOCOL: 'ip-protocol';
 
 IPOTHER: 'ipother';
 
+IPSEC: 'ipsec';
+
 IPSECALG: 'ipsecalg';
 
 IPV4: 'ipv4';
@@ -276,6 +302,8 @@ KERNEL: 'kernel';
 KEY: 'key';
 
 LACP: 'lacp';
+
+LAST_MODIFIED_TIME: 'last-modified-time';
 
 LDAP: 'ldap';
 
@@ -333,6 +361,8 @@ MAXIMUM_RECORD_SIZE: 'maximum-record-size';
 
 MEMBERS: 'members';
 
+METRICS: 'metrics';
+
 MIN_ACTIVE_MEMBERS: 'min-active-members';
 
 MOD_SSL_METHODS: 'mod-ssl-methods';
@@ -341,7 +371,11 @@ MODE: 'mode';
 
 MQTT: 'mqtt';
 
+MODULE: 'module';
+
 MONITOR: 'monitor';
+
+NAT: 'nat';
 
 NEIGHBOR: 'neighbor';
 
@@ -372,17 +406,25 @@ OPTIONAL_MODULES
 
 OPTIONS: 'options';
 
+ORDER_ON_PAGE: 'order-on-page';
+
 ORIGINS: 'origins';
 
 OUT: 'out';
 
 OVERRIDE_CONNECTION_LIMIT: 'override-connection-limit';
 
+OUTBOUND_SMTP: 'outbound-smtp';
+
 PCP: 'pcp';
 
 PASSPHRASE: 'passphrase';
 
 PEER_NO_RENEGOTIATE_TIMEOUT: 'peer-no-renegotiate-timeout';
+
+PERIOD: 'period';
+
+PEM: 'pem';
 
 PERMIT: 'permit';
 
@@ -489,6 +531,8 @@ SECURE_RENEGOTIATION: 'secure-renegotiation';
 
 SECURITY: 'security';
 
+SECURITY_LOG_PROFILES: 'security-log-profiles';
+
 SELECTIVE: 'selective';
 
 SELF: 'self';
@@ -514,6 +558,8 @@ SESSION_MIRRORING: 'session-mirroring';
 SESSION_TICKET: 'session-ticket';
 
 SESSION_TICKET_TIMEOUT: 'session-ticket-timeout';
+
+SESSION: 'session';
 
 SET: 'set';
 
@@ -541,6 +587,10 @@ SNI_REQUIRE: 'sni-require';
 
 SNMP: 'snmp';
 
+SSHD: 'sshd';
+
+SYSLOG: 'syslog';
+
 SOCKS: 'socks';
 
 SOURCE: 'source';
@@ -550,6 +600,10 @@ SOURCE_ADDR: 'source-addr';
 SOURCE_ADDRESS_TRANSLATION: 'source-address-translation';
 
 SOURCE_MASK: 'source-mask';
+
+SOURCE_PORT: 'source-port';
+
+SERVERSSL_USE_SNI: 'serverssl-use-sni';
 
 SPLITSESSIONCLIENT: 'splitsessionclient';
 
@@ -637,9 +691,13 @@ UNIT_ID: 'unit-id';
 
 UPDATE_SOURCE: 'update-source';
 
+USERNAME: 'username';
+
 VALUE: 'value';
 
 VERSION: 'version';
+
+VIEW_BY: 'view-by';
 
 VIRTUAL: 'virtual';
 
@@ -659,7 +717,11 @@ WEB_SECURITY: 'web-security';
 
 WEBSOCKET: 'websocket';
 
+WOM: 'wom';
+
 WEIGHT: 'weight';
+
+WIDGET_TYPE: 'widget-type';
 
 XML: 'xml';
 

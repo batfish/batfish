@@ -1,0 +1,90 @@
+sys global-settings {
+    console-inactivity-timeout 600
+    gui-setup disabled
+    hostname test-device
+}
+
+sys outbound-smtp {
+    from-line-override disabled
+    mailhub 192.0.2.1:25
+}
+
+sys sshd {
+    inactivity-timeout 600
+}
+
+sys syslog {
+    remote-servers {
+        /Common/remotesyslog1 {
+            host 192.0.2.2
+            local-ip 192.0.2.3
+        }
+    }
+}
+
+ltm nat /Common/test_nat_object {
+    inherited-traffic-group true
+}
+
+ltm snat-translation /Common/test_snat_translation {
+    address 192.0.2.100
+    inherited-traffic-group true
+    traffic-group /Common/traffic-group-1
+}
+
+ltm virtual /Common/VS_Test {
+    destination 192.0.2.1:80
+    fw-enforced-policy /Common/test-policy
+    mask 255.255.255.0
+    mask any
+    pool /Common/test_pool
+    security-log-profiles {
+        /Common/traffic-log
+        /Common/security-log
+    }
+    session user-disabled
+    serverssl-use-sni disabled
+    source 192.0.2.0/24
+    source-address-translation {
+        type automap
+    }
+    source-port preserve-strict
+}
+
+analytics gui-widget /Common/uwid_summary {
+    cent-report-destination-type self
+    drilldown-entities { psm_protocol_type }
+    drilldown-values { FTP }
+    gui-pagecode _ov_summary
+    metrics { count drop_count }
+    module asm
+    order-on-page 1
+    period 86400
+    username testuser
+    view-by asm_repev_request_type
+    widget-type 3
+}
+
+analytics gui-widget /Common/uwid_network {
+    cent-report-destination-type self
+    gui-pagecode network
+    metrics { acl_matches }
+    module network
+    order-on-page 2
+    period 86400
+    username testuser
+    view-by acl_enforced_rule
+    widget-type 2
+}
+
+ltm profile ipsecalg /Common/test_ipsecalg {
+    app-service none
+    defaults-from none
+    description none
+    idle-timeout 3600
+    initial-connection-timeout 3
+    log-profile none
+    log-publisher none
+    partition Common
+    pending-ike-connection-limit 5
+}

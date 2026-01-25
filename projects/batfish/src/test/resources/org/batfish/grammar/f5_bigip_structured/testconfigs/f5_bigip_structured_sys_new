@@ -1,0 +1,25 @@
+#TMSH-VERSION: 15.1.10.3
+
+sys global-settings {
+    console-inactivity-timeout 600
+    gui-setup disabled
+    hostname f5_bigip_structured_sys_new_statements
+}
+
+sys outbound-smtp {
+    from-line-override disabled
+    mailhub 192.0.2.1:25
+}
+
+sys sshd {
+    inactivity-timeout 600
+}
+
+sys syslog {
+    remote-servers {
+        /Common/remotesyslog1 {
+            host 192.0.2.2
+            local-ip 192.0.2.3
+        }
+    }
+}

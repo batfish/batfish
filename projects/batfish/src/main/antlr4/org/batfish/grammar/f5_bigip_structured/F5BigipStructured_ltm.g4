@@ -165,6 +165,23 @@ lmt_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+l_nat
+:
+  NAT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ln_inherited_traffic_group
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ln_inherited_traffic_group
+:
+  INHERITED_TRAFFIC_GROUP value = word NEWLINE
+;
+
 l_node
 :
   NODE name = structure_name BRACE_LEFT
@@ -1593,6 +1610,7 @@ l_snat_translation
     (
       lst_address
       | lst_address6
+      | lst_inherited_traffic_group
       | lst_traffic_group
       | unrecognized
     )*
@@ -1607,6 +1625,11 @@ lst_address
 lst_address6
 :
   ADDRESS address6 = ipv6_address NEWLINE
+;
+
+lst_inherited_traffic_group
+:
+  INHERITED_TRAFFIC_GROUP value = word NEWLINE
 ;
 
 lst_traffic_group
@@ -1649,6 +1672,7 @@ l_virtual
       | lv_destination
       | lv_disabled
       | lv_enabled
+      | lv_fw_enforced_policy
       | lv_ip_forward
       | lv_ip_protocol
       | lv_mask
@@ -1658,9 +1682,13 @@ l_virtual
       | lv_profiles
       | lv_reject
       | lv_rules
+      | lv_security_log_profiles
+      | lv_session
+      | lv_serverssl_use_sni
       | lv_source
       | lv_source6
       | lv_source_address_translation
+      | lv_source_port
       | lv_translate_address
       | lv_translate_port
       | lv_vlans
@@ -1691,6 +1719,11 @@ lv_enabled
   ENABLED NEWLINE
 ;
 
+lv_fw_enforced_policy
+:
+  FW_ENFORCED_POLICY value = structure_name NEWLINE
+;
+
 lv_ip_forward
 :
   IP_FORWARD NEWLINE
@@ -1703,7 +1736,7 @@ lv_ip_protocol
 
 lv_mask
 :
-  MASK mask = ip_address NEWLINE
+  MASK (mask = ip_address | ANY) NEWLINE
 ;
 
 lv_mask6
@@ -1777,6 +1810,24 @@ lvr_rule
   name = structure_name NEWLINE
 ;
 
+lv_security_log_profiles
+:
+  SECURITY_LOG_PROFILES BRACE_LEFT
+  (
+    NEWLINE lvslp_profile*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lvslp_profile
+:
+  name = structure_name NEWLINE
+;
+
+lv_session
+:
+  SESSION value = word NEWLINE
+;
+
 lv_source
 :
   SOURCE source = ip_prefix NEWLINE
@@ -1808,6 +1859,11 @@ lvsat_pool
 lvsat_type
 :
   TYPE source_address_translation_type NEWLINE
+;
+
+lv_source_port
+:
+  SOURCE_PORT value = word NEWLINE
 ;
 
 lv_translate_address
@@ -1849,6 +1905,15 @@ lv_vlans_disabled
 lv_vlans_enabled
 :
   VLANS_ENABLED NEWLINE
+;
+
+lv_serverssl_use_sni
+:
+  SERVERSSL_USE_SNI
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
 ;
 
 l_virtual_address
@@ -1924,6 +1989,7 @@ s_ltm
   (
     l_data_group
     | l_monitor
+    | l_nat
     | l_node
     | l_null
     | l_persistence
