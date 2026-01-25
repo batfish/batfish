@@ -1,0 +1,83 @@
+### User-verified configuration examples for Palo Alto parsing tests
+### These examples test real-world configuration patterns
+
+set deviceconfig system hostname PA-NAT-Testing
+
+set network interface ethernet ethernet1/1 layer3 ip 10.100.100.1/24
+set network interface ethernet ethernet1/1 layer3 interface-management-profile Mgt-Ping-SSH-Https
+set network interface ethernet ethernet1/1 comment Inside
+
+set network interface ethernet ethernet1/2 layer3 ip 172.16.1.1/24
+set network interface ethernet ethernet1/2 layer3 interface-management-profile Mgt-Ping-SSH-Https
+set network interface ethernet ethernet1/2 comment Outside
+
+set network interface tunnel units tunnel.1 ip 3.3.3.1
+set network interface tunnel units tunnel.1 interface-management-profile Mgt-Ping-SSH-Https
+set network interface tunnel units tunnel.1 comment NatTunnel
+
+set network ike crypto-profiles ike-crypto-profiles default encryption [ aes-128-cbc 3des ]
+set network ike crypto-profiles ike-crypto-profiles default hash sha1
+set network ike crypto-profiles ike-crypto-profiles default dh-group group2
+set network ike crypto-profiles ike-crypto-profiles default lifetime hours 8
+set network ike crypto-profiles ipsec-crypto-profiles default esp encryption [ aes-128-cbc 3des ]
+set network ike crypto-profiles ipsec-crypto-profiles default esp authentication sha1
+set network ike crypto-profiles ipsec-crypto-profiles default dh-group group2
+set network ike crypto-profiles ipsec-crypto-profiles default lifetime hours 1
+set network ike crypto-profiles global-protect-app-crypto-profiles default encryption aes-128-cbc
+set network ike crypto-profiles global-protect-app-crypto-profiles default authentication sha1
+
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 tunnel.1 ]
+set network virtual-router default routing-table ip static-route local-site-NAT interface tunnel.1
+set network virtual-router default routing-table ip static-route local-site-NAT metric 10
+set network virtual-router default routing-table ip static-route local-site-NAT destination 2.2.2.0/24
+set network virtual-router default routing-table ip static-route local-site-NAT route-table unicast
+
+set network tunnel ipsec NatTunnel auto-key ike-gateway Palo2
+set network tunnel ipsec NatTunnel tunnel-monitor enable no
+set network tunnel ipsec NatTunnel tunnel-interface tunnel.1
+
+set zone Trust network layer3 ethernet1/1
+set zone untrust network layer3 [ ethernet1/2 tunnel.1 ]
+
+set rulebase security rules PermitAny to any
+set rulebase security rules PermitAny from any
+set rulebase security rules PermitAny source any
+set rulebase security rules PermitAny destination any
+set rulebase security rules PermitAny source-user any
+set rulebase security rules PermitAny category any
+set rulebase security rules PermitAny application any
+set rulebase security rules PermitAny service any
+set rulebase security rules PermitAny source-hip any
+set rulebase security rules PermitAny destination-hip any
+set rulebase security rules PermitAny action allow
+
+set rulebase nat rules SubnetNAT source-translation static-ip translated-address 1.1.1.0/24
+set rulebase nat rules SubnetNAT source-translation static-ip bi-directional yes
+set rulebase nat rules SubnetNAT to untrust
+set rulebase nat rules SubnetNAT from Trust
+set rulebase nat rules SubnetNAT source 10.100.100.0/24
+set rulebase nat rules SubnetNAT destination any
+set rulebase nat rules SubnetNAT service any
+set rulebase nat rules SubnetNAT to-interface tunnel.1
+
+set import network interface [ ethernet1/1 ethernet1/2 tunnel.1 ]
+
+### Additional security rule examples with advanced options
+set rulebase security rules rashi from trust-vwire
+set rulebase security rules rashi from untrust-vwire
+set rulebase security rules rashi to trust-vwire
+set rulebase security rules rashi to untrust-vwire
+set rulebase security rules rashi source 10.16.0.21
+set rulebase security rules rashi destination any
+set rulebase security rules rashi service any
+set rulebase security rules rashi application adobe-meeting-remote-control
+set rulebase security rules rashi application adobe-meeting
+set rulebase security rules rashi application adobe-online-office
+set rulebase security rules rashi action deny
+set rulebase security rules rashi source-user any
+set rulebase security rules rashi option disable-server-response-inspection no
+set rulebase security rules rashi negate-source no
+set rulebase security rules rashi negate-destination no
+set rulebase security rules rashi disabled yes
+set rulebase security rules rashi log-start no
+set rulebase security rules rashi log-end yes

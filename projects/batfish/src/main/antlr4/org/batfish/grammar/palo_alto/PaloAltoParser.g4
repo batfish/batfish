@@ -24,6 +24,7 @@ import
     PaloAlto_tag,
     PaloAlto_template,
     PaloAlto_template_stack,
+    PaloAlto_user_id_collector,
     PaloAlto_virtual_router,
     PaloAlto_virtual_wire,
     PaloAlto_vlan,
@@ -80,6 +81,7 @@ s_null
         LOG_COLLECTOR
         | LOG_COLLECTOR_GROUP
         | MGT_CONFIG
+        | SCHEDULE
     )
     null_rest_of_line
 ;
@@ -107,9 +109,11 @@ statement_config_devices
     | s_address_group
     | s_application
     | s_application_group
+    | s_dynamic_user_group
     | s_deviceconfig
     | s_network
     | s_null
+    | s_user_id_collector
     | s_profiles
     | s_rulebase
     | s_service
@@ -165,7 +169,7 @@ set_line
 
 set_line_template
 :
-    TEMPLATE name = variable statement_template
+    TEMPLATE name = variable statement_template?
 ;
 
 set_line_template_stack
@@ -175,7 +179,7 @@ set_line_template_stack
 
 set_line_device_group
 :
-    DEVICE_GROUP name = variable statement_device_group
+    DEVICE_GROUP name = variable statement_device_group?
 ;
 
 set_line_readonly
@@ -226,7 +230,13 @@ set_line_tail
     | set_line_response
     | set_line_template
     | set_line_template_stack
+    | s_import
     | s_policy
+;
+
+s_import
+:
+    IMPORT NETWORK INTERFACE variable_list
 ;
 
 s_policy

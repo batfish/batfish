@@ -1,0 +1,1 @@
+set config devices localhost.localdomain vsys vsys3 rulebase security rules rule1 source-user "cn=user,ou=groups,dc=example,dc=com"

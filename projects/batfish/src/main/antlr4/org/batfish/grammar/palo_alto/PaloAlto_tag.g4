@@ -12,7 +12,7 @@ s_tag
     (
         st_color
         | st_comments
-    )?
+    )*
 ;
 
 st_comments

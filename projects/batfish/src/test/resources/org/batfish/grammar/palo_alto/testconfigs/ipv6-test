@@ -1,0 +1,2 @@
+set address ipv6-prefix ip-netmask 2001:db8:85a3::/64
+set address ipv6-addr ip-netmask 2001:db8:85a3::8a2e:370:7334

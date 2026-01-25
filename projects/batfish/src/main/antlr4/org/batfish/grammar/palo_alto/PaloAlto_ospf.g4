@@ -299,3 +299,11 @@ ospfgr_strict_lsa_checking
 
 
 
+vrp_ospfv3
+:
+    OSPFV3
+    (
+        ospf_enable
+        | ospf_null
+    )
+;

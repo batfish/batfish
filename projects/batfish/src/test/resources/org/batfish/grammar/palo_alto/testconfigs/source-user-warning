@@ -1,0 +1,9 @@
+set rulebase security rules r1 source-user [ user1 user2 ]
+set rulebase security rules r1 from any
+set rulebase security rules r1 to any
+set rulebase security rules r1 source any
+set rulebase security rules r1 destination any
+set rulebase security rules r1 application any
+set rulebase security rules r1 service any
+set rulebase security rules r1 action allow
+

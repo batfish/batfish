@@ -1,0 +1,15 @@
+set vsys vsys1 group-mapping gm1 group-object "cn=admins,dc=example,dc=com"
+set vsys vsys1 group-mapping gm1 group-name Administrators
+set vsys vsys1 group-mapping gm1 group-member user1
+set vsys vsys1 group-mapping gm1 user-object "cn=john,dc=example,dc=com"
+set vsys vsys1 group-mapping gm1 user-name john.doe
+set vsys vsys1 group-mapping gm1 server-profile ldap-profile
+set vsys vsys1 group-mapping gm1 group-include-list nested-groups
+set vsys vsys1 group-mapping gm1 user-email john.doe@example.com
+set vsys vsys1 group-mapping gm1 group-email admins@example.com
+set vsys vsys1 group-mapping gm1 alternate-user-name-1 jdoe1
+set vsys vsys1 group-mapping gm1 alternate-user-name-2 jdoe2
+set vsys vsys1 group-mapping gm1 alternate-user-name-3 jdoe3
+set vsys vsys1 group-mapping gm1 disabled no
+
+

@@ -13,7 +13,7 @@ s_address
 
 s_address_definition
 :
-    name = variable
+    (name=variable | name_token=IP_NETMASK | name_token=IP_RANGE_LITERAL)
     (
         sa_description
         | sa_fqdn

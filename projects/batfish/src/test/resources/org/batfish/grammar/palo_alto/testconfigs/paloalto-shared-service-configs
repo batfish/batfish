@@ -1,0 +1,16 @@
+# Test configuration for set config shared service and ssl-tls-service-profile
+# These commands were previously unrecognized and should now parse correctly
+
+set config shared service TCP-6379 protocol tcp override no
+set config shared service TCP-9200 protocol tcp override no
+set config shared service TCP-27017 protocol tcp override no
+set config shared log-settings email MAIL_NDC server mail01 gateway 10.34.2.65
+set config shared log-settings email MAIL_NDC server mail01 from admin@example.com
+set config shared log-settings email MAIL_NDC server mail01 to alerts@example.com
+set config shared log-settings email MAIL_NDC server mail01 protocol smtp
+set config shared log-settings email MAIL_NDC server mail01 port 25
+set config shared log-settings snmptrap snmp_trap version v2c server snmp_trap01 manager 10.34.21.21
+set config shared log-settings snmptrap snmp_trap version v2c server snmp_trap01 community public
+set config shared ssl-tls-service-profile mgmt protocol-settings min-version tls1-2
+set config shared ssl-tls-service-profile mgmt protocol-settings max-version tls1-3
+set config shared ssl-tls-service-profile mgmt certificate selfcert

@@ -105,6 +105,7 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
@@ -307,6 +308,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_active_active_device_bindingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_disabledContext;
@@ -323,13 +325,17 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destination_hipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_hip_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_hipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_userContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
@@ -415,6 +421,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.HighAvailability;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
+import org.batfish.representation.palo_alto.Ip6Prefix;
 import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -1431,6 +1438,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspf_enable(Ospf_enableContext ctx) {
+    if (_currentOspfVr == null) {
+      return;
+    }
     _currentOspfVr.setEnable(toBoolean(ctx.yn));
   }
 
@@ -1652,7 +1662,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    String rangeStr = ctx.ip_range().getText();
+    if (rangeStr.contains(":")) {
+      String[] ips = rangeStr.split("-");
+      Ip6 lowIp = Ip6.parse(stripZoneIndex(ips[0]));
+      Ip6 highIp = Ip6.parse(stripZoneIndex(ips[1]));
+      if (lowIp.compareTo(highIp) >= 0) {
+        warn(ctx, "Invalid IPv6 address range");
+      } else {
+        _currentAddressObject.setIpRange6(Range.closed(lowIp, highIp));
+      }
+    } else {
+      toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    }
   }
 
   @Override
@@ -1726,6 +1748,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterS_external_list(S_external_listContext ctx) {
+    if (ctx.name == null) {
+      return;
+    }
     _currentExternalListName = getFullText(ctx.name);
   }
 
@@ -1805,8 +1830,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String deviceName = getText(ctx.name);
       _currentDeviceName = firstNonNull(_currentDeviceName, deviceName);
       if (!_currentDeviceName.equals(deviceName)) {
-        /* Do not currently handle multiple device names, which presumably happens only if multiple
-         * physical devices are configured from a single config */
+        /*
+         * Do not currently handle multiple device names, which presumably happens only
+         * if multiple
+         * physical devices are configured from a single config
+         */
         warn(ctx, "Multiple devices encountered: " + deviceName);
       }
     }
@@ -1929,11 +1957,30 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
   private void applyIpNetmask(AddressObject addressObject, PaloAltoParser.Ip_netmaskContext ctx) {
     if (ctx.ip_address() != null) {
-      addressObject.setIp(toIp(ctx.ip_address()));
+      String ipStr = ctx.ip_address().getText();
+      if (ipStr.contains(":")) {
+        // Strip zone index if present
+        int percentIdx = ipStr.indexOf('%');
+        String baseIp = percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
+        addressObject.setIp(Ip6.parse(baseIp));
+      } else {
+        addressObject.setIp(Ip.parse(ipStr));
+      }
       return;
     }
     assert ctx.ip_prefix() != null;
-    addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    String prefixStr = ctx.ip_prefix().getText();
+    if (prefixStr.contains(":")) {
+      // IPv6 Prefix. Splitting on / to handle base IP possibly having a zone index
+      String[] parts = prefixStr.split("/", 2);
+      String baseIp = parts[0];
+      int percentIdx = baseIp.indexOf('%');
+      String strippedBaseIp = percentIdx != -1 ? baseIp.substring(0, percentIdx) : baseIp;
+      String strippedPrefixStr = strippedBaseIp + (parts.length > 1 ? "/" + parts[1] : "");
+      addressObject.setPrefix(Ip6Prefix.parse(strippedPrefixStr));
+    } else {
+      addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    }
   }
 
   @Override
@@ -2679,17 +2726,18 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return Optional.of(NatRule.ActiveActiveDeviceBinding.PRIMARY);
     } else if (deviceBinding.BOTH() != null) {
       return Optional.of(NatRule.ActiveActiveDeviceBinding.BOTH);
+    } else if (deviceBinding.uint8() != null) {
+      int val = Integer.parseInt(deviceBinding.uint8().getText());
+      if (val == 0) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ZERO);
+      } else if (val == 1) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ONE);
+      }
+      warn(ctx, "Invalid active-active-device-binding value: " + val);
+      return Optional.empty();
     } else {
-      assert deviceBinding.uint8() != null;
-      Optional<Integer> maybeId = toInteger(ctx, deviceBinding);
-      return maybeId.map(
-          id -> {
-            if (id == 0) {
-              return NatRule.ActiveActiveDeviceBinding.ZERO;
-            }
-            assert id == 1;
-            return NatRule.ActiveActiveDeviceBinding.ONE;
-          });
+      warn(ctx, "Invalid active-active-device-binding value");
+      return Optional.empty();
     }
   }
 
@@ -2750,6 +2798,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSrn_description(Srn_descriptionContext ctx) {
+    _currentNatRule.setDescription(getText(ctx.description));
+  }
+
+  @Override
   public void exitSrndt_translated_address(Srndt_translated_addressContext ctx) {
     RuleEndpoint translatedAddress = toRuleEndpoint(ctx.translated_address_list_item());
     _currentNatRuleDestinationTranslation.setTranslatedAddress(translatedAddress);
@@ -2757,7 +2810,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     // Add reference
     String uniqueName = computeObjectName(_currentVsys, translatedAddress.getValue());
     // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-    // reference or not.  So mark a reference to a very permissive abstract structure type.
+      // reference or not.  So mark a reference to a very permissive abstract structure type.
     PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
     if (translatedAddress.getType() == RuleEndpoint.Type.REFERENCE) {
       // We know this reference doesn't look like a valid constant, so it must be pointing to an
@@ -2936,6 +2989,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     }
   }
 
+  @Override
+  public void exitSrs_group_tag(PaloAltoParser.Srs_group_tagContext ctx) {
+    String groupTag = getText((ParserRuleContext) ctx.getChild(1));
+    _currentSecurityRule.setGroupTag(groupTag);
+  }
+
   private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
@@ -3002,6 +3061,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSrs_destination_hip(Srs_destination_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addDestinationHip(getText(var));
+    }
+  }
+
+  @Override
   public void exitSrs_disabled(Srs_disabledContext ctx) {
     _currentSecurityRule.setDisabled(toBoolean(ctx.yn));
   }
@@ -3017,6 +3086,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         String uniqueName = computeObjectName(_currentVsys, zoneName);
         referenceStructure(ZONE, uniqueName, SECURITY_RULE_FROM_ZONE, getLine(var.start));
       }
+    }
+  }
+
+  @Override
+  public void exitSrs_hip_profiles(Srs_hip_profilesContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addHipProfile(getText(var));
     }
   }
 
@@ -3054,6 +3133,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         type = ADDRESS_LIKE;
       }
       referenceStructure(type, uniqueName, SECURITY_RULE_SOURCE, getLine(var.start));
+    }
+  }
+
+  @Override
+  public void exitSrs_source_hip(Srs_source_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addSourceHip(getText(var));
+    }
+  }
+
+  @Override
+  public void exitSrs_source_user(Srs_source_userContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    if (ctx.names != null) {
+      for (Variable_list_itemContext var : variables(ctx.names)) {
+        _currentSecurityRule.addSourceUser(getText(var));
+      }
     }
   }
 
@@ -3201,6 +3302,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterSls_server(Sls_serverContext ctx) {
+    if (_currentSyslogServerGroupName == null) {
+      return;
+    }
     _currentSyslogServer =
         _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
@@ -3212,6 +3316,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSlss_server(Slss_serverContext ctx) {
+    if (_currentSyslogServer == null) {
+      return;
+    }
     _currentSyslogServer.setAddress(getText(ctx.address));
   }
 
@@ -3373,9 +3480,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
-      return Optional.empty();
     }
     return Optional.of(ip.getIp());
+  }
+
+  private static @Nonnull String stripZoneIndex(String ipStr) {
+    int percentIdx = ipStr.indexOf('%');
+    return percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
   }
 
   private @Nonnull Optional<Range<Ip>> toIpRange(Ip_rangeContext ctx) {

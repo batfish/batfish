@@ -1,0 +1,2 @@
+set address r1 ip-range 2001:db8::1-2001:db8::10
+set address r2 ip-range fe80::1%eth0-fe80::ff%eth0

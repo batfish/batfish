@@ -1,6 +1,8 @@
 parser grammar PaloAlto_shared;
 
 import
+    PaloAlto_address,
+    PaloAlto_address_group,
     PaloAlto_application,
     PaloAlto_common,
     PaloAlto_log_settings,
@@ -26,23 +28,40 @@ ss_common
     | s_application
     | s_application_filter
     | s_application_group
+    | s_dynamic_user_group
     | s_external_list
     | s_log_settings
     | s_profiles
     | s_post_rulebase
     | s_pre_rulebase
+    | ss_service_override
     | s_service
     | s_service_group
     | s_tag
+    | s_local_user_database
+    | ss_ssl_tls_service_profile
     | ss_null
+;
+
+s_local_user_database
+:
+    LOCAL_USER_DATABASE variable
+;
+
+s_dynamic_user_group
+:
+    DYNAMIC_USER_GROUP name=variable null_rest_of_line
 ;
 
 s_external_list
 :
-    EXTERNAL_LIST name = variable
+    EXTERNAL_LIST
     (
-      sel_type
-    )
+        name = variable
+        (
+            sel_type
+        )
+    )?
 ;
 
 sel_type
@@ -50,6 +69,7 @@ sel_type
     TYPE
     (
       selt_ip
+      | selt_url
     )
 ;
 
@@ -59,6 +79,7 @@ selt_ip
     (
       seltip_auth
       | seltip_certificate_profile
+      | seltip_exception_list
       | seltip_recurring
       | seltip_url
     )
@@ -92,11 +113,40 @@ seltip_recurring
 :
     RECURRING
     (
-      HOURLY
+      FIVE_MINUTE
+      | HOURLY
     )
 ;
 
 seltip_url
+:
+    URL url = variable
+;
+
+seltip_exception_list
+:
+    EXCEPTION_LIST ip_prefix_list
+;
+
+selt_url
+:
+    URL
+    (
+      selturl_recurring
+      | selturl_url
+    )
+;
+
+selturl_recurring
+:
+    RECURRING
+    (
+      FIVE_MINUTE
+      | HOURLY
+    )
+;
+
+selturl_url
 :
     URL url = variable
 ;
@@ -106,13 +156,84 @@ ss_null
     (
         ADMIN_ROLE
         | AUTHENTICATION_PROFILE
+        | AUTHENTICATION_SEQUENCE
         | BOTNET
         | CERTIFICATE
         | CERTIFICATE_PROFILE
         | CONTENT_PREVIEW
         | PROFILE_GROUP
         | PROFILES
+        | SCHEDULE
         | SERVER_PROFILE
+        | USER_ID_COLLECTOR
     )
     null_rest_of_line
+;
+
+ss_ssl_tls_service_profile
+:
+    SSL_TLS_SERVICE_PROFILE name = variable
+    (
+        sslp_protocol_settings
+        | sslp_certificate
+    )*
+;
+
+sslp_protocol_settings
+:
+    PROTOCOL_SETTINGS
+    (
+        sslps_min_version
+        | sslps_max_version
+        | sslps_algorithm_setting
+    )*
+;
+
+sslps_min_version
+:
+    MIN_VERSION variable
+;
+
+sslps_max_version
+:
+    MAX_VERSION variable
+;
+
+sslps_algorithm_setting
+:
+    (
+        AUTH_ALGO_SHA1
+        | AUTH_ALGO_SHA256
+        | AUTH_ALGO_SHA384
+        | ENC_ALGO_AES_128_CBC
+        | ENC_ALGO_AES_128_GCM
+        | ENC_ALGO_AES_256_CBC
+        | ENC_ALGO_AES_256_GCM
+        | ENC_ALGO_AES_CHACHA20_POLY1305
+        | KEYXCHG_ALGO_DHE
+        | KEYXCHG_ALGO_ECDHE
+        | KEYXCHG_ALGO_RSA
+    )
+    variable
+;
+
+sslp_certificate
+:
+    CERTIFICATE variable
+;
+
+ss_service_override
+: SERVICE name = variable
+   (
+       sso_protocol
+       | sso_override
+   )*
+;
+
+sso_protocol
+: PROTOCOL (TCP | UDP)
+;
+
+sso_override
+: OVERRIDE yn = yes_or_no
 ;

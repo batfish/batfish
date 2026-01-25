@@ -50,11 +50,20 @@ public final class SecurityRule implements Serializable {
   // Services
   private final @Nonnull SortedSet<ServiceOrServiceGroupReference> _service;
 
+  // Users
+  private final @Nonnull SortedSet<String> _sourceUsers;
+
   // Applications
   private final @Nonnull SortedSet<ApplicationOrApplicationGroupReference> _applications;
 
   // Rule type
   private @Nullable RuleType _ruleType;
+
+  private final @Nonnull SortedSet<String> _sourceHips;
+  private final @Nonnull SortedSet<String> _destinationHips;
+  private final @Nonnull SortedSet<String> _hipProfiles;
+
+  private @Nullable String _groupTag;
 
   private final @Nonnull Set<String> _tags;
 
@@ -69,7 +78,11 @@ public final class SecurityRule implements Serializable {
     _service = new TreeSet<>();
     _source = ImmutableSet.of();
     _negateSource = false;
+    _sourceUsers = new TreeSet<>();
     _to = new TreeSet<>();
+    _destinationHips = new TreeSet<>();
+    _hipProfiles = new TreeSet<>();
+    _sourceHips = new TreeSet<>();
     _tags = new HashSet<>(1);
     _name = name;
     _vsys = vsys;
@@ -169,6 +182,14 @@ public final class SecurityRule implements Serializable {
     return _source;
   }
 
+  public @Nonnull SortedSet<String> getSourceUsers() {
+    return _sourceUsers;
+  }
+
+  public void addSourceUser(String sourceUser) {
+    _sourceUsers.add(sourceUser);
+  }
+
   public @Nonnull SortedSet<String> getTo() {
     return _to;
   }
@@ -199,5 +220,37 @@ public final class SecurityRule implements Serializable {
 
   public void setRuleType(@Nullable RuleType ruleType) {
     _ruleType = ruleType;
+  }
+
+  public @Nonnull SortedSet<String> getDestinationHips() {
+    return _destinationHips;
+  }
+
+  public void addDestinationHip(String hip) {
+    _destinationHips.add(hip);
+  }
+
+  public @Nonnull SortedSet<String> getHipProfiles() {
+    return _hipProfiles;
+  }
+
+  public void addHipProfile(String hipProfile) {
+    _hipProfiles.add(hipProfile);
+  }
+
+  public @Nonnull SortedSet<String> getSourceHips() {
+    return _sourceHips;
+  }
+
+  public void addSourceHip(String hip) {
+    _sourceHips.add(hip);
+  }
+
+  public @Nullable String getGroupTag() {
+    return _groupTag;
+  }
+
+  public void setGroupTag(String groupTag) {
+    _groupTag = groupTag;
   }
 }

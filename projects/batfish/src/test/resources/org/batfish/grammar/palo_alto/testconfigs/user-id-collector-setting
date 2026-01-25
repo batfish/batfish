@@ -1,0 +1,4 @@
+### Test config for user-id-collector setting parsing
+set deviceconfig system hostname user-id-collector-setting
+set vsys vsys1 setting user-id-collector syslog-listener-ssl yes
+set vsys vsys1 setting user-id-collector wmi-account myaccount
