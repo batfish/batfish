@@ -31,6 +31,7 @@ interface_address_or_reference
 ip_address
 :
     IP_ADDRESS
+    | IP_ADDRESS_V6
 ;
 
 ip_address_or_slash32
@@ -68,8 +69,6 @@ ip_prefix_list
 src_or_dst_list
 :
     (
-        src_or_dst_list_item
-        |
         (
             OPEN_BRACKET
             (
@@ -77,6 +76,7 @@ src_or_dst_list
             )*
             CLOSE_BRACKET
         )
+        | src_or_dst_list_item
     )
 ;
 
@@ -138,8 +138,6 @@ variable_port_list
 variable_list
 :
     (
-        variable_list_item
-        |
         (
             OPEN_BRACKET
             (
@@ -147,6 +145,7 @@ variable_list
             )*
             CLOSE_BRACKET
         )
+        | variable_list_item
     )
 ;
 
@@ -161,6 +160,11 @@ variable_list_item
 variable
 :
     ~NEWLINE
+;
+
+dotted_variable
+:
+    variable (DOT variable)*
 ;
 
 vlan_tag

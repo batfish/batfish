@@ -2461,7 +2461,7 @@ public final class PaloAltoGrammarTest {
             allOf(
                 ParseWarningMatchers.hasText("active-active-device-binding primary"),
                 hasComment("Batfish currently models this as active-active-device-binding both")),
-            hasComment("Expected active-active-device-binding in range 0-1, but got '2'")));
+            hasComment("Invalid active-active-device-binding value: 2")));
 
     // Make sure the active-active-device-binding isn't set to an invalid number
     Map<String, NatRule> natRules =

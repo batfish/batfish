@@ -1,0 +1,4 @@
+set rulebase security rules rule1 source-hip "cn=user,ou=groups,dc=example,dc=com"
+set rulebase security rules rule1 destination-hip "hip 3"
+set rulebase security rules rule1 hip-profiles "profile 1"
+set rulebase security rules rule1 action allow

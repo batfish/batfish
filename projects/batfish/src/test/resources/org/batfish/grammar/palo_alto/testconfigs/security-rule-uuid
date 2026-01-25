@@ -1,0 +1,11 @@
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 to External
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 from Internal
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 source 10.1.1.100
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 destination [ 192.0.2.10 FQDN-api.example.com FQDN-gateway.example.net ]
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 application any
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 service [ service-http service-https ]
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 action allow
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 description "Multi-line description
+Test ticket reference goes here"
+set vsys vsys1 rulebase security rules "rule-with-uuid" 9f3a249c-95fb-465a-905d-d002b8b019f4 log-end yes
+

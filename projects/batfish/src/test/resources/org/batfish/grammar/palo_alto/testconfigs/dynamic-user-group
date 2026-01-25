@@ -1,0 +1,3 @@
+set dynamic-user-group dug1 filter '"tag01" or "tag02"'
+set dynamic-user-group dug2 filter '"department:engineering"'
+set dynamic-user-group dug3 filter '"location:hq" and "clearance:high"'

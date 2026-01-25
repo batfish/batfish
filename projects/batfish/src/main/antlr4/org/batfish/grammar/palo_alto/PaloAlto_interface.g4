@@ -45,10 +45,73 @@ sni_aggregate_ethernet_definition
     name = variable
     (
         if_common
+        | snie_lacp
         | snie_layer2
         | snie_layer3
         | snie_virtual_wire
-    )?
+    )*
+;
+
+snie_lacp
+: LACP
+    (
+        sniel_enable
+        | sniel_fast_null
+        | sniel_high_availability
+        | sniel_mode
+        | sniel_passive_pre_negotiation_null
+        | sniel_port_priority
+        | sniel_transmission_rate_null
+    )*
+;
+
+sniel_high_availability
+:
+    HIGH_AVAILABILITY
+    (
+        sniel_ha_passive_pre_negotiation_null
+        | sniel_use_same_system_mac_null
+    )*
+;
+
+sniel_ha_passive_pre_negotiation_null
+:
+    PASSIVE_PRE_NEGOTIATION yn = yes_or_no
+;
+
+sniel_use_same_system_mac_null
+:
+    USE_SAME_SYSTEM_MAC ENABLE yn = yes_or_no
+;
+
+sniel_mode
+:
+    MODE (ACTIVE | PASSIVE)
+;
+
+sniel_port_priority
+:
+    PORT_PRIORITY priority = uint16
+;
+
+sniel_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+sniel_fast_null
+:
+    FAST
+;
+
+sniel_passive_pre_negotiation_null
+:
+    PASSIVE_PRE_NEGOTIATION yn = yes_or_no
+;
+
+sniel_transmission_rate_null
+:
+    TRANSMISSION_RATE rate = variable
 ;
 
 sni_ethernet
@@ -63,6 +126,7 @@ sni_ethernet_definition
         if_common
         | snie_aggregate_group
         | snie_ha
+        | snie_lacp
         | snie_layer2
         | snie_layer3
         | snie_link_duplex
@@ -70,7 +134,7 @@ sni_ethernet_definition
         | snie_link_state
         | snie_tap
         | snie_virtual_wire
-    )?
+    )*
 ;
 
 sni_loopback
@@ -80,7 +144,7 @@ sni_loopback
         if_common
         | snil_ip
         | snil_units
-    )?
+    )*
 ;
 
 sni_tunnel
@@ -88,7 +152,7 @@ sni_tunnel
     TUNNEL (
         if_common
         | snit_units
-    )?
+    )*
 ;
 
 sni_vlan
@@ -97,7 +161,7 @@ sni_vlan
     (
         if_common
         | sniv_units
-    )?
+    )*
 ;
 
 snie_aggregate_group
@@ -115,7 +179,7 @@ snie_layer2
     LAYER2
     (
         sniel2_units
-    )?
+    )*
 ;
 
 snie_layer3
@@ -123,8 +187,9 @@ snie_layer3
     LAYER3
     (
         sniel3_common
+        | snie_lacp
         | sniel3_units
-    )?
+    )*
 ;
 
 snie_link_duplex
@@ -172,7 +237,7 @@ sniel2_unit
     (
         if_common
         | if_tag
-    )
+    )*
 ;
 
 sniel2_units
@@ -208,6 +273,7 @@ sniel3_null
         | IPV6
         | NDP_PROXY
         | NETFLOW_PROFILE
+        | INTERFACE_MANAGEMENT_PROFILE
     )
     null_rest_of_line
 ;
@@ -219,7 +285,7 @@ sniel3_unit
         if_common
         | sniel3_common
         | if_tag
-    )
+    )*
 ;
 
 sniel3_units
@@ -238,7 +304,7 @@ snil_unit
     (
         if_common
         | snil_ip
-    )?
+    )*
 ;
 
 snil_units
@@ -251,7 +317,8 @@ snit_unit
     name = variable
     (
         if_common
-    )?
+        | sniel3_common
+    )*
 ;
 
 snit_units
@@ -264,7 +331,7 @@ sniv_unit
     name = variable
     (
         if_common
-    )?
+    )*
 ;
 
 sniv_units

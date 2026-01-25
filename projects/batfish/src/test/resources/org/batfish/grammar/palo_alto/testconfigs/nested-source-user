@@ -1,0 +1,36 @@
+vsys {
+  vsys1 {
+    rulebase {
+      security {
+        rules {
+          "source-user-test-ldap" f1f2f3f4-a5a6-b7b8-c9c0-d1d2d3d4d5d6 {
+            from Internal;
+            to External;
+            source any;
+            destination any;
+            source-user "cn=security team,ou=it department,ou=divisions,dc=example,dc=org";
+            application any;
+            service any;
+            action allow;
+            description "Test LDAP DN in source-user field";
+          }
+          "source-user-test-multi" 12341234-5678-90ab-cdef-123456789abc {
+            from SSL-VPN-Employees;
+            to Internal-Network;
+            source any;
+            destination [ 192.0.2.63 192.0.2.66];
+            source-user [ example-user1 example-user2 example-user3];
+            application any;
+            service [ TCP-3306 TCP-1433];
+            action allow;
+            log-setting Syslog_Profile;
+            description "Test multi-line description
+TICKET-12345
+TICKET-67890";
+            source-hip any;
+          }
+        }
+      }
+    }
+  }
+}
