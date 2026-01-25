@@ -13,7 +13,9 @@ public final class RuleEndpoint implements Serializable {
     IP_ADDRESS,
     IP_PREFIX,
     IP_RANGE,
-    REFERENCE
+    REFERENCE,
+    FQDN,
+    IP_LOCATION
   }
 
   private final Type _type;
