@@ -59,6 +59,8 @@ public final class VendorConfigurationFormatDetector {
 
   // checkCisco patterns
   private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
+  private static final Pattern FTD_VERSION_LINE_PATTERN =
+      Pattern.compile("(?m)(^NGFW Version.*$)|(^ngips .*$)|(^service-module \\d+ keepalive.*$)");
   private static final Pattern CISCO_LIKE_PATTERN =
       Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
   private static final Pattern CISCO_STYLE_ACL_PATTERN =
@@ -177,7 +179,9 @@ public final class VendorConfigurationFormatDetector {
           "(?m)^\\s*(interface Bundle-Ether|end-policy\\b|end-set\\b|ipv4 access-list\\b)");
 
   private @Nullable ConfigurationFormat checkCisco() {
-    if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
+    if (fileTextMatches(FTD_VERSION_LINE_PATTERN)) {
+      return ConfigurationFormat.CISCO_FTD;
+    } else if (fileTextMatches(ASA_VERSION_LINE_PATTERN)) {
       return ConfigurationFormat.CISCO_ASA;
     } else if (fileTextMatches(XR_QUALIFIERS)) {
       return ConfigurationFormat.CISCO_IOS_XR;
