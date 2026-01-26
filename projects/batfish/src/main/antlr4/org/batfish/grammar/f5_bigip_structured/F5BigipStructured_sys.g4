@@ -152,15 +152,187 @@ sys_null
     | OUTBOUND_SMTP
     | PROVISION
     | SFLOW
-    | SSHD
-    | SYSLOG
     | TURBOFLEX
   ) ignored
 ;
 
+sys_sshd
+:
+  SSHD BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sshd_inactivity_timeout
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sshd_inactivity_timeout
+:
+  INACTIVITY_TIMEOUT timeout = uint NEWLINE
+;
+
+sys_syslog
+:
+  SYSLOG BRACE_LEFT
+  (
+    NEWLINE
+    (
+      syslog_remote_servers
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+syslog_remote_servers
+:
+  REMOTE_SERVERS BRACE_LEFT
+  (
+    NEWLINE syslog_remote_server*
+  )? BRACE_RIGHT NEWLINE
+;
+
+syslog_remote_server
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      syslog_host
+      | syslog_local_ip
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+syslog_host
+:
+  HOST host = word NEWLINE
+;
+
+syslog_local_ip
+:
+  LOCAL_IP ip = word NEWLINE
+;
+
 sys_snmp
 :
-  SNMP ignored
+  SNMP BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_agent_addresses
+      | snmp_allowed_addresses
+      | snmp_communities
+      | snmp_disk_monitors
+      | snmp_process_monitors
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_agent_addresses
+:
+  AGENT_ADDRESSES BRACE_LEFT addresses += word* BRACE_RIGHT NEWLINE
+;
+
+snmp_allowed_addresses
+:
+  ALLOWED_ADDRESSES BRACE_LEFT addresses += word* BRACE_RIGHT NEWLINE
+;
+
+snmp_communities
+:
+  COMMUNITIES BRACE_LEFT
+  (
+    NEWLINE snmp_community*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_community
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_community_name
+      | snmp_community_source
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_community_name
+:
+  COMMUNITY_NAME name = word NEWLINE
+;
+
+snmp_community_source
+:
+  SOURCE source = word NEWLINE
+;
+
+snmp_disk_monitors
+:
+  DISK_MONITORS BRACE_LEFT
+  (
+    NEWLINE snmp_disk_monitor*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_disk_monitor
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_minspace
+      | snmp_disk_path
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_minspace
+:
+  MINSPACE space = uint NEWLINE
+;
+
+snmp_disk_path
+:
+  PATH path = word NEWLINE
+;
+
+snmp_process_monitors
+:
+  PROCESS_MONITORS BRACE_LEFT
+  (
+    NEWLINE snmp_process_monitor*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_process_monitor
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_max_processes
+      | snmp_process_name
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_max_processes
+:
+  MAX_PROCESSES (INFINITY | uint) NEWLINE
+;
+
+snmp_process_name
+:
+  PROCESS name = word NEWLINE
 ;
 
 s_sys
@@ -174,7 +346,9 @@ s_sys
     | sys_management_route
     | sys_ntp
     | sys_null
+    | sys_sshd
     | sys_snmp
+    | sys_syslog
     | unrecognized
   )
 ;

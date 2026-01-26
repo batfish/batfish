@@ -456,6 +456,8 @@ PROFILE: 'profile';
 
 PROFILES: 'profiles';
 
+PROCESS: 'process';
+
 PROVISION: 'provision';
 
 PROXY_CA_CERT: 'proxy-ca-cert';
@@ -724,6 +726,24 @@ WEIGHT: 'weight';
 WIDGET_TYPE: 'widget-type';
 
 XML: 'xml';
+
+// SNMP-related tokens
+AGENT_ADDRESSES: 'agent-addresses';
+ALLOWED_ADDRESSES: 'allowed-addresses';
+COMMUNITIES: 'communities';
+DISK_MONITORS: 'disk-monitors';
+MAX_PROCESSES: 'max-processes';
+MINSPACE: 'minspace';
+PROCESS_MONITORS: 'process-monitors';
+PATH: 'path';
+COMMUNITY_NAME: 'community-name';
+INFINITY: 'infinity';
+
+// SSHD and SYSLOG-related tokens
+INACTIVITY_TIMEOUT: 'inactivity-timeout';
+REMOTE_SERVERS: 'remote-servers';
+HOST: 'host';
+LOCAL_IP: 'local-ip';
 
 // Complex tokens
 

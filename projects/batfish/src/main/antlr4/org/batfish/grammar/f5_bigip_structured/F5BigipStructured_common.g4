@@ -130,6 +130,14 @@ uint32
   | VLAN_ID
 ;
 
+uint
+:
+  UINT16
+  | UINT32
+  | VLAN_ID
+  | UNIT_ID
+;
+
 vlan_id
 :
   VLAN_ID
