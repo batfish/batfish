@@ -732,12 +732,15 @@ AGENT_ADDRESSES: 'agent-addresses';
 ALLOWED_ADDRESSES: 'allowed-addresses';
 COMMUNITIES: 'communities';
 DISK_MONITORS: 'disk-monitors';
+DISK_MONITOR: 'disk-monitor';
 MAX_PROCESSES: 'max-processes';
 MINSPACE: 'minspace';
 PROCESS_MONITORS: 'process-monitors';
 PATH: 'path';
 COMMUNITY_NAME: 'community-name';
 INFINITY: 'infinity';
+SYS_CONTACT: 'sys-contact';
+SYS_LOCATION: 'sys-location';
 
 // SSHD and SYSLOG-related tokens
 INACTIVITY_TIMEOUT: 'inactivity-timeout';

@@ -199,6 +199,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.Arrays;
+import java.util.Map;
 import java.util.Objects;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -524,6 +525,18 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shp_poolC
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shpp_weightContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sht_trunkContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shtt_weightContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_communitiesContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_communityContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_community_nameContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_community_sourceContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_disk_monitorsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_disk_path_nullContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_max_processes_nullContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_minspace_nullContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_process_monitorsContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_process_name_nullContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_sys_contact_nullContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Snmp_sys_location_nullContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Standard_communityContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_nameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Structure_name_with_portContext;
@@ -534,6 +547,7 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_manag
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_ntpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sys_snmpContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Uint16Context;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UintContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Unicast_address_ipContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.UnrecognizedContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Vlan_idContext;
@@ -578,6 +592,9 @@ import org.batfish.representation.f5_bigip.Self;
 import org.batfish.representation.f5_bigip.Snat;
 import org.batfish.representation.f5_bigip.SnatPool;
 import org.batfish.representation.f5_bigip.SnatTranslation;
+import org.batfish.representation.f5_bigip.SnmpCommunity;
+import org.batfish.representation.f5_bigip.SnmpDiskMonitor;
+import org.batfish.representation.f5_bigip.SnmpProcessMonitor;
 import org.batfish.representation.f5_bigip.TrafficGroup;
 import org.batfish.representation.f5_bigip.Trunk;
 import org.batfish.representation.f5_bigip.UnicastAddress;
@@ -615,25 +632,44 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     return Integer.parseInt(text.substring(text.lastIndexOf(":") + 1));
   }
 
+  private static int toInteger(UintContext ctx) {
+    if (ctx == null) {
+      throw new IllegalArgumentException("Uint context cannot be null");
+    }
+    return Integer.parseInt(ctx.getText());
+  }
+
   private static @Nonnull ConcreteInterfaceAddress toInterfaceAddress(Ip_prefixContext ctx) {
     return ConcreteInterfaceAddress.parse(ctx.getText());
   }
 
   private static @Nonnull Ip toIp(Ip_address_portContext ctx) {
+    if (ctx == null) {
+      throw new IllegalArgumentException("IP address context cannot be null");
+    }
     String text = ctx.getText();
     return Ip.parse(text.substring(0, text.indexOf(":")));
   }
 
   private static @Nonnull Ip toIp(Ip_addressContext ctx) {
+    if (ctx == null) {
+      throw new IllegalArgumentException("IP address context cannot be null");
+    }
     return Ip.parse(ctx.getText());
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_address_portContext ctx) {
+    if (ctx == null) {
+      throw new IllegalArgumentException("IPv6 address context cannot be null");
+    }
     String text = ctx.getText();
     return Ip6.parse(text.substring(0, text.lastIndexOf(".")));
   }
 
   private static @Nonnull Ip6 toIp6(Ipv6_addressContext ctx) {
+    if (ctx == null) {
+      throw new IllegalArgumentException("IPv6 address context cannot be null");
+    }
     return Ip6.parse(ctx.getText());
   }
 
@@ -724,6 +760,9 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable Virtual _currentVirtual;
   private @Nullable VirtualAddress _currentVirtualAddress;
   private @Nullable Vlan _currentVlan;
+  private @Nullable SnmpCommunity _currentSnmpCommunity;
+  private @Nullable SnmpDiskMonitor _currentSnmpDiskMonitor;
+  private @Nullable SnmpProcessMonitor _currentSnmpProcessMonitor;
   private @Nullable Integer _imishConfigurationLine;
   private @Nullable Integer _imishConfigurationOffset;
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
@@ -2542,12 +2581,36 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_mask(Lv_maskContext ctx) {
-    _currentVirtual.setMask(toIp(ctx.mask));
+    if (ctx.mask == null) {
+      _w.redFlagf(
+          "Null mask encountered for virtual '%s' at line %d",
+          _currentVirtual.getName(), ctx.getStart().getLine());
+      return;
+    }
+    try {
+      _currentVirtual.setMask(toIp(ctx.mask));
+    } catch (IllegalArgumentException e) {
+      _w.redFlagf(
+          "Invalid mask '%s' for virtual '%s' at line %d: %s",
+          ctx.mask.getText(), _currentVirtual.getName(), ctx.getStart().getLine(), e.getMessage());
+    }
   }
 
   @Override
   public void exitLv_mask6(Lv_mask6Context ctx) {
-    _currentVirtual.setMask6(toIp6(ctx.mask6));
+    if (ctx.mask6 == null) {
+      _w.redFlagf(
+          "Null mask6 encountered for virtual '%s' at line %d",
+          _currentVirtual.getName(), ctx.getStart().getLine());
+      return;
+    }
+    try {
+      _currentVirtual.setMask6(toIp6(ctx.mask6));
+    } catch (IllegalArgumentException e) {
+      _w.redFlagf(
+          "Invalid mask6 '%s' for virtual '%s' at line %d: %s",
+          ctx.mask6.getText(), _currentVirtual.getName(), ctx.getStart().getLine(), e.getMessage());
+    }
   }
 
   @Override
@@ -2677,12 +2740,42 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLva_mask(Lva_maskContext ctx) {
-    _currentVirtualAddress.setMask(toIp(ctx.mask));
+    if (ctx.mask == null) {
+      _w.redFlagf(
+          "Null mask encountered for virtual address '%s' at line %d",
+          _currentVirtualAddress.getName(), ctx.getStart().getLine());
+      return;
+    }
+    try {
+      _currentVirtualAddress.setMask(toIp(ctx.mask));
+    } catch (IllegalArgumentException e) {
+      _w.redFlagf(
+          "Invalid mask '%s' for virtual address '%s' at line %d: %s",
+          ctx.mask.getText(),
+          _currentVirtualAddress.getName(),
+          ctx.getStart().getLine(),
+          e.getMessage());
+    }
   }
 
   @Override
   public void exitLva_mask6(Lva_mask6Context ctx) {
-    _currentVirtualAddress.setMask6(toIp6(ctx.mask6));
+    if (ctx.mask6 == null) {
+      _w.redFlagf(
+          "Null mask6 encountered for virtual address '%s' at line %d",
+          _currentVirtualAddress.getName(), ctx.getStart().getLine());
+      return;
+    }
+    try {
+      _currentVirtualAddress.setMask6(toIp6(ctx.mask6));
+    } catch (IllegalArgumentException e) {
+      _w.redFlagf(
+          "Invalid mask6 '%s' for virtual address '%s' at line %d: %s",
+          ctx.mask6.getText(),
+          _currentVirtualAddress.getName(),
+          ctx.getStart().getLine(),
+          e.getMessage());
+    }
   }
 
   @Override
@@ -3105,8 +3198,156 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   @Override
+  public void enterSys_snmp(Sys_snmpContext ctx) {
+    // Initialize SNMP structures if needed
+    _c.defineStructure(F5BigipStructureType.SNMP, "snmp", ctx.getParent());
+  }
+
+  @Override
   public void exitSys_snmp(Sys_snmpContext ctx) {
-    todo(ctx);
+    // SNMP processing completed
+  }
+
+  // SNMP Communities parsing
+  @Override
+  public void enterSnmp_communities(Snmp_communitiesContext ctx) {
+    // Communities section entered
+  }
+
+  @Override
+  public void exitSnmp_communities(Snmp_communitiesContext ctx) {
+    // Communities section exited
+  }
+
+  @Override
+  public void enterSnmp_community(Snmp_communityContext ctx) {
+    String name = toName(ctx.name);
+    _currentSnmpCommunity =
+        SnmpCommunity.builder().setName(name).setCommunityName("").build();
+  }
+
+  @Override
+  public void exitSnmp_community(Snmp_communityContext ctx) {
+    if (_currentSnmpCommunity != null) {
+      _c.getSnmpCommunities().put(_currentSnmpCommunity.getName(), _currentSnmpCommunity);
+      _currentSnmpCommunity = null;
+    }
+  }
+
+  @Override
+  public void enterSnmp_community_name(Snmp_community_nameContext ctx) {
+    if (_currentSnmpCommunity != null) {
+      SnmpCommunity.Builder builder =
+          SnmpCommunity.builder()
+              .setName(_currentSnmpCommunity.getName())
+              .setCommunityName(unquote(ctx.name.getText()))
+              .setSource(_currentSnmpCommunity.getSource());
+      _currentSnmpCommunity = builder.build();
+    }
+  }
+
+  @Override
+  public void exitSnmp_community_name(Snmp_community_nameContext ctx) {
+    // Community name processing completed
+  }
+
+  @Override
+  public void enterSnmp_community_source(Snmp_community_sourceContext ctx) {
+    if (_currentSnmpCommunity != null) {
+      SnmpCommunity.Builder builder =
+          SnmpCommunity.builder()
+              .setName(_currentSnmpCommunity.getName())
+              .setCommunityName(_currentSnmpCommunity.getCommunityName())
+              .setSource(ctx.source.getText());
+      _currentSnmpCommunity = builder.build();
+    }
+  }
+
+  @Override
+  public void exitSnmp_community_source(Snmp_community_sourceContext ctx) {
+    // Community source processing completed
+  }
+
+  // SNMP Disk Monitors parsing
+  @Override
+  public void enterSnmp_disk_monitors(Snmp_disk_monitorsContext ctx) {
+    // Disk monitors section entered
+  }
+
+  @Override
+  public void exitSnmp_disk_monitors(Snmp_disk_monitorsContext ctx) {
+    // Disk monitors section exited
+  }
+
+  @Override
+  public void enterSnmp_minspace_null(Snmp_minspace_nullContext ctx) {
+    // SNMP minspace parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_minspace_null(Snmp_minspace_nullContext ctx) {
+    // SNMP minspace parsing completed
+  }
+
+  @Override
+  public void enterSnmp_disk_path_null(Snmp_disk_path_nullContext ctx) {
+    // SNMP disk path parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_disk_path_null(Snmp_disk_path_nullContext ctx) {
+    // SNMP disk path parsing completed
+  }
+
+  @Override
+  public void enterSnmp_sys_contact_null(Snmp_sys_contact_nullContext ctx) {
+    // SNMP sys-contact parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_sys_contact_null(Snmp_sys_contact_nullContext ctx) {
+    // SNMP sys-contact parsing completed
+  }
+
+  @Override
+  public void enterSnmp_sys_location_null(Snmp_sys_location_nullContext ctx) {
+    // SNMP sys-location parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_sys_location_null(Snmp_sys_location_nullContext ctx) {
+    // SNMP sys-location parsing completed
+  }
+
+  // SNMP Process Monitors parsing
+  @Override
+  public void enterSnmp_process_monitors(Snmp_process_monitorsContext ctx) {
+    // Process monitors section entered
+  }
+
+  @Override
+  public void exitSnmp_process_monitors(Snmp_process_monitorsContext ctx) {
+    // Process monitors section exited
+  }
+
+  @Override
+  public void enterSnmp_max_processes_null(Snmp_max_processes_nullContext ctx) {
+    // SNMP max-processes parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_max_processes_null(Snmp_max_processes_nullContext ctx) {
+    // SNMP max-processes parsing completed
+  }
+
+  @Override
+  public void enterSnmp_process_name_null(Snmp_process_name_nullContext ctx) {
+    // SNMP process name parsing (not extracted)
+  }
+
+  @Override
+  public void exitSnmp_process_name_null(Snmp_process_name_nullContext ctx) {
+    // SNMP process name parsing completed
   }
 
   @Override
@@ -3262,13 +3503,44 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   }
 
   private void unrecognized(UnrecognizedContext ctx) {
+    String leadText = getUnrecognizedLeadText(ctx);
+    String detailedMessage = getDetailedUnrecognizedMessage(ctx, leadText);
+
     ParseWarning warning =
         new ParseWarning(
             ctx.getStart().getLine(),
-            getUnrecognizedLeadText(ctx),
+            leadText,
             ctx.toString(Arrays.asList(_parser.getParser().getRuleNames())),
-            "This syntax is unrecognized");
+            detailedMessage);
     unrecognized(warning, ctx);
+  }
+
+  private String getDetailedUnrecognizedMessage(UnrecognizedContext ctx, String leadText) {
+    StringBuilder message = new StringBuilder();
+    message.append("This syntax is unrecognized");
+
+    // Try to identify the type of error
+    if (leadText.contains("invalid") || leadText.contains("bad")) {
+      message.append(". The configuration appears to contain invalid syntax.");
+    } else if (leadText.contains("missing")) {
+      message.append(". A required element or closing brace may be missing.");
+    } else if (leadText.contains("duplicate")) {
+      message.append(". Duplicate keys or sections are not allowed.");
+    } else {
+      message.append(". Check for typos, missing braces, or invalid keywords.");
+    }
+
+    // Add context about what was expected
+    if (leadText.contains("pool") || leadText.contains("virtual")) {
+      message.append(
+          " For pool/virtual configurations, ensure proper syntax with braces and valid"
+              + " references.");
+    } else if (leadText.contains("snmp")) {
+      message.append(
+          " For SNMP configurations, ensure proper syntax with valid keywords and values.");
+    }
+
+    return message.toString();
   }
 
   private void unrecognized(ParseWarning warning, @Nullable ParserRuleContext ctx) {
@@ -3300,20 +3572,132 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String lineText = errorNode.getText().replace("\n", "").replace("\r", "").trim();
     _c.setUnrecognized(true);
 
+    String detailedError = getDetailedErrorMessage(errorNode, line, lineText);
+
     if (token instanceof UnrecognizedLineToken) {
       UnrecognizedLineToken unrecToken = (UnrecognizedLineToken) token;
       _w.getParseWarnings()
-          .add(
-              new ParseWarning(
-                  line, lineText, unrecToken.getParserContext(), "This syntax is unrecognized"));
+          .add(new ParseWarning(line, lineText, unrecToken.getParserContext(), detailedError));
     } else {
-      String msg = String.format("Unrecognized Line: %d: %s", line, lineText);
+      String msg = String.format("Error Line %d: %s", line, detailedError);
       _w.redFlag(msg + " SUBSEQUENT LINES MAY NOT BE PROCESSED CORRECTLY");
+    }
+  }
+
+  private String getDetailedErrorMessage(ErrorNode errorNode, int line, String lineText) {
+    StringBuilder message = new StringBuilder();
+
+    if (lineText.contains("invalid") || lineText.contains("bad")) {
+      message.append("Invalid syntax detected. ");
+      if (lineText.contains("boolean")) {
+        message.append("Expected boolean values: true/false, yes/no, enable/disable.");
+      } else if (lineText.contains("ip")) {
+        message.append("Invalid IP address format detected.");
+      } else if (lineText.contains("number")) {
+        message.append("Expected numeric value.");
+      }
+    } else if (lineText.contains("missing")) {
+      message.append("Missing required element. ");
+      if (lineText.contains("brace")) {
+        message.append("Check for missing closing braces '}'.");
+      } else if (lineText.contains("quote")) {
+        message.append("Check for unmatched quotes.");
+      }
+    } else if (lineText.contains("unterminated")) {
+      message.append("Unterminated string or structure. ");
+      message.append("Check for missing closing braces or quotes.");
+    } else {
+      message.append("Syntax error detected. ");
+    }
+
+    message.append(String.format("Line %d: %s", line, lineText));
+    return message.toString();
+  }
+
+  /** Validates common configuration issues and adds warnings for potential problems. */
+  private void validateConfiguration() {
+    // Check for common configuration issues
+
+    // Check if virtual references non-existent pools
+    validateVirtualPoolReferences();
+
+    // Check for potential IP address issues
+    validateIpAddressFormats();
+
+    // Check for SNMP configuration issues
+    validateSnmpConfiguration();
+
+    // Check for interface configuration issues
+    validateInterfaceConfiguration();
+  }
+
+  private void validateVirtualPoolReferences() {
+    for (Map.Entry<String, Virtual> entry : _c.getVirtuals().entrySet()) {
+      Virtual virtual = entry.getValue();
+      if (virtual.getPool() != null) {
+        String poolName = virtual.getPool();
+        if (!_c.getPools().containsKey(poolName)) {
+          _w.redFlag(
+              String.format(
+                  "Virtual '%s' references non-existent pool '%s'", entry.getKey(), poolName));
+        }
+      }
+    }
+  }
+
+  private void validateIpAddressFormats() {
+    // Check virtual addresses for valid IP formats
+    for (Map.Entry<String, VirtualAddress> entry : _c.getVirtualAddresses().entrySet()) {
+      VirtualAddress va = entry.getValue();
+      try {
+        // Try to parse the address to validate format
+        String address = va.getAddress().toString();
+        if (address.isEmpty() || address.equals("0.0.0.0")) {
+          _w.redFlag(
+              String.format(
+                  "Virtual address '%s' has invalid or empty IP address: %s",
+                  entry.getKey(), address));
+        }
+      } catch (Exception e) {
+        _w.redFlag(
+            String.format(
+                "Virtual address '%s' has malformed IP address: %s",
+                entry.getKey(), va.getAddress()));
+      }
+    }
+  }
+
+  private void validateSnmpConfiguration() {
+    if (_c.getSnmpCommunities() != null) {
+      for (Map.Entry<String, SnmpCommunity> entry : _c.getSnmpCommunities().entrySet()) {
+        SnmpCommunity community = entry.getValue();
+        if (community.getCommunityName() == null || community.getCommunityName().isEmpty()) {
+          _w.redFlag(String.format("SNMP community '%s' has empty community name", entry.getKey()));
+        }
+        if (community.getSource() != null && community.getSource().isEmpty()) {
+          _w.redFlag(String.format("SNMP community '%s' has empty source address", entry.getKey()));
+        }
+      }
+    }
+  }
+
+  private void validateInterfaceConfiguration() {
+    for (Map.Entry<String, Interface> entry : _c.getInterfaces().entrySet()) {
+      Interface iface = entry.getValue();
+      // Basic validation - check if interface has required properties
+      if (iface.getName() == null || iface.getName().isEmpty()) {
+        _w.redFlag(String.format("Interface has empty name: %s", entry.getKey()));
+      }
     }
   }
 
   @Override
   public void exitEveryRule(ParserRuleContext ctx) {
     tryProcessSilentSyntax(ctx);
+
+    // Call validation at the top level (when we exit the main configuration rule)
+    if (ctx instanceof F5BigipStructuredParser.F5_bigip_structured_configurationContext) {
+      validateConfiguration();
+    }
   }
 }

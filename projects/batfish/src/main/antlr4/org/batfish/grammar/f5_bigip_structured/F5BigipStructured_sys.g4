@@ -222,11 +222,7 @@ sys_snmp
   (
     NEWLINE
     (
-      snmp_agent_addresses
-      | snmp_allowed_addresses
-      | snmp_communities
-      | snmp_disk_monitors
-      | snmp_process_monitors
+      snmp_communities
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -244,28 +240,25 @@ snmp_allowed_addresses
 
 snmp_communities
 :
-  COMMUNITIES BRACE_LEFT
+  COMMUNITIES BRACE_LEFT NEWLINE
   (
-    NEWLINE snmp_community*
-  )? BRACE_RIGHT NEWLINE
+    snmp_community
+  )* BRACE_RIGHT NEWLINE
 ;
 
 snmp_community
 :
-  name = structure_name BRACE_LEFT
+  name = structure_name BRACE_LEFT NEWLINE
   (
-    NEWLINE
-    (
-      snmp_community_name
-      | snmp_community_source
-      | unrecognized
-    )*
-  )? BRACE_RIGHT NEWLINE
+    snmp_community_name
+    | snmp_community_source
+  )*
 ;
 
 snmp_community_name
 :
-  COMMUNITY_NAME name = word NEWLINE
+  COMMUNITY_NAME name = word_id NEWLINE
+  BRACE_RIGHT NEWLINE
 ;
 
 snmp_community_source
@@ -276,9 +269,13 @@ snmp_community_source
 snmp_disk_monitors
 :
   DISK_MONITORS BRACE_LEFT
-  (
-    NEWLINE snmp_disk_monitor*
-  )? BRACE_RIGHT NEWLINE
+  snmp_disk_monitors_content*
+  BRACE_RIGHT NEWLINE
+;
+
+snmp_disk_monitors_content
+:
+  NEWLINE snmp_disk_monitor?
 ;
 
 snmp_disk_monitor
@@ -287,29 +284,38 @@ snmp_disk_monitor
   (
     NEWLINE
     (
-      snmp_minspace
-      | snmp_disk_path
+      snmp_minspace_null
+      | snmp_disk_path_null
       | unrecognized
     )*
-  )? BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT
 ;
 
-snmp_minspace
+snmp_disk_path_value
+:
+  (PARTITION | word)+
+;
+
+snmp_minspace_null
 :
   MINSPACE space = uint NEWLINE
 ;
 
-snmp_disk_path
+snmp_disk_path_null
 :
-  PATH path = word NEWLINE
+  PATH path = snmp_disk_path_value NEWLINE
 ;
 
 snmp_process_monitors
 :
   PROCESS_MONITORS BRACE_LEFT
-  (
-    NEWLINE snmp_process_monitor*
-  )? BRACE_RIGHT NEWLINE
+  snmp_process_monitors_content*
+  BRACE_RIGHT NEWLINE
+;
+
+snmp_process_monitors_content
+:
+  NEWLINE snmp_process_monitor?
 ;
 
 snmp_process_monitor
@@ -318,28 +324,39 @@ snmp_process_monitor
   (
     NEWLINE
     (
-      snmp_max_processes
-      | snmp_process_name
+      snmp_max_processes_null
+      | snmp_process_name_null
       | unrecognized
     )*
-  )? BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT
 ;
 
-snmp_max_processes
+snmp_max_processes_null
 :
   MAX_PROCESSES (INFINITY | uint) NEWLINE
 ;
 
-snmp_process_name
+snmp_process_name_null
 :
   PROCESS name = word NEWLINE
+;
+
+snmp_sys_contact_null
+:
+  SYS_CONTACT contact = word NEWLINE
+;
+
+snmp_sys_location_null
+:
+  SYS_LOCATION location = word NEWLINE
 ;
 
 s_sys
 :
   SYS
   (
-    sys_dns
+    SNMP BRACE_LEFT (NEWLINE (snmp_communities | snmp_agent_addresses | snmp_allowed_addresses | snmp_disk_monitors | snmp_process_monitors | snmp_sys_contact_null | snmp_sys_location_null)*) BRACE_RIGHT NEWLINE?
+    | sys_dns
     | sys_global_settings
     | sys_ha_group
     | sys_management_ip
@@ -347,9 +364,7 @@ s_sys
     | sys_ntp
     | sys_null
     | sys_sshd
-    | sys_snmp
     | sys_syslog
-    | unrecognized
   )
 ;
 

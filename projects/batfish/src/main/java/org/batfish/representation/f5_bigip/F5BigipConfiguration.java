@@ -268,6 +268,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private transient SortedMap<String, SimpleTransformation> _virtualOutgoingTransformations;
   private final @Nonnull Map<String, Virtual> _virtuals;
   private final @Nonnull Map<String, Vlan> _vlans;
+  private final @Nonnull Map<String, SnmpCommunity> _snmpCommunities;
+  private final @Nonnull Map<String, SnmpDiskMonitor> _snmpDiskMonitors;
+  private final @Nonnull Map<String, SnmpProcessMonitor> _snmpProcessMonitors;
 
   public F5BigipConfiguration() {
     _accessLists = new HashMap<>();
@@ -293,6 +296,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _virtualAddresses = new HashMap<>();
     _virtuals = new HashMap<>();
     _vlans = new HashMap<>();
+    _snmpCommunities = new HashMap<>();
+    _snmpDiskMonitors = new HashMap<>();
+    _snmpProcessMonitors = new HashMap<>();
   }
 
   private void addActivePeer(
@@ -939,6 +945,18 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Vlan> getVlans() {
     return _vlans;
+  }
+
+  public @Nonnull Map<String, SnmpCommunity> getSnmpCommunities() {
+    return _snmpCommunities;
+  }
+
+  public @Nonnull Map<String, SnmpDiskMonitor> getSnmpDiskMonitors() {
+    return _snmpDiskMonitors;
+  }
+
+  public @Nonnull Map<String, SnmpProcessMonitor> getSnmpProcessMonitors() {
+    return _snmpProcessMonitors;
   }
 
   private void initInterfaceIncomingFilterLines() {
