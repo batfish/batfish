@@ -1456,7 +1456,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspf_graceful_restart(Ospf_graceful_restartContext ctx) {
-    todo(ctx);
+    // OSPF graceful restart is a protocol feature that only affects restart behavior,
+    // not final routing state, so it's intentionally ignored (_null rules)
   }
 
   @Override
@@ -2293,8 +2294,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
             .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
-    // TODO: convert vlan ID for created vlan units
-    todo(ctx);
+    // Extract VLAN tag from unit name (e.g., "vlan.1" -> tag=1)
+    try {
+      String[] parts = name.split("\\.");
+      if (parts.length == 2) {
+        int vlanTag = Integer.parseInt(parts[1]);
+        _currentInterface.setTag(vlanTag);
+      }
+    } catch (NumberFormatException e) {
+      // If VLAN tag cannot be parsed, interface will be created without tag
+    }
   }
 
   @Override
@@ -2810,7 +2819,7 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     // Add reference
     String uniqueName = computeObjectName(_currentVsys, translatedAddress.getValue());
     // At this time, don't know if something that looks like a constant (e.g. IP address) is a
-      // reference or not.  So mark a reference to a very permissive abstract structure type.
+    // reference or not.  So mark a reference to a very permissive abstract structure type.
     PaloAltoStructureType type = ADDRESS_LIKE_OR_NONE;
     if (translatedAddress.getType() == RuleEndpoint.Type.REFERENCE) {
       // We know this reference doesn't look like a valid constant, so it must be pointing to an
