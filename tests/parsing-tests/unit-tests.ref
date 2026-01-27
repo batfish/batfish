@@ -71709,16 +71709,6 @@
             }
           ]
         },
-        "configs/palo_alto/interfaces" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "This feature is not currently supported",
-              "Line" : 49,
-              "Parser_Context" : "[sniv_unit sniv_units sni_vlan sn_interface s_network statement_config_devices set_line_config_devices set_line_tail set_line palo_alto_configuration]",
-              "Text" : "vlan.1"
-            }
-          ]
-        },
         "configs/palo_alto/nat" : {
           "Parse warnings" : [
             {
