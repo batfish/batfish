@@ -222,10 +222,16 @@ sys_snmp
   (
     NEWLINE
     (
-      snmp_communities
+      snmp_agent_addresses
+      | snmp_allowed_addresses
+      | snmp_communities
+      | snmp_disk_monitors
+      | snmp_process_monitors
+      | snmp_sys_contact_null
+      | snmp_sys_location_null
       | unrecognized
     )*
-  )? BRACE_RIGHT NEWLINE
+  )? BRACE_RIGHT NEWLINE?
 ;
 
 snmp_agent_addresses
@@ -355,16 +361,17 @@ s_sys
 :
   SYS
   (
-    SNMP BRACE_LEFT (NEWLINE (snmp_communities | snmp_agent_addresses | snmp_allowed_addresses | snmp_disk_monitors | snmp_process_monitors | snmp_sys_contact_null | snmp_sys_location_null)*) BRACE_RIGHT NEWLINE?
-    | sys_dns
+    sys_dns
     | sys_global_settings
     | sys_ha_group
     | sys_management_ip
     | sys_management_route
     | sys_ntp
     | sys_null
+    | sys_snmp
     | sys_sshd
     | sys_syslog
+    | unrecognized
   )
 ;
 
