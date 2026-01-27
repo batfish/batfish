@@ -40,16 +40,16 @@ nat_destination
 nat_service
 :
    SERVICE protocol real_port = nat_service_port mapped_port = nat_service_port
-   | SERVICE real_service = nat_service_object_name mapped_service = nat_service_object_name
+   | SERVICE real_service = nat_service_object_name_null mapped_service = nat_service_object_name_null
 ;
 
 nat_address
 :
    ip = IP_ADDRESS
-   | nat_object_name
+   | nat_object_name_null
 ;
 
-nat_object_name
+nat_object_name_null
 :
    ~(
       DESTINATION
@@ -58,7 +58,7 @@ nat_object_name
    )
 ;
 
-nat_service_object_name
+nat_service_object_name_null
 :
    ~(
       SERVICE
@@ -69,5 +69,5 @@ nat_service_object_name
 nat_service_port
 :
    port_specifier
-   | port_value
+   | port_value_null
 ;

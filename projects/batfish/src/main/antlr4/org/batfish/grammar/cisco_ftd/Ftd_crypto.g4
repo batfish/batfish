@@ -55,13 +55,13 @@ crypto_ikev2
 :
    IKEV2
    (
-      crypto_ikev2_enable
+      crypto_ikev2_enable_null
       | crypto_ikev2_policy
       | null_rest_of_line
    )
 ;
 
-crypto_ikev2_enable
+crypto_ikev2_enable_null
 :
    ENABLE (name_parts += ~NEWLINE)+ NEWLINE
 ;

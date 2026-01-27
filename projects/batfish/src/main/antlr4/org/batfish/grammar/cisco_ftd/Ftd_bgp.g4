@@ -15,7 +15,7 @@ router_bgp_stanza
 bgp_stanza_tail
 :
    (
-      bgp_log_neighbor_changes
+      bgp_log_neighbor_changes_null
       | bgp_router_id
       | bgp_neighbor
       | bgp_address_family
@@ -23,7 +23,7 @@ bgp_stanza_tail
    )
 ;
 
-bgp_log_neighbor_changes
+bgp_log_neighbor_changes_null
 :
     BGP LOG_NEIGHBOR_CHANGES NEWLINE
 ;
@@ -52,11 +52,11 @@ bgp_neighbor_timers
 
 bgp_neighbor_route_map
 :
-    ROUTE_MAP map_name=route_map_name (IN | OUT)
-    | ROUTE_MAP (IN | OUT) map_name=route_map_name
+    ROUTE_MAP map_name=route_map_name_null (IN | OUT)
+    | ROUTE_MAP (IN | OUT) map_name=route_map_name_null
 ;
 
-route_map_name
+route_map_name_null
 :
     ~(
         IN

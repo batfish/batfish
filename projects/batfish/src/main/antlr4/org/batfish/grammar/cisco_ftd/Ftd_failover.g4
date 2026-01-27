@@ -8,16 +8,16 @@ failover_stanza
 :
    FAILOVER
    (
-      failover_enable
+      failover_enable_null
       | failover_lan
-      | failover_link
-      | failover_polltime
-      | failover_interface_ip
+      | failover_link_null
+      | failover_polltime_null
+      | failover_interface_ip_null
       | null_rest_of_line
    )
 ;
 
-failover_enable
+failover_enable_null
 :
    NEWLINE
 ;
@@ -31,12 +31,12 @@ failover_lan
    )
 ;
 
-failover_link
+failover_link_null
 :
    LINK iface_name = ~NEWLINE+ NEWLINE
 ;
 
-failover_polltime
+failover_polltime_null
 :
    POLLTIME
    (
@@ -46,7 +46,7 @@ failover_polltime
    NEWLINE
 ;
 
-failover_interface_ip
+failover_interface_ip_null
 :
    INTERFACE IP iface_name = ~(IP_ADDRESS | NEWLINE)+ ip = IP_ADDRESS mask = IP_ADDRESS STANDBY standby_ip = IP_ADDRESS NEWLINE
 ;

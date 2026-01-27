@@ -6,7 +6,7 @@ options {
 
 object_stanza
 :
-   OBJECT object_type name = object_name_text NEWLINE
+   OBJECT object_type name = object_name_text_null NEWLINE
    object_tail*
 ;
 
@@ -23,12 +23,12 @@ object_tail
       | object_subnet
       | object_fqdn
       | description_line
-      | object_unrecognized_line
+      | object_unrecognized_line_null
    )
 ;
 
 // Like unrecognized_line but doesn't match lines starting with stanza keywords
-object_unrecognized_line
+object_unrecognized_line_null
 :
    ~(NEWLINE | INTERFACE | ACCESS_LIST | OBJECT | OBJECT_GROUP | HOSTNAME | ROUTE | NAT | FAILOVER | CRYPTO | ACCESS_GROUP)
    ~NEWLINE* NEWLINE
@@ -46,17 +46,17 @@ object_subnet
 
 object_fqdn
 :
-   FQDN fqdn_name (ID id_value = dec)? NEWLINE
+   FQDN fqdn_name_null (ID id_value = dec)? NEWLINE
 ;
 
-fqdn_name
+fqdn_name_null
 :
    ~NEWLINE+
 ;
 
 object_group_stanza
 :
-   OBJECT_GROUP group_type name = object_group_name_text NEWLINE
+   OBJECT_GROUP group_type name = object_group_name_text_null NEWLINE
    object_group_tail*
 ;
 
@@ -74,8 +74,8 @@ object_group_tail
       | og_service_object
       | og_port_object
       | description_line
-      // Use object_unrecognized_line to avoid consuming lines starting stanza keywords
-      | object_unrecognized_line
+      // Use object_unrecognized_line_null to avoid consuming lines starting stanza keywords
+      | object_unrecognized_line_null
    )
 ;
 
@@ -84,28 +84,28 @@ og_network_object
    NETWORK_OBJECT
    (
       HOST ip = IP_ADDRESS
-      | OBJECT obj_name
+      | OBJECT obj_name_null
       | network = IP_ADDRESS mask = IP_ADDRESS
    )
    NEWLINE
 ;
 
-obj_name
+obj_name_null
 :
    ~NEWLINE+
 ;
 
 og_group_object
 :
-   GROUP_OBJECT name = object_group_name_text NEWLINE
+   GROUP_OBJECT name = object_group_name_text_null NEWLINE
 ;
 
-object_name_text
+object_name_text_null
 :
    (~NEWLINE)+
 ;
 
-object_group_name_text
+object_group_name_text_null
 :
    (~NEWLINE)+
 ;
@@ -126,23 +126,23 @@ og_port_object
 :
    PORT_OBJECT
    (
-      EQ port = port_value
-      | RANGE port_low = port_value port_high = port_value
+      EQ port = port_value_null
+      | RANGE port_low = port_value_null port_high = port_value_null
    )
    NEWLINE
 ;
 
-port_value
+port_value_null
 :
-   dec | service_name
+   dec | service_name_null
 ;
 
-service_name
+service_name_null
 :
    ~NEWLINE+
 ;
 
-object_group_search_stanza
+object_group_search_stanza_null
 :
    OBJECT_GROUP_SEARCH null_rest_of_line
 ;
