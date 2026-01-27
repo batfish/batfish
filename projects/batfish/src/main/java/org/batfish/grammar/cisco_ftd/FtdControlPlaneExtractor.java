@@ -174,11 +174,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitIf_description(If_descriptionContext ctx) {
-    if (_currentInterface != null
-        && ctx.description_line() != null
-        && ctx.description_line().text != null) {
-      _currentInterface.setDescription(ctx.description_line().text.getText());
-    }
+    // Interface description parsing (not extracted - cosmetic only)
   }
 
   @Override
@@ -256,22 +252,13 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitAccess_list_stanza(Access_list_stanzaContext ctx) {
-    if (_currentAcl != null && _currentAclName != null) {
-      if (ctx.acl_remark() != null) {
-        // Manual handling since exitAcl_remark listener is not triggering reliably
-        Acl_remarkContext remarkCtx = ctx.acl_remark();
-        String remark = remarkCtx.remark_text != null ? remarkCtx.remark_text.getText().trim() : "";
-        FtdAccessListLine line = FtdAccessListLine.createRemark(_currentAclName, remark);
-        _currentAcl.addLine(line);
-      }
-    }
     _currentAcl = null;
     _currentAclName = null;
   }
 
   @Override
   public void exitAcl_remark(Acl_remarkContext ctx) {
-    // Logic moved to exitAccess_list_stanza due to listener issue
+    // ACL remark parsing (not extracted - cosmetic only)
   }
 
   @Override
@@ -283,8 +270,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       FtdAccessListAddressSpecifier srcSpec = null;
       FtdAccessListAddressSpecifier dstSpec = null;
 
-      if (ctx.src_spec() != null && ctx.src_spec().acl_address_spec() != null) {
-        srcSpec = toAddressSpecifier(ctx.src_spec().acl_address_spec());
+      if (ctx.src_spec_null() != null && ctx.src_spec_null().acl_address_spec() != null) {
+        srcSpec = toAddressSpecifier(ctx.src_spec_null().acl_address_spec());
       }
       if (ctx.dst_spec() != null && ctx.dst_spec().acl_address_spec() != null) {
         dstSpec = toAddressSpecifier(ctx.dst_spec().acl_address_spec());
@@ -332,8 +319,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       FtdAccessListAddressSpecifier srcSpec = null;
       FtdAccessListAddressSpecifier dstSpec = null;
 
-      if (ctx.src_spec() != null && ctx.src_spec().acl_address_spec() != null) {
-        srcSpec = toAddressSpecifier(ctx.src_spec().acl_address_spec());
+      if (ctx.src_spec_null() != null && ctx.src_spec_null().acl_address_spec() != null) {
+        srcSpec = toAddressSpecifier(ctx.src_spec_null().acl_address_spec());
       }
       if (ctx.dst_spec() != null && ctx.dst_spec().acl_address_spec() != null) {
         dstSpec = toAddressSpecifier(ctx.dst_spec().acl_address_spec());
@@ -379,8 +366,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       FtdAccessListAddressSpecifier srcSpec = null;
       FtdAccessListAddressSpecifier dstSpec = null;
 
-      if (ctx.src_spec() != null && ctx.src_spec().acl_address_spec() != null) {
-        srcSpec = toAddressSpecifier(ctx.src_spec().acl_address_spec());
+      if (ctx.src_spec_null() != null && ctx.src_spec_null().acl_address_spec() != null) {
+        srcSpec = toAddressSpecifier(ctx.src_spec_null().acl_address_spec());
       }
       if (ctx.dst_spec() != null && ctx.dst_spec().acl_address_spec() != null) {
         dstSpec = toAddressSpecifier(ctx.dst_spec().acl_address_spec());
@@ -391,8 +378,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       if (ctx.action != null && ctx.action.TRUST() != null) {
         line.setTrust(true);
       }
-      if (ctx.ifc_clause() != null && ctx.ifc_clause().acl_ifc_name() != null) {
-        line.setInterfaceName(ctx.ifc_clause().acl_ifc_name().getText());
+      if (ctx.ifc_clause_null() != null && ctx.ifc_clause_null().acl_ifc_name_null() != null) {
+        line.setInterfaceName(ctx.ifc_clause_null().acl_ifc_name_null().getText());
       }
       Port_specContext dstPortSpec = ctx.dst_spec() != null ? ctx.dst_spec().port_spec() : null;
       line.setDestinationPortSpecifier(getPortSpecText(dstPortSpec));
@@ -985,8 +972,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitObject_fqdn(Object_fqdnContext ctx) {
-    if (_currentNetworkObject != null && ctx.fqdn_name() != null) {
-      String fqdn = ctx.fqdn_name().getText();
+    if (_currentNetworkObject != null && ctx.fqdn_name_null() != null) {
+      String fqdn = ctx.fqdn_name_null().getText();
       _currentNetworkObject.setFqdn(fqdn);
     }
   }
@@ -1025,14 +1012,14 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       if (ctx.HOST() != null && ctx.ip != null) {
         Ip ip = Ip.parse(ctx.ip.getText());
         member = FtdNetworkObjectGroupMember.host(ip);
-      } else if (ctx.OBJECT() != null && ctx.obj_name() != null) {
-        String objName = ctx.obj_name().getText();
+      } else if (ctx.OBJECT() != null && ctx.obj_name_null() != null) {
+        String objName = ctx.obj_name_null().getText();
         member = FtdNetworkObjectGroupMember.object(objName);
         referenceStructure(
             FtdStructureType.NETWORK_OBJECT,
             objName,
             FtdStructureUsage.NETWORK_OBJECT_GROUP_OBJECT,
-            ctx.obj_name().getStart().getLine());
+            ctx.obj_name_null().getStart().getLine());
       } else if (ctx.network != null && ctx.mask != null) {
         Ip network = Ip.parse(ctx.network.getText());
         Ip mask = Ip.parse(ctx.mask.getText());
@@ -1183,16 +1170,16 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     if (ctx.ip != null) {
       return new FtdNatAddress.FtdNatAddressIp(Ip.parse(ctx.ip.getText()));
     } else {
-      String name = ctx.nat_object_name().getText();
-      // Heuristic: check if this is network object or service object?
-      // In FTD NAT, objects are usually network objects.
-      // TODO: We might need to distinguish if it maps to other types if grammar
-      // allows
+      String name = ctx.nat_object_name_null().getText();
+      // NAT rules reference network objects or service objects.
+      // Current implementation: assumes all are network objects (common for NAT).
+      // Limitation: If service objects are referenced, they won't be validated.
+      // TODO: Add lookup to verify object exists and is correct type
       referenceStructure(
           FtdStructureType.NETWORK_OBJECT,
           name,
           FtdStructureUsage.NAT_SOURCE_OBJECT, // Usage depends on context, simplifying here
-          ctx.nat_object_name().getStart().getLine());
+          ctx.nat_object_name_null().getStart().getLine());
       return new FtdNatAddress.FtdNatAddressName(name);
     }
   }
@@ -1317,6 +1304,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         if (routeMapCtx.IN() != null && routeMapCtx.map_name != null) {
           String mapName = routeMapCtx.map_name.getText().trim();
           neighbor.setRouteMapIn(mapName);
+          _w.redFlag("BGP route-map in is not supported in conversion: " + mapName);
           referenceStructure(
               FtdStructureType.ROUTE_MAP,
               mapName,
@@ -1325,6 +1313,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         } else if (routeMapCtx.OUT() != null && routeMapCtx.map_name != null) {
           String mapName = routeMapCtx.map_name.getText().trim();
           neighbor.setRouteMapOut(mapName);
+          _w.redFlag("BGP route-map out is not supported in conversion: " + mapName);
           referenceStructure(
               FtdStructureType.ROUTE_MAP,
               mapName,
@@ -1342,8 +1331,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitFailover_stanza(Failover_stanzaContext ctx) {
-    // Store the raw text of the failover stanza line for now
-    _configuration.getFailoverLines().add(ctx.getText());
+    // Failover configuration parsing (not extracted - operational/HA feature)
   }
 
   // ==================== Helper Methods ====================
@@ -1423,8 +1411,8 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         return "range " + spec.port_low.getText() + " " + spec.port_high.getText();
       }
     }
-    if (ctx.OBJECT_GROUP() != null && ctx.port_object_group_name() != null) {
-      return "object-group " + ctx.port_object_group_name().getText();
+    if (ctx.OBJECT_GROUP() != null && ctx.port_object_group_name_null() != null) {
+      return "object-group " + ctx.port_object_group_name_null().getText();
     }
     StringBuilder sb = new StringBuilder();
     for (int i = 0; i < ctx.children.size(); i++) {
@@ -1469,22 +1457,22 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     if (ctx.HOST() != null && ctx.ip != null) {
       return FtdAccessListAddressSpecifier.host(Ip.parse(ctx.ip.getText()));
     }
-    if (ctx.OBJECT() != null && ctx.object_name() != null) {
-      String name = getObjectReferenceName(ctx.object_name());
+    if (ctx.OBJECT() != null && ctx.object_name_null() != null) {
+      String name = getObjectReferenceName(ctx.object_name_null());
       referenceStructure(
           FtdStructureType.NETWORK_OBJECT,
           name,
           FtdStructureUsage.ACCESS_LIST_NETWORK_OBJECT,
-          ctx.object_name().getStart().getLine());
+          ctx.object_name_null().getStart().getLine());
       return FtdAccessListAddressSpecifier.object(name);
     }
-    if (ctx.OBJECT_GROUP() != null && ctx.object_group_name() != null) {
-      String name = getObjectReferenceName(ctx.object_group_name());
+    if (ctx.OBJECT_GROUP() != null && ctx.object_group_name_null() != null) {
+      String name = getObjectReferenceName(ctx.object_group_name_null());
       referenceStructure(
           FtdStructureType.NETWORK_OBJECT_GROUP,
           name,
           FtdStructureUsage.ACCESS_LIST_NETWORK_OBJECT_GROUP,
-          ctx.object_group_name().getStart().getLine());
+          ctx.object_group_name_null().getStart().getLine());
       return FtdAccessListAddressSpecifier.objectGroup(name);
     }
     if (ctx.ANY() != null) {

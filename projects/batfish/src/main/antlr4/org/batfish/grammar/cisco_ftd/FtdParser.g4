@@ -37,7 +37,7 @@ stanza
    | names_stanza
    | object_stanza
    | object_group_stanza
-   | object_group_search_stanza
+   | object_group_search_stanza_null
    | route_stanza
    | nat_stanza
    | dns_stanza

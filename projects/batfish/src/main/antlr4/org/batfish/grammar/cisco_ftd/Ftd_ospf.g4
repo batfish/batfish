@@ -17,7 +17,7 @@ ospf_stanza_tail
    (
       ospf_area_filter_list
       | ospf_default_information
-      | ospf_log_adjacency_changes
+      | ospf_log_adjacency_changes_null
       | ospf_network
       | ospf_passive_interface
       | ospf_redistribute
@@ -42,7 +42,7 @@ ospf_default_information
    )* NEWLINE
 ;
 
-ospf_log_adjacency_changes
+ospf_log_adjacency_changes_null
 :
    LOG_ADJACENCY_CHANGES NEWLINE
 ;

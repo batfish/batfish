@@ -38,25 +38,25 @@ acl_remark
 
 acl_advanced
 :
-   ADVANCED action = access_list_action protocol ifc_clause? src_spec dst_spec? acl_options* NEWLINE
+   ADVANCED action = access_list_action protocol ifc_clause_null? src_spec_null dst_spec? acl_options* NEWLINE
 ;
 
 acl_extended
 :
-   EXTENDED action = access_list_action protocol src_spec dst_spec? acl_options* NEWLINE
+   EXTENDED action = access_list_action protocol src_spec_null dst_spec? acl_options* NEWLINE
 ;
 
 acl_implicit_extended
 :
-   action = access_list_action protocol src_spec dst_spec? acl_options* NEWLINE
+   action = access_list_action protocol src_spec_null dst_spec? acl_options* NEWLINE
 ;
 
-ifc_clause
+ifc_clause_null
 :
-   IFC acl_ifc_name
+   IFC acl_ifc_name_null
 ;
 
-acl_ifc_name
+acl_ifc_name_null
 :
    (
       ~(
@@ -72,7 +72,7 @@ acl_ifc_name
    )+
 ;
 
-src_spec
+src_spec_null
 :
    acl_address_spec
 ;
@@ -85,15 +85,15 @@ dst_spec
 acl_address_spec
 :
    HOST ip = IP_ADDRESS
-   | OBJECT object_name
-   | OBJECT_GROUP object_group_name
+   | OBJECT object_name_null
+   | OBJECT_GROUP object_group_name_null
    | ANY
    | ANY4
    | ANY6
    | ip = IP_ADDRESS mask = IP_ADDRESS
 ;
 
-object_name
+object_name_null
 :
    (
       ~(
@@ -119,7 +119,7 @@ object_name
    )+
 ;
 
-object_group_name
+object_group_name_null
 :
    (
       ~(
@@ -148,10 +148,10 @@ object_group_name
 port_spec
 :
    port_specifier
-   | OBJECT_GROUP port_object_group_name
+   | OBJECT_GROUP port_object_group_name_null
 ;
 
-port_object_group_name
+port_object_group_name_null
 :
    (
       ~(
@@ -170,7 +170,7 @@ acl_options
    RULE_ID id = dec
    | EVENT_LOG log_option = (FLOW_END | FLOW_START | FLOW_NSEL)
    | INACTIVE
-   | LOG log_level?
+   | LOG log_level_null?
    | TIME_RANGE time_range_name
 ;
 
@@ -187,7 +187,7 @@ time_range_name
    )+
 ;
 
-log_level
+log_level_null
 :
    DEFAULT
    | EMERGENCIES

@@ -32,12 +32,12 @@ interface_stanza_tail
    (
       if_description
       | if_ip_address
-      | if_mac_address
+      | if_mac_address_null
       | if_nameif
-      | if_no_nameif
+      | if_no_nameif_null
       | if_security_level
-      | if_no_security_level
-      | if_no_ip_address
+      | if_no_security_level_null
+      | if_no_ip_address_null
       | if_shutdown
       | if_no_shutdown
       | if_vlan
@@ -74,7 +74,7 @@ if_ip_address
    NEWLINE
 ;
 
-if_mac_address
+if_mac_address_null
 :
    MAC_ADDRESS mac = ~NEWLINE+
    (
@@ -88,7 +88,7 @@ if_nameif
    NAMEIF (name_parts += ~NEWLINE)+ NEWLINE
 ;
 
-if_no_nameif
+if_no_nameif_null
 :
    NO NAMEIF NEWLINE
 ;
@@ -98,12 +98,12 @@ if_security_level
    SECURITY_LEVEL level = dec NEWLINE
 ;
 
-if_no_security_level
+if_no_security_level_null
 :
    NO SECURITY_LEVEL NEWLINE
 ;
 
-if_no_ip_address
+if_no_ip_address_null
 :
    NO IP ADDRESS NEWLINE
 ;

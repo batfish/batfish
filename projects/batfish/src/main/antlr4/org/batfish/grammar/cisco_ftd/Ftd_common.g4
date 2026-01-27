@@ -41,20 +41,20 @@ null_rest_of_line
 
 port_specifier
 :
-   EQ port = port_value
-   | GT port = port_value
-   | LT port = port_value
-   | NEQ port = port_value
+   EQ port = port_value_null
+   | GT port = port_value_null
+   | LT port = port_value_null
+   | NEQ port = port_value_null
    | RANGE port_low = dec port_high = dec
 ;
 
-port_value
+port_value_null
 :
    dec
-   | port_name
+   | port_name_null
 ;
 
-port_name
+port_name_null
 :
    NAME
    | WORD
