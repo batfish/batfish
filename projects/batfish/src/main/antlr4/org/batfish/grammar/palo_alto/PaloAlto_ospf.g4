@@ -94,9 +94,9 @@ ospf_graceful_restart
 :
     GRACEFUL_RESTART
     (
-        ospfgr_enable
-        | ospfgr_helper_enable
-        | ospfgr_strict_lsa_checking
+        ospfgr_enable_null
+        | ospfgr_helper_enable_null
+        | ospfgr_strict_lsa_checking_null
     )
 ;
 
@@ -282,17 +282,17 @@ ospfatsdr_disable
     DISABLE
 ;
 
-ospfgr_enable
+ospfgr_enable_null
 :
     ENABLE yn = yes_or_no
 ;
 
-ospfgr_helper_enable
+ospfgr_helper_enable_null
 :
     HELPER_ENABLE yn = yes_or_no
 ;
 
-ospfgr_strict_lsa_checking
+ospfgr_strict_lsa_checking_null
 :
     STRICT_LSA_CHECKING yn = yes_or_no
 ;
