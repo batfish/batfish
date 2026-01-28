@@ -1055,4 +1055,24 @@ public class FtdGrammarTest {
     // Test that no warnings were generated for unrecognized lines
     assertThat(vc.getWarnings().getParseWarnings(), hasSize(0));
   }
+
+  @Test
+  public void testUppercaseNgfwVersion() {
+    String config =
+        "NGFW Version 7.4.2.1\n"
+            + "hostname test-asa\n"
+            + "interface Ethernet0/0\n"
+            + " nameif outside\n"
+            + " security-level 0\n"
+            + "interface Ethernet0/1\n"
+            + " nameif inside\n"
+            + " security-level 100\n";
+
+    FtdConfiguration vc = parseVendorConfig(config);
+
+    assertThat(vc, notNullValue());
+    assertThat(vc.getInterfaces().keySet(), hasSize(2));
+    assertThat(vc.getInterfaces().containsKey("Ethernet0/0"), equalTo(true));
+    assertThat(vc.getInterfaces().containsKey("Ethernet0/1"), equalTo(true));
+  }
 }

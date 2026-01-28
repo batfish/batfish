@@ -302,7 +302,7 @@ NETWORK_OBJECT: 'network-object';
 
 NEWLINE: ('\r'? '\n')+;
 
-NGFW: 'ngfw';
+NGFW: 'NGFW';
 
 NGIPS: 'ngips';
 
