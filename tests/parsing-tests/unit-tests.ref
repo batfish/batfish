@@ -71709,16 +71709,6 @@
             }
           ]
         },
-        "configs/palo_alto/nat" : {
-          "Parse warnings" : [
-            {
-              "Comment" : "Batfish currently models this as active-active-device-binding both",
-              "Line" : 19,
-              "Parser_Context" : "[srn_active_active_device_binding srn_definition sr_nat_rules sr_nat rulebase_inner s_post_rulebase ss_common s_policy_panorama s_policy set_line_tail set_line palo_alto_configuration]",
-              "Text" : "active-active-device-binding primary"
-            }
-          ]
-        },
         "configs/route_policy_param" : {
           "Parse warnings" : [
             {
