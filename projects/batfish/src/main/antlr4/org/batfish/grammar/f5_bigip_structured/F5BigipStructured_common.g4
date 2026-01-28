@@ -85,7 +85,7 @@ structure_name_with_port
   )
 ;
 
-/* 
+/*
  * An ignored fragment of syntax.
  * Must always be preceded by at least one token on line in which it appears.
  */
@@ -93,7 +93,6 @@ ignored
 :
   u_word* list? NEWLINE
 ;
-
 
 /* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
 unrecognized

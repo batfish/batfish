@@ -63,6 +63,8 @@ ARP: 'arp';
 
 AUTO_SYNC: 'auto-sync';
 
+AUTOMAP: 'automap';
+
 AUTH: 'auth';
 
 BASE_MAC: 'base-mac';
@@ -215,6 +217,20 @@ FW_ENFORCED_POLICY: 'fw-enforced-policy';
 
 GATEWAY_ICMP: 'gateway-icmp';
 
+DEVICE_CONFIG: 'device-config';
+
+DOS: 'dos';
+
+FIREWALL: 'firewall';
+
+IP_UNCOMMON_PROTOLIST: 'ip-uncommon-protolist';
+
+IPV6_EXT_HDR: 'ipv6-ext-hdr';
+
+UDP_PORTLIST: 'udp-portlist';
+
+CONFIG_CHANGE_LOG: 'config-change-log';
+
 GENERIC_ALERT: 'generic-alert';
 
 GLOBAL_SETTINGS: 'global-settings';
@@ -308,6 +324,8 @@ LAST_MODIFIED_TIME: 'last-modified-time';
 LDAP: 'ldap';
 
 LIMIT_TYPE: 'limit-type';
+
+LSN: 'lsn';
 
 LLDP_ADMIN: 'lldp-admin';
 
@@ -451,6 +469,8 @@ PREFIX_LIST: 'prefix-list';
 PRIORITY_GROUP: 'priority-group';
 
 PRODUCT: 'product';
+RATIO: 'ratio';
+
 
 PROFILE: 'profile';
 
@@ -612,6 +632,8 @@ SPLITSESSIONCLIENT: 'splitsessionclient';
 SPLITSESSIONSERVER: 'splitsessionserver';
 
 SSL: 'ssl';
+STATE: 'state';
+
 
 SSL_FORWARD_PROXY: 'ssl-forward-proxy';
 
@@ -665,8 +687,9 @@ TRANSLATE_ADDRESS: 'translate-address';
 
 TRANSLATE_PORT: 'translate-port';
 
-TRUE: 'true';
+TRANSPARENT: 'transparent';
 
+TRUE: 'true';
 TRUNK: 'trunk';
 
 TRUNKS: 'trunks';

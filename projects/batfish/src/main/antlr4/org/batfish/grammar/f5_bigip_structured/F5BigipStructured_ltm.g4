@@ -30,6 +30,7 @@ lm_dns
     NEWLINE
     (
       lmd_defaults_from
+      | lmd_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -40,6 +41,17 @@ lmd_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lmd_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
 lm_gateway_icmp
 :
   GATEWAY_ICMP name = structure_name BRACE_LEFT
@@ -47,6 +59,7 @@ lm_gateway_icmp
     NEWLINE
     (
       lmg_defaults_from
+      | lmg_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -55,6 +68,19 @@ lm_gateway_icmp
 lmg_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lmg_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | DESCRIPTION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+    | TRANSPARENT
+  ) ignored
 ;
 
 lm_http
@@ -138,6 +164,7 @@ lm_ldap
     NEWLINE
     (
       lml_defaults_from
+      | lml_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -148,6 +175,17 @@ lml_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lml_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
 lm_tcp
 :
   TCP name = structure_name BRACE_LEFT
@@ -155,6 +193,7 @@ lm_tcp
     NEWLINE
     (
       lmt_defaults_from
+      | lmt_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -163,6 +202,17 @@ lm_tcp
 lmt_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lmt_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
 ;
 
 l_nat
@@ -351,6 +401,9 @@ lpm_member
       | lpmm_address6
       | lpmm_description
       | lpmm_null
+      | lpmm_ratio
+      | lpmm_session
+      | lpmm_state
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -366,14 +419,6 @@ lpmm_address6
   ADDRESS address6 = ipv6_address NEWLINE
 ;
 
-lp_monitor
-:
-  MONITOR names += structure_name
-  (
-    AND names += structure_name
-  )* NEWLINE
-;
-
 lpmm_description
 :
   DESCRIPTION text = word NEWLINE
@@ -384,6 +429,29 @@ lpmm_null
   (
     PRIORITY_GROUP
   ) ignored
+;
+
+lpmm_ratio
+:
+  RATIO value = uint NEWLINE
+;
+
+lpmm_session
+:
+  SESSION value = word NEWLINE
+;
+
+lpmm_state
+:
+  STATE value = word NEWLINE
+;
+
+lp_monitor
+:
+  MONITOR names += structure_name
+  (
+    AND names += structure_name
+  )* NEWLINE
 ;
 
 lp_null
@@ -1756,11 +1824,7 @@ lvp_persistence
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE
-    (
-      lvpp_null
-      | unrecognized
-    )*
+    NEWLINE ignored*
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -1788,7 +1852,7 @@ lv_profiles_profile
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE unrecognized*
+    NEWLINE ignored*
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -2023,5 +2087,7 @@ route_advertisement_mode
 
 source_address_translation_type
 :
-  SNAT
+  AUTOMAP
+  | LSN
+  | SNAT
 ;

@@ -3222,8 +3222,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void enterSnmp_community(Snmp_communityContext ctx) {
     String name = toName(ctx.name);
-    _currentSnmpCommunity =
-        SnmpCommunity.builder().setName(name).setCommunityName("").build();
+    _currentSnmpCommunity = SnmpCommunity.builder().setName(name).setCommunityName("").build();
   }
 
   @Override

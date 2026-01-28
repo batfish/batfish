@@ -7,6 +7,7 @@ import
   F5BigipStructured_cm,
   F5BigipStructured_ltm,
   F5BigipStructured_net,
+  F5BigipStructured_security,
   F5BigipStructured_sys;
 
 options {
@@ -44,11 +45,6 @@ statement
   | s_security
   | s_sys
   | s_wom
-;
-
-s_security
-:
-  SECURITY ignored
 ;
 
 s_apm
