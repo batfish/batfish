@@ -273,10 +273,6 @@ NAMEIF: 'nameif';
 
 NAMES: 'names';
 
-PRE_SHARED_KEY: 'pre-shared-key';
-
-PRF: 'prf';
-
 REMOTE_ACCESS: 'remote-access';
 
 REMOTE_AUTHENTICATION: 'remote-authentication';
@@ -356,6 +352,8 @@ PORT_OBJECT: 'port-object';
 
 PREFIX: 'prefix';
 
+PRE_SHARED_KEY: 'pre-shared-key';
+
 PRIMARY: 'primary';
 
 PRESERVE: 'preserve';
@@ -365,6 +363,8 @@ PRESERVE_UNTAG: 'preserve-untag';
 PROFILE: 'profile';
 
 PROPAGATE: 'propagate';
+
+PRF: 'prf';
 
 PROXY: 'proxy';
 
