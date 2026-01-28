@@ -954,6 +954,7 @@ s_crypto
       | crypto_keyring
       | crypto_map
       | crypto_pki
+      | null_rest_of_line
    )
 ;
 
