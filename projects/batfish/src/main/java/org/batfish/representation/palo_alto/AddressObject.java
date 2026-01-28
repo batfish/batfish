@@ -26,6 +26,7 @@ import org.batfish.datamodel.Prefix;
 public final class AddressObject implements Serializable {
 
   public enum Type {
+    FQDN,
     IP,
     IP_RANGE,
     PREFIX
@@ -37,6 +38,7 @@ public final class AddressObject implements Serializable {
   private @Nullable Type _type;
 
   // Only one can be set
+  private @Nullable String _fqdn;
   private @Nullable Ip _ip;
   private @Nullable Ip6 _ip6;
   private @Nullable Range<Ip> _ipRange;
@@ -50,6 +52,7 @@ public final class AddressObject implements Serializable {
   }
 
   private void clearAddress() {
+    _fqdn = null;
     _ip = null;
     _ip6 = null;
     _ipRange = null;
@@ -63,7 +66,10 @@ public final class AddressObject implements Serializable {
   }
 
   public @Nonnull IpSpace getIpSpace() {
-    if (_ip != null) {
+    if (_fqdn != null) {
+      // FQDN addresses resolve dynamically and cannot be converted to static IpSpace
+      return EmptyIpSpace.INSTANCE;
+    } else if (_ip != null) {
       return _ip.toIpSpace();
     } else if (_prefix != null) {
       return _prefix.getPrefix().toIpSpace();
@@ -193,5 +199,15 @@ public final class AddressObject implements Serializable {
     _type = prefix == null ? null : Type.PREFIX;
     clearAddress();
     _prefix6 = prefix;
+  }
+
+  public void setFqdn(@Nullable String fqdn) {
+    _type = fqdn == null ? null : Type.FQDN;
+    clearAddress();
+    _fqdn = fqdn;
+  }
+
+  public @Nullable String getFqdn() {
+    return _fqdn;
   }
 }
