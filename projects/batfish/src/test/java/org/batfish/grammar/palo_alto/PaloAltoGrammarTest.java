@@ -2457,17 +2457,18 @@ public final class PaloAltoGrammarTest {
     List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
     assertThat(
         parseWarnings,
-        containsInAnyOrder(
-            allOf(
-                ParseWarningMatchers.hasText("active-active-device-binding primary"),
-                hasComment("Batfish currently models this as active-active-device-binding both")),
-            hasComment("Invalid active-active-device-binding value: 2")));
+        containsInAnyOrder(hasComment("Invalid active-active-device-binding value: 2")));
 
     // Make sure the active-active-device-binding isn't set to an invalid number
     Map<String, NatRule> natRules =
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getNatRules();
     assertThat(natRules, hasKey("NATRULE2"));
     assertNull(natRules.get("NATRULE2").getActiveActiveDeviceBinding());
+    // Make sure PRIMARY is properly set
+    assertThat(natRules, hasKey("NATRULE1"));
+    assertEquals(
+        natRules.get("NATRULE1").getActiveActiveDeviceBinding(),
+        NatRule.ActiveActiveDeviceBinding.PRIMARY);
   }
 
   @Test

@@ -2731,7 +2731,6 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private @Nonnull Optional<NatRule.ActiveActiveDeviceBinding> toActiveActiveDeviceBinding(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
     if (deviceBinding.PRIMARY() != null) {
-      warn(ctx, "Batfish currently models this as active-active-device-binding both");
       return Optional.of(NatRule.ActiveActiveDeviceBinding.PRIMARY);
     } else if (deviceBinding.BOTH() != null) {
       return Optional.of(NatRule.ActiveActiveDeviceBinding.BOTH);
