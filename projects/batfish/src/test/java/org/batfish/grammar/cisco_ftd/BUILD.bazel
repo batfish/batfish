@@ -10,7 +10,6 @@ junit_tests(
     srcs = glob([
         "**/*Test.java",
     ]),
-
     deps = [
         "//projects/batfish",
         "//projects/batfish:batfish_testlib",
