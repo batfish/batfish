@@ -1653,7 +1653,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_fqdn(Sa_fqdnContext ctx) {
-    warn(ctx, ctx.FQDN().getSymbol(), "FQDN in address objects is not currently supported");
+    // Extract the FQDN value (everything after "FQDN" keyword)
+    String fqdnText = ctx.getText().substring("FQDN".length()).trim();
+    _currentAddressObject.setFqdn(fqdnText);
   }
 
   @Override
