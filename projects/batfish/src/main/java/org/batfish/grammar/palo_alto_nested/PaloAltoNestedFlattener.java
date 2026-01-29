@@ -51,7 +51,36 @@ public class PaloAltoNestedFlattener extends PaloAltoNestedParserBaseListener im
 
   /** Count the number of lines in a given string */
   private static int countLines(String string) {
-    return string.split("\r\n|\r|\n", -1).length;
+    if (string == null) {
+      return 0;
+    }
+    if (string.isEmpty()) {
+      return 1;
+    }
+
+    int count = 1;
+    int i = 0;
+
+    while (i < string.length()) {
+      char c = string.charAt(i);
+
+      if (c == '\r') {
+        if (i + 1 < string.length() && string.charAt(i + 1) == '\n') {
+          count++;
+          i += 2;
+        } else {
+          count++;
+          i++;
+        }
+      } else if (c == '\n') {
+        count++;
+        i++;
+      } else {
+        i++;
+      }
+    }
+
+    return count;
   }
 
   @Override
