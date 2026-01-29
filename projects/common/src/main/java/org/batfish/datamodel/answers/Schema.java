@@ -142,7 +142,7 @@ public class Schema {
           baseTypeName.startsWith("class:"),
           "Only class-based schemas are supported. Got " + baseTypeName);
 
-      baseTypeName = baseTypeName.replaceFirst("class:", "");
+      baseTypeName = baseTypeName.substring("class:".length());
 
       try {
         baseType = Class.forName(baseTypeName);
