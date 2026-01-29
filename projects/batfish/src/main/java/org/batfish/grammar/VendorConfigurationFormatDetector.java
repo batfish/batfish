@@ -60,7 +60,7 @@ public final class VendorConfigurationFormatDetector {
   // checkCisco patterns
   private static final Pattern ASA_VERSION_LINE_PATTERN = Pattern.compile("(?m)(^ASA Version.*$)");
   private static final Pattern FTD_VERSION_LINE_PATTERN =
-      Pattern.compile("(?m)(^NGFW Version.*$)|(^ngips .*$)|(^service-module \\d+ keepalive.*$)");
+      Pattern.compile("(?mi)(^NGFW Version.*$)|(^ngips .*$)|(^service-module \\d+ keepalive.*$)");
   private static final Pattern CISCO_LIKE_PATTERN =
       Pattern.compile("(?m)(^boot system flash.*$)|(^interface .*$)");
   private static final Pattern CISCO_STYLE_ACL_PATTERN =
