@@ -60,7 +60,6 @@ stanza
    | arp_stanza
    | version_stanza
    | enable_password_stanza
-   | names_stanza
    | mac_address_stanza
    | cts_stanza
    | snort_stanza
@@ -73,7 +72,6 @@ stanza
    | monitor_interface_stanza
    | pager_stanza
    | aaa_stanza
-   | mac_address_stanza
    | unrecognized_stanza
 ;
 
