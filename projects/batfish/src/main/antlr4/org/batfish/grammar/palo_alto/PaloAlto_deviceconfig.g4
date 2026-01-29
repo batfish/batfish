@@ -277,6 +277,7 @@ sdssa_definition
     VERSION variable
     | VIEWS variable sdssav_definition*
     | USERS variable sdssau_definition*
+    | SNMP_COMMUNITY_STRING variable
 ;
 
 sdssav_definition
@@ -307,6 +308,7 @@ sdss_snmp_system
     (
         LOCATION variable
         | CONTACT variable
+        | SEND_EVENT_SPECIFIC_TRAPS yes_or_no
     )
 ;
 

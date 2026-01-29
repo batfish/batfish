@@ -36,6 +36,10 @@ SNMP_SYSTEM: 'snmp-system';
 
 ACCESS_SETTING: 'access-setting';
 
+SNMP_COMMUNITY_STRING: 'snmp-community-string';
+
+SEND_EVENT_SPECIFIC_TRAPS: 'send-event-specific-traps';
+
 AUTHPRIV: 'authpriv';
 
 AUTHPWD: 'authpwd';

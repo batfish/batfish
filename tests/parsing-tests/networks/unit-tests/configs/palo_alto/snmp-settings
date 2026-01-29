@@ -1,0 +1,36 @@
+!RANCID-CONTENT-TYPE: paloalto
+config {
+  devices {
+    localhost.localdomain {
+      deviceconfig {
+        system {
+          hostname "palo_alto_snmp_settings";
+          snmp-setting {
+            access-setting {
+              version v2c {
+                snmp-community-string "public";
+              }
+              version v2c {
+                snmp-community-string "private";
+              }
+            }
+            snmp-system {
+              send-event-specific-traps yes;
+            }
+          }
+        }
+      }
+      network {
+        interface {
+          ethernet1/1 {
+            layer3 {
+              ip {
+                10.1.1.1/24;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
