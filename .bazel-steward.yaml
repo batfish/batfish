@@ -1,5 +1,6 @@
 update-rules:
-  - bumping: minor-patch
+  - kinds: maven
+    bumping: minor-patch
 
 pull-requests:
   - dependencies: "com.fasterxml.jackson*:*"
