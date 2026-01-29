@@ -27,6 +27,8 @@ ACTION: 'action';
 
 ACTIVATE: 'activate';
 
+ACTIVE: 'active';
+
 ACTIVE_BONUS: 'active-bonus';
 
 ACTIVE_MODULES: 'active-modules';
@@ -37,9 +39,13 @@ ADDRESS: 'address';
 
 ADDRESS_FAMILY: 'address-family';
 
+AGENT_ADDRESSES: 'agent-addresses';
+
 ALERT_TIMEOUT: 'alert-timeout';
 
 ALL: 'all';
+
+ALLOWED_ADDRESSES: 'allowed-addresses';
 
 ALLOW_DYNAMIC_RECORD_SIZING: 'allow-dynamic-record-sizing';
 
@@ -55,27 +61,37 @@ AND: 'and';
 
 ANY: 'any';
 
-APP_SERVICE: 'app-service';
-
 APM: 'apm';
+
+APP_SERVICE: 'app-service';
 
 ARP: 'arp';
 
-AUTO_SYNC: 'auto-sync';
+ASM: 'asm';
+
+AUTH: 'auth';
 
 AUTOMAP: 'automap';
 
-AUTH: 'auth';
+AUTO_SYNC: 'auto-sync';
 
 BASE_MAC: 'base-mac';
 
 BGP: 'bgp';
+
+BLOCKING_MODE: 'blocking-mode';
 
 BUILD: 'build';
 
 BUNDLE: 'bundle';
 
 BUNDLE_SPEED: 'bundle-speed';
+
+CACHE_SIZE: 'cache-size';
+
+CACHE_TIMEOUT: 'cache-timeout';
+
+CAPABILITY: 'capability';
 
 CA_CERT: 'ca-cert';
 
@@ -85,13 +101,11 @@ CA_DEVICES: 'ca-devices';
 
 CA_KEY: 'ca-key';
 
-CACHE_SIZE: 'cache-size';
-
-CACHE_TIMEOUT: 'cache-timeout';
-
-CAPABILITY: 'capability';
+CENT_REPORT_DESTINATION_TYPE: 'cent-report-destination-type';
 
 CERT: 'cert';
+
+CERTIFICATE_AUTHORITY: 'certificate-authority';
 
 CERT_EXTENSION_INCLUDES: 'cert-extension-includes';
 
@@ -101,17 +115,15 @@ CERT_LIFESPAN: 'cert-lifespan';
 
 CERT_LOOKUP_BY_IPADDR_PORT: 'cert-lookup-by-ipaddr-port';
 
-CERTIFICATE_AUTHORITY: 'certificate-authority';
-
 CHAIN: 'chain';
 
 CHASSIS_ID: 'chassis-id';
 
-CIPHER_GROUP: 'cipher-group';
-
 CIPHERLIST: 'cipherlist';
 
 CIPHERS: 'ciphers';
+
+CIPHER_GROUP: 'cipher-group';
 
 CLASSIFICATION: 'classification';
 
@@ -121,55 +133,67 @@ CLIENT_SSL: 'client-ssl';
 
 CM: 'cm';
 
+COMMUNITIES: 'communities';
+
 COMMUNITY: 'community';
+
+COMMUNITY_NAME: 'community-name';
 
 COMPATIBILITY: 'compatibility';
 
-CONSOLE_INACTIVITY_TIMEOUT: 'console-inactivity-timeout';
-
-CENT_REPORT_DESTINATION_TYPE: 'cent-report-destination-type';
-
-CREATION_TIME: 'creation-time';
-
 CONFIGSYNC_IP: 'configsync-ip';
 
+CONFIG_CHANGE_LOG: 'config-change-log';
+
+CONSOLE_INACTIVITY_TIMEOUT: 'console-inactivity-timeout';
+
 COOKIE: 'cookie';
+
+CREATION_TIME: 'creation-time';
 
 DATA_GROUP: 'data-group';
 
 DEFAULT: 'default';
 
-DEFAULT_NODE_MONITOR: 'default-node-monitor';
-
 DEFAULTS_FROM: 'defaults-from';
+
+DEFAULT_NODE_MONITOR: 'default-node-monitor';
 
 DENY: 'deny';
 
 DESCRIPTION: 'description';
 
-DRILLDOWN_ENTITIES: 'drilldown-entities';
-
-DRILLDOWN_VALUES: 'drilldown-values';
-
 DESTINATION: 'destination';
-
-DEVICE: 'device';
-
-DEVICE_GROUP: 'device-group';
-
-DEVICES: 'devices';
 
 DHCPV4: 'dhcpv4';
 
 DHCPV6: 'dhcpv6';
 
+DEVICE: 'device';
+
+DEVICES: 'devices';
+
+DEVICE_CONFIG: 'device-config';
+
+DEVICE_GROUP: 'device-group';
+
 DIAMETER: 'diameter';
 
 DISABLED: 'disabled';
 
+DISK_MONITOR: 'disk-monitor';
+
+DISK_MONITORS: 'disk-monitors';
+
 DNS: 'dns';
 
 DNS_RESOLVER: 'dns-resolver';
+
+DOS: 'dos';
+
+DRILLDOWN_ENTITIES: 'drilldown-entities';
+
+DRILLDOWN_VALUES: 'drilldown-values';
 
 DYNAD: 'dynad';
 
@@ -183,6 +207,10 @@ EFFECTIVE_PORT: 'effective-port';
 
 ENABLED: 'enabled';
 
+ENCODING: 'encoding';
+
+FASTL4: 'fastl4';
+
 ENTRIES: 'entries';
 
 EXPIRATION: 'expiration';
@@ -195,11 +223,11 @@ FALSE: 'false';
 
 FASTHTTP: 'fasthttp';
 
-FASTL4: 'fastl4';
-
 FDB: 'fdb';
 
 FEATURE_MODULE: 'feature-module';
+
+FIREWALL: 'firewall';
 
 FIX: 'fix';
 
@@ -217,43 +245,33 @@ FW_ENFORCED_POLICY: 'fw-enforced-policy';
 
 GATEWAY_ICMP: 'gateway-icmp';
 
-DEVICE_CONFIG: 'device-config';
-
-DOS: 'dos';
-
-FIREWALL: 'firewall';
-
-IP_UNCOMMON_PROTOLIST: 'ip-uncommon-protolist';
-
-IPV6_EXT_HDR: 'ipv6-ext-hdr';
-
-UDP_PORTLIST: 'udp-portlist';
-
-CONFIG_CHANGE_LOG: 'config-change-log';
-
 GENERIC_ALERT: 'generic-alert';
 
 GLOBAL_SETTINGS: 'global-settings';
 
 GTP: 'gtp';
 
-GUI_SECURITY_BANNER_TEXT: 'gui-security-banner-text';
+GUID: 'guid';
 
 GUI_PAGECODE: 'gui-pagecode';
 
-GUI_WIDGET: 'gui-widget';
+GUI_SECURITY_BANNER_TEXT: 'gui-security-banner-text';
 
 GUI_SETUP: 'gui-setup';
 
-GUID: 'guid';
+GUI_WIDGET: 'gui-widget';
 
 GW: 'gw';
 
-HA_GROUP: 'ha-group';
-
 HANDSHAKE_TIMEOUT: 'handshake-timeout';
 
+HA_GROUP: 'ha-group';
+
+HTTP2: 'http2';
+
 HIDDEN_LITERAL: 'hidden';
+
+HOST: 'host';
 
 HOSTNAME: 'hostname';
 
@@ -261,15 +279,13 @@ HTML: 'html';
 
 HTTP: 'http';
 
-HTTP_COMPRESSION: 'http-compression';
-
-HTTP_PROXY_CONNECT: 'http-proxy-connect';
-
-HTTP2: 'http2';
-
 HTTPD: 'httpd';
 
 HTTPS: 'https';
+
+HTTP_COMPRESSION: 'http-compression';
+
+HTTP_PROXY_CONNECT: 'http-proxy-connect';
 
 ICAP: 'icap';
 
@@ -281,11 +297,15 @@ IFILE: 'ifile';
 
 IKE_DAEMON: 'ike-daemon';
 
+ILX: 'ilx';
+
+INACTIVITY_TIMEOUT: 'inactivity-timeout';
+
+INFINITY: 'infinity';
+
 INHERIT_CERTKEYCHAIN: 'inherit-certkeychain';
 
 INHERITED_TRAFFIC_GROUP: 'inherited-traffic-group';
-
-ILX: 'ilx';
 
 INTERFACE: 'interface';
 
@@ -309,9 +329,13 @@ IPSEC: 'ipsec';
 
 IPSECALG: 'ipsecalg';
 
+IP_UNCOMMON_PROTOLIST: 'ip-uncommon-protolist';
+
 IPV4: 'ipv4';
 
 IPV6: 'ipv6';
+
+IPV6_EXT_HDR: 'ipv6-ext-hdr';
 
 KERNEL: 'kernel';
 
@@ -325,8 +349,6 @@ LDAP: 'ldap';
 
 LIMIT_TYPE: 'limit-type';
 
-LSN: 'lsn';
-
 LLDP_ADMIN: 'lldp-admin';
 
 LLDP_GLOBALS: 'lldp-globals';
@@ -336,6 +358,10 @@ LLDP_TLVMAP: 'lldp-tlvmap';
 LOAD_BALANCING_MODE: 'load-balancing-mode';
 
 LOCAL_AS: 'local-as';
+
+LOCAL_IP: 'local-ip';
+
+LSN: 'lsn';
 
 LTM: 'ltm';
 
@@ -361,11 +387,17 @@ MATCH_ACROSS_SERVICES: 'match-across-services';
 
 MATCH_ACROSS_VIRTUALS: 'match-across-virtuals';
 
+MAXIMUM_PREFIX: 'maximum-prefix';
+
+MAXIMUM_RECORD_SIZE: 'maximum-record-size';
+
 MAX_ACTIVE_HANDSHAKES: 'max-active-handshakes';
 
 MAX_AGE: 'max-age';
 
 MAX_AGGREGATE_RENEGOTIATION_PER_MINUTE: 'max-aggregate-renegotiation-per-minute';
+
+MAX_PROCESSES: 'max-processes';
 
 MAX_RENEGOTIATIONS_PER_MINUTE: 'max-renegotiations-per-minute';
 
@@ -373,25 +405,28 @@ MAX_REUSE: 'max-reuse';
 
 MAX_SIZE: 'max-size';
 
-MAXIMUM_PREFIX: 'maximum-prefix';
-
-MAXIMUM_RECORD_SIZE: 'maximum-record-size';
-
 MEMBERS: 'members';
 
 METRICS: 'metrics';
 
-MIN_ACTIVE_MEMBERS: 'min-active-members';
+MINSPACE: 'minspace';
 
-MOD_SSL_METHODS: 'mod-ssl-methods';
+MIN_ACTIVE_MEMBERS: 'min-active-members';
 
 MODE: 'mode';
 
-MQTT: 'mqtt';
-
 MODULE: 'module';
 
+MOD_SSL_METHODS: 'mod-ssl-methods';
+
 MONITOR: 'monitor';
+
+MQTT: 'mqtt';
+
+OPTIONAL_MODULES
+: 
+  'optional-modules'
+;
 
 NAT: 'nat';
 
@@ -417,32 +452,35 @@ ONE_CONNECT: 'one-connect';
 
 ONE_HUNDRED_G: '100G';
 
-OPTIONAL_MODULES
-: 
-  'optional-modules'
-;
-
 OPTIONS: 'options';
 
 ORDER_ON_PAGE: 'order-on-page';
+
+ORIGINATING_ADDRESS: 'originating-address';
 
 ORIGINS: 'origins';
 
 OUT: 'out';
 
-OVERRIDE_CONNECTION_LIMIT: 'override-connection-limit';
-
 OUTBOUND_SMTP: 'outbound-smtp';
 
-PCP: 'pcp';
+OVERRIDE_CONNECTION_LIMIT: 'override-connection-limit';
+
+PARENT: 'parent';
+
+PARENT_POLICY: 'parent-policy';
 
 PASSPHRASE: 'passphrase';
 
+PATH: 'path';
+
+PCP: 'pcp';
+
 PEER_NO_RENEGOTIATE_TIMEOUT: 'peer-no-renegotiate-timeout';
 
-PERIOD: 'period';
-
 PEM: 'pem';
+
+PERIOD: 'period';
 
 PERMIT: 'permit';
 
@@ -452,6 +490,15 @@ PERSISTENCE: 'persistence';
 
 PLATFORM_ID: 'platform-id';
 
+POLICY: 'policy';
+
+POLICY_BUILDER: 'policy-builder';
+
+
+POLICY_TEMPLATE: 'policy-template';
+
+POLICY_TYPE: 'policy-type';
+
 POOL: 'pool';
 
 POOLS: 'pools';
@@ -459,6 +506,8 @@ POOLS: 'pools';
 PORT: 'port';
 
 PPTP: 'pptp';
+
+PREDEFINED_POLICY: 'predefined-policy';
 
 PREFIX: 'prefix';
 
@@ -468,15 +517,15 @@ PREFIX_LIST: 'prefix-list';
 
 PRIORITY_GROUP: 'priority-group';
 
-PRODUCT: 'product';
-RATIO: 'ratio';
+PROCESS: 'process';
 
+PROCESS_MONITORS: 'process-monitors';
+
+PRODUCT: 'product';
 
 PROFILE: 'profile';
 
 PROFILES: 'profiles';
-
-PROCESS: 'process';
 
 PROVISION: 'provision';
 
@@ -492,6 +541,8 @@ QOE: 'qoe';
 
 RADIUS: 'radius';
 
+RATIO: 'ratio';
+
 RECV: 'recv';
 
 RECV_DISABLE: 'recv-disable';
@@ -501,6 +552,8 @@ REDISTRIBUTE: 'redistribute';
 REJECT: 'reject';
 
 REMOTE_AS: 'remote-as';
+
+REMOTE_SERVERS: 'remote-servers';
 
 RENEGOTIATE_MAX_RECORD_DELAY: 'renegotiate-max-record-delay';
 
@@ -522,17 +575,15 @@ REWRITE: 'rewrite';
 
 ROUTE: 'route';
 
+ROUTER_ID: 'router-id';
+
 ROUTE_ADVERTISEMENT: 'route-advertisement';
 
 ROUTE_DOMAIN: 'route-domain';
 
 ROUTE_MAP: 'route-map';
 
-ROUTER_ID: 'router-id';
-
 ROUTING: 'routing';
-
-RTSP: 'rtsp';
 
 RULE
 :
@@ -546,6 +597,8 @@ RULE
 ;
 
 RULES: 'rules';
+
+RTSP: 'rtsp';
 
 SCTP: 'sctp';
 
@@ -565,23 +618,25 @@ SELF_DEVICE: 'self-device';
 
 SEND: 'send';
 
+SERVERS: 'servers';
+
+SERVERSSL_USE_SNI: 'serverssl-use-sni';
+
 SERVER_LDAP: 'server-ldap';
 
 SERVER_NAME: 'server-name';
 
 SERVER_SSL: 'server-ssl';
 
-SERVERS: 'servers';
-
 SERVICE_DOWN_ACTION: 'service-down-action';
+
+SESSION: 'session';
 
 SESSION_MIRRORING: 'session-mirroring';
 
 SESSION_TICKET: 'session-ticket';
 
 SESSION_TICKET_TIMEOUT: 'session-ticket-timeout';
-
-SESSION: 'session';
 
 SET: 'set';
 
@@ -599,19 +654,16 @@ SMTPS: 'smtps';
 
 SNAT: 'snat';
 
+SNATPOOL: 'snatpool';
+
 SNAT_TRANSLATION: 'snat-translation';
 
-SNATPOOL: 'snatpool';
 
 SNI_DEFAULT: 'sni-default';
 
 SNI_REQUIRE: 'sni-require';
 
 SNMP: 'snmp';
-
-SSHD: 'sshd';
-
-SYSLOG: 'syslog';
 
 SOCKS: 'socks';
 
@@ -625,15 +677,13 @@ SOURCE_MASK: 'source-mask';
 
 SOURCE_PORT: 'source-port';
 
-SERVERSSL_USE_SNI: 'serverssl-use-sni';
-
 SPLITSESSIONCLIENT: 'splitsessionclient';
 
 SPLITSESSIONSERVER: 'splitsessionserver';
 
-SSL: 'ssl';
-STATE: 'state';
+SSHD: 'sshd';
 
+SSL: 'ssl';
 
 SSL_FORWARD_PROXY: 'ssl-forward-proxy';
 
@@ -642,6 +692,8 @@ SSL_FORWARD_PROXY_BYPASS: 'ssl-forward-proxy-bypass';
 SSL_PROFILE: 'ssl-profile';
 
 SSL_SIGN_HASH: 'ssl-sign-hash';
+
+STATE: 'state';
 
 STATISTICS: 'statistics';
 
@@ -663,6 +715,12 @@ SYNC_ONLY: 'sync-only';
 
 SYS: 'sys';
 
+SYSLOG: 'syslog';
+
+SYS_CONTACT: 'sys-contact';
+
+SYS_LOCATION: 'sys-location';
+
 TAG: 'tag';
 
 TCP: 'tcp';
@@ -671,13 +729,13 @@ TCP_ANALYTICS: 'tcp-analytics';
 
 TFTP: 'tftp';
 
-TIME_UNTIL_UP: 'time-until-up';
-
-TIME_ZONE: 'time-zone';
-
 TIMEOUT: 'timeout';
 
 TIMEZONE: 'timezone';
+
+TIME_UNTIL_UP: 'time-until-up';
+
+TIME_ZONE: 'time-zone';
 
 TRAFFIC_ACCELERATION: 'traffic-acceleration';
 
@@ -687,18 +745,21 @@ TRANSLATE_ADDRESS: 'translate-address';
 
 TRANSLATE_PORT: 'translate-port';
 
+TRANSLATION_ADDRESS: 'translation-address';
+
 TRANSPARENT: 'transparent';
 
 TRUE: 'true';
+
 TRUNK: 'trunk';
 
 TRUNKS: 'trunks';
 
+TRUSTED_RESPONDERS: 'trusted-responders';
+
 TRUST_DOMAIN: 'trust-domain';
 
 TRUST_GROUP: 'trust-group';
-
-TRUSTED_RESPONDERS: 'trusted-responders';
 
 TUNNELS: 'tunnels';
 
@@ -708,6 +769,8 @@ TYPE: 'type';
 
 UDP: 'udp';
 
+UDP_PORTLIST: 'udp-portlist';
+
 UNCLEAN_SHUTDOWN: 'unclean-shutdown';
 
 UNICAST_ADDRESS: 'unicast-address';
@@ -716,60 +779,26 @@ UNIT_ID: 'unit-id';
 
 UPDATE_SOURCE: 'update-source';
 
+// SNMP-related tokens
 USERNAME: 'username';
-
 VALUE: 'value';
-
 VERSION: 'version';
-
 VIEW_BY: 'view-by';
-
 VIRTUAL: 'virtual';
-
 VIRTUAL_ADDRESS: 'virtual-address';
-
 VLAN: 'vlan';
-
 VLANS: 'vlans';
-
 VLANS_DISABLED: 'vlans-disabled';
-
 VLANS_ENABLED: 'vlans-enabled';
-
+WEBSOCKET: 'websocket';
 WEB_ACCELERATION: 'web-acceleration';
-
 WEB_SECURITY: 'web-security';
 
-WEBSOCKET: 'websocket';
-
-WOM: 'wom';
-
-WEIGHT: 'weight';
-
-WIDGET_TYPE: 'widget-type';
-
-XML: 'xml';
-
-// SNMP-related tokens
-AGENT_ADDRESSES: 'agent-addresses';
-ALLOWED_ADDRESSES: 'allowed-addresses';
-COMMUNITIES: 'communities';
-DISK_MONITORS: 'disk-monitors';
-DISK_MONITOR: 'disk-monitor';
-MAX_PROCESSES: 'max-processes';
-MINSPACE: 'minspace';
-PROCESS_MONITORS: 'process-monitors';
-PATH: 'path';
-COMMUNITY_NAME: 'community-name';
-INFINITY: 'infinity';
-SYS_CONTACT: 'sys-contact';
-SYS_LOCATION: 'sys-location';
-
 // SSHD and SYSLOG-related tokens
-INACTIVITY_TIMEOUT: 'inactivity-timeout';
-REMOTE_SERVERS: 'remote-servers';
-HOST: 'host';
-LOCAL_IP: 'local-ip';
+WEIGHT: 'weight';
+WIDGET_TYPE: 'widget-type';
+WOM: 'wom';
+XML: 'xml';
 
 // Complex tokens
 

@@ -222,6 +222,9 @@ l_nat
     NEWLINE
     (
       ln_inherited_traffic_group
+      | ln_originating_address
+      | ln_traffic_group
+      | ln_translation_address
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -230,6 +233,21 @@ l_nat
 ln_inherited_traffic_group
 :
   INHERITED_TRAFFIC_GROUP value = word NEWLINE
+;
+
+ln_originating_address
+:
+  ORIGINATING_ADDRESS address = ip_address NEWLINE
+;
+
+ln_traffic_group
+:
+  TRAFFIC_GROUP group = structure_name NEWLINE
+;
+
+ln_translation_address
+:
+  TRANSLATION_ADDRESS address = ip_address NEWLINE
 ;
 
 l_node
@@ -272,13 +290,6 @@ l_persistence
     | lper_ssl
     | unrecognized
   )
-;
-
-lper_null
-:
-  (
-    APP_SERVICE
-  ) ignored
 ;
 
 lper_cookie
@@ -1826,13 +1837,6 @@ lvp_persistence
   (
     NEWLINE ignored*
   )? BRACE_RIGHT NEWLINE
-;
-
-lvpp_null
-:
-  (
-    DEFAULT
-  ) ignored
 ;
 
 lv_pool

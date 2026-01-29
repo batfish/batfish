@@ -156,6 +156,11 @@ sys_null
   ) ignored
 ;
 
+sshd_inactivity_timeout
+:
+  INACTIVITY_TIMEOUT timeout = uint NEWLINE
+;
+
 sys_sshd
 :
   SSHD BRACE_LEFT
@@ -166,11 +171,6 @@ sys_sshd
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
-;
-
-sshd_inactivity_timeout
-:
-  INACTIVITY_TIMEOUT timeout = uint NEWLINE
 ;
 
 sys_syslog
@@ -259,12 +259,12 @@ snmp_community
     snmp_community_name
     | snmp_community_source
   )*
+  BRACE_RIGHT NEWLINE
 ;
 
 snmp_community_name
 :
   COMMUNITY_NAME name = word_id NEWLINE
-  BRACE_RIGHT NEWLINE
 ;
 
 snmp_community_source
