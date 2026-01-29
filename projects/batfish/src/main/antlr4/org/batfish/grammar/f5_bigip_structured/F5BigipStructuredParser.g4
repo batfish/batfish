@@ -3,10 +3,12 @@ parser grammar F5BigipStructuredParser;
 /* This is only needed if parser grammar is spread across files */
 import
   F5BigipStructured_analytics,
+  F5BigipStructured_asm,
   F5BigipStructured_common,
   F5BigipStructured_cm,
   F5BigipStructured_ltm,
   F5BigipStructured_net,
+  F5BigipStructured_pem,
   F5BigipStructured_security,
   F5BigipStructured_sys;
 
@@ -36,6 +38,7 @@ statement
 :
   s_analytics
   | s_apm
+  | s_asm
   | s_auth
   | s_cm
   | s_ilx
@@ -60,11 +63,6 @@ s_auth
 s_ilx
 :
   ILX ignored
-;
-
-s_pem
-:
-  PEM ignored
 ;
 
 s_wom
