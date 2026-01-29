@@ -24,6 +24,9 @@ sys syslog {
 
 ltm nat /Common/test_nat_object {
     inherited-traffic-group true
+    originating-address 192.0.2.50
+    traffic-group /Common/traffic-group-1
+    translation-address 192.0.2.100
 }
 
 ltm snat-translation /Common/test_snat_translation {
@@ -87,4 +90,23 @@ ltm profile ipsecalg /Common/test_ipsecalg {
     log-publisher none
     partition Common
     pending-ike-connection-limit 5
+}
+
+ltm pool /Common/test_pool {
+    members {
+        /Common/pool-member:0 {
+            address 192.0.2.10
+        }
+        /Common/pool-member:80 {
+            address 192.0.2.11
+        }
+    }
+}
+
+ltm node /Common/test-node {
+    address 192.0.2.20
+}
+
+ltm node /Common/test-node-ipv6 {
+    address 2001:db8::1
 }

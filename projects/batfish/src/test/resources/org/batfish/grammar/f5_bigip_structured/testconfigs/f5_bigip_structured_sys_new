@@ -23,3 +23,36 @@ sys syslog {
         }
     }
 }
+
+sys snmp {
+    agent-addresses {
+        tcp6:161
+        udp6:161
+    }
+    allowed-addresses {
+        0.0.0.0/0.0.0.0
+    }
+    communities {
+        /Common/public {
+            community-name public
+            source default
+        }
+        /Common/private {
+            community-name private
+        }
+    }
+    disk-monitors {
+        /Common/root {
+            minspace 2000
+            path /
+        }
+    }
+    process-monitors {
+        /Common/test-process {
+            max-processes 100
+            process named
+        }
+    }
+    sys-contact admin@example.com
+    sys-location Server Room
+}
