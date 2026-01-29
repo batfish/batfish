@@ -52,8 +52,11 @@ bgp_neighbor_timers
 
 bgp_neighbor_route_map
 :
-    ROUTE_MAP map_name=route_map_name_null (IN | OUT)
-    | ROUTE_MAP (IN | OUT) map_name=route_map_name_null
+    ROUTE_MAP
+    (
+        map_name=route_map_name_null (IN | OUT)
+        | (IN | OUT) map_name=route_map_name_null
+    )
 ;
 
 route_map_name_null

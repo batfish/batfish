@@ -258,7 +258,11 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitAcl_remark(Acl_remarkContext ctx) {
-    // ACL remark parsing (not extracted - cosmetic only)
+    if (_currentAcl != null && _currentAclName != null) {
+      String remarkText = ctx.remark_text != null ? ctx.remark_text.getText().trim() : "";
+      FtdAccessListLine line = FtdAccessListLine.createRemark(_currentAclName, remarkText);
+      _currentAcl.addLine(line);
+    }
   }
 
   @Override

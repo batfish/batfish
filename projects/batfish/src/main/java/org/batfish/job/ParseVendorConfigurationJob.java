@@ -42,6 +42,8 @@ import org.batfish.grammar.cisco.CiscoCombinedParser;
 import org.batfish.grammar.cisco.CiscoControlPlaneExtractor;
 import org.batfish.grammar.cisco_asa.AsaCombinedParser;
 import org.batfish.grammar.cisco_asa.AsaControlPlaneExtractor;
+import org.batfish.grammar.cisco_ftd.FtdCombinedParser;
+import org.batfish.grammar.cisco_ftd.FtdControlPlaneExtractor;
 import org.batfish.grammar.cisco_xr.CiscoXrCombinedParser;
 import org.batfish.grammar.cisco_xr.CiscoXrControlPlaneExtractor;
 import org.batfish.grammar.cumulus_concatenated.CumulusConcatenatedCombinedParser;
@@ -259,6 +261,24 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                   _fileResults.get(filename).getWarnings(),
                   _fileResults.get(filename).getSilentSyntax());
           parseFile(filename, asaParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
+        }
+
+      case CISCO_FTD:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          FtdCombinedParser ftdParser = new FtdCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new FtdControlPlaneExtractor(
+                  fileText,
+                  ftdParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, ftdParser, extractor);
           vc = extractor.getVendorConfiguration();
           vc.setFilename(filename);
           break;

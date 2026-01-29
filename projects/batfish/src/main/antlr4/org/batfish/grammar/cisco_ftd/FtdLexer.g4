@@ -576,9 +576,10 @@ VARIABLE_NAME
 // NAME matches identifiers and names that aren't recognized keywords
 // It requires at least one non-alphanumeric character (underscore, hyphen, etc.)
 // to avoid conflicting with keywords + numbers like "Ethernet1"
+// Semantic predicate helps fail-fast when text is clearly a WORD candidate
 NAME
 :
-   F_Variable_Char* F_Variable_Special_Char F_Variable_Char*
+   {!isPureAlphabeticSequence()}? F_Variable_Char* F_Variable_Special_Char F_Variable_Char*
 ;
 
 // WORD matches alphabetic sequences that aren't recognized keywords
