@@ -1185,15 +1185,10 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     String name = toName(np);
     int port = toPort(np);
     _c.referenceStructure(NODE, name, POOL_MEMBER, np.getStart().getLine());
-    if (port == 0) {
-      warn(ctx, "0 is not a valid port");
-      _currentPoolMember = new PoolMember("dummy", name, 1);
-    } else {
-      _currentPoolMember =
-          _currentPool
-              .getMembers()
-              .computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
-    }
+    // Port 0 is valid in F5 - means "inherit port from virtual server"
+    // See: https://community.f5.com/discussions/technicalforum/health-monitor--service-port-0/63454
+    _currentPoolMember =
+        _currentPool.getMembers().computeIfAbsent(np.getText(), n -> new PoolMember(n, name, port));
   }
 
   @Override
