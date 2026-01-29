@@ -258,7 +258,6 @@ snt_comment
     COMMENT null_rest_of_line
 ;
 
-// TODO: extract
 snt_copy_tos
 :
     COPY_TOS yn = yes_or_no

@@ -94,7 +94,7 @@ vr_ecmp
     ECMP
     (
        ALGORITHM null_rest_of_line
-       | MAX_PATH UINT8 // only 2,3,4 are allowed
+       | MAX_PATH uint8
        | vr_ecmp_enable
     )
 ;
