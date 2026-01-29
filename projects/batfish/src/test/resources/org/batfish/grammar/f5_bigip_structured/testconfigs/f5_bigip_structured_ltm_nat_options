@@ -1,0 +1,27 @@
+net self /Common/10.0.0.1%0/255.255.255.0 {
+    allow-service default
+}
+
+ltm nat /Common/test_nat {
+    addressing-translation {
+        origins {
+            10.0.0.0/8
+        }
+        source-address 192.0.2.1
+        translation-address 198.51.100.0/24
+    }
+    traffic-group /Common/pool-1
+}
+
+ltm snatpool /Common/test_snatpool {
+    members {
+        192.0.2.10
+        192.0.2.11
+    }
+    translation-address 198.51.100.100
+}
+
+ltm snat-translation {
+    pool /Common/test_snatpool
+    source-address 203.0.113.0/24
+}

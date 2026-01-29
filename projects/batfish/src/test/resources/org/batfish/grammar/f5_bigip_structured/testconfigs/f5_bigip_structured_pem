@@ -1,0 +1,18 @@
+net self /Common/10.0.0.1%0/255.255.255.0 {
+    allow-service default
+}
+
+pem global-settings {
+    dns-cache {
+        cache-size 1000
+        cache-timeout 60
+    }
+}
+
+sys syslog {
+    remote-servers {
+        syslog-server {
+            host 10.0.0.1
+        }
+    }
+}
