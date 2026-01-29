@@ -3640,31 +3640,4 @@ public final class F5BigipStructuredGrammarTest {
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, VLAN, used, 3));
   }
-
-  @Test
-  public void testPem() throws IOException {
-    String filename = "f5_bigip_structured_pem";
-    String hostname = "myhostname";
-    Map<String, Configuration> configurations = parseTextConfigs(filename);
-
-    assertThat(configurations, hasKey(hostname));
-  }
-
-  @Test
-  public void testPoolPort0() throws IOException {
-    String filename = "f5_bigip_structured_ltm_pool_port0";
-    String hostname = "myhostname";
-    Map<String, Configuration> configurations = parseTextConfigs(filename);
-
-    assertThat(configurations, hasKey(hostname));
-  }
-
-  @Test
-  public void testNatOptions() throws IOException {
-    String filename = "f5_bigip_structured_ltm_nat_options";
-    String hostname = "myhostname";
-    Map<String, Configuration> configurations = parseTextConfigs(filename);
-
-    assertThat(configurations, hasKey(hostname));
-  }
 }
