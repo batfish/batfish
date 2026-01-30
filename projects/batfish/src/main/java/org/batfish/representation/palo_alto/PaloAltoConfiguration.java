@@ -122,6 +122,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -237,6 +239,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private String _ntpServerPrimary;
 
   private String _ntpServerSecondary;
+
+  private @Nullable SnmpSetting _snmpSetting;
 
   private @Nullable Vsys _panorama;
 
@@ -415,6 +419,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _ntpServerSecondary;
   }
 
+  @Nullable
+  public SnmpSetting getSnmpSetting() {
+    return _snmpSetting;
+  }
+
   public @Nonnull SortedMap<String, Vsys> getSharedGateways() {
     return _sharedGateways;
   }
@@ -468,6 +477,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setNtpServerSecondary(String ntpServerSecondary) {
     _ntpServerSecondary = ntpServerSecondary;
+  }
+
+  public void setSnmpSetting(@Nullable SnmpSetting snmpSetting) {
+    _snmpSetting = snmpSetting;
   }
 
   @Override
@@ -1080,6 +1093,37 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           generateSharedGatewayOutgoingFilter(
               sharedGateway, _sharedGateways.values(), _virtualSystems.values());
       _c.getIpAccessLists().put(acl.getName(), acl);
+    }
+  }
+
+  /** Convert SNMP settings to VI model */
+  private void convertSnmpSettings() {
+    if (_snmpSetting == null) {
+      return;
+    }
+
+    SnmpServer snmpServer = new SnmpServer();
+
+    // Convert SNMP communities
+    for (SnmpAccessSetting accessSetting : _snmpSetting.getAccessSettings()) {
+      for (String communityString : accessSetting.getCommunityStrings()) {
+        // Use the community string itself as the name (SnmpCommunity only takes a name)
+        SnmpCommunity community = new SnmpCommunity(communityString);
+        // Mark as read-only based on version (v2c is typically read-only)
+        if (accessSetting.getVersion().contains("v2c")
+            || accessSetting.getVersion().contains("v1")) {
+          community.setRo(true);
+        }
+        snmpServer.getCommunities().put(communityString, community);
+      }
+    }
+
+    // Set on default VRF (Palo Alto typically uses default VRF for management)
+    // Get the first VRF key from the map
+    if (!_c.getVrfs().isEmpty()) {
+      String defaultVrfName = _c.getVrfs().keySet().iterator().next();
+      snmpServer.setVrf(defaultVrfName);
+      _c.getVrfs().get(defaultVrfName).setSnmpServer(snmpServer);
     }
   }
 
@@ -3512,6 +3556,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.CUSTOM_URL_CATEGORY,
         ImmutableList.of(PaloAltoStructureType.CUSTOM_URL_CATEGORY),
         PaloAltoStructureUsage.SECURITY_RULE_CATEGORY);
+
+    // Convert SNMP settings
+    convertSnmpSettings();
 
     return _c;
   }
