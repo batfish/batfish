@@ -3196,7 +3196,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitSys_ntp(Sys_ntpContext ctx) {
-    todo(ctx);
+    // NTP servers are already extracted in exitNtp_servers
   }
 
   @Override
