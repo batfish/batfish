@@ -271,6 +271,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, SnmpCommunity> _snmpCommunities;
   private final @Nonnull Map<String, SnmpDiskMonitor> _snmpDiskMonitors;
   private final @Nonnull Map<String, SnmpProcessMonitor> _snmpProcessMonitors;
+  private final @Nonnull Map<String, FirewallRuleList> _firewallRuleLists;
 
   public F5BigipConfiguration() {
     _accessLists = new HashMap<>();
@@ -299,6 +300,7 @@ public class F5BigipConfiguration extends VendorConfiguration {
     _snmpCommunities = new HashMap<>();
     _snmpDiskMonitors = new HashMap<>();
     _snmpProcessMonitors = new HashMap<>();
+    _firewallRuleLists = new HashMap<>();
   }
 
   private void addActivePeer(
@@ -384,6 +386,51 @@ public class F5BigipConfiguration extends VendorConfiguration {
                 .collect(ImmutableList.toImmutableList()))
         .setName(acl.getName())
         .build();
+  }
+
+  private void addFirewallRuleList(FirewallRuleList ruleList) {
+    // Convert firewall rule-list to IpAccessList
+    List<AclLine> lines =
+        ruleList.getRules().stream()
+            .map(this::toIpAccessListLine)
+            .collect(ImmutableList.toImmutableList());
+
+    IpAccessList.builder().setOwner(_c).setLines(lines).setName(ruleList.getName()).build();
+  }
+
+  private ExprAclLine toIpAccessListLine(FirewallRule rule) {
+    ExprAclLine.Builder builder = ExprAclLine.builder();
+
+    // Set action based on rule action
+    if ("accept".equals(rule.getAction())) {
+      builder.setAction(LineAction.PERMIT);
+    } else if ("drop".equals(rule.getAction()) || "reject".equals(rule.getAction())) {
+      builder.setAction(LineAction.DENY);
+    } else {
+      // Default to deny if action is not specified or unrecognized
+      builder.setAction(LineAction.DENY);
+    }
+
+    // Build header space with IP protocol if specified
+    HeaderSpace.Builder headerSpace = HeaderSpace.builder();
+
+    if (rule.getIpProtocol() != null) {
+      try {
+        IpProtocol ipProtocol = IpProtocol.fromString(rule.getIpProtocol());
+        headerSpace.setIpProtocols(ImmutableSortedSet.of(ipProtocol));
+      } catch (IllegalArgumentException e) {
+        // If protocol is not recognized, log a warning and leave it empty
+        _w.redFlag(
+            String.format(
+                "Unrecognized IP protocol '%s' in firewall rule '%s'",
+                rule.getIpProtocol(), rule.getName()));
+      }
+    }
+
+    builder.setMatchCondition(new MatchHeaderSpace(headerSpace.build()));
+    builder.setName(rule.getName());
+
+    return builder.build();
   }
 
   private void addNatRules(org.batfish.datamodel.Interface vlanInterface) {
@@ -957,6 +1004,10 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, SnmpProcessMonitor> getSnmpProcessMonitors() {
     return _snmpProcessMonitors;
+  }
+
+  public @Nonnull Map<String, FirewallRuleList> getFirewallRuleLists() {
+    return _firewallRuleLists;
   }
 
   private void initInterfaceIncomingFilterLines() {
@@ -1825,6 +1876,9 @@ public class F5BigipConfiguration extends VendorConfiguration {
 
     // Add access-lists
     _accessLists.values().forEach(this::addIpAccessList);
+
+    // Add firewall rule-lists as access-lists
+    _firewallRuleLists.values().forEach(this::addFirewallRuleList);
 
     // Convert access-lists referenced by route-maps to RouteFilterLists
     _accessLists.forEach(

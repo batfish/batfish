@@ -519,6 +519,9 @@ import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Prefix_li
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_advertisement_modeContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Route_map_actionContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.S_securityContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sec_firewall_ruleContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sec_firewall_rule_itemContext;
+import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sec_firewall_rule_listContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sgs_hostnameContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Sh_active_bonusContext;
 import org.batfish.grammar.f5_bigip_structured.F5BigipStructuredParser.Shp_poolContext;
@@ -571,6 +574,8 @@ import org.batfish.representation.f5_bigip.F5BigipConfiguration;
 import org.batfish.representation.f5_bigip.F5BigipRoutingProtocol;
 import org.batfish.representation.f5_bigip.F5BigipStructureType;
 import org.batfish.representation.f5_bigip.F5BigipStructureUsage;
+import org.batfish.representation.f5_bigip.FirewallRule;
+import org.batfish.representation.f5_bigip.FirewallRuleList;
 import org.batfish.representation.f5_bigip.HaGroup;
 import org.batfish.representation.f5_bigip.HaGroupPool;
 import org.batfish.representation.f5_bigip.HaGroupTrunk;
@@ -763,6 +768,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   private @Nullable SnmpCommunity _currentSnmpCommunity;
   private @Nullable SnmpDiskMonitor _currentSnmpDiskMonitor;
   private @Nullable SnmpProcessMonitor _currentSnmpProcessMonitor;
+  private @Nullable FirewallRuleList _currentFirewallRuleList;
+  private @Nullable FirewallRule _currentFirewallRule;
   private @Nullable Integer _imishConfigurationLine;
   private @Nullable Integer _imishConfigurationOffset;
   private final @Nonnull F5BigipStructuredCombinedParser _parser;
@@ -3342,6 +3349,57 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
   @Override
   public void exitSnmp_process_name_null(Snmp_process_name_nullContext ctx) {
     // SNMP process name parsing completed
+  }
+
+  // Firewall rule-list parsing
+  @Override
+  public void enterSec_firewall_rule_list(Sec_firewall_rule_listContext ctx) {
+    String name = toName(ctx.name);
+    _currentFirewallRuleList = FirewallRuleList.builder().setName(name).build();
+  }
+
+  @Override
+  public void exitSec_firewall_rule_list(Sec_firewall_rule_listContext ctx) {
+    if (_currentFirewallRuleList != null) {
+      _c.getFirewallRuleLists().put(_currentFirewallRuleList.getName(), _currentFirewallRuleList);
+      _currentFirewallRuleList = null;
+    }
+  }
+
+  @Override
+  public void enterSec_firewall_rule(Sec_firewall_ruleContext ctx) {
+    String name = toName(ctx.name);
+    _currentFirewallRule = FirewallRule.builder().setName(name).build();
+  }
+
+  @Override
+  public void exitSec_firewall_rule(Sec_firewall_ruleContext ctx) {
+    if (_currentFirewallRule != null && _currentFirewallRuleList != null) {
+      // Add the rule to the current rule-list
+      FirewallRuleList.Builder builder = _currentFirewallRuleList.toBuilder();
+      builder.addRule(_currentFirewallRule);
+      _currentFirewallRuleList = builder.build();
+      _currentFirewallRule = null;
+    }
+  }
+
+  @Override
+  public void exitSec_firewall_rule_item(Sec_firewall_rule_itemContext ctx) {
+    if (_currentFirewallRule == null) {
+      return;
+    }
+
+    if (ctx.ACTION() != null && ctx.word_id() != null) {
+      String action = ctx.word_id().getText();
+      FirewallRule.Builder builder = _currentFirewallRule.toBuilder().setAction(action);
+      _currentFirewallRule = builder.build();
+    }
+
+    if (ctx.IP_PROTOCOL() != null && ctx.word_id() != null) {
+      String ipProtocol = ctx.word_id().getText();
+      FirewallRule.Builder builder = _currentFirewallRule.toBuilder().setIpProtocol(ipProtocol);
+      _currentFirewallRule = builder.build();
+    }
   }
 
   @Override
