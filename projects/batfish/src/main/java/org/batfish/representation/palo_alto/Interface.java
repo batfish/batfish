@@ -33,9 +33,12 @@ public final class Interface implements Serializable {
   private final @Nonnull Set<InterfaceAddress> _allAddresses;
   private @Nullable String _comment;
   private @Nullable Boolean _ha;
+  private @Nullable Boolean _lldpEnabled;
   private @Nullable Integer _mtu;
   private final @Nonnull String _name;
+  private @Nullable Boolean _ndpProxy;
   private @Nullable Interface _parent;
+  private @Nullable Boolean _routerAdvertisement;
   private @Nullable Integer _tag;
   private final @Nonnull Type _type;
   private final @Nonnull SortedMap<String, Interface> _units;
@@ -89,6 +92,14 @@ public final class Interface implements Serializable {
     _ha = ha;
   }
 
+  public @Nullable Boolean getLldpEnabled() {
+    return _lldpEnabled;
+  }
+
+  public void setLldpEnabled(@Nullable Boolean lldpEnabled) {
+    _lldpEnabled = lldpEnabled;
+  }
+
   public @Nullable Integer getMtu() {
     return _mtu;
   }
@@ -97,8 +108,24 @@ public final class Interface implements Serializable {
     return _name;
   }
 
+  public @Nullable Boolean getNdpProxy() {
+    return _ndpProxy;
+  }
+
+  public void setNdpProxy(@Nullable Boolean ndpProxy) {
+    _ndpProxy = ndpProxy;
+  }
+
   public @Nullable Interface getParent() {
     return _parent;
+  }
+
+  public @Nullable Boolean getRouterAdvertisement() {
+    return _routerAdvertisement;
+  }
+
+  public void setRouterAdvertisement(@Nullable Boolean routerAdvertisement) {
+    _routerAdvertisement = routerAdvertisement;
   }
 
   public @Nullable Integer getTag() {
