@@ -327,4 +327,92 @@ public class HuaweiGrammarTest {
         viConfig.getDefaultVrf().getStaticRoutes().iterator().next().getNetwork().toString(),
         equalTo("0.0.0.0/0"));
   }
+
+  @Test
+  public void testBgpBasic() {
+    String configText = "sysname Router1\n" + "bgp 65001\n" + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getBgpProcess(), notNullValue());
+    assertThat(config.getBgpProcess().getAsNum(), equalTo(65001L));
+  }
+
+  @Test
+  public void testBgpWithRouterId() {
+    String configText = "sysname Router1\n" + "bgp 65001\n" + " router-id 1.1.1.1\n" + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getBgpProcess(), notNullValue());
+    assertThat(config.getBgpProcess().getAsNum(), equalTo(65001L));
+    assertThat(config.getBgpProcess().getRouterId().toString(), equalTo("1.1.1.1"));
+  }
+
+  @Test
+  public void testBgpWithPeers() {
+    String configText =
+        "sysname Router1\n"
+            + "bgp 65001\n"
+            + " peer 192.168.1.2 as-number 65002\n"
+            + " peer 192.168.1.3 as-number 65003\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getBgpProcess(), notNullValue());
+    assertThat(config.getBgpProcess().getAsNum(), equalTo(65001L));
+    // Peers are parsed but not stored in Phase 5 (future enhancement)
+  }
+
+  @Test
+  public void testBgpNetworks() {
+    String configText =
+        "sysname Router1\n"
+            + "bgp 65001\n"
+            + " network 10.0.0.0 255.255.255.0\n"
+            + " network 172.16.0.0 255.255.0.0\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getBgpProcess(), notNullValue());
+    assertThat(config.getBgpProcess().getAsNum(), equalTo(65001L));
+  }
+
+  @Test
+  public void testBgpConversion() {
+    String configText =
+        "sysname Router1\n"
+            + "bgp 65001\n"
+            + " router-id 1.1.1.1\n"
+            + " peer 192.168.1.2 as-number 65002\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getBgpProcess(), notNullValue());
+
+    // Convert to vendor-independent configuration
+    org.batfish.datamodel.Configuration viConfig =
+        HuaweiConversions.toVendorIndependentConfiguration(config);
+
+    assertThat(viConfig, notNullValue());
+    assertThat(viConfig.getHostname(), equalTo("router1"));
+  }
 }

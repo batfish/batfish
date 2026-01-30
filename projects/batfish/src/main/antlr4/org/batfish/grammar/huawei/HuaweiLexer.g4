@@ -69,6 +69,8 @@ COMMUNITY: 'community';
 
 CONFIG: 'config';
 
+CONNECT_INTERFACE: 'connect-interface';
+
 CONTROL: 'control';
 
 COST: 'cost';
@@ -141,6 +143,8 @@ EVI: 'evi';
 
 EXPORT: 'export';
 
+EXTERNAL: 'external';
+
 EXTENDED: 'extended';
 
 FAILOVER: 'failover';
@@ -197,9 +201,13 @@ IGMP_SNOOPING: 'igmp-snooping';
 
 IMPORT: 'import';
 
+IMPORT_ROUTE: 'import-route';
+
 INBOUND: 'inbound';
 
 INFO_CENTER: 'info-center';
+
+INTERNAL: 'internal';
 
 INTERFACE: 'interface';
 
@@ -286,6 +294,8 @@ NEGOTIATION: 'negotiation';
 NEIGHBOR: 'neighbor';
 
 NET_STREAM: 'net-stream';
+
+NETWORK: 'network';
 
 NEXT_HOP: 'next-hop';
 
