@@ -116,8 +116,6 @@ public class FtdNetworkObject implements Serializable {
       case FQDN:
         // FQDN objects are not supported for IpSpace conversion
         return null;
-      default:
-        return null;
     }
   }
 
