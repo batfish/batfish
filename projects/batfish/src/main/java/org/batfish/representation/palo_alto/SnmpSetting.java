@@ -26,8 +26,7 @@ public final class SnmpSetting implements Serializable {
     return _accessSettings;
   }
 
-  @Nullable
-  public SnmpSystem getSnmpSystem() {
+  public @Nullable SnmpSystem getSnmpSystem() {
     return _snmpSystem;
   }
 

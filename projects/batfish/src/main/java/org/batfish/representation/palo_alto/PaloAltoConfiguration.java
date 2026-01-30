@@ -419,8 +419,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _ntpServerSecondary;
   }
 
-  @Nullable
-  public SnmpSetting getSnmpSetting() {
+  public @Nullable SnmpSetting getSnmpSetting() {
     return _snmpSetting;
   }
 
