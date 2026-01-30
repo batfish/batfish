@@ -115,6 +115,8 @@ import org.batfish.representation.fortios.AccessList;
 import org.batfish.representation.fortios.AccessListRule;
 import org.batfish.representation.fortios.Address;
 import org.batfish.representation.fortios.Addrgrp;
+import org.batfish.representation.fortios.BatfishUUID;
+import org.batfish.representation.fortios.BfdSettings;
 import org.batfish.representation.fortios.BgpNeighbor;
 import org.batfish.representation.fortios.BgpNetwork;
 import org.batfish.representation.fortios.BgpProcess;
@@ -126,6 +128,7 @@ import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Status;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InternetServiceName;
+import org.batfish.representation.fortios.Ippool;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.RouteMap;
@@ -1115,6 +1118,123 @@ public final class FortiosGrammarTest {
     assertThat(vc.getBfdSettings().getMinRx(), equalTo(5000));
     assertThat(vc.getBfdSettings().getMinTx(), equalTo(100));
     assertThat(vc.getBfdSettings().getMultiplier(), equalTo(50));
+  }
+
+  @Test
+  public void testBfdSettingsGettersWithNulls() {
+    // Test BfdSettings effective getters when all values are null (should use defaults)
+    BfdSettings bfdSettings = new BfdSettings();
+
+    // All getters should return defaults when values are null
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(50));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(50));
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(50));
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(3));
+
+    // Verify raw getters return null
+    assertThat(bfdSettings.getInterval(), nullValue());
+    assertThat(bfdSettings.getMinRx(), nullValue());
+    assertThat(bfdSettings.getMinTx(), nullValue());
+    assertThat(bfdSettings.getMultiplier(), nullValue());
+  }
+
+  @Test
+  public void testBfdSettingsEffectiveGetterCombinations() {
+    // Test various combinations of set and unset values
+    BfdSettings bfdSettings = new BfdSettings();
+
+    // Set only interval
+    bfdSettings.setInterval(100);
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(100));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(50)); // default
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(50)); // default
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(3)); // default
+
+    // Set all values
+    bfdSettings.setMinRx(200);
+    bfdSettings.setMinTx(300);
+    bfdSettings.setMultiplier(10);
+    assertThat(bfdSettings.getIntervalEffective(), equalTo(100));
+    assertThat(bfdSettings.getMinRxEffective(), equalTo(200));
+    assertThat(bfdSettings.getMinTxEffective(), equalTo(300));
+    assertThat(bfdSettings.getMultiplierEffective(), equalTo(10));
+  }
+
+  @Test
+  public void testBgpNeighborBfdEffectiveWithNull() {
+    // Test BgpNeighbor.getBfdEffective() with null value
+    BgpNeighbor neighbor = new BgpNeighbor(Ip.parse("10.0.0.1"));
+
+    // Initially null, should return false
+    assertThat(neighbor.getBfd(), nullValue());
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Set to false
+    neighbor.setBfd(false);
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Set to true
+    neighbor.setBfd(true);
+    assertThat(neighbor.getBfdEffective(), equalTo(true));
+
+    // Set back to null
+    neighbor.setBfd(null);
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testStaticRouteBfdEffectiveWithNull() {
+    // Test StaticRoute.getBfdEffective() with null value
+    StaticRoute route = new StaticRoute("1");
+
+    // Initially null, should return DEFAULT_BFD (false)
+    assertThat(route.getBfd(), nullValue());
+    assertThat(route.getBfdEffective(), equalTo(false));
+
+    // Set to false explicitly
+    route.setBfd(false);
+    assertThat(route.getBfdEffective(), equalTo(false));
+
+    // Set to true
+    route.setBfd(true);
+    assertThat(route.getBfdEffective(), equalTo(true));
+
+    // Set back to null
+    route.setBfd(null);
+    assertThat(route.getBfdEffective(), equalTo(false)); // uses DEFAULT_BFD
+  }
+
+  @Test
+  public void testIppoolGettersAndSetters() {
+    // Test Ippool getters and setters to increase coverage
+    BatfishUUID uuid = new BatfishUUID(1);
+    Ippool pool = new Ippool("test-pool", uuid);
+
+    // Test getName
+    assertThat(pool.getName(), equalTo("test-pool"));
+
+    // Test setName
+    pool.setName("new-pool");
+    assertThat(pool.getName(), equalTo("new-pool"));
+
+    // Test getBatfishUUID
+    assertThat(pool.getBatfishUUID(), equalTo(uuid));
+
+    // Test other setters/getters
+    pool.setStartip(Ip.parse("10.0.0.1"));
+    assertThat(pool.getStartip(), equalTo(Ip.parse("10.0.0.1")));
+
+    pool.setEndip(Ip.parse("10.0.0.100"));
+    assertThat(pool.getEndip(), equalTo(Ip.parse("10.0.0.100")));
+
+    pool.setAssociatedInterface("port1");
+    assertThat(pool.getAssociatedInterface(), equalTo("port1"));
+
+    pool.setType(Ippool.Type.OVERLOAD);
+    assertThat(pool.getType(), equalTo(Ippool.Type.OVERLOAD));
+
+    pool.setComments("test comments");
+    assertThat(pool.getComments(), equalTo("test comments"));
   }
 
   @Test
