@@ -1,0 +1,19 @@
+set deviceconfig system hostname address-object-comprehensive
+
+# FQDN address objects
+set address web-server fqdn web.example.com
+set address web-server description "Web server FQDN"
+set address web-server tag web
+
+set address api-server fqdn api.example.com
+
+# IPv6 address (single)
+set address ipv6-single ip-netmask 2001:db8::1
+set address ipv6-single tag ipv6
+
+# IPv6 prefix
+set address ipv6-prefix ip-netmask 2001:db8:85a3::/64
+set address ipv6-prefix description "IPv6 subnet"
+
+# IPv6 range
+set address ipv6-range ip-range 2001:db8::100-2001:db8::200
