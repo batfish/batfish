@@ -2461,6 +2461,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSpc_definition(PaloAltoParser.Spc_definitionContext ctx) {
+    // Individual handlers (exitSpc_description, exitSpc_list, exitSpc_type) process the content
+  }
+
+  @Override
   public void exitSpc_description(PaloAltoParser.Spc_descriptionContext ctx) {
     _currentCustomUrlCategory.setDescription(getText(ctx.description));
   }
