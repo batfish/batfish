@@ -366,6 +366,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.St_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_templatesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sv_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -3545,6 +3546,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitS_vsys_definition(S_vsys_definitionContext ctx) {
     _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitSv_display_name(Sv_display_nameContext ctx) {
+    String displayName = getText(ctx.variable());
+    _currentVsys.setDisplayName(displayName);
   }
 
   @Override
