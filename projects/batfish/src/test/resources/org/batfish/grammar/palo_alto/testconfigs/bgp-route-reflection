@@ -1,0 +1,48 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test BGP route reflection with multiple clients and cluster configuration
+set deviceconfig system hostname bgp-route-reflection
+
+# Interfaces
+set network interface ethernet ethernet1/1 layer3 ip 192.168.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 192.168.2.1/24
+set network interface ethernet ethernet1/3 layer3 ip 192.168.3.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+
+# Route reflector server
+set network virtual-router default protocol bgp routing-options reflector-cluster-id 1.2.3.100
+set network virtual-router default protocol bgp peer-group RR_CLIENTS type ibgp
+set network virtual-router default protocol bgp peer-group RR_CLIENTS enable yes
+
+# Route reflector clients
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT1 local-address ip 192.168.1.1
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT1 peer-address ip 192.168.1.2
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT1 peer-as 65001
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT1 reflector-client client
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT1 enable yes
+
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT2 local-address ip 192.168.2.1
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT2 peer-address ip 192.168.2.2
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT2 peer-as 65001
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT2 reflector-client client
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT2 enable yes
+
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT3 local-address ip 192.168.3.1
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT3 peer-address ip 192.168.3.2
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT3 peer-as 65001
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT3 reflector-client client
+set network virtual-router default protocol bgp peer-group RR_CLIENTS peer CLIENT3 enable yes
+
+# Non-client peer
+set network virtual-router default protocol bgp peer-group NON_CLIENT type ibgp
+set network virtual-router default protocol bgp peer-group NON_CLIENT enable yes
+set network virtual-router default protocol bgp peer-group NON_CLIENT peer PEER1 local-address ip 10.0.0.1
+set network virtual-router default protocol bgp peer-group NON_CLIENT peer PEER1 peer-address ip 10.0.0.2
+set network virtual-router default protocol bgp peer-group NON_CLIENT peer PEER1 peer-as 65001
+set network virtual-router default protocol bgp peer-group NON_CLIENT peer PEER1 reflector-client non-client
+set network virtual-router default protocol bgp peer-group NON_CLIENT peer PEER1 enable yes
+
+# BGP general settings
+set network virtual-router default protocol bgp enable yes
+set network virtual-router default protocol bgp router-id 1.2.3.4/32
+set network virtual-router default protocol bgp local-as 65001
+set network virtual-router default protocol bgp install-route yes

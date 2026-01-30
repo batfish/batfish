@@ -4785,4 +4785,219 @@ public final class PaloAltoGrammarTest {
     assertThat(ccae, hasNumReferrers(filename, SERVICE, serviceName, 1));
     assertThat(ccae, hasNumReferrers(filename, APPLICATION_GROUP, appGroupName, 1));
   }
+
+  @Test
+  public void testBgpRouteReflectionExtraction() {
+    String hostname = "bgp-route-reflection";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify BGP configuration is extracted
+    assertThat(c.getVirtualRouters(), hasKey("default"));
+    VirtualRouter vr = c.getVirtualRouters().get("default");
+    assertThat(vr.getBgp(), notNullValue());
+
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
+
+    // Verify routing options
+    assertThat(bgp.getRoutingOptions(), notNullValue());
+    assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.100")));
+
+    // Verify RR_CLIENTS peer group with route reflector clients
+    assertThat(bgp.getPeerGroups(), hasKey("RR_CLIENTS"));
+    BgpPeerGroup rrClientsGroup = bgp.getPeerGroups().get("RR_CLIENTS");
+
+    // Verify all three clients are configured as route reflector clients
+    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT1"));
+    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT2"));
+    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT3"));
+
+    for (String clientName : ImmutableList.of("CLIENT1", "CLIENT2", "CLIENT3")) {
+      BgpPeer client = rrClientsGroup.getPeers().get(clientName);
+      assertThat(client.getReflectorClient(), equalTo(ReflectorClient.CLIENT));
+    }
+
+    // Verify NON_CLIENT peer group with non-client peer
+    assertThat(bgp.getPeerGroups(), hasKey("NON_CLIENT"));
+    BgpPeerGroup nonClientGroup = bgp.getPeerGroups().get("NON_CLIENT");
+    assertThat(nonClientGroup.getPeers(), hasKey("PEER1"));
+
+    BgpPeer peer1 = nonClientGroup.getPeers().get("PEER1");
+    assertThat(peer1.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
+  }
+
+  @Test
+  public void testBgpRouteReflectionConversion() {
+    String hostname = "bgp-route-reflection";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasVrf("default", hasBgpProcess(any(BgpProcess.class))));
+    BgpProcess proc = c.getVrfs().get("default").getBgpProcess();
+
+    // Verify all four peers are configured (3 clients + 1 non-client)
+    assertThat(
+        proc.getActiveNeighbors().keySet(),
+        hasItems(
+            Ip.parse("192.168.1.2"),
+            Ip.parse("192.168.2.2"),
+            Ip.parse("192.168.3.2"),
+            Ip.parse("10.0.0.2")));
+
+    // Verify clients have correct AS
+    BgpActivePeerConfig client1 = proc.getActiveNeighbors().get(Ip.parse("192.168.1.2"));
+    assertThat(client1.getRemoteAsns(), equalTo(LongSpace.of(65001)));
+    assertThat(client1.getLocalIp(), equalTo(Ip.parse("192.168.1.1")));
+  }
+
+  @Test
+  public void testQosProfilesExtraction() {
+    String hostname = "qos-profiles";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify configuration parses successfully
+    assertThat(c.getVirtualRouters(), hasKey("default"));
+    VirtualRouter vr = c.getVirtualRouters().get("default");
+    assertNotNull(vr);
+  }
+
+  @Test
+  public void testQosProfilesConversion() {
+    String hostname = "qos-profiles";
+    Configuration c = parseConfig(hostname);
+
+    // Verify configuration converts successfully
+    assertThat(c, hasVrf("default", hasName(equalTo("default"))));
+
+    // Verify interfaces are converted with correct addresses
+    assertThat(c, hasInterface("ethernet1/1"));
+    assertThat(c, hasInterface("ethernet1/2"));
+  }
+
+  @Test
+  public void testNatRoutingIntegrationExtraction() {
+    String hostname = "nat-routing-integration";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    assertThat(c.getVirtualRouters(), hasKey("default"));
+    VirtualRouter vr = c.getVirtualRouters().get("default");
+
+    // Verify BGP configuration
+    assertThat(vr.getBgp(), notNullValue());
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp.getLocalAs(), equalTo(65001L));
+
+    // Verify NAT rules exist
+    Vsys vs = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    assertThat(vs.getRulebase().getNatRules(), hasKey("SNAT_OUTBOUND"));
+    assertThat(vs.getRulebase().getNatRules(), hasKey("DNAT_DMZ"));
+    assertThat(vs.getRulebase().getNatRules(), hasKey("STATIC_NAT"));
+  }
+
+  @Test
+  public void testNatRoutingIntegrationConversion() {
+    String hostname = "nat-routing-integration";
+    Configuration c = parseConfig(hostname);
+
+    assertThat(c, hasVrf("default", hasBgpProcess(any(BgpProcess.class))));
+    Vrf vrf = c.getVrfs().get("default");
+
+    // Verify BGP peer is configured
+    BgpProcess bgpProc = vrf.getBgpProcess();
+    assertThat(bgpProc.getActiveNeighbors(), hasKey(Ip.parse("203.0.113.2")));
+    assertThat(
+        bgpProc.getActiveNeighbors().get(Ip.parse("203.0.113.2")).getRemoteAsns(),
+        equalTo(LongSpace.of(65002)));
+
+    // Verify interfaces exist
+    assertThat(c, hasInterface("ethernet1/1"));
+    assertThat(c, hasInterface("ethernet1/2"));
+    assertThat(c, hasInterface("ethernet1/3"));
+  }
+
+  @Test
+  public void testOspfMultiAreaExtraction() {
+    String hostname = "ospf-multi-area";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    assertThat(c.getVirtualRouters(), hasKey("default"));
+    VirtualRouter vr = c.getVirtualRouters().get("default");
+
+    assertThat(vr.getOspf(), notNullValue());
+    OspfVr ospf = vr.getOspf();
+    assertThat(ospf.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+
+    // Verify 4 areas are configured
+    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.0")));
+    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.1")));
+    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.2")));
+    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.3")));
+
+    // Verify area 1 is stub with default route
+    OspfArea area1 = ospf.getAreas().get(Ip.parse("0.0.0.1"));
+    assertThat(area1.getTypeSettings(), instanceOf(OspfAreaStub.class));
+    OspfAreaStub stubArea1 = (OspfAreaStub) area1.getTypeSettings();
+    assertThat(stubArea1.getDefaultRouteMetric(), equalTo(100));
+    assertTrue(stubArea1.getAcceptSummary());
+
+    // Verify area 2 is totally stubby (no summaries)
+    OspfArea area2 = ospf.getAreas().get(Ip.parse("0.0.0.2"));
+    assertThat(area2.getTypeSettings(), instanceOf(OspfAreaStub.class));
+    OspfAreaStub stubArea2 = (OspfAreaStub) area2.getTypeSettings();
+    assertFalse(stubArea2.getAcceptSummary());
+
+    // Verify area 3 is NSSA without summaries
+    OspfArea area3 = ospf.getAreas().get(Ip.parse("0.0.0.3"));
+    assertThat(area3.getTypeSettings(), instanceOf(OspfAreaNssa.class));
+    OspfAreaNssa nssaArea3 = (OspfAreaNssa) area3.getTypeSettings();
+    assertThat(nssaArea3.getDefaultRouteMetric(), equalTo(200));
+    assertThat(nssaArea3.getDefaultRouteType(), equalTo(DefaultRouteType.EXT_2));
+    assertFalse(nssaArea3.getAcceptSummary());
+
+    // Verify interface in area 2 is passive
+    OspfInterface area2Iface = area2.getInterfaces().get("ethernet1/3.30");
+    assertTrue(area2Iface.getPassive());
+    assertThat(area2Iface.getMetric(), equalTo(100));
+  }
+
+  @Test
+  public void testOspfMultiAreaConversion() {
+    String hostname = "ospf-multi-area";
+    Configuration c = parseConfig(hostname);
+
+    String processId = "~OSPF_PROCESS_1.1.1.1";
+    assertThat(c, hasVrf("default", hasName(equalTo("default"))));
+    Vrf vrf = c.getVrfs().get("default");
+    assertThat(vrf.getOspfProcesses(), hasKey(processId));
+
+    OspfProcess ospfProcess = vrf.getOspfProcesses().get(processId);
+    assertThat(ospfProcess, OspfProcessMatchers.hasRouterId(equalTo(Ip.parse("1.1.1.1"))));
+
+    // Verify all 4 areas are converted
+    assertThat(ospfProcess, hasArea(0L, allOf(hasStubType(equalTo(StubType.NONE)))));
+    assertThat(ospfProcess, hasArea(1L, hasStub(hasSuppressType3(false))));
+    assertThat(ospfProcess, hasArea(2L, hasStub(hasSuppressType3(true))));
+    assertThat(
+        ospfProcess,
+        hasArea(
+            3L,
+            hasNssa(
+                allOf(
+                    hasDefaultOriginateType(OspfDefaultOriginateType.EXTERNAL_TYPE2),
+                    NssaSettingsMatchers.hasSuppressType3(true)))));
+
+    // Verify interfaces have correct OSPF settings
+    assertThat(c, hasInterface("ethernet1/1.10"));
+    OspfInterfaceSettings iface1Settings =
+        c.getAllInterfaces().get("ethernet1/1.10").getOspfSettings();
+    assertThat(iface1Settings.getAreaName(), equalTo(0L));
+    assertFalse(iface1Settings.getPassive());
+
+    // Verify passive interface in area 2
+    assertThat(c, hasInterface("ethernet1/3.30"));
+    OspfInterfaceSettings iface3Settings =
+        c.getAllInterfaces().get("ethernet1/3.30").getOspfSettings();
+    assertThat(iface3Settings.getAreaName(), equalTo(2L));
+    assertTrue(iface3Settings.getPassive());
+    assertThat(iface3Settings.getCost(), equalTo(100));
+  }
 }

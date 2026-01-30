@@ -1,0 +1,59 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test NAT integration with BGP routing
+set deviceconfig system hostname nat-routing-integration
+
+# Interfaces
+set network interface ethernet ethernet1/1 layer3 ip 10.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.2.1.1/24
+set network interface ethernet ethernet1/3 layer3 ip 203.0.113.1/24
+
+# Virtual router with routing
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ethernet1/3 ]
+
+# BGP configuration for external routing
+set network virtual-router default protocol bgp enable yes
+set network virtual-router default protocol bgp router-id 1.2.3.4/32
+set network virtual-router default protocol bgp local-as 65001
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER type ebgp
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER enable yes
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER peer PEER1 peer-address ip 203.0.113.2
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER peer PEER1 local-address ip 203.0.113.1
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER peer PEER1 peer-as 65002
+set network virtual-router default protocol bgp peer-group EXTERNAL_PEER peer PEER1 enable yes
+
+# Zones
+set zone internal network layer3 ethernet1/1
+set zone dmz network layer3 ethernet1/2
+set zone external network layer3 ethernet1/3
+
+# NAT rules that interact with routing
+# Source NAT for internal traffic going to external
+set rulebase nat rules SNAT_OUTBOUND source-translation dynamic-ip-and-port translated-address 203.0.113.10
+set rulebase nat rules SNAT_OUTBOUND from internal
+set rulebase nat rules SNAT_OUTBOUND to external
+set rulebase nat rules SNAT_OUTBOUND source 10.1.1.0/24
+set rulebase nat rules SNAT_OUTBOUND destination any
+
+# Destination NAT for DMZ server
+set rulebase nat rules DNAT_DMZ destination-translation translated-address 10.2.1.10
+set rulebase nat rules DNAT_DMZ from external
+set rulebase nat rules DNAT_DMZ to external
+set rulebase nat rules DNAT_DMZ source any
+set rulebase nat rules DNAT_DMZ destination 203.0.113.20
+
+# Static NAT for server with bidirectional NAT
+set rulebase nat rules STATIC_NAT source-translation static-ip translated-address 203.0.113.30
+set rulebase nat rules STATIC_NAT source-translation static-ip bi-directional yes
+set rulebase nat rules STATIC_NAT from external
+set rulebase nat rules STATIC_NAT to external
+set rulebase nat rules STATIC_NAT source any
+set rulebase nat rules STATIC_NAT destination 203.0.113.30
+
+# Security rule to allow traffic
+set rulebase security rules ALLOW_ALL action allow
+set rulebase security rules ALLOW_ALL from any
+set rulebase security rules ALLOW_ALL to any
+set rulebase security rules ALLOW_ALL source any
+set rulebase security rules ALLOW_ALL destination any
+set rulebase security rules ALLOW_ALL application any
+set rulebase security rules ALLOW_ALL service any
