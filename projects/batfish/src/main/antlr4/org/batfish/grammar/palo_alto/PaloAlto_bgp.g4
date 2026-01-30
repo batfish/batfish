@@ -164,7 +164,7 @@ bgppgp_address_family_identifier
 
 bgppgp_bfd
 :
-    BFD null_rest_of_line
+    BFD PROFILE profile = variable
 ;
 
 bgppgp_connection_options
