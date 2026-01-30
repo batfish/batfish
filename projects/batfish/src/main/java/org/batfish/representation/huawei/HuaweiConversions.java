@@ -10,6 +10,7 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 
 /**
@@ -45,7 +46,10 @@ public class HuaweiConversions {
             DEFAULT_VRF_NAME,
             vrfName -> org.batfish.datamodel.Vrf.builder().setName(DEFAULT_VRF_NAME).build());
 
-    // TODO: Convert other features (BGP, OSPF, static routes, ACLs, NAT, etc.)
+    // Convert static routes
+    toConfigurationStaticRoutes(c, huaweiConfig);
+
+    // TODO: Convert other features (BGP, OSPF, ACLs, NAT, etc.)
 
     return c;
   }
@@ -230,14 +234,45 @@ public class HuaweiConversions {
   /**
    * Converts Huawei static routes to Batfish vendor-independent format.
    *
-   * <p>This method is a stub for future implementation.
-   *
    * @param c The Batfish Configuration object to populate
    * @param huaweiCfg The Huawei configuration to convert from
    */
   public static void toConfigurationStaticRoutes(
       @Nonnull Configuration c, @Nonnull HuaweiConfiguration huaweiCfg) {
-    // TODO: Implement static route conversion
+    for (HuaweiStaticRoute huaweiRoute : huaweiCfg.getStaticRoutes()) {
+      // Build the static route
+      StaticRoute.Builder builder =
+          StaticRoute.builder()
+              .setNetwork(huaweiRoute.getDestination())
+              .setNextHopIp(huaweiRoute.getNextHopIp());
+
+      // Set next-hop interface if present
+      if (huaweiRoute.getNextHopInterface() != null) {
+        builder.setNextHopInterface(huaweiRoute.getNextHopInterface());
+      }
+
+      // Set administrative distance (preference)
+      builder.setAdministrativeCost(huaweiRoute.getPreference());
+
+      // Build the route
+      StaticRoute route = builder.build();
+
+      // Add to appropriate VRF
+      String vrfName = huaweiRoute.getVrfName();
+      if (vrfName == null) {
+        vrfName = DEFAULT_VRF_NAME;
+      }
+
+      // Get or create VRF
+      Vrf vrf = c.getVrfs().get(vrfName);
+      if (vrf == null) {
+        vrf = Vrf.builder().setName(vrfName).build();
+        c.getVrfs().put(vrfName, vrf);
+      }
+
+      // Add static route to VRF
+      vrf.getStaticRoutes().add(route);
+    }
   }
 
   /**

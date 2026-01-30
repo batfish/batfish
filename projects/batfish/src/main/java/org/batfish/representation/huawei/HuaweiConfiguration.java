@@ -3,6 +3,7 @@ package org.batfish.representation.huawei;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSortedMap;
 import java.io.Serializable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.SortedMap;
 import javax.annotation.Nonnull;
@@ -32,6 +33,9 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   /** Map of VLAN IDs to VLAN configurations */
   private SortedMap<Integer, HuaweiVlan> _vlans;
 
+  /** List of static routes */
+  @Nonnull private List<HuaweiStaticRoute> _staticRoutes;
+
   /** BGP process configuration (stub for future implementation) */
   @Nullable private HuaweiBgpProcess _bgpProcess;
 
@@ -44,6 +48,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   public HuaweiConfiguration() {
     _interfaces = ImmutableSortedMap.of();
     _vlans = ImmutableSortedMap.of();
+    _staticRoutes = new ArrayList<>();
     _vrfs = ImmutableSortedMap.of();
   }
 
@@ -171,6 +176,34 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
         ImmutableSortedMap.<Integer, HuaweiVlan>naturalOrder().putAll(_vlans);
     builder.put(vlanId, vlan);
     _vlans = builder.build();
+  }
+
+  /**
+   * Gets the list of static routes.
+   *
+   * @return A list of static routes
+   */
+  @Nonnull
+  public List<HuaweiStaticRoute> getStaticRoutes() {
+    return _staticRoutes;
+  }
+
+  /**
+   * Sets the list of static routes.
+   *
+   * @param staticRoutes The list of static routes to set
+   */
+  public void setStaticRoutes(@Nonnull List<HuaweiStaticRoute> staticRoutes) {
+    _staticRoutes = staticRoutes;
+  }
+
+  /**
+   * Adds a static route to the configuration.
+   *
+   * @param route The static route to add
+   */
+  public void addStaticRoute(HuaweiStaticRoute route) {
+    _staticRoutes.add(route);
   }
 
   /**

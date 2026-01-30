@@ -339,6 +339,8 @@ PRECEDENCE: 'precedence';
 
 PREFER: 'prefer';
 
+PREFERENCE: 'preference';
+
 PREFIX: 'prefix';
 
 PREFIX_PRIORITY: 'prefix-priority';

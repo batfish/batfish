@@ -8,6 +8,7 @@ import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.representation.huawei.HuaweiConfiguration;
 import org.batfish.representation.huawei.HuaweiConversions;
+import org.batfish.representation.huawei.HuaweiStaticRoute;
 import org.batfish.representation.huawei.HuaweiVlan;
 import org.junit.Test;
 
@@ -217,5 +218,113 @@ public class HuaweiGrammarTest {
     assertThat(viConfig.getHostname(), equalTo("router1")); // Hostnames are lowercased
     assertThat(viConfig.getAllInterfaces().size(), equalTo(1));
     assertThat(viConfig.getAllInterfaces().containsKey("Vlanif100"), equalTo(true));
+  }
+
+  @Test
+  public void testStaticRouteBasic() {
+    String configText =
+        "sysname Router1\n" + "ip route-static 0.0.0.0 0.0.0.0 192.168.1.1\n" + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getStaticRoutes().size(), equalTo(1));
+
+    HuaweiStaticRoute route = config.getStaticRoutes().get(0);
+    assertThat(route, notNullValue());
+    assertThat(route.getDestination().toString(), equalTo("0.0.0.0/0"));
+    assertThat(route.getNextHopIp().toString(), equalTo("192.168.1.1"));
+  }
+
+  @Test
+  public void testStaticRouteWithInterface() {
+    String configText =
+        "sysname Router1\n"
+            + "ip route-static 10.0.0.0 255.255.255.0 GigabitEthernet0/0/0 192.168.1.1\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getStaticRoutes().size(), equalTo(1));
+
+    HuaweiStaticRoute route = config.getStaticRoutes().get(0);
+    assertThat(route, notNullValue());
+    assertThat(route.getDestination().toString(), equalTo("10.0.0.0/24"));
+    assertThat(route.getNextHopInterface(), equalTo("GigabitEthernet0/0/0"));
+    assertThat(route.getNextHopIp().toString(), equalTo("192.168.1.1"));
+  }
+
+  @Test
+  public void testStaticRouteWithPreference() {
+    String configText =
+        "sysname Router1\n"
+            + "ip route-static 10.0.0.0 255.255.255.0 192.168.1.1 preference 100\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getStaticRoutes().size(), equalTo(1));
+
+    HuaweiStaticRoute route = config.getStaticRoutes().get(0);
+    assertThat(route, notNullValue());
+    assertThat(route.getDestination().toString(), equalTo("10.0.0.0/24"));
+    assertThat(route.getNextHopIp().toString(), equalTo("192.168.1.1"));
+    assertThat(route.getPreference(), equalTo(100));
+  }
+
+  @Test
+  public void testStaticRouteMultiple() {
+    String configText =
+        "sysname Router1\n"
+            + "ip route-static 0.0.0.0 0.0.0.0 192.168.1.1\n"
+            + "ip route-static 10.0.0.0 255.255.255.0 192.168.1.2\n"
+            + "ip route-static 172.16.0.0 255.255.0.0 192.168.1.3 preference 50\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getStaticRoutes().size(), equalTo(3));
+  }
+
+  @Test
+  public void testStaticRouteConversion() {
+    String configText =
+        "sysname Router1\n"
+            + "ip route-static 0.0.0.0 0.0.0.0 192.168.1.1\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " ip address 192.168.1.2 255.255.255.0\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getStaticRoutes().size(), equalTo(1));
+
+    // Convert to vendor-independent configuration
+    org.batfish.datamodel.Configuration viConfig =
+        HuaweiConversions.toVendorIndependentConfiguration(config);
+
+    assertThat(viConfig, notNullValue());
+    assertThat(viConfig.getHostname(), equalTo("router1"));
+    assertThat(viConfig.getAllInterfaces().size(), equalTo(1));
+
+    // Check static routes were added to default VRF
+    assertThat(viConfig.getDefaultVrf().getStaticRoutes().size(), equalTo(1));
+    assertThat(
+        viConfig.getDefaultVrf().getStaticRoutes().iterator().next().getNetwork().toString(),
+        equalTo("0.0.0.0/0"));
   }
 }

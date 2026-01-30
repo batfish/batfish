@@ -4,6 +4,8 @@ import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.huawei.HuaweiParser.Description_lineContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_dot1q_terminationContext;
@@ -11,6 +13,7 @@ import org.batfish.grammar.huawei.HuaweiParser.If_ip_addressContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_shutdownContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_interfaceContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_returnContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_static_routeContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_sysnameContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_vlanContext;
 import org.batfish.grammar.huawei.HuaweiParser.V_descriptionContext;
@@ -18,6 +21,7 @@ import org.batfish.grammar.huawei.HuaweiParser.V_nameContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.huawei.HuaweiConfiguration;
 import org.batfish.representation.huawei.HuaweiInterface;
+import org.batfish.representation.huawei.HuaweiStaticRoute;
 import org.batfish.representation.huawei.HuaweiVlan;
 import org.batfish.vendor.VendorConfiguration;
 
@@ -337,6 +341,117 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
           String.format(
               "Invalid VLAN ID in dot1q termination on interface %s at line %d: %s",
               _currentInterfaceName, ctx.getStart().getLine(), ctx.vid.getText());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process exit from s_static_route rule - extract static route configuration.
+   *
+   * <p>Extracts static route information including destination, next-hop, preference, etc.
+   */
+  @Override
+  public void exitS_static_route(S_static_routeContext ctx) {
+    if (ctx.static_route_body() == null) {
+      return;
+    }
+
+    HuaweiParser.Static_route_bodyContext body = ctx.static_route_body();
+
+    try {
+      HuaweiStaticRoute route = null;
+
+      // Extract destination and next-hop based on format
+      if (body.dest_prefix != null) {
+        // CIDR notation: ip route-static 10.0.0.0/24 192.168.1.1
+        Prefix destPrefix = Prefix.parse(body.dest_prefix.getText());
+        route = new HuaweiStaticRoute(destPrefix);
+
+        if (body.next_hop != null) {
+          Ip nextHop = Ip.parse(body.next_hop.getText());
+          route.setNextHopIp(nextHop);
+        }
+      } else if (body.dest_addr != null) {
+        // Traditional notation with mask
+        Ip destIp = Ip.parse(body.dest_addr.getText());
+
+        if (body.dest_mask != null) {
+          Ip mask = Ip.parse(body.dest_mask.getText());
+          Prefix destPrefix = Prefix.create(destIp, mask);
+          route = new HuaweiStaticRoute(destPrefix);
+        } else {
+          // No mask - treat as /32
+          Prefix destPrefix = Prefix.create(destIp, 32);
+          route = new HuaweiStaticRoute(destPrefix);
+        }
+
+        // Set next-hop
+        if (body.next_hop != null) {
+          Ip nextHop = Ip.parse(body.next_hop.getText());
+          route.setNextHopIp(nextHop);
+        } else if (body.next_hop2 != null) {
+          Ip nextHop = Ip.parse(body.next_hop2.getText());
+          route.setNextHopIp(nextHop);
+        }
+
+        // Set outgoing interface if present
+        if (body.out_if != null) {
+          route.setNextHopInterface(body.out_if.getText());
+        }
+      } else if (body.dest_addr2 != null) {
+        // Alternative format with interface
+        Ip destIp = Ip.parse(body.dest_addr2.getText());
+
+        if (body.dest_mask2 != null) {
+          Ip mask = Ip.parse(body.dest_mask2.getText());
+          Prefix destPrefix = Prefix.create(destIp, mask);
+          route = new HuaweiStaticRoute(destPrefix);
+        } else {
+          Prefix destPrefix = Prefix.create(destIp, 32);
+          route = new HuaweiStaticRoute(destPrefix);
+        }
+
+        // Set outgoing interface
+        if (body.out_if != null) {
+          route.setNextHopInterface(body.out_if.getText());
+        }
+
+        // Set next-hop
+        if (body.next_hop2 != null) {
+          org.batfish.datamodel.Ip nextHop =
+              org.batfish.datamodel.Ip.parse(body.next_hop2.getText());
+          route.setNextHopIp(nextHop);
+        }
+      }
+
+      // Set preference if present
+      if (route != null && body.pref != null) {
+        try {
+          int preference = Integer.parseInt(body.pref.getText());
+          route.setPreference(preference);
+        } catch (NumberFormatException e) {
+          String warning =
+              String.format(
+                  "Invalid preference value at line %d: %s",
+                  body.pref.getStart().getLine(), body.pref.getText());
+          _w.redFlag(warning);
+        }
+      }
+
+      // Set VRF if present
+      if (route != null && body.vrf != null) {
+        route.setVrfName(body.vrf.getText());
+      }
+
+      // Add route to configuration
+      if (route != null) {
+        _configuration.addStaticRoute(route);
+      }
+    } catch (Exception e) {
+      String warning =
+          String.format(
+              "Error parsing static route at line %d: %s",
+              ctx.getStart().getLine(), e.getMessage());
       _w.redFlag(warning);
     }
   }
