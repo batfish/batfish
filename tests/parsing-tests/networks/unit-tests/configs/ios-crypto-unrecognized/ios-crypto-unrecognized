@@ -1,0 +1,23 @@
+!
+hostname ios-crypto-unrecognized
+!
+! Test null_rest_of_line fallback for unrecognized crypto subcommands
+! These commands are not explicitly supported but should parse without errors
+!
+crypto ssl diagnostic sslvm
+crypto ssl policy
+crypto ssh publickey
+crypto key import rsa general-keys
+crypto key export rsa general-keys
+!
+! Known commands should still parse correctly
+crypto pki trustpoint TEST-TP
+ enrollment selfsigned
+ revocation-check none
+!
+crypto ca trustpool policy
+!
+interface GigabitEthernet0/0
+ ip address 10.0.0.1 255.255.255.0
+!
+end
