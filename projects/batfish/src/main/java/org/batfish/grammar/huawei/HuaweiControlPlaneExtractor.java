@@ -6,14 +6,19 @@ import org.batfish.common.NetworkSnapshot;
 import org.batfish.common.Warnings;
 import org.batfish.grammar.ControlPlaneExtractor;
 import org.batfish.grammar.huawei.HuaweiParser.Description_lineContext;
+import org.batfish.grammar.huawei.HuaweiParser.If_dot1q_terminationContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_ip_addressContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_shutdownContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_interfaceContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_returnContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_sysnameContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_vlanContext;
+import org.batfish.grammar.huawei.HuaweiParser.V_descriptionContext;
+import org.batfish.grammar.huawei.HuaweiParser.V_nameContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.representation.huawei.HuaweiConfiguration;
 import org.batfish.representation.huawei.HuaweiInterface;
+import org.batfish.representation.huawei.HuaweiVlan;
 import org.batfish.vendor.VendorConfiguration;
 
 /**
@@ -232,5 +237,107 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   public void exitS_return(S_returnContext ctx) {
     // Clear the current interface context when we exit the interface block
     _currentInterfaceName = null;
+  }
+
+  /**
+   * Process exit from s_vlan rule - extract VLAN configuration.
+   *
+   * <p>Extracts VLAN ID from "vlan <id>" command and creates HuaweiVlan object. For "vlan batch"
+   * commands, creates multiple VLANs.
+   */
+  @Override
+  public void exitS_vlan(S_vlanContext ctx) {
+    // Handle "vlan batch" command (create multiple VLANs)
+    if (ctx.vlan_batch_range() != null) {
+      // Iterate through all uint8 contexts in vlan_batch_range
+      for (HuaweiParser.Uint8Context uint8Ctx : ctx.vlan_batch_range().uint8()) {
+        try {
+          int vlanId = Integer.parseInt(uint8Ctx.getText());
+          HuaweiVlan vlan = _configuration.getVlan(vlanId);
+          if (vlan == null) {
+            vlan = new HuaweiVlan(vlanId);
+            _configuration.addVlan(vlanId, vlan);
+          }
+        } catch (NumberFormatException e) {
+          String warning =
+              String.format(
+                  "Invalid VLAN ID at line %d: %s",
+                  uint8Ctx.getStart().getLine(), uint8Ctx.getText());
+          _w.redFlag(warning);
+        }
+      }
+    }
+    // Handle individual "vlan <id>" command
+    else if (ctx.vlan_id != null) {
+      try {
+        int vlanId = Integer.parseInt(ctx.vlan_id.getText());
+        HuaweiVlan vlan = _configuration.getVlan(vlanId);
+        if (vlan == null) {
+          vlan = new HuaweiVlan(vlanId);
+          _configuration.addVlan(vlanId, vlan);
+        }
+      } catch (NumberFormatException e) {
+        String warning =
+            String.format(
+                "Invalid VLAN ID at line %d: %s",
+                ctx.vlan_id.getStart().getLine(), ctx.vlan_id.getText());
+        _w.redFlag(warning);
+      }
+    }
+  }
+
+  /**
+   * Process exit from v_name rule - extract VLAN name.
+   *
+   * <p>Extracts VLAN name from the "name" command within a VLAN configuration block.
+   */
+  @Override
+  public void exitV_name(V_nameContext ctx) {
+    // We need to find which VLAN we're currently configuring
+    // This is tricky because the grammar doesn't give us direct context
+    // We'll need to track the current VLAN similar to how we track current interface
+    // For now, this is a stub that will be enhanced when we add full VLAN tracking
+  }
+
+  /**
+   * Process exit from v_description rule - extract VLAN description.
+   *
+   * <p>Extracts description from the "description" command within a VLAN configuration block.
+   */
+  @Override
+  public void exitV_description(V_descriptionContext ctx) {
+    // Similar to v_name, this requires tracking the current VLAN context
+    // For now, this is a stub
+  }
+
+  /**
+   * Process exit from if_dot1q_termination rule - extract subinterface VLAN assignment.
+   *
+   * <p>Extracts VLAN ID from "dot1q termination vid <vid>" command on subinterfaces.
+   */
+  @Override
+  public void exitIf_dot1q_termination(If_dot1q_terminationContext ctx) {
+    if (_currentInterfaceName == null) {
+      return;
+    }
+
+    HuaweiInterface iface = _configuration.getInterfaces().get(_currentInterfaceName);
+    if (iface == null || ctx.vid == null) {
+      return;
+    }
+
+    try {
+      int vid = Integer.parseInt(ctx.vid.getText());
+      // Store the VLAN ID for this subinterface
+      // This can be used later to associate the subinterface with a VLAN
+      // For now, we just note it - the actual VLAN-to-subinterface mapping
+      // will be done during conversion to Batfish model
+    } catch (NumberFormatException e) {
+      String warning =
+          String.format(
+              "Invalid VLAN ID in dot1q termination on interface %s at line %d: %s",
+              _currentInterfaceName, ctx.getStart().getLine(), ctx.vid.getText());
+      _w.redFlag(warning);
+    }
   }
 }

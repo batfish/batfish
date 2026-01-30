@@ -7,6 +7,8 @@ import static org.hamcrest.Matchers.notNullValue;
 import org.batfish.common.Warnings;
 import org.batfish.config.Settings;
 import org.batfish.representation.huawei.HuaweiConfiguration;
+import org.batfish.representation.huawei.HuaweiConversions;
+import org.batfish.representation.huawei.HuaweiVlan;
 import org.junit.Test;
 
 /** Tests for Huawei grammar parsing */
@@ -103,5 +105,117 @@ public class HuaweiGrammarTest {
         config.getInterfaces().get("GigabitEthernet0/0/0");
     assertThat(iface, notNullValue());
     assertThat(iface.getShutdown(), equalTo(false));
+  }
+
+  @Test
+  public void testVlanCreation() {
+    String configText =
+        "sysname Router1\n" + "vlan 100\n" + " description Management VLAN\n" + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getVlans().size(), equalTo(1));
+
+    HuaweiVlan vlan = config.getVlan(100);
+    assertThat(vlan, notNullValue());
+    assertThat(vlan.getVlanId(), equalTo(100));
+  }
+
+  @Test
+  public void testVlanBatch() {
+    String configText = "sysname Router1\n" + "vlan batch 10 20 30 40\n" + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getVlans().size(), equalTo(4));
+
+    assertThat(config.getVlan(10), notNullValue());
+    assertThat(config.getVlan(20), notNullValue());
+    assertThat(config.getVlan(30), notNullValue());
+    assertThat(config.getVlan(40), notNullValue());
+  }
+
+  @Test
+  public void testVlanifInterface() {
+    String configText =
+        "sysname Router1\n"
+            + "vlan 100\n"
+            + "interface Vlanif100\n"
+            + " description Management Interface\n"
+            + " ip address 192.168.100.1 255.255.255.0\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getVlans().size(), equalTo(1));
+    assertThat(config.getInterfaces().size(), equalTo(1));
+
+    HuaweiVlan vlan = config.getVlan(100);
+    assertThat(vlan, notNullValue());
+
+    org.batfish.representation.huawei.HuaweiInterface iface =
+        config.getInterfaces().get("Vlanif100");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getDescription(), equalTo("Management Interface"));
+    assertThat(iface.getAddress(), notNullValue());
+    assertThat(iface.getAddress().getIp().toString(), equalTo("192.168.100.1"));
+  }
+
+  @Test
+  public void testSubinterfaceDot1q() {
+    String configText =
+        "sysname Router1\n"
+            + "interface GigabitEthernet0/0/0.100\n"
+            + " dot1q termination vid 100\n"
+            + " ip address 10.0.0.1 255.255.255.0\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getInterfaces().size(), equalTo(1));
+
+    org.batfish.representation.huawei.HuaweiInterface iface =
+        config.getInterfaces().get("GigabitEthernet0/0/0.100");
+    assertThat(iface, notNullValue());
+    assertThat(iface.getAddress(), notNullValue());
+    assertThat(iface.getAddress().getIp().toString(), equalTo("10.0.0.1"));
+  }
+
+  @Test
+  public void testVlanConversion() {
+    String configText =
+        "sysname Router1\n"
+            + "vlan 100\n"
+            + "interface Vlanif100\n"
+            + " ip address 192.168.100.1 255.255.255.0\n"
+            + "return\n";
+
+    HuaweiCombinedParser parser = new HuaweiCombinedParser(configText, getSettings());
+    Warnings warnings = new Warnings();
+    HuaweiConfiguration config = HuaweiControlPlaneExtractor.extract(configText, parser, warnings);
+
+    assertThat(config, notNullValue());
+    assertThat(config.getVlans().size(), equalTo(1));
+
+    // Convert to vendor-independent configuration
+    org.batfish.datamodel.Configuration viConfig =
+        HuaweiConversions.toVendorIndependentConfiguration(config);
+
+    assertThat(viConfig, notNullValue());
+    assertThat(viConfig.getHostname(), equalTo("router1")); // Hostnames are lowercased
+    assertThat(viConfig.getAllInterfaces().size(), equalTo(1));
+    assertThat(viConfig.getAllInterfaces().containsKey("Vlanif100"), equalTo(true));
   }
 }

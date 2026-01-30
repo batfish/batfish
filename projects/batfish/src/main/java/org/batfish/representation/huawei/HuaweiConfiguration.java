@@ -29,6 +29,9 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   /** Map of interface names to interface configurations */
   private SortedMap<String, HuaweiInterface> _interfaces;
 
+  /** Map of VLAN IDs to VLAN configurations */
+  private SortedMap<Integer, HuaweiVlan> _vlans;
+
   /** BGP process configuration (stub for future implementation) */
   @Nullable private HuaweiBgpProcess _bgpProcess;
 
@@ -40,6 +43,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
 
   public HuaweiConfiguration() {
     _interfaces = ImmutableSortedMap.of();
+    _vlans = ImmutableSortedMap.of();
     _vrfs = ImmutableSortedMap.of();
   }
 
@@ -124,6 +128,49 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
         ImmutableSortedMap.<String, HuaweiInterface>naturalOrder().putAll(_interfaces);
     builder.put(name, iface);
     _interfaces = builder.build();
+  }
+
+  /**
+   * Gets the map of VLANs.
+   *
+   * @return A sorted map of VLAN IDs to VLAN configurations
+   */
+  @Nonnull
+  public SortedMap<Integer, HuaweiVlan> getVlans() {
+    return _vlans;
+  }
+
+  /**
+   * Sets the VLANs map.
+   *
+   * @param vlans The map of VLAN IDs to VLAN configurations
+   */
+  public void setVlans(@Nonnull SortedMap<Integer, HuaweiVlan> vlans) {
+    _vlans = vlans;
+  }
+
+  /**
+   * Gets a specific VLAN by ID.
+   *
+   * @param vlanId The VLAN ID
+   * @return The VLAN configuration, or null if not found
+   */
+  @Nullable
+  public HuaweiVlan getVlan(int vlanId) {
+    return _vlans.get(vlanId);
+  }
+
+  /**
+   * Adds or updates a VLAN.
+   *
+   * @param vlanId The VLAN ID
+   * @param vlan The VLAN configuration
+   */
+  public void addVlan(int vlanId, HuaweiVlan vlan) {
+    ImmutableSortedMap.Builder<Integer, HuaweiVlan> builder =
+        ImmutableSortedMap.<Integer, HuaweiVlan>naturalOrder().putAll(_vlans);
+    builder.put(vlanId, vlan);
+    _vlans = builder.build();
   }
 
   /**

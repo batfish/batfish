@@ -23,6 +23,7 @@ if_substanza
    if_description
    | if_ip_address
    | if_shutdown
+   | if_dot1q_termination
    | if_null
 ;
 
@@ -49,6 +50,16 @@ if_shutdown
       SHUTDOWN
       | UNDO SHUTDOWN
    )
+;
+
+// Subinterface dot1q termination (e.g., dot1q termination vid 100)
+if_dot1q_termination
+:
+   DOT1Q TERMINATION VID vid = uint16
+   (
+      // Optional: dot1q termination vid <low> <high>
+      low_vid = uint16
+   )?
 ;
 
 // Null interface configuration (parse but ignore)

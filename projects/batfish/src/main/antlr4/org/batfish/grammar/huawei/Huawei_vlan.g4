@@ -6,22 +6,14 @@ options {
    tokenVocab = HuaweiLexer;
 }
 
-// VLAN configuration (stub for Phase 1)
+// VLAN configuration
 
-// VLAN batch command (create multiple VLANs)
+// VLAN stanza: vlan batch or vlan <id>
 s_vlan
 :
-   VLAN vlan_range
+   VLAN_BATCH vlan_batch_range
    |
-   VLAN BATCH vlan_batch_range
-;
-
-// VLAN range (e.g., vlan 10, vlan 10-20)
-vlan_range
-:
-   uint8
-   |
-   uint8 DASH uint8
+   VLAN vlan_id = uint8 vlan_body
 ;
 
 // VLAN batch range (e.g., vlan batch 10 20 30)
@@ -30,4 +22,43 @@ vlan_batch_range
    (
       vlan = uint8
    )+
+;
+
+// VLAN body (configuration for individual VLAN)
+vlan_body
+:
+   (
+      vlan_substanza
+   )*
+;
+
+// VLAN sub-stanzas
+vlan_substanza
+:
+   v_name
+   |
+   v_description
+   |
+   v_null
+;
+
+// VLAN name
+v_name
+:
+   NAME name = variable
+;
+
+// VLAN description
+v_description
+:
+   description_line
+;
+
+// Null VLAN configuration (parse but ignore)
+v_null
+:
+   NO?
+   (
+      null_rest_of_line
+   )
 ;

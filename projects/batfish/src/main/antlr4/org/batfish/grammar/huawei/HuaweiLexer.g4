@@ -109,6 +109,8 @@ DISP: 'disp';
 
 DISPLAY: 'display';
 
+DOT1Q: 'dot1q';
+
 DUAL: 'dual';
 
 DYNAMIC: 'dynamic';
@@ -489,6 +491,8 @@ TCP: 'tcp';
 
 TELNET: 'telnet';
 
+TERMINATION: 'termination';
+
 TFTP: 'tftp';
 
 TIMEOUT: 'timeout';
@@ -542,6 +546,8 @@ VLAN: 'vlan';
 VLANIF: 'Vlanif';
 
 VLAN_BATCH: 'vlan batch';
+
+VID: 'vid';
 
 VLL: 'vll';
 
