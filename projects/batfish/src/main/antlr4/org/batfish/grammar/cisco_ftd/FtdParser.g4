@@ -352,7 +352,7 @@ flow_offload_stanza
 
 cryptochecksum_stanza
 :
-   CRYPTOCHECKSUM ~NEWLINE* NEWLINE
+   CRYPTOCHECKSUM_LINE
 ;
 
 // Generic unrecognized line - matches any line
