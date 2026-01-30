@@ -76,6 +76,7 @@ sls_server
     (
         slss_address
         | slss_and_also_to
+        | slss_certificate_profile
         | slss_community
         | slss_facility
         | slss_format
@@ -102,6 +103,11 @@ slss_and_also_to
     AND_ALSO_TO email = variable
 ;
 
+slss_certificate_profile
+:
+    CERTIFICATE_PROFILE certificate_profile = variable
+;
+
 slss_community
 :
     COMMUNITY community = variable
@@ -115,6 +121,9 @@ slss_facility
 slss_format
 :
     FORMAT format = (BSD | IETF)
+    (
+        ESCAPING ESCAPED_CHARACTERS escaped_character = variable
+    )?
 ;
 
 slss_from
