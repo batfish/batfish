@@ -1,6 +1,11 @@
 update-rules:
   - kinds: maven
     bumping: minor-patch
+  - kinds:
+      - bazel
+      - bazel-rules
+      - bzlmod
+    enabled: false
 
 pull-requests:
   - dependencies: "com.fasterxml.jackson*:*"
