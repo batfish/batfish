@@ -79,7 +79,15 @@ CRITICAL: 'critical';
 
 CRYPTO: 'crypto';
 
-CRYPTOCHECKSUM: 'Cryptochecksum';
+// Cryptochecksum line: "Cryptochecksum:hexvalue"
+// Matches to end of line (NEWLINE optional for EOF case)
+CRYPTOCHECKSUM_LINE
+:
+   'Cryptochecksum:' ~[\r\n]* NEWLINE?
+;
+
+// Fragment for the keyword (not used as a separate token)
+fragment F_CRYPTOCHECKSUM: 'Cryptochecksum';
 
 CTS: 'cts';
 
