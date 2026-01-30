@@ -1,0 +1,14 @@
+sysname Router1
+interface GigabitEthernet0/0/0
+ description Uplink
+ ip address 192.168.1.1 255.255.255.0
+interface GigabitEthernet0/0/1
+ description Downlink
+ ip address 10.0.0.1 255.255.255.0
+interface Vlanif100
+ description Management VLAN
+ ip address 172.16.1.1 255.255.255.0
+interface LoopBack0
+ description Loopback
+ ip address 1.1.1.1 255.255.255.255
+return

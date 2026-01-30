@@ -59,6 +59,8 @@ import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.fortios.FortiosCombinedParser;
 import org.batfish.grammar.fortios.FortiosControlPlaneExtractor;
 import org.batfish.grammar.frr.FrrCombinedParser;
+import org.batfish.grammar.huawei.HuaweiCombinedParser;
+import org.batfish.grammar.huawei.HuaweiControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
@@ -420,6 +422,24 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
                     filename, e.getMessage()),
                 e);
           }
+        }
+
+      case HUAWEI:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          HuaweiCombinedParser huaweiParser = new HuaweiCombinedParser(fileText, _settings);
+          ControlPlaneExtractor extractor =
+              new HuaweiControlPlaneExtractor(
+                  fileText,
+                  huaweiParser,
+                  _fileResults.get(filename).getWarnings(),
+                  _fileResults.get(filename).getSilentSyntax());
+          parseFile(filename, huaweiParser, extractor);
+          vc = extractor.getVendorConfiguration();
+          vc.setFilename(filename);
+          break;
         }
 
       case SONIC:

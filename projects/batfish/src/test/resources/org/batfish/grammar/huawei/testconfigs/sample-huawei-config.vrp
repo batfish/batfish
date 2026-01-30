@@ -1,0 +1,32 @@
+# Huawei VRP Test Configuration
+# This file demonstrates the minimal configuration that Phase 1 grammar can parse
+
+# Set system name
+sysname Router1
+
+# Configure GigabitEthernet interface
+interface GigabitEthernet0/0/0
+ description Uplink to core router
+ ip address 192.168.1.1 255.255.255.0
+return
+
+# Configure VLAN interface
+interface Vlanif100
+ description Management VLAN
+ ip address 10.0.0.1 255.255.255.0
+return
+
+# Configure Loopback interface
+interface LoopBack0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+return
+
+# Create multiple VLANs
+vlan batch 10,20,30-40
+
+# Configure static route
+ip route-static 0.0.0.0 0.0.0.0 192.168.1.254
+
+# Return to system view
+return

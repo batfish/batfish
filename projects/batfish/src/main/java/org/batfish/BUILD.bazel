@@ -35,6 +35,7 @@ java_library(
         "//projects/batfish/src/main/java/org/batfish/grammar/flatvyos",
         "//projects/batfish/src/main/java/org/batfish/grammar/fortios",
         "//projects/batfish/src/main/java/org/batfish/grammar/frr",
+        "//projects/batfish/src/main/java/org/batfish/grammar/huawei:huawei_grammar",
         "//projects/batfish/src/main/java/org/batfish/grammar/iptables",
         "//projects/batfish/src/main/java/org/batfish/grammar/juniper",
         "//projects/batfish/src/main/java/org/batfish/grammar/palo_alto",

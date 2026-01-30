@@ -1,0 +1,24 @@
+sysname CoreRouter01
+interface GigabitEthernet0/0/0
+ description Uplink to ISP
+ ip address 203.0.113.1 255.255.255.252
+interface GigabitEthernet0/0/1
+ description Uplink to DataCenter
+ ip address 10.255.255.1 255.255.255.252
+interface GigabitEthernet0/0/2
+ description Server Network - SHUTDOWN
+ shutdown
+ ip address 192.168.100.1 255.255.255.0
+interface Vlanif100
+ description Management VLAN
+ ip address 172.16.1.1 255.255.255.0
+interface Vlanif200
+ description Voice VLAN
+ ip address 172.16.2.1 255.255.255.0
+interface LoopBack0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+interface Eth-Trunk1
+ description Port-channel to Switch2
+ ip address 10.0.0.1 255.255.255.0
+return

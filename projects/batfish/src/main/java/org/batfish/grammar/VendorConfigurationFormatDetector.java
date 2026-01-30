@@ -38,6 +38,7 @@ public final class VendorConfigurationFormatDetector {
   private static final Pattern CADANT_NETWORK_PATTERN = Pattern.compile("(?m)^shelfname");
   private static final Pattern CHECK_POINT_GATEWAY_PATTERN =
       Pattern.compile("(?m)^# Configuration of [\\w-]+\\R+# Language version: ");
+  private static final Pattern HUAWEI_PATTERN = Pattern.compile("(?m)^sysname\\s+");
   private static final Pattern CUMULUS_CONCATENATED_PATTERN =
       Pattern.compile("(?m)^# This file describes the network interfaces");
   private static final Pattern CUMULUS_NCLU_PATTERN = Pattern.compile("(?m)^net del all$");
@@ -483,6 +484,13 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  private @Nullable ConfigurationFormat checkHuawei() {
+    if (fileTextMatches(HUAWEI_PATTERN)) {
+      return ConfigurationFormat.HUAWEI;
+    }
+    return null;
+  }
+
   private ConfigurationFormat identifyConfigurationFormat() {
     ConfigurationFormat format = checkEmpty();
     format = (format == null) ? checkBatfish() : format;
@@ -497,6 +505,7 @@ public final class VendorConfigurationFormatDetector {
     format = (format == null) ? checkA10() : format;
     format = (format == null) ? checkCheckPoint() : format;
     format = (format == null) ? checkFortios() : format;
+    format = (format == null) ? checkHuawei() : format;
     format = (format == null) ? checkRuckusIcx() : format;
     format = (format == null) ? checkCadant() : format;
     format = (format == null) ? checkCumulusConcatenated() : format;
