@@ -404,10 +404,8 @@ public class F5BigipConfiguration extends VendorConfiguration {
     // Set action based on rule action
     if ("accept".equals(rule.getAction())) {
       builder.setAction(LineAction.PERMIT);
-    } else if ("drop".equals(rule.getAction()) || "reject".equals(rule.getAction())) {
-      builder.setAction(LineAction.DENY);
     } else {
-      // Default to deny if action is not specified or unrecognized
+      // For drop, reject, or any other action, default to deny
       builder.setAction(LineAction.DENY);
     }
 
