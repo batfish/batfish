@@ -156,6 +156,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _zones;
   }
 
+  /** Global BFD settings */
+  public @Nonnull BfdSettings getBfdSettings() {
+    return _bfdSettings;
+  }
+
   /** Initializes configuration's {@link BgpProcess} if it isn't already initialized */
   public void initBgpProcess() {
     if (_bgpProcess == null) {
@@ -180,6 +185,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
   private final @Nonnull Map<String, Ippool> _ippools;
+  private final @Nonnull BfdSettings _bfdSettings = new BfdSettings();
 
   private @Nullable BgpProcess _bgpProcess;
 

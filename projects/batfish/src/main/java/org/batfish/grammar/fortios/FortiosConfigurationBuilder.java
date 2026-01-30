@@ -121,6 +121,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cralecre_set_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_bfdContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
@@ -131,6 +132,7 @@ import org.batfish.grammar.fortios.FortiosParser.Crrmecr_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_match_ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_bfdContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_dstContext;
@@ -138,6 +140,10 @@ import org.batfish.grammar.fortios.FortiosParser.Crs_set_gatewayContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_sdwanContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_intervalContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_min_rxContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_min_txContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_multiplierContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
@@ -326,6 +332,54 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsg_hostname(Csg_hostnameContext ctx) {
     toString(ctx, ctx.host).ifPresent(_c::setHostname);
+  }
+
+  @Override
+  public void exitCsb_set_interval(Csb_set_intervalContext ctx) {
+    String val = toString(ctx.str());
+    if (val != null) {
+      try {
+        _c.getBfdSettings().setInterval(Integer.parseInt(val));
+      } catch (NumberFormatException e) {
+        // Invalid BFD interval, ignore
+      }
+    }
+  }
+
+  @Override
+  public void exitCsb_set_min_rx(Csb_set_min_rxContext ctx) {
+    String val = toString(ctx.str());
+    if (val != null) {
+      try {
+        _c.getBfdSettings().setMinRx(Integer.parseInt(val));
+      } catch (NumberFormatException e) {
+        // Invalid BFD min-rx, ignore
+      }
+    }
+  }
+
+  @Override
+  public void exitCsb_set_min_tx(Csb_set_min_txContext ctx) {
+    String val = toString(ctx.str());
+    if (val != null) {
+      try {
+        _c.getBfdSettings().setMinTx(Integer.parseInt(val));
+      } catch (NumberFormatException e) {
+        // Invalid BFD min-tx, ignore
+      }
+    }
+  }
+
+  @Override
+  public void exitCsb_set_multiplier(Csb_set_multiplierContext ctx) {
+    String val = toString(ctx.str());
+    if (val != null) {
+      try {
+        _c.getBfdSettings().setMultiplier(Integer.parseInt(val));
+      } catch (NumberFormatException e) {
+        // Invalid BFD multiplier, ignore
+      }
+    }
   }
 
   @Override
@@ -1222,6 +1276,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCrbcne_set_bfd(Crbcne_set_bfdContext ctx) {
+    _currentBgpNeighbor.setBfd(toBoolean(ctx.bfd_enable));
+  }
+
+  @Override
   public void exitCrbcr_set_status(Crbcr_set_statusContext ctx) {
     if (toBoolean(ctx.enable_or_disable())) {
       warn(ctx, "Redistribution into BGP is not yet supported");
@@ -1283,6 +1342,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrs_set_status(Crs_set_statusContext ctx) {
     _currentStaticRoute.setStatus(
         toBoolean(ctx.enabled) ? StaticRoute.Status.ENABLE : StaticRoute.Status.DISABLE);
+  }
+
+  @Override
+  public void exitCrs_set_bfd(Crs_set_bfdContext ctx) {
+    _currentStaticRoute.setBfd(toBoolean(ctx.bfd_enable));
   }
 
   @Override

@@ -5,7 +5,8 @@ options {
 }
 
 c_system: SYSTEM (
-  cs_global
+  cs_bfd
+  | cs_global
   | cs_interface
   | cs_npu
   | cs_replacemsg
@@ -30,6 +31,22 @@ csg_split_port_mode: CONFIG SPLIT_PORT_MODE newline csgspm_edit* END newline;
 csgspm_edit: EDIT interface_name newline csgspm_line* NEXT newline;
 
 csgspm_line: (SET | UNSET) null_rest_of_line;
+
+cs_bfd: BFD newline csb*;
+
+csb: csb_set;
+
+csb_set: SET (
+    csb_set_interval
+    | csb_set_min_rx
+    | csb_set_min_tx
+    | csb_set_multiplier
+);
+
+csb_set_interval: INTERVAL interval = str newline;
+csb_set_min_rx: MIN_RX min_rx = str newline;
+csb_set_min_tx: MIN_TX min_tx = str newline;
+csb_set_multiplier: MULTIPLIER multiplier = str newline;
 
 // [A-Za-z0-9_-]
 device_hostname: str;

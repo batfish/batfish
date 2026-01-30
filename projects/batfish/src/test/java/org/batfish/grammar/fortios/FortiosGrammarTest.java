@@ -1020,6 +1020,33 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testBfdParsing() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd");
+
+    // Test global BFD settings
+    assertThat(cc.getBfdSettings().getIntervalEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMinRxEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMinTxEffective(), equalTo(100));
+    assertThat(cc.getBfdSettings().getMultiplierEffective(), equalTo(5));
+
+    // Test BGP neighbor BFD
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    BgpNeighbor neighbor1 = bgpProcess.getNeighbors().get(Ip.parse("10.0.0.2"));
+    assertThat(neighbor1.getBfdEffective(), equalTo(true));
+
+    BgpNeighbor neighbor2 = bgpProcess.getNeighbors().get(Ip.parse("10.0.1.2"));
+    assertThat(neighbor2.getBfdEffective(), equalTo(false));
+
+    // Test static route BFD
+    StaticRoute route1 = cc.getStaticRoutes().get("1");
+    assertThat(route1.getBfdEffective(), equalTo(true));
+
+    StaticRoute route2 = cc.getStaticRoutes().get("2");
+    assertThat(route2.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
   public void testInterfaceExtraction() {
     String hostname = "iface";
     FortiosConfiguration vc = parseVendorConfig(hostname);

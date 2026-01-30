@@ -121,6 +121,7 @@ AUTOMATION_TRIGGER: 'automation-trigger' {
     pushMode(M_IgnoredConfigBlock);
   }
 };
+BFD: 'bfd';
 BEFORE: 'before' -> pushMode(M_SingleStr);
 BGP: 'bgp';
 BUFFER: 'buffer' -> pushMode(M_Str);
@@ -325,6 +326,7 @@ IKE: 'ike' {
   }
 };
 INTERFACE: 'interface' -> pushMode(M_Str);
+INTERVAL: 'interval' -> pushMode(M_Str);
 INTERFACE_SUBNET: 'interface-subnet';
 INTERNET_SERVICE_ID: 'internet-service-id' -> pushMode(M_Str);
 INTERNET_SERVICE_NAME: 'internet-service-name';
@@ -393,6 +395,9 @@ MAIL: 'mail' {
 MATCH_IP_ADDRESS: 'match-ip-address' -> pushMode(M_Str);
 MEDIATYPE: 'mediatype' -> pushMode(M_Str);
 MEMBER: 'member' -> pushMode(M_Str);
+MIN_RX: 'min-rx' -> pushMode(M_Str);
+MIN_TX: 'min-tx' -> pushMode(M_Str);
+MULTIPLIER: 'multiplier' -> pushMode(M_Str);
 MOVE: 'move' -> pushMode(M_SingleStr);
 MODE: 'mode' -> pushMode(M_Str);
 MONITOR_BANDWIDTH: 'monitor-bandwidth' -> pushMode(M_Str);
