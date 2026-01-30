@@ -20,13 +20,13 @@ Examples:
 ./tools/profiling/profile.sh //projects/allinone/src/test/java/org/batfish/e2e/isp:tests
 
 # Profile to specific file
-./tools/profiling/profile.sh //projects/batfish:tests my_profile.html
+./tools/profiling/profile.sh //projects/batfish/src/test/java/org/batfish/bddreachability:tests my_profile.html
 
 # Profile to collapsed format (for analysis)
-./tools/profiling/profile.sh //projects/batfish:tests analysis.txt collapsed
+./tools/profiling/profile.sh //projects/batfish/src/test/java/org/batfish/bddreachability:tests analysis.txt collapsed
 
 # Profile to JFR format (for Java Mission Control)
-./tools/profiling/profile.sh //projects/batfish:tests profile.jfr jfr
+./tools/profiling/profile.sh //projects/batfish/src/test/java/org/batfish/bddreachability:tests profile.jfr jfr
 ```
 
 The script:
@@ -96,11 +96,11 @@ flamegraph.pl profile.txt > profile.svg
 Profile specific test targets:
 
 ```bash
-# Profile BgpRib tests
-./tools/profiling/profile.sh //projects/batfish:tests bgp_rib_profile.html
+# Profile BDD reachability tests
+./tools/profiling/profile.sh //projects/batfish/src/test/java/org/batfish/bddreachability:tests bdd_profile.html
 
 # Profile with collapsed format for analysis
-./tools/profiling/profile.sh //projects/batfish:tests analysis.txt collapsed
+./tools/profiling/profile.sh //projects/batfish/src/test/java/org/batfish/dataplane:tests analysis.txt collapsed
 ```
 
 ## CI and Automation

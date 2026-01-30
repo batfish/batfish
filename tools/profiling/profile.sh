@@ -56,6 +56,14 @@ esac
 # Determine target type
 TARGET_KIND=$(bazel --quiet query --output=label_kind "$TEST_TARGET" 2>/dev/null | cut -d' ' -f1)
 
+if [[ -z "$TARGET_KIND" ]]; then
+    echo "ERROR: Target '$TEST_TARGET' not found."
+    echo ""
+    echo "To find test targets, run:"
+    echo "  bazel query 'kind(\"java_test\", //projects/...)' | head -20"
+    exit 1
+fi
+
 # Execute target with profiling enabled
 if [[ "$TARGET_KIND" == *"_test"* ]]; then
     bazel --quiet test \
