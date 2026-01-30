@@ -246,6 +246,7 @@
         "configs/palo_alto/interfaces" : "PALO_ALTO_NESTED",
         "configs/palo_alto/nat" : "PALO_ALTO_NESTED",
         "configs/palo_alto/policy" : "PALO_ALTO_NESTED",
+        "configs/palo_alto/snmp-settings" : "PALO_ALTO_NESTED",
         "configs/palo_alto/virtual-routers" : "PALO_ALTO_NESTED",
         "configs/palo_alto/zones" : "PALO_ALTO_NESTED",
         "configs/pim" : "CISCO_IOS_XR",
@@ -992,6 +993,9 @@
         "ospf-disable" : [
           "configs/juniper_ospf_disable"
         ],
+        "palo_alto_snmp_settings" : [
+          "configs/palo_alto/snmp-settings"
+        ],
         "palo_alto_virtual_routers" : [
           "configs/palo_alto/virtual-routers"
         ],
@@ -1333,6 +1337,7 @@
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/nat" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
+        "configs/palo_alto/snmp-settings" : "PASSED",
         "configs/palo_alto/virtual-routers" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
         "configs/pim" : "PASSED",
@@ -66709,6 +66714,103 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/palo_alto/snmp-settings" : {
+          "sentences" : [
+            "(palo_alto_configuration",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable*",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices*",
+            "          (s_deviceconfig*",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system*",
+            "              SYSTEM:'system'",
+            "              (sds_hostname",
+            "                HOSTNAME:'hostname'",
+            "                name = (variable*",
+            "                  DOUBLE_QUOTED_STRING:'\"palo_alto_snmp_settings\"')))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable*",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices*",
+            "          (s_deviceconfig*",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system*",
+            "              SYSTEM:'system'",
+            "              (sds_snmp_setting*",
+            "                SNMP_SETTING:'snmp-setting'",
+            "                (sdss_access_setting*",
+            "                  ACCESS_SETTING:'access-setting'",
+            "                  (sdssa_definition*",
+            "                    VERSION:'version'",
+            "                    (variable*",
+            "                      VARIABLE:'v2c'))",
+            "                  (sdssa_definition*",
+            "                    SNMP_COMMUNITY_STRING:'snmp-community-string'",
+            "                    (variable*",
+            "                      DOUBLE_QUOTED_STRING:'\"public\"')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable*",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices*",
+            "          (s_deviceconfig*",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system*",
+            "              SYSTEM:'system'",
+            "              (sds_snmp_setting*",
+            "                SNMP_SETTING:'snmp-setting'",
+            "                (sdss_access_setting*",
+            "                  ACCESS_SETTING:'access-setting'",
+            "                  (sdssa_definition*",
+            "                    VERSION:'version'",
+            "                    (variable*",
+            "                      VARIABLE:'v2c'))",
+            "                  (sdssa_definition*",
+            "                    SNMP_COMMUNITY_STRING:'snmp-community-string'",
+            "                    (variable*",
+            "                      DOUBLE_QUOTED_STRING:'\"private\"')))))))))",
+            "    NEWLINE:'\\n')",
+            "  (set_line*",
+            "    SET:'set'",
+            "    (set_line_tail*",
+            "      (set_line_config_devices",
+            "        CONFIG:'config'",
+            "        DEVICES:'devices'",
+            "        name = (variable*",
+            "          VARIABLE:'localhost.localdomain')",
+            "        (statement_config_devices*",
+            "          (s_deviceconfig*",
+            "            DEVICECONFIG:'deviceconfig'",
+            "            (sd_system*",
+            "              SYSTEM:'system'",
+            "              (sds_snmp_setting*",
+            "                SNMP_SETTING:'snmp-setting'",
+            "                (sdss_snmp_system*",
+            "                  SNMP_SYSTEM:'snmp-system'",
+            "                  SEND_EVENT_SPECIFIC_TRAPS:'send-event-specific-traps'",
+            "                  (yes_or_no*",
+            "                    YES:'yes'))))))))",
+            "    NEWLINE:'\\n')",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/palo_alto/virtual-routers" : {
           "sentences" : [
             "(palo_alto_configuration",
@@ -71970,6 +72072,7 @@
         "nxos_vrf" : "WARNINGS",
         "openflow" : "PASSED",
         "ospf-disable" : "PASSED",
+        "palo_alto_snmp_settings" : "PASSED",
         "palo_alto_virtual_routers" : "PASSED",
         "paloalto_applications" : "PASSED",
         "paloalto_interfaces" : "WARNINGS",
@@ -76781,6 +76884,7 @@
             }
           }
         },
+        "configs/palo_alto/snmp-settings" : { },
         "configs/palo_alto/virtual-routers" : {
           "virtual-router" : {
             "vr1" : {
@@ -77741,6 +77845,9 @@
         ],
         "configs/palo_alto/policy" : [
           "paloalto_policy"
+        ],
+        "configs/palo_alto/snmp-settings" : [
+          "palo_alto_snmp_settings"
         ],
         "configs/palo_alto/virtual-routers" : [
           "palo_alto_virtual_routers"
@@ -87368,6 +87475,7 @@
           }
         },
         "configs/palo_alto/policy" : { },
+        "configs/palo_alto/snmp-settings" : { },
         "configs/palo_alto/virtual-routers" : {
           "interface" : {
             "dummy" : {
@@ -88289,6 +88397,7 @@
         "configs/palo_alto/interfaces" : "PASSED",
         "configs/palo_alto/nat" : "PASSED",
         "configs/palo_alto/policy" : "PASSED",
+        "configs/palo_alto/snmp-settings" : "PASSED",
         "configs/palo_alto/virtual-routers" : "PASSED",
         "configs/palo_alto/zones" : "PASSED",
         "configs/pim" : "PASSED",
