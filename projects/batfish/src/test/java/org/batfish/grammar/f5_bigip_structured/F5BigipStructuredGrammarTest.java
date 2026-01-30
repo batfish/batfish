@@ -3536,6 +3536,28 @@ public final class F5BigipStructuredGrammarTest {
   }
 
   @Test
+  public void testDc1ConfigParse() throws IOException {
+    // Test parsing of DC1-bigip.conf configuration
+    Batfish batfish = getBatfishForConfigurationNames("DC1-bigip");
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
+    assertThat("Configuration map not empty", configs.isEmpty(), equalTo(false));
+    Configuration c = configs.values().iterator().next();
+    assertThat("Configuration parsed successfully", c, notNullValue());
+    assertThat("Hostname extracted", c.getHostname(), notNullValue());
+  }
+
+  @Test
+  public void testDc2ConfigParse() throws IOException {
+    // Test parsing of DC2-bigip.conf configuration
+    Batfish batfish = getBatfishForConfigurationNames("DC2-bigip");
+    Map<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
+    assertThat("Configuration map not empty", configs.isEmpty(), equalTo(false));
+    Configuration c = configs.values().iterator().next();
+    assertThat("Configuration parsed successfully", c, notNullValue());
+    assertThat("Hostname extracted", c.getHostname(), notNullValue());
+  }
+
+  @Test
   public void testVirtualRejectFilter() throws IOException {
     // Test that:
     // - Traffic matching a 'virtual' in 'ip-forward' is not filtered at ingress

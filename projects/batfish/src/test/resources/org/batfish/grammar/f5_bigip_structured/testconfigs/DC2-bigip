@@ -1,0 +1,13 @@
+#TMSH-VERSION: 15.1.10.3
+
+sys global-settings {
+    hostname dc2-bigip
+}
+
+sys log-config destination remote-high-speed-log /Common/logging_DC2 {
+    protocol udp
+}
+
+security scrubber profile /Common/scrubber-profile-default {
+    advertisement-ttl 600
+}

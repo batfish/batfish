@@ -25,6 +25,14 @@ tokens {
 
 ACTION: 'action';
 
+ACCOUNT: 'account';
+
+AUTO_CHECK: 'auto-check';
+
+AUTO_PHONEHOME: 'auto-phonehome';
+
+AVAILABILITY_ZONE: 'availability-zone';
+
 ACTIVATE: 'activate';
 
 ACTIVE: 'active';
@@ -39,6 +47,7 @@ ADDRESS: 'address';
 
 ADDRESS_FAMILY: 'address-family';
 
+ADVERTISEMENT_TTL: 'advertisement-ttl';
 AGENT_ADDRESSES: 'agent-addresses';
 
 ALERT_TIMEOUT: 'alert-timeout';
@@ -70,6 +79,7 @@ ARP: 'arp';
 ASM: 'asm';
 
 AUTH: 'auth';
+BANNER: 'banner';
 
 AUTOMAP: 'automap';
 
@@ -127,6 +137,8 @@ CIPHER_GROUP: 'cipher-group';
 
 CLASSIFICATION: 'classification';
 
+CLOUD_PROVIDER: 'cloud-provider';
+
 CLIENT_LDAP: 'client-ldap';
 
 CLIENT_SSL: 'client-ssl';
@@ -140,6 +152,8 @@ COMMUNITY: 'community';
 COMMUNITY_NAME: 'community-name';
 
 COMPATIBILITY: 'compatibility';
+
+COMPATIBILITY_LEVEL: 'compatibility-level';
 
 CONFIGSYNC_IP: 'configsync-ip';
 
@@ -165,6 +179,10 @@ DESCRIPTION: 'description';
 
 DESTINATION: 'destination';
 
+DESTINATIONS: 'destinations';
+
+DEDUPLICATION: 'deduplication';
+
 DHCPV4: 'dhcpv4';
 
 DHCPV6: 'dhcpv6';
@@ -174,10 +192,13 @@ DEVICE: 'device';
 DEVICES: 'devices';
 
 DEVICE_CONFIG: 'device-config';
+DOS_DEVICE_VECTOR: 'dos-device-vector';
 
 DEVICE_GROUP: 'device-group';
 
 DIAMETER: 'diameter';
+
+DIAGS: 'diags';
 
 DISABLED: 'disabled';
 
@@ -186,6 +207,8 @@ DISK_MONITOR: 'disk-monitor';
 DISK_MONITORS: 'disk-monitors';
 
 DNS: 'dns';
+
+DNS_LOGGING: 'dns-logging';
 
 DNS_RESOLVER: 'dns-resolver';
 
@@ -206,6 +229,28 @@ EFFECTIVE_IP: 'effective-ip';
 EFFECTIVE_PORT: 'effective-port';
 
 ENABLED: 'enabled';
+
+ECM: 'ecm';
+
+FREQUENCY: 'frequency';
+
+INSTANCE_TYPE: 'instance-type';
+
+LOG_CONFIG: 'log-config';
+
+PROTOCOL: 'protocol';
+
+PROPERTY_TEMPLATE: 'property-template';
+
+PUBLISHER: 'publisher';
+
+REGION: 'region';
+
+SOFTWARE: 'software';
+
+UPDATE: 'update';
+
+VALID_VALUES: 'valid-values';
 
 ENCODING: 'encoding';
 
@@ -233,6 +278,7 @@ FIX: 'fix';
 
 FOLDER: 'folder';
 
+FORMAT: 'format';
 FORTY_G: '40G';
 
 FORWARD_ERROR_CORRECTION: 'forward-error-correction';
@@ -295,6 +341,8 @@ IDLE_TIMEOUT_OVERRIDE: 'idle-timeout-override';
 
 IFILE: 'ifile';
 
+IHEALTH: 'ihealth';
+
 IKE_DAEMON: 'ike-daemon';
 
 ILX: 'ilx';
@@ -356,12 +404,16 @@ LLDP_GLOBALS: 'lldp-globals';
 LLDP_TLVMAP: 'lldp-tlvmap';
 
 LOAD_BALANCING_MODE: 'load-balancing-mode';
+LOG_PROFILE: 'log-profile';
+LOG_PUBLISHER: 'log-publisher';
 
 LOCAL_AS: 'local-as';
 
 LOCAL_IP: 'local-ip';
 
 LSN: 'lsn';
+
+LEVEL: 'level';
 
 LTM: 'ltm';
 
@@ -371,7 +423,11 @@ MANAGEMENT_DHCP: 'management-dhcp';
 
 MANAGEMENT_IP: 'management-ip';
 
+MANAGEMENT_OVSDB: 'management-ovsdb';
+
 MANAGEMENT_ROUTE: 'management-route';
+
+MANAGEMENT_PORT: 'management-port';
 
 MAP_T: 'map-t';
 
@@ -529,6 +585,8 @@ PROFILES: 'profiles';
 
 PROVISION: 'provision';
 
+PROTOCOL_INSPECTION: 'protocol-inspection';
+
 PROXY_CA_CERT: 'proxy-ca-cert';
 
 PROXY_CA_KEY: 'proxy-ca-key';
@@ -540,6 +598,8 @@ PROXY_SSL_PASSTHROUGH: 'proxy-ssl-passthrough';
 QOE: 'qoe';
 
 RADIUS: 'radius';
+
+RADIUS_SERVER: 'radius-server';
 
 RATIO: 'ratio';
 
@@ -553,8 +613,10 @@ REJECT: 'reject';
 
 REMOTE_AS: 'remote-as';
 
+REMOTE_HIGH_SPEED_LOG: 'remote-high-speed-log';
 REMOTE_SERVERS: 'remote-servers';
 
+REMOTE_SYSLOG: 'remote-syslog';
 RENEGOTIATE_MAX_RECORD_DELAY: 'renegotiate-max-record-delay';
 
 RENEGOTIATE_PERIOD: 'renegotiate-period';
@@ -602,11 +664,16 @@ RULES: 'rules';
 
 RTSP: 'rtsp';
 
+SCRUBBER: 'scrubber';
 SCTP: 'sctp';
 
 SECURE_RENEGOTIATION: 'secure-renegotiation';
 
 SECURITY: 'security';
+
+SECRET: 'secret';
+
+SERVER: 'server';
 
 SECURITY_LOG_PROFILES: 'security-log-profiles';
 
@@ -678,6 +745,7 @@ SOURCE_ADDRESS_TRANSLATION: 'source-address-translation';
 SOURCE_MASK: 'source-mask';
 
 SOURCE_PORT: 'source-port';
+SPANNING: 'spanning';
 
 SPLITSESSIONCLIENT: 'splitsessionclient';
 
@@ -748,6 +816,8 @@ TRANSLATE_ADDRESS: 'translate-address';
 TRANSLATE_PORT: 'translate-port';
 
 TRANSLATION_ADDRESS: 'translation-address';
+TRANSLATION: 'translation';
+TRAPS: 'traps';
 
 TRANSPARENT: 'transparent';
 

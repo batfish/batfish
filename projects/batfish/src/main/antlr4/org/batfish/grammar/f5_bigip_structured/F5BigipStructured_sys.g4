@@ -167,10 +167,16 @@ sys_sshd
   (
     NEWLINE
     (
-      sshd_inactivity_timeout
+      sshd_banner
+      | sshd_inactivity_timeout
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+sshd_banner
+:
+  BANNER (ENABLED | DISABLED) NEWLINE
 ;
 
 sys_syslog
@@ -229,6 +235,7 @@ sys_snmp
       | snmp_process_monitors
       | snmp_sys_contact_null
       | snmp_sys_location_null
+      | snmp_traps
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE?
@@ -357,11 +364,50 @@ snmp_sys_location_null
   SYS_LOCATION location = word NEWLINE
 ;
 
+snmp_traps
+:
+  TRAPS BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_trap
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_trap
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      snmp_trap_community
+      | snmp_trap_host
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+snmp_trap_community
+:
+  COMMUNITY community = word_id NEWLINE
+;
+
+snmp_trap_host
+:
+  HOST host = ip_address NEWLINE
+;
+
 s_sys
 :
   SYS
   (
-    sys_dns
+    sys_compatibility_level
+    | sys_diags_ihealth
+    | sys_ecm
+    | sys_log_config
+    | sys_management_ovsdb
+    | sys_dns
     | sys_global_settings
     | sys_ha_group
     | sys_management_ip
@@ -369,9 +415,159 @@ s_sys
     | sys_ntp
     | sys_null
     | sys_snmp
+    | sys_software_update
     | sys_sshd
     | sys_syslog
+    | sys_wom_deduplication
     | unrecognized
   )
 ;
 
+sys_ecm
+:
+  ECM CLOUD_PROVIDER name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sys_ecm_description
+      | sys_ecm_property_template
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sys_ecm_description
+:
+  DESCRIPTION description_text NEWLINE
+;
+
+sys_ecm_property_template
+:
+  PROPERTY_TEMPLATE BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ecm_property_item
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ecm_property_item
+:
+  word BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ecm_property_setting
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ecm_property_setting
+:
+  WORD_ID NEWLINE
+  | DESCRIPTION description_text NEWLINE
+  | VALID_VALUES BRACE_LEFT word+ BRACE_RIGHT NEWLINE
+;
+
+sys_log_config
+:
+  LOG_CONFIG
+  (
+    PUBLISHER structure_name ignored
+    | DESTINATION (MANAGEMENT_PORT | REMOTE_HIGH_SPEED_LOG | REMOTE_SYSLOG) name = structure_name BRACE_LEFT
+    (
+      NEWLINE
+      (
+        slc_format
+        | slc_protocol
+        | slc_remote_high_speed_log
+        | ignored
+        | unrecognized
+      )*
+    )? BRACE_RIGHT NEWLINE
+  )
+;
+
+sys_software_update
+:
+  SOFTWARE UPDATE BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sys_software_update_settings
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sys_software_update_settings
+:
+  AUTO_CHECK (ENABLED | DISABLED) NEWLINE
+  | AUTO_PHONEHOME (ENABLED | DISABLED) NEWLINE
+  | FREQUENCY word_id NEWLINE
+  | ignored
+;
+
+sys_wom_deduplication
+:
+  WOM DEDUPLICATION ignored
+;
+
+sys_diags_ihealth
+:
+  DIAGS IHEALTH BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ignored
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sys_management_ovsdb
+:
+  MANAGEMENT_OVSDB BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ignored
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sys_compatibility_level
+:
+  COMPATIBILITY_LEVEL BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sysc_level
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sysc_level
+:
+  LEVEL uint NEWLINE
+;
+
+slc_format
+:
+  FORMAT format_value = word NEWLINE
+;
+
+slc_protocol
+:
+  PROTOCOL protocol_value = word NEWLINE
+;
+
+slc_remote_high_speed_log
+:
+  REMOTE_HIGH_SPEED_LOG pool_name = structure_name NEWLINE
+;
