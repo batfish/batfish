@@ -5060,4 +5060,167 @@ public final class PaloAltoGrammarTest {
     assertThat(c.getVirtualSystems(), hasKey("vsys1"));
     assertThat(c.getVirtualSystems().get("vsys1").getDisplayName(), equalTo("Primary-VSYS"));
   }
+
+  @Test
+  public void testAddressObjectComprehensive() {
+    String hostname = "address-object-comprehensive";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+
+    // Verify FQDN address objects
+    AddressObject webServer = addressObjects.get("web-server");
+    assertThat(webServer, notNullValue());
+    assertThat(webServer.getType(), equalTo(AddressObject.Type.FQDN));
+    assertThat(webServer.getFqdn(), equalTo("web.example.com"));
+    assertThat(webServer.getDescription(), equalTo("Web server FQDN"));
+    assertThat(webServer.getTags(), contains("web"));
+    assertThat(webServer.getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+
+    AddressObject apiServer = addressObjects.get("api-server");
+    assertThat(apiServer, notNullValue());
+    assertThat(apiServer.getType(), equalTo(AddressObject.Type.FQDN));
+    assertThat(apiServer.getFqdn(), equalTo("api.example.com"));
+
+    // Verify IPv6 address objects - just check parsing succeeds
+    AddressObject ipv6Single = addressObjects.get("ipv6-single");
+    assertThat(ipv6Single, notNullValue());
+    assertThat(ipv6Single.getType(), equalTo(AddressObject.Type.IP));
+    assertThat(ipv6Single.getTags(), contains("ipv6"));
+
+    AddressObject ipv6Prefix = addressObjects.get("ipv6-prefix");
+    assertThat(ipv6Prefix, notNullValue());
+    assertThat(ipv6Prefix.getType(), equalTo(AddressObject.Type.PREFIX));
+    assertThat(ipv6Prefix.getDescription(), equalTo("IPv6 subnet"));
+
+    AddressObject ipv6Range = addressObjects.get("ipv6-range");
+    assertThat(ipv6Range, notNullValue());
+    assertThat(ipv6Range.getType(), equalTo(AddressObject.Type.IP_RANGE));
+  }
+
+  @Test
+  public void testSecurityRuleComprehensive() {
+    String hostname = "security-rule-comprehensive";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, SecurityRule> securityRules = vsys.getRulebase().getSecurityRules();
+
+    // Verify rule with HIP profiles
+    SecurityRule rule1 = securityRules.get("rule1");
+    assertThat(rule1, notNullValue());
+    assertThat(rule1.getSourceHips(), containsInAnyOrder("hip-profile1", "hip-profile2"));
+    assertThat(rule1.getDestinationHips(), contains("hip-profile3"));
+    assertThat(rule1.getHipProfiles(), containsInAnyOrder("hip-profile-a", "hip-profile-b"));
+
+    // Verify rule with group tag
+    SecurityRule rule2 = securityRules.get("rule2");
+    assertThat(rule2, notNullValue());
+    assertThat(rule2.getGroupTag(), equalTo("critical-servers"));
+
+    // Verify rule with custom URL category
+    SecurityRule rule3 = securityRules.get("rule3");
+    assertThat(rule3, notNullValue());
+    assertThat(rule3.getCategory(), iterableWithSize(1));
+    assertThat(rule3.getCategory().iterator().next().getName(), equalTo("custom-category1"));
+
+    // Verify rule with rule type
+    SecurityRule rule4 = securityRules.get("rule4");
+    assertThat(rule4, notNullValue());
+    assertThat(rule4.getRuleType(), equalTo(SecurityRule.RuleType.INTERZONE));
+
+    // Verify rule with source users
+    SecurityRule rule5 = securityRules.get("rule5");
+    assertThat(rule5, notNullValue());
+    assertThat(rule5.getSourceUsers(), containsInAnyOrder("user1", "user2"));
+
+    // Verify rule with negate source
+    SecurityRule rule6 = securityRules.get("rule6");
+    assertThat(rule6, notNullValue());
+    assertThat(rule6.getNegateSource(), equalTo(true));
+
+    // Verify rule with negate destination
+    SecurityRule rule7 = securityRules.get("rule7");
+    assertThat(rule7, notNullValue());
+    assertThat(rule7.getNegateDestination(), equalTo(true));
+  }
+
+  @Test
+  public void testNatRuleComprehensive() {
+    String hostname = "nat-rule-comprehensive";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, NatRule> natRules = vsys.getRulebase().getNatRules();
+
+    // Verify that NAT rules were created
+    assertThat(natRules.keySet(), hasItem("nat1"));
+    assertThat(natRules.keySet(), hasItem("nat2"));
+    assertThat(natRules.keySet(), hasItem("nat3"));
+    assertThat(natRules.keySet(), hasItem("nat4"));
+    assertThat(natRules.keySet(), hasItem("nat5"));
+
+    // Verify rule with active-active device binding
+    NatRule nat1 = natRules.get("nat1");
+    assertThat(
+        nat1.getActiveActiveDeviceBinding(), equalTo(NatRule.ActiveActiveDeviceBinding.PRIMARY));
+
+    // Verify rule with description and disabled
+    NatRule nat5 = natRules.get("nat5");
+    assertThat(nat5.getDescription(), equalTo("Test NAT rule"));
+    assertThat(nat5.getDisabled(), equalTo(true));
+  }
+
+  @Test
+  public void testAddressGroupComprehensive() {
+    String hostname = "address-group-comprehensive";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
+    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
+    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
+
+    // Verify dynamic address group with complex filter
+    AddressGroup prodWebServers = addressGroups.get("prod-web-servers");
+    assertThat(prodWebServers, notNullValue());
+    assertThat(prodWebServers.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(prodWebServers.getFilter(), equalTo("'production' and 'web'"));
+    assertThat(prodWebServers.getDescription(), equalTo("Production web servers"));
+    // Should match only server1 (has both production and web tags)
+    assertThat(
+        prodWebServers.getIpSpace(addressObjects, addressGroups),
+        equalTo(addressObjects.get("server1").getIpSpace()));
+
+    // Verify dynamic address group with IPv6 objects
+    AddressGroup ipv6Servers = addressGroups.get("ipv6-servers");
+    assertThat(ipv6Servers, notNullValue());
+    assertThat(ipv6Servers.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(ipv6Servers.getFilter(), equalTo("ipv6"));
+
+    // Verify static address group
+    AddressGroup allServers = addressGroups.get("all-servers");
+    assertThat(allServers, notNullValue());
+    assertThat(allServers.getType(), equalTo(AddressGroup.Type.STATIC));
+    assertThat(
+        allServers.getMembers(), containsInAnyOrder("server1", "server2", "server3", "server4"));
+
+    // Verify hybrid group (converted from dynamic to static)
+    AddressGroup hybridGroup = addressGroups.get("hybrid-group");
+    assertThat(hybridGroup, notNullValue());
+    assertThat(hybridGroup.getType(), equalTo(AddressGroup.Type.STATIC));
+    assertThat(hybridGroup.getMembers(), contains("server1"));
+    assertThat(hybridGroup.getFilter(), nullValue());
+
+    // Verify nested address groups
+    AddressGroup webServers = addressGroups.get("web-servers");
+    assertThat(webServers, notNullValue());
+    assertThat(webServers.getMembers(), containsInAnyOrder("server1", "server2"));
+
+    AddressGroup allWebServers = addressGroups.get("all-web-servers");
+    assertThat(allWebServers, notNullValue());
+    assertThat(allWebServers.getMembers(), contains("web-servers"));
+
+    // Verify dynamic group matching nested groups with tags
+    AddressGroup taggedGroups = addressGroups.get("tagged-groups");
+    assertThat(taggedGroups, notNullValue());
+    assertThat(taggedGroups.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(taggedGroups.getFilter(), equalTo("'production'"));
+  }
 }
