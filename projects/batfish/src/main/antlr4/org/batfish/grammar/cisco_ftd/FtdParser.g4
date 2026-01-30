@@ -301,7 +301,8 @@ access_group_name
 access_group_tail
 :
    GLOBAL
-   | access_group_direction (INTERFACE interface_name_value = access_group_interface_name)?
+   | access_group_direction INTERFACE interface_name_value = access_group_interface_name
+   | access_group_direction
 ;
 
 access_group_direction

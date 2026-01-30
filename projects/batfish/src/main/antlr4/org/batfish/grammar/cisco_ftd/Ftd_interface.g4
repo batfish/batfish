@@ -64,23 +64,12 @@ if_description
 
 if_ip_address
 :
-   NO? IP ADDRESS
-   (
-      ip = IP_ADDRESS mask = IP_ADDRESS
-      (
-         STANDBY standby_ip = IP_ADDRESS
-      )?
-   )
-   NEWLINE
+   NO? IP ADDRESS ip = IP_ADDRESS mask = IP_ADDRESS (STANDBY standby_ip = IP_ADDRESS)? NEWLINE
 ;
 
 if_mac_address_null
 :
-   MAC_ADDRESS mac = ~NEWLINE+
-   (
-      STANDBY standby_mac = ~NEWLINE+
-   )?
-   NEWLINE
+   MAC_ADDRESS mac = ~NEWLINE+ (STANDBY standby_mac = ~NEWLINE+)? NEWLINE
 ;
 
 if_nameif

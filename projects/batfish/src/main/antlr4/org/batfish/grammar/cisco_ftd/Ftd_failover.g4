@@ -40,8 +40,16 @@ failover_polltime_null
 :
    POLLTIME
    (
-      UNIT MSEC? msec_value = dec (HOLDTIME MSEC? holdtime_value = dec)?
-      | INTERFACE MSEC? msec_value = dec (HOLDTIME holdtime_value = dec)?
+      UNIT msec_value = dec
+      | UNIT MSEC msec_value = dec
+      | UNIT msec_value = dec HOLDTIME holdtime_value = dec
+      | UNIT MSEC msec_value = dec HOLDTIME holdtime_value = dec
+      | UNIT msec_value = dec HOLDTIME MSEC holdtime_value = dec
+      | UNIT MSEC msec_value = dec HOLDTIME MSEC holdtime_value = dec
+      | INTERFACE msec_value = dec
+      | INTERFACE MSEC msec_value = dec
+      | INTERFACE msec_value = dec HOLDTIME holdtime_value = dec
+      | INTERFACE MSEC msec_value = dec HOLDTIME holdtime_value = dec
    )
    NEWLINE
 ;
