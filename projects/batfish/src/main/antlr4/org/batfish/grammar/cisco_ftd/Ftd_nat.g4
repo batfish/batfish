@@ -39,8 +39,11 @@ nat_destination
 
 nat_service
 :
-   SERVICE protocol real_port = nat_service_port mapped_port = nat_service_port
-   | SERVICE real_service = nat_service_object_name_null mapped_service = nat_service_object_name_null
+   SERVICE
+   (
+      protocol real_port = nat_service_port mapped_port = nat_service_port
+      | real_service = nat_service_object_name_null mapped_service = nat_service_object_name_null
+   )
 ;
 
 nat_address

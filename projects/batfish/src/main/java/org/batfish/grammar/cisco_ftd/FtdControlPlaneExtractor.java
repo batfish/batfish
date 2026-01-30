@@ -69,6 +69,7 @@ import org.batfish.grammar.cisco_ftd.FtdParser.Og_group_objectContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Og_network_objectContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Og_port_objectContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Og_service_objectContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Og_service_object_paramsContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Policy_map_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Policy_map_tailContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Port_specContext;
@@ -1070,10 +1071,17 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
     String protocol = ctx.protocol().getText().toLowerCase();
     String portSpec = null;
-    if (ctx.DESTINATION() != null && !ctx.port_spec().isEmpty()) {
-      portSpec = getPortSpecText(ctx.port_spec(ctx.port_spec().size() - 1));
-    } else if (!ctx.port_spec().isEmpty()) {
-      portSpec = getPortSpecText(ctx.port_spec(0));
+    Og_service_object_paramsContext params = ctx.og_service_object_params();
+    if (params != null) {
+      // If DESTINATION is present, use its port_spec; otherwise use SOURCE's port_spec
+      if (params.DESTINATION() != null && params.port_spec().size() > 1) {
+        portSpec = getPortSpecText(params.port_spec(1));
+      } else if (params.SOURCE() != null && params.port_spec().size() > 0) {
+        portSpec = getPortSpecText(params.port_spec(0));
+      } else if (params.DESTINATION() != null && params.port_spec().size() > 0) {
+        // DESTINATION without SOURCE
+        portSpec = getPortSpecText(params.port_spec(0));
+      }
     }
     _currentServiceObjectGroup.addMember(
         FtdServiceObjectGroupMember.serviceObject(protocol, portSpec));

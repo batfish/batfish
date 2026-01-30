@@ -112,14 +112,15 @@ object_group_name_text_null
 
 og_service_object
 :
-   SERVICE_OBJECT protocol
-   (
-      SOURCE port_spec
-   )?
-   (
-      DESTINATION port_spec
-   )?
-   NEWLINE
+   SERVICE_OBJECT protocol og_service_object_params NEWLINE
+;
+
+og_service_object_params
+:
+   SOURCE port_spec DESTINATION port_spec
+   | SOURCE port_spec
+   | DESTINATION port_spec
+   /* empty - neither source nor destination specified */
 ;
 
 og_port_object
