@@ -20,17 +20,6 @@ config {
           }
         }
       }
-      network {
-        interface {
-          ethernet1/1 {
-            layer3 {
-              ip {
-                10.1.1.1/24;
-              }
-            }
-          }
-        }
-      }
     }
   }
 }
