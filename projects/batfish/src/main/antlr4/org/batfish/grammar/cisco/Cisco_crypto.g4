@@ -571,7 +571,8 @@ cpkicc_certificate
 :
    CERTIFICATE
    (
-      SELF_SIGNED
+      CA
+      | SELF_SIGNED
    )? certificate QUIT NEWLINE
 ;
 
