@@ -297,6 +297,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_haContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_lldpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
@@ -2360,6 +2361,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     InterfaceAddress address = toInterfaceAddress(ctx.address);
     _currentInterface.addAddress(address);
     referenceInterfaceAddress(ctx.address, LAYER3_INTERFACE_ADDRESS);
+  }
+
+  @Override
+  public void exitSniel3_lldp(Sniel3_lldpContext ctx) {
+    _currentInterface.setLldpEnabled(toBoolean(ctx.yn));
   }
 
   @Override

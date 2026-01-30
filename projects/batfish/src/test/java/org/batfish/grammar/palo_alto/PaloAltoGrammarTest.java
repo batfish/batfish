@@ -1653,6 +1653,27 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceNameUnit1, hasDescription("unit 1")));
   }
 
+  @Test
+  public void testInterfaceLldpExtraction() {
+    PaloAltoConfiguration c = parsePaloAltoConfig("interface-lldp");
+    Interface e1_1 = c.getInterfaces().get("ethernet1/1");
+    Interface e1_2 = c.getInterfaces().get("ethernet1/2");
+    Interface e1_3 = c.getInterfaces().get("ethernet1/3");
+    Interface e1_4 = c.getInterfaces().get("ethernet1/4");
+
+    assertThat(e1_1, notNullValue());
+    assertThat(e1_1.getLldpEnabled(), equalTo(true));
+
+    assertThat(e1_2, notNullValue());
+    assertThat(e1_2.getLldpEnabled(), equalTo(false));
+
+    assertThat(e1_3, notNullValue());
+    assertThat(e1_3.getLldpEnabled(), nullValue());
+
+    assertThat(e1_4, notNullValue());
+    assertThat(e1_4.getLldpEnabled(), equalTo(true));
+  }
+
   // Test for https://github.com/batfish/batfish/issues/5598.
   @Test
   public void testInterfaceAggregateExtraction() {
