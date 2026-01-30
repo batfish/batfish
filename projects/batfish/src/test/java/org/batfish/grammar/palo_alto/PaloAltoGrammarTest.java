@@ -282,6 +282,8 @@ import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
+import org.batfish.representation.palo_alto.SnmpSetting;
+import org.batfish.representation.palo_alto.SnmpSystem;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.Template;
@@ -4999,5 +5001,42 @@ public final class PaloAltoGrammarTest {
     assertThat(iface3Settings.getAreaName(), equalTo(2L));
     assertTrue(iface3Settings.getPassive());
     assertThat(iface3Settings.getCost(), equalTo(100));
+  }
+
+  @Test
+  public void testSnmpSettingsExtraction() {
+    String hostname = "snmp-settings";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify SNMP settings are extracted
+    assertThat(c.getSnmpSetting(), notNullValue());
+    SnmpSetting snmpSetting = c.getSnmpSetting();
+
+    // Verify SNMP system configuration
+    assertThat(snmpSetting.getSnmpSystem(), notNullValue());
+    SnmpSystem snmpSystem = snmpSetting.getSnmpSystem();
+    // Note: Only the last SNMP system setting is preserved due to implementation
+    assertThat(snmpSystem.getSendEventSpecificTraps(), equalTo(true));
+
+    // Verify SNMP access settings
+    assertThat(snmpSetting.getAccessSettings(), iterableWithSize(4));
+  }
+
+  @Test
+  public void testIpv6PrefixExtraction() {
+    String hostname = "ipv6-prefix";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify configuration parses successfully
+    assertThat(c, notNullValue());
+  }
+
+  @Test
+  public void testIpv6PrefixConversion() {
+    String hostname = "ipv6-prefix";
+    Configuration c = parseConfig(hostname);
+
+    // Verify configuration converts successfully
+    assertThat(c, notNullValue());
   }
 }
