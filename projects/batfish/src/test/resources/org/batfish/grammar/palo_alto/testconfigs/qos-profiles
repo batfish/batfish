@@ -1,0 +1,29 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test QoS profiles with different classes and priorities
+set deviceconfig system hostname qos-profiles
+
+# Network interfaces
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.0.2.1/24
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+# QoS profile configuration with different priority classes
+set network qos profile default class-bandwidth-type mbps
+set network qos profile default class class1 priority real-time
+set network qos profile default class class2 priority high
+set network qos profile default class class3 priority high
+set network qos profile default class class4 priority medium
+set network qos profile default class class5 priority medium
+set network qos profile default class class6 priority low
+set network qos profile default class class7 priority low
+set network qos profile default class class8 priority low
+
+# Custom QoS profile for specific applications
+set network qos profile app-profile class-bandwidth-type kbps
+set network qos profile app-profile class realtime priority real-time
+set network qos profile app-profile class business-critical priority high
+set network qos profile app-profile class normal priority medium
+
+# Zones for testing
+set zone trust network layer3 ethernet1/1
+set zone untrust network layer3 ethernet1/2
