@@ -3509,7 +3509,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     unrecognized(warning, ctx);
   }
 
-  private String getDetailedUnrecognizedMessage(UnrecognizedContext ctx, String leadText) {
+  private String getDetailedUnrecognizedMessage(
+      @SuppressWarnings("unused") UnrecognizedContext ctx, String leadText) {
     StringBuilder message = new StringBuilder();
     message.append("This syntax is unrecognized");
 
@@ -3578,7 +3579,8 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
     }
   }
 
-  private String getDetailedErrorMessage(ErrorNode errorNode, int line, String lineText) {
+  private String getDetailedErrorMessage(
+      @SuppressWarnings("unused") ErrorNode errorNode, int line, String lineText) {
     StringBuilder message = new StringBuilder();
 
     if (lineText.contains("invalid") || lineText.contains("bad")) {
