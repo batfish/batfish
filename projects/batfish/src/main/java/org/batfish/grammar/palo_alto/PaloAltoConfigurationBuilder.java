@@ -256,8 +256,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_snmp_settingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdss_access_settingContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdss_snmp_systemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdssa_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_device_groupContext;
@@ -454,6 +458,9 @@ import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
+import org.batfish.representation.palo_alto.SnmpAccessSetting;
+import org.batfish.representation.palo_alto.SnmpSetting;
+import org.batfish.representation.palo_alto.SnmpSystem;
 import org.batfish.representation.palo_alto.SourceTranslation;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
@@ -515,6 +522,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private NatRule _currentNatRule;
   private DestinationTranslation _currentNatRuleDestinationTranslation;
   private boolean _currentNtpServerPrimary;
+  private SnmpAccessSetting _currentSnmpAccessSetting;
+  private SnmpSystem _currentSnmpSystem;
   private Interface _currentParentInterface;
   private PolicyRule _currentPolicyRule;
   private boolean _currentPolicyRuleImport;
@@ -1803,6 +1812,61 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       _currentConfiguration.setDnsServerPrimary(getText(ctx.primary_name));
     } else if (ctx.secondary_name != null) {
       _currentConfiguration.setDnsServerSecondary(getText(ctx.secondary_name));
+    }
+  }
+
+  @Override
+  public void enterSds_snmp_setting(Sds_snmp_settingContext ctx) {
+    if (_currentConfiguration.getSnmpSetting() == null) {
+      _currentConfiguration.setSnmpSetting(new SnmpSetting());
+    }
+  }
+
+  @Override
+  public void enterSdss_access_setting(Sdss_access_settingContext ctx) {
+    // Will create a new access setting for each version encountered
+  }
+
+  @Override
+  public void enterSdssa_definition(Sdssa_definitionContext ctx) {
+    if (ctx.VERSION() != null) {
+      String version = getText(ctx.variable());
+      _currentSnmpAccessSetting = new SnmpAccessSetting(version);
+    } else if (ctx.SNMP_COMMUNITY_STRING() != null) {
+      if (_currentSnmpAccessSetting != null) {
+        String communityString = getText(ctx.variable());
+        _currentSnmpAccessSetting.addCommunityString(communityString);
+      }
+    }
+  }
+
+  @Override
+  public void exitSdssa_definition(Sdssa_definitionContext ctx) {
+    if (ctx.VERSION() != null && _currentSnmpAccessSetting != null) {
+      _currentConfiguration.getSnmpSetting().addAccessSetting(_currentSnmpAccessSetting);
+    }
+  }
+
+  @Override
+  public void enterSdss_snmp_system(Sdss_snmp_systemContext ctx) {
+    _currentSnmpSystem = new SnmpSystem();
+    if (_currentConfiguration.getSnmpSetting() != null) {
+      _currentConfiguration.getSnmpSetting().setSnmpSystem(_currentSnmpSystem);
+    }
+  }
+
+  @Override
+  public void exitSdss_snmp_system(Sdss_snmp_systemContext ctx) {
+    if (_currentSnmpSystem != null) {
+      if (ctx.SEND_EVENT_SPECIFIC_TRAPS() != null) {
+        _currentSnmpSystem.setSendEventSpecificTraps(toBoolean(ctx.yes_or_no()));
+      }
+      if (ctx.CONTACT() != null && ctx.variable() != null) {
+        _currentSnmpSystem.setContact(getText(ctx.variable()));
+      }
+      if (ctx.LOCATION() != null && ctx.variable() != null) {
+        _currentSnmpSystem.setLocation(getText(ctx.variable()));
+      }
     }
   }
 
