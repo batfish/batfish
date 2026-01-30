@@ -943,6 +943,7 @@ s_crypto
    NO? CRYPTO
    (
       crypto_ca
+      | crypto_call
       | crypto_csr_params
       | crypto_dynamic_map
       | crypto_engine
@@ -953,10 +954,38 @@ s_crypto
       | crypto_isakmp
       | crypto_key
       | crypto_keyring
+      | crypto_logging
       | crypto_map
       | crypto_pki
-      | null_rest_of_line
+      | crypto_ssl
+      | crypto_ssh
+      | crypto_vpn
    )
+;
+
+crypto_call
+:
+   CALL null_rest_of_line
+;
+
+crypto_logging
+:
+   LOGGING null_rest_of_line
+;
+
+crypto_ssl
+:
+   SSL null_rest_of_line
+;
+
+crypto_ssh
+:
+   SSH null_rest_of_line
+;
+
+crypto_vpn
+:
+   VPN null_rest_of_line
 ;
 
 s_key
