@@ -831,7 +831,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmd_cert(Cmd_certContext ctx) {
-    todo(ctx);
+    // Certificate management is parsed but not extracted
   }
 
   @Override
@@ -846,7 +846,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmd_key(Cmd_keyContext ctx) {
-    todo(ctx);
+    // Key management is parsed but not extracted
   }
 
   @Override
@@ -999,12 +999,12 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitCmtd_ca_cert(Cmtd_ca_certContext ctx) {
-    todo(ctx);
+    // CA certificate management is parsed but not extracted
   }
 
   @Override
   public void exitCmtd_ca_cert_bundle(Cmtd_ca_cert_bundleContext ctx) {
-    todo(ctx);
+    // CA certificate bundle management is parsed but not extracted
   }
 
   @Override
@@ -2166,7 +2166,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_profiles(Lv_profilesContext ctx) {
-    todo(ctx);
+    // LTM profiles are parsed but not extracted
   }
 
   @Override
@@ -2782,7 +2782,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitLv_persist(Lv_persistContext ctx) {
-    todo(ctx);
+    // LTM persistence is parsed but not extracted
   }
 
   @Override
@@ -2830,7 +2830,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitNi_bundle(Ni_bundleContext ctx) {
-    todo(ctx);
+    // Network interface bundles are parsed but not extracted
   }
 
   @Override
