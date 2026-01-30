@@ -254,6 +254,7 @@ import org.batfish.representation.f5_bigip.HaGroupPool;
 import org.batfish.representation.f5_bigip.HaGroupTrunk;
 import org.batfish.representation.f5_bigip.ManagementIp;
 import org.batfish.representation.f5_bigip.Route;
+import org.batfish.representation.f5_bigip.SnmpCommunity;
 import org.batfish.representation.f5_bigip.TrafficGroup;
 import org.batfish.representation.f5_bigip.UnicastAddress;
 import org.batfish.representation.f5_bigip.Virtual;
@@ -3661,5 +3662,51 @@ public final class F5BigipStructuredGrammarTest {
 
     // detect all structure references
     assertThat(ans, hasNumReferrers(file, VLAN, used, 3));
+  }
+
+  @Test
+  public void testSnmpConversion() throws IOException {
+    String hostname = "f5_bigip_structured_snmp";
+    F5BigipConfiguration vc = parseVendorConfig(hostname);
+
+    // Test SNMP communities
+    assertThat(vc.getSnmpCommunities(), hasKey("/Common/public"));
+    assertThat(vc.getSnmpCommunities(), hasKey("/Common/private"));
+
+    // Verify public community
+    {
+      SnmpCommunity publicComm = vc.getSnmpCommunities().get("/Common/public");
+      assertThat(publicComm.getCommunityName(), equalTo("public"));
+      assertThat(publicComm.getSource(), equalTo("default"));
+    }
+
+    // Verify private community
+    {
+      SnmpCommunity privateComm = vc.getSnmpCommunities().get("/Common/private");
+      assertThat(privateComm.getCommunityName(), equalTo("private"));
+      assertThat(privateComm.getSource(), nullValue());
+    }
+  }
+
+  @Test
+  public void testHaGroupConversion() throws IOException {
+    String hostname = "f5_bigip_structured_sys_ha_group";
+    F5BigipConfiguration vc = parseVendorConfig(hostname);
+
+    // Test HA group configuration
+    assertThat(vc.getHaGroups(), hasKey("g1"));
+
+    HaGroup haGroup = vc.getHaGroups().get("g1");
+    assertThat(haGroup.getActiveBonus(), equalTo(12));
+
+    // Test HA group pools
+    assertThat(haGroup.getPools(), hasKey("/Common/p1"));
+    HaGroupPool pool = haGroup.getPools().get("/Common/p1");
+    assertThat(pool.getWeight(), equalTo(34));
+
+    // Test HA group trunks
+    assertThat(haGroup.getTrunks(), hasKey("t1"));
+    HaGroupTrunk trunk = haGroup.getTrunks().get("t1");
+    assertThat(trunk.getWeight(), equalTo(56));
   }
 }
