@@ -29,49 +29,48 @@ ftd_configuration
 
 stanza
 :
-   enable_stanza
-   | hostname_stanza
-   | interface_stanza
-   | access_list_stanza
+   aaa_stanza
    | access_group_stanza
-   | names_stanza
-   | object_stanza
-   | object_group_stanza
-   | object_group_search_stanza_null
-   | route_stanza
-   | nat_stanza
-   | dns_stanza
-   | ftp_stanza
-   | ngips_stanza
-   | service_module_stanza
-   | time_range_stanza
-   | failover_stanza
+   | access_list_stanza
+   | arp_stanza
+   | class_map_stanza
+   | cts_stanza
+   | cryptochecksum_stanza
    | crypto_stanza
-   | tunnel_group_stanza
-   | router_ospf_stanza
-   | router_bgp_stanza
+   | dns_stanza
+   | enable_stanza
+   | failover_stanza
+   | flow_offload_stanza
+   | ftp_stanza
+   | hostname_stanza
+   | icmp_stanza
+   | interface_stanza
    | logging_stanza
+   | mac_address_stanza
+   | monitor_interface_stanza
    | mtu_stanza
-   | timeout_stanza
+   | names_stanza
+   | nat_stanza
+   | ngips_stanza
+   | object_group_search_stanza_null
+   | object_group_stanza
+   | object_stanza
+   | pager_stanza
+   | policy_map_stanza
+   | route_stanza
+   | router_bgp_stanza
+   | router_ospf_stanza
+   | service_module_stanza
+   | service_policy_stanza
+   | snmp_server_stanza
+   | snort_stanza
    | ssh_stanza
    | telnet_stanza
-   | icmp_stanza
-   | snmp_server_stanza
-   | arp_stanza
-   | version_stanza
-   | enable_password_stanza
-   | mac_address_stanza
-   | cts_stanza
-   | snort_stanza
-   | flow_offload_stanza
-   | cryptochecksum_stanza
-   | class_map_stanza
-   | policy_map_stanza
-   | service_policy_stanza
    | threat_detection_stanza
-   | monitor_interface_stanza
-   | pager_stanza
-   | aaa_stanza
+   | time_range_stanza
+   | timeout_stanza
+   | tunnel_group_stanza
+   | version_stanza
    | unrecognized_stanza
 ;
 
@@ -334,11 +333,6 @@ mac_address_stanza
 version_stanza
 :
    NGFW VERSION version = ~NEWLINE* NEWLINE
-;
-
-enable_password_stanza
-:
-   ENABLE PASSWORD ~NEWLINE* NEWLINE
 ;
 
 cts_stanza
