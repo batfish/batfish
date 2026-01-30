@@ -226,6 +226,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_external_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
@@ -269,7 +270,19 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_templateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_template_stackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_and_also_toContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_certificate_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_communityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_facilityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_formatContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_gatewayContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_managerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_toContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_transportContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_versionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_aggregate_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
@@ -3322,6 +3335,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitS_profiles(S_profilesContext ctx) {
+    // Silently consume security profile settings
+  }
+
+  @Override
   public void enterS_service_definition(S_service_definitionContext ctx) {
     String name = getText(ctx.name);
     _currentService = _currentVsys.getServices().computeIfAbsent(name, Service::new);
@@ -3451,6 +3469,66 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return;
     }
     _currentSyslogServer.setAddress(getText(ctx.address));
+  }
+
+  @Override
+  public void exitSlss_certificate_profile(Slss_certificate_profileContext ctx) {
+    // Silently consume certificate-profile - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_format(Slss_formatContext ctx) {
+    // Silently consume format settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_from(Slss_fromContext ctx) {
+    // Silently consume email from settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_to(Slss_toContext ctx) {
+    // Silently consume email to settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_gateway(Slss_gatewayContext ctx) {
+    // Silently consume gateway settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_and_also_to(Slss_and_also_toContext ctx) {
+    // Silently consume and-also-to settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_transport(Slss_transportContext ctx) {
+    // Silently consume transport settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_facility(Slss_facilityContext ctx) {
+    // Silently consume facility settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_port(Slss_portContext ctx) {
+    // Silently consume port settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_community(Slss_communityContext ctx) {
+    // Silently consume SNMP community settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_manager(Slss_managerContext ctx) {
+    // Silently consume SNMP manager settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_version(Slss_versionContext ctx) {
+    // Silently consume version settings - not used by Batfish
   }
 
   @Override
