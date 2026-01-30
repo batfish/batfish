@@ -1,0 +1,7 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test IPv6 address and prefix configuration
+set deviceconfig system hostname ipv6-prefix
+
+# IPv6 address objects
+set shared address ipv6-single ip-range 2001:db8::100-2001:db8::100
+set shared address ipv6-range ip-range 2001:db8::200-2001:db8::300
