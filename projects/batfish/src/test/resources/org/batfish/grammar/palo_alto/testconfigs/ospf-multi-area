@@ -1,0 +1,75 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test OSPF with multiple areas and different area types
+set deviceconfig system hostname ospf-multi-area
+
+# Interfaces
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.10 ip 10.0.0.1/24
+set network interface ethernet ethernet1/1 layer3 units ethernet1/1.10 tag 10
+set network interface ethernet ethernet1/2 layer3 units ethernet1/2.20 ip 10.0.1.1/24
+set network interface ethernet ethernet1/2 layer3 units ethernet1/2.20 tag 20
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.30 ip 10.0.2.1/24
+set network interface ethernet ethernet1/3 layer3 units ethernet1/3.30 tag 30
+set network interface ethernet ethernet1/4 layer3 units ethernet1/4.40 ip 10.0.3.1/24
+set network interface ethernet ethernet1/4 layer3 units ethernet1/4.40 tag 40
+set network interface ethernet ethernet1/5 layer3 units ethernet1/5.50 ip 10.0.4.1/24
+set network interface ethernet ethernet1/5 layer3 units ethernet1/5.50 tag 50
+
+# Virtual router
+set network virtual-router default interface [ ethernet1/1.10 ethernet1/2.20 ethernet1/3.30 ethernet1/4.40 ethernet1/5.50 ]
+
+# OSPF process
+set network virtual-router default protocol ospf router-id 1.1.1.1
+set network virtual-router default protocol ospf enable yes
+set network virtual-router default protocol ospf reject-default-route no
+
+# Area 0 (backbone area) - normal type
+set network virtual-router default protocol ospf area 0.0.0.0 type normal
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 enable yes
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 passive no
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 metric 10
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 priority 1
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 hello-interval 10
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 dead-counts 4
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 retransmit-interval 5
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 transit-delay 1
+set network virtual-router default protocol ospf area 0.0.0.0 interface ethernet1/1.10 link-type broadcast
+
+# Area 1 - stub area with default route
+set network virtual-router default protocol ospf area 0.0.0.1 type stub default-route advertise metric 100
+set network virtual-router default protocol ospf area 0.0.0.1 type stub accept-summary yes
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 enable yes
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 passive no
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 metric 50
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 priority 1
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 hello-interval 10
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 dead-counts 4
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 retransmit-interval 5
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 transit-delay 1
+set network virtual-router default protocol ospf area 0.0.0.1 interface ethernet1/2.20 link-type broadcast
+
+# Area 2 - stub area without summaries (totally stubby)
+set network virtual-router default protocol ospf area 0.0.0.2 type stub accept-summary no
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 enable yes
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 passive yes
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 metric 100
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 priority 1
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 hello-interval 10
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 dead-counts 4
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 retransmit-interval 5
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 transit-delay 1
+set network virtual-router default protocol ospf area 0.0.0.2 interface ethernet1/3.30 link-type broadcast
+
+# Area 3 - NSSA area with default route
+set network virtual-router default protocol ospf area 0.0.0.3 type nssa default-route advertise metric 200
+set network virtual-router default protocol ospf area 0.0.0.3 type nssa default-route advertise type ext-2
+set network virtual-router default protocol ospf area 0.0.0.3 type nssa accept-summary no
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 enable yes
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 passive no
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 metric 75
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 priority 1
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 hello-interval 10
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 dead-counts 4
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 retransmit-interval 5
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 transit-delay 1
+set network virtual-router default protocol ospf area 0.0.0.3 interface ethernet1/4.40 link-type broadcast
+
