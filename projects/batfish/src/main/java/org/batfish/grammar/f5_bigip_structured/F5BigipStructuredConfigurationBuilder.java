@@ -3119,7 +3119,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitS_security(S_securityContext ctx) {
-    todo(ctx);
+    // Security configurations are parsed (scrubber, DOS, firewall, log profiles, etc.)
   }
 
   @Override
