@@ -1,0 +1,21 @@
+#RANCID-CONTENT-TYPE: paloalto
+# Test SNMP settings
+set deviceconfig system hostname snmp-settings
+
+# Interfaces
+set network interface ethernet ethernet1/1 layer3 ip 10.0.1.1/24
+set network virtual-router default interface ethernet1/1
+
+# SNMP system settings
+set deviceconfig system snmp-setting snmp-system location ServerRoom
+set deviceconfig system snmp-setting snmp-system contact admin@example.com
+set deviceconfig system snmp-setting snmp-system send-event-specific-traps yes
+
+# SNMP access settings
+set deviceconfig system snmp-setting access-setting version version1
+set deviceconfig system snmp-setting access-setting version version1 snmp-community-string public
+set deviceconfig system snmp-setting access-setting version version2c
+set deviceconfig system snmp-setting access-setting version version2c snmp-community-string private
+
+# Zone
+set zone trust network layer3 ethernet1/1
