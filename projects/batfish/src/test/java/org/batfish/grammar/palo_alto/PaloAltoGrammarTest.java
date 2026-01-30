@@ -5039,4 +5039,25 @@ public final class PaloAltoGrammarTest {
     // Verify configuration converts successfully
     assertThat(c, notNullValue());
   }
+
+  @Test
+  public void testLegacyConfigFormat() {
+    String hostname = "config-filesystem-format";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify legacy format (set config devices localhost.localdomain ...) is supported
+    assertThat(c, notNullValue());
+    assertThat(c.getHostname(), equalTo("config-filesystem-format"));
+  }
+
+  @Test
+  public void testLegacyVsysFormat() {
+    String hostname = "vsys-configs";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify legacy vsys format (set config devices localhost.localdomain vsys ...) is supported
+    assertThat(c, notNullValue());
+    assertThat(c.getVirtualSystems(), hasKey("vsys1"));
+    assertThat(c.getVirtualSystems().get("vsys1").getDisplayName(), equalTo("Primary-VSYS"));
+  }
 }
