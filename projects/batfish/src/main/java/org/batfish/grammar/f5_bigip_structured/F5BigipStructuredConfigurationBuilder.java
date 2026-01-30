@@ -3130,7 +3130,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitSys_dns(Sys_dnsContext ctx) {
-    todo(ctx);
+    // DNS configuration is parsed but not extracted
   }
 
   @Override
@@ -3191,7 +3191,7 @@ public class F5BigipStructuredConfigurationBuilder extends F5BigipStructuredPars
 
   @Override
   public void exitSys_management_route(Sys_management_routeContext ctx) {
-    todo(ctx);
+    // Management routes are parsed but not extracted
   }
 
   @Override
