@@ -708,6 +708,7 @@ public class FtdConfiguration extends VendorConfiguration {
       case OBJECT_GROUP:
         return resolveNetworkObjectGroupIpSpace(specifier.getObjectName(), new HashSet<>());
     }
+    throw new IllegalStateException("Unhandled AddressType: " + specifier.getType());
   }
 
   private @Nullable IpSpace resolveNetworkObjectIpSpace(
@@ -759,6 +760,7 @@ public class FtdConfiguration extends VendorConfiguration {
       case GROUP_OBJECT:
         return resolveNetworkObjectGroupIpSpace(member.getObjectName(), visited);
     }
+    throw new IllegalStateException("Unhandled MemberType: " + member.getType());
   }
 
   private @Nullable IpProtocol toIpProtocol(@Nullable String protocol) {
@@ -1508,6 +1510,7 @@ public class FtdConfiguration extends VendorConfiguration {
               case FQDN:
                 return null;
             }
+            throw new IllegalStateException("Unhandled NetworkObjectType: " + obj.getType());
           }
         });
   }
