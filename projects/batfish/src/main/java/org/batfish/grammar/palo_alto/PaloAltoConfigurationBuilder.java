@@ -2865,6 +2865,31 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSdhag_group_id(PaloAltoParser.Sdhag_group_idContext ctx) {
+    toInteger(ctx, ctx.ha_group_id()).ifPresent(_currentHighAvailability::setGroupId);
+  }
+
+  @Override
+  public void exitSdha_enabled(PaloAltoParser.Sdha_enabledContext ctx) {
+    _currentHighAvailability.setEnabled(toBoolean(ctx.yes_or_no()));
+  }
+
+  @Override
+  public void exitSds_timezone(PaloAltoParser.Sds_timezoneContext ctx) {
+    _currentConfiguration.setTimezone(getText(ctx.variable()));
+  }
+
+  @Override
+  public void exitSds_type(PaloAltoParser.Sds_typeContext ctx) {
+    _currentConfiguration.setType(getText(ctx.variable()));
+  }
+
+  @Override
+  public void exitSds_permitted_ip(PaloAltoParser.Sds_permitted_ipContext ctx) {
+    _currentConfiguration.setPermittedIp(toPrefix(ctx.ip_prefix()));
+  }
+
+  @Override
   public void exitSrn_active_active_device_binding(Srn_active_active_device_bindingContext ctx) {
     toActiveActiveDeviceBinding(ctx, ctx.bind)
         .ifPresent(_currentNatRule::setActiveActiveDeviceBinding);
@@ -2894,6 +2919,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private static final IntegerSpace HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE =
       IntegerSpace.of(Range.closed(0, 1));
 
+  private static final IntegerSpace HA_GROUP_ID_SPACE = IntegerSpace.of(Range.closed(1, 63));
+
   private Optional<Integer> toInteger(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_idContext deviceId) {
     return toIntegerInSpace(
@@ -2901,6 +2928,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         deviceId,
         HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE,
         "high-availability active-active device-id");
+  }
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext ctx, PaloAltoParser.Ha_group_idContext groupId) {
+    return toIntegerInSpace(ctx, groupId, HA_GROUP_ID_SPACE, "high-availability group-id");
   }
 
   private static final IntegerSpace ACTIVE_ACTIVE_DEVICE_BINDING_SPACE =
