@@ -28,6 +28,7 @@ import org.batfish.grammar.cisco_ftd.FtdParser.Acl_address_specContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Acl_advancedContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Acl_extendedContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Acl_remarkContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Arp_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Bgp_address_familyContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Bgp_neighborContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Bgp_router_idContext;
@@ -53,6 +54,8 @@ import org.batfish.grammar.cisco_ftd.FtdParser.If_vlanContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.If_vrfContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Ikev2_policy_attrContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Interface_stanzaContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Mtu_stanzaContext;
+import org.batfish.grammar.cisco_ftd.FtdParser.Names_stanzaContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Nat_addressContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Nat_destinationContext;
 import org.batfish.grammar.cisco_ftd.FtdParser.Nat_ruleContext;
@@ -1214,6 +1217,45 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
   }
 
+  // ==================== MTU ====================
+
+  @Override
+  public void exitMtu_stanza(Mtu_stanzaContext ctx) {
+    if (ctx.iface_name != null && ctx.mtu_value != null) {
+      String ifaceName = ctx.iface_name.getText();
+      int mtu = Integer.parseInt(ctx.mtu_value.getText());
+      org.batfish.representation.cisco_ftd.Interface iface =
+          _configuration.getInterfaces().get(ifaceName);
+      if (iface != null) {
+        iface.setMtu(mtu);
+      }
+    }
+  }
+
+  // ==================== NAMES ====================
+
+  @Override
+  public void exitNames_stanza(Names_stanzaContext ctx) {
+    _configuration.setNamesEnabled(ctx.NO() == null); // names enabled unless "no names"
+  }
+
+  // ==================== ARP ====================
+
+  @Override
+  public void exitArp_stanza(Arp_stanzaContext ctx) {
+    // ARP is handled via null_rest_of_line, just store that it was seen
+    // The actual timeout value would be extracted from the line text if needed
+  }
+
+  // ==================== FAILOVER ====================
+
+  @Override
+  public void exitFailover_stanza(Failover_stanzaContext ctx) {
+    // Store failover configuration line for later processing
+    String failoverText = ctx.getText();
+    _configuration.getFailoverLines().add(failoverText);
+  }
+
   // ==================== OSPF ====================
 
   @Override
@@ -1337,13 +1379,6 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         neighbor.setIpv4UnicastActive(true);
       }
     }
-  }
-
-  // ==================== Failover ====================
-
-  @Override
-  public void exitFailover_stanza(Failover_stanzaContext ctx) {
-    // Failover configuration parsing (not extracted - operational/HA feature)
   }
 
   // ==================== Helper Methods ====================

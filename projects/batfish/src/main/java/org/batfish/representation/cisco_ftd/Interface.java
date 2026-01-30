@@ -71,6 +71,14 @@ public class Interface implements Serializable {
     return _vrf;
   }
 
+  public void setMtu(@Nullable Integer mtu) {
+    _mtu = mtu;
+  }
+
+  public @Nullable Integer getMtu() {
+    return _mtu;
+  }
+
   private final String _name;
   private @Nullable String _description;
   private boolean _active = true; // Interfaces are active by default
@@ -79,4 +87,5 @@ public class Interface implements Serializable {
   private @Nullable Integer _securityLevel;
   private @Nullable Integer _vlan;
   private @Nullable String _vrf;
+  private @Nullable Integer _mtu;
 }

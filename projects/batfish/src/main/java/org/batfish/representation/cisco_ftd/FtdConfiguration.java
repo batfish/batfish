@@ -89,6 +89,7 @@ public class FtdConfiguration extends VendorConfiguration {
     _tunnelGroups = new HashMap<>();
     _vrfs = new TreeMap<>();
     _vrfs.put(Configuration.DEFAULT_VRF_NAME, new Vrf(Configuration.DEFAULT_VRF_NAME));
+    _names = new HashMap<>();
   }
 
   @Override
@@ -275,7 +276,40 @@ public class FtdConfiguration extends VendorConfiguration {
     // Convert VPN settings (IKEv2, IPsec, Tunnel Groups)
     convertVpnSettings(c);
 
+    // Convert names (hostname mappings) to vendor family metadata
+    convertNames(c);
+
+    // Convert ARP timeout to interface settings
+    convertArpTimeout(c);
+
     return List.of(c);
+  }
+
+  private void convertNames(Configuration c) {
+    if (_names.isEmpty() || !_namesEnabled) {
+      return;
+    }
+    CiscoFamily cisco = c.getVendorFamily().getCisco();
+    if (cisco == null) {
+      cisco = new CiscoFamily();
+      c.getVendorFamily().setCisco(cisco);
+    }
+    Service namesService = cisco.getServices().computeIfAbsent("names", k -> new Service());
+    _names.forEach((name, ip) -> namesService.getSubservices().put(name + ":" + ip, new Service()));
+  }
+
+  private void convertArpTimeout(Configuration c) {
+    if (_arpTimeout == null) {
+      return;
+    }
+    // Store ARP timeout in vendor family metadata
+    CiscoFamily cisco = c.getVendorFamily().getCisco();
+    if (cisco == null) {
+      cisco = new CiscoFamily();
+      c.getVendorFamily().setCisco(cisco);
+    }
+    Service arpService = cisco.getServices().computeIfAbsent("arp", k -> new Service());
+    arpService.getSubservices().put("timeout:" + _arpTimeout, new Service());
   }
 
   // Configuration properties
@@ -302,6 +336,9 @@ public class FtdConfiguration extends VendorConfiguration {
   private final @Nonnull Map<Integer, FtdIkev2Policy> _ikev2Policies;
   private final @Nonnull Map<String, FtdTunnelGroup> _tunnelGroups;
   private @Nullable FtdBgpProcess _bgpProcess;
+  private final @Nonnull Map<String, String> _names; // name-to-IP mappings
+  private @Nullable Integer _arpTimeout; // ARP timeout in seconds
+  private boolean _namesEnabled = false;
 
   public @Nullable FtdBgpProcess getBgpProcess() {
     return _bgpProcess;
@@ -309,6 +346,26 @@ public class FtdConfiguration extends VendorConfiguration {
 
   public void setBgpProcess(@Nullable FtdBgpProcess bgpProcess) {
     _bgpProcess = bgpProcess;
+  }
+
+  public @Nonnull Map<String, String> getNames() {
+    return _names;
+  }
+
+  public void setNamesEnabled(boolean enabled) {
+    _namesEnabled = enabled;
+  }
+
+  public boolean getNamesEnabled() {
+    return _namesEnabled;
+  }
+
+  public void setArpTimeout(@Nullable Integer arpTimeout) {
+    _arpTimeout = arpTimeout;
+  }
+
+  public @Nullable Integer getArpTimeout() {
+    return _arpTimeout;
   }
 
   private void convertVpnSettings(Configuration c) {
@@ -1602,6 +1659,10 @@ public class FtdConfiguration extends VendorConfiguration {
     String nameif = repIface.getNameif();
     if (nameif != null) {
       ib.setZoneName(nameif);
+    }
+
+    if (repIface.getMtu() != null) {
+      ib.setMtu(repIface.getMtu());
     }
 
     org.batfish.datamodel.Interface newIface = ib.build();
