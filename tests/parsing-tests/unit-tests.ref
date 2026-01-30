@@ -142,6 +142,8 @@
         "configs/if_tag_is" : "CISCO_IOS_XR",
         "configs/interface_exit" : "CISCO_IOS",
         "configs/interface_sdr" : "CISCO_IOS",
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "CISCO_IOS",
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "CISCO_IOS",
         "configs/ios-xe/ios-xe-bgp-vrf" : "CISCO_IOS",
         "configs/ios_banner" : "CISCO_IOS",
         "configs/ios_banner_dos" : "CISCO_IOS",
@@ -712,6 +714,12 @@
         "interfacemtu" : [
           "configs/juniper-interfaces"
         ],
+        "ios-crypto-keyword-names" : [
+          "configs/ios-crypto-keyword-names/ios-crypto-keyword-names"
+        ],
+        "ios-crypto-unrecognized" : [
+          "configs/ios-crypto-unrecognized/ios-crypto-unrecognized"
+        ],
         "ios-xe-bgp-vrf" : [
           "configs/ios-xe/ios-xe-bgp-vrf"
         ],
@@ -1225,6 +1233,8 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",
@@ -42191,6 +42201,231 @@
             "  EOF:<EOF>)"
           ]
         },
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza*",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios-crypto-keyword-names'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            POLICY:'policy')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            PROFILE:'profile')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            DEFAULT:'default')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            POLICY:'policy')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              VARIABLE:'selfsigned'",
+            "              NEWLINE:'\\n'))",
+            "          (cpkit_null*",
+            "            REVOCATION_CHECK:'revocation-check'",
+            "            (null_rest_of_line*",
+            "              NONE:'none'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            PROFILE:'profile')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              URL:'url'",
+            "              HTTP:'http'",
+            "              COLON:':'",
+            "              VARIABLE:'//pki.example.com'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            DEFAULT:'default')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              VARIABLE:'selfsigned'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_interface*",
+            "      INTERFACE:'interface'",
+            "      (s_interface_definition",
+            "        iname = (interface_name*",
+            "          name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "          DEC:'0'  <== mode:M_Interface",
+            "          FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "          (range*",
+            "            (subrange*",
+            "              low = (dec*",
+            "                DEC:'0'  <== mode:M_Interface))))",
+            "        NEWLINE:'\\n'  <== mode:M_Interface",
+            "        (if_inner*",
+            "          (if_ip_address",
+            "            IP:'ip'",
+            "            ADDRESS:'address'",
+            "            ip = IP_ADDRESS:'10.0.0.1'",
+            "            subnet = IP_ADDRESS:'255.255.255.0'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza*",
+            "    (s_null*",
+            "      (null_single*",
+            "        END:'end'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+          "sentences" : [
+            "(cisco_configuration",
+            "  (stanza*",
+            "    (s_hostname",
+            "      HOSTNAME:'hostname'",
+            "      VARIABLE:'ios-crypto-unrecognized'",
+            "      NEWLINE:'\\n'))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (null_rest_of_line*",
+            "        SSL:'ssl'",
+            "        DIAGNOSTIC:'diagnostic'",
+            "        VARIABLE:'sslvm'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (null_rest_of_line*",
+            "        SSL:'ssl'",
+            "        POLICY:'policy'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (null_rest_of_line*",
+            "        SSH:'ssh'",
+            "        VARIABLE:'publickey'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (null_rest_of_line*",
+            "        KEY:'key'",
+            "        IMPORT:'import'",
+            "        RSA:'rsa'",
+            "        VARIABLE:'general-keys'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (null_rest_of_line*",
+            "        KEY:'key'",
+            "        EXPORT:'export'",
+            "        RSA:'rsa'",
+            "        VARIABLE:'general-keys'",
+            "        NEWLINE:'\\n')))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_pki*",
+            "        PKI:'pki'",
+            "        (cpki_trustpoint*",
+            "          TRUSTPOINT:'trustpoint'",
+            "          name = (variable_permissive*",
+            "            VARIABLE:'TEST-TP')",
+            "          NEWLINE:'\\n'",
+            "          (cpkit_null*",
+            "            ENROLLMENT:'enrollment'",
+            "            (null_rest_of_line*",
+            "              VARIABLE:'selfsigned'",
+            "              NEWLINE:'\\n'))",
+            "          (cpkit_null*",
+            "            REVOCATION_CHECK:'revocation-check'",
+            "            (null_rest_of_line*",
+            "              NONE:'none'",
+            "              NEWLINE:'\\n'))))))",
+            "  (stanza*",
+            "    (s_crypto*",
+            "      CRYPTO:'crypto'",
+            "      (crypto_ca*",
+            "        CA:'ca'",
+            "        (cc_trustpool*",
+            "          TRUSTPOOL:'trustpool'",
+            "          name = (variable*",
+            "            POLICY:'policy')",
+            "          NEWLINE:'\\n'))))",
+            "  (stanza*",
+            "    (s_interface*",
+            "      INTERFACE:'interface'",
+            "      (s_interface_definition",
+            "        iname = (interface_name*",
+            "          name_prefix_alpha = M_Interface_PREFIX:'GigabitEthernet'  <== mode:M_Interface",
+            "          DEC:'0'  <== mode:M_Interface",
+            "          FORWARD_SLASH:'/'  <== mode:M_Interface",
+            "          (range*",
+            "            (subrange*",
+            "              low = (dec*",
+            "                DEC:'0'  <== mode:M_Interface))))",
+            "        NEWLINE:'\\n'  <== mode:M_Interface",
+            "        (if_inner*",
+            "          (if_ip_address",
+            "            IP:'ip'",
+            "            ADDRESS:'address'",
+            "            ip = IP_ADDRESS:'10.0.0.1'",
+            "            subnet = IP_ADDRESS:'255.255.255.0'",
+            "            NEWLINE:'\\n')))))",
+            "  (stanza*",
+            "    (s_null*",
+            "      (null_single*",
+            "        END:'end'",
+            "        NEWLINE:'\\n\\n')))",
+            "  EOF:<EOF>)"
+          ]
+        },
         "configs/ios-xe/ios-xe-bgp-vrf" : {
           "sentences" : [
             "(cisco_configuration",
@@ -71775,6 +72010,8 @@
         "interface_exit" : "PASSED",
         "interface_sdr" : "PASSED",
         "interfacemtu" : "PASSED",
+        "ios-crypto-keyword-names" : "PASSED",
+        "ios-crypto-unrecognized" : "PASSED",
         "ios-xe-bgp-vrf" : "PASSED",
         "ios_banner" : "PASSED",
         "ios_banner_dos" : "PASSED",
@@ -74269,6 +74506,22 @@
           "interface" : {
             "Loopback0" : {
               "definitionLines" : "4-10",
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "definitionLines" : "20-21",
+              "numReferrers" : 1
+            }
+          }
+        },
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "definitionLines" : "20-21",
               "numReferrers" : 1
             }
           }
@@ -77318,6 +77571,12 @@
         ],
         "configs/interface_sdr" : [
           "interface_sdr"
+        ],
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : [
+          "ios-crypto-keyword-names"
+        ],
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : [
+          "ios-crypto-unrecognized"
         ],
         "configs/ios-xe/ios-xe-bgp-vrf" : [
           "ios-xe-bgp-vrf"
@@ -81224,6 +81483,24 @@
             "Loopback0" : {
               "interface" : [
                 4
+              ]
+            }
+          }
+        },
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                20
+              ]
+            }
+          }
+        },
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+          "interface" : {
+            "GigabitEthernet0/0" : {
+              "interface" : [
+                20
               ]
             }
           }
@@ -86310,6 +86587,8 @@
         "configs/if_tag_is" : { },
         "configs/interface_exit" : { },
         "configs/interface_sdr" : { },
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : { },
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : { },
         "configs/ios-xe/ios-xe-bgp-vrf" : { },
         "configs/ios_banner" : { },
         "configs/ios_banner_dos" : { },
@@ -88059,6 +88338,8 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
+        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
+        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",
