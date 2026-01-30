@@ -9,11 +9,9 @@ set config devices localhost.localdomain vsys vsys1 user-id-agent serial-number 
 set config devices localhost.localdomain vsys vsys1 user-id-agent host user-id-host1
 set config devices localhost.localdomain vsys vsys1 user-id-agent host user-id-host2
 
-# ALG configuration  
+# ALG configuration
 set config devices localhost.localdomain vsys vsys1 alg dns enabled yes
-set config devices localhost.localdomain vsys vsys1 alg
-
- ftp enabled no
+set config devices localhost.localdomain vsys vsys1 alg ftp enabled no
 
 # QoS configuration
 set config devices localhost.localdomain vsys vsys1 qos profile qos-profile1 class class1
