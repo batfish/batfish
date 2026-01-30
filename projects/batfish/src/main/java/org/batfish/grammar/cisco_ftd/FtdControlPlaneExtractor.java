@@ -1076,9 +1076,9 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       // If DESTINATION is present, use its port_spec; otherwise use SOURCE's port_spec
       if (params.DESTINATION() != null && params.port_spec().size() > 1) {
         portSpec = getPortSpecText(params.port_spec(1));
-      } else if (params.SOURCE() != null && params.port_spec().size() > 0) {
+      } else if (params.SOURCE() != null && !params.port_spec().isEmpty()) {
         portSpec = getPortSpecText(params.port_spec(0));
-      } else if (params.DESTINATION() != null && params.port_spec().size() > 0) {
+      } else if (params.DESTINATION() != null && !params.port_spec().isEmpty()) {
         // DESTINATION without SOURCE
         portSpec = getPortSpecText(params.port_spec(0));
       }
