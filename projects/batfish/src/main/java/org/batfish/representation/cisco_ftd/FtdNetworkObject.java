@@ -117,6 +117,7 @@ public class FtdNetworkObject implements Serializable {
         // FQDN objects are not supported for IpSpace conversion
         return null;
     }
+    throw new IllegalStateException("Unhandled NetworkObjectType: " + _type);
   }
 
   @Override

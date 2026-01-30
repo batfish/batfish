@@ -102,5 +102,6 @@ public class FtdAccessListAddressSpecifier implements Serializable {
       case OBJECT_GROUP:
         return "object-group " + _objectName;
     }
+    throw new IllegalStateException("Unhandled AddressType: " + _type);
   }
 }

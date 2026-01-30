@@ -71,5 +71,6 @@ public class FtdServiceObjectGroupMember implements Serializable {
       case GROUP_OBJECT:
         return "group-object " + _objectName;
     }
+    throw new IllegalStateException("Unhandled MemberType: " + _type);
   }
 }
