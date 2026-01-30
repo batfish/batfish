@@ -433,6 +433,10 @@ FILTER: 'filter';
 
 FORMAT: 'format';
 
+ESCAPING: 'escaping';
+
+ESCAPED_CHARACTERS: 'escaped-characters';
+
 FQDN: 'fqdn';
 
 FROM: 'from';
