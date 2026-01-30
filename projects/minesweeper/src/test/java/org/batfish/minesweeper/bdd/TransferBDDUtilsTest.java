@@ -142,4 +142,18 @@ public class TransferBDDUtilsTest {
     BDD bdd3 = commAPs[0].and(commAPs[1]);
     assertEquals(bdd3.veccompose(pairing2), commAPs[0]);
   }
+
+  @Test
+  public void testWeakestPreconditionForPathPostCondUpdate() {
+    BDDFactory factory = _tbdd.getFactory();
+
+    // make sure the postcondition is not consumed by the function
+    TransferReturn path = new TransferReturn(_freshRoute, factory.nithVar(0), true);
+    BDD postCond = factory.ithVar(0).and(factory.nithVar(1));
+    TransferBDDUtils.weakestPreconditionForPath(path, postCond, (post, p) -> post);
+    // the postcondition is updated by the WP call
+    assertEquals(postCond, factory.zero());
+    // the input constraints are unchanged
+    assertEquals(path.getInputConstraints(), factory.nithVar(0));
+  }
 }
