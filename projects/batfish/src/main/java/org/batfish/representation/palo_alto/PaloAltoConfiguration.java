@@ -240,6 +240,12 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   private String _ntpServerSecondary;
 
+  private @Nullable String _timezone;
+
+  private @Nullable String _type;
+
+  private @Nullable Prefix _permittedIp;
+
   private @Nullable SnmpSetting _snmpSetting;
 
   private @Nullable Vsys _panorama;
@@ -417,6 +423,30 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   @Nullable
   String getNtpServerSecondary() {
     return _ntpServerSecondary;
+  }
+
+  public @Nullable String getTimezone() {
+    return _timezone;
+  }
+
+  public void setTimezone(@Nullable String timezone) {
+    _timezone = timezone;
+  }
+
+  public @Nullable String getType() {
+    return _type;
+  }
+
+  public void setType(@Nullable String type) {
+    _type = type;
+  }
+
+  public @Nullable Prefix getPermittedIp() {
+    return _permittedIp;
+  }
+
+  public void setPermittedIp(@Nullable Prefix permittedIp) {
+    _permittedIp = permittedIp;
   }
 
   public @Nullable SnmpSetting getSnmpSetting() {
