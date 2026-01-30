@@ -63,6 +63,49 @@ sec_firewall_config_change_log
   )? BRACE_RIGHT NEWLINE
 ;
 
+// Security Firewall rule-list configuration
+sec_firewall_rule_list
+:
+  FIREWALL RULE_LIST name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sec_firewall_rules
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sec_firewall_rules
+:
+  RULES BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sec_firewall_rule
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sec_firewall_rule
+:
+  name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      sec_firewall_rule_item
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+sec_firewall_rule_item
+:
+  ACTION word_id NEWLINE
+  | IP_PROTOCOL word_id NEWLINE
+;
+
 // Other security configurations that are not yet implemented
 sec_dos_other
 :
@@ -92,6 +135,7 @@ s_security
     | sec_dos_udp_portlist
     | sec_dos_other
     | sec_firewall_config_change_log
+    | sec_firewall_rule_list
     | sec_firewall_other
     | sec_null
     | unrecognized

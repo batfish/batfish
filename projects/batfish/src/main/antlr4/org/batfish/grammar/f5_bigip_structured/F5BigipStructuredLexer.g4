@@ -596,6 +596,8 @@ RULE
   }
 ;
 
+RULE_LIST: 'rule-list';
+
 RULES: 'rules';
 
 RTSP: 'rtsp';
