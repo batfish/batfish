@@ -42,10 +42,7 @@ public class FtdRealisticConfigTest extends FtdGrammarTest {
   private ParseResult parseConfigResource(String resourceName) {
     ParseResult result = new ParseResult(resourceName);
 
-    try {
-      // Read the configuration file from test resources
-      InputStream inputStream = getClass().getResourceAsStream(resourceName);
-
+    try (InputStream inputStream = getClass().getResourceAsStream(resourceName)) {
       if (inputStream == null) {
         result._success = false;
         result._errorMessage = "Configuration resource not found: " + resourceName;
