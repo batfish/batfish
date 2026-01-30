@@ -336,50 +336,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   @Override
   public void exitCsb_set_interval(Csb_set_intervalContext ctx) {
-    String val = toString(ctx.str());
-    if (val != null) {
-      try {
-        _c.getBfdSettings().setInterval(Integer.parseInt(val));
-      } catch (NumberFormatException e) {
-        // Invalid BFD interval, ignore
-      }
-    }
+    toBfdInterval(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setInterval);
   }
 
   @Override
   public void exitCsb_set_min_rx(Csb_set_min_rxContext ctx) {
-    String val = toString(ctx.str());
-    if (val != null) {
-      try {
-        _c.getBfdSettings().setMinRx(Integer.parseInt(val));
-      } catch (NumberFormatException e) {
-        // Invalid BFD min-rx, ignore
-      }
-    }
+    toBfdMinRx(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMinRx);
   }
 
   @Override
   public void exitCsb_set_min_tx(Csb_set_min_txContext ctx) {
-    String val = toString(ctx.str());
-    if (val != null) {
-      try {
-        _c.getBfdSettings().setMinTx(Integer.parseInt(val));
-      } catch (NumberFormatException e) {
-        // Invalid BFD min-tx, ignore
-      }
-    }
+    toBfdMinTx(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMinTx);
   }
 
   @Override
   public void exitCsb_set_multiplier(Csb_set_multiplierContext ctx) {
-    String val = toString(ctx.str());
-    if (val != null) {
-      try {
-        _c.getBfdSettings().setMultiplier(Integer.parseInt(val));
-      } catch (NumberFormatException e) {
-        // Invalid BFD multiplier, ignore
-      }
-    }
+    toBfdMultiplier(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMultiplier);
   }
 
   @Override
@@ -3127,6 +3099,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toIntegerInSpace(ctx, vrf.uint8(), VRF_SPACE, "vrf");
   }
 
+  private @Nonnull Optional<Integer> toBfdInterval(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_INTERVAL_SPACE, "BFD interval");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMinRx(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MIN_RX_SPACE, "BFD minimum RX");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMinTx(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MIN_TX_SPACE, "BFD minimum TX");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMultiplier(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MULTIPLIER_SPACE, "BFD multiplier");
+  }
+
   private static int toInteger(Subnet_maskContext ctx) {
     return Ip.parse(ctx.getText()).numSubnetBits();
   }
@@ -3405,6 +3393,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
+  private static final IntegerSpace BFD_INTERVAL_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MIN_RX_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MIN_TX_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MULTIPLIER_SPACE = IntegerSpace.of(Range.closed(3, 50));
 
   private AccessList _currentAccessList;
   private boolean _currentAccessListNameValid;

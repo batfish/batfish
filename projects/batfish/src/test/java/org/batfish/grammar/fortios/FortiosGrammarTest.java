@@ -1047,6 +1047,77 @@ public final class FortiosGrammarTest {
   }
 
   @Test
+  public void testBfdDefaultValues() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd_edge_cases");
+
+    // Global BFD with only interval set - others should use defaults
+    assertThat(cc.getBfdSettings().getIntervalEffective(), equalTo(200));
+    assertThat(cc.getBfdSettings().getMinRxEffective(), equalTo(50)); // default
+    assertThat(cc.getBfdSettings().getMinTxEffective(), equalTo(50)); // default
+    assertThat(cc.getBfdSettings().getMultiplierEffective(), equalTo(3)); // default
+
+    // BGP neighbor with BFD not set - should default to false
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    BgpNeighbor neighbor = bgpProcess.getNeighbors().get(Ip.parse("10.0.0.1"));
+    assertThat(neighbor.getBfdEffective(), equalTo(false));
+
+    // Static route with BFD not set - should default to false
+    StaticRoute route = cc.getStaticRoutes().get("1");
+    assertThat(route.getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testBfdMixedConfigurations() {
+    FortiosConfiguration cc = parseVendorConfig("fortios_bfd_mixed");
+
+    BgpProcess bgpProcess = cc.getBgpProcess();
+    assert bgpProcess != null;
+    Map<Ip, BgpNeighbor> neighbors = bgpProcess.getNeighbors();
+    assertThat(neighbors.get(Ip.parse("10.0.0.1")).getBfdEffective(), equalTo(true));
+    assertThat(neighbors.get(Ip.parse("10.0.0.2")).getBfdEffective(), equalTo(false));
+    assertThat(neighbors.get(Ip.parse("10.0.0.3")).getBfdEffective(), equalTo(false));
+
+    Map<String, StaticRoute> routes = cc.getStaticRoutes();
+    assertThat(routes.get("1").getBfdEffective(), equalTo(true));
+    assertThat(routes.get("2").getBfdEffective(), equalTo(false));
+    assertThat(routes.get("3").getBfdEffective(), equalTo(false));
+  }
+
+  @Test
+  public void testBfdValidationWarnings() throws IOException {
+    String hostname = "fortios_bfd_validation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Warnings warnings =
+        getOnlyElement(
+            batfish
+                .loadParseVendorConfigurationAnswerElement(batfish.getSnapshot())
+                .getWarnings()
+                .values());
+
+    // Should have warnings for out-of-range BFD values
+    assertThat(
+        warnings,
+        hasParseWarnings(
+            containsInAnyOrder(
+                hasComment("Expected BFD interval in range 50-5000, but got '60000'"),
+                hasComment("Expected BFD minimum RX in range 50-5000, but got '1'"),
+                hasComment("Expected BFD minimum TX in range 50-5000, but got '999999'"),
+                hasComment("Expected BFD multiplier in range 3-50, but got '100'"))));
+  }
+
+  @Test
+  public void testBfdValidValues() {
+    FortiosConfiguration vc = parseVendorConfig("fortios_bfd_valid");
+
+    // Verify values are parsed correctly
+    assertThat(vc.getBfdSettings().getInterval(), equalTo(50));
+    assertThat(vc.getBfdSettings().getMinRx(), equalTo(5000));
+    assertThat(vc.getBfdSettings().getMinTx(), equalTo(100));
+    assertThat(vc.getBfdSettings().getMultiplier(), equalTo(50));
+  }
+
+  @Test
   public void testInterfaceExtraction() {
     String hostname = "iface";
     FortiosConfiguration vc = parseVendorConfig(hostname);

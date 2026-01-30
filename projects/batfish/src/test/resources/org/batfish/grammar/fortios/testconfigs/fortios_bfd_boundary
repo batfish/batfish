@@ -1,0 +1,15 @@
+config system global
+    set hostname "fortios-bfd-boundary"
+end
+
+config system bfd
+    # Test boundary values - should all be valid
+    set interval 50
+    set interval 5000
+    set min-rx 50
+    set min-rx 5000
+    set min-tx 50
+    set min-tx 5000
+    set multiplier 3
+    set multiplier 50
+end
