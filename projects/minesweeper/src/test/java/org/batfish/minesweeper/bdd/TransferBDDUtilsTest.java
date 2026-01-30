@@ -1,13 +1,11 @@
 package org.batfish.minesweeper.bdd;
 
 import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.fail;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import java.util.List;
 import net.sf.javabdd.BDD;
-import net.sf.javabdd.BDDException;
 import net.sf.javabdd.BDDFactory;
 import net.sf.javabdd.BDDPairing;
 import org.batfish.minesweeper.CommunityVar;
@@ -146,18 +144,16 @@ public class TransferBDDUtilsTest {
   }
 
   @Test
-  public void testWeakestPreconditionForPathBDDConsumption() {
+  public void testWeakestPreconditionForPathPostCondUpdate() {
     BDDFactory factory = _tbdd.getFactory();
 
     // make sure the postcondition is not consumed by the function
-    TransferReturn path = new TransferReturn(_freshRoute, factory.one(), true);
+    TransferReturn path = new TransferReturn(_freshRoute, factory.nithVar(0), true);
     BDD postCond = factory.ithVar(0).and(factory.nithVar(1));
     TransferBDDUtils.weakestPreconditionForPath(path, postCond, (post, p) -> post);
-    try {
-      var unused = postCond.toString();
-    } catch (BDDException e) {
-      // the postcondition was consumed
-      fail();
-    }
+    // the postcondition is updated by the WP call
+    assertEquals(postCond, factory.zero());
+    // the input constraints are unchanged
+    assertEquals(path.getInputConstraints(), factory.nithVar(0));
   }
 }
