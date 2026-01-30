@@ -1,7 +1,7 @@
 package org.batfish.representation.cisco_ftd;
 
 import java.io.Serializable;
-import java.util.HashSet;
+import java.util.EnumSet;
 import java.util.Set;
 import org.batfish.datamodel.DiffieHellmanGroup;
 import org.batfish.datamodel.EncryptionAlgorithm;
@@ -19,10 +19,10 @@ public class FtdIkev2Policy implements Serializable {
 
   public FtdIkev2Policy(int priority) {
     _priority = priority;
-    _encryptionAlgorithms = new HashSet<>();
-    _integrityAlgorithms = new HashSet<>();
-    _prfAlgorithms = new HashSet<>();
-    _dhGroups = new HashSet<>();
+    _encryptionAlgorithms = EnumSet.noneOf(EncryptionAlgorithm.class);
+    _integrityAlgorithms = EnumSet.noneOf(IkeHashingAlgorithm.class);
+    _prfAlgorithms = EnumSet.noneOf(IkeHashingAlgorithm.class);
+    _dhGroups = EnumSet.noneOf(DiffieHellmanGroup.class);
   }
 
   public int getPriority() {

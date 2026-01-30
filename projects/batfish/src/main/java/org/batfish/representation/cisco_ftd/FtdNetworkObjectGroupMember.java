@@ -75,8 +75,6 @@ public class FtdNetworkObjectGroupMember implements Serializable {
         return "object " + _objectName;
       case GROUP_OBJECT:
         return "group-object " + _objectName;
-      default:
-        return "unknown";
     }
   }
 }

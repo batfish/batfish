@@ -70,8 +70,6 @@ public class FtdServiceObjectGroupMember implements Serializable {
         return "port-object " + (_portSpec != null ? _portSpec : "");
       case GROUP_OBJECT:
         return "group-object " + _objectName;
-      default:
-        return "unknown";
     }
   }
 }

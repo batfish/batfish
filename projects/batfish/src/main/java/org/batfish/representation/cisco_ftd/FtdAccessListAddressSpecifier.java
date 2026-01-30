@@ -101,8 +101,6 @@ public class FtdAccessListAddressSpecifier implements Serializable {
         return "object " + _objectName;
       case OBJECT_GROUP:
         return "object-group " + _objectName;
-      default:
-        return "unknown";
     }
   }
 }

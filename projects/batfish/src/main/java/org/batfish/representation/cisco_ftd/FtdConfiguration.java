@@ -4,10 +4,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.regex.Matcher;
@@ -705,8 +707,6 @@ public class FtdConfiguration extends VendorConfiguration {
         return resolveNetworkObjectIpSpace(specifier.getObjectName(), new HashSet<>());
       case OBJECT_GROUP:
         return resolveNetworkObjectGroupIpSpace(specifier.getObjectName(), new HashSet<>());
-      default:
-        return null;
     }
   }
 
@@ -758,8 +758,6 @@ public class FtdConfiguration extends VendorConfiguration {
         return resolveNetworkObjectIpSpace(member.getObjectName(), visited);
       case GROUP_OBJECT:
         return resolveNetworkObjectGroupIpSpace(member.getObjectName(), visited);
-      default:
-        return null;
     }
   }
 
@@ -869,7 +867,7 @@ public class FtdConfiguration extends VendorConfiguration {
     }
     IntegerSpace ports = null;
     boolean anyPort = false;
-    Set<IpProtocol> protocols = new HashSet<>();
+    Set<IpProtocol> protocols = EnumSet.noneOf(IpProtocol.class);
 
     if (group.getProtocol() != null) {
       IpProtocol protocol = toIpProtocol(group.getProtocol());
@@ -911,8 +909,6 @@ public class FtdConfiguration extends VendorConfiguration {
                       : IntegerSpace.unionOf(ports, nested.getPorts());
             }
           }
-          break;
-        default:
           break;
       }
     }
@@ -1323,7 +1319,7 @@ public class FtdConfiguration extends VendorConfiguration {
       if (_prefix != null && _prefix.getPrefixLength() == Prefix.MAX_PREFIX_LENGTH) {
         return _prefix.getStartIp();
       }
-      if (_rangeStart != null && _rangeEnd != null && _rangeStart.equals(_rangeEnd)) {
+      if (_rangeStart != null && _rangeEnd != null && Objects.equals(_rangeStart, _rangeEnd)) {
         return _rangeStart;
       }
       return null;
@@ -1510,7 +1506,6 @@ public class FtdConfiguration extends VendorConfiguration {
                     obj.getRangeStart(),
                     obj.getRangeEnd());
               case FQDN:
-              default:
                 return null;
             }
           }
