@@ -848,25 +848,78 @@ public void testOspfTimerParsing() {
 
 See the [Implementation Guide](implementation_guide.md) for more detailed guidance on determining the appropriate implementation level for different types of commands.
 
-### Grammar packages
+### Vendor code organization
 
-**This section is still in progress. Check back later for more complete instructions.**
+Batfish uses two code organization patterns for vendor support. **New vendors should use the
+vendor-scoped pattern.**
 
-For now, if you need to write a new grammar, follow the pattern of the Cisco NX-OS grammar package.
-That is, make a copy of and appropriate alterations to each of:
+#### Vendor-scoped pattern (recommended for new vendors)
 
-- [`antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/BUILD.bazel)
-- [`java/org/batfish/grammar/cisco_nxos/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
-- [`java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/parsing/BUILD.bazel)
+New vendors should place all code under `org.batfish.vendor.<vendor_name>/` with subpackages for
+grammar and representation. This provides better code isolation and clearer namespacing.
 
-in the appropriate directories created for your new grammar.
+**Directory structure:**
 
-Then, add appropriate references to the `//projects/batfish` target, also copying the pattern for
-Cisco NX-OS.
+```
+projects/batfish/src/main/
+├── antlr4/org/batfish/vendor/<vendor>/grammar/   # ANTLR .g4 files
+└── java/org/batfish/vendor/<vendor>/
+    ├── grammar/                                   # Parser, extractor, base lexer
+    └── representation/                            # Vendor-specific data model
 
-For tests, copy the pattern used by:
+projects/batfish/src/test/java/org/batfish/vendor/<vendor>/  # All tests unified
+```
 
-- [`//projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos:tests`](../../projects/batfish/src/test/java/org/batfish/grammar/cisco_nxos/BUILD.bazel)
+**Example vendors using this pattern:** A10, CheckPoint Gateway, CheckPoint Management, SONiC
+
+To add a new vendor using this pattern, follow the structure of the A10 vendor:
+
+- [`antlr4/org/batfish/vendor/a10/grammar/BUILD.bazel`](../../projects/batfish/src/main/antlr4/org/batfish/vendor/a10/grammar/BUILD.bazel)
+- [`java/org/batfish/vendor/a10/grammar/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/vendor/a10/grammar/BUILD.bazel)
+- [`java/org/batfish/vendor/a10/representation/BUILD.bazel`](../../projects/batfish/src/main/java/org/batfish/vendor/a10/representation/BUILD.bazel)
+
+For tests, follow the pattern in:
+
+- [`test/java/org/batfish/vendor/a10/BUILD.bazel`](../../projects/batfish/src/test/java/org/batfish/vendor/a10/BUILD.bazel)
+
+#### Legacy flat pattern (existing vendors only)
+
+Older vendors use a flat hierarchy with grammar and representation in separate top-level packages:
+
+```
+projects/batfish/src/main/
+├── antlr4/org/batfish/grammar/<vendor>/          # ANTLR .g4 files
+└── java/
+    ├── org/batfish/grammar/<vendor>/             # Parser, extractor
+    └── org/batfish/representation/<vendor>/      # Vendor-specific data model
+
+projects/batfish/src/test/java/
+├── org/batfish/grammar/<vendor>/                 # Grammar tests
+└── org/batfish/representation/<vendor>/          # Representation tests
+```
+
+**Example vendors using this pattern:** Cisco (IOS, NX-OS, ASA, XR), Juniper, Arista, Palo Alto,
+Fortinet, Cumulus, F5, AWS, etc.
+
+This pattern is maintained for backward compatibility. Do not use it for new vendors.
+
+#### Implementation quality reference
+
+While new vendors should use the vendor-scoped code organization pattern, **Cisco NX-OS has the
+most mature lexer, parser, and vendor-independent representation** and serves as the best reference
+for implementation quality and patterns. When writing a new vendor's grammar or extraction logic,
+study the NX-OS implementation for examples of:
+
+- Lexer structure and mode handling
+- Parser rule organization and LL(1) grammar design
+- Extraction patterns and error handling
+- Conversion to vendor-independent model
+
+The NX-OS code is located at:
+
+- [`antlr4/org/batfish/grammar/cisco_nxos/`](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/)
+- [`java/org/batfish/grammar/cisco_nxos/`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/)
+- [`java/org/batfish/representation/cisco_nxos/`](../../projects/batfish/src/main/java/org/batfish/representation/cisco_nxos/)
 
 ### Combined parser
 
