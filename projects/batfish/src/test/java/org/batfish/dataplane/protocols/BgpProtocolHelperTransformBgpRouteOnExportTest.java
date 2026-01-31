@@ -54,7 +54,7 @@ import org.batfish.datamodel.route.nh.NextHopDiscard;
 import org.batfish.datamodel.route.nh.NextHopIp;
 import org.batfish.datamodel.route.nh.NextHopVtep;
 import org.batfish.datamodel.routing_policy.communities.CommunitySet;
-import org.batfish.representation.arista.AristaConfiguration;
+import org.batfish.vendor.arista.representation.AristaConfiguration;
 import org.junit.Before;
 import org.junit.Test;
 
