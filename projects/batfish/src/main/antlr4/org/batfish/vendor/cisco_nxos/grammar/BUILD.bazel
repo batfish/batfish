@@ -1,0 +1,20 @@
+load("@rules_java//java:defs.bzl", "java_library")
+load("//skylark:antlr.bzl", "antlr_grammar")
+
+package(default_visibility = ["//visibility:public"])
+
+antlr_grammar(
+    name = "grammar_generated",
+    srcs = glob(["*.g4"]),
+    package = "org.batfish.vendor.cisco_nxos.grammar",
+)
+
+java_library(
+    name = "grammar",
+    srcs = [":grammar_generated"],
+    javacopts = ["-XepDisableAllChecks"],
+    deps = [
+        "//projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/grammar:cisco_nxos_base",
+        "@maven//:org_antlr_antlr4_runtime",
+    ],
+)
