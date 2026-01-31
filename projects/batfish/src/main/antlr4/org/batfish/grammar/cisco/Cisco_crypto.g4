@@ -712,6 +712,7 @@ crypto_key
    (
       ck_null
       | ck_pubkey_chain
+      | null_rest_of_line
    )
 ;
 
@@ -956,7 +957,9 @@ s_crypto
       | crypto_keyring
       | crypto_logging_null
       | crypto_map
+      | crypto_map_null
       | crypto_pki
+      | crypto_pki_null
       | crypto_ssl_null
       | crypto_ssh_null
       | crypto_vpn_null
@@ -986,6 +989,16 @@ crypto_ssh_null
 crypto_vpn_null
 :
    VPN null_rest_of_line
+;
+
+crypto_map_null
+:
+   MAP null_rest_of_line
+;
+
+crypto_pki_null
+:
+   PKI null_rest_of_line
 ;
 
 s_key
