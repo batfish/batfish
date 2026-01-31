@@ -1,0 +1,42 @@
+#RANCID-CONTENT-TYPE: paloalto
+deviceconfig {
+  system {
+    hostname bgp-connection-options;
+  }
+}
+network {
+  virtual-router BGP {
+    protocol {
+      bgp {
+        routing-options {
+          as-format 4-byte;
+        }
+        peer-group {
+          PG {
+            type {
+              ebgp;
+            }
+            peer {
+              PEER {
+                connection-options {
+                  keep-alive-interval 30;
+                  hold-time 90;
+                  idle-hold-time 60;
+                  min-route-adv-interval 15;
+                  open-delay-time 10;
+                }
+                peer-address {
+                  ip 5.4.3.2;
+                }
+                peer-as 65002;
+              }
+            }
+            enable yes;
+          }
+        }
+        enable yes;
+        local-as 65001;
+      }
+    }
+  }
+}

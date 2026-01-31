@@ -4279,6 +4279,27 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testBgpBfdProfileExtraction() {
+    String hostname = "bgp-bfd-profile";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify BGP configuration is extracted
+    assertThat(c.getVirtualRouters(), hasKey("BGP_VR"));
+    VirtualRouter vr = c.getVirtualRouters().get("BGP_VR");
+    assertThat(vr.getBgp(), notNullValue());
+
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp.getPeerGroups(), hasKey("PG"));
+    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
+
+    assertThat(pg.getPeers(), hasKey("PEER"));
+    BgpPeer peer = pg.getPeers().get("PEER");
+
+    // Verify BFD profile is extracted correctly
+    assertThat(peer.getBfdProfile(), equalTo("Inherit-vr-global-setting"));
+  }
+
+  @Test
   public void testBgpMultihopConversion() {
     String hostname = "bgp-multihop";
     Configuration c = parseConfig(hostname);
@@ -4289,6 +4310,31 @@ public final class PaloAltoGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("120.120.120.120"))
             .getEbgpMultihop());
+  }
+
+  @Test
+  public void testBgpConnectionOptionsExtraction() {
+    String hostname = "bgp-connection-options";
+    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+
+    // Verify BGP configuration is extracted
+    assertThat(c.getVirtualRouters(), hasKey("BGP"));
+    VirtualRouter vr = c.getVirtualRouters().get("BGP");
+    assertThat(vr.getBgp(), notNullValue());
+
+    BgpVr bgp = vr.getBgp();
+    assertThat(bgp.getPeerGroups(), hasKey("PG"));
+    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
+
+    assertThat(pg.getPeers(), hasKey("PEER"));
+    BgpPeer peer = pg.getPeers().get("PEER");
+
+    // Verify BGP connection options timers are extracted correctly
+    assertThat(peer.getConnectionOptions().getKeepAliveInterval(), equalTo(30));
+    assertThat(peer.getConnectionOptions().getHoldTime(), equalTo(90));
+    assertThat(peer.getConnectionOptions().getIdleHoldTime(), equalTo(60));
+    assertThat(peer.getConnectionOptions().getMinRouteAdvInterval(), equalTo(15));
+    assertThat(peer.getConnectionOptions().getOpenDelayTime(), equalTo(10));
   }
 
   @Test
@@ -5060,6 +5106,30 @@ public final class PaloAltoGrammarTest {
     // Verify configuration converts successfully
     assertThat(c, notNullValue());
   }
+
+  // TODO: Uncomment when IPv6 neighbor discovery parsing is implemented
+  //  @Test
+  //  public void testIpv6NeighborDiscoveryExtraction() {
+  //    String hostname = "ipv6-neighbor-discovery";
+  //    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+  //
+  //    // Verify interface neighbor discovery settings are extracted
+  //    Interface iface1 = c.getAllInterfaces().get("ethernet1/1");
+  //    assertThat(iface1, notNullValue());
+  //    assertThat(iface1.getRouterAdvertisement(), equalTo(true));
+  //    // NDP proxy parsing not yet implemented
+  //    // assertThat(iface1.getNdpProxy(), equalTo(false));
+  //
+  //    Interface iface2 = c.getAllInterfaces().get("ethernet1/2");
+  //    assertThat(iface2, notNullValue());
+  //    assertThat(iface2.getRouterAdvertisement(), equalTo(false));
+  //    // assertThat(iface2.getNdpProxy(), equalTo(true));
+  //
+  //    Interface iface3 = c.getAllInterfaces().get("ethernet1/3");
+  //    assertThat(iface3, notNullValue());
+  //    assertThat(iface3.getRouterAdvertisement(), nullValue());
+  //    // assertThat(iface3.getNdpProxy(), nullValue());
+  //  }
 
   @Test
   public void testLegacyConfigFormat() {
