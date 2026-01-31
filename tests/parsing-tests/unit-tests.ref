@@ -142,8 +142,8 @@
         "configs/if_tag_is" : "CISCO_IOS_XR",
         "configs/interface_exit" : "CISCO_IOS",
         "configs/interface_sdr" : "CISCO_IOS",
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "CISCO_IOS",
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "CISCO_IOS",
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : "CISCO_IOS",
+        "configs/ios-xe/ios-crypto-unrecognized" : "CISCO_IOS",
         "configs/ios-xe/ios-xe-bgp-vrf" : "CISCO_IOS",
         "configs/ios_banner" : "CISCO_IOS",
         "configs/ios_banner_dos" : "CISCO_IOS",
@@ -715,10 +715,10 @@
           "configs/juniper-interfaces"
         ],
         "ios-crypto-keyword-names" : [
-          "configs/ios-crypto-keyword-names/ios-crypto-keyword-names"
+          "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names"
         ],
         "ios-crypto-unrecognized" : [
-          "configs/ios-crypto-unrecognized/ios-crypto-unrecognized"
+          "configs/ios-xe/ios-crypto-unrecognized"
         ],
         "ios-xe-bgp-vrf" : [
           "configs/ios-xe/ios-xe-bgp-vrf"
@@ -1233,8 +1233,8 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "PASSED",
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
+        "configs/ios-xe/ios-crypto-unrecognized" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",
@@ -42201,7 +42201,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
           "sentences" : [
             "(cisco_configuration",
             "  (stanza*",
@@ -42320,7 +42320,7 @@
             "  EOF:<EOF>)"
           ]
         },
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+        "configs/ios-xe/ios-crypto-unrecognized" : {
           "sentences" : [
             "(cisco_configuration",
             "  (stanza*",
@@ -42331,43 +42331,48 @@
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
-            "      (null_rest_of_line*",
+            "      (crypto_ssl_null*",
             "        SSL:'ssl'",
-            "        DIAGNOSTIC:'diagnostic'",
-            "        VARIABLE:'sslvm'",
-            "        NEWLINE:'\\n')))",
+            "        (null_rest_of_line*",
+            "          DIAGNOSTIC:'diagnostic'",
+            "          VARIABLE:'sslvm'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
-            "      (null_rest_of_line*",
+            "      (crypto_ssl_null*",
             "        SSL:'ssl'",
-            "        POLICY:'policy'",
-            "        NEWLINE:'\\n')))",
+            "        (null_rest_of_line*",
+            "          POLICY:'policy'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
-            "      (null_rest_of_line*",
+            "      (crypto_ssh_null*",
             "        SSH:'ssh'",
-            "        VARIABLE:'publickey'",
-            "        NEWLINE:'\\n')))",
+            "        (null_rest_of_line*",
+            "          VARIABLE:'publickey'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
-            "      (null_rest_of_line*",
+            "      (crypto_key*",
             "        KEY:'key'",
-            "        IMPORT:'import'",
-            "        RSA:'rsa'",
-            "        VARIABLE:'general-keys'",
-            "        NEWLINE:'\\n')))",
+            "        (null_rest_of_line*",
+            "          IMPORT:'import'",
+            "          RSA:'rsa'",
+            "          VARIABLE:'general-keys'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
-            "      (null_rest_of_line*",
+            "      (crypto_key*",
             "        KEY:'key'",
-            "        EXPORT:'export'",
-            "        RSA:'rsa'",
-            "        VARIABLE:'general-keys'",
-            "        NEWLINE:'\\n')))",
+            "        (null_rest_of_line*",
+            "          EXPORT:'export'",
+            "          RSA:'rsa'",
+            "          VARIABLE:'general-keys'",
+            "          NEWLINE:'\\n'))))",
             "  (stanza*",
             "    (s_crypto*",
             "      CRYPTO:'crypto'",
@@ -74510,7 +74515,7 @@
             }
           }
         },
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
           "interface" : {
             "GigabitEthernet0/0" : {
               "definitionLines" : "20-21",
@@ -74518,7 +74523,7 @@
             }
           }
         },
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+        "configs/ios-xe/ios-crypto-unrecognized" : {
           "interface" : {
             "GigabitEthernet0/0" : {
               "definitionLines" : "20-21",
@@ -77572,10 +77577,10 @@
         "configs/interface_sdr" : [
           "interface_sdr"
         ],
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : [
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : [
           "ios-crypto-keyword-names"
         ],
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : [
+        "configs/ios-xe/ios-crypto-unrecognized" : [
           "ios-crypto-unrecognized"
         ],
         "configs/ios-xe/ios-xe-bgp-vrf" : [
@@ -81487,7 +81492,7 @@
             }
           }
         },
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : {
           "interface" : {
             "GigabitEthernet0/0" : {
               "interface" : [
@@ -81496,7 +81501,7 @@
             }
           }
         },
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : {
+        "configs/ios-xe/ios-crypto-unrecognized" : {
           "interface" : {
             "GigabitEthernet0/0" : {
               "interface" : [
@@ -86587,8 +86592,8 @@
         "configs/if_tag_is" : { },
         "configs/interface_exit" : { },
         "configs/interface_sdr" : { },
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : { },
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : { },
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : { },
+        "configs/ios-xe/ios-crypto-unrecognized" : { },
         "configs/ios-xe/ios-xe-bgp-vrf" : { },
         "configs/ios_banner" : { },
         "configs/ios_banner_dos" : { },
@@ -88338,8 +88343,8 @@
         "configs/if_tag_is" : "PASSED",
         "configs/interface_exit" : "PASSED",
         "configs/interface_sdr" : "PASSED",
-        "configs/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
-        "configs/ios-crypto-unrecognized/ios-crypto-unrecognized" : "PASSED",
+        "configs/ios-xe/ios-crypto-keyword-names/ios-crypto-keyword-names" : "PASSED",
+        "configs/ios-xe/ios-crypto-unrecognized" : "PASSED",
         "configs/ios-xe/ios-xe-bgp-vrf" : "PASSED",
         "configs/ios_banner" : "PASSED",
         "configs/ios_banner_dos" : "PASSED",
