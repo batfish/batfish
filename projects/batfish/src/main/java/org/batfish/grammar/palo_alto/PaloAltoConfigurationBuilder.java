@@ -1056,6 +1056,31 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitBgppgp_co_hold_time(Bgppgp_co_hold_timeContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setHoldTime(toInteger(ctx.val));
+  }
+
+  @Override
+  public void exitBgppgp_co_idle_hold_time(Bgppgp_co_idle_hold_timeContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setIdleHoldTime(toInteger(ctx.val));
+  }
+
+  @Override
+  public void exitBgppgp_co_keep_alive_interval(Bgppgp_co_keep_alive_intervalContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setKeepAliveInterval(toInteger(ctx.val));
+  }
+
+  @Override
+  public void exitBgppgp_co_min_route_adv_interval(Bgppgp_co_min_route_adv_intervalContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setMinRouteAdvInterval(toInteger(ctx.val));
+  }
+
+  @Override
+  public void exitBgppgp_co_open_delay_time(Bgppgp_co_open_delay_timeContext ctx) {
+    _currentBgpPeer.getConnectionOptions().setOpenDelayTime(toInteger(ctx.val));
+  }
+
+  @Override
   public void exitBgppgp_coo_allow(Bgppgp_coo_allowContext ctx) {
     _currentBgpPeer.getConnectionOptions().setOutgoingAllow(toBoolean(ctx.yn));
   }
@@ -2367,6 +2392,17 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void exitSniel3_lldp(Sniel3_lldpContext ctx) {
     _currentInterface.setLldpEnabled(toBoolean(ctx.yn));
   }
+
+  // TODO: IPv6 neighbor discovery - uncomment when Context classes are generated
+  //  @Override
+  //  public void exitSni_ipv6_router_advertisement(Sni_ipv6_router_advertisementContext ctx) {
+  //    _currentInterface.setRouterAdvertisement(toBoolean(ctx.yn));
+  //  }
+  //
+  //  @Override
+  //  public void exitSni_ipv6_ndp_proxy(Sni_ipv6_ndp_proxyContext ctx) {
+  //    _currentInterface.setNdpProxy(toBoolean(ctx.yn));
+  //  }
 
   @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
