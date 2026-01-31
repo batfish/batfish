@@ -252,7 +252,6 @@ sniel3_common
         sniel3_ip
         | sniel3_lldp
         | sniel3_mtu
-        | sni_ipv6_neighbor_discovery
         | sniel3_null
     )
 ;
@@ -265,25 +264,6 @@ sniel3_ip
 sniel3_lldp
 :
     LLDP ENABLE yn = yes_or_no
-;
-
-sni_ipv6_neighbor_discovery
-:
-    IPV6 NEIGHBOR_DISCOVERY
-    (
-        sni_ipv6_router_advertisement
-        | sni_ipv6_ndp_proxy
-    )
-;
-
-sni_ipv6_router_advertisement
-:
-    ROUTER_ADVERTISEMENT ENABLE yn = yes_or_no
-;
-
-sni_ipv6_ndp_proxy
-:
-    NDP_PROXY ENABLE yn = yes_or_no
 ;
 
 sniel3_mtu
