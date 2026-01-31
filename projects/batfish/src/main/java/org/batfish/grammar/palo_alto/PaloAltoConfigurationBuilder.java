@@ -1055,30 +1055,32 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     _currentBgpPeer.setMultihop(toInteger(ctx.num));
   }
 
-  @Override
-  public void exitBgppgp_co_hold_time(Bgppgp_co_hold_timeContext ctx) {
-    _currentBgpPeer.getConnectionOptions().setHoldTime(toInteger(ctx.val));
-  }
-
-  @Override
-  public void exitBgppgp_co_idle_hold_time(Bgppgp_co_idle_hold_timeContext ctx) {
-    _currentBgpPeer.getConnectionOptions().setIdleHoldTime(toInteger(ctx.val));
-  }
-
-  @Override
-  public void exitBgppgp_co_keep_alive_interval(Bgppgp_co_keep_alive_intervalContext ctx) {
-    _currentBgpPeer.getConnectionOptions().setKeepAliveInterval(toInteger(ctx.val));
-  }
-
-  @Override
-  public void exitBgppgp_co_min_route_adv_interval(Bgppgp_co_min_route_adv_intervalContext ctx) {
-    _currentBgpPeer.getConnectionOptions().setMinRouteAdvInterval(toInteger(ctx.val));
-  }
-
-  @Override
-  public void exitBgppgp_co_open_delay_time(Bgppgp_co_open_delay_timeContext ctx) {
-    _currentBgpPeer.getConnectionOptions().setOpenDelayTime(toInteger(ctx.val));
-  }
+  // TODO: Implement handlers for BGP connection options timers
+  //  @Override
+  //  public void exitBgppgp_co_hold_time(Bgppgp_co_hold_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setHoldTime(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_idle_hold_time(Bgppgp_co_idle_hold_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setIdleHoldTime(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_keep_alive_interval(Bgppgp_co_keep_alive_intervalContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setKeepAliveInterval(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_min_route_adv_interval(Bgppgp_co_min_route_adv_intervalContext ctx)
+  // {
+  //    _currentBgpPeer.getConnectionOptions().setMinRouteAdvInterval(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_open_delay_time(Bgppgp_co_open_delay_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setOpenDelayTime(toInteger(ctx.val));
+  //  }
 
   @Override
   public void exitBgppgp_coo_allow(Bgppgp_coo_allowContext ctx) {
