@@ -39,7 +39,7 @@ Note: `bdd.andWith(bdd)` is safe (unlike `bdd.andEq(bdd); bdd.free()` which free
 Use `bdd.id()` to create a copy of a BDD reference. This is useful when you need an intermediate value that can be freed independently (e.g., as an accumulator in a loop).
 
 ```java
-BDD accumulator = factory.zero().id();  // Create a copy we can mutate
+BDD accumulator = someExistingBdd.id();  // Create a copy we can mutate
 for (...) {
   BDD term = ...;
   accumulator.orWith(term);  // Updates accumulator, frees term
