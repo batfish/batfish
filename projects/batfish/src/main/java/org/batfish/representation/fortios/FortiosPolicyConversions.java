@@ -429,6 +429,7 @@ public final class FortiosPolicyConversions {
         }
         yield Stream.of(matchIpProtocol(protocolNumber));
       }
+      case ALL -> Stream.of(TRUE);
       case ICMP6 ->
           throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
     };

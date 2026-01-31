@@ -121,6 +121,7 @@ import org.batfish.grammar.fortios.FortiosParser.Cralecre_set_wildcardContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crb_set_router_idContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcn_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_bfdContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
@@ -131,6 +132,7 @@ import org.batfish.grammar.fortios.FortiosParser.Crrmecr_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_actionContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrmecre_set_match_ip_addressContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crs_set_bfdContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_deviceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_distanceContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_dstContext;
@@ -138,6 +140,10 @@ import org.batfish.grammar.fortios.FortiosParser.Crs_set_gatewayContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_sdwanContext;
 import org.batfish.grammar.fortios.FortiosParser.Crs_set_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Cs_replacemsgContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_intervalContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_min_rxContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_min_txContext;
+import org.batfish.grammar.fortios.FortiosParser.Csb_set_multiplierContext;
 import org.batfish.grammar.fortios.FortiosParser.Csg_hostnameContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Csi_set_aliasContext;
@@ -227,6 +233,7 @@ import org.batfish.representation.fortios.Interface;
 import org.batfish.representation.fortios.Interface.Speed;
 import org.batfish.representation.fortios.Interface.Type;
 import org.batfish.representation.fortios.InternetServiceName;
+import org.batfish.representation.fortios.Ippool;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
@@ -288,6 +295,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       policy.setSrcAddr(toNames(policy.getSrcAddrUUIDs()));
       policy.setDstAddr(toNames(policy.getDstAddrUUIDs()));
       policy.setService(toNames(policy.getServiceUUIDs()));
+      policy.setPoolnames(toNames(policy.getPoolnameUUIDs()));
       policy.setDstIntfZones(toNames(policy.getDstIntfZoneUUIDs()));
       policy.setSrcIntfZones(toNames(policy.getSrcIntfZoneUUIDs()));
     }
@@ -324,6 +332,26 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   @Override
   public void exitCsg_hostname(Csg_hostnameContext ctx) {
     toString(ctx, ctx.host).ifPresent(_c::setHostname);
+  }
+
+  @Override
+  public void exitCsb_set_interval(Csb_set_intervalContext ctx) {
+    toBfdInterval(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setInterval);
+  }
+
+  @Override
+  public void exitCsb_set_min_rx(Csb_set_min_rxContext ctx) {
+    toBfdMinRx(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMinRx);
+  }
+
+  @Override
+  public void exitCsb_set_min_tx(Csb_set_min_txContext ctx) {
+    toBfdMinTx(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMinTx);
+  }
+
+  @Override
+  public void exitCsb_set_multiplier(Csb_set_multiplierContext ctx) {
+    toBfdMultiplier(ctx, toString(ctx.str())).ifPresent(_c.getBfdSettings()::setMultiplier);
   }
 
   @Override
@@ -566,6 +594,58 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     } else {
       warn(ctx, "Cannot set wildcard for address type " + _currentAddress.getTypeEffective());
     }
+  }
+
+  @Override
+  public void enterCfip_edit(FortiosParser.Cfip_editContext ctx) {
+    Optional<String> name =
+        toString(ctx, ctx.ippool_name().str(), "ippool name", ADDRESS_NAME_PATTERN);
+    Ippool existingIppool = name.map(_c.getIppools()::get).orElse(null);
+    if (existingIppool != null) {
+      _currentIppool = SerializationUtils.clone(existingIppool);
+    } else {
+      _currentIppool = new Ippool(toString(ctx.ippool_name().str()), getUUID());
+    }
+    _currentIppoolNameValid = name.isPresent();
+  }
+
+  @Override
+  public void exitCfip_edit(FortiosParser.Cfip_editContext ctx) {
+    String invalidReason = ippoolValid(_currentIppool, _currentIppoolNameValid);
+    if (invalidReason == null) {
+      _c.defineStructure(FortiosStructureType.IPPOOL, _currentIppool.getName(), ctx);
+      _c.getIppools().put(_currentIppool.getName(), _currentIppool);
+      _c.getRenameableObjects().put(_currentIppool.getBatfishUUID(), _currentIppool);
+    } else {
+      warn(ctx, String.format("Ippool edit block ignored: %s", invalidReason));
+    }
+    _currentIppool = null;
+  }
+
+  @Override
+  public void exitCfip_set_startip(FortiosParser.Cfip_set_startipContext ctx) {
+    _currentIppool.setStartip(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitCfip_set_endip(FortiosParser.Cfip_set_endipContext ctx) {
+    _currentIppool.setEndip(toIp(ctx.ip));
+  }
+
+  @Override
+  public void exitCfip_set_type(FortiosParser.Cfip_set_typeContext ctx) {
+    _currentIppool.setType(toIppoolType(ctx.ippool_type()));
+  }
+
+  @Override
+  public void exitCfip_set_comments(FortiosParser.Cfip_set_commentsContext ctx) {
+    _currentIppool.setComments(toString(ctx.comments));
+  }
+
+  @Override
+  public void exitCfip_set_associated_interface(
+      FortiosParser.Cfip_set_associated_interfaceContext ctx) {
+    _currentIppool.setAssociatedInterface(toString(ctx, ctx.interface_or_zone_name()).orElse(null));
   }
 
   @Override
@@ -1112,6 +1192,38 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Speed.TEN_THOUSAND_HALF;
     } else if (ctx.HUNDRED_GFULL() != null) {
       return Speed.HUNDRED_GFULL;
+    } else if (ctx.HUNDRED_AUTO() != null) {
+      return Speed.HUNDRED_AUTO;
+    } else if (ctx.THOUSAND_AUTO() != null) {
+      return Speed.THOUSAND_AUTO;
+    } else if (ctx.TWO_THOUSAND_FIVE_HUNDRED_AUTO() != null) {
+      return Speed.TWO_THOUSAND_FIVE_HUNDRED_AUTO;
+    } else if (ctx.FIVE_THOUSAND_AUTO() != null) {
+      return Speed.FIVE_THOUSAND_AUTO;
+    } else if (ctx.TEN_THOUSAND_AUTO() != null) {
+      return Speed.TEN_THOUSAND_AUTO;
+    } else if (ctx.TWENTY_FIVE_THOUSAND_FULL() != null) {
+      return Speed.TWENTY_FIVE_THOUSAND_FULL;
+    } else if (ctx.TWENTY_FIVE_THOUSAND_AUTO() != null) {
+      return Speed.TWENTY_FIVE_THOUSAND_AUTO;
+    } else if (ctx.FORTY_THOUSAND_FULL() != null) {
+      return Speed.FORTY_THOUSAND_FULL;
+    } else if (ctx.FORTY_THOUSAND_AUTO() != null) {
+      return Speed.FORTY_THOUSAND_AUTO;
+    } else if (ctx.FIFTY_THOUSAND_FULL() != null) {
+      return Speed.FIFTY_THOUSAND_FULL;
+    } else if (ctx.FIFTY_THOUSAND_AUTO() != null) {
+      return Speed.FIFTY_THOUSAND_AUTO;
+    } else if (ctx.HUNDRED_GAUTO() != null) {
+      return Speed.HUNDRED_GAUTO;
+    } else if (ctx.TWO_HUNDRED_GFULL() != null) {
+      return Speed.TWO_HUNDRED_GFULL;
+    } else if (ctx.TWO_HUNDRED_GAUTO() != null) {
+      return Speed.TWO_HUNDRED_GAUTO;
+    } else if (ctx.FOUR_HUNDRED_G_FULL() != null) {
+      return Speed.FOUR_HUNDRED_G_FULL;
+    } else if (ctx.FOUR_HUNDRED_G_AUTO() != null) {
+      return Speed.FOUR_HUNDRED_G_AUTO;
     }
     assert ctx.HUNDRED_GHALF() != null;
     return Speed.HUNDRED_GHALF;
@@ -1133,6 +1245,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrbcne_set_update_source(FortiosParser.Crbcne_set_update_sourceContext ctx) {
     toInterface(ctx, ctx.interface_name(), BGP_UPDATE_SOURCE_INTERFACE)
         .ifPresent(_currentBgpNeighbor::setUpdateSource);
+  }
+
+  @Override
+  public void exitCrbcne_set_bfd(Crbcne_set_bfdContext ctx) {
+    _currentBgpNeighbor.setBfd(toBoolean(ctx.bfd_enable));
   }
 
   @Override
@@ -1197,6 +1314,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   public void exitCrs_set_status(Crs_set_statusContext ctx) {
     _currentStaticRoute.setStatus(
         toBoolean(ctx.enabled) ? StaticRoute.Status.ENABLE : StaticRoute.Status.DISABLE);
+  }
+
+  @Override
+  public void exitCrs_set_bfd(Crs_set_bfdContext ctx) {
+    _currentStaticRoute.setBfd(toBoolean(ctx.bfd_enable));
   }
 
   @Override
@@ -1474,6 +1596,27 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
               Set<BatfishUUID> addrs = _currentPolicy.getSrcAddrUUIDs();
               addrs.clear();
               addrs.addAll(addresses);
+            });
+  }
+
+  @Override
+  public void exitCfp_set_nat(FortiosParser.Cfp_set_natContext ctx) {
+    _currentPolicy.setNat(toBoolean(ctx.nat));
+  }
+
+  @Override
+  public void exitCfp_set_ippool(FortiosParser.Cfp_set_ippoolContext ctx) {
+    _currentPolicy.setIppool(toBoolean(ctx.ippool));
+  }
+
+  @Override
+  public void exitCfp_set_poolname(FortiosParser.Cfp_set_poolnameContext ctx) {
+    toIppoolUUIDs(ctx.poolname, FortiosStructureUsage.POLICY_POOLNAME)
+        .ifPresent(
+            poolnames -> {
+              Set<BatfishUUID> uuids = _currentPolicy.getPoolnameUUIDs();
+              uuids.clear();
+              uuids.addAll(poolnames);
             });
   }
 
@@ -2545,6 +2688,8 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       return Protocol.ICMP6;
     } else if (ctx.IP_UPPER() != null) {
       return Protocol.IP;
+    } else if (ctx.ALL() != null) {
+      return Protocol.ALL;
     } else {
       assert ctx.TCP_UDP_SCTP() != null;
       return Protocol.TCP_UDP_SCTP;
@@ -2600,6 +2745,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       warn(ctx, "Addrgrp type folder is not yet supported");
       return Addrgrp.Type.FOLDER;
     }
+  }
+
+  private @Nonnull Ippool.Type toIppoolType(FortiosParser.Ippool_typeContext ctx) {
+    if (ctx.FIXED_PORT_RANGE() != null) {
+      return Ippool.Type.FIXED_PORT_RANGE;
+    } else if (ctx.ONE_TO_ONE() != null) {
+      return Ippool.Type.ONE_TO_ONE;
+    } else if (ctx.OVERLOAD() != null) {
+      return Ippool.Type.OVERLOAD;
+    } else {
+      assert ctx.PORT_BLOCK_ALLOCATION() != null;
+      return Ippool.Type.PORT_BLOCK_ALLOCATION;
+    }
+  }
+
+  private Optional<Set<BatfishUUID>> toIppoolUUIDs(
+      FortiosParser.StrContext ctx, FortiosStructureUsage usage) {
+    int line = ctx.start.getLine();
+    Map<String, Ippool> ippoolsMap = _c.getIppools();
+    String name = toString(ctx);
+    if (ippoolsMap.containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.IPPOOL, name, usage, line);
+      return Optional.of(ImmutableSet.of(ippoolsMap.get(name).getBatfishUUID()));
+    }
+    _c.undefined(FortiosStructureType.IPPOOL, name, usage, line);
+    return Optional.empty();
   }
 
   private Interface.Type toInterfaceType(Interface_typeContext ctx) {
@@ -2928,6 +3099,22 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return toIntegerInSpace(ctx, vrf.uint8(), VRF_SPACE, "vrf");
   }
 
+  private @Nonnull Optional<Integer> toBfdInterval(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_INTERVAL_SPACE, "BFD interval");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMinRx(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MIN_RX_SPACE, "BFD minimum RX");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMinTx(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MIN_TX_SPACE, "BFD minimum TX");
+  }
+
+  private @Nonnull Optional<Integer> toBfdMultiplier(ParserRuleContext ctx, String str) {
+    return toIntegerInSpace(ctx, str, BFD_MULTIPLIER_SPACE, "BFD multiplier");
+  }
+
   private static int toInteger(Subnet_maskContext ctx) {
     return Ip.parse(ctx.getText()).numSubnetBits();
   }
@@ -3038,6 +3225,20 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     return null;
   }
 
+  /** Returns message indicating why ippool can't be committed in the CLI, or null if it can */
+  public static @Nullable String ippoolValid(Ippool ippool, boolean nameValid) {
+    if (!nameValid) {
+      return "invalid name";
+    }
+    if (ippool.getStartip() == null) {
+      return "missing startip";
+    }
+    if (ippool.getEndip() == null) {
+      return "missing endip";
+    }
+    return null;
+  }
+
   private static @Nullable String bgpNeighborValid(BgpNeighbor bgpNeighbor) {
     if (bgpNeighbor.getIp().equals(Ip.ZERO)) {
       return "neighbor ID is invalid";
@@ -3088,7 +3289,7 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
         yield null;
       }
       // both ICMP type and ICMP code are allowed to be unset
-      case ICMP, ICMP6, IP ->
+      case ICMP, ICMP6, IP, ALL ->
           // protocol-number is allowed to be unset
           null;
     };
@@ -3192,6 +3393,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       LongSpace.of(Range.closed(0L, 4294967295L));
   private static final IntegerSpace VLANID_SPACE = IntegerSpace.of(Range.closed(1, 4094));
   private static final IntegerSpace VRF_SPACE = IntegerSpace.of(Range.closed(0, 31));
+  private static final IntegerSpace BFD_INTERVAL_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MIN_RX_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MIN_TX_SPACE = IntegerSpace.of(Range.closed(50, 5000));
+  private static final IntegerSpace BFD_MULTIPLIER_SPACE = IntegerSpace.of(Range.closed(3, 50));
 
   private AccessList _currentAccessList;
   private boolean _currentAccessListNameValid;
@@ -3206,6 +3411,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
    * #addressValid(Address, boolean)}.
    */
   private boolean _currentAddressNameValid;
+
+  private Ippool _currentIppool;
+  private boolean _currentIppoolNameValid;
 
   private Addrgrp _currentAddrgrp;
   private boolean _currentAddrgrpNameValid;

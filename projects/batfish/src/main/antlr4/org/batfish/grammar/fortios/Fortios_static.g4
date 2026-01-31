@@ -19,6 +19,7 @@ crs_set_singletons:
     | crs_set_gateway
     | crs_set_sdwan
     | crs_set_status
+    | crs_set_bfd
 ;
 
 crs_set_device: DEVICE iface = interface_name newline;
@@ -32,6 +33,8 @@ crs_set_gateway: GATEWAY gateway = ip_address newline;
 crs_set_sdwan: SDWAN enabled = enable_or_disable newline;
 
 crs_set_status: STATUS enabled = enable_or_disable newline;
+
+crs_set_bfd: BFD bfd_enable = enable_or_disable newline;
 
 // 0-4294967295 inclusive
 route_num: str;

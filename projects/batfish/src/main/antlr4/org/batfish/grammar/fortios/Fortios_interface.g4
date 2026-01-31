@@ -41,8 +41,19 @@ csi_set_singletons:
     | csi_set_status
     | csi_set_type
     | csi_set_vdom
+    | csi_set_allowaccess
     | csi_set_vlanid
     | csi_set_vrf
+    | csi_set_dedicated_to
+    | csi_set_device_identification
+    | csi_set_forward_error_correction
+    | csi_set_ip_managed_by_fortiipam
+    | csi_set_lldp_transmission
+    | csi_set_mediatype
+    | csi_set_mode
+    | csi_set_monitor_bandwidth
+    | csi_set_role
+    | csi_set_src_check
     | csi_set_null
 ;
 
@@ -76,6 +87,18 @@ csi_set_vrf: VRF value = vrf newline;
 
 csi_set_null: SNMP_INDEX null_rest_of_line;
 
+csi_set_allowaccess: ALLOWACCESS null_rest_of_line;
+csi_set_dedicated_to: DEDICATED_TO null_rest_of_line;
+csi_set_device_identification: DEVICE_IDENTIFICATION null_rest_of_line;
+csi_set_forward_error_correction: FORWARD_ERROR_CORRECTION null_rest_of_line;
+csi_set_ip_managed_by_fortiipam: IP_MANAGED_BY_FORTIIPAM null_rest_of_line;
+csi_set_lldp_transmission: LLDP_TRANSMISSION null_rest_of_line;
+csi_set_mediatype: MEDIATYPE null_rest_of_line;
+csi_set_mode: MODE null_rest_of_line;
+csi_set_monitor_bandwidth: MONITOR_BANDWIDTH null_rest_of_line;
+csi_set_role: ROLE null_rest_of_line;
+csi_set_src_check: SRC_CHECK null_rest_of_line;
+
 // 68-65535
 mtu: uint16;
 
@@ -106,10 +129,26 @@ interface_speed
     | TEN_HALF
     | HUNDRED_FULL
     | HUNDRED_HALF
+    | HUNDRED_AUTO
     | THOUSAND_FULL
     | THOUSAND_HALF
+    | THOUSAND_AUTO
     | TEN_THOUSAND_FULL
     | TEN_THOUSAND_HALF
+    | TEN_THOUSAND_AUTO
+    | TWENTY_FIVE_THOUSAND_FULL
+    | TWENTY_FIVE_THOUSAND_AUTO
+    | TWO_THOUSAND_FIVE_HUNDRED_AUTO
+    | FORTY_THOUSAND_FULL
+    | FORTY_THOUSAND_AUTO
+    | FIVE_THOUSAND_AUTO
+    | FIFTY_THOUSAND_FULL
+    | FIFTY_THOUSAND_AUTO
     | HUNDRED_GFULL
+    | HUNDRED_GAUTO
     | HUNDRED_GHALF
+    | TWO_HUNDRED_GFULL
+    | TWO_HUNDRED_GAUTO
+    | FOUR_HUNDRED_G_FULL
+    | FOUR_HUNDRED_G_AUTO
 ;

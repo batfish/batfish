@@ -63,6 +63,7 @@ public class FortiosConfiguration extends VendorConfiguration {
     _routeMaps = new HashMap<>();
     _services = new HashMap<>();
     _serviceGroups = new HashMap<>();
+    _ippools = new HashMap<>();
     _staticRoutes = new HashMap<>();
     _zones = new HashMap<>();
   }
@@ -96,6 +97,10 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, Addrgrp> getAddrgrps() {
     return _addrgrps;
+  }
+
+  public @Nonnull Map<String, Ippool> getIppools() {
+    return _ippools;
   }
 
   public @Nullable BgpProcess getBgpProcess() {
@@ -151,6 +156,11 @@ public class FortiosConfiguration extends VendorConfiguration {
     return _zones;
   }
 
+  /** Global BFD settings */
+  public @Nonnull BfdSettings getBfdSettings() {
+    return _bfdSettings;
+  }
+
   /** Initializes configuration's {@link BgpProcess} if it isn't already initialized */
   public void initBgpProcess() {
     if (_bgpProcess == null) {
@@ -174,6 +184,8 @@ public class FortiosConfiguration extends VendorConfiguration {
   private final @Nonnull Map<String, ServiceGroup> _serviceGroups;
   private final @Nonnull Map<String, StaticRoute> _staticRoutes;
   private final @Nonnull Map<String, Zone> _zones;
+  private final @Nonnull Map<String, Ippool> _ippools;
+  private final @Nonnull BfdSettings _bfdSettings = new BfdSettings();
 
   private @Nullable BgpProcess _bgpProcess;
 
@@ -340,10 +352,17 @@ public class FortiosConfiguration extends VendorConfiguration {
   private static double toSpeed(Interface.Speed speed) {
     return switch (speed) {
       case TEN_FULL, TEN_HALF -> 10e6;
-      case HUNDRED_FULL, HUNDRED_HALF -> 100e6;
-      case THOUSAND_FULL, THOUSAND_HALF -> 1000e6;
-      case TEN_THOUSAND_FULL, TEN_THOUSAND_HALF -> 10000e6;
-      case HUNDRED_GFULL, HUNDRED_GHALF -> 100e9;
+      case HUNDRED_FULL, HUNDRED_HALF, HUNDRED_AUTO -> 100e6;
+      case THOUSAND_FULL, THOUSAND_HALF, THOUSAND_AUTO -> 1000e6;
+      case TEN_THOUSAND_FULL, TEN_THOUSAND_HALF, TEN_THOUSAND_AUTO -> 10000e6;
+      case TWENTY_FIVE_THOUSAND_FULL, TWENTY_FIVE_THOUSAND_AUTO -> 25000e6;
+      case FORTY_THOUSAND_FULL, FORTY_THOUSAND_AUTO -> 40000e6;
+      case FIFTY_THOUSAND_FULL, FIFTY_THOUSAND_AUTO -> 50000e6;
+      case TWO_THOUSAND_FIVE_HUNDRED_AUTO -> 2500e6;
+      case FIVE_THOUSAND_AUTO -> 5000e6;
+      case HUNDRED_GFULL, HUNDRED_GHALF, HUNDRED_GAUTO -> 100e9;
+      case TWO_HUNDRED_GFULL, TWO_HUNDRED_GAUTO -> 200e9;
+      case FOUR_HUNDRED_G_FULL, FOUR_HUNDRED_G_AUTO -> 400e9;
       case AUTO ->
           // Assume 10Gbps default
           10000e6;

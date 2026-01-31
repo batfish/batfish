@@ -19,6 +19,7 @@ public enum FortiosStructureUsage implements StructureUsage {
   POLICY_DELETE("firewall policy delete"),
   POLICY_MOVE("firewall policy move"),
   POLICY_MOVE_PIVOT("firewall policy move before or after"),
+  POLICY_POOLNAME("firewall policy poolname"),
   POLICY_SERVICE("firewall policy service"),
   POLICY_SRCADDR("firewall policy srcaddr"),
   POLICY_SRCINTF("firewall policy srcintf"),
