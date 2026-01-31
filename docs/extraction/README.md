@@ -4,6 +4,12 @@ In Batfish, "extraction" refers to the process of populating vendor-specific net
 data structures from one or more [parse trees](../parsing/README.md) of DSL network configuration
 files.
 
+## Vendor code organization
+
+For guidance on where to place vendor-specific extraction and representation code, see the
+[Vendor code organization](../parsing/README.md#vendor-code-organization) section in the parsing
+documentation. New vendors should use the vendor-scoped pattern (`org.batfish.vendor.<vendor>/`).
+
 The configuration of some network devices may also include files in well-known structured formats
 (e.g. JSON, YAML). The process of converting such files into vendor-specific data structures is
 outside of the scope of this document, covered instead
