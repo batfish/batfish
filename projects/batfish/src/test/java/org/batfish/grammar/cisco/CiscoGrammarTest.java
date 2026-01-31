@@ -528,6 +528,12 @@ public final class CiscoGrammarTest {
   }
 
   @Test
+  public void testCryptoParsing() throws IOException {
+    // Don't crash
+    parseConfig("ios-xe-crypto-parsing");
+  }
+
+  @Test
   public void testLineAuthenticationMethods() throws IOException {
     // test IOS
     Configuration iosConfiguration = parseConfig("aaaAuthenticationIos");
