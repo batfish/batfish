@@ -80,7 +80,7 @@ public final class KernelRoute extends AbstractRoute implements Comparable<Kerne
   }
 
   private KernelRoute(
-      Prefix network, int admin, long tag, @Nullable Ip requiredOwnedIp, boolean nonForwarding) {
+      Prefix network, long admin, long tag, @Nullable Ip requiredOwnedIp, boolean nonForwarding) {
     super(network, admin, tag, false, nonForwarding);
     _requiredOwnedIp = requiredOwnedIp;
   }

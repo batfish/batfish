@@ -29,7 +29,7 @@ public abstract class EvpnRoute<B extends Builder<B, R>, R extends BgpRoute<B, R
     protected @Nullable Integer _vni;
 
     @Override
-    public final B setAdmin(int admin) {
+    public final B setAdmin(long admin) {
       // All EVPN routes have admin set to an arbitrary constant value because they never compete
       // with non-EVPN routes
       throw new UnsupportedOperationException("Cannot set admin for an EvpnRoute");

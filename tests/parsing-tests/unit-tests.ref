@@ -57429,7 +57429,7 @@
             "                    (popst_common*",
             "                      (popst_preference",
             "                        PREFERENCE:'preference'",
-            "                        preference = (dec*",
+            "                        preference = (uint32*",
             "                          UINT8:'100')))))))))))",
             "    NEWLINE:'\\n')",
             "  (set_line*",
