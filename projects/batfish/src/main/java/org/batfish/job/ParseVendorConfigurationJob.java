@@ -59,8 +59,6 @@ import org.batfish.grammar.flatvyos.FlatVyosControlPlaneExtractor;
 import org.batfish.grammar.fortios.FortiosCombinedParser;
 import org.batfish.grammar.fortios.FortiosControlPlaneExtractor;
 import org.batfish.grammar.frr.FrrCombinedParser;
-import org.batfish.grammar.huawei.HuaweiCombinedParser;
-import org.batfish.grammar.huawei.HuaweiControlPlaneExtractor;
 import org.batfish.grammar.iptables.IptablesCombinedParser;
 import org.batfish.grammar.iptables.IptablesControlPlaneExtractor;
 import org.batfish.grammar.mrv.MrvCombinedParser;
@@ -79,6 +77,8 @@ import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedP
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
+import org.batfish.vendor.huawei.grammar.HuaweiCombinedParser;
+import org.batfish.vendor.huawei.grammar.HuaweiControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor.SonicFileType;
 
