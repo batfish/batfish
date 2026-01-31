@@ -13,20 +13,36 @@ import org.batfish.grammar.huawei.HuaweiParser.Description_lineContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_dot1q_terminationContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_ip_addressContext;
 import org.batfish.grammar.huawei.HuaweiParser.If_shutdownContext;
+import org.batfish.grammar.huawei.HuaweiParser.Ospf_areaContext;
+import org.batfish.grammar.huawei.HuaweiParser.Ospf_networkContext;
+import org.batfish.grammar.huawei.HuaweiParser.Ospf_router_idContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_aclContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_bgpContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_interfaceContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_natContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_ospfContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_returnContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_static_routeContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_sysnameContext;
 import org.batfish.grammar.huawei.HuaweiParser.S_vlanContext;
+import org.batfish.grammar.huawei.HuaweiParser.S_vrfContext;
 import org.batfish.grammar.huawei.HuaweiParser.V_descriptionContext;
 import org.batfish.grammar.huawei.HuaweiParser.V_nameContext;
+import org.batfish.grammar.huawei.HuaweiParser.Vrf_route_distinguisherContext;
+import org.batfish.grammar.huawei.HuaweiParser.Vrf_vpn_targetContext;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
+import org.batfish.representation.huawei.HuaweiAcl;
+import org.batfish.representation.huawei.HuaweiAcl.AclType;
+import org.batfish.representation.huawei.HuaweiAclLine;
 import org.batfish.representation.huawei.HuaweiBgpProcess;
 import org.batfish.representation.huawei.HuaweiConfiguration;
 import org.batfish.representation.huawei.HuaweiInterface;
+import org.batfish.representation.huawei.HuaweiNatRule;
+import org.batfish.representation.huawei.HuaweiNatRule.NatType;
+import org.batfish.representation.huawei.HuaweiOspfProcess;
 import org.batfish.representation.huawei.HuaweiStaticRoute;
 import org.batfish.representation.huawei.HuaweiVlan;
+import org.batfish.representation.huawei.HuaweiVrf;
 import org.batfish.vendor.VendorConfiguration;
 
 /**
@@ -44,6 +60,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   private final Warnings _w;
   private final SilentSyntaxCollection _silentSyntax;
   private String _currentInterfaceName;
+  private HuaweiAcl _currentAcl;
+  private HuaweiVrf _currentVrf;
 
   public HuaweiControlPlaneExtractor(
       String text, HuaweiCombinedParser parser, Warnings w, SilentSyntaxCollection silentSyntax) {
@@ -53,6 +71,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     _silentSyntax = silentSyntax;
     _configuration = new HuaweiConfiguration();
     _currentInterfaceName = null;
+    _currentAcl = null;
+    _currentVrf = null;
   }
 
   public String getInputText() {
@@ -533,5 +553,515 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
               ctx.getStart().getLine(), e.getMessage());
       _w.redFlag(warning);
     }
+  }
+
+  /**
+   * Process entry to s_acl rule - create ACL object.
+   *
+   * <p>Creates HuaweiAcl object with name/number and type.
+   */
+  @Override
+  public void enterS_acl(S_aclContext ctx) {
+    String aclName = null;
+    AclType aclType = AclType.ADVANCED; // Default to advanced
+
+    // Extract ACL name/number
+    if (ctx.acl_name != null) {
+      aclName = ctx.acl_name.getText();
+    } else if (ctx.acl_num != null) {
+      aclName = ctx.acl_num.getText();
+    }
+
+    // Determine ACL type based on keyword or number range
+    if (ctx.acl_type != null) {
+      aclType = ctx.acl_type.getText().equals("basic") ? AclType.BASIC : AclType.ADVANCED;
+    } else if (ctx.acl_num != null) {
+      // Determine type from ACL number range
+      try {
+        int aclNum = Integer.parseInt(ctx.acl_num.getText());
+        if (aclNum >= 2000 && aclNum < 3000) {
+          aclType = AclType.BASIC;
+        } else if (aclNum >= 3000 && aclNum < 4000) {
+          aclType = AclType.ADVANCED;
+        }
+      } catch (NumberFormatException e) {
+        // Invalid ACL number - will be handled as warning
+      }
+    }
+
+    if (aclName != null) {
+      _currentAcl = new HuaweiAcl(aclName, aclType);
+      _configuration.addAcl(aclName, _currentAcl);
+    }
+  }
+
+  /**
+   * Process exit from s_acl rule - clear current ACL context.
+   *
+   * <p>Called when exiting an ACL configuration block.
+   */
+  @Override
+  public void exitS_acl(S_aclContext ctx) {
+    _currentAcl = null;
+  }
+
+  /**
+   * Process exit from acl_rule rule - extract permit/deny rule.
+   *
+   * <p>Extracts ACL rule information including action, protocol, source, destination, and ports.
+   */
+  public void exitAcl_rule(HuaweiParser.Acl_ruleContext ctx) {
+    if (_currentAcl == null) {
+      return;
+    }
+
+    try {
+      // Extract action (permit/deny)
+      String action = "deny"; // Default to deny
+      if (ctx.action != null) {
+        action = ctx.action.getText().toLowerCase();
+      }
+
+      // Create ACL line with sequence number (use size of existing lines + 1)
+      int seqNum = _currentAcl.getLines().size() + 1;
+      HuaweiAclLine line = new HuaweiAclLine(seqNum, action);
+
+      // Extract protocol
+      String protocol = "ip"; // Default to IP (any protocol)
+      if (ctx.TCP() != null) {
+        protocol = "tcp";
+      } else if (ctx.UDP() != null) {
+        protocol = "udp";
+      } else if (ctx.ICMP() != null) {
+        protocol = "icmp";
+      } else if (ctx.IP() != null) {
+        protocol = "ip";
+      } else if (ctx.variable() != null) {
+        protocol = ctx.variable().getText().toLowerCase();
+      }
+      line.setProtocol(protocol);
+
+      // Extract source address
+      if (ctx.src_addr != null) {
+        String srcAddr = ctx.src_addr.getText();
+        // Handle wildcard format
+        if (ctx.src_wildcard != null) {
+          // Convert address+wildcard to prefix format
+          // For now, store as "address wildcard"
+          line.setSource(srcAddr + " " + ctx.src_wildcard.getText());
+        } else if (ctx.src_prefix_len != null) {
+          // CIDR notation
+          line.setSource(srcAddr + "/" + ctx.src_prefix_len.getText());
+        } else {
+          line.setSource(srcAddr);
+        }
+      } else if (ctx.src_any != null) {
+        line.setSource("any");
+      }
+
+      // Extract destination address
+      if (ctx.dest_addr != null) {
+        String destAddr = ctx.dest_addr.getText();
+        // Handle wildcard format
+        if (ctx.dest_wildcard != null) {
+          // Convert address+wildcard to prefix format
+          line.setDestination(destAddr + " " + ctx.dest_wildcard.getText());
+        } else if (ctx.dest_prefix_len != null) {
+          // CIDR notation
+          line.setDestination(destAddr + "/" + ctx.dest_prefix_len.getText());
+        } else {
+          line.setDestination(destAddr);
+        }
+      } else if (ctx.dest_any != null) {
+        line.setDestination("any");
+      }
+
+      // Extract source port
+      if (ctx.src_port != null) {
+        String portOp = "";
+        if (ctx.eq != null) {
+          portOp = "eq ";
+        } else if (ctx.gt != null) {
+          portOp = "gt ";
+        } else if (ctx.lt != null) {
+          portOp = "lt ";
+        } else if (ctx.range != null && ctx.src_port_start != null && ctx.src_port_end != null) {
+          portOp = "range " + ctx.src_port_start.getText() + " ";
+          line.setSourcePort(portOp + ctx.src_port_end.getText());
+        }
+        if (!portOp.isEmpty() && ctx.src_port != null) {
+          line.setSourcePort(portOp + ctx.src_port.getText());
+        }
+      }
+
+      // Extract destination port
+      if (ctx.dest_port != null) {
+        String portOp = "";
+        if (ctx.eq2 != null) {
+          portOp = "eq ";
+        } else if (ctx.gt2 != null) {
+          portOp = "gt ";
+        } else if (ctx.lt2 != null) {
+          portOp = "lt ";
+        } else if (ctx.range2 != null && ctx.dest_port_start != null && ctx.dest_port_end != null) {
+          portOp = "range " + ctx.dest_port_start.getText() + " ";
+          line.setDestinationPort(portOp + ctx.dest_port_end.getText());
+        }
+        if (!portOp.isEmpty() && ctx.dest_port != null) {
+          line.setDestinationPort(portOp + ctx.dest_port.getText());
+        }
+      }
+
+      // Add the line to the ACL
+      _currentAcl.addLine(line);
+
+    } catch (Exception e) {
+      String warning =
+          String.format(
+              "Error parsing ACL rule at line %d: %s", ctx.getStart().getLine(), e.getMessage());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process exit from s_nat rule - extract NAT configuration.
+   *
+   * <p>Extracts NAT configuration including address groups, outbound rules, static NAT, and NAT
+   * server.
+   */
+  @Override
+  public void exitS_nat(S_natContext ctx) {
+    // Check if this is a "no nat" command (undo NAT)
+    if (ctx.nat_substanza() != null
+        && ctx.nat_substanza().getStart().getType() == HuaweiParser.NO) {
+      // Undo NAT - ignore for now
+      return;
+    }
+
+    // Process different NAT sub-stanzas
+    if (ctx.nat_substanza() == null) {
+      return;
+    }
+
+    try {
+      // Handle nat address-group
+      if (ctx.nat_substanza().nat_address_group() != null) {
+        HuaweiParser.Nat_address_groupContext groupCtx = ctx.nat_substanza().nat_address_group();
+        // For Phase 8, we're just noting that address groups exist
+        // Full implementation would parse and store the address pool
+      }
+
+      // Handle nat outbound (dynamic NAT / Easy IP)
+      else if (ctx.nat_substanza().nat_outbound() != null) {
+        HuaweiParser.Nat_outboundContext outboundCtx = ctx.nat_substanza().nat_outbound();
+
+        // Create NAT rule for outbound
+        String ruleName = "outbound_" + System.currentTimeMillis();
+        HuaweiNatRule natRule = new HuaweiNatRule(ruleName, NatType.DYNAMIC);
+
+        // Extract ACL number/name
+        if (outboundCtx.uint16() != null) {
+          natRule.setAclName(outboundCtx.uint16().getText());
+        } else if (outboundCtx.VARIABLE() != null && outboundCtx.VARIABLE().size() > 0) {
+          natRule.setAclName(outboundCtx.VARIABLE(0).getText());
+        }
+
+        // Check if using interface (Easy IP)
+        if (outboundCtx.INTERFACE() != null) {
+          natRule.setType(NatType.EASY_IP);
+          if (outboundCtx.VARIABLE() != null && outboundCtx.VARIABLE().size() > 0) {
+            natRule.setInterfaceName(
+                outboundCtx.VARIABLE(outboundCtx.VARIABLE().size() - 1).getText());
+          }
+        }
+        // Check if using pool name
+        else if (outboundCtx.VARIABLE() != null && outboundCtx.VARIABLE().size() > 0) {
+          natRule.setPoolName(outboundCtx.VARIABLE(outboundCtx.VARIABLE().size() - 1).getText());
+        }
+
+        // Extract VRF name if present
+        if (outboundCtx.VPN_INSTANCE() != null && outboundCtx.VARIABLE() != null) {
+          natRule.setVrfName(outboundCtx.VARIABLE(outboundCtx.VARIABLE().size() - 1).getText());
+        }
+
+        _configuration.addNatRule(natRule);
+      }
+
+      // Handle nat static (static one-to-one NAT)
+      else if (ctx.nat_substanza().nat_static() != null) {
+        HuaweiParser.Nat_staticContext staticCtx = ctx.nat_substanza().nat_static();
+
+        // Create NAT rule for static NAT
+        String ruleName = "static_" + System.currentTimeMillis();
+        HuaweiNatRule natRule = new HuaweiNatRule(ruleName, NatType.STATIC);
+
+        // Extract global IP
+        if (staticCtx.ip_address() != null && staticCtx.ip_address().size() > 0) {
+          Ip globalIp = Ip.parse(staticCtx.ip_address(0).getText());
+          natRule.setGlobalIp(globalIp);
+        }
+
+        // Extract inside IP (second IP address)
+        if (staticCtx.ip_address() != null && staticCtx.ip_address().size() > 1) {
+          Ip insideIp = Ip.parse(staticCtx.ip_address(1).getText());
+          natRule.setInsideLocalIp(insideIp);
+        }
+
+        // Extract VRF name if present
+        if (staticCtx.VPN_INSTANCE() != null && staticCtx.VARIABLE() != null) {
+          natRule.setVrfName(staticCtx.VARIABLE().getText());
+        }
+
+        _configuration.addNatRule(natRule);
+      }
+
+      // Handle nat server (port forwarding)
+      else if (ctx.nat_substanza().nat_server() != null) {
+        HuaweiParser.Nat_serverContext serverCtx = ctx.nat_substanza().nat_server();
+
+        // Create NAT rule for NAT server
+        String ruleName = "server_" + System.currentTimeMillis();
+        HuaweiNatRule natRule = new HuaweiNatRule(ruleName, NatType.NAT_SERVER);
+
+        // Check if protocol specified
+        if (serverCtx.PROTOCOL() != null) {
+          if (serverCtx.TCP() != null) {
+            natRule.setProtocol("tcp");
+          } else if (serverCtx.UDP() != null) {
+            natRule.setProtocol("udp");
+          }
+
+          // Extract ports if protocol specified
+          // With PROTOCOL keyword, format is: PROTOCOL TCP/UDP GLOBAL <ip> <port1> INSIDE <ip>
+          // <port2>
+          if (serverCtx.global_port_proto != null) {
+            try {
+              natRule.setGlobalPort(Integer.parseInt(serverCtx.global_port_proto.getText()));
+            } catch (NumberFormatException e) {
+              // Invalid port number
+            }
+          }
+          if (serverCtx.inside_port_proto != null) {
+            try {
+              natRule.setInsideLocalPort(Integer.parseInt(serverCtx.inside_port_proto.getText()));
+            } catch (NumberFormatException e) {
+              // Invalid port number
+            }
+          }
+
+          // Extract IPs
+          if (serverCtx.ip_address() != null && serverCtx.ip_address().size() > 0) {
+            Ip globalIp = Ip.parse(serverCtx.ip_address(0).getText());
+            natRule.setGlobalIp(globalIp);
+          }
+          if (serverCtx.ip_address() != null && serverCtx.ip_address().size() > 1) {
+            Ip insideIp = Ip.parse(serverCtx.ip_address(1).getText());
+            natRule.setInsideLocalIp(insideIp);
+          }
+        } else {
+          // No protocol - check for simple IP mapping or single port
+          if (serverCtx.ip_address() != null && serverCtx.ip_address().size() > 0) {
+            Ip globalIp = Ip.parse(serverCtx.ip_address(0).getText());
+            natRule.setGlobalIp(globalIp);
+          }
+          if (serverCtx.ip_address() != null && serverCtx.ip_address().size() > 1) {
+            Ip insideIp = Ip.parse(serverCtx.ip_address(1).getText());
+            natRule.setInsideLocalIp(insideIp);
+          }
+
+          // Check for single port (format without protocol keyword)
+          // Format: GLOBAL <ip> <port> INSIDE <ip>
+          if (serverCtx.global_port_simple != null) {
+            try {
+              natRule.setGlobalPort(Integer.parseInt(serverCtx.global_port_simple.getText()));
+            } catch (NumberFormatException e) {
+              // Invalid port number
+            }
+          }
+        }
+
+        // Extract VRF name if present
+        if (serverCtx.VPN_INSTANCE() != null && serverCtx.VARIABLE() != null) {
+          natRule.setVrfName(serverCtx.VARIABLE().getText());
+        }
+
+        _configuration.addNatRule(natRule);
+      }
+
+    } catch (Exception e) {
+      String warning =
+          String.format(
+              "Error parsing NAT configuration at line %d: %s",
+              ctx.getStart().getLine(), e.getMessage());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process entry to s_ospf rule - create OSPF process.
+   *
+   * <p>Creates HuaweiOspfProcess object with process ID.
+   */
+  @Override
+  public void enterS_ospf(S_ospfContext ctx) {
+    if (ctx.process_id != null) {
+      try {
+        long processId = Long.parseLong(ctx.process_id.getText());
+        HuaweiOspfProcess ospfProcess = new HuaweiOspfProcess(processId);
+        _configuration.setOspfProcess(ospfProcess);
+      } catch (NumberFormatException e) {
+        String warning =
+            String.format(
+                "Invalid OSPF process ID at line %d: %s",
+                ctx.process_id.getStart().getLine(), ctx.process_id.getText());
+        _w.redFlag(warning);
+      }
+    }
+  }
+
+  /**
+   * Process exit from ospf_area rule - extract OSPF area configuration.
+   *
+   * <p>Extracts area ID from the "area" command and creates area in OSPF process.
+   */
+  @Override
+  public void exitOspf_area(Ospf_areaContext ctx) {
+    HuaweiOspfProcess ospfProcess = _configuration.getOspfProcess();
+    if (ospfProcess == null || ctx.area_id == null) {
+      return;
+    }
+
+    try {
+      long areaId = Long.parseLong(ctx.area_id.getText());
+      // Create or get the area
+      ospfProcess.getOrCreateArea(areaId);
+    } catch (NumberFormatException e) {
+      String warning =
+          String.format(
+              "Invalid OSPF area ID at line %d: %s",
+              ctx.area_id.getStart().getLine(), ctx.area_id.getText());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process exit from ospf_network rule - extract OSPF network configuration.
+   *
+   * <p>Extracts network prefix and area ID from "network <prefix> area <area-id>" command.
+   */
+  @Override
+  public void exitOspf_network(Ospf_networkContext ctx) {
+    HuaweiOspfProcess ospfProcess = _configuration.getOspfProcess();
+    if (ospfProcess == null || ctx.ip == null || ctx.area_id == null) {
+      return;
+    }
+
+    try {
+      Prefix network = Prefix.parse(ctx.ip.getText());
+      long areaId = Long.parseLong(ctx.area_id.getText());
+
+      // Create OSPF network object
+      HuaweiOspfProcess.HuaweiOspfNetwork ospfNetwork =
+          new HuaweiOspfProcess.HuaweiOspfNetwork(network, areaId);
+      ospfProcess.addNetwork(ospfNetwork);
+
+      // Also ensure the area exists
+      ospfProcess.getOrCreateArea(areaId);
+    } catch (Exception e) {
+      String warning =
+          String.format(
+              "Error parsing OSPF network at line %d: %s",
+              ctx.getStart().getLine(), e.getMessage());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process exit from ospf_router_id rule - extract OSPF router ID.
+   *
+   * <p>Extracts router ID from the "router-id" command.
+   */
+  @Override
+  public void exitOspf_router_id(Ospf_router_idContext ctx) {
+    HuaweiOspfProcess ospfProcess = _configuration.getOspfProcess();
+    if (ospfProcess == null || ctx.router_ip == null) {
+      return;
+    }
+
+    try {
+      Ip routerId = Ip.parse(ctx.router_ip.getText());
+      ospfProcess.setRouterId(routerId);
+    } catch (Exception e) {
+      String warning =
+          String.format(
+              "Invalid OSPF router ID at line %d: %s",
+              ctx.router_ip.getStart().getLine(), ctx.router_ip.getText());
+      _w.redFlag(warning);
+    }
+  }
+
+  /**
+   * Process entry to s_vrf rule - create VRF object.
+   *
+   * <p>Creates HuaweiVrf object with VRF name.
+   */
+  @Override
+  public void enterS_vrf(S_vrfContext ctx) {
+    if (ctx.vrf_name != null) {
+      String vrfName = ctx.vrf_name.getText();
+      HuaweiVrf vrf = new HuaweiVrf(vrfName);
+      _configuration.addVrf(vrfName, vrf);
+      _currentVrf = vrf;
+    }
+  }
+
+  /**
+   * Process exit from vrf_route_distinguisher rule - extract RD value.
+   *
+   * <p>Extracts route distinguisher from "route-distinguisher <rd>" command.
+   */
+  @Override
+  public void exitVrf_route_distinguisher(Vrf_route_distinguisherContext ctx) {
+    if (_currentVrf == null || ctx.rd == null) {
+      return;
+    }
+
+    String rd = ctx.rd.getText();
+    _currentVrf.setRouteDistinguisher(rd);
+  }
+
+  /**
+   * Process exit from vrf_vpn_target rule - extract route target values.
+   *
+   * <p>Extracts VPN target (route target) from "vpn-target <rt> import/export/both" command.
+   */
+  @Override
+  public void exitVrf_vpn_target(Vrf_vpn_targetContext ctx) {
+    if (_currentVrf == null || ctx.rt_value == null) {
+      return;
+    }
+
+    String rt = ctx.rt_value.getText();
+
+    // Determine if this is import, export, or both
+    boolean isImport = ctx.IMPORT() != null || ctx.BOTH() != null;
+    boolean isExport = ctx.EXPORT() != null || ctx.BOTH() != null;
+
+    if (isImport) {
+      _currentVrf.addImportRouteTarget(rt);
+    }
+    if (isExport) {
+      _currentVrf.addExportRouteTarget(rt);
+    }
+  }
+
+  /**
+   * Process exit from s_vrf rule - clear current VRF context.
+   *
+   * <p>Called when exiting a VRF configuration block.
+   */
+  @Override
+  public void exitS_vrf(S_vrfContext ctx) {
+    _currentVrf = null;
   }
 }

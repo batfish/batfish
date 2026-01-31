@@ -26,10 +26,11 @@ huawei_configuration
 ;
 
 // Stanza at top level (includes return which ends parsing)
+// Order matters: s_interface must come LAST (before s_ignored) because
+// interface_name's VARIABLE catchall can match any keyword
 s_stanza
 :
    s_sysname
-   | s_interface
    | s_vlan
    | s_bgp
    | s_ospf
@@ -38,6 +39,7 @@ s_stanza
    | s_nat
    | s_vrf
    | s_return
+   | s_interface
    | s_ignored
 ;
 

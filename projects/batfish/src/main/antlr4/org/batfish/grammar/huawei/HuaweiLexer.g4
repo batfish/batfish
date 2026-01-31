@@ -25,6 +25,12 @@ ACL_IPV6: 'ipv6';
 
 ADDRESS: 'address';
 
+ADDRESS_GROUP: 'address-group';
+
+MASK: 'mask';
+
+AREA: 'area';
+
 ARP: 'arp';
 
 AS_NUMBER: 'as-number';
@@ -33,7 +39,15 @@ AS_PATH_LIMIT: 'as-path-limit';
 
 AUTHENTICATION_MODE: 'authentication-mode';
 
+AUTO: 'auto';
+
+AVAILABLE: 'available';
+
+ANY: 'any';
+
 BANDWIDTH: 'bandwidth';
+
+BOTH: 'both';
 
 BATCH: 'batch';
 
@@ -97,11 +111,15 @@ DESCRIPTION: 'description';
 
 DEST_ADDRESS: 'dest-address';
 
+DESTINATION: 'destination';
+
 DEVICE: 'device';
 
 DHCP: 'dhcp';
 
 DIFF_SERV: 'diff-serv';
+
+DISTINGUISHER: 'distinguisher';
 
 DISABLE: 'disable';
 
@@ -128,6 +146,8 @@ ENABLE: 'enable';
 ENCAP: 'encap';
 
 ENCAPULATION: 'encapsulation';
+
+EQ: 'eq';
 
 ESI: 'esi';
 
@@ -159,6 +179,8 @@ FLOW_ACTION: 'flow-action';
 
 FLOOD: 'flood';
 
+FRAGMENT: 'fragment';
+
 FORCED: 'forced';
 
 FR: 'fr';
@@ -176,6 +198,8 @@ GIGABITETHERNET: 'GigabitEthernet';
 GLOBAL: 'global';
 
 GROUP: 'group';
+
+GT: 'gt';
 
 HA: 'ha';
 
@@ -210,6 +234,8 @@ INFO_CENTER: 'info-center';
 INTERNAL: 'internal';
 
 INTERFACE: 'interface';
+
+INSIDE: 'inside';
 
 IP: 'ip';
 
@@ -256,6 +282,8 @@ LOCAL: 'local';
 LOG: 'log';
 
 LOGGING: 'logging';
+
+LT: 'lt';
 
 LOOPBACK: 'LoopBack';
 
@@ -383,6 +411,8 @@ QUEUE: 'queue';
 
 RADIUS: 'radius';
 
+RANGE: 'range';
+
 RATE: 'rate';
 
 RATE_LIMIT: 'rate-limit';
@@ -419,6 +449,8 @@ ROLE: 'role';
 
 ROUTE: 'route';
 
+ROUTE_DISTINGUISHER: 'route-distinguisher';
+
 ROUTE_POLICY: 'route-policy';
 
 ROUTE_STATIC: 'route-static';
@@ -426,6 +458,8 @@ ROUTE_STATIC: 'route-static';
 ROUTER_ID: 'router-id';
 
 ROUTING: 'routing';
+
+RULE: 'rule';
 
 RPC: 'rpc';
 
@@ -612,7 +646,9 @@ IPV4_ADDRESS_PATTERN
 
 IPV6_ADDRESS_PATTERN
 :
-   [0-9a-fA-F:]+ -> type(IPV6_ADDRESS)
+   // Must have at least 2 colons to distinguish from route distinguisher format (e.g., 100:1)
+   [0-9a-fA-F:]* ':' [0-9a-fA-F:]* ':' [0-9a-fA-F:]*
+   -> type(IPV6_ADDRESS)
 ;
 
 IPV4_PREFIX_PATTERN

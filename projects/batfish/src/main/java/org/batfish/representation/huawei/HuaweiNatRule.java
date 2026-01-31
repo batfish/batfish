@@ -1,6 +1,8 @@
 package org.batfish.representation.huawei;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 // import org.batfish.datamodel.AclLine; // TODO: Add when needed
@@ -58,9 +60,13 @@ public class HuaweiNatRule implements Serializable {
   /** VRF name */
   @Nullable private String _vrfName;
 
+  /** Address pool (list of global IP addresses for dynamic NAT) */
+  @Nullable private List<Ip> _addressPool;
+
   public HuaweiNatRule(@Nonnull String name, @Nonnull NatType type) {
     _name = name;
     _type = type;
+    _addressPool = new ArrayList<>();
   }
 
   /**
@@ -270,5 +276,36 @@ public class HuaweiNatRule implements Serializable {
    */
   public void setVrfName(@Nullable String vrfName) {
     _vrfName = vrfName;
+  }
+
+  /**
+   * Gets the address pool.
+   *
+   * @return The list of IP addresses in the pool, or null if not set
+   */
+  @Nullable
+  public List<Ip> getAddressPool() {
+    return _addressPool;
+  }
+
+  /**
+   * Sets the address pool.
+   *
+   * @param addressPool The list of IP addresses to set
+   */
+  public void setAddressPool(@Nullable List<Ip> addressPool) {
+    _addressPool = addressPool;
+  }
+
+  /**
+   * Adds an IP address to the address pool.
+   *
+   * @param ip The IP address to add
+   */
+  public void addAddressPoolIp(@Nonnull Ip ip) {
+    if (_addressPool == null) {
+      _addressPool = new ArrayList<>();
+    }
+    _addressPool.add(ip);
   }
 }

@@ -82,7 +82,11 @@ interface_name
    // Eth-Trunk interfaces
    name = ETH_TRUNK num = uint16
    |
-   // Other interface types (match generic pattern)
+   // Other interface types: match multi-part names (contain /, -, or .)
+   // This avoids matching single-word config keywords like "nat", "bgp", "acl", etc.
+   name = VARIABLE (FORWARD_SLASH | DASH | PERIOD) VARIABLE
+   |
+   // Single-word interface names (less common, usually avoided in configs)
    name = VARIABLE
 ;
 

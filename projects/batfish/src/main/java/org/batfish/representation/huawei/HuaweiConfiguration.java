@@ -36,6 +36,9 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   /** List of static routes */
   @Nonnull private List<HuaweiStaticRoute> _staticRoutes;
 
+  /** List of NAT rules */
+  @Nonnull private List<HuaweiNatRule> _natRules;
+
   /** BGP process configuration (stub for future implementation) */
   @Nullable private HuaweiBgpProcess _bgpProcess;
 
@@ -45,11 +48,16 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   /** VRF configurations (stub for future implementation) */
   private SortedMap<String, HuaweiVrf> _vrfs;
 
+  /** Map of ACL names/numbers to ACL configurations */
+  private SortedMap<String, HuaweiAcl> _acls;
+
   public HuaweiConfiguration() {
     _interfaces = ImmutableSortedMap.of();
     _vlans = ImmutableSortedMap.of();
     _staticRoutes = new ArrayList<>();
+    _natRules = new ArrayList<>();
     _vrfs = ImmutableSortedMap.of();
+    _acls = ImmutableSortedMap.of();
   }
 
   /**
@@ -207,6 +215,34 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   }
 
   /**
+   * Gets the list of NAT rules.
+   *
+   * @return A list of NAT rules
+   */
+  @Nonnull
+  public List<HuaweiNatRule> getNatRules() {
+    return _natRules;
+  }
+
+  /**
+   * Sets the list of NAT rules.
+   *
+   * @param natRules The list of NAT rules to set
+   */
+  public void setNatRules(@Nonnull List<HuaweiNatRule> natRules) {
+    _natRules = natRules;
+  }
+
+  /**
+   * Adds a NAT rule to the configuration.
+   *
+   * @param natRule The NAT rule to add
+   */
+  public void addNatRule(HuaweiNatRule natRule) {
+    _natRules.add(natRule);
+  }
+
+  /**
    * Gets the BGP process configuration.
    *
    * @return The BGP process, or null if not configured
@@ -274,5 +310,48 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
         ImmutableSortedMap.<String, HuaweiVrf>naturalOrder().putAll(_vrfs);
     builder.put(name, vrf);
     _vrfs = builder.build();
+  }
+
+  /**
+   * Gets the map of ACLs.
+   *
+   * @return A sorted map of ACL names/numbers to ACL configurations
+   */
+  @Nonnull
+  public SortedMap<String, HuaweiAcl> getAcls() {
+    return _acls;
+  }
+
+  /**
+   * Sets the ACLs map.
+   *
+   * @param acls The map of ACL names/numbers to ACL configurations
+   */
+  public void setAcls(@Nonnull SortedMap<String, HuaweiAcl> acls) {
+    _acls = acls;
+  }
+
+  /**
+   * Gets a specific ACL by name or number.
+   *
+   * @param name The ACL name or number
+   * @return The ACL configuration, or null if not found
+   */
+  @Nullable
+  public HuaweiAcl getAcl(String name) {
+    return _acls.get(name);
+  }
+
+  /**
+   * Adds or updates an ACL.
+   *
+   * @param name The ACL name or number
+   * @param acl The ACL configuration
+   */
+  public void addAcl(String name, HuaweiAcl acl) {
+    ImmutableSortedMap.Builder<String, HuaweiAcl> builder =
+        ImmutableSortedMap.<String, HuaweiAcl>naturalOrder().putAll(_acls);
+    builder.put(name, acl);
+    _acls = builder.build();
   }
 }
