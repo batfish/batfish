@@ -16,6 +16,13 @@ repos:
         language: system
         require_serial: true
         pass_filenames: false # this is a global check, only run it once
+      - id: validate-grammar-rules
+        name: validate-grammar-rules
+        entry: ./tools/validate_grammar_rules.py --changed-only
+        language: python
+        files: '\.g4$'
+        require_serial: true
+        pass_filenames: true
   - repo: https://github.com/psf/black
     rev: 25.1.0
     hooks:

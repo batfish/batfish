@@ -9,22 +9,26 @@ This script checks:
 4. _null suffix usage (leaf vs non-leaf rules)
 5. NEWLINE placement (should be at leaf level, not parent)
 6. Import structure (no circular imports)
+7. Rule ordering (lexicographical within prefix groups)
+8. Spacing and formatting (indentation, blank lines between groups)
 """
 
 import argparse
 import re
+import subprocess
 import sys
 from pathlib import Path
 from typing import Dict, List, Set, Tuple
 
 
 class GrammarValidator:
-    def __init__(self, grammar_file: Path):
+    def __init__(self, grammar_file: Path, changed_rules: Set[str] = None):
         self.grammar_file = grammar_file
         self.content = grammar_file.read_text()
         self.lines = self.content.split("\n")
         self.errors = []
         self.warnings = []
+        self.changed_rules = changed_rules or set()
 
         # Extracted grammar info
         self.parser_rules: Dict[str, Tuple[str, int]] = (
@@ -42,6 +46,15 @@ class GrammarValidator:
         if not self.parser_rules and not self.lexer_rules:
             return True  # Empty or non-grammar file
 
+        # Filter to only changed rules if specified
+        if self.changed_rules:
+            # Only validate changed rules
+            self.parser_rules = {
+                name: data
+                for name, data in self.parser_rules.items()
+                if name in self.changed_rules
+            }
+
         # Only validate parser grammars
         if "parser grammar" in self.content:
             self._validate_parser_rule_names()
@@ -49,6 +62,9 @@ class GrammarValidator:
             self._validate_newline_placement()
             self._validate_imports()
             self._validate_ll1_hint()
+            self._validate_rule_ordering()
+            self._validate_formatting()
+            self._check_rule_grouping()
         elif "lexer grammar" in self.content:
             self._validate_lexer_rule_names()
 
@@ -287,6 +303,112 @@ class GrammarValidator:
                 # After F_, should be roughly camelCase or PascalCase
                 pass  # Allow flexibility here
 
+    def _validate_rule_ordering(self):
+        """Check that rules are in lexicographical order within their prefix groups."""
+        rule_names = list(self.parser_rules.keys())
+        if len(rule_names) < 2:
+            return
+
+        # Group rules by their prefix (before first underscore, or full name if no underscore)
+        groups: Dict[str, List[str]] = {}
+        for rule_name in rule_names:
+            if "_" in rule_name:
+                prefix = rule_name.split("_")[0]
+            else:
+                prefix = rule_name
+
+            if prefix not in groups:
+                groups[prefix] = []
+            groups[prefix].append(rule_name)
+
+        # Check ordering within each group
+        for prefix, group_rules in groups.items():
+            if len(group_rules) < 2:
+                continue
+
+            sorted_rules = sorted(group_rules)
+            if group_rules != sorted_rules:
+                # Find which rules are out of order
+                for i, (actual, expected) in enumerate(zip(group_rules, sorted_rules)):
+                    if actual != expected:
+                        line_num = self.parser_rules[actual][1]
+                        self.warnings.append(
+                            f"Line {line_num}: Rule '{actual}' is out of order. "
+                            f"Expected '{expected}' (rules should be sorted alphabetically within '{prefix}*' group)"
+                        )
+
+    def _validate_formatting(self):
+        """Check formatting consistency (indentation, spacing, blank lines)."""
+        if not self.parser_rules:
+            return
+
+        # Get rule line numbers
+        rule_lines = {name: data[1] for name, data in self.parser_rules.items()}
+        sorted_rule_names = sorted(rule_lines.keys(), key=lambda x: rule_lines[x])
+
+        # Check for proper indentation and spacing within rules
+        for rule_name, (definition, line_num) in self.parser_rules.items():
+            lines = definition.split("\n")
+
+            # Skip single-line rules (everything on one line ending with ;)
+            if len(lines) == 1:
+                continue
+
+            # For multi-line rules, check that content is properly indented
+            # Content lines should start with 3 spaces
+            for i, line in enumerate(lines[1:], 1):  # Skip first line (rule name)
+                stripped = line.strip()
+                if not stripped or stripped.startswith("//"):
+                    continue  # Skip empty lines and comments
+
+                # Lines with actual content should be indented
+                # The colon line (second line) and content lines should have 3 spaces
+                if i == 1 and stripped == ":":
+                    # This is the colon line, should have 3 spaces or be just ":"
+                    if line != ":" and not line.startswith("   "):
+                        self.warnings.append(
+                            f"Line {line_num + i}: Colon should be on its own line or indented with 3 spaces"
+                        )
+                elif (
+                    i > 1
+                    and stripped
+                    and not stripped.startswith("|")
+                    and not line.startswith("   ")
+                ):
+                    # Content line should be indented with 3 spaces
+                    # Allow some flexibility for lines starting with |
+                    if not (line.startswith("|") or line.startswith("   |")):
+                        self.warnings.append(
+                            f"Line {line_num + i}: Content should be indented with 3 spaces, found: '{repr(line[:10])}'"
+                        )
+
+    def _check_rule_grouping(self):
+        """Check that related rules are grouped together by prefix."""
+        if not self.parser_rules:
+            return
+
+        rule_lines = {name: data[1] for name, data in self.parser_rules.items()}
+        sorted_by_line = sorted(rule_lines.keys(), key=lambda x: rule_lines[x])
+
+        # Check if rules with same prefix are grouped together
+        current_prefixes = set()
+        prev_prefix = None
+
+        for rule_name in sorted_by_line:
+            prefix = rule_name.split("_")[0] if "_" in rule_name else rule_name
+
+            if prev_prefix is not None and prev_prefix != prefix:
+                if prefix in current_prefixes:
+                    # This prefix appeared before, means rules are not grouped
+                    line_num = rule_lines[rule_name]
+                    self.warnings.append(
+                        f"Line {line_num}: Rule '{rule_name}' with prefix '{prefix}*' is not grouped with "
+                        f"other '{prefix}*' rules. Rules with the same prefix should be grouped together."
+                    )
+
+            current_prefixes.add(prefix)
+            prev_prefix = prefix
+
     def print_results(self):
         """Print validation results."""
         if self.errors or self.warnings:
@@ -314,6 +436,48 @@ def find_grammar_files(root_dir: Path) -> List[Path]:
     return list(root_dir.rglob("*.g4"))
 
 
+def get_changed_rules(grammar_file: Path) -> Set[str]:
+    """Get set of changed parser rules from git diff."""
+    try:
+        # Get git diff for the file
+        result = subprocess.run(
+            ["git", "diff", "--cached", str(grammar_file)],
+            capture_output=True,
+            text=True,
+            check=False,
+        )
+
+        # If no staged changes, try unstaged
+        if not result.stdout:
+            result = subprocess.run(
+                ["git", "diff", str(grammar_file)],
+                capture_output=True,
+                text=True,
+                check=False,
+            )
+
+        if not result.stdout:
+            return set()
+
+        # Parse the diff to find changed/added rules
+        changed_rules = set()
+        lines = result.stdout.split("\n")
+
+        for line in lines:
+            # Look for added lines that define rules
+            if line.startswith("+") and not line.startswith("+++") and ":" in line:
+                content = line[1:].strip()
+                # Check if it's a parser rule definition (lowercase start, colon)
+                match = re.match(r"^([a-z][a-z0-9_]*)\s*:", content)
+                if match:
+                    changed_rules.add(match.group(1))
+
+        return changed_rules
+    except (subprocess.SubprocessError, FileNotFoundError):
+        # Not in a git repo or git not available
+        return set()
+
+
 def main():
     parser = argparse.ArgumentParser(
         description="Validate Batfish ANTLR grammar conventions"
@@ -335,6 +499,11 @@ def main():
         action="store_true",
         help="Show warnings in addition to errors",
     )
+    parser.add_argument(
+        "--changed-only",
+        action="store_true",
+        help="Only validate changed rules (via git diff)",
+    )
 
     args = parser.parse_args()
 
@@ -352,7 +521,10 @@ def main():
     all_valid = True
     has_issues = False
     for grammar_file in grammar_files:
-        validator = GrammarValidator(grammar_file)
+        # Get changed rules if requested
+        changed_rules = get_changed_rules(grammar_file) if args.changed_only else None
+
+        validator = GrammarValidator(grammar_file, changed_rules)
         is_valid = validator.validate()
 
         # Only print results if there are errors, or if verbose mode is on
