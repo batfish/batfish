@@ -1,0 +1,29 @@
+! Cisco FTD Prefilter ACL with TRUST Action
+! Based on "Configure Control Plane Access Control Policies"
+
+hostname ftd-prefilter
+NGFW VERSION 7.4.0
+
+interface GigabitEthernet0/0
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.1 255.255.255.0
+!
+
+interface GigabitEthernet0/1
+ nameif INSIDE
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+!
+
+! Prefilter ACL with TRUST action
+access-list PREFILTER-OUTSIDE-IN advanced trust ip any any rule-id 268455934
+access-list PREFILTER-OUTSIDE-IN remark ACL-OUTSIDE-IN_#174 | Prefilter-FTD
+access-list PREFILTER-OUTSIDE-IN extended permit ip 192.168.1.0 255.255.255.0 any rule-id 268455935
+access-list PREFILTER-OUTSIDE-IN extended deny ip any any rule-id 268455936 log
+
+! Apply ACL to interface
+access-group PREFILTER-OUTSIDE-IN global
+
+! NAT configuration
+nat (INSIDE,OUTSIDE) source dynamic PAT-INSIDE interface

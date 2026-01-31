@@ -1,0 +1,29 @@
+! Cisco FTD High Availability/Failover Configuration
+! Based on "Configure FTD High Availability Using FDM"
+
+hostname ftd-ha-primary
+NGFW VERSION 7.4.0
+
+interface GigabitEthernet0/0
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.1 255.255.255.0
+!
+
+interface GigabitEthernet0/1
+ nameif INSIDE
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+!
+
+! Failover configuration
+failover
+failover link interface GigabitEthernet0/2
+failover replicate interface GigabitEthernet0/2
+failover polltime unit 1 holdtime 15
+failover polltime interface 5 holdtime 25
+failover key SecureKey123
+!
+
+access-list OUTSIDE-IN extended permit ip any any
+access-group OUTSIDE-IN interface OUTSIDE in

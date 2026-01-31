@@ -1,0 +1,45 @@
+! Cisco FTD Site-to-Site IKEv2 VPN Configuration
+! Based on "Configure a VRF Aware Site-to-Site Tunnel with IKEv2"
+
+hostname ftd-vpn
+NGFW VERSION 7.4.0
+
+interface GigabitEthernet0/0
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.1 255.255.255.0
+!
+
+interface GigabitEthernet0/1
+ nameif INSIDE
+ security-level 100
+ ip address 192.168.1.1 255.255.255.0
+!
+
+! IKEv2 Proposal
+crypto ikev2 proposal FTD-IKEv2-PROPOSAL
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+!
+
+! IKEv2 Policy
+crypto ikev2 policy FTD-IKEv2-POLICY
+ proposal FTD-IKEv2-PROPOSAL
+!
+
+! Tunnel Group
+tunnel-group REMOTE-SITE type ipsec-l2l
+tunnel-group REMOTE-SITE ipsec-attributes
+ ikev2 remote-authentication pre-shared-key MySecret123
+ ikev2 local-authentication pre-shared-key MySecret123
+!
+
+! Crypto Map
+crypto map CRYPTO-MAP 10 match address VPN-TRAFFIC
+crypto map CRYPTO-MAP 10 set peer 198.51.100.1
+crypto map CRYPTO-MAP 10 set ikev2 ipsec-proposal FTD-IPSEC-PROPOSAL
+crypto map CRYPTO-MAP interface OUTSIDE
+
+! ACL for VPN traffic
+access-list VPN-TRAFFIC extended permit ip 192.168.1.0 255.255.255.0 10.10.10.0 255.255.255.0
