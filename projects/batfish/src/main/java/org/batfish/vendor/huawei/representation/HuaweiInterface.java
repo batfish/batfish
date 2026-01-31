@@ -20,13 +20,13 @@ public class HuaweiInterface implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** Interface name (e.g., "GigabitEthernet0/0/1") */
-  @Nonnull private String _name;
+  private @Nonnull String _name;
 
   /** Description of the interface */
-  @Nullable private String _description;
+  private @Nullable String _description;
 
   /** Interface IP address and netmask */
-  @Nullable private ConcreteInterfaceAddress _address;
+  private @Nullable ConcreteInterfaceAddress _address;
 
   /** Administrative status of the interface */
   private boolean _shutdown;
@@ -35,13 +35,13 @@ public class HuaweiInterface implements Serializable {
   private int _mtu;
 
   /** Bandwidth of the interface in bps */
-  @Nullable private Double _bandwidth;
+  private @Nullable Double _bandwidth;
 
   /** ACL applied to inbound traffic */
-  @Nullable private String _incomingFilter;
+  private @Nullable String _incomingFilter;
 
   /** ACL applied to outbound traffic */
-  @Nullable private String _outgoingFilter;
+  private @Nullable String _outgoingFilter;
 
   /** Set of IP addresses for DHCP relay */
   private SortedSet<Ip> _dhcpRelayAddresses;

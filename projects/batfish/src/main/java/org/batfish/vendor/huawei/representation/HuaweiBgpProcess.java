@@ -22,7 +22,7 @@ public class HuaweiBgpProcess implements Serializable {
   private long _asNum;
 
   /** Router ID */
-  @Nullable private Ip _routerId;
+  private @Nullable Ip _routerId;
 
   /** BGP neighbors: IP address to neighbor configuration */
   private Map<Ip, BgpPeerConfig> _neighbors;

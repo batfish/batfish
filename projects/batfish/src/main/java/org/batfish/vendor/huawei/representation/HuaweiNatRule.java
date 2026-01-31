@@ -28,40 +28,40 @@ public class HuaweiNatRule implements Serializable {
   }
 
   /** NAT rule name/identifier */
-  @Nonnull private String _name;
+  private @Nonnull String _name;
 
   /** NAT type */
-  @Nonnull private NatType _type;
+  private @Nonnull NatType _type;
 
   /** ACL name for traffic matching */
-  @Nullable private String _aclName;
+  private @Nullable String _aclName;
 
   /** Global address pool name */
-  @Nullable private String _poolName;
+  private @Nullable String _poolName;
 
   /** Global IP address (for static NAT or NAT server) */
-  @Nullable private Ip _globalIp;
+  private @Nullable Ip _globalIp;
 
   /** Global port (for NAT server) */
-  @Nullable private Integer _globalPort;
+  private @Nullable Integer _globalPort;
 
   /** Inside local IP address */
-  @Nullable private Ip _insideLocalIp;
+  private @Nullable Ip _insideLocalIp;
 
   /** Inside local port */
-  @Nullable private Integer _insideLocalPort;
+  private @Nullable Integer _insideLocalPort;
 
   /** Interface name (for Easy IP) */
-  @Nullable private String _interfaceName;
+  private @Nullable String _interfaceName;
 
   /** Protocol (tcp, udp, or null for any) */
-  @Nullable private String _protocol;
+  private @Nullable String _protocol;
 
   /** VRF name */
-  @Nullable private String _vrfName;
+  private @Nullable String _vrfName;
 
   /** Address pool (list of global IP addresses for dynamic NAT) */
-  @Nullable private List<Ip> _addressPool;
+  private @Nullable List<Ip> _addressPool;
 
   public HuaweiNatRule(@Nonnull String name, @Nonnull NatType type) {
     _name = name;

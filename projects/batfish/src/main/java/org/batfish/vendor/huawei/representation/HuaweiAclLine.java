@@ -17,22 +17,22 @@ public class HuaweiAclLine implements Serializable {
   private int _sequenceNumber;
 
   /** Action: permit or deny */
-  @Nonnull private String _action;
+  private @Nonnull String _action;
 
   /** Protocol (tcp, udp, ip, icmp, etc.) */
-  @Nullable private String _protocol;
+  private @Nullable String _protocol;
 
   /** Source IP address/prefix */
-  @Nullable private String _source;
+  private @Nullable String _source;
 
   /** Source port(s) */
-  @Nullable private String _sourcePort;
+  private @Nullable String _sourcePort;
 
   /** Destination IP address/prefix */
-  @Nullable private String _destination;
+  private @Nullable String _destination;
 
   /** Destination port(s) */
-  @Nullable private String _destinationPort;
+  private @Nullable String _destinationPort;
 
   public HuaweiAclLine(int sequenceNumber, @Nonnull String action) {
     _sequenceNumber = sequenceNumber;

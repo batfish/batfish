@@ -87,9 +87,9 @@ interface_name
    name = VARIABLE (FORWARD_SLASH | DASH | PERIOD) VARIABLE
    |
    // Fallback: Any other interface name (including Vlanif + number without space)
-   // Using a non-greedy approach to avoid matching known keywords
+   // Use negative lookahead to prevent matching major stanza-starting keywords
    name = VARIABLE
-;
+   ;
 
 // Variable for interface names
 variable_interface_name
@@ -98,9 +98,67 @@ variable_interface_name
 ;
 
 // Null rest of line (consume all tokens until next command)
+// Matches tokens that can appear in descriptions or parameter values
+// IMPORTANT: Must NOT match tokens that start new stanzas (INTERFACE, IP, ACL, BGP, etc.)
 null_rest_of_line
 :
-   VARIABLE+
+   null_token+
+;
+
+// Tokens that can appear in values (descriptions, names, etc.)
+// This allows SOME keywords to appear within string values
+// EXCLUDED: Tokens that start new top-level stanzas (IP, ACL, BGP, OSPF, NAT, VLAN, SYSNAME, RETURN)
+// Note: INTERFACE is allowed for descriptions like "Test interface"
+null_token
+:
+   VARIABLE
+   | UINT8
+   | UINT16
+   | UINT32
+   | DEC
+   | IPV4_ADDRESS_PATTERN
+   | IPV6_ADDRESS
+   | INTERFACE
+   | DESCRIPTION
+   | NAME
+   | PERMIT
+   | DENY
+   | TCP
+   | UDP
+   | ICMP
+   | SOURCE
+   | DESTINATION
+   | PROTOCOL
+   | TO
+   | AREA
+   | ROUTER_ID
+   | PEER
+   | GROUP
+   | NETWORK
+   | ROUTE_DISTINGUISHER
+   | VPN_TARGET
+   | SHUTDOWN
+   | ADDRESS
+   | MASK
+   | DOT1Q
+   | TERMINATION
+   | VID
+   | PORT
+   | GLOBAL
+   | INSIDE
+   | OUTBOUND
+   | SERVER
+   | ACL_NUMBER
+   | ACL_NAME
+   | RULE
+   | SOURCE_PORT
+   | DESTINATION_PORT
+   | EQ
+   | GT
+   | LT
+   | RANGE
+   | ANY
+   | COMMAND
 ;
 
 // Exit from current configuration mode

@@ -21,16 +21,16 @@ public class HuaweiVlan implements Serializable {
   private final int _vlanId;
 
   /** VLAN name */
-  @Nullable private String _name;
+  private @Nullable String _name;
 
   /** VLAN description */
-  @Nullable private String _description;
+  private @Nullable String _description;
 
   /** Set of interface names that are members of this VLAN */
-  @Nonnull private SortedSet<String> _interfaces;
+  private @Nonnull SortedSet<String> _interfaces;
 
   /** Name of the associated VLANIF interface (if any) */
-  @Nullable private String _vlanifInterface;
+  private @Nullable String _vlanifInterface;
 
   /**
    * Creates a new VLAN with the specified ID.

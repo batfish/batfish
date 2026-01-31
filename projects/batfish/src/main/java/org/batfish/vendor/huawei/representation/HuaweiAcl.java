@@ -24,19 +24,19 @@ public class HuaweiAcl implements Serializable {
   }
 
   /** ACL name or number */
-  @Nonnull private String _name;
+  private @Nonnull String _name;
 
   /** ACL type */
-  @Nonnull private AclType _type;
+  private @Nonnull AclType _type;
 
   /** ACL entries/lines */
-  @Nonnull private List<HuaweiAclLine> _lines;
+  private @Nonnull List<HuaweiAclLine> _lines;
 
   /** Whether this is an IPv6 ACL */
   private boolean _ipv6;
 
   /** VRF name for this ACL (if applicable) */
-  @Nullable private String _vrfName;
+  private @Nullable String _vrfName;
 
   public HuaweiAcl(@Nonnull String name, @Nonnull AclType type) {
     _name = name;

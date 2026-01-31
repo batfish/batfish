@@ -26,8 +26,8 @@ huawei_configuration
 ;
 
 // Stanza at top level (includes return which ends parsing)
-// Order matters: s_interface must come LAST (before s_ignored) because
-// interface_name's VARIABLE catchall can match any keyword
+// Order matters: s_return must come BEFORE s_interface to prevent keywords
+// in description text from being parsed as nested interfaces
 s_stanza
 :
    s_sysname

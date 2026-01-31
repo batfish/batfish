@@ -25,7 +25,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   private static final long serialVersionUID = 1L;
 
   /** Hostname of the device */
-  @Nullable private String _hostname;
+  private @Nullable String _hostname;
 
   /** Map of interface names to interface configurations */
   private SortedMap<String, HuaweiInterface> _interfaces;
@@ -34,16 +34,16 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
   private SortedMap<Integer, HuaweiVlan> _vlans;
 
   /** List of static routes */
-  @Nonnull private List<HuaweiStaticRoute> _staticRoutes;
+  private @Nonnull List<HuaweiStaticRoute> _staticRoutes;
 
   /** List of NAT rules */
-  @Nonnull private List<HuaweiNatRule> _natRules;
+  private @Nonnull List<HuaweiNatRule> _natRules;
 
   /** BGP process configuration (stub for future implementation) */
-  @Nullable private HuaweiBgpProcess _bgpProcess;
+  private @Nullable HuaweiBgpProcess _bgpProcess;
 
   /** OSPF process configuration (stub for future implementation) */
-  @Nullable private HuaweiOspfProcess _ospfProcess;
+  private @Nullable HuaweiOspfProcess _ospfProcess;
 
   /** VRF configurations (stub for future implementation) */
   private SortedMap<String, HuaweiVrf> _vrfs;

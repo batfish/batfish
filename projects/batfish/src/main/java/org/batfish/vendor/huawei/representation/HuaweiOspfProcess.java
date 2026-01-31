@@ -24,22 +24,22 @@ public class HuaweiOspfProcess implements Serializable {
   private long _processId;
 
   /** Router ID */
-  @Nullable private Ip _routerId;
+  private @Nullable Ip _routerId;
 
   /** OSPF networks: list of network advertisements with associated area IDs */
-  @Nonnull private List<HuaweiOspfNetwork> _networks;
+  private @Nonnull List<HuaweiOspfNetwork> _networks;
 
   /** OSPF areas: area ID to area configuration */
-  @Nonnull private Map<Long, HuaweiOspfArea> _areas;
+  private @Nonnull Map<Long, HuaweiOspfArea> _areas;
 
   /** OSPF interfaces */
-  @Nonnull private Map<String, HuaweiOspfInterfaceSettings> _interfaces;
+  private @Nonnull Map<String, HuaweiOspfInterfaceSettings> _interfaces;
 
   /** Default originate enabled */
   private boolean _defaultOriginate;
 
   /** Default originate route map */
-  @Nullable private String _defaultOriginateRouteMap;
+  private @Nullable String _defaultOriginateRouteMap;
 
   public HuaweiOspfProcess(long processId) {
     _processId = processId;

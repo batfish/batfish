@@ -36,9 +36,10 @@ bgp_router_id
 ;
 
 // BGP peer: peer 192.168.1.2 as-number 65002
+// Note: as-number is optional for edge case handling (malformed configs)
 bgp_peer
 :
-   PEER peer_ip = ip_address AS_NUMBER peer_as = uint16
+   PEER peer_ip = ip_address (AS_NUMBER peer_as = uint16)?
    (
       // Optional peer parameters
       bgp_peer_param

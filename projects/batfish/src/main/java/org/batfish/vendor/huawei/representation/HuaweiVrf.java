@@ -20,11 +20,11 @@ public class HuaweiVrf implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** VRF name */
-  @Nonnull private String _name;
+  private @Nonnull String _name;
 
   /** Route distinguisher */
-  // @Nullable private RouteDistinguisher _routeDistinguisher;
-  @Nullable private String _routeDistinguisher; // Stub for now
+  // private @Nullable RouteDistinguisher _routeDistinguisher;
+  private @Nullable String _routeDistinguisher; // Stub for now
 
   /** Import route targets */
   private Map<String, Object> _importRouteTargets;
@@ -33,19 +33,19 @@ public class HuaweiVrf implements Serializable {
   private Map<String, Object> _exportRouteTargets;
 
   /** VRF description */
-  @Nullable private String _description;
+  private @Nullable String _description;
 
   /** Interfaces in this VRF */
   private Map<String, HuaweiInterface> _interfaces;
 
   /** VRF-specific BGP process */
-  @Nullable private HuaweiBgpProcess _bgpProcess;
+  private @Nullable HuaweiBgpProcess _bgpProcess;
 
   /** VRF-specific OSPF process */
-  @Nullable private HuaweiOspfProcess _ospfProcess;
+  private @Nullable HuaweiOspfProcess _ospfProcess;
 
   /** VRF address family (IPv4, IPv6, or both) */
-  @Nullable private String _addressFamily;
+  private @Nullable String _addressFamily;
 
   public HuaweiVrf(@Nonnull String name) {
     _name = name;

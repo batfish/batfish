@@ -18,13 +18,13 @@ public class HuaweiStaticRoute implements Serializable {
   private static final long serialVersionUID = 1L;
 
   /** Destination network prefix */
-  @Nonnull private Prefix _destination;
+  private @Nonnull Prefix _destination;
 
   /** Next hop IP address */
-  @Nullable private Ip _nextHopIp;
+  private @Nullable Ip _nextHopIp;
 
   /** Output interface */
-  @Nullable private String _nextHopInterface;
+  private @Nullable String _nextHopInterface;
 
   /** Administrative distance/preference */
   private int _preference;
@@ -33,7 +33,7 @@ public class HuaweiStaticRoute implements Serializable {
   private boolean _defaultRoute;
 
   /** VRF name for this route */
-  @Nullable private String _vrfName;
+  private @Nullable String _vrfName;
 
   public HuaweiStaticRoute(@Nonnull Prefix destination) {
     _destination = destination;

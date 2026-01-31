@@ -1,5 +1,6 @@
 package org.batfish.vendor.huawei.grammar;
 
+import java.util.List;
 import org.antlr.v4.runtime.ParserRuleContext;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
 import org.batfish.common.NetworkSnapshot;
@@ -62,6 +63,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   private String _currentInterfaceName;
   private HuaweiAcl _currentAcl;
   private HuaweiVrf _currentVrf;
+  private Integer _currentVlanId;
+  private String _pendingVlanDescription;
 
   public HuaweiControlPlaneExtractor(
       String text, HuaweiCombinedParser parser, Warnings w, SilentSyntaxCollection silentSyntax) {
@@ -73,6 +76,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     _currentInterfaceName = null;
     _currentAcl = null;
     _currentVrf = null;
+    _currentVlanId = null;
+    _pendingVlanDescription = null;
   }
 
   public String getInputText() {
@@ -265,6 +270,31 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   public void exitS_return(S_returnContext ctx) {
     // Clear the current interface context when we exit the interface block
     _currentInterfaceName = null;
+    // Also clear current VLAN context
+    _currentVlanId = null;
+    // Clear pending VLAN description
+    _pendingVlanDescription = null;
+  }
+
+  /**
+   * Process entry to s_vlan rule - track current VLAN context.
+   *
+   * <p>Sets the current VLAN ID when entering a VLAN configuration block (not for batch).
+   */
+  @Override
+  public void enterS_vlan(S_vlanContext ctx) {
+    // Only track current VLAN for single VLAN configuration (not batch)
+    if (ctx.vlan_id != null) {
+      try {
+        _currentVlanId = Integer.parseInt(ctx.vlan_id.getText());
+      } catch (NumberFormatException e) {
+        // Invalid VLAN ID will be handled in exitS_vlan
+        _currentVlanId = null;
+      }
+    } else {
+      // For "vlan batch", don't set current VLAN context
+      _currentVlanId = null;
+    }
   }
 
   /**
@@ -277,21 +307,48 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   public void exitS_vlan(S_vlanContext ctx) {
     // Handle "vlan batch" command (create multiple VLANs)
     if (ctx.vlan_batch_range() != null) {
-      // Iterate through all uint8 contexts in vlan_batch_range
-      for (HuaweiParser.Uint8Context uint8Ctx : ctx.vlan_batch_range().uint8()) {
-        try {
-          int vlanId = Integer.parseInt(uint8Ctx.getText());
-          HuaweiVlan vlan = _configuration.getVlan(vlanId);
-          if (vlan == null) {
-            vlan = new HuaweiVlan(vlanId);
-            _configuration.addVlan(vlanId, vlan);
+      // Check if this is a range specification with "to" keyword
+      if (ctx.vlan_batch_range().TO() != null) {
+        // Handle "vlan batch X to Y" - create range from X to Y-1 (exclusive at end)
+        // "2 to 10" creates VLANs 2-9, not 2-10
+        List<HuaweiParser.Uint8Context> uint8Contexts = ctx.vlan_batch_range().uint8();
+        if (uint8Contexts.size() >= 2) {
+          try {
+            int startVlan = Integer.parseInt(uint8Contexts.get(0).getText());
+            int endVlan = Integer.parseInt(uint8Contexts.get(uint8Contexts.size() - 1).getText());
+            // Create VLANs from start to end-1 (exclusive at end)
+            for (int vlanId = startVlan; vlanId < endVlan; vlanId++) {
+              HuaweiVlan vlan = _configuration.getVlan(vlanId);
+              if (vlan == null) {
+                vlan = new HuaweiVlan(vlanId);
+                _configuration.addVlan(vlanId, vlan);
+              }
+            }
+          } catch (NumberFormatException e) {
+            String warning =
+                String.format(
+                    "Invalid VLAN ID range at line %d",
+                    ctx.vlan_batch_range().getStart().getLine());
+            _w.redFlag(warning);
           }
-        } catch (NumberFormatException e) {
-          String warning =
-              String.format(
-                  "Invalid VLAN ID at line %d: %s",
-                  uint8Ctx.getStart().getLine(), uint8Ctx.getText());
-          _w.redFlag(warning);
+        }
+      } else {
+        // Handle "vlan batch X Y Z" - create specific VLANs
+        for (HuaweiParser.Uint8Context uint8Ctx : ctx.vlan_batch_range().uint8()) {
+          try {
+            int vlanId = Integer.parseInt(uint8Ctx.getText());
+            HuaweiVlan vlan = _configuration.getVlan(vlanId);
+            if (vlan == null) {
+              vlan = new HuaweiVlan(vlanId);
+              _configuration.addVlan(vlanId, vlan);
+            }
+          } catch (NumberFormatException e) {
+            String warning =
+                String.format(
+                    "Invalid VLAN ID at line %d: %s",
+                    uint8Ctx.getStart().getLine(), uint8Ctx.getText());
+            _w.redFlag(warning);
+          }
         }
       }
     }
@@ -302,6 +359,11 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
         HuaweiVlan vlan = _configuration.getVlan(vlanId);
         if (vlan == null) {
           vlan = new HuaweiVlan(vlanId);
+          // Apply pending description if exists
+          if (_pendingVlanDescription != null) {
+            vlan.setDescription(_pendingVlanDescription);
+            _pendingVlanDescription = null;
+          }
           _configuration.addVlan(vlanId, vlan);
         }
       } catch (NumberFormatException e) {
@@ -334,8 +396,27 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
    */
   @Override
   public void exitV_description(V_descriptionContext ctx) {
-    // Similar to v_name, this requires tracking the current VLAN context
-    // For now, this is a stub
+    if (_currentVlanId == null) {
+      return;
+    }
+
+    // Extract description text and store it temporarily
+    // It will be applied to the VLAN when exitS_vlan creates the VLAN object
+    if (ctx.description_line() != null && ctx.description_line().text != null) {
+      String text = ctx.description_line().text.getText();
+      if (!text.isEmpty()) {
+        _pendingVlanDescription = text.trim();
+      }
+    }
+  }
+
+  /** Process entry to v_description rule - for debugging */
+  @Override
+  public void enterV_description(V_descriptionContext ctx) {
+    // Debug: check if we have a current VLAN ID
+    if (_currentVlanId == null) {
+      // No current VLAN - this might be the problem
+    }
   }
 
   /**
@@ -884,7 +965,9 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
    */
   @Override
   public void enterS_ospf(S_ospfContext ctx) {
-    if (ctx.process_id != null) {
+    // Only create OSPF process if it doesn't already exist
+    // This prevents resetting the areas map if enterS_ospf is called multiple times
+    if (_configuration.getOspfProcess() == null && ctx.process_id != null) {
       try {
         long processId = Long.parseLong(ctx.process_id.getText());
         HuaweiOspfProcess ospfProcess = new HuaweiOspfProcess(processId);
@@ -907,14 +990,31 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   @Override
   public void exitOspf_area(Ospf_areaContext ctx) {
     HuaweiOspfProcess ospfProcess = _configuration.getOspfProcess();
-    if (ospfProcess == null || ctx.area_id == null) {
+    if (ospfProcess == null) {
+      // OSPF process not initialized yet - shouldn't happen if config is well-formed
+      String warning =
+          String.format(
+              "OSPF process not initialized when processing area at line %d",
+              ctx.getStart().getLine());
+      _w.redFlag(warning);
+      return;
+    }
+
+    if (ctx.area_id == null) {
+      // No area ID in parse tree - this is a grammar issue
+      String warning = String.format("OSPf area ID is null at line %d", ctx.getStart().getLine());
+      _w.redFlag(warning);
       return;
     }
 
     try {
       long areaId = Long.parseLong(ctx.area_id.getText());
       // Create or get the area
-      ospfProcess.getOrCreateArea(areaId);
+      HuaweiOspfProcess.HuaweiOspfArea area = ospfProcess.getOrCreateArea(areaId);
+      // Verify area was added
+      if (area != null) {
+        // Successfully created/retrieved area
+      }
     } catch (NumberFormatException e) {
       String warning =
           String.format(

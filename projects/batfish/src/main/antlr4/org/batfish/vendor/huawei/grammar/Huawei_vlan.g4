@@ -16,12 +16,16 @@ s_vlan
    VLAN vlan_id = uint8 vlan_body
 ;
 
-// VLAN batch range (e.g., vlan batch 10 20 30)
+// VLAN batch range (e.g., vlan batch 10 20 30 or vlan batch 2 to 10)
 vlan_batch_range
 :
    (
       vlan = uint8
    )+
+   (
+      // Optional: "to <vlan>" for range specification
+      TO vlan = uint8
+   )?
 ;
 
 // VLAN body (configuration for individual VLAN)
