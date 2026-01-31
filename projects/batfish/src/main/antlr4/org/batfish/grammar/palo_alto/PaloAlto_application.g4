@@ -33,6 +33,10 @@ sapp_ignored
     | sapp_risk
     | sapp_subcategory
     | sapp_technology
+    | sapp_tcp_timeout
+    | sapp_udp_timeout
+    | sapp_tcp_half_closed_timeout
+    | sapp_tcp_time_wait_timeout
 )
 ;
 
@@ -79,3 +83,7 @@ sappg_members
 :
     MEMBERS variable_list?
 ;
+sapp_tcp_half_closed_timeout : TCP_HALF_CLOSED_TIMEOUT uint32;
+sapp_tcp_time_wait_timeout : TCP_TIME_WAIT_TIMEOUT uint32;
+sapp_tcp_timeout : TCP_TIMEOUT uint32;
+sapp_udp_timeout : UDP_TIMEOUT uint32;

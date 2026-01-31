@@ -13,7 +13,7 @@ sdg_description
 
 sdg_devices
 :
-    DEVICES device = variable sdgd_vsys?
+    DEVICES (device=variable | device_ip=IP_ADDRESS) sdgd_vsys?
 ;
 
 sdg_parent_dg

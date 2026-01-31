@@ -1,0 +1,5 @@
+set deviceconfig system hostname bgp-bfd-profile
+
+set network virtual-router BGP_VR protocol bgp enable yes
+set network virtual-router BGP_VR protocol bgp peer-group PG enable yes
+set network virtual-router BGP_VR protocol bgp peer-group PG peer PEER bfd profile Inherit-vr-global-setting

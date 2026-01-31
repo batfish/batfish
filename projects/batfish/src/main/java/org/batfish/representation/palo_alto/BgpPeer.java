@@ -96,9 +96,18 @@ public class BgpPeer implements Serializable {
     _reflectorClient = reflectorClient;
   }
 
+  public @Nullable String getBfdProfile() {
+    return _bfdProfile;
+  }
+
+  public void setBfdProfile(@Nullable String bfdProfile) {
+    _bfdProfile = bfdProfile;
+  }
+
   // private implementation details
 
   private BgpConnectionOptions _connectionOptions = new BgpConnectionOptions();
+  private @Nullable String _bfdProfile;
   private boolean _enable;
   private @Nullable Boolean _enableSenderSideLoopDetection;
   private @Nullable Ip _localAddress;

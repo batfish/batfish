@@ -1,0 +1,48 @@
+set deviceconfig system hostname nat-rule-comprehensive
+
+set network interface ethernet ethernet1/1 layer3 ip 10.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 203.0.113.1/24
+set zone trust network layer3 ethernet1/1
+set zone untrust network layer3 ethernet1/2
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set address internal-net ip-netmask 10.1.1.0/24
+set address external-ip ip-netmask 203.0.113.5
+
+# NAT rule with active-active device binding
+set rulebase nat rules nat1 to untrust
+set rulebase nat rules nat1 from trust
+set rulebase nat rules nat1 source internal-net
+set rulebase nat rules nat1 destination any
+set rulebase nat rules nat1 service any
+set rulebase nat rules nat1 active-active-device-binding primary
+
+# NAT rule with source translation (dynamic IP)
+set rulebase nat rules nat2 to untrust
+set rulebase nat rules nat2 from trust
+set rulebase nat rules nat2 source internal-net
+set rulebase nat rules nat2 destination any
+set rulebase nat rules nat2 service any
+
+# NAT rule with source translation (dynamic IP and port)
+set rulebase nat rules nat3 to untrust
+set rulebase nat rules nat3 from trust
+set rulebase nat rules nat3 source internal-net
+set rulebase nat rules nat3 destination any
+set rulebase nat rules nat3 service any
+
+# NAT rule with destination translation
+set rulebase nat rules nat4 to trust
+set rulebase nat rules nat4 from untrust
+set rulebase nat rules nat4 source any
+set rulebase nat rules nat4 destination external-ip
+set rulebase nat rules nat4 service any
+
+# NAT rule with description and disabled
+set rulebase nat rules nat5 to untrust
+set rulebase nat rules nat5 from trust
+set rulebase nat rules nat5 source internal-net
+set rulebase nat rules nat5 destination any
+set rulebase nat rules nat5 service any
+set rulebase nat rules nat5 description "Test NAT rule"
+set rulebase nat rules nat5 disabled yes

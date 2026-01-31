@@ -1,0 +1,24 @@
+set deviceconfig system hostname external-lists-test
+
+# External list with IP type and URL
+set config devices localhost.localdomain vsys vsys1 external-list BlockList-IP type ip recurring hourly
+set config devices localhost.localdomain vsys vsys1 external-list BlockList-IP type ip url https://example.com/api/blocklist
+set config devices localhost.localdomain vsys vsys1 external-list BlockList-IP type ip certificate-profile default-cert
+
+# External list with URL type  
+set config devices localhost.localdomain vsys vsys1 external-list BlockList-URL type url recurring hourly
+set config devices localhost.localdomain vsys vsys1 external-list BlockList-URL type url url https://example.com/api/url-blocklist
+
+# External list with exception list and IPv4
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IP type ip recurring five-minute
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IP type ip url https://example.com/api/allowlist
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IP type ip exception-list 10.0.0.0/8
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IP type ip exception-list 192.168.0.0/16
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IP type ip exception-list 172.16.0.0/12
+
+# External list with exception list and IPv6
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IPv6 type ip recurring hourly
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IPv6 type ip url https://example.com/api/ipv6-allowlist
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IPv6 type ip exception-list 2001:db8::/32
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IPv6 type ip exception-list fd00::/8
+set config devices localhost.localdomain vsys vsys1 external-list AllowList-IPv6 type ip exception-list 2001:db8:abcd::/48

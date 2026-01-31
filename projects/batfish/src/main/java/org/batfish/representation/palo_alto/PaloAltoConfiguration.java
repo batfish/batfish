@@ -122,6 +122,8 @@ import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.LongSpace;
 import org.batfish.datamodel.NamedPort;
 import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.SnmpCommunity;
+import org.batfish.datamodel.SnmpServer;
 import org.batfish.datamodel.SwitchportMode;
 import org.batfish.datamodel.TraceElement;
 import org.batfish.datamodel.UniverseIpSpace;
@@ -237,6 +239,14 @@ public class PaloAltoConfiguration extends VendorConfiguration {
   private String _ntpServerPrimary;
 
   private String _ntpServerSecondary;
+
+  private @Nullable String _timezone;
+
+  private @Nullable String _type;
+
+  private @Nullable Prefix _permittedIp;
+
+  private @Nullable SnmpSetting _snmpSetting;
 
   private @Nullable Vsys _panorama;
 
@@ -415,6 +425,34 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     return _ntpServerSecondary;
   }
 
+  public @Nullable String getTimezone() {
+    return _timezone;
+  }
+
+  public void setTimezone(@Nullable String timezone) {
+    _timezone = timezone;
+  }
+
+  public @Nullable String getType() {
+    return _type;
+  }
+
+  public void setType(@Nullable String type) {
+    _type = type;
+  }
+
+  public @Nullable Prefix getPermittedIp() {
+    return _permittedIp;
+  }
+
+  public void setPermittedIp(@Nullable Prefix permittedIp) {
+    _permittedIp = permittedIp;
+  }
+
+  public @Nullable SnmpSetting getSnmpSetting() {
+    return _snmpSetting;
+  }
+
   public @Nonnull SortedMap<String, Vsys> getSharedGateways() {
     return _sharedGateways;
   }
@@ -468,6 +506,10 @@ public class PaloAltoConfiguration extends VendorConfiguration {
 
   public void setNtpServerSecondary(String ntpServerSecondary) {
     _ntpServerSecondary = ntpServerSecondary;
+  }
+
+  public void setSnmpSetting(@Nullable SnmpSetting snmpSetting) {
+    _snmpSetting = snmpSetting;
   }
 
   @Override
@@ -1021,6 +1063,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       if (securityRuleApplies(fromZone, toZone, rule, _w) && !ruleToExprAclLine.containsKey(name)) {
         ruleToExprAclLine.put(
             name, toIpAccessListLine(rule, ruleVsys, namespaceVsys, appOverrideAcls));
+      } else if (securityRuleApplies(fromZone, toZone, rule, _w)
+          && ruleToExprAclLine.containsKey(name)) {
+        // Rule was skipped due to name conflict with higher-priority rule
+        _w.redFlagf(
+            "Security rule '%s' from %s rulebase was skipped for zone pair (%s, %s) due to name"
+                + " conflict with a higher-priority rule",
+            name, ruleVsys.getName(), fromZone, toZone);
       }
     }
   }
@@ -1073,6 +1122,37 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           generateSharedGatewayOutgoingFilter(
               sharedGateway, _sharedGateways.values(), _virtualSystems.values());
       _c.getIpAccessLists().put(acl.getName(), acl);
+    }
+  }
+
+  /** Convert SNMP settings to VI model */
+  private void convertSnmpSettings() {
+    if (_snmpSetting == null) {
+      return;
+    }
+
+    SnmpServer snmpServer = new SnmpServer();
+
+    // Convert SNMP communities
+    for (SnmpAccessSetting accessSetting : _snmpSetting.getAccessSettings()) {
+      for (String communityString : accessSetting.getCommunityStrings()) {
+        // Use the community string itself as the name (SnmpCommunity only takes a name)
+        SnmpCommunity community = new SnmpCommunity(communityString);
+        // Mark as read-only based on version (v2c is typically read-only)
+        if (accessSetting.getVersion().contains("v2c")
+            || accessSetting.getVersion().contains("v1")) {
+          community.setRo(true);
+        }
+        snmpServer.getCommunities().put(communityString, community);
+      }
+    }
+
+    // Set on default VRF (Palo Alto typically uses default VRF for management)
+    // Get the first VRF key from the map
+    if (!_c.getVrfs().isEmpty()) {
+      String defaultVrfName = _c.getVrfs().keySet().iterator().next();
+      snmpServer.setVrf(defaultVrfName);
+      _c.getVrfs().get(defaultVrfName).setSnmpServer(snmpServer);
     }
   }
 
@@ -2017,6 +2097,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case REFERENCE ->
               // Rely on undefined references to surface this issue (endpoint reference not defined)
               EmptyIpSpace.INSTANCE;
+          case FQDN ->
+              // FQDN cannot be resolved statically - treat as empty space with a warning
+              EmptyIpSpace.INSTANCE;
+          case IP_LOCATION ->
+              // Geolocation codes (e.g., country codes) cannot be mapped to IP spaces without
+              // additional geolocation data - treat as empty space with a warning
+              EmptyIpSpace.INSTANCE;
         };
     }
   }
@@ -2088,6 +2175,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           case REFERENCE ->
               // Unresolved reference or unhandled type
               null;
+          case FQDN, IP_LOCATION ->
+              // FQDN and geolocation endpoints cannot be traced statically
+              null;
         };
     }
   }
@@ -2138,6 +2228,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
           }
           case REFERENCE ->
               // Rely on undefined references to surface this issue (endpoint reference not defined)
+              ImmutableRangeSet.of();
+          case FQDN, IP_LOCATION ->
+              // FQDN and geolocation endpoints cannot be converted to IP range sets statically
               ImmutableRangeSet.of();
         };
     }
@@ -3492,6 +3585,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         PaloAltoStructureType.CUSTOM_URL_CATEGORY,
         ImmutableList.of(PaloAltoStructureType.CUSTOM_URL_CATEGORY),
         PaloAltoStructureUsage.SECURITY_RULE_CATEGORY);
+
+    // Convert SNMP settings
+    convertSnmpSettings();
 
     return _c;
   }

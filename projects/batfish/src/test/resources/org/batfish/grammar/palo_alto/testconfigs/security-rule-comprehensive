@@ -1,0 +1,85 @@
+set deviceconfig system hostname security-rule-comprehensive
+
+set network interface ethernet ethernet1/1 layer3 ip 10.1.1.1/24
+set network interface ethernet ethernet1/2 layer3 ip 10.2.1.1/24
+set zone zone1 network layer3 ethernet1/1
+set zone zone2 network layer3 ethernet1/2
+set network virtual-router default interface [ ethernet1/1 ethernet1/2 ]
+
+set address addr1 ip-netmask 10.1.1.0/24
+set address addr2 ip-netmask 10.2.1.0/24
+
+# Security rule with HIP profiles
+set rulebase security rules rule1 from zone1
+set rulebase security rules rule1 to zone2
+set rulebase security rules rule1 source addr1
+set rulebase security rules rule1 destination addr2
+set rulebase security rules rule1 application any
+set rulebase security rules rule1 service any
+set rulebase security rules rule1 action allow
+set rulebase security rules rule1 source-hip hip-profile1
+set rulebase security rules rule1 source-hip hip-profile2
+set rulebase security rules rule1 destination-hip hip-profile3
+set rulebase security rules rule1 hip-profiles hip-profile-a
+set rulebase security rules rule1 hip-profiles hip-profile-b
+
+# Security rule with group tag
+set rulebase security rules rule2 from zone1
+set rulebase security rules rule2 to zone2
+set rulebase security rules rule2 source addr1
+set rulebase security rules rule2 destination addr2
+set rulebase security rules rule2 application any
+set rulebase security rules rule2 service any
+set rulebase security rules rule2 action allow
+set rulebase security rules rule2 group-tag critical-servers
+
+# Security rule with custom URL category
+set rulebase security rules rule3 from zone1
+set rulebase security rules rule3 to zone2
+set rulebase security rules rule3 source addr1
+set rulebase security rules rule3 destination addr2
+set rulebase security rules rule3 application any
+set rulebase security rules rule3 service any
+set rulebase security rules rule3 action allow
+set rulebase security rules rule3 category custom-category1
+
+# Security rule with rule type (interzone)
+set rulebase security rules rule4 from zone1
+set rulebase security rules rule4 to zone2
+set rulebase security rules rule4 source addr1
+set rulebase security rules rule4 destination addr2
+set rulebase security rules rule4 application any
+set rulebase security rules rule4 service any
+set rulebase security rules rule4 action allow
+set rulebase security rules rule4 rule-type interzone
+
+# Security rule with source users
+set rulebase security rules rule5 from zone1
+set rulebase security rules rule5 to zone2
+set rulebase security rules rule5 source addr1
+set rulebase security rules rule5 destination addr2
+set rulebase security rules rule5 application any
+set rulebase security rules rule5 service any
+set rulebase security rules rule5 action allow
+set rulebase security rules rule5 source-user user1
+set rulebase security rules rule5 source-user user2
+
+# Security rule with negate source
+set rulebase security rules rule6 from zone1
+set rulebase security rules rule6 to zone2
+set rulebase security rules rule6 source addr1
+set rulebase security rules rule6 negate-source yes
+set rulebase security rules rule6 destination addr2
+set rulebase security rules rule6 application any
+set rulebase security rules rule6 service any
+set rulebase security rules rule6 action allow
+
+# Security rule with negate destination
+set rulebase security rules rule7 from zone1
+set rulebase security rules rule7 to zone2
+set rulebase security rules rule7 source addr1
+set rulebase security rules rule7 destination addr2
+set rulebase security rules rule7 negate-destination yes
+set rulebase security rules rule7 application any
+set rulebase security rules rule7 service any
+set rulebase security rules rule7 action allow

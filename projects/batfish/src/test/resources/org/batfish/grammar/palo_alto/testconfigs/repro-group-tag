@@ -1,0 +1,1 @@
+set config devices localhost.localdomain vsys vsys1 rulebase security rules test-rule 00000000-0000-0000-0000-000000000000 group-tag "REDACTED TAG"

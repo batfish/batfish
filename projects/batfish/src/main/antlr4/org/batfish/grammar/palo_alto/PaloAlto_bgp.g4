@@ -58,8 +58,45 @@ bgp_local_as
 
 bgp_null
 :
-    DAMPENING_PROFILE
-    null_rest_of_line
+    DAMPENING_PROFILE name = variable
+    (
+        bgpnd_cutoff
+        | bgpnd_decay_half_life_reachable
+        | bgpnd_decay_half_life_unreachable
+        | bgpnd_enable
+        | bgpnd_max_hold_time
+        | bgpnd_reuse
+    )?
+;
+
+bgpnd_cutoff
+:
+    CUTOFF val = variable
+;
+
+bgpnd_decay_half_life_reachable
+:
+    DECAY_HALF_LIFE_REACHABLE val = variable
+;
+
+bgpnd_decay_half_life_unreachable
+:
+    DECAY_HALF_LIFE_UNREACHABLE val = variable
+;
+
+bgpnd_enable
+:
+    ENABLE yn = yes_or_no
+;
+
+bgpnd_max_hold_time
+:
+    MAX_HOLD_TIME val = variable
+;
+
+bgpnd_reuse
+:
+    REUSE val = variable
 ;
 
 bgp_peer_group
@@ -82,9 +119,17 @@ bgppg_definition
     name = bgp_peer_group_name
     (
         bgppg_enable
+        | bgppg_enable_mp_bgp_null
         | bgppg_peer
         | bgppg_type
+        | bgppgte_aggregated_confed_as_path_null
+        | bgppgp_soft_reset_with_stored_info_null
     )?
+;
+
+bgppg_enable_mp_bgp_null
+:
+    ENABLE_MP_BGP yn = yes_or_no
 ;
 
 bgppg_enable
@@ -96,22 +141,30 @@ bgppg_peer
 :
     PEER name = bgp_peer_name
     (
-        bgppgp_bfd
+        bgppgp_address_family_identifier
+        | bgppgp_bfd
         | bgppgp_connection_options
         | bgppgp_enable
+        | bgppgp_enable_mp_bgp
         | bgppgp_enable_sender_side_loop_detection
         | bgppgp_local_address
         | bgppgp_max_prefixes
         | bgppgp_peer_address
         | bgppgp_peer_as
-//        | bgppgp_peering_type
+        | bgppgp_peering_type
         | bgppgp_reflector_client
+        | bgppgp_subsequent_address_family_identifier
     )?
+;
+
+bgppgp_address_family_identifier
+:
+    ADDRESS_FAMILY_IDENTIFIER (IPV4 | IPV6)
 ;
 
 bgppgp_bfd
 :
-    BFD null_rest_of_line
+    BFD PROFILE profile = variable
 ;
 
 bgppgp_connection_options
@@ -229,6 +282,35 @@ bgppgp_reflector_client
     REFLECTOR_CLIENT (CLIENT | MESHED_CLIENT | NON_CLIENT)
 ;
 
+bgppgp_enable_mp_bgp
+:
+    ENABLE_MP_BGP yn = yes_or_no
+;
+
+bgppgp_peering_type
+:
+    PEERING_TYPE (SPECIFIED | UNSPECIFIED)
+;
+
+bgppgp_subsequent_address_family_identifier
+:
+    SUBSEQUENT_ADDRESS_FAMILY_IDENTIFIER
+    (
+        bgppgpsafi_unicast
+        | bgppgpsafi_multicast
+    )
+;
+
+bgppgpsafi_unicast
+:
+    UNICAST yn = yes_or_no
+;
+
+bgppgpsafi_multicast
+:
+    MULTICAST yn = yes_or_no
+;
+
 bgppg_type
 :
     TYPE
@@ -263,10 +345,22 @@ bgppgte_remove_private_as
     REMOVE_PRIVATE_AS yn = yes_or_no
 ;
 
+bgppgte_aggregated_confed_as_path_null
+:
+    AGGREGATED_CONFED_AS_PATH null_rest_of_line
+;
+
 bgppgt_ibgp
 :
     IBGP
-    // TODO ibgp-specific options
+    (
+        bgppgte_aggregated_confed_as_path_null
+    )?
+;
+
+bgppgp_soft_reset_with_stored_info_null
+:
+    SOFT_RESET_WITH_STORED_INFO null_rest_of_line
 ;
 
 bgp_policy

@@ -1,0 +1,6 @@
+set deviceconfig high-availability group group-id 1
+set deviceconfig high-availability group monitoring link-monitoring link-group monitor interface [ ethernet1/5 ethernet1/7 ]
+set deviceconfig high-availability group monitoring link-monitoring link-group "ae3 RDL-VPN" interface [ ethernet1/9 ethernet1/10 ]
+set deviceconfig high-availability group monitoring link-monitoring link-group "ae3 RDL-VPN" failure-condition all
+set deviceconfig high-availability group monitoring link-monitoring link-group "ae1 INET" interface [ ethernet1/13 ethernet1/14 ]
+set deviceconfig high-availability group monitoring link-monitoring link-group "ae1 INET" failure-condition any

@@ -113,7 +113,7 @@ set readonly devices localhost.localdomain template T1 config devices localhost.
 set template T1 config mgt-config users
 set template T1 config shared
 set template T1 config devices localhost.localdomain network vlan
-set template T1 config devices localhost.localdomain network virtual-wire
+set template T1 config devices localhost.localdomain network virtual-wire vwire1
 
 set device-group DGNAME profiles data-filtering NAME rules NAME2 application any
 set device-group DGNAME profiles data-objects NAME pattern-type regex pattern NAME2

@@ -12,8 +12,11 @@ import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.EmptyIp6Space;
 import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
+import org.batfish.datamodel.Ip6Space;
 import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
 import org.batfish.datamodel.Prefix;
@@ -25,7 +28,9 @@ public final class AddressObject implements Serializable {
   public enum Type {
     IP,
     IP_RANGE,
-    PREFIX
+    IP_LOCATION,
+    PREFIX,
+    FQDN
   }
 
   private @Nullable String _description;
@@ -35,8 +40,13 @@ public final class AddressObject implements Serializable {
 
   // Only one can be set
   private @Nullable Ip _ip;
+  private @Nullable Ip6 _ip6;
   private @Nullable Range<Ip> _ipRange;
+  private @Nullable Range<Ip6> _ipRange6;
   private @Nullable IpPrefix _prefix;
+  private @Nullable Ip6Prefix _prefix6;
+  private @Nullable String _fqdn;
+  private @Nullable String _ipLocation;
 
   public AddressObject(String name) {
     _name = name;
@@ -45,8 +55,13 @@ public final class AddressObject implements Serializable {
 
   private void clearAddress() {
     _ip = null;
+    _ip6 = null;
     _ipRange = null;
+    _ipRange6 = null;
     _prefix = null;
+    _prefix6 = null;
+    _fqdn = null;
+    _ipLocation = null;
   }
 
   public @Nullable String getDescription() {
@@ -54,7 +69,11 @@ public final class AddressObject implements Serializable {
   }
 
   public @Nonnull IpSpace getIpSpace() {
-    if (_ip != null) {
+    if (_fqdn != null || _ipLocation != null) {
+      // FQDN and IP_LOCATION addresses resolve dynamically and cannot be converted to static
+      // IpSpace
+      return EmptyIpSpace.INSTANCE;
+    } else if (_ip != null) {
       return _ip.toIpSpace();
     } else if (_prefix != null) {
       return _prefix.getPrefix().toIpSpace();
@@ -64,6 +83,16 @@ public final class AddressObject implements Serializable {
       return IpRange.range(_ipRange.lowerEndpoint(), _ipRange.upperEndpoint());
     }
     return EmptyIpSpace.INSTANCE;
+  }
+
+  public @Nonnull Ip6Space getIp6Space() {
+    if (_ip6 != null) {
+      return _ip6.toPrefix6().toIp6Space();
+    } else if (_prefix6 != null) {
+      return _prefix6.getPrefix().toIp6Space();
+    }
+    // Note: Ip6Range is not yet supported as Ip6Space implementation in datamodel
+    return EmptyIp6Space.INSTANCE;
   }
 
   /**
@@ -112,6 +141,18 @@ public final class AddressObject implements Serializable {
     return _prefix;
   }
 
+  public @Nullable Ip6 getIp6() {
+    return _ip6;
+  }
+
+  public @Nullable Ip6Prefix getPrefix6() {
+    return _prefix6;
+  }
+
+  public @Nullable Range<Ip6> getIpRange6() {
+    return _ipRange6;
+  }
+
   public @Nonnull String getName() {
     return _name;
   }
@@ -140,9 +181,47 @@ public final class AddressObject implements Serializable {
     _ipRange = ipRange;
   }
 
+  public void setIpRange6(@Nullable Range<Ip6> ipRange6) {
+    _type = ipRange6 == null ? null : Type.IP_RANGE;
+    clearAddress();
+    _ipRange6 = ipRange6;
+  }
+
   public void setPrefix(@Nullable IpPrefix prefix) {
     _type = prefix == null ? null : Type.PREFIX;
     clearAddress();
     _prefix = prefix;
+  }
+
+  public void setIp(@Nullable Ip6 ip) {
+    _type = ip == null ? null : Type.IP;
+    clearAddress();
+    _ip6 = ip;
+  }
+
+  public void setPrefix(@Nullable Ip6Prefix prefix) {
+    _type = prefix == null ? null : Type.PREFIX;
+    clearAddress();
+    _prefix6 = prefix;
+  }
+
+  public @Nullable String getFqdn() {
+    return _fqdn;
+  }
+
+  public void setFqdn(@Nullable String fqdn) {
+    _type = fqdn == null ? null : Type.FQDN;
+    clearAddress();
+    _fqdn = fqdn;
+  }
+
+  public @Nullable String getIpLocation() {
+    return _ipLocation;
+  }
+
+  public void setIpLocation(@Nullable String ipLocation) {
+    _type = ipLocation == null ? null : Type.IP_LOCATION;
+    clearAddress();
+    _ipLocation = ipLocation;
   }
 }

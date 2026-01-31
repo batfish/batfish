@@ -105,6 +105,7 @@ import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IntegerSpace;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.LineAction;
@@ -225,6 +226,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.S_external_listContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_policy_panoramaContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_post_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_pre_rulebaseContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.S_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_rulebaseContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.S_service_group_definitionContext;
@@ -255,8 +257,12 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ip_addressContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_netmaskContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_ntp_serversContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sds_snmp_settingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsd_serversContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sdsn_ntp_server_addressContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdss_access_settingContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdss_snmp_systemContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sdssa_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Selt_ipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_config_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_device_groupContext;
@@ -264,7 +270,19 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_templateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Set_line_template_stackContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sl_syslogContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sls_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_and_also_toContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_certificate_profileContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_communityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_facilityContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_formatContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_gatewayContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_managerContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_portContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_serverContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_toContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_transportContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Slss_versionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sn_shared_gateway_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_aggregate_ethernet_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sni_ethernet_definitionContext;
@@ -279,6 +297,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_haContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snie_link_stateContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel2_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_ipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_lldpContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_mtuContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sniel3_unitContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Snil_ipContext;
@@ -307,6 +326,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srespr_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sresprd_hostnameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_active_active_device_bindingContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_definitionContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_destination_translationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srn_disabledContext;
@@ -323,13 +343,17 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_applicationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_definitionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destinationContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_destination_hipContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_disabledContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_fromContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_hip_profilesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_destinationContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_negate_sourceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_rule_typeContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_serviceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_sourceContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_hipContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_source_userContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_tagContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Srs_toContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sserv_descriptionContext;
@@ -343,6 +367,7 @@ import org.batfish.grammar.palo_alto.PaloAltoParser.St_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_descriptionContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_devicesContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Sts_templatesContext;
+import org.batfish.grammar.palo_alto.PaloAltoParser.Sv_display_nameContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svi_visible_vsysContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Svin_interfaceContext;
 import org.batfish.grammar.palo_alto.PaloAltoParser.Szn_externalContext;
@@ -415,6 +440,7 @@ import org.batfish.representation.palo_alto.EbgpPeerGroupType.ImportNexthopMode;
 import org.batfish.representation.palo_alto.HighAvailability;
 import org.batfish.representation.palo_alto.Interface;
 import org.batfish.representation.palo_alto.InterfaceAddress;
+import org.batfish.representation.palo_alto.Ip6Prefix;
 import org.batfish.representation.palo_alto.IpPrefix;
 import org.batfish.representation.palo_alto.NatRule;
 import org.batfish.representation.palo_alto.OspfArea;
@@ -447,6 +473,9 @@ import org.batfish.representation.palo_alto.Service;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
 import org.batfish.representation.palo_alto.ServiceGroup;
 import org.batfish.representation.palo_alto.ServiceOrServiceGroupReference;
+import org.batfish.representation.palo_alto.SnmpAccessSetting;
+import org.batfish.representation.palo_alto.SnmpSetting;
+import org.batfish.representation.palo_alto.SnmpSystem;
 import org.batfish.representation.palo_alto.SourceTranslation;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.SyslogServer;
@@ -508,6 +537,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private NatRule _currentNatRule;
   private DestinationTranslation _currentNatRuleDestinationTranslation;
   private boolean _currentNtpServerPrimary;
+  private SnmpAccessSetting _currentSnmpAccessSetting;
+  private SnmpSystem _currentSnmpSystem;
   private Interface _currentParentInterface;
   private PolicyRule _currentPolicyRule;
   private boolean _currentPolicyRuleImport;
@@ -759,6 +790,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     } else if (ctx.range != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
     }
+    // Check if this is a geolocation code (2-letter ISO country code or special codes)
+    if (isGeolocationCode(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.IP_LOCATION, text);
+    }
+    // Check if this looks like an FQDN (contains dots and domain-like characters)
+    if (isFqdn(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.FQDN, text);
+    }
     return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
   }
 
@@ -771,6 +810,14 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       return new RuleEndpoint(RuleEndpoint.Type.IP_PREFIX, text);
     } else if (ctx.range != null) {
       return new RuleEndpoint(RuleEndpoint.Type.IP_RANGE, text);
+    }
+    // Check if this is a geolocation code (2-letter ISO country code or special codes)
+    if (isGeolocationCode(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.IP_LOCATION, text);
+    }
+    // Check if this looks like an FQDN (contains dots and domain-like characters)
+    if (isFqdn(text)) {
+      return new RuleEndpoint(RuleEndpoint.Type.FQDN, text);
     }
     return new RuleEndpoint(RuleEndpoint.Type.REFERENCE, text);
   }
@@ -789,6 +836,46 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       }
     }
     return text;
+  }
+
+  /**
+   * Check if a string is a valid geolocation code (ISO 3166-1 alpha-2 country code or special codes
+   * like A1, A2, EU, AP, etc.)
+   */
+  private boolean isGeolocationCode(String text) {
+    if (text == null || text.length() != 2) {
+      return false;
+    }
+    // Check for special geolocation codes
+    if ("A1".equals(text)
+        || "A2".equals(text)
+        || "EU".equals(text)
+        || "AP".equals(text)
+        || "CE".equals(text)
+        || "DN".equals(text)
+        || "LN".equals(text)) {
+      return true;
+    }
+    // Check for ISO 3166-1 alpha-2 country code pattern (two uppercase letters)
+    return text.length() == 2
+        && Character.isUpperCase(text.charAt(0))
+        && Character.isUpperCase(text.charAt(1));
+  }
+
+  /**
+   * Check if a string looks like an FQDN (contains dots and domain-like characters). This is a
+   * heuristic check - real FQDNs would be validated by the firewall.
+   */
+  private boolean isFqdn(String text) {
+    if (text == null || text.isEmpty()) {
+      return false;
+    }
+    // FQDNs typically contain dots and alphanumeric characters with hyphens
+    // This is a simple heuristic - valid FQDNs can be more complex
+    return text.contains(".")
+        && text.matches("^[a-zA-Z0-9.-]+$")
+        && !text.startsWith(".")
+        && !text.endsWith(".");
   }
 
   /** Return the rulebase based on the {@link #_currentRuleScope current rulebase scope} */
@@ -967,6 +1054,33 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   public void enterBgppgp_co_multihop(Bgppgp_co_multihopContext ctx) {
     _currentBgpPeer.setMultihop(toInteger(ctx.num));
   }
+
+  // TODO: Implement handlers for BGP connection options timers
+  //  @Override
+  //  public void exitBgppgp_co_hold_time(Bgppgp_co_hold_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setHoldTime(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_idle_hold_time(Bgppgp_co_idle_hold_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setIdleHoldTime(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_keep_alive_interval(Bgppgp_co_keep_alive_intervalContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setKeepAliveInterval(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_min_route_adv_interval(Bgppgp_co_min_route_adv_intervalContext ctx)
+  // {
+  //    _currentBgpPeer.getConnectionOptions().setMinRouteAdvInterval(toInteger(ctx.val));
+  //  }
+  //
+  //  @Override
+  //  public void exitBgppgp_co_open_delay_time(Bgppgp_co_open_delay_timeContext ctx) {
+  //    _currentBgpPeer.getConnectionOptions().setOpenDelayTime(toInteger(ctx.val));
+  //  }
 
   @Override
   public void exitBgppgp_coo_allow(Bgppgp_coo_allowContext ctx) {
@@ -1431,6 +1545,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspf_enable(Ospf_enableContext ctx) {
+    if (_currentOspfVr == null) {
+      return;
+    }
     _currentOspfVr.setEnable(toBoolean(ctx.yn));
   }
 
@@ -1446,7 +1563,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitOspf_graceful_restart(Ospf_graceful_restartContext ctx) {
-    todo(ctx);
+    // OSPF graceful restart is a protocol feature that only affects restart behavior,
+    // not final routing state, so it's intentionally ignored (_null rules)
   }
 
   @Override
@@ -1642,7 +1760,10 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_fqdn(Sa_fqdnContext ctx) {
-    warn(ctx, ctx.FQDN().getSymbol(), "FQDN in address objects is not currently supported");
+    String fqdn = getText(ctx.null_rest_of_line());
+    if (fqdn != null && !fqdn.trim().isEmpty()) {
+      _currentAddressObject.setFqdn(fqdn.trim());
+    }
   }
 
   @Override
@@ -1652,7 +1773,19 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSa_ip_range(Sa_ip_rangeContext ctx) {
-    toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    String rangeStr = ctx.ip_range().getText();
+    if (rangeStr.contains(":")) {
+      String[] ips = rangeStr.split("-");
+      Ip6 lowIp = Ip6.parse(stripZoneIndex(ips[0]));
+      Ip6 highIp = Ip6.parse(stripZoneIndex(ips[1]));
+      if (lowIp.compareTo(highIp) >= 0) {
+        warn(ctx, "Invalid IPv6 address range");
+      } else {
+        _currentAddressObject.setIpRange6(Range.closed(lowIp, highIp));
+      }
+    } else {
+      toIpRange(ctx.ip_range()).ifPresent(range -> _currentAddressObject.setIpRange(range));
+    }
   }
 
   @Override
@@ -1725,7 +1858,65 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void enterSds_snmp_setting(Sds_snmp_settingContext ctx) {
+    if (_currentConfiguration.getSnmpSetting() == null) {
+      _currentConfiguration.setSnmpSetting(new SnmpSetting());
+    }
+  }
+
+  @Override
+  public void enterSdss_access_setting(Sdss_access_settingContext ctx) {
+    // Will create a new access setting for each version encountered
+  }
+
+  @Override
+  public void enterSdssa_definition(Sdssa_definitionContext ctx) {
+    if (ctx.VERSION() != null) {
+      String version = getText(ctx.variable());
+      _currentSnmpAccessSetting = new SnmpAccessSetting(version);
+    } else if (ctx.SNMP_COMMUNITY_STRING() != null) {
+      if (_currentSnmpAccessSetting != null) {
+        String communityString = getText(ctx.variable());
+        _currentSnmpAccessSetting.addCommunityString(communityString);
+      }
+    }
+  }
+
+  @Override
+  public void exitSdssa_definition(Sdssa_definitionContext ctx) {
+    if (ctx.VERSION() != null && _currentSnmpAccessSetting != null) {
+      _currentConfiguration.getSnmpSetting().addAccessSetting(_currentSnmpAccessSetting);
+    }
+  }
+
+  @Override
+  public void enterSdss_snmp_system(Sdss_snmp_systemContext ctx) {
+    _currentSnmpSystem = new SnmpSystem();
+    if (_currentConfiguration.getSnmpSetting() != null) {
+      _currentConfiguration.getSnmpSetting().setSnmpSystem(_currentSnmpSystem);
+    }
+  }
+
+  @Override
+  public void exitSdss_snmp_system(Sdss_snmp_systemContext ctx) {
+    if (_currentSnmpSystem != null) {
+      if (ctx.SEND_EVENT_SPECIFIC_TRAPS() != null) {
+        _currentSnmpSystem.setSendEventSpecificTraps(toBoolean(ctx.yes_or_no()));
+      }
+      if (ctx.CONTACT() != null && ctx.variable() != null) {
+        _currentSnmpSystem.setContact(getText(ctx.variable()));
+      }
+      if (ctx.LOCATION() != null && ctx.variable() != null) {
+        _currentSnmpSystem.setLocation(getText(ctx.variable()));
+      }
+    }
+  }
+
+  @Override
   public void enterS_external_list(S_external_listContext ctx) {
+    if (ctx.name == null) {
+      return;
+    }
     _currentExternalListName = getFullText(ctx.name);
   }
 
@@ -1805,8 +1996,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
       String deviceName = getText(ctx.name);
       _currentDeviceName = firstNonNull(_currentDeviceName, deviceName);
       if (!_currentDeviceName.equals(deviceName)) {
-        /* Do not currently handle multiple device names, which presumably happens only if multiple
-         * physical devices are configured from a single config */
+        /*
+         * Do not currently handle multiple device names, which presumably happens only
+         * if multiple
+         * physical devices are configured from a single config
+         */
         warn(ctx, "Multiple devices encountered: " + deviceName);
       }
     }
@@ -1929,11 +2123,30 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   /** Apply the ip-netmask (ip addr or prefix) to the specified {@link AddressObject}. */
   private void applyIpNetmask(AddressObject addressObject, PaloAltoParser.Ip_netmaskContext ctx) {
     if (ctx.ip_address() != null) {
-      addressObject.setIp(toIp(ctx.ip_address()));
+      String ipStr = ctx.ip_address().getText();
+      if (ipStr.contains(":")) {
+        // Strip zone index if present
+        int percentIdx = ipStr.indexOf('%');
+        String baseIp = percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
+        addressObject.setIp(Ip6.parse(baseIp));
+      } else {
+        addressObject.setIp(Ip.parse(ipStr));
+      }
       return;
     }
     assert ctx.ip_prefix() != null;
-    addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    String prefixStr = ctx.ip_prefix().getText();
+    if (prefixStr.contains(":")) {
+      // IPv6 Prefix. Splitting on / to handle base IP possibly having a zone index
+      String[] parts = prefixStr.split("/", 2);
+      String baseIp = parts[0];
+      int percentIdx = baseIp.indexOf('%');
+      String strippedBaseIp = percentIdx != -1 ? baseIp.substring(0, percentIdx) : baseIp;
+      String strippedPrefixStr = strippedBaseIp + (parts.length > 1 ? "/" + parts[1] : "");
+      addressObject.setPrefix(Ip6Prefix.parse(strippedPrefixStr));
+    } else {
+      addressObject.setPrefix(toIpPrefix(ctx.ip_prefix()));
+    }
   }
 
   @Override
@@ -2178,6 +2391,22 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSniel3_lldp(Sniel3_lldpContext ctx) {
+    _currentInterface.setLldpEnabled(toBoolean(ctx.yn));
+  }
+
+  // TODO: IPv6 neighbor discovery - uncomment when Context classes are generated
+  //  @Override
+  //  public void exitSni_ipv6_router_advertisement(Sni_ipv6_router_advertisementContext ctx) {
+  //    _currentInterface.setRouterAdvertisement(toBoolean(ctx.yn));
+  //  }
+  //
+  //  @Override
+  //  public void exitSni_ipv6_ndp_proxy(Sni_ipv6_ndp_proxyContext ctx) {
+  //    _currentInterface.setNdpProxy(toBoolean(ctx.yn));
+  //  }
+
+  @Override
   public void exitSniel3_mtu(Sniel3_mtuContext ctx) {
     _currentInterface.setMtu(Integer.parseInt(getText(ctx.mtu)));
   }
@@ -2246,8 +2475,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
             .computeIfAbsent(name, n -> new Interface(n, Interface.Type.VLAN_UNIT));
     _currentInterface.setParent(_currentParentInterface);
     defineFlattenedStructure(INTERFACE, name, ctx);
-    // TODO: convert vlan ID for created vlan units
-    todo(ctx);
+    // Extract VLAN tag from unit name (e.g., "vlan.1" -> tag=1)
+    try {
+      String[] parts = name.split("\\.");
+      if (parts.length == 2) {
+        int vlanTag = Integer.parseInt(parts[1]);
+        _currentInterface.setTag(vlanTag);
+      }
+    } catch (NumberFormatException e) {
+      // If VLAN tag cannot be parsed, interface will be created without tag
+    }
   }
 
   @Override
@@ -2266,6 +2503,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSp_custom_url_category(PaloAltoParser.Sp_custom_url_categoryContext ctx) {
     _currentCustomUrlCategory = null;
+  }
+
+  @Override
+  public void exitSpc_definition(PaloAltoParser.Spc_definitionContext ctx) {
+    // Individual handlers (exitSpc_description, exitSpc_list, exitSpc_type) process the content
   }
 
   @Override
@@ -2667,6 +2909,31 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSdhag_group_id(PaloAltoParser.Sdhag_group_idContext ctx) {
+    toInteger(ctx, ctx.ha_group_id()).ifPresent(_currentHighAvailability::setGroupId);
+  }
+
+  @Override
+  public void exitSdha_enabled(PaloAltoParser.Sdha_enabledContext ctx) {
+    _currentHighAvailability.setEnabled(toBoolean(ctx.yes_or_no()));
+  }
+
+  @Override
+  public void exitSds_timezone(PaloAltoParser.Sds_timezoneContext ctx) {
+    _currentConfiguration.setTimezone(getText(ctx.variable()));
+  }
+
+  @Override
+  public void exitSds_type(PaloAltoParser.Sds_typeContext ctx) {
+    _currentConfiguration.setType(getText(ctx.variable()));
+  }
+
+  @Override
+  public void exitSds_permitted_ip(PaloAltoParser.Sds_permitted_ipContext ctx) {
+    _currentConfiguration.setPermittedIp(toPrefix(ctx.ip_prefix()));
+  }
+
+  @Override
   public void exitSrn_active_active_device_binding(Srn_active_active_device_bindingContext ctx) {
     toActiveActiveDeviceBinding(ctx, ctx.bind)
         .ifPresent(_currentNatRule::setActiveActiveDeviceBinding);
@@ -2675,26 +2942,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   private @Nonnull Optional<NatRule.ActiveActiveDeviceBinding> toActiveActiveDeviceBinding(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_binding_valContext deviceBinding) {
     if (deviceBinding.PRIMARY() != null) {
-      warn(ctx, "Batfish currently models this as active-active-device-binding both");
       return Optional.of(NatRule.ActiveActiveDeviceBinding.PRIMARY);
     } else if (deviceBinding.BOTH() != null) {
       return Optional.of(NatRule.ActiveActiveDeviceBinding.BOTH);
+    } else if (deviceBinding.uint8() != null) {
+      int val = Integer.parseInt(deviceBinding.uint8().getText());
+      if (val == 0) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ZERO);
+      } else if (val == 1) {
+        return Optional.of(NatRule.ActiveActiveDeviceBinding.ONE);
+      }
+      warn(ctx, "Invalid active-active-device-binding value: " + val);
+      return Optional.empty();
     } else {
-      assert deviceBinding.uint8() != null;
-      Optional<Integer> maybeId = toInteger(ctx, deviceBinding);
-      return maybeId.map(
-          id -> {
-            if (id == 0) {
-              return NatRule.ActiveActiveDeviceBinding.ZERO;
-            }
-            assert id == 1;
-            return NatRule.ActiveActiveDeviceBinding.ONE;
-          });
+      warn(ctx, "Invalid active-active-device-binding value");
+      return Optional.empty();
     }
   }
 
   private static final IntegerSpace HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE =
       IntegerSpace.of(Range.closed(0, 1));
+
+  private static final IntegerSpace HA_GROUP_ID_SPACE = IntegerSpace.of(Range.closed(1, 63));
 
   private Optional<Integer> toInteger(
       ParserRuleContext ctx, PaloAltoParser.Active_active_device_idContext deviceId) {
@@ -2703,6 +2972,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         deviceId,
         HA_ACTIVE_ACTIVE_DEVICE_ID_SPACE,
         "high-availability active-active device-id");
+  }
+
+  private Optional<Integer> toInteger(
+      ParserRuleContext ctx, PaloAltoParser.Ha_group_idContext groupId) {
+    return toIntegerInSpace(ctx, groupId, HA_GROUP_ID_SPACE, "high-availability group-id");
   }
 
   private static final IntegerSpace ACTIVE_ACTIVE_DEVICE_BINDING_SPACE =
@@ -2747,6 +3021,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitSrn_disabled(Srn_disabledContext ctx) {
     _currentNatRule.setDisabled(toBoolean(ctx.yn));
+  }
+
+  @Override
+  public void exitSrn_description(Srn_descriptionContext ctx) {
+    _currentNatRule.setDescription(getText(ctx.description));
   }
 
   @Override
@@ -2936,6 +3215,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     }
   }
 
+  @Override
+  public void exitSrs_group_tag(PaloAltoParser.Srs_group_tagContext ctx) {
+    String groupTag = getText((ParserRuleContext) ctx.getChild(1));
+    _currentSecurityRule.setGroupTag(groupTag);
+  }
+
   private void referenceApplicationOrGroupLike(
       String name, String uniqueName, PaloAltoStructureUsage usage, ParserRuleContext var) {
     PaloAltoStructureType type =
@@ -3002,6 +3287,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSrs_destination_hip(Srs_destination_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addDestinationHip(getText(var));
+    }
+  }
+
+  @Override
   public void exitSrs_disabled(Srs_disabledContext ctx) {
     _currentSecurityRule.setDisabled(toBoolean(ctx.yn));
   }
@@ -3017,6 +3312,16 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
         String uniqueName = computeObjectName(_currentVsys, zoneName);
         referenceStructure(ZONE, uniqueName, SECURITY_RULE_FROM_ZONE, getLine(var.start));
       }
+    }
+  }
+
+  @Override
+  public void exitSrs_hip_profiles(Srs_hip_profilesContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addHipProfile(getText(var));
     }
   }
 
@@ -3058,6 +3363,28 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   }
 
   @Override
+  public void exitSrs_source_hip(Srs_source_hipContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    for (Variable_list_itemContext var : variables(ctx.names)) {
+      _currentSecurityRule.addSourceHip(getText(var));
+    }
+  }
+
+  @Override
+  public void exitSrs_source_user(Srs_source_userContext ctx) {
+    if (ctx.any != null) {
+      return;
+    }
+    if (ctx.names != null) {
+      for (Variable_list_itemContext var : variables(ctx.names)) {
+        _currentSecurityRule.addSourceUser(getText(var));
+      }
+    }
+  }
+
+  @Override
   public void exitSrs_tag(Srs_tagContext ctx) {
     for (Variable_list_itemContext var : variables(ctx.variable_list())) {
       String tag = getText(var);
@@ -3087,6 +3414,11 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitS_rulebase(S_rulebaseContext ctx) {
     _currentRuleScope = null;
+  }
+
+  @Override
+  public void exitS_profiles(S_profilesContext ctx) {
+    // Silently consume security profile settings
   }
 
   @Override
@@ -3201,6 +3533,9 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void enterSls_server(Sls_serverContext ctx) {
+    if (_currentSyslogServerGroupName == null) {
+      return;
+    }
     _currentSyslogServer =
         _currentVsys.getSyslogServer(_currentSyslogServerGroupName, getText(ctx.name));
   }
@@ -3212,7 +3547,70 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitSlss_server(Slss_serverContext ctx) {
+    if (_currentSyslogServer == null) {
+      return;
+    }
     _currentSyslogServer.setAddress(getText(ctx.address));
+  }
+
+  @Override
+  public void exitSlss_certificate_profile(Slss_certificate_profileContext ctx) {
+    // Silently consume certificate-profile - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_format(Slss_formatContext ctx) {
+    // Silently consume format settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_from(Slss_fromContext ctx) {
+    // Silently consume email from settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_to(Slss_toContext ctx) {
+    // Silently consume email to settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_gateway(Slss_gatewayContext ctx) {
+    // Silently consume gateway settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_and_also_to(Slss_and_also_toContext ctx) {
+    // Silently consume and-also-to settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_transport(Slss_transportContext ctx) {
+    // Silently consume transport settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_facility(Slss_facilityContext ctx) {
+    // Silently consume facility settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_port(Slss_portContext ctx) {
+    // Silently consume port settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_community(Slss_communityContext ctx) {
+    // Silently consume SNMP community settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_manager(Slss_managerContext ctx) {
+    // Silently consume SNMP manager settings - not used by Batfish
+  }
+
+  @Override
+  public void exitSlss_version(Slss_versionContext ctx) {
+    // Silently consume version settings - not used by Batfish
   }
 
   @Override
@@ -3224,6 +3622,12 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
   @Override
   public void exitS_vsys_definition(S_vsys_definitionContext ctx) {
     _currentVsys = _defaultVsys;
+  }
+
+  @Override
+  public void exitSv_display_name(Sv_display_nameContext ctx) {
+    String displayName = getText(ctx.variable());
+    _currentVsys.setDisplayName(displayName);
   }
 
   @Override
@@ -3373,9 +3777,13 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
     ConcreteInterfaceAddress ip = toConcreteInterfaceAddress(addr.addr);
     if (ip.getNetworkBits() != Prefix.MAX_PREFIX_LENGTH) {
       warn(ctx, addr, String.format("Expecting 32-bit mask for %s, ignoring", ipType));
-      return Optional.empty();
     }
     return Optional.of(ip.getIp());
+  }
+
+  private static @Nonnull String stripZoneIndex(String ipStr) {
+    int percentIdx = ipStr.indexOf('%');
+    return percentIdx != -1 ? ipStr.substring(0, percentIdx) : ipStr;
   }
 
   private @Nonnull Optional<Range<Ip>> toIpRange(Ip_rangeContext ctx) {

@@ -1,0 +1,39 @@
+vsys {
+  vsys1 {
+    redistribution-agent {
+      Agent-01 {
+        host-port {
+          host 192.0.2.5;
+          port 5007;
+        }
+        ip-user-mappings yes;
+        ip-tags yes;
+        user-tags yes;
+      }
+    }
+    server-profile {
+      radius {
+        Radius-01 {
+          server {
+            primary {
+              secret -AQ==unused;
+              port 1812;
+              ip-address 192.0.2.1;
+            }
+          }
+        }
+      }
+      tacplus {
+        Tacacs-01 {
+          server {
+            primary {
+              secret -AQ==unused;
+              port 49;
+              address 192.0.2.2;
+            }
+          }
+        }
+      }
+    }
+  }
+}
