@@ -225,6 +225,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.EqualsNull")
   public void testSnmpCommunityEquals() {
     SnmpCommunity c1 =
         SnmpCommunity.builder()
@@ -431,6 +432,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.EqualsNull")
   public void testSnmpDiskMonitorEquals() {
     SnmpDiskMonitor m1 =
         SnmpDiskMonitor.builder().setName("disk1").setPath("/var/log").setMinSpace(100).build();
@@ -584,6 +586,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.EqualsNull")
   public void testSnmpProcessMonitorEquals() {
     SnmpProcessMonitor m1 =
         SnmpProcessMonitor.builder()
@@ -882,6 +885,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.EqualsNull")
   public void testFirewallRule_equals_nullObject() {
     FirewallRule rule =
         FirewallRule.builder().setName("rule1").setAction("accept").setIpProtocol("tcp").build();
@@ -1111,6 +1115,7 @@ public class F5BigipConfigurationTest {
   }
 
   @Test
+  @SuppressWarnings("PMD.EqualsNull")
   public void testFirewallRuleList_equals_nullObject() {
     FirewallRuleList list =
         FirewallRuleList.builder()
