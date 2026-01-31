@@ -870,7 +870,7 @@ projects/batfish/src/main/
 projects/batfish/src/test/java/org/batfish/vendor/<vendor>/  # All tests unified
 ```
 
-**Example vendors using this pattern:** A10, Arista, CheckPoint Gateway, CheckPoint Management, SONiC
+**Example vendors using this pattern:** A10, Arista, CheckPoint Gateway, CheckPoint Management, Cisco NX-OS, SONiC
 
 To add a new vendor using this pattern, follow the structure of the A10 vendor:
 
@@ -898,7 +898,7 @@ projects/batfish/src/test/java/
 └── org/batfish/representation/<vendor>/          # Representation tests
 ```
 
-**Example vendors using this pattern:** Cisco (IOS, NX-OS, ASA, XR), Juniper, Palo Alto,
+**Example vendors using this pattern:** Cisco (IOS, ASA, XR), Juniper, Palo Alto,
 Fortinet, Cumulus, F5, AWS, etc.
 
 This pattern is maintained for backward compatibility. Do not use it for new vendors.
@@ -917,9 +917,9 @@ study the NX-OS implementation for examples of:
 
 The NX-OS code is located at:
 
-- [`antlr4/org/batfish/grammar/cisco_nxos/`](../../projects/batfish/src/main/antlr4/org/batfish/grammar/cisco_nxos/)
-- [`java/org/batfish/grammar/cisco_nxos/`](../../projects/batfish/src/main/java/org/batfish/grammar/cisco_nxos/)
-- [`java/org/batfish/representation/cisco_nxos/`](../../projects/batfish/src/main/java/org/batfish/representation/cisco_nxos/)
+- [`antlr4/org/batfish/vendor/cisco_nxos/grammar/`](../../projects/batfish/src/main/antlr4/org/batfish/vendor/cisco_nxos/grammar/)
+- [`java/org/batfish/vendor/cisco_nxos/grammar/`](../../projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/grammar/)
+- [`java/org/batfish/vendor/cisco_nxos/representation/`](../../projects/batfish/src/main/java/org/batfish/vendor/cisco_nxos/representation/)
 
 ### Combined parser
 
