@@ -870,7 +870,7 @@ projects/batfish/src/main/
 projects/batfish/src/test/java/org/batfish/vendor/<vendor>/  # All tests unified
 ```
 
-**Example vendors using this pattern:** A10, CheckPoint Gateway, CheckPoint Management, SONiC
+**Example vendors using this pattern:** A10, Arista, CheckPoint Gateway, CheckPoint Management, SONiC
 
 To add a new vendor using this pattern, follow the structure of the A10 vendor:
 
@@ -898,7 +898,7 @@ projects/batfish/src/test/java/
 └── org/batfish/representation/<vendor>/          # Representation tests
 ```
 
-**Example vendors using this pattern:** Cisco (IOS, NX-OS, ASA, XR), Juniper, Arista, Palo Alto,
+**Example vendors using this pattern:** Cisco (IOS, NX-OS, ASA, XR), Juniper, Palo Alto,
 Fortinet, Cumulus, F5, AWS, etc.
 
 This pattern is maintained for backward compatibility. Do not use it for new vendors.
