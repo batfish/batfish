@@ -1,8 +1,5 @@
 !
-hostname ios-crypto-unrecognized
-!
-! Test null_rest_of_line fallback for unrecognized crypto subcommands
-! These commands are not explicitly supported but should parse without errors
+hostname ios-xe-crypto-parsing
 !
 crypto ssl diagnostic sslvm
 crypto ssl policy

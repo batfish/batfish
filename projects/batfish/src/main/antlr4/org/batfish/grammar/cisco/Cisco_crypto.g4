@@ -490,6 +490,10 @@ cisprf_self_identity
 
 cisprf_vrf: VRF name = variable NEWLINE;
 
+ck_export_null: EXPORT null_rest_of_line;
+
+ck_import_null: IMPORT null_rest_of_line;
+
 ck_null
 :
    (
@@ -711,8 +715,9 @@ crypto_key
    KEY
    (
       ck_null
+      | ck_export_null
+      | ck_import_null
       | ck_pubkey_chain
-      | null_rest_of_line
    )
 ;
 
