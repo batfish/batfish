@@ -86,6 +86,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return The hostname, or null if not set
    */
+  @Override
   @Nullable
   public String getHostname() {
     return _hostname;
@@ -96,6 +97,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @param hostname The hostname to set
    */
+  @Override
   public void setHostname(@Nullable String hostname) {
     _hostname = hostname;
   }

@@ -3,23 +3,15 @@ package org.batfish.vendor.huawei.representation;
 import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import java.util.Map;
 import java.util.Map.Entry;
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
-import org.batfish.datamodel.ExprAclLine;
-import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.InterfaceType;
-import org.batfish.datamodel.IpAccessList;
-import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
-import org.batfish.datamodel.acl.MatchHeaderSpace;
 
 /**
  * Conversion utilities for transforming Huawei VRP configurations to Batfish's vendor-independent
@@ -305,89 +297,11 @@ public class HuaweiConversions {
    */
   public static void toConfigurationAcls(
       @Nonnull Configuration c, @Nonnull HuaweiConfiguration huaweiCfg) {
-    for (HuaweiAcl huaweiAcl : huaweiCfg.getAcls().values()) {
-      String aclName = huaweiAcl.getName();
-
-      // Convert ACL lines to Batfish format
-      Builder<AclLine> lines = ImmutableList.builder();
-      for (HuaweiAclLine huaweiLine : huaweiAcl.getLines()) {
-        try {
-          ExprAclLine aclLine = convertAclLine(huaweiLine);
-          if (aclLine != null) {
-            lines.add(aclLine);
-          }
-        } catch (Exception e) {
-          // Log error but continue processing other lines
-          // In production, this would be added to warnings
-        }
-      }
-
-      // Create IpAccessList and add to configuration
-      IpAccessList ipAccessList =
-          IpAccessList.builder()
-              .setName(aclName)
-              .setLines(lines.build())
-              .setOwner(c)
-              .setSourceName("huawei")
-              .setSourceType("huawei")
-              .build();
-
-      // The builder automatically adds to c.getIpAccessLists()
+    if (!huaweiCfg.getAcls().isEmpty()) {
+      // TODO: Implement full ACL conversion to Batfish model
+      // Would create IpAccessList with the ACL lines and add to c.getIpAccessLists()
+      // For now, ACL parsing works but conversion to Batfish model is stub
     }
-  }
-
-  /**
-   * Converts a Huawei ACL line to a Batfish ExprAclLine.
-   *
-   * @param huaweiLine The Huawei ACL line to convert
-   * @return A Batfish ExprAclLine, or null if conversion fails
-   */
-  @Nullable
-  private static ExprAclLine convertAclLine(@Nonnull HuaweiAclLine huaweiLine) {
-    // Determine action (permit/deny)
-    LineAction action =
-        "permit".equalsIgnoreCase(huaweiLine.getAction()) ? LineAction.PERMIT : LineAction.DENY;
-
-    // Build HeaderSpace for matching
-    HeaderSpace.Builder headerSpace = HeaderSpace.builder();
-
-    // Parse source address
-    String src = huaweiLine.getSource();
-    if (src != null && !src.equalsIgnoreCase("any")) {
-      // For now, handle basic CIDR notation
-      // TODO: Handle wildcard format and more complex address specifications
-      try {
-        if (src.contains("/")) {
-          // CIDR notation - create empty HeaderSpace for now
-          // Full implementation would properly set source IP ranges
-        }
-      } catch (Exception e) {
-        // If parsing fails, leave as empty (matches all)
-      }
-    }
-
-    // Parse destination address
-    String dst = huaweiLine.getDestination();
-    if (dst != null && !dst.equalsIgnoreCase("any")) {
-      // For now, handle basic CIDR notation
-      try {
-        if (dst.contains("/")) {
-          // CIDR notation - create empty HeaderSpace for now
-          // Full implementation would properly set destination IP ranges
-        }
-      } catch (Exception e) {
-        // If parsing fails, leave as empty (matches all)
-      }
-    }
-
-    // TODO: Parse protocol, ports, etc. for more accurate matching
-
-    // Build the ExprAclLine
-    return ExprAclLine.builder()
-        .setAction(action)
-        .setMatchCondition(new MatchHeaderSpace(headerSpace.build()))
-        .setName(String.valueOf(huaweiLine.getSequenceNumber()))
-        .build();
   }
 
   /**
@@ -401,20 +315,15 @@ public class HuaweiConversions {
    */
   public static void toConfigurationNat(
       @Nonnull Configuration c, @Nonnull HuaweiConfiguration huaweiCfg) {
-    for (HuaweiNatRule natRule : huaweiCfg.getNatRules()) {
-      // For Phase 8, we're just tracking that NAT is configured
-      // Full implementation would convert to Batfish's NAT model
-      // This would involve creating org.batfish.datamodel.IpAccessList objects
-      // and configuring ServiceNAT rules on interfaces
-
-      // TODO: Implement full NAT conversion:
+    // Track that NAT is configured
+    if (!huaweiCfg.getNatRules().isEmpty()) {
+      // TODO: Implement full NAT conversion to Batfish model
+      // Would involve:
       // - Static NAT: Create IpAccessList with static NAT rules
       // - Dynamic NAT: Create Pool and associate with ACL
       // - Easy IP: Create PAT rules on interface
       // - NAT Server: Create port forwarding rules
-
-      // For now, we just note that NAT is present
-      // The actual Batfish NAT model would be populated here
+      // For now, NAT parsing works but conversion to Batfish model is stub
     }
   }
 
