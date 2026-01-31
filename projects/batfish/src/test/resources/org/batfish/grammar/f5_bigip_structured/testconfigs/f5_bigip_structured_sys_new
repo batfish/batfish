@@ -1,0 +1,58 @@
+#TMSH-VERSION: 15.1.10.3
+
+sys global-settings {
+    console-inactivity-timeout 600
+    gui-setup disabled
+    hostname f5_bigip_structured_sys_new_statements
+}
+
+sys outbound-smtp {
+    from-line-override disabled
+    mailhub 192.0.2.1:25
+}
+
+sys sshd {
+    inactivity-timeout 600
+}
+
+sys syslog {
+    remote-servers {
+        /Common/remotesyslog1 {
+            host 192.0.2.2
+            local-ip 192.0.2.3
+        }
+    }
+}
+
+sys snmp {
+    agent-addresses {
+        tcp6:161
+        udp6:161
+    }
+    allowed-addresses {
+        0.0.0.0/0.0.0.0
+    }
+    communities {
+        /Common/public {
+            community-name public
+            source default
+        }
+        /Common/private {
+            community-name private
+        }
+    }
+    disk-monitors {
+        /Common/root {
+            minspace 2000
+            path /
+        }
+    }
+    process-monitors {
+        /Common/test-process {
+            max-processes 100
+            process named
+        }
+    }
+    sys-contact admin@example.com
+    sys-location Server Room
+}

@@ -12,7 +12,7 @@ import org.batfish.datamodel.Ip6;
 public final class PoolMember implements Serializable {
 
   public PoolMember(String name, String node, int port) {
-    checkArgument(port > 0 && port <= 65535, "Invalid port %s", port);
+    checkArgument(port >= 0 && port <= 65535, "Invalid port %s", port);
     _name = name;
     _node = node;
     _port = port;

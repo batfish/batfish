@@ -30,6 +30,7 @@ lm_dns
     NEWLINE
     (
       lmd_defaults_from
+      | lmd_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -40,6 +41,17 @@ lmd_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lmd_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
 lm_gateway_icmp
 :
   GATEWAY_ICMP name = structure_name BRACE_LEFT
@@ -47,6 +59,7 @@ lm_gateway_icmp
     NEWLINE
     (
       lmg_defaults_from
+      | lmg_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -55,6 +68,19 @@ lm_gateway_icmp
 lmg_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lmg_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | DESCRIPTION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+    | TRANSPARENT
+  ) ignored
 ;
 
 lm_http
@@ -138,6 +164,7 @@ lm_ldap
     NEWLINE
     (
       lml_defaults_from
+      | lml_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -148,6 +175,17 @@ lml_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lml_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
 lm_tcp
 :
   TCP name = structure_name BRACE_LEFT
@@ -155,6 +193,7 @@ lm_tcp
     NEWLINE
     (
       lmt_defaults_from
+      | lmt_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -165,6 +204,67 @@ lmt_defaults_from
   DEFAULTS_FROM name = structure_name NEWLINE
 ;
 
+lmt_null
+:
+  (
+    ADAPTIVE
+    | DESTINATION
+    | INTERVAL
+    | TIME_UNTIL_UP
+    | TIMEOUT
+  ) ignored
+;
+
+l_nat
+:
+  NAT name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ln_inherited_traffic_group
+      | ln_originating_address
+      | ln_traffic_group
+      | ln_translation_address
+      | ln_vlans
+      | ln_vlans_enabled
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ln_inherited_traffic_group
+:
+  INHERITED_TRAFFIC_GROUP value = word NEWLINE
+;
+
+ln_originating_address
+:
+  ORIGINATING_ADDRESS address = ip_address NEWLINE
+;
+
+ln_traffic_group
+:
+  TRAFFIC_GROUP group = structure_name NEWLINE
+;
+
+ln_translation_address
+:
+  TRANSLATION_ADDRESS address = ip_address NEWLINE
+;
+
+ln_vlans
+:
+  VLANS BRACE_LEFT
+  (
+    NEWLINE (structure_name NEWLINE)*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ln_vlans_enabled
+:
+  VLANS_ENABLED NEWLINE
+;
+
 l_node
 :
   NODE name = structure_name BRACE_LEFT
@@ -173,8 +273,16 @@ l_node
     (
       ln_address
       | ln_address6
+      | ln_description
+      | ln_monitor
+      | ln_session
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+ln_session
+:
+  SESSION (ENABLED | DISABLED | word_id) NEWLINE
 ;
 
 ln_address
@@ -187,13 +295,96 @@ ln_address6
   ADDRESS address = ipv6_address NEWLINE
 ;
 
+ln_description
+:
+  DESCRIPTION description_value = description_text NEWLINE
+;
+
+description_text
+:
+  word_id
+  | DOUBLE_QUOTED_STRING
+;
+
+ln_monitor
+:
+  MONITOR monitor_list NEWLINE
+;
+
+monitor_list
+:
+  structure_name (AND structure_name)*
+;
+
 l_null
 :
   (
-    DEFAULT_NODE_MONITOR
-    | GLOBAL_SETTINGS
+    GLOBAL_SETTINGS
     | IFILE
   ) ignored
+;
+
+l_default_node_monitor
+:
+  DEFAULT_NODE_MONITOR BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ldnm_rule
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ldnm_rule
+:
+  RULE value = word_id NEWLINE
+;
+
+l_auth
+:
+  AUTH RADIUS_SERVER name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lauth_secret_null
+      | lauth_server_null
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lauth_secret_null
+:
+  SECRET word_id NEWLINE
+;
+
+lauth_server_null
+:
+  SERVER word_id NEWLINE
+;
+
+l_classification_settings
+:
+  CLASSIFICATION WORD_ID WORD_ID BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lcs_auto_update_interval
+      | lcs_enabled
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lcs_auto_update_interval
+:
+  WORD_ID word_id NEWLINE
+;
+
+lcs_enabled
+:
+  ENABLED word_id NEWLINE
 ;
 
 l_persistence
@@ -205,13 +396,6 @@ l_persistence
     | lper_ssl
     | unrecognized
   )
-;
-
-lper_null
-:
-  (
-    APP_SERVICE
-  ) ignored
 ;
 
 lper_cookie
@@ -333,7 +517,11 @@ lpm_member
       lpmm_address
       | lpmm_address6
       | lpmm_description
+      | lpmm_monitor
       | lpmm_null
+      | lpmm_ratio
+      | lpmm_session
+      | lpmm_state
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
@@ -349,14 +537,6 @@ lpmm_address6
   ADDRESS address6 = ipv6_address NEWLINE
 ;
 
-lp_monitor
-:
-  MONITOR names += structure_name
-  (
-    AND names += structure_name
-  )* NEWLINE
-;
-
 lpmm_description
 :
   DESCRIPTION text = word NEWLINE
@@ -367,6 +547,34 @@ lpmm_null
   (
     PRIORITY_GROUP
   ) ignored
+;
+
+lpmm_ratio
+:
+  RATIO value = uint NEWLINE
+;
+
+lpmm_session
+:
+  SESSION value = word NEWLINE
+;
+
+lpmm_state
+:
+  STATE value = word NEWLINE
+;
+
+lpmm_monitor
+:
+  MONITOR monitor_list NEWLINE
+;
+
+lp_monitor
+:
+  MONITOR names += structure_name
+  (
+    AND names += structure_name
+  )* NEWLINE
 ;
 
 lp_null
@@ -392,6 +600,7 @@ l_profile
     | lprof_dhcpv6
     | lprof_diameter
     | lprof_dns
+    | lprof_dns_logging
     | lprof_fasthttp
     | lprof_fastl4
     | lprof_fix
@@ -640,15 +849,56 @@ lprof_dns
   (
     NEWLINE
     (
-      lprof_dns_defaults_from
+      lprof_dns_app_service_null
+      | lprof_dns_defaults_from
+      | lprof_dns_log_profile_null
+      | lprof_dns_setting_null
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
+lprof_dns_app_service_null
+:
+  APP_SERVICE structure_name NEWLINE
+;
+
 lprof_dns_defaults_from
 :
   DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_dns_log_profile_null
+:
+  LOG_PROFILE structure_name NEWLINE
+;
+
+lprof_dns_setting_null
+:
+  WORD_ID (uint16 | word_id) NEWLINE
+;
+
+lprof_dns_logging
+:
+  DNS_LOGGING name = structure_name BRACE_LEFT
+  (
+    NEWLINE
+    (
+      ldns_log_publisher_null
+      | ldns_setting_null
+      | unrecognized
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+ldns_log_publisher_null
+:
+  LOG_PUBLISHER structure_name NEWLINE
+;
+
+ldns_setting_null
+:
+  WORD_ID word_id NEWLINE
 ;
 
 lprof_fasthttp
@@ -708,10 +958,50 @@ lprof_ftp
   (
     NEWLINE
     (
-      lprof_ftp_defaults_from
+      lprof_app_service
+      | lprof_ftp_allow_ftps
+      | lprof_ftp_defaults_from
+      | lprof_ftp_log_profile
+      | lprof_ftp_log_publisher
+      | lprof_ftp_port
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+lprof_ftp_allow_ftps
+:
+  WORD_ID (ENABLED | DISABLED) NEWLINE
+;
+
+lprof_ftp_log_profile
+:
+  LOG_PROFILE structure_name NEWLINE
+;
+
+lprof_ftp_log_publisher
+:
+  LOG_PUBLISHER structure_name NEWLINE
+;
+
+lprof_ftp_port
+:
+  PORT uint NEWLINE
+;
+
+lprof_ftp_defaults_from
+:
+  DEFAULTS_FROM name = structure_name NEWLINE
+;
+
+lprof_app_service
+:
+  APP_SERVICE structure_name NEWLINE
+;
+
+lprof_ftp_allow_ftps
+:
+  WORD_ID (ENABLED | DISABLED) NEWLINE
 ;
 
 lprof_ftp_defaults_from
@@ -1193,7 +1483,8 @@ lprof_server_ssl
   (
     NEWLINE
     (
-      lprof_server_ssl_defaults_from
+      lprof_app_service
+      | lprof_server_ssl_defaults_from
       | lprof_server_ssl_null
       | unrecognized
     )*
@@ -1520,13 +1811,25 @@ l_snat
   (
     NEWLINE
     (
-      ls_origins
+      ls_automap
+      | ls_origins
       | ls_snatpool
+      | ls_translation
       | ls_vlans
       | ls_vlans_disabled
       | ls_vlans_enabled
     )*
   )? BRACE_RIGHT NEWLINE
+;
+
+ls_translation
+:
+  TRANSLATION structure_name NEWLINE
+;
+
+ls_automap
+:
+  AUTOMAP NEWLINE
 ;
 
 ls_origins
@@ -1593,6 +1896,7 @@ l_snat_translation
     (
       lst_address
       | lst_address6
+      | lst_inherited_traffic_group
       | lst_traffic_group
       | unrecognized
     )*
@@ -1607,6 +1911,11 @@ lst_address
 lst_address6
 :
   ADDRESS address6 = ipv6_address NEWLINE
+;
+
+lst_inherited_traffic_group
+:
+  INHERITED_TRAFFIC_GROUP value = word NEWLINE
 ;
 
 lst_traffic_group
@@ -1649,8 +1958,11 @@ l_virtual
       | lv_destination
       | lv_disabled
       | lv_enabled
+      | lv_fw_enforced_policy
       | lv_ip_forward
       | lv_ip_protocol
+      | lv_creation_time
+      | lv_last_modified_time
       | lv_mask
       | lv_mask6
       | lv_persist
@@ -1658,9 +1970,13 @@ l_virtual
       | lv_profiles
       | lv_reject
       | lv_rules
+      | lv_security_log_profiles
+      | lv_session
+      | lv_serverssl_use_sni
       | lv_source
       | lv_source6
       | lv_source_address_translation
+      | lv_source_port
       | lv_translate_address
       | lv_translate_port
       | lv_vlans
@@ -1691,6 +2007,11 @@ lv_enabled
   ENABLED NEWLINE
 ;
 
+lv_fw_enforced_policy
+:
+  FW_ENFORCED_POLICY value = structure_name NEWLINE
+;
+
 lv_ip_forward
 :
   IP_FORWARD NEWLINE
@@ -1701,9 +2022,19 @@ lv_ip_protocol
   IP_PROTOCOL ip_protocol NEWLINE
 ;
 
+lv_creation_time
+:
+  CREATION_TIME time = word NEWLINE
+;
+
+lv_last_modified_time
+:
+  LAST_MODIFIED_TIME time = word NEWLINE
+;
+
 lv_mask
 :
-  MASK mask = ip_address NEWLINE
+  MASK (mask = ip_address | ANY) NEWLINE
 ;
 
 lv_mask6
@@ -1723,19 +2054,8 @@ lvp_persistence
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE
-    (
-      lvpp_null
-      | unrecognized
-    )*
+    NEWLINE ignored*
   )? BRACE_RIGHT NEWLINE
-;
-
-lvpp_null
-:
-  (
-    DEFAULT
-  ) ignored
 ;
 
 lv_pool
@@ -1755,7 +2075,7 @@ lv_profiles_profile
 :
   name = structure_name BRACE_LEFT
   (
-    NEWLINE unrecognized*
+    NEWLINE ignored*
   )? BRACE_RIGHT NEWLINE
 ;
 
@@ -1775,6 +2095,33 @@ lv_rules
 lvr_rule
 :
   name = structure_name NEWLINE
+;
+
+lv_security_log_profiles
+:
+  SECURITY_LOG_PROFILES BRACE_LEFT
+  (
+    NEWLINE
+    (
+      lvslp_profile
+      | lvslp_profile_quoted
+    )*
+  )? BRACE_RIGHT NEWLINE
+;
+
+lvslp_profile
+:
+  structure_name NEWLINE
+;
+
+lvslp_profile_quoted
+:
+  DOUBLE_QUOTED_STRING NEWLINE
+;
+
+lv_session
+:
+  SESSION value = word NEWLINE
 ;
 
 lv_source
@@ -1808,6 +2155,11 @@ lvsat_pool
 lvsat_type
 :
   TYPE source_address_translation_type NEWLINE
+;
+
+lv_source_port
+:
+  SOURCE_PORT value = word NEWLINE
 ;
 
 lv_translate_address
@@ -1851,6 +2203,15 @@ lv_vlans_enabled
   VLANS_ENABLED NEWLINE
 ;
 
+lv_serverssl_use_sni
+:
+  SERVERSSL_USE_SNI
+  (
+    DISABLED
+    | ENABLED
+  ) NEWLINE
+;
+
 l_virtual_address
 :
   VIRTUAL_ADDRESS name = structure_name BRACE_LEFT
@@ -1858,21 +2219,45 @@ l_virtual_address
     NEWLINE
     (
       lva_address
+      | lva_address_any
       | lva_address6
       | lva_arp
       | lva_icmp_echo
+      | lva_inherited_traffic_group
       | lva_mask
+      | lva_mask_any
       | lva_mask6
       | lva_route_advertisement
+      | lva_spanning
       | lva_traffic_group
       | unrecognized
     )*
   )? BRACE_RIGHT NEWLINE
 ;
 
+lva_route_advertisement
+:
+  ROUTE_ADVERTISEMENT ramode = route_advertisement_mode NEWLINE
+;
+
+lva_spanning
+:
+  SPANNING (ENABLED | DISABLED) NEWLINE
+;
+
+lva_route_advertisement
+:
+  ROUTE_ADVERTISEMENT ramode = route_advertisement_mode NEWLINE
+;
+
 lva_address
 :
   ADDRESS address = ip_address NEWLINE
+;
+
+lva_address_any
+:
+  ADDRESS ANY NEWLINE
 ;
 
 lva_address6
@@ -1903,9 +2288,23 @@ lva_mask
   MASK mask = ip_address NEWLINE
 ;
 
+lva_mask_any
+:
+  MASK ANY NEWLINE
+;
+
 lva_mask6
 :
   MASK mask6 = ipv6_address NEWLINE
+;
+
+lva_inherited_traffic_group
+:
+  INHERITED_TRAFFIC_GROUP
+  (
+    TRUE
+    | FALSE
+  ) NEWLINE
 ;
 
 lva_route_advertisement
@@ -1922,8 +2321,12 @@ s_ltm
 :
   LTM
   (
-    l_data_group
+    l_auth
+    | l_classification_settings
+    | l_data_group
+    | l_default_node_monitor
     | l_monitor
+    | l_nat
     | l_node
     | l_null
     | l_persistence
@@ -1957,5 +2360,7 @@ route_advertisement_mode
 
 source_address_translation_type
 :
-  SNAT
+  AUTOMAP
+  | LSN
+  | SNAT
 ;

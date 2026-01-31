@@ -1,0 +1,17 @@
+#TMSH-VERSION: 15.1.10.3
+
+sys global-settings {
+    hostname dc1-bigip
+}
+
+sys log-config destination management-port /Common/SYSLOG-MGMT-PORT {
+}
+
+sys log-config destination remote-syslog /Common/logging_formatted_DC1 {
+    format rfc5424
+    remote-high-speed-log /Common/logging_DC1
+}
+
+security scrubber profile /Common/scrubber-profile-default {
+    advertisement-ttl 300
+}

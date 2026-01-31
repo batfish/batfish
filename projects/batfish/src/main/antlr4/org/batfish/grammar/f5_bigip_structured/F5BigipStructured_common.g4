@@ -85,7 +85,7 @@ structure_name_with_port
   )
 ;
 
-/* 
+/*
  * An ignored fragment of syntax.
  * Must always be preceded by at least one token on line in which it appears.
  */
@@ -93,7 +93,6 @@ ignored
 :
   u_word* list? NEWLINE
 ;
-
 
 /* An unrecognized fragment of syntax. When used, MUST be LAST alternative */
 unrecognized
@@ -128,6 +127,14 @@ uint32
   UINT16
   | UINT32
   | VLAN_ID
+;
+
+uint
+:
+  UINT16
+  | UINT32
+  | VLAN_ID
+  | UNIT_ID
 ;
 
 vlan_id
