@@ -97,7 +97,7 @@ public class VendorFamily implements Serializable {
     return _f5Bigip;
   }
 
-  @JsonIgnore
+  @JsonProperty(PROP_HUAWEI)
   public HuaweiFamily getHuawei() {
     return _huawei;
   }
@@ -141,7 +141,7 @@ public class VendorFamily implements Serializable {
   @JsonProperty(PROP_F5_BIGIP)
   private void setF5BigipDeprecated(JsonNode ignored) {}
 
-  @JsonIgnore
+  @JsonProperty(PROP_HUAWEI)
   public void setHuawei(HuaweiFamily huawei) {
     _huawei = huawei;
   }
