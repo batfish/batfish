@@ -26,6 +26,7 @@ public enum ConfigurationFormat {
   FORTIOS("fortios"),
   FOUNDRY("foundry"),
   HOST("host"),
+  HUAWEI("huawei"),
   IBM_BNT("ibmbnt"),
   IGNORED("ignored"),
   IPTABLES("iptables"),

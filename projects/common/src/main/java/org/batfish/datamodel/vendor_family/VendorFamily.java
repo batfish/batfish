@@ -12,6 +12,7 @@ import org.batfish.datamodel.vendor_family.cisco_nxos.CiscoNxosFamily;
 import org.batfish.datamodel.vendor_family.cisco_xr.CiscoXrFamily;
 import org.batfish.datamodel.vendor_family.cumulus.CumulusFamily;
 import org.batfish.datamodel.vendor_family.f5_bigip.F5BigipFamily;
+import org.batfish.datamodel.vendor_family.huawei.HuaweiFamily;
 import org.batfish.datamodel.vendor_family.juniper.JuniperFamily;
 
 public class VendorFamily implements Serializable {
@@ -23,6 +24,7 @@ public class VendorFamily implements Serializable {
     CISCO_XR,
     CUMULUS,
     F5_BIGIP,
+    HUAWEI,
     JUNIPER,
     UNKNOWN
   }
@@ -32,6 +34,7 @@ public class VendorFamily implements Serializable {
   private static final String PROP_CISCO_NXOS = "cisco_nxos";
   private static final String PROP_CUMULUS = "cumulus";
   @Deprecated private static final String PROP_F5_BIGIP = "f5Bigip";
+  private static final String PROP_HUAWEI = "huawei";
   private static final String PROP_JUNIPER = "juniper";
 
   private static Type toFamilyType(Object family) {
@@ -47,6 +50,8 @@ public class VendorFamily implements Serializable {
       return Type.CUMULUS;
     } else if (family instanceof F5BigipFamily) {
       return Type.F5_BIGIP;
+    } else if (family instanceof HuaweiFamily) {
+      return Type.HUAWEI;
     } else if (family instanceof JuniperFamily) {
       return Type.JUNIPER;
     }
@@ -59,6 +64,7 @@ public class VendorFamily implements Serializable {
   private CiscoXrFamily _ciscoXr;
   private CumulusFamily _cumulus;
   private F5BigipFamily _f5Bigip;
+  private HuaweiFamily _huawei;
   private JuniperFamily _juniper;
 
   @JsonProperty(PROP_AWS)
@@ -89,6 +95,11 @@ public class VendorFamily implements Serializable {
   @JsonIgnore
   public F5BigipFamily getF5Bigip() {
     return _f5Bigip;
+  }
+
+  @JsonProperty(PROP_HUAWEI)
+  public HuaweiFamily getHuawei() {
+    return _huawei;
   }
 
   @JsonProperty(PROP_JUNIPER)
@@ -130,6 +141,11 @@ public class VendorFamily implements Serializable {
   @JsonProperty(PROP_F5_BIGIP)
   private void setF5BigipDeprecated(JsonNode ignored) {}
 
+  @JsonProperty(PROP_HUAWEI)
+  public void setHuawei(HuaweiFamily huawei) {
+    _huawei = huawei;
+  }
+
   @JsonProperty(PROP_JUNIPER)
   public void setJuniper(JuniperFamily juniper) {
     _juniper = juniper;
@@ -138,7 +154,7 @@ public class VendorFamily implements Serializable {
   /** Concatenates all non-null family pointers */
   @Override
   public String toString() {
-    return Stream.of(_aws, _cisco, _ciscoNxos, _ciscoXr, _cumulus, _f5Bigip, _juniper)
+    return Stream.of(_aws, _cisco, _ciscoNxos, _ciscoXr, _cumulus, _f5Bigip, _huawei, _juniper)
         .filter(Objects::nonNull)
         .map(f -> Objects.toString(toFamilyType(f)))
         .collect(Collectors.joining(" "));
