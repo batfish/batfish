@@ -50,8 +50,7 @@ public class HuaweiAcl implements Serializable {
    *
    * @return The ACL name
    */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -69,8 +68,7 @@ public class HuaweiAcl implements Serializable {
    *
    * @return The ACL type
    */
-  @Nonnull
-  public AclType getType() {
+  public @Nonnull AclType getType() {
     return _type;
   }
 
@@ -88,8 +86,7 @@ public class HuaweiAcl implements Serializable {
    *
    * @return A list of ACL lines
    */
-  @Nonnull
-  public List<HuaweiAclLine> getLines() {
+  public @Nonnull List<HuaweiAclLine> getLines() {
     return _lines;
   }
 
@@ -134,8 +131,7 @@ public class HuaweiAcl implements Serializable {
    *
    * @return The VRF name, or null if not applicable
    */
-  @Nullable
-  public String getVrfName() {
+  public @Nullable String getVrfName() {
     return _vrfName;
   }
 

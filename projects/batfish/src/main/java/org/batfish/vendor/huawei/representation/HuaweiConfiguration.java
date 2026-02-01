@@ -87,8 +87,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    * @return The hostname, or null if not set
    */
   @Override
-  @Nullable
-  public String getHostname() {
+  public @Nullable String getHostname() {
     return _hostname;
   }
 
@@ -107,8 +106,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A sorted map of interface names to interface configurations
    */
-  @Nonnull
-  public SortedMap<String, HuaweiInterface> getInterfaces() {
+  public @Nonnull SortedMap<String, HuaweiInterface> getInterfaces() {
     return _interfaces;
   }
 
@@ -127,8 +125,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    * @param name The interface name
    * @return The interface configuration, or null if not found
    */
-  @Nullable
-  public HuaweiInterface getInterface(String name) {
+  public @Nullable HuaweiInterface getInterface(String name) {
     return _interfaces.get(name);
   }
 
@@ -150,8 +147,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A sorted map of VLAN IDs to VLAN configurations
    */
-  @Nonnull
-  public SortedMap<Integer, HuaweiVlan> getVlans() {
+  public @Nonnull SortedMap<Integer, HuaweiVlan> getVlans() {
     return _vlans;
   }
 
@@ -170,8 +166,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    * @param vlanId The VLAN ID
    * @return The VLAN configuration, or null if not found
    */
-  @Nullable
-  public HuaweiVlan getVlan(int vlanId) {
+  public @Nullable HuaweiVlan getVlan(int vlanId) {
     return _vlans.get(vlanId);
   }
 
@@ -193,8 +188,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A list of static routes
    */
-  @Nonnull
-  public List<HuaweiStaticRoute> getStaticRoutes() {
+  public @Nonnull List<HuaweiStaticRoute> getStaticRoutes() {
     return _staticRoutes;
   }
 
@@ -221,8 +215,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A list of NAT rules
    */
-  @Nonnull
-  public List<HuaweiNatRule> getNatRules() {
+  public @Nonnull List<HuaweiNatRule> getNatRules() {
     return _natRules;
   }
 
@@ -249,8 +242,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return The BGP process, or null if not configured
    */
-  @Nullable
-  public HuaweiBgpProcess getBgpProcess() {
+  public @Nullable HuaweiBgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
@@ -268,8 +260,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return The OSPF process, or null if not configured
    */
-  @Nullable
-  public HuaweiOspfProcess getOspfProcess() {
+  public @Nullable HuaweiOspfProcess getOspfProcess() {
     return _ospfProcess;
   }
 
@@ -287,8 +278,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A sorted map of VRF names to VRF configurations
    */
-  @Nonnull
-  public SortedMap<String, HuaweiVrf> getVrfs() {
+  public @Nonnull SortedMap<String, HuaweiVrf> getVrfs() {
     return _vrfs;
   }
 
@@ -319,8 +309,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    *
    * @return A sorted map of ACL names/numbers to ACL configurations
    */
-  @Nonnull
-  public SortedMap<String, HuaweiAcl> getAcls() {
+  public @Nonnull SortedMap<String, HuaweiAcl> getAcls() {
     return _acls;
   }
 
@@ -339,8 +328,7 @@ public class HuaweiConfiguration extends VendorConfiguration implements Serializ
    * @param name The ACL name or number
    * @return The ACL configuration, or null if not found
    */
-  @Nullable
-  public HuaweiAcl getAcl(String name) {
+  public @Nullable HuaweiAcl getAcl(String name) {
     return _acls.get(name);
   }
 

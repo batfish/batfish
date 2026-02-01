@@ -300,8 +300,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   /**
    * Process exit from s_vlan rule - extract VLAN configuration.
    *
-   * <p>Extracts VLAN ID from "vlan <id>" command and creates HuaweiVlan object. For "vlan batch"
-   * commands, creates multiple VLANs.
+   * <p>Extracts VLAN ID from "vlan {@code <id>}" command and creates HuaweiVlan object. For "vlan
+   * batch" commands, creates multiple VLANs.
    */
   @Override
   public void exitS_vlan(S_vlanContext ctx) {
@@ -422,7 +422,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   /**
    * Process exit from if_dot1q_termination rule - extract subinterface VLAN assignment.
    *
-   * <p>Extracts VLAN ID from "dot1q termination vid <vid>" command on subinterfaces.
+   * <p>Extracts VLAN ID from "dot1q termination vid {@code <vid>}" command on subinterfaces.
    */
   @Override
   public void exitIf_dot1q_termination(If_dot1q_terminationContext ctx) {
@@ -1027,7 +1027,8 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   /**
    * Process exit from ospf_network rule - extract OSPF network configuration.
    *
-   * <p>Extracts network prefix and area ID from "network <prefix> area <area-id>" command.
+   * <p>Extracts network prefix and area ID from "network {@code <prefix>} area {@code <area-id>}"
+   * command.
    */
   @Override
   public void exitOspf_network(Ospf_networkContext ctx) {
@@ -1098,7 +1099,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   /**
    * Process exit from vrf_route_distinguisher rule - extract RD value.
    *
-   * <p>Extracts route distinguisher from "route-distinguisher <rd>" command.
+   * <p>Extracts route distinguisher from "route-distinguisher {@code <rd>}" command.
    */
   @Override
   public void exitVrf_route_distinguisher(Vrf_route_distinguisherContext ctx) {

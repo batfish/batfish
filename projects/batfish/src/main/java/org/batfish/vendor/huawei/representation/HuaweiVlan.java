@@ -56,8 +56,7 @@ public class HuaweiVlan implements Serializable {
    *
    * @return The VLAN name, or null if not set
    */
-  @Nullable
-  public String getName() {
+  public @Nullable String getName() {
     return _name;
   }
 
@@ -75,8 +74,7 @@ public class HuaweiVlan implements Serializable {
    *
    * @return The VLAN description, or null if not set
    */
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -94,8 +92,7 @@ public class HuaweiVlan implements Serializable {
    *
    * @return A sorted set of interface names
    */
-  @Nonnull
-  public SortedSet<String> getInterfaces() {
+  public @Nonnull SortedSet<String> getInterfaces() {
     return _interfaces;
   }
 
@@ -122,8 +119,7 @@ public class HuaweiVlan implements Serializable {
    *
    * @return The VLANIF interface name (e.g., "Vlanif100"), or null if not set
    */
-  @Nullable
-  public String getVlanifInterface() {
+  public @Nullable String getVlanifInterface() {
     return _vlanifInterface;
   }
 

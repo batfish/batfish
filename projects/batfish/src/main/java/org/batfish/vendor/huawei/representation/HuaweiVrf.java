@@ -59,8 +59,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The VRF name
    */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -78,8 +77,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The route distinguisher, or null if not set
    */
-  @Nullable
-  public String getRouteDistinguisher() {
+  public @Nullable String getRouteDistinguisher() {
     return _routeDistinguisher;
   }
 
@@ -97,8 +95,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return A map of import route targets
    */
-  @Nonnull
-  public Map<String, Object> getImportRouteTargets() {
+  public @Nonnull Map<String, Object> getImportRouteTargets() {
     return _importRouteTargets;
   }
 
@@ -126,8 +123,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return A map of export route targets
    */
-  @Nonnull
-  public Map<String, Object> getExportRouteTargets() {
+  public @Nonnull Map<String, Object> getExportRouteTargets() {
     return _exportRouteTargets;
   }
 
@@ -155,8 +151,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The description, or null if not set
    */
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -174,8 +169,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return A map of interface names to interface configurations
    */
-  @Nonnull
-  public Map<String, HuaweiInterface> getInterfaces() {
+  public @Nonnull Map<String, HuaweiInterface> getInterfaces() {
     return _interfaces;
   }
 
@@ -203,8 +197,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The BGP process, or null if not configured
    */
-  @Nullable
-  public HuaweiBgpProcess getBgpProcess() {
+  public @Nullable HuaweiBgpProcess getBgpProcess() {
     return _bgpProcess;
   }
 
@@ -222,8 +215,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The OSPF process, or null if not configured
    */
-  @Nullable
-  public HuaweiOspfProcess getOspfProcess() {
+  public @Nullable HuaweiOspfProcess getOspfProcess() {
     return _ospfProcess;
   }
 
@@ -241,8 +233,7 @@ public class HuaweiVrf implements Serializable {
    *
    * @return The address family (IPv4, IPv6, or null for both)
    */
-  @Nullable
-  public String getAddressFamily() {
+  public @Nullable String getAddressFamily() {
     return _addressFamily;
   }
 

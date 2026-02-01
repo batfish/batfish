@@ -63,8 +63,7 @@ public class HuaweiBgpProcess implements Serializable {
    *
    * @return The router ID, or null if not set
    */
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -82,8 +81,7 @@ public class HuaweiBgpProcess implements Serializable {
    *
    * @return A map of neighbor IP addresses to neighbor configurations
    */
-  @Nonnull
-  public Map<Ip, BgpPeerConfig> getNeighbors() {
+  public @Nonnull Map<Ip, BgpPeerConfig> getNeighbors() {
     return _neighbors;
   }
 
@@ -111,8 +109,7 @@ public class HuaweiBgpProcess implements Serializable {
    *
    * @return A map of peer group names to configurations
    */
-  @Nonnull
-  public Map<String, Object> getPeerGroups() {
+  public @Nonnull Map<String, Object> getPeerGroups() {
     return _peerGroups;
   }
 
@@ -130,8 +127,7 @@ public class HuaweiBgpProcess implements Serializable {
    *
    * @return A map of address family names to configurations
    */
-  @Nonnull
-  public Map<String, Object> getAddressFamilies() {
+  public @Nonnull Map<String, Object> getAddressFamilies() {
     return _addressFamilies;
   }
 

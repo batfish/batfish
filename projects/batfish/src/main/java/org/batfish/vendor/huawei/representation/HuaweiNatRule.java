@@ -74,8 +74,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The rule name
    */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -93,8 +92,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The NAT type
    */
-  @Nonnull
-  public NatType getType() {
+  public @Nonnull NatType getType() {
     return _type;
   }
 
@@ -112,8 +110,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The ACL name, or null if not set
    */
-  @Nullable
-  public String getAclName() {
+  public @Nullable String getAclName() {
     return _aclName;
   }
 
@@ -131,8 +128,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The pool name, or null if not set
    */
-  @Nullable
-  public String getPoolName() {
+  public @Nullable String getPoolName() {
     return _poolName;
   }
 
@@ -150,8 +146,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The global IP, or null if not set
    */
-  @Nullable
-  public Ip getGlobalIp() {
+  public @Nullable Ip getGlobalIp() {
     return _globalIp;
   }
 
@@ -169,8 +164,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The global port, or null if not set
    */
-  @Nullable
-  public Integer getGlobalPort() {
+  public @Nullable Integer getGlobalPort() {
     return _globalPort;
   }
 
@@ -188,8 +182,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The inside local IP, or null if not set
    */
-  @Nullable
-  public Ip getInsideLocalIp() {
+  public @Nullable Ip getInsideLocalIp() {
     return _insideLocalIp;
   }
 
@@ -207,8 +200,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The inside local port, or null if not set
    */
-  @Nullable
-  public Integer getInsideLocalPort() {
+  public @Nullable Integer getInsideLocalPort() {
     return _insideLocalPort;
   }
 
@@ -226,8 +218,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The interface name, or null if not set
    */
-  @Nullable
-  public String getInterfaceName() {
+  public @Nullable String getInterfaceName() {
     return _interfaceName;
   }
 
@@ -245,8 +236,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The protocol, or null if not set
    */
-  @Nullable
-  public String getProtocol() {
+  public @Nullable String getProtocol() {
     return _protocol;
   }
 
@@ -264,8 +254,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The VRF name, or null if not set
    */
-  @Nullable
-  public String getVrfName() {
+  public @Nullable String getVrfName() {
     return _vrfName;
   }
 
@@ -283,8 +272,7 @@ public class HuaweiNatRule implements Serializable {
    *
    * @return The list of IP addresses in the pool, or null if not set
    */
-  @Nullable
-  public List<Ip> getAddressPool() {
+  public @Nullable List<Ip> getAddressPool() {
     return _addressPool;
   }
 

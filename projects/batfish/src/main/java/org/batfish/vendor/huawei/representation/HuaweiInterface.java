@@ -62,8 +62,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The interface name
    */
-  @Nonnull
-  public String getName() {
+  public @Nonnull String getName() {
     return _name;
   }
 
@@ -81,8 +80,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The description, or null if not set
    */
-  @Nullable
-  public String getDescription() {
+  public @Nullable String getDescription() {
     return _description;
   }
 
@@ -100,8 +98,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The interface address, or null if not set
    */
-  @Nullable
-  public ConcreteInterfaceAddress getAddress() {
+  public @Nullable ConcreteInterfaceAddress getAddress() {
     return _address;
   }
 
@@ -155,8 +152,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The bandwidth in bps, or null if not set
    */
-  @Nullable
-  public Double getBandwidth() {
+  public @Nullable Double getBandwidth() {
     return _bandwidth;
   }
 
@@ -174,8 +170,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The ACL name, or null if not set
    */
-  @Nullable
-  public String getIncomingFilter() {
+  public @Nullable String getIncomingFilter() {
     return _incomingFilter;
   }
 
@@ -193,8 +188,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return The ACL name, or null if not set
    */
-  @Nullable
-  public String getOutgoingFilter() {
+  public @Nullable String getOutgoingFilter() {
     return _outgoingFilter;
   }
 
@@ -212,8 +206,7 @@ public class HuaweiInterface implements Serializable {
    *
    * @return A sorted set of IP addresses
    */
-  @Nonnull
-  public SortedSet<Ip> getDhcpRelayAddresses() {
+  public @Nonnull SortedSet<Ip> getDhcpRelayAddresses() {
     return _dhcpRelayAddresses;
   }
 

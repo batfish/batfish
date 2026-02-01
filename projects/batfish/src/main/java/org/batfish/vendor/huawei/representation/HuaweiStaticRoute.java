@@ -46,8 +46,7 @@ public class HuaweiStaticRoute implements Serializable {
    *
    * @return The destination prefix
    */
-  @Nonnull
-  public Prefix getDestination() {
+  public @Nonnull Prefix getDestination() {
     return _destination;
   }
 
@@ -65,8 +64,7 @@ public class HuaweiStaticRoute implements Serializable {
    *
    * @return The next hop IP, or null if not set
    */
-  @Nullable
-  public Ip getNextHopIp() {
+  public @Nullable Ip getNextHopIp() {
     return _nextHopIp;
   }
 
@@ -84,8 +82,7 @@ public class HuaweiStaticRoute implements Serializable {
    *
    * @return The interface name, or null if not set
    */
-  @Nullable
-  public String getNextHopInterface() {
+  public @Nullable String getNextHopInterface() {
     return _nextHopInterface;
   }
 
@@ -139,8 +136,7 @@ public class HuaweiStaticRoute implements Serializable {
    *
    * @return The VRF name, or null if in default VRF
    */
-  @Nullable
-  public String getVrfName() {
+  public @Nullable String getVrfName() {
     return _vrfName;
   }
 

@@ -72,8 +72,7 @@ public class HuaweiOspfProcess implements Serializable {
    *
    * @return The router ID, or null if not set
    */
-  @Nullable
-  public Ip getRouterId() {
+  public @Nullable Ip getRouterId() {
     return _routerId;
   }
 
@@ -91,8 +90,7 @@ public class HuaweiOspfProcess implements Serializable {
    *
    * @return A list of network advertisements
    */
-  @Nonnull
-  public List<HuaweiOspfNetwork> getNetworks() {
+  public @Nonnull List<HuaweiOspfNetwork> getNetworks() {
     return _networks;
   }
 
@@ -119,8 +117,7 @@ public class HuaweiOspfProcess implements Serializable {
    *
    * @return A map of area IDs to area configurations
    */
-  @Nonnull
-  public Map<Long, HuaweiOspfArea> getAreas() {
+  public @Nonnull Map<Long, HuaweiOspfArea> getAreas() {
     return _areas;
   }
 
@@ -139,8 +136,7 @@ public class HuaweiOspfProcess implements Serializable {
    * @param areaId The area ID
    * @return The area configuration
    */
-  @Nonnull
-  public HuaweiOspfArea getOrCreateArea(long areaId) {
+  public @Nonnull HuaweiOspfArea getOrCreateArea(long areaId) {
     return _areas.computeIfAbsent(areaId, HuaweiOspfArea::new);
   }
 
@@ -159,8 +155,7 @@ public class HuaweiOspfProcess implements Serializable {
    *
    * @return A map of interface names to configurations
    */
-  @Nonnull
-  public Map<String, HuaweiOspfInterfaceSettings> getInterfaces() {
+  public @Nonnull Map<String, HuaweiOspfInterfaceSettings> getInterfaces() {
     return _interfaces;
   }
 
@@ -206,8 +201,7 @@ public class HuaweiOspfProcess implements Serializable {
    *
    * @return The route map name, or null if not set
    */
-  @Nullable
-  public String getDefaultOriginateRouteMap() {
+  public @Nullable String getDefaultOriginateRouteMap() {
     return _defaultOriginateRouteMap;
   }
 

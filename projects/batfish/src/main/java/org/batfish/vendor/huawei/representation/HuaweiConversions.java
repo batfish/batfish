@@ -53,8 +53,7 @@ public class HuaweiConversions {
    * @param huaweiConfig The Huawei configuration to convert
    * @return A Batfish Configuration object
    */
-  @Nonnull
-  public static Configuration toVendorIndependentConfiguration(
+  public static @Nonnull Configuration toVendorIndependentConfiguration(
       @Nonnull HuaweiConfiguration huaweiConfig) {
     // Create new Configuration object with hostname and format
     Configuration c = new Configuration(huaweiConfig.getHostname(), ConfigurationFormat.HUAWEI);
@@ -115,8 +114,7 @@ public class HuaweiConversions {
    * @param huaweiInterface The Huawei interface to convert
    * @return A Batfish Interface object
    */
-  @Nonnull
-  private static Interface toInterface(
+  private static @Nonnull Interface toInterface(
       @Nonnull String name, @Nonnull HuaweiInterface huaweiInterface) {
     Interface.Builder builder = Interface.builder();
 
@@ -194,8 +192,7 @@ public class HuaweiConversions {
    * @param c The Configuration that owns the interface
    * @return A Batfish Interface object
    */
-  @Nonnull
-  public static Interface toInterface(
+  public static @Nonnull Interface toInterface(
       @Nonnull HuaweiInterface huaweiIface, @Nonnull Vrf vrf, @Nonnull Configuration c) {
     String name = huaweiIface.getName();
     // Use builder pattern
@@ -257,8 +254,7 @@ public class HuaweiConversions {
    * @param interfaceName The Huawei interface name
    * @return The corresponding Batfish InterfaceType
    */
-  @Nonnull
-  private static InterfaceType getInterfaceType(@Nonnull String interfaceName) {
+  private static @Nonnull InterfaceType getInterfaceType(@Nonnull String interfaceName) {
     // Check for subinterfaces (contain a dot with number after)
     if (interfaceName.contains(".")) {
       String[] parts = interfaceName.split("\\\\.");
@@ -531,8 +527,7 @@ public class HuaweiConversions {
    * @param huaweiAcl The Huawei ACL to convert
    * @return A Batfish IpAccessList
    */
-  @Nonnull
-  private static IpAccessList toIpAccessList(@Nonnull HuaweiAcl huaweiAcl) {
+  private static @Nonnull IpAccessList toIpAccessList(@Nonnull HuaweiAcl huaweiAcl) {
     // Convert each ACL line to ExprAclLine
     ImmutableList.Builder<AclLine> linesBuilder = ImmutableList.builder();
     for (HuaweiAclLine huaweiLine : huaweiAcl.getLines()) {
@@ -556,8 +551,7 @@ public class HuaweiConversions {
    * @param huaweiLine The Huawei ACL line to convert
    * @return A Batfish ExprAclLine, or null if conversion fails
    */
-  @Nullable
-  private static ExprAclLine toAclLine(@Nonnull HuaweiAclLine huaweiLine) {
+  private static @Nullable ExprAclLine toAclLine(@Nonnull HuaweiAclLine huaweiLine) {
     // Convert action (permit/deny)
     LineAction action;
     String actionStr = huaweiLine.getAction().toLowerCase();
@@ -652,8 +646,7 @@ public class HuaweiConversions {
    * @param prefixStr The prefix string to parse
    * @return A Prefix object, or null if parsing fails
    */
-  @Nullable
-  private static Prefix parsePrefix(@Nonnull String prefixStr) {
+  private static @Nullable Prefix parsePrefix(@Nonnull String prefixStr) {
     try {
       // Try CIDR notation first (e.g., "10.1.1.0/24")
       if (prefixStr.contains("/")) {
@@ -690,8 +683,7 @@ public class HuaweiConversions {
    * @param portSpec The port specification string
    * @return A SubRange representing the ports, or null if parsing fails
    */
-  @Nullable
-  private static SubRange parsePortSpecToSubRange(@Nonnull String portSpec) {
+  private static @Nullable SubRange parsePortSpecToSubRange(@Nonnull String portSpec) {
     try {
       String spec = portSpec.trim().toLowerCase();
 
@@ -738,8 +730,7 @@ public class HuaweiConversions {
    * @param protocol The protocol string (e.g., "tcp", "udp", "icmp", "ip")
    * @return An IpProtocol object, or null if unknown
    */
-  @Nullable
-  private static IpProtocol toIpProtocol(@Nonnull String protocol) {
+  private static @Nullable IpProtocol toIpProtocol(@Nonnull String protocol) {
     String proto = protocol.toLowerCase().trim();
     switch (proto) {
       case "tcp":
@@ -852,8 +843,7 @@ public class HuaweiConversions {
    * @return A Batfish OspfArea
    */
   @SuppressWarnings("unused") // Configuration parameter will be used in future implementation
-  @Nonnull
-  private static OspfArea toOspfArea(
+  private static @Nonnull OspfArea toOspfArea(
       @Nonnull HuaweiOspfProcess.HuaweiOspfArea huaweiArea, @Nonnull Configuration c) {
 
     OspfArea.Builder builder = OspfArea.builder();

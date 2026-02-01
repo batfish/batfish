@@ -62,8 +62,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The action
    */
-  @Nonnull
-  public String getAction() {
+  public @Nonnull String getAction() {
     return _action;
   }
 
@@ -81,8 +80,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The protocol (tcp, udp, icmp, ip, etc.)
    */
-  @Nullable
-  public String getProtocol() {
+  public @Nullable String getProtocol() {
     return _protocol;
   }
 
@@ -100,8 +98,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The source address
    */
-  @Nullable
-  public String getSource() {
+  public @Nullable String getSource() {
     return _source;
   }
 
@@ -119,8 +116,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The source port
    */
-  @Nullable
-  public String getSourcePort() {
+  public @Nullable String getSourcePort() {
     return _sourcePort;
   }
 
@@ -138,8 +134,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The destination address
    */
-  @Nullable
-  public String getDestination() {
+  public @Nullable String getDestination() {
     return _destination;
   }
 
@@ -157,8 +152,7 @@ public class HuaweiAclLine implements Serializable {
    *
    * @return The destination port
    */
-  @Nullable
-  public String getDestinationPort() {
+  public @Nullable String getDestinationPort() {
     return _destinationPort;
   }
 
