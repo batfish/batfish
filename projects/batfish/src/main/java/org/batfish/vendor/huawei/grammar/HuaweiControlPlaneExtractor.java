@@ -59,7 +59,6 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   private final String _text;
   private final HuaweiCombinedParser _parser;
   private final Warnings _w;
-  private final SilentSyntaxCollection _silentSyntax;
   private String _currentInterfaceName;
   private HuaweiAcl _currentAcl;
   private HuaweiVrf _currentVrf;
@@ -71,7 +70,6 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     _text = text;
     _parser = parser;
     _w = w;
-    _silentSyntax = silentSyntax;
     _configuration = new HuaweiConfiguration();
     _currentInterfaceName = null;
     _currentAcl = null;
@@ -436,11 +434,11 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     }
 
     try {
-      int vid = Integer.parseInt(ctx.vid.getText());
       // Store the VLAN ID for this subinterface
       // This can be used later to associate the subinterface with a VLAN
       // For now, we just note it - the actual VLAN-to-subinterface mapping
       // will be done during conversion to Batfish model
+      Integer.parseInt(ctx.vid.getText());
     } catch (NumberFormatException e) {
       String warning =
           String.format(
@@ -620,12 +618,11 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
     }
 
     try {
-      Ip peerIp = Ip.parse(ctx.peer_ip.getText());
-      long peerAs = Long.parseLong(ctx.peer_as.getText());
-
       // Store peer info in a simple map for now (Phase 5)
       // Full BGP conversion will be implemented in future phases
       // For now, we just track that BGP is configured with peers
+      Ip.parse(ctx.peer_ip.getText());
+      Long.parseLong(ctx.peer_as.getText());
 
     } catch (Exception e) {
       String warning =
@@ -691,6 +688,7 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
    *
    * <p>Extracts ACL rule information including action, protocol, source, destination, and ports.
    */
+  @Override
   public void exitAcl_rule(HuaweiParser.Acl_ruleContext ctx) {
     if (_currentAcl == null) {
       return;
@@ -862,13 +860,13 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
         HuaweiNatRule natRule = new HuaweiNatRule(ruleName, NatType.STATIC);
 
         // Extract global IP (first IP address)
-        if (ctx.ip_address() != null && ctx.ip_address().size() > 0) {
+        if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
           Ip globalIp = Ip.parse(ctx.ip_address(0).getText());
           natRule.setGlobalIp(globalIp);
         }
 
         // Extract inside IP (second IP address)
-        if (ctx.ip_address() != null && ctx.ip_address().size() > 1) {
+        if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
           Ip insideIp = Ip.parse(ctx.ip_address(1).getText());
           natRule.setInsideLocalIp(insideIp);
         }
@@ -912,21 +910,21 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
           }
 
           // Extract IPs
-          if (ctx.ip_address() != null && ctx.ip_address().size() > 0) {
+          if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
             Ip globalIp = Ip.parse(ctx.ip_address(0).getText());
             natRule.setGlobalIp(globalIp);
           }
-          if (ctx.ip_address() != null && ctx.ip_address().size() > 1) {
+          if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
             Ip insideIp = Ip.parse(ctx.ip_address(1).getText());
             natRule.setInsideLocalIp(insideIp);
           }
         } else {
           // No protocol - check for simple IP mapping or single port
-          if (ctx.ip_address() != null && ctx.ip_address().size() > 0) {
+          if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
             Ip globalIp = Ip.parse(ctx.ip_address(0).getText());
             natRule.setGlobalIp(globalIp);
           }
-          if (ctx.ip_address() != null && ctx.ip_address().size() > 1) {
+          if (ctx.ip_address() != null && !ctx.ip_address().isEmpty()) {
             Ip insideIp = Ip.parse(ctx.ip_address(1).getText());
             natRule.setInsideLocalIp(insideIp);
           }
