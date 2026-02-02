@@ -464,22 +464,226 @@ public class BgpTopologyUtilsTest {
     assertPair(1L, 3L, LongSpace.of(4), 4L, null, LongSpace.of(5), null);
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(5), null);
 
-    // One peer implicitly matches other's confed, they shares same AS
+    // One peer with confed peers with non-confed peer with same AS.
+    // Per RFC 5065, a peer without confederation config is NOT part of the confederation.
+    // This should be ACROSS_CONFED_BORDER since the non-confed peer must peer with the
+    // confed ID.
     assertPair(
         1L,
         3L,
         LongSpace.of(1L),
         1L,
         null,
-        LongSpace.of(1L),
-        new AsPair(1, 1, ConfedSessionType.WITHIN_CONFED));
-    // One peer implicitly matches other's confed, but remote ASN doesn't overlap local AS
+        LongSpace.of(3L),
+        new AsPair(3, 1, ConfedSessionType.ACROSS_CONFED_BORDER));
+    // No session: non-confed peer expects member AS, but confed peer can only use confed ID
+    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(1L), null);
+    // No session: non-confed peer doesn't have confed ID in remote ASNs
     assertPair(1L, 3L, LongSpace.of(2L), 1L, null, LongSpace.of(1L), null);
-    assertPair(1L, 3L, LongSpace.of(1L), 1L, null, LongSpace.of(2L), null);
+    assertPair(1L, 3L, LongSpace.of(3L), 1L, null, LongSpace.of(2L), null);
 
     // Compatible when ignoring confederations, but incompatible because non-matching confederations
     // are present
     assertPair(1L, 3L, LongSpace.of(4), 4L, 9L, LongSpace.of(1), null);
+  }
+
+  @Test
+  public void testComputeAsPair_issue9263() {
+    // Test case for GitHub issue #9263:
+    // R1: router bgp 3001, bgp confederation identifier 30, neighbor 4.0.0.3 remote-as 3001
+    // R2: router bgp 3001, neighbor 4.0.0.2 remote-as 30
+    // Expected: EBGP session between AS 30 and AS 3001 (ACROSS_CONFED_BORDER)
+    // Since R2 has no confederation config, it is NOT part of the confederation.
+    // R1 must use its confederation ID (30) when peering with R2.
+    assertPair(
+        3001L, // R1 (initiator): localAs (member-AS)
+        30L, // R1 (initiator): confed ID
+        LongSpace.of(3001L), // R1's remote ASNs (peering with member AS)
+        3001L, // R2 (listener): localAs
+        null, // R2 (listener): NO confederation configured
+        LongSpace.of(30L), // R2's remote ASNs (peering with confed ID)
+        new AsPair(30, 3001, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Same scenario but reversed: R2 initiates to R1
+    assertPair(
+        3001L, // R2 (initiator): localAs (NO confederation)
+        null, // R2 (initiator): NO confederation
+        LongSpace.of(30L), // R2's remote ASNs (peering with confed ID)
+        3001L, // R1 (listener): localAs (member-AS)
+        30L, // R1 (listener): confed ID
+        LongSpace.of(3001L), // R1's remote ASNs
+        new AsPair(3001, 30, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  @Test
+  public void testComputeAsPair_confederationEdgeCases() {
+    // Both peers in same confederation, different member ASes
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1002L),
+        1002L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1002, ConfedSessionType.WITHIN_CONFED));
+
+    // Both peers in different confederations - must use confed IDs
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(200L),
+        2001L,
+        200L,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Peer with confed tries to peer with non-confed peer using member AS (should fail)
+    assertPair(
+        3001L,
+        30L,
+        LongSpace.of(3001L), // Trying to peer with member AS
+        3001L,
+        null,
+        LongSpace.of(3001L), // But peer expects member AS
+        null); // No session - non-confed peer must expect confed ID
+
+    // Non-confed peer peers with multiple ASes, including confed ID
+    assertPair(
+        3001L,
+        30L,
+        LongSpace.builder().including(3001L).including(4000L).build(),
+        4000L,
+        null,
+        LongSpace.of(30L),
+        new AsPair(30, 4000, ConfedSessionType.ACROSS_CONFED_BORDER));
+  }
+
+  @Test
+  public void testComputeAsPair_confederationComprehensive() {
+    // Test all combinations of confederation configurations
+
+    // ===== Both peers in SAME confederation =====
+    // Same member AS - IBGP within same member AS
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1001, ConfedSessionType.WITHIN_CONFED));
+
+    // Different member ASes, same confed - IBGP within confederation
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1002L),
+        1002L,
+        100L,
+        LongSpace.of(1001L),
+        new AsPair(1001, 1002, ConfedSessionType.WITHIN_CONFED));
+
+    // ===== Both peers in DIFFERENT confederations =====
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(200L),
+        2001L,
+        200L,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // ===== One peer in confederation, other NOT =====
+    // Non-confed peer expects confed ID - should work (ACROSS_CONFED_BORDER)
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(2000L),
+        2000L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Non-confed peer expects member AS (not confed ID) - NO SESSION
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(1001L),
+        1001L,
+        null,
+        LongSpace.of(1001L),
+        null); // No session: initiator uses confed ID externally, not member AS
+
+    // Non-confed peer expects different AS - NO SESSION
+    assertPair(
+        1001L, 100L, LongSpace.of(3000L), 2000L, null, LongSpace.of(4000L), null); // AS mismatch
+
+    // ===== Neither peer in confederation =====
+    // Standard IBGP
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(100L),
+        100L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 100, ConfedSessionType.NO_CONFED));
+
+    // Standard EBGP
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(200L),
+        200L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 200, ConfedSessionType.NO_CONFED));
+
+    // AS mismatch
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(200L),
+        300L,
+        null,
+        LongSpace.of(100L),
+        null); // No session: AS mismatch
+
+    // ===== Edge case: member AS equals confed ID of other peer =====
+    // Peer A: localAs=100, confed=null
+    // Peer B: localAs=100, confed=200
+    // Peer A expects to peer with AS=100 (which is B's member AS)
+    // But B has confed, so B will use confed ID (200) externally
+    // Result: NO SESSION because A expects 100 but B uses 200
+    assertPair(
+        100L,
+        null,
+        LongSpace.of(100L),
+        100L,
+        200L,
+        LongSpace.of(100L),
+        null); // No session: non-confed peer expects member AS, but confed peer uses confed ID
+
+    // ===== Edge case: ALL_AS_NUMBERS =====
+    // Confed peer with ALL_AS_NUMBERS to non-confed peer
+    assertPair(
+        1001L,
+        100L,
+        ALL_AS_NUMBERS,
+        2000L,
+        null,
+        LongSpace.of(100L),
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
+
+    // Non-confed peer with ALL_AS_NUMBERS to confed peer
+    assertPair(
+        1001L,
+        100L,
+        LongSpace.of(2000L),
+        2000L,
+        null,
+        ALL_AS_NUMBERS,
+        new AsPair(100, 2000, ConfedSessionType.ACROSS_CONFED_BORDER));
   }
 
   @Test
