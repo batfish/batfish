@@ -1,0 +1,19 @@
+!RANCID-CONTENT-TYPE: arista
+!
+hostname arista_bgp_vrf_evpn_route_target
+!
+router bgp 1
+  router-id 1.2.3.4
+  vrf EVPN_VRF
+    rd 100:100
+    route-target import evpn 10:10
+    route-target export evpn 20:20
+    local-as 65000
+  vrf NON_EVPN_VRF
+    rd 200:200
+    route-target export 30:30
+    route-target import 40:40
+    local-as 65001
+!
+vrf instance EVPN_VRF
+vrf instance NON_EVPN_VRF

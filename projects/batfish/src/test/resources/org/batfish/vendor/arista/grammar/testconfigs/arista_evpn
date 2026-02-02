@@ -108,8 +108,8 @@ router bgp 65101
    !
    vrf Tenant_A_OPZone
       rd 192.168.255.3:50101
-      route-target import 50101:50101
-      route-target export 50101:50101
+      route-target import evpn 50101:50101
+      route-target export evpn 50101:50101
       redistribute connected
    !
    vrf Tenant_B_OPZone

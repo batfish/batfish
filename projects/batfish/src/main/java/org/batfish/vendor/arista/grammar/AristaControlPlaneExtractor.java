@@ -3555,7 +3555,7 @@ public class AristaControlPlaneExtractor extends AristaParserBaseListener
 
   @Override
   public void exitEos_rbv_route_target(Eos_rbv_route_targetContext ctx) {
-    if (ctx.EVPN() == null && ctx.p != null) {
+    if (ctx.EVPN() == null) {
       warn(ctx, "Only EVPN is supported");
       return;
     }

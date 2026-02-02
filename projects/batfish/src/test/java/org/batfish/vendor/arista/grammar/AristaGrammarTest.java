@@ -2293,8 +2293,9 @@ public class AristaGrammarTest {
       AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("FOO");
       assertThat(vrf.getBestpathAsPathMultipathRelax(), equalTo(Boolean.TRUE));
       assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("123:123")));
-      assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(1L, 1L)));
-      assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(2L, 2L)));
+      // route-target without "evpn" keyword is not supported (only EVPN is supported)
+      assertThat(vrf.getExportRouteTarget(), nullValue());
+      assertThat(vrf.getImportRouteTarget(), nullValue());
       assertThat(vrf.getLocalAs(), equalTo(65000L));
       assertThat(vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.ROUTER_ID));
       assertThat(vrf.getClusterId(), nullValue());
@@ -2305,6 +2306,28 @@ public class AristaGrammarTest {
       assertThat(
           vrf.getBestpathTieBreaker(), equalTo(AristaBgpBestpathTieBreaker.CLUSTER_LIST_LENGTH));
       assertThat(vrf.getClusterId(), nullValue());
+    }
+  }
+
+  @Test
+  public void testVrfEvpnRouteTargetExtraction() {
+    AristaConfiguration config = parseVendorConfig("arista_bgp_vrf_evpn_route_target");
+    {
+      // VRF with "route-target import evpn" and "route-target export evpn" should have both set
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("EVPN_VRF");
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("100:100")));
+      assertThat(vrf.getImportRouteTarget(), equalTo(ExtendedCommunity.target(10L, 10L)));
+      assertThat(vrf.getExportRouteTarget(), equalTo(ExtendedCommunity.target(20L, 20L)));
+      assertThat(vrf.getLocalAs(), equalTo(65000L));
+    }
+    {
+      // VRF with "route-target import" and "route-target export" WITHOUT "evpn" should have both
+      // null
+      AristaBgpVrf vrf = config.getAristaBgp().getVrfs().get("NON_EVPN_VRF");
+      assertThat(vrf.getRouteDistinguisher(), equalTo(RouteDistinguisher.parse("200:200")));
+      assertThat(vrf.getImportRouteTarget(), nullValue());
+      assertThat(vrf.getExportRouteTarget(), nullValue());
+      assertThat(vrf.getLocalAs(), equalTo(65001L));
     }
   }
 
