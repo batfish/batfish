@@ -826,38 +826,28 @@ public final class BgpTopologyUtils {
         }
       }
     }
-    // Initiator is inside a confederation
+    // Initiator is inside a confederation, but listener is not
     if (initiatorConfed != null) {
-      // Initiator and listener are in the same AS, so they're in the same confederation
-      if (initiatorLocalAs.equals(listenerLocalAs)) {
-        if (listenerRemoteAsns.contains(initiatorLocalAs)
-            && initiatorRemoteAsns.contains(listenerLocalAs)) {
-          return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.WITHIN_CONFED);
-        } else {
-          return null;
-        }
-      } else if (listenerRemoteAsns.contains(initiatorConfed)
+      // Listener is not in a confederation, so this is across the confederation border if the
+      // listener is configured to peer with the initiator's confederation ID. Both peers must
+      // agree on the AS numbers: the initiator uses its confederation ID externally, and the
+      // listener uses its local AS (or confederation ID if it has one, but it doesn't here).
+      if (listenerRemoteAsns.contains(initiatorConfed)
           && initiatorRemoteAsns.contains(listenerLocalAs)) {
         return new AsPair(initiatorConfed, listenerLocalAs, ConfedSessionType.ACROSS_CONFED_BORDER);
       } else {
         return null;
       }
     } else {
-      // Listener is inside a confederation
-      // Initiator and listener are in the same AS, so they're in the same confederation
-      if (initiatorLocalAs.equals(listenerLocalAs)) {
-        if (listenerRemoteAsns.contains(initiatorLocalAs)
-            && initiatorRemoteAsns.contains(listenerLocalAs)) {
-          return new AsPair(initiatorLocalAs, listenerLocalAs, ConfedSessionType.WITHIN_CONFED);
-        } else {
-          return null;
-        }
-      } else if (listenerRemoteAsns.contains(initiatorLocalAs)
+      // Listener is inside a confederation, but initiator is not
+      // Similar to above: initiator must be configured to peer with listener's confederation ID
+      if (listenerRemoteAsns.contains(initiatorLocalAs)
           && initiatorRemoteAsns.contains(listenerConfed)) {
         return new AsPair(initiatorLocalAs, listenerConfed, ConfedSessionType.ACROSS_CONFED_BORDER);
+      } else {
+        return null;
       }
     }
-    return null;
   }
 
   /** Whether the session is within a confederation (or across its border), if applicable */
