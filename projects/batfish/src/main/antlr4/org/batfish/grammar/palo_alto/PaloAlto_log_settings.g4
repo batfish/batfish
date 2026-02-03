@@ -57,7 +57,8 @@ sl_syslog
     SYSLOG name = variable
     (
         sls_server
-    )?
+        | slss_format
+    )*
 ;
 
 sl_system
@@ -120,10 +121,49 @@ slss_facility
 
 slss_format
 :
-    FORMAT format = (BSD | IETF)
+    // Special case: format escaping escaped-characters <value> | format escaping escape-character <value>
+    FORMAT ESCAPING (ESCAPED_CHARACTERS | ESCAPE_CHARACTER) esc_value = variable
+    // CEF format fields: format config "...", format system "...", etc.
+    | FORMAT field_name = variable field_value = variable
+    // Flat format: FORMAT (BSD | IETF) (ESCAPING ESCAPED_CHARACTERS variable)?
+    | FORMAT format = (BSD | IETF)
     (
-        ESCAPING ESCAPED_CHARACTERS escaped_character = variable
+        ESCAPING ESCAPED_CHARACTERS escaped_chars = variable
+        | ESCAPING ESCAPE_CHARACTER escape_char = variable
     )?
+    // Nested format: FORMAT { slss_format_block* }
+    | FORMAT OPEN_BRACE slss_format_block* CLOSE_BRACE
+;
+
+slss_format_block
+:
+    slss_format_escaping
+    | slss_format_quoted_field
+;
+
+slss_format_escaping
+:
+    ESCAPING OPEN_BRACE
+    (
+        slss_format_escaped_characters
+        | slss_format_escape_character
+    )+
+    CLOSE_BRACE
+;
+
+slss_format_escaped_characters
+:
+    ESCAPED_CHARACTERS escaped_val = variable SEMICOLON
+;
+
+slss_format_escape_character
+:
+    ESCAPE_CHARACTER escape_val = variable SEMICOLON
+;
+
+slss_format_quoted_field
+:
+    field_name = variable field_value = variable SEMICOLON
 ;
 
 slss_from
