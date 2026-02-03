@@ -1,0 +1,4 @@
+# Test set config with log-settings format
+set config shared log-settings syslog test-profile format escaping escaped-characters \=
+set config shared log-settings syslog test-profile format escaping escape-character \
+set deviceconfig system hostname set-config-log-settings-format
