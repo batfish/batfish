@@ -267,7 +267,8 @@ sniel2_units
 sniel3_common
 :
     (
-        sniel3_adjust_tcp_mss_null
+        sniel3_adjust_tcp_mss
+        | sniel3_interface_management_profile
         | sniel3_ip
         | sniel3_ipv6
         | sniel3_lldp
@@ -307,15 +308,14 @@ sniel3_ndp_proxy
     NDP_PROXY (ENABLE | ENABLED)? yn = yes_or_no
 ;
 
-sniel3_adjust_tcp_mss_null
+sniel3_adjust_tcp_mss
 :
-    ADJUST_TCP_MSS OPEN_BRACE CLOSE_BRACE
-    | ADJUST_TCP_MSS OPEN_BRACE sls_adjust_tcp_mss_block CLOSE_BRACE
+    ADJUST_TCP_MSS (ENABLE | ENABLED)? yn = yes_or_no
 ;
 
-sls_adjust_tcp_mss_block
+sniel3_interface_management_profile
 :
-    ENABLE yn = yes_or_no SEMICOLON
+    INTERFACE_MANAGEMENT_PROFILE profile = variable
 ;
 
 sniel3_ipv6
@@ -386,6 +386,8 @@ sniv_unit
     name = variable
     (
         if_common
+        | sniel3_adjust_tcp_mss
+        | sniel3_interface_management_profile
         | sniel3_ip
         | sniel3_ipv6
         | sniel3_ndp_proxy
