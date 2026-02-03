@@ -252,10 +252,15 @@ sniel2_unit
     )*
 ;
 
+sniel2_lldp
+:
+    LLDP ENABLE yn = yes_or_no
+;
+
 sniel2_units
 :
     UNITS sniel2_unit?
-    | sniel3_lldp
+    | sniel2_lldp
 ;
 
 // Common syntax between layer3 interfaces and subinterfaces (units)
