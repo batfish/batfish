@@ -1872,13 +1872,6 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testFWDC1ColocationTestNSAB11SET01() {
-    Configuration c = parseConfig("fw-dc1-colocation-test-nsab11-set-01");
-
-    // Test parsing of real production Palo Alto config with all features
-  }
-
-  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 

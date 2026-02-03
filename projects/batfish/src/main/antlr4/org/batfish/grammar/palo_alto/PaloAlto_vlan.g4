@@ -8,5 +8,19 @@ options {
 
 sn_vlan
 :
-    VLAN
+    VLAN vlan_id = variable?
+    (
+        sn_vlan_interface
+        | sn_vlan_virtual_interface
+    )*
+;
+
+sn_vlan_interface
+:
+    INTERFACE iface = variable
+;
+
+sn_vlan_virtual_interface
+:
+    VIRTUAL_INTERFACE INTERFACE iface = variable
 ;
