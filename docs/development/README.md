@@ -46,7 +46,15 @@ Batfish uses Bazel as its build system. Key commands:
 ## Getting Started
 
 - [Building and Running](../building_and_running/README.md): Instructions for building and running Batfish
-- [Contributing](contributing/README.md): Guidelines for contributing to Batfish
+- [Contributing](../contributing/README.md): Guidelines for contributing to Batfish
+- [PR Preparation Guide](pr_preparation.md): Step-by-step guide for preparing pull requests
+
+## Development Documentation
+
+- [Coding Standards](coding_standards.md): Style guidelines and best practices
+- [Testing Guide](testing_guide.md): Comprehensive testing information
+- [BDD Best Practices](bdd_best_practices.md): Working with Binary Decision Diagrams
+- [Git Workflow](git_workflow.md): Version control workflow and practices
 
 ## Development Workflow
 
