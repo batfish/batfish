@@ -9,4 +9,5 @@ jobs:
     if: contains(github.event.pull_request.labels.*.name, 'lab-validation')
     uses: batfish/lab-validation/.github/workflows/reusable-lab-validation.yml@main
     with:
+      batfish_repository: ${{ github.event.pull_request.head.repo.full_name }}
       batfish_ref: ${{ github.event.pull_request.head.ref }}
