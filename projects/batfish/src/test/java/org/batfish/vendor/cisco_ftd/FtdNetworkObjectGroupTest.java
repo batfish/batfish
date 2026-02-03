@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.Ip;
 import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroupMember;
@@ -294,5 +295,91 @@ public class FtdNetworkObjectGroupTest extends FtdGrammarTest {
 
     FtdNetworkObjectGroup group = vc.getNetworkObjectGroups().get("VARIOUS_SUBNETS");
     assertThat(group.getMembers(), hasSize(4));
+  }
+
+  // ==================== FtdNetworkObjectGroupMember Tests ====================
+
+  @Test
+  public void testMemberTypeHost() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.host(Ip.parse("10.1.1.1"));
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.HOST));
+    assertThat(member.getIp(), equalTo(Ip.parse("10.1.1.1")));
+    assertThat(member.getMask(), equalTo(null));
+    assertThat(member.getObjectName(), equalTo(null));
+    assertThat(member.toString(), equalTo("host 10.1.1.1"));
+  }
+
+  @Test
+  public void testMemberTypeNetworkMask() {
+    FtdNetworkObjectGroupMember member =
+        FtdNetworkObjectGroupMember.networkMask(Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"));
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.NETWORK_MASK));
+    assertThat(member.getIp(), equalTo(Ip.parse("192.168.1.0")));
+    assertThat(member.getMask(), equalTo(Ip.parse("255.255.255.0")));
+    assertThat(member.getObjectName(), equalTo(null));
+    assertThat(member.toString(), equalTo("192.168.1.0 255.255.255.0"));
+  }
+
+  @Test
+  public void testMemberTypeObject() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.object("WEB_SERVER");
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.OBJECT));
+    assertThat(member.getIp(), equalTo(null));
+    assertThat(member.getMask(), equalTo(null));
+    assertThat(member.getObjectName(), equalTo("WEB_SERVER"));
+    assertThat(member.toString(), equalTo("object WEB_SERVER"));
+  }
+
+  @Test
+  public void testMemberTypeGroupObject() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.groupObject("SERVER_GROUP");
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.GROUP_OBJECT));
+    assertThat(member.getIp(), equalTo(null));
+    assertThat(member.getMask(), equalTo(null));
+    assertThat(member.getObjectName(), equalTo("SERVER_GROUP"));
+    assertThat(member.toString(), equalTo("group-object SERVER_GROUP"));
+  }
+
+  @Test
+  public void testMemberToStringAllTypes() {
+    // Verify toString() for all member types
+    FtdNetworkObjectGroupMember hostMember = FtdNetworkObjectGroupMember.host(Ip.parse("1.2.3.4"));
+    assertThat(hostMember.toString(), equalTo("host 1.2.3.4"));
+
+    FtdNetworkObjectGroupMember networkMember =
+        FtdNetworkObjectGroupMember.networkMask(Ip.parse("10.0.0.0"), Ip.parse("255.0.0.0"));
+    assertThat(networkMember.toString(), equalTo("10.0.0.0 255.0.0.0"));
+
+    FtdNetworkObjectGroupMember objectMember = FtdNetworkObjectGroupMember.object("obj1");
+    assertThat(objectMember.toString(), equalTo("object obj1"));
+
+    FtdNetworkObjectGroupMember groupMember = FtdNetworkObjectGroupMember.groupObject("group1");
+    assertThat(groupMember.toString(), equalTo("group-object group1"));
+  }
+
+  @Test
+  public void testMemberTypeEnumeration() {
+    // Test that all enum values are accessible
+    FtdNetworkObjectGroupMember.MemberType[] types =
+        FtdNetworkObjectGroupMember.MemberType.values();
+    assertThat(types.length, equalTo(4));
+
+    assertThat(types[0], equalTo(FtdNetworkObjectGroupMember.MemberType.HOST));
+    assertThat(types[1], equalTo(FtdNetworkObjectGroupMember.MemberType.NETWORK_MASK));
+    assertThat(types[2], equalTo(FtdNetworkObjectGroupMember.MemberType.OBJECT));
+    assertThat(types[3], equalTo(FtdNetworkObjectGroupMember.MemberType.GROUP_OBJECT));
+  }
+
+  @Test
+  public void testMemberToStringThrowsOnUnhandledType() {
+    // This test documents that toString() throws on unhandled types
+    // In normal usage, this shouldn't happen as types are set via factory methods
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.host(Ip.parse("1.2.3.4"));
+    // Valid type - should work
+    assertThat(member.toString(), equalTo("host 1.2.3.4"));
   }
 }

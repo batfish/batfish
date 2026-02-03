@@ -348,4 +348,229 @@ public class FtdRepresentationTest extends FtdGrammarTest {
     assertThat(route1.getInterfaceName(), equalTo("Ethernet0/0"));
     assertThat(route2.getInterfaceName(), equalTo("Ethernet0/1"));
   }
+
+  // ==================== FtdOspfProcess Tests ====================
+
+  @Test
+  public void testFtdOspfProcessConstructorAndGetters() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    assertThat(process.getName(), equalTo("100"));
+    assertThat(process.getRouterId(), nullValue());
+    assertThat(process.getNetworks(), hasSize(0));
+    assertThat(process.getPassiveInterfaces(), hasSize(0));
+    assertThat(process.getAreas().entrySet(), hasSize(0));
+    assertThat(process.getPassiveInterfaceDefault(), equalTo(false));
+  }
+
+  @Test
+  public void testFtdOspfProcessSetRouterId() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    process.setRouterId(Ip.parse("1.1.1.1"));
+    assertThat(process.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
+
+    process.setRouterId(Ip.parse("2.2.2.2"));
+    assertThat(process.getRouterId(), equalTo(Ip.parse("2.2.2.2")));
+  }
+
+  @Test
+  public void testFtdOspfProcessPassiveInterfaceDefault() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    assertThat(process.getPassiveInterfaceDefault(), equalTo(false));
+
+    process.setPassiveInterfaceDefault(true);
+    assertThat(process.getPassiveInterfaceDefault(), equalTo(true));
+
+    process.setPassiveInterfaceDefault(false);
+    assertThat(process.getPassiveInterfaceDefault(), equalTo(false));
+  }
+
+  @Test
+  public void testFtdOspfProcessWithNetwork() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork network =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork(
+            Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"), 0L);
+
+    process.getNetworks().add(network);
+
+    assertThat(process.getNetworks(), hasSize(1));
+    assertThat(process.getNetworks().get(0).getIp(), equalTo(Ip.parse("192.168.1.0")));
+    assertThat(process.getNetworks().get(0).getAreaId(), equalTo(0L));
+  }
+
+  @Test
+  public void testFtdOspfProcessWithPassiveInterface() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    process.getPassiveInterfaces().add("outside");
+    process.getPassiveInterfaces().add("inside");
+
+    assertThat(process.getPassiveInterfaces(), hasSize(2));
+    assertThat(process.getPassiveInterfaces().contains("outside"), equalTo(true));
+    assertThat(process.getPassiveInterfaces().contains("inside"), equalTo(true));
+  }
+
+  @Test
+  public void testFtdOspfProcessWithArea() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
+
+    process.getAreas().put(0L, area);
+
+    assertThat(process.getAreas(), hasKey(0L));
+    assertThat(process.getAreas().get(0L).getAreaId(), equalTo(0L));
+  }
+
+  @Test
+  public void testFtdOspfProcessMultipleAreas() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
+
+    process.getAreas().put(0L, new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L));
+    process.getAreas().put(1L, new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(1L));
+
+    assertThat(process.getAreas().entrySet(), hasSize(2));
+    assertThat(process.getAreas(), hasKey(0L));
+    assertThat(process.getAreas(), hasKey(1L));
+  }
+
+  // ==================== FtdPolicyMap Tests ====================
+
+  @Test
+  public void testFtdPolicyMapConstructorAndGetters() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("GLOBAL_POLICY");
+
+    assertThat(policyMap.getName(), equalTo("GLOBAL_POLICY"));
+    assertThat(policyMap.getType(), nullValue());
+    assertThat(policyMap.getClassNames(), hasSize(0));
+    assertThat(policyMap.getParameterLines(), hasSize(0));
+    assertThat(policyMap.getClassActionLines().entrySet(), hasSize(0));
+  }
+
+  @Test
+  public void testFtdPolicyMapSetType() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("INSPECT_POLICY");
+
+    assertThat(policyMap.getType(), nullValue());
+
+    policyMap.setType("inspection");
+    assertThat(policyMap.getType(), equalTo("inspection"));
+
+    policyMap.setType("type-inspect");
+    assertThat(policyMap.getType(), equalTo("type-inspect"));
+  }
+
+  @Test
+  public void testFtdPolicyMapAddClassName() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("TEST_POLICY");
+
+    assertThat(policyMap.getClassNames(), hasSize(0));
+
+    policyMap.addClassName("class1");
+    assertThat(policyMap.getClassNames(), hasSize(1));
+    assertThat(policyMap.getClassNames().get(0), equalTo("class1"));
+
+    policyMap.addClassName("class2");
+    assertThat(policyMap.getClassNames(), hasSize(2));
+  }
+
+  @Test
+  public void testFtdPolicyMapAddParameterLine() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("PARAM_POLICY");
+
+    assertThat(policyMap.getParameterLines(), hasSize(0));
+
+    policyMap.addParameterLine("parameters");
+    assertThat(policyMap.getParameterLines(), hasSize(1));
+
+    policyMap.addParameterLine("  timeout reset 30");
+    assertThat(policyMap.getParameterLines(), hasSize(2));
+  }
+
+  @Test
+  public void testFtdPolicyMapAddClassActionLine() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("ACTION_POLICY");
+
+    assertThat(policyMap.getClassActionLines().entrySet(), hasSize(0));
+
+    policyMap.addClassActionLine("inspect-class", "inspect http");
+    assertThat(policyMap.getClassActionLines().entrySet(), hasSize(1));
+    assertThat(policyMap.getClassActionLines().get("inspect-class"), hasSize(1));
+
+    policyMap.addClassActionLine("inspect-class", "inspect dns");
+    assertThat(policyMap.getClassActionLines().get("inspect-class"), hasSize(2));
+
+    policyMap.addClassActionLine("priority-class", "priority level 1");
+    assertThat(policyMap.getClassActionLines().entrySet(), hasSize(2));
+  }
+
+  @Test
+  public void testFtdPolicyMapComplexConfiguration() {
+    org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap policyMap =
+        new org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap("COMPLEX_POLICY");
+
+    policyMap.setType("inspection");
+
+    policyMap.addClassName("inspection_http");
+    policyMap.addClassName("inspection_dns");
+    policyMap.addClassName("inspection_ssh");
+
+    policyMap.addParameterLine("parameters");
+    policyMap.addParameterLine("  timeout reset 30");
+
+    policyMap.addClassActionLine("inspection_http", "inspect http");
+    policyMap.addClassActionLine("inspection_http", "set connection timeout idle 300");
+    policyMap.addClassActionLine("inspection_dns", "inspect dns");
+    policyMap.addClassActionLine("inspection_ssh", "inspect ssh");
+
+    assertThat(policyMap.getType(), equalTo("inspection"));
+    assertThat(policyMap.getClassNames(), hasSize(3));
+    assertThat(policyMap.getParameterLines(), hasSize(2));
+    assertThat(policyMap.getClassActionLines().entrySet(), hasSize(3));
+    assertThat(policyMap.getClassActionLines().get("inspection_http"), hasSize(2));
+  }
+
+  // ==================== FtdOspfNetwork Tests ====================
+
+  @Test
+  public void testFtdOspfNetworkConstructorAndGetters() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork network =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork(
+            Ip.parse("10.0.0.0"), Ip.parse("255.0.0.0"), 0L);
+
+    assertThat(network.getIp(), equalTo(Ip.parse("10.0.0.0")));
+    assertThat(network.getMask(), equalTo(Ip.parse("255.0.0.0")));
+    assertThat(network.getAreaId(), equalTo(0L));
+  }
+
+  @Test
+  public void testFtdOspfNetworkDifferentAreas() {
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork networkArea0 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork(
+            Ip.parse("192.168.1.0"), Ip.parse("255.255.255.0"), 0L);
+
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork networkArea1 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork(
+            Ip.parse("10.0.0.0"), Ip.parse("255.0.0.0"), 1L);
+
+    assertThat(networkArea0.getAreaId(), equalTo(0L));
+    assertThat(networkArea1.getAreaId(), equalTo(1L));
+  }
 }
