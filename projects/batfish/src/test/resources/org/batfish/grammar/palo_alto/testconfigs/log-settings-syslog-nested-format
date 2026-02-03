@@ -1,0 +1,5 @@
+# Test config for syslog format with escaping configuration (flat format)
+set deviceconfig system hostname log-settings-syslog-nested-format
+set shared log-settings syslog syslog-profile-TM server server1 server 1.2.3.4
+set shared log-settings syslog syslog-profile-TM server server1 format BSD escaping escaped-characters \=
+set shared log-settings syslog syslog-profile-TM server server1 format BSD escaping escape-character \
