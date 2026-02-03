@@ -194,8 +194,14 @@ snie_layer3
     (
         sniel3_common
         | snie_lacp
+        | snie_untagged_sub_interface
         | sniel3_units
     )*
+;
+
+snie_untagged_sub_interface
+:
+    UNTAGGED_SUB_INTERFACE yn = yes_or_no
 ;
 
 snie_link_duplex
@@ -256,7 +262,8 @@ sniel2_units
 sniel3_common
 :
     (
-        sniel3_ip
+        sniel3_adjust_tcp_mss_null
+        | sniel3_ip
         | sniel3_ipv6
         | sniel3_lldp
         | sniel3_mtu
@@ -293,6 +300,17 @@ sniel3_null
 sniel3_ndp_proxy
 :
     NDP_PROXY (ENABLE | ENABLED)? yn = yes_or_no
+;
+
+sniel3_adjust_tcp_mss_null
+:
+    ADJUST_TCP_MSS OPEN_BRACE CLOSE_BRACE
+    | ADJUST_TCP_MSS OPEN_BRACE sls_adjust_tcp_mss_block CLOSE_BRACE
+;
+
+sls_adjust_tcp_mss_block
+:
+    ENABLE yn = yes_or_no SEMICOLON
 ;
 
 sniel3_ipv6
