@@ -1028,6 +1028,8 @@ UNICAST: 'unicast';
 
 UNITS: 'units';
 
+UNTAGGED_SUB_INTERFACE: 'untagged-sub-interface';
+
 UNIVERSAL: 'universal';
 
 UP: 'up';
@@ -1073,6 +1075,8 @@ USERNAME: 'username';
 USERNAME_REGEX: 'username-regex';
 
 VERSION: 'version';
+
+TLS_VERSION: 'tls-version';
 
 VIRTUAL_ROUTER: 'virtual-router';
 

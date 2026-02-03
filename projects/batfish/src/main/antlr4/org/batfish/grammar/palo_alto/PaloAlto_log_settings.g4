@@ -36,7 +36,8 @@ sl_email
     EMAIL name = variable
     (
         sls_server
-    )?
+        | slss_format
+    )*
 ;
 
 sl_profiles
@@ -86,6 +87,7 @@ sls_server
         | slss_manager
         | slss_port
         | slss_server
+        | slss_tls_version
         | slss_to
         | slss_transport
         | slss_version
@@ -204,6 +206,11 @@ slss_transport
 slss_version
 :
     VERSION version = variable
+;
+
+slss_tls_version
+:
+    TLS_VERSION version = variable
 ;
 
 slsnmp_version
