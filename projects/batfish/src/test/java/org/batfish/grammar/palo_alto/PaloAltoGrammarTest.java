@@ -1858,6 +1858,13 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testSetNetworkInterfaceLayer2Zone() {
+    Configuration c = parseConfig("set-network-interface-layer2-zone");
+
+    // Test that set network interface ethernet <name> layer2 zone <zone> parses
+  }
+
+  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 
