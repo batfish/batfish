@@ -1842,6 +1842,14 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testSetConfigLogSettingsFormat() {
+    Configuration c = parseConfig("set-config-log-settings-format");
+
+    // Test that set config shared log-settings syslog with format escaping parses correctly
+    // This is the flattener output from nested configs starting with "config {"
+  }
+
+  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 
