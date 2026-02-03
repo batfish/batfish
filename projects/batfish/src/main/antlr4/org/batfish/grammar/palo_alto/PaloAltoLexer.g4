@@ -437,6 +437,8 @@ ESCAPING: 'escaping';
 
 ESCAPED_CHARACTERS: 'escaped-characters';
 
+ESCAPE_CHARACTER: 'escape-character';
+
 FQDN: 'fqdn';
 
 FROM: 'from';
@@ -1107,7 +1109,11 @@ UUID
     [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9] [a-f0-9]
 ;
 
+CLOSE_BRACE: '}';
+
 CLOSE_BRACKET: ']';
+
+SEMICOLON: ';';
 
 UINT8: F_Uint8;
 
@@ -1160,6 +1166,11 @@ NETFLOW_PROFILE: 'netflow-profile';
 NEWLINE
 :
     F_Newline+
+;
+
+OPEN_BRACE
+:
+    '{'
 ;
 
 OPEN_BRACKET

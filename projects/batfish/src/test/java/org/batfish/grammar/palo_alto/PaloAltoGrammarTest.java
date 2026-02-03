@@ -1834,6 +1834,14 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testLogSettingsSyslogNestedFormat() {
+    Configuration c = parseConfig("log-settings-syslog-nested-format");
+
+    // Confirm the syslog server shows up in VI model
+    assertThat(c.getLoggingServers(), containsInAnyOrder("1.2.3.4"));
+  }
+
+  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 
