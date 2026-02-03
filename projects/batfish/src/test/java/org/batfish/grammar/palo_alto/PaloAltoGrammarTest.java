@@ -1850,6 +1850,14 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testSetConfigInterfaceLayer2Lldp() {
+    Configuration c = parseConfig("set-config-interface-layer2-lldp");
+
+    // Test that set config devices <name> network interface ethernet <name> layer2 lldp enable no
+    // parses
+  }
+
+  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 

@@ -1,0 +1,3 @@
+# Test set config with interface layer2 lldp
+set config devices localhost.localdomain network interface ethernet ethernet1/10 layer2 lldp enable no
+set deviceconfig system hostname set-config-interface-layer2-lldp
