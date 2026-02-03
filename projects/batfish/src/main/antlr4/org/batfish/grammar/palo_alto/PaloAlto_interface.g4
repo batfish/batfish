@@ -243,6 +243,7 @@ sniel2_unit
 sniel2_units
 :
     UNITS sniel2_unit?
+    | sniel3_lldp
 ;
 
 // Common syntax between layer3 interfaces and subinterfaces (units)
