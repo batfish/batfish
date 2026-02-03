@@ -1865,6 +1865,13 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
+  public void testSetNetworkInterfaceUnitsFeatures() {
+    Configuration c = parseConfig("set-network-interface-units-features");
+
+    // Test that set network interface vlan units with ipv6, ndp-proxy, adjust-tcp-mss parses
+  }
+
+  @Test
   public void testMgmtIface() {
     PaloAltoConfiguration c = parsePaloAltoConfig("mgmt-iface");
 

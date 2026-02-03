@@ -1,0 +1,5 @@
+# Test set network interface vlan units with various features
+set network interface vlan units vlan.1900 ipv6 neighbor-discovery router-advertisement enable no
+set network interface vlan units vlan.1900 ndp-proxy enabled no
+set network interface vlan units vlan.1900 ip 10.143.64.1/24
+set deviceconfig system hostname set-network-interface-units-features
