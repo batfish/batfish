@@ -179,7 +179,13 @@ snie_layer2
     LAYER2
     (
         sniel2_units
+        | sniel2_zone
     )*
+;
+
+sniel2_zone
+:
+    ZONE zone = variable
 ;
 
 snie_layer3
