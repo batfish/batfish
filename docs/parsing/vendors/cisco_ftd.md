@@ -38,7 +38,7 @@ projects/batfish/src/main/
 ├── java/org/batfish/vendor/cisco_ftd/
 │   ├── grammar/                                   # Parser, extractor, base lexer
 │   └── representation/                            # FTD-specific data model
-└── test/java/org/batfish/vendor_cisco_ftd/         # All tests
+└── test/java/org/batfish/vendor/cisco_ftd/         # All tests
 ```
 
 ## Common FTD Parsing Patterns

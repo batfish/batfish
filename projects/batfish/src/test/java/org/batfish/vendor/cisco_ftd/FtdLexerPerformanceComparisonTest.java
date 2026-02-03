@@ -15,8 +15,12 @@ public class FtdLexerPerformanceComparisonTest extends FtdGrammarTest {
   /** Test parsing with a large configuration file to measure memory allocations. */
   @Test
   public void testPerformanceComparison() throws Exception {
-    String configPath =
-        "/Users/nat/dev/batfish-scratch/snapshot/configs/FW-DC2-Services-CNAA03-SET-01.conf";
+    // Config file path can be configured via environment variable for CI/local testing
+    String configPath = System.getenv().getOrDefault("FTD_TEST_CONFIG", "");
+    if (configPath.isEmpty()) {
+      // Use relative path to test resources - falls back to test config if not found
+      configPath = "test_configs/FW-DC2-Services-CNAA03-SET-01.conf";
+    }
 
     System.out.println("\n=== FTD Lexer Performance Comparison ===\n");
 
