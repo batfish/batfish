@@ -207,8 +207,49 @@ Commonly, some Java library will have a CVE and we will want to upgrade our depe
 
 ### Building images locally
 
-This section of the doc is still in progress. Check back later!
+Docker images for Batfish are built in a separate repository: [batfish/docker](https://github.com/batfish/docker).
+
+To build Docker images locally:
+
+1. **Clone the docker repository**:
+   ```bash
+   git clone https://github.com/batfish/docker.git
+   cd docker
+   ```
+
+2. **Build the batfish service image**:
+   ```bash
+   docker build -t batfish/batfish:latest -f batfish/Dockerfile .
+   ```
+
+3. **Build the allinone image** (includes Jupyter notebooks):
+   ```bash
+   docker build -t batfish/allinone:latest -f allinone/Dockerfile .
+   ```
+
+4. **Run the container**:
+   ```bash
+   # For allinone (with Jupyter)
+   docker run -p 9997:9997 batfish/allinone:latest
+
+   # For batfish service only
+   docker run -p 9997:9997 batfish/batfish:latest
+   ```
+
+**Note**: The Docker build process pulls pre-built JAR files from Maven Central or builds them from the batfish/batfish repository. See the [docker repository](https://github.com/batfish/docker) for detailed build instructions.
 
 ### Building images via GitHub actions
 
-This section of the doc is still in progress. Check back later!
+The Batfish repository does not directly build Docker images via GitHub Actions. Instead:
+
+1. **Image Building**: Docker images are built and published by the separate [batfish/docker](https://github.com/batfish/docker) repository
+2. **Vulnerability Scanning**: This repository includes GitHub Actions workflows that scan published images for vulnerabilities:
+   - `.github/workflows/vulnerability-scan.yml`
+   - `.github/workflows/reusable-vulnerability-scan.yml`
+
+3. **Image Availability**:
+   - Images are published to Docker Hub as `batfish/batfish` and `batfish/allinone`
+   - New images are typically published with each release
+   - Use `docker pull batfish/allinone:latest` to get the latest version
+
+**For development**: Use `tools/bazel_run.sh` to run Batfish locally without Docker.
