@@ -1,0 +1,5 @@
+# Test set network interface ethernet layer2 zone
+set network interface ethernet ethernet1/1 layer2 zone L2-Inside
+set network interface ethernet ethernet1/2 layer2 zone L2-Outside
+set network interface ethernet ethernet1/1 layer2 lldp enable no
+set deviceconfig system hostname set-network-interface-layer2-zone
