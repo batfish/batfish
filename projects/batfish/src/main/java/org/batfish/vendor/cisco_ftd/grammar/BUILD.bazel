@@ -23,6 +23,7 @@ java_library(
         exclude = [
             "FtdBaseLexer.java",
             "FtdBaseParser.java",
+            "FtdBaseLexerOptimized.java",
         ],
     ),
     deps = [

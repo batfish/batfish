@@ -1638,7 +1638,7 @@ public class FtdConfiguration extends VendorConfiguration {
   }
 
   private void convertInterface(
-      org.batfish.representation.cisco_ftd.Interface repIface, Configuration c) {
+      org.batfish.vendor.cisco_ftd.representation.Interface repIface, Configuration c) {
     String ifName = repIface.getName();
     org.batfish.datamodel.Interface.Builder ib =
         org.batfish.datamodel.Interface.builder()

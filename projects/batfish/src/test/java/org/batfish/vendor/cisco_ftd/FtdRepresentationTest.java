@@ -291,8 +291,8 @@ public class FtdRepresentationTest extends FtdGrammarTest {
 
   @Test
   public void testFtdRouteConstructorsAndGetters() {
-    org.batfish.representation.cisco_ftd.FtdRoute route =
-        new org.batfish.representation.cisco_ftd.FtdRoute(
+    org.batfish.vendor.cisco_ftd.representation.FtdRoute route =
+        new org.batfish.vendor.cisco_ftd.representation.FtdRoute(
             "GigabitEthernet0/0",
             Ip.parse("10.0.0.0"),
             Ip.parse("255.0.0.0"),
@@ -308,18 +308,18 @@ public class FtdRepresentationTest extends FtdGrammarTest {
 
   @Test
   public void testFtdOspfAreaConstructorAndGetters() {
-    org.batfish.representation.cisco_ftd.FtdOspfArea area =
-        new org.batfish.representation.cisco_ftd.FtdOspfArea(0L);
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
 
     assertThat(area.getAreaId(), equalTo(0L));
   }
 
   @Test
   public void testFtdOspfAreaDifferentAreaIds() {
-    org.batfish.representation.cisco_ftd.FtdOspfArea area0 =
-        new org.batfish.representation.cisco_ftd.FtdOspfArea(0L);
-    org.batfish.representation.cisco_ftd.FtdOspfArea area1 =
-        new org.batfish.representation.cisco_ftd.FtdOspfArea(1L);
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area0 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
+    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area1 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(1L);
 
     assertThat(area0.getAreaId(), equalTo(0L));
     assertThat(area1.getAreaId(), equalTo(1L));
@@ -327,16 +327,16 @@ public class FtdRepresentationTest extends FtdGrammarTest {
 
   @Test
   public void testFtdRouteWithDifferentMetrics() {
-    org.batfish.representation.cisco_ftd.FtdRoute route1 =
-        new org.batfish.representation.cisco_ftd.FtdRoute(
+    org.batfish.vendor.cisco_ftd.representation.FtdRoute route1 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdRoute(
             "Ethernet0/0",
             Ip.parse("192.168.1.0"),
             Ip.parse("255.255.255.0"),
             Ip.parse("10.1.1.1"),
             10);
 
-    org.batfish.representation.cisco_ftd.FtdRoute route2 =
-        new org.batfish.representation.cisco_ftd.FtdRoute(
+    org.batfish.vendor.cisco_ftd.representation.FtdRoute route2 =
+        new org.batfish.vendor.cisco_ftd.representation.FtdRoute(
             "Ethernet0/1",
             Ip.parse("172.16.0.0"),
             Ip.parse("255.240.0.0"),

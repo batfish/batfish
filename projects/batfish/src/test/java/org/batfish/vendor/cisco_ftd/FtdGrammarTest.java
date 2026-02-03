@@ -35,6 +35,8 @@ import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.cisco_ftd.grammar.FtdCombinedParser;
+import org.batfish.vendor.cisco_ftd.grammar.FtdControlPlaneExtractor;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessList;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessListLine;

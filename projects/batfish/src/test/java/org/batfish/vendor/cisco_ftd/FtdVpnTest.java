@@ -13,6 +13,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.grammar.silent_syntax.SilentSyntaxCollection;
 import org.batfish.main.BatfishTestUtils;
+import org.batfish.vendor.cisco_ftd.grammar.FtdCombinedParser;
+import org.batfish.vendor.cisco_ftd.grammar.FtdControlPlaneExtractor;
 import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
 import org.junit.Rule;
 import org.junit.Test;
