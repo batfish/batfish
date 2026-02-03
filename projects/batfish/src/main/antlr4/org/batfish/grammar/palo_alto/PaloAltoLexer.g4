@@ -872,6 +872,8 @@ ROUTE_TABLE: 'route-table';
 
 ROUTER_ID: 'router-id';
 
+ROUTER_ADVERTISEMENT: 'router-advertisement';
+
 ROUTING_OPTIONS: 'routing-options';
 
 ROUTING_TABLE: 'routing-table';
@@ -1162,6 +1164,8 @@ COMMENT_LINE
 
 
 NETFLOW_PROFILE: 'netflow-profile';
+
+NEIGHBOR_DISCOVERY: 'neighbor-discovery';
 
 NEWLINE
 :

@@ -257,8 +257,10 @@ sniel3_common
 :
     (
         sniel3_ip
+        | sniel3_ipv6
         | sniel3_lldp
         | sniel3_mtu
+        | sniel3_ndp_proxy
         | sniel3_null
     )
 ;
@@ -282,12 +284,30 @@ sniel3_null
 :
     (
         ADJUST_TCP_MSS
-        | IPV6
-        | NDP_PROXY
         | NETFLOW_PROFILE
         | INTERFACE_MANAGEMENT_PROFILE
     )
     null_rest_of_line
+;
+
+sniel3_ndp_proxy
+:
+    NDP_PROXY (ENABLE | ENABLED)? yn = yes_or_no
+;
+
+sniel3_ipv6
+:
+    IPV6 sniel3_ipv6_neighbor_discovery?
+;
+
+sniel3_ipv6_neighbor_discovery
+:
+    NEIGHBOR_DISCOVERY sniel3_ipv6_nd_router_advertisement?
+;
+
+sniel3_ipv6_nd_router_advertisement
+:
+    ROUTER_ADVERTISEMENT ENABLE yn = yes_or_no
 ;
 
 sniel3_unit
@@ -343,6 +363,9 @@ sniv_unit
     name = variable
     (
         if_common
+        | sniel3_ip
+        | sniel3_ipv6
+        | sniel3_ndp_proxy
     )*
 ;
 
