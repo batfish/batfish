@@ -152,6 +152,7 @@ sd_system
         | sds_domain
         | sds_hostname
         | sds_ip_address
+        | sds_login_banner
         | sds_netmask
         | sds_ntp_servers
         | sds_permitted_ip
@@ -197,6 +198,11 @@ sds_hostname
 sds_ip_address
 :
     IP_ADDRESS_LITERAL ip_address
+;
+
+sds_login_banner
+:
+    LOGIN_BANNER banner = variable
 ;
 
 sds_netmask

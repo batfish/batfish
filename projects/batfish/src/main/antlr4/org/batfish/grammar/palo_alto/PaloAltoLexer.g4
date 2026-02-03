@@ -52,6 +52,8 @@ OID: 'oid';
 
 LOCATION: 'location';
 
+LOGIN_BANNER: 'login-banner';
+
 PERMITTED_IP: 'permitted-ip';
 
 ROUTE: 'route';
@@ -91,6 +93,8 @@ EGRESS_INTERFACE: 'egress-interface';
 ENFORCE_SYMMETRIC_RETURN: 'enforce-symmetric-return';
 
 MONITOR: 'monitor';
+
+MONITOR_DESTINATIONS: 'monitor-destinations';
 
 ACTIVE: 'active';
 
@@ -179,6 +183,8 @@ AS_FORMAT: 'as-format';
 
 AS_PATH: 'as-path';
 
+ASSERT_INTERVAL: 'assert-interval';
+
 AUTH: 'auth';
 
 AUTH_PROFILE: 'auth-profile';
@@ -208,6 +214,8 @@ BEFORE: 'before';
 BFD: 'bfd';
 
 BGP: 'bgp';
+
+BSR_BORDER: 'bsr-border';
 
 BI_DIRECTIONAL: 'bi-directional';
 
@@ -239,6 +247,8 @@ COLOR: 'color';
 COMMENT: 'comment';
 
 COMMENTS: 'comments';
+
+COUNT: 'count';
 
 COMMUNITY: 'community';
 
@@ -351,6 +361,8 @@ DOWN: 'down';
 
 DROP: 'drop';
 
+DR_PRIORITY: 'dr-priority';
+
 DYNAMIC: 'dynamic';
 
 EBGP: 'ebgp';
@@ -406,6 +418,8 @@ EXCESSIVE_BANDWIDTH_USE: 'excessive-bandwidth-use';
 EXPORT: 'export';
 
 EXPORT_NEXTHOP: 'export-nexthop';
+
+EXTERNAL_RP: 'external-rp';
 
 EXT_1: 'ext-1';
 
@@ -485,6 +499,8 @@ GROUP_NAME: 'group-name';
 
 GROUP_OBJECT: 'group-object';
 
+GROUP_ADDRESSES: 'group-addresses';
+
 GTP: 'gtp';
 
 HALF: 'half';
@@ -534,6 +550,10 @@ IKE: 'ike';
 
 IKE_CRYPTO_PROFILES: 'ike-crypto-profiles';
 
+IGMP: 'igmp';
+
+IMMEDIATE_LEAVE: 'immediate-leave';
+
 IMPORT: 'import';
 
 IMPORT_NEXTHOP: 'import-nexthop';
@@ -554,9 +574,15 @@ INTERFACE2: 'interface2';
 
 INTERFACE_MANAGEMENT_PROFILE: 'interface-management-profile';
 
+INTERFACE_GROUP: 'interface-group';
+
 INTERZONE: 'interzone';
 
+INTERVAL: 'interval';
+
 INTRAZONE: 'intrazone';
+
+JOIN_PRUNE_INTERVAL: 'join-prune-interval';
 
 IP: 'ip';
 
@@ -583,6 +609,8 @@ LAYER2: 'layer2';
 LAYER3: 'layer3';
 
 LIFETIME: 'lifetime';
+
+LAST_MEMBER_QUERY_INTERVAL: 'last-member-query-interval';
 
 MANAGEMENT: 'management';
 
@@ -636,6 +664,12 @@ MAX_HOLD_TIME: 'max-hold-time';
 MAX_PATH: 'max-path';
 
 MAX_PREFIXES: 'max-prefixes';
+
+MAX_SOURCES: 'max-sources';
+
+MAX_QUERY_RESPONSE_TIME: 'max-query-response-time';
+
+MAX_GROUPS: 'max-groups';
 
 MAX_VERSION: 'max-version';
 
@@ -772,6 +806,8 @@ PEERING_TYPE: 'peering-type';
 
 PERVASIVE: 'pervasive';
 
+PIM: 'pim';
+
 SPECIFIED: 'specified';
 
 POLICY: 'policy';
@@ -806,6 +842,8 @@ PROTOCOL_SETTINGS: 'protocol-settings';
 
 QOS: 'qos';
 
+QUERY_INTERVAL: 'query-interval';
+
 READONLY: 'readonly';
 
 RECURRING: 'recurring';
@@ -837,6 +875,8 @@ REGEX_IDENTIFIER: 'regex-identifier';
 REGION: 'region';
 
 REMATCH: 'rematch';
+
+RESOURCE: 'resource';
 
 RESET_BOTH: 'reset-both';
 
@@ -874,9 +914,15 @@ ROUTER_ID: 'router-id';
 
 ROUTER_ADVERTISEMENT: 'router-advertisement';
 
+ROUTER_ALERT_POLICING: 'router-alert-policing';
+
 ROUTING_OPTIONS: 'routing-options';
 
 ROUTING_TABLE: 'routing-table';
+
+ROBUSTNESS: 'robustness';
+
+RP: 'rp';
 
 RULE_TYPE: 'rule-type';
 
@@ -1030,6 +1076,8 @@ UNITS: 'units';
 
 UNTAGGED_SUB_INTERFACE: 'untagged-sub-interface';
 
+UNLIMITED: 'unlimited';
+
 UNIVERSAL: 'universal';
 
 UP: 'up';
@@ -1079,6 +1127,8 @@ VERSION: 'version';
 TLS_VERSION: 'tls-version';
 
 VIRTUAL_ROUTER: 'virtual-router';
+
+VIRTUAL_INTERFACE: 'virtual-interface';
 
 VIRTUAL_WIRE: 'virtual-wire';
 

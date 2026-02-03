@@ -100,8 +100,14 @@ sv_import
     IMPORT
     (
         svi_network
+        | svi_resource
         | svi_visible_vsys
     )?
+;
+
+svi_resource
+:
+    RESOURCE
 ;
 
 svi_network
