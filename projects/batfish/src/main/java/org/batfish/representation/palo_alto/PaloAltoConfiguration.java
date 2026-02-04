@@ -2379,7 +2379,11 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       newIface.setFirewallSessionInterfaceInfo(
           new FirewallSessionInterfaceInfo(
               Action.POST_NAT_FIB_LOOKUP, sharedGateway.getImportedInterfaces(), null, null));
-    } else if (zone != null) {
+    }
+    if (zone != null) {
+      newIface.setZoneName(zone.getName());
+    }
+    if (zone != null && !sharedGatewayOptional.isPresent() && zone.getType() == Type.LAYER3) {
       newIface.setZoneName(zone.getName());
       if (zone.getType() == Type.LAYER3) {
         String zoneFilterName =
