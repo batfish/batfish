@@ -12,5 +12,3 @@ build --javacopt "-Xep:RemoveUnusedImports:ERROR"
 # makes it take effect.
 coverage --instrumentation_filter=-//projects/batfish/src/main/java/org/batfish/representation/juniper/parboiled,-//projects/batfish/src/main/java/org/batfish/vendor/check_point_management/parsing/parboiled
 
-# Required for rules_java 8.x with Bazel 8.0-8.2 (https://github.com/bazelbuild/bazel/pull/26119)
-common --repositories_without_autoloads=bazel_features_version,bazel_features_globals
