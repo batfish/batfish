@@ -75,11 +75,10 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^set (groups [^ ][^ ]* )?system host-name ");
   private static final Pattern FLATTENED_JUNIPER_PATTERN =
       Pattern.compile(Pattern.quote(BATFISH_FLATTENED_JUNIPER_HEADER));
-  private static final Pattern JUNIPER_ACL_PATTERN = Pattern.compile("(?m)^firewall *\\{");
-  private static final Pattern JUNIPER_POLICY_OPTIONS_PATTERN =
-      Pattern.compile("(?m)^policy-options *\\{");
-  private static final Pattern JUNIPER_SNMP_PATTERN = Pattern.compile("(?m)^snmp *\\{");
-  private static final Pattern SET_PATTERN = Pattern.compile("(?m)^set ");
+  // Juniper-specific keywords and stanzas (stanzas match "keyword {" or "keyword{")
+  private static final Pattern JUNIPER_PATTERN =
+      Pattern.compile(
+          "(firewall|policy-options|snmp|routing-instances|groups) *\\{|apply-groups|replace:");
 
   // checkPaloAlto patterns
   private static final Pattern FLAT_PALO_ALTO_PATTERN =
@@ -271,10 +270,7 @@ public final class VendorConfigurationFormatDetector {
     boolean isJuniper =
         preMatch
             || FLAT_JUNIPER_HOSTNAME_DECLARATION_PATTERN.matcher(_fileText).find(0)
-            || (_fileText.contains("apply-groups") && SET_PATTERN.matcher(_fileText).find(0))
-            || fileTextMatches(JUNIPER_ACL_PATTERN)
-            || fileTextMatches(JUNIPER_POLICY_OPTIONS_PATTERN)
-            || fileTextMatches(JUNIPER_SNMP_PATTERN)
+            || fileTextMatches(JUNIPER_PATTERN)
             || _fileText.contains("system")
                 && _fileText.contains("{")
                 && _fileText.contains("}")
