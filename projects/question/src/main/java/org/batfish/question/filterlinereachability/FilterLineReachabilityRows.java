@@ -101,6 +101,12 @@ public class FilterLineReachabilityRows {
     IpAccessList acl = aclSpecs.acl.getOriginalAcl();
     AclLine blockedLine = acl.getLines().get(lineNumber);
 
+    // FTD two-stage filter: Skip reporting regular ACL rules blocked by Prefilter "trust" rules
+    // Trust rules fast-path traffic and are intentionally evaluated before regular permit rules
+    if (isFtdTwoStageFilterShadowing(line, acl)) {
+      return;
+    }
+
     // All the host-acl pairs that contain this canonical acl
     List<String> flatSources =
         aclSpecs.sources.entrySet().stream()
@@ -189,5 +195,37 @@ public class FilterLineReachabilityRows {
 
   public Multiset<Row> getRows() {
     return _rows;
+  }
+
+  /**
+   * Check if this unreachable line is part of FTD two-stage filtering (Prefilter trust + regular
+   * ACL). FTD Prefilter policies with "trust" actions fast-path traffic before regular ACL
+   * evaluation. Regular permit rules shadowed by trust rules are expected behavior, not real
+   * issues.
+   *
+   * @return true if blocked line should be skipped (FTD two-stage filtering), false otherwise
+   */
+  private boolean isFtdTwoStageFilterShadowing(UnreachableFilterLine line, IpAccessList acl) {
+    // Only applies to BLOCKING_LINES case
+    if (!(line instanceof BlockedFilterLine)) {
+      return false;
+    }
+
+    BlockedFilterLine blockedLine = (BlockedFilterLine) line;
+
+    // Check if any blocking line is a Prefilter trust rule
+    for (Integer blockingLineNum : blockedLine.getBlockingLines()) {
+      AclLine blockingLine = acl.getLines().get(blockingLineNum);
+      String blockingName = blockingLine.getName();
+
+      // FTD Prefilter trust rules have "Prefilter-FTD" in their name and contain "trust"
+      if (blockingName != null
+          && blockingName.contains("Prefilter-FTD")
+          && blockingName.contains(" trust ")) {
+        return true;
+      }
+    }
+
+    return false;
   }
 }
