@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 
 import java.io.IOException;
@@ -561,5 +562,52 @@ public class FtdAccessListTest extends FtdGrammarTest {
     assertThat(lineName, containsString("ACL-OUTSIDE-IN_#174"));
     assertThat(lineName, containsString("Prefilter-FTD"));
     assertThat(lineName, containsString("ifc OUTSIDE"));
+  }
+
+  @Test
+  public void testPrefilterTwoStageFiltering() throws IOException {
+    // Test FTD two-stage filtering: Prefilter trust rule + regular permit rules
+    // Verifies that Prefilter trust rules are identifiable for filterLineReachability filtering
+    String config =
+        join(
+            "NGFW Version 7.4.2.1",
+            "hostname fw",
+            "interface Port-channel1.320",
+            " nameif OUTSIDE",
+            "access-list CSM_FW_ACL_ remark rule-id 100: PREFILTER POLICY: Prefilter-FTD",
+            "access-list CSM_FW_ACL_ remark rule-id 100: RULE: ACL-OUTSIDE-IN_#1",
+            "access-list CSM_FW_ACL_ advanced trust tcp ifc OUTSIDE 10.5.73.0 255.255.255.0 any"
+                + " eq 1994 rule-id 100",
+            "access-list CSM_FW_ACL_ remark rule-id 200: RULE: ACL-OUTSIDE-IN_#2",
+            "access-list CSM_FW_ACL_ extended permit tcp 10.5.73.0 255.255.255.0 any eq 80 rule-id"
+                + " 200",
+            "access-list CSM_FW_ACL_ extended permit tcp 10.5.73.0 255.255.255.0 any eq 443"
+                + " rule-id 201",
+            "access-group CSM_FW_ACL_ global");
+
+    SortedMap<String, byte[]> configurationBytes = new TreeMap<>();
+    configurationBytes.put("fw.cfg", config.getBytes(StandardCharsets.UTF_8));
+    var batfish =
+        BatfishTestUtils.getBatfishFromTestrigText(
+            TestrigText.builder().setConfigurationBytes(configurationBytes).build(), _folder);
+    SortedMap<String, Configuration> configs = batfish.loadConfigurations(batfish.getSnapshot());
+    Configuration c = configs.get("fw");
+    assertThat(c.getIpAccessLists(), hasKey("CSM_FW_ACL_"));
+
+    // Verify Prefilter trust rule has correct markers
+    var prefilterLine = c.getIpAccessLists().get("CSM_FW_ACL_").getLines().get(0);
+    assertThat(prefilterLine.getName(), containsString("Prefilter-FTD"));
+    assertThat(prefilterLine.getName(), containsString(" trust "));
+    assertThat(prefilterLine.getName(), containsString("rule-id 100"));
+
+    // Verify regular permit rules have rule-id but no Prefilter marker
+    var regularLine1 = c.getIpAccessLists().get("CSM_FW_ACL_").getLines().get(1);
+    assertThat(regularLine1.getName(), containsString("rule-id 200"));
+    assertThat(regularLine1.getName(), not(containsString("Prefilter-FTD")));
+    assertThat(regularLine1.getName(), not(containsString(" trust ")));
+
+    var regularLine2 = c.getIpAccessLists().get("CSM_FW_ACL_").getLines().get(2);
+    assertThat(regularLine2.getName(), containsString("rule-id 201"));
+    assertThat(regularLine2.getName(), not(containsString("Prefilter-FTD")));
   }
 }
