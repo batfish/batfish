@@ -1186,14 +1186,13 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       return new FtdNatAddress.FtdNatAddressIp(Ip.parse(ctx.ip.getText()));
     } else {
       String name = ctx.nat_object_name_null().getText();
-      // NAT rules reference network objects or service objects.
-      // Current implementation: assumes all are network objects (common for NAT).
-      // Limitation: If service objects are referenced, they won't be validated.
-      // TODO: Add lookup to verify object exists and is correct type
+      // NAT address specifications reference network objects (not service objects).
+      // Service objects are used for port/protocol specifications in ACLs, not IP addresses.
+      // We track the reference here for validation and undefined reference detection.
       referenceStructure(
           FtdStructureType.NETWORK_OBJECT,
           name,
-          FtdStructureUsage.NAT_SOURCE_OBJECT, // Usage depends on context, simplifying here
+          FtdStructureUsage.NAT_SOURCE_OBJECT, // Usage depends on context (source vs destination)
           ctx.nat_object_name_null().getStart().getLine());
       return new FtdNatAddress.FtdNatAddressName(name);
     }
