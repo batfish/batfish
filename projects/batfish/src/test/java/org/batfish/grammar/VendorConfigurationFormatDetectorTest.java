@@ -218,6 +218,10 @@ public class VendorConfigurationFormatDetectorTest {
         ImmutableList.of(
             "firewall {\n}\n",
             "policy-options {\n}\n",
+            "routing-instances {\n}\n",
+            "groups {\n}\n",
+            "apply-groups foo;\ninterfaces {\n}\n",
+            "replace: system {\n}\n",
             "!RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper\n!\nsomething {\n blah;\n}\n",
             "#RANCID-CONTENT-TYPE: juniper-srx\n!\nsomething {\n blah;\n}\n",
