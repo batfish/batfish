@@ -205,6 +205,6 @@ public class FortiosPolicyConversionsTest {
     assertThat(
         FortiosPolicyConversions.computeOutgoingFilterName(
             "OUTGOING", "external"),
-        equalTo("OUTGOING_FILTER_external"));
+        equalTo("OUTGOING~external~OUTGOING_FILTER"));
   }
 }
