@@ -385,9 +385,11 @@ import org.batfish.datamodel.routing_policy.expr.DecrementMetric;
 import org.batfish.datamodel.routing_policy.expr.IncrementAdministrativeCost;
 import org.batfish.datamodel.routing_policy.expr.IncrementMetric;
 import org.batfish.datamodel.routing_policy.expr.LiteralAdministrativeCost;
+import org.batfish.datamodel.routing_policy.expr.LiteralLong;
 import org.batfish.datamodel.routing_policy.expr.MatchProtocol;
 import org.batfish.datamodel.routing_policy.statement.If;
 import org.batfish.datamodel.routing_policy.statement.SetAdministrativeCost;
+import org.batfish.datamodel.routing_policy.statement.SetLocalPreference;
 import org.batfish.datamodel.routing_policy.statement.SetMetric;
 import org.batfish.datamodel.routing_policy.statement.TraceableStatement;
 import org.batfish.datamodel.tracking.TrackMethods;
@@ -9786,6 +9788,27 @@ public final class FlatJuniperGrammarTest {
     assertThat(groupInherit.getLocalPreference(), nullValue());
     groupInherit.cascadeInheritance();
     assertThat(groupInherit.getLocalPreference(), equalTo(50L));
+  }
+
+  @Test
+  public void testBgpLocalPreferenceConversion() {
+    Configuration c = parseConfig("bgp-local-preference");
+
+    // Group with local-preference 100: export policy should set local-preference
+    RoutingPolicy overrideExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("default", "1.1.1.2/32"));
+    assertThat(overrideExportPolicy, notNullValue());
+    assertThat(
+        overrideExportPolicy.getStatements(),
+        hasItem(equalTo(new SetLocalPreference(new LiteralLong(100L)))));
+
+    // Group that inherits process-level local-preference 50
+    RoutingPolicy inheritExportPolicy =
+        c.getRoutingPolicies().get(generatedBgpPeerExportPolicyName("default", "1.1.1.3/32"));
+    assertThat(inheritExportPolicy, notNullValue());
+    assertThat(
+        inheritExportPolicy.getStatements(),
+        hasItem(equalTo(new SetLocalPreference(new LiteralLong(50L)))));
   }
 
   @Test
