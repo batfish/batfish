@@ -4716,7 +4716,6 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   public void exitB_local_preference(B_local_preferenceContext ctx) {
     long localPreference = toLong(ctx.localpref);
     _currentBgpGroup.setLocalPreference(localPreference);
-    todo(ctx);
   }
 
   @Override
