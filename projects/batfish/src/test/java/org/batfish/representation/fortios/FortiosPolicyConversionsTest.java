@@ -191,20 +191,16 @@ public class FortiosPolicyConversionsTest {
   @Test
   public void testGetPolicyName() {
     // Test policy name generation
+    assertThat(FortiosPolicyConversions.getPolicyName("123", null), equalTo("123"));
     assertThat(
-        FortiosPolicyConversions.getPolicyName("123", null),
-        equalTo("123"));
-    assertThat(
-        FortiosPolicyConversions.getPolicyName("456", "My Policy"),
-        equalTo("456 named My Policy"));
+        FortiosPolicyConversions.getPolicyName("456", "My Policy"), equalTo("456 named My Policy"));
   }
 
   @Test
   public void testComputeOutgoingFilterName() {
     // Test outgoing filter name generation
     assertThat(
-        FortiosPolicyConversions.computeOutgoingFilterName(
-            "OUTGOING", "external"),
+        FortiosPolicyConversions.computeOutgoingFilterName("OUTGOING", "external"),
         equalTo("OUTGOING~external~OUTGOING_FILTER"));
   }
 }
