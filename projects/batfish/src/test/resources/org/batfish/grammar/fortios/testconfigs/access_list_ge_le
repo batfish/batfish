@@ -1,0 +1,44 @@
+config system global
+    set hostname "access_list_ge_le"
+end
+config router access-list
+    edit "acl_with_ge_le"
+        set comments "ACL with GE/LE prefix length matching"
+        config rule
+            edit 10
+                # Matches prefixes /24 to /32 (ge 24 le 32)
+                set action permit
+                set prefix 10.0.0.0/8
+                set ge 24
+                set le 32
+            next
+            edit 20
+                # Matches prefixes /16 to /24 (ge 16 le 24)
+                set action permit
+                set prefix 192.168.0.0/16
+                set ge 16
+                set le 24
+            next
+            edit 30
+                # Only ge specified (defaults to le 32)
+                set action permit
+                set prefix 172.16.0.0/12
+                set ge 16
+            next
+            edit 40
+                # Only le specified (defaults to ge 0)
+                set action deny
+                set prefix 203.0.113.0/24
+                set le 32
+            next
+            edit 50
+                # Both ge and le, then unset ge
+                set action permit
+                set prefix 198.51.100.0/24
+                set ge 24
+                set le 32
+                unset ge
+            next
+        end
+    next
+end
