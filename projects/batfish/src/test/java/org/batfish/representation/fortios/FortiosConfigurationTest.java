@@ -381,13 +381,16 @@ public class FortiosConfigurationTest {
               address.setType(unsupportedType);
               Warnings w = new Warnings(true, true, true);
               assertThat(toIpSpace(address, w), equalTo(EmptyIpSpace.INSTANCE));
+              // Changed from redFlag to unimplemented - these are features we haven't
+              // implemented yet, not configuration errors
               assertThat(
-                  w.getRedFlagWarnings(),
+                  w.getUnimplementedWarnings(),
                   contains(
                       hasText(
                           String.format(
-                              "Addresses of type %s are unsupported and will be considered"
-                                  + " unmatchable.",
+                              "Address type %s is not yet supported; address name will be"
+                                  + " treated as unmatchable. Policies using this address will"
+                                  + " be excluded from analysis.",
                               unsupportedType))));
             });
   }
