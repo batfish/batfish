@@ -303,6 +303,28 @@ public final class FortiosPolicyConversions {
         && policy.getSrcIntfZones() != null
         && policy.getDstIntfZones() != null;
 
+    // Check for partial support: if any addresses failed to convert, exclude the policy
+    // from analysis rather than marking it as "unmatchable"
+    boolean hasUnconvertedSrcAddrs = !Sets.intersection(srcAddrs, namedIpSpaces).equals(srcAddrs);
+    boolean hasUnconvertedDstAddrs = !Sets.intersection(dstAddrs, namedIpSpaces).equals(dstAddrs);
+
+    if (hasUnconvertedSrcAddrs || hasUnconvertedDstAddrs) {
+      w.unimplementedf(
+          "Policy %s contains address types that are not fully supported and will be excluded from"
+              + " reachability analysis. Missing source addresses: %s, Missing destination"
+              + " addresses: %s",
+          numAndName,
+          hasUnconvertedSrcAddrs
+              ? Sets.difference(srcAddrs, namedIpSpaces).stream()
+                  .collect(ImmutableList.toImmutableList())
+              : "none",
+          hasUnconvertedDstAddrs
+              ? Sets.difference(dstAddrs, namedIpSpaces).stream()
+                  .collect(ImmutableList.toImmutableList())
+              : "none");
+      return Optional.empty();
+    }
+
     // Note that src/dst interface filtering will be done in generated export policies.
     ImmutableList.Builder<AclLineMatchExpr> matchConjuncts = ImmutableList.builder();
 
@@ -429,6 +451,7 @@ public final class FortiosPolicyConversions {
         }
         yield Stream.of(matchIpProtocol(protocolNumber));
       }
+      case ALL -> Stream.of(TRUE);
       case ICMP6 ->
           throw new UnsupportedOperationException("Should not be called with ICMP6 service.");
     };
@@ -521,10 +544,12 @@ public final class FortiosPolicyConversions {
       case FQDN: // Based on domain names
       case GEOGRAPHY: // Based on countries
       case MAC: // Based on MAC addresses
-        // Unsupported address types.
-        w.redFlagf(
-            "Addresses of type %s are unsupported and will be considered unmatchable.",
-            a.getType());
+        // Unsupported address types. Use unimplemented (not redFlag) since these are
+        // features we haven't implemented yet, not configuration errors.
+        w.unimplementedf(
+            "Address type %s is not yet supported; address %s will be treated as unmatchable. "
+                + "Policies using this address will be excluded from analysis.",
+            a.getType(), a.getName());
         return EmptyIpSpace.INSTANCE;
     }
     throw new IllegalArgumentException("Should be unreachable");
