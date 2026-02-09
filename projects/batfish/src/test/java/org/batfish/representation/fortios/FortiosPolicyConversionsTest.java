@@ -90,8 +90,8 @@ public class FortiosPolicyConversionsTest {
     assertFalse("Policy with partial support should not convert", result.isPresent());
 
     // Should have unimplemented warning, not redFlag
-    assertTrue(
-        "Should have unimplemented warnings", !warnings.getUnimplementedWarnings().isEmpty());
+    assertFalse(
+        "Should have unimplemented warnings", warnings.getUnimplementedWarnings().isEmpty());
     assertThat(
         warnings.getUnimplementedWarnings(),
         hasItem(hasText(containsString("excluded from reachability analysis"))));
