@@ -133,4 +133,78 @@ public class FortiosPolicyConversionsTest {
         "Should not have unimplemented warnings", warnings.getUnimplementedWarnings().isEmpty());
     assertTrue("Should not have redFlag warnings", warnings.getRedFlagWarnings().isEmpty());
   }
+
+  @Test
+  public void testConvertPolicyDisabled() {
+    // Create a disabled policy - should not convert
+    Policy policy = new Policy("2");
+    policy.setAction(Policy.Action.ACCEPT);
+    policy.setStatus(Policy.Status.DISABLE);
+    policy.setSrcAddr(ImmutableSet.of("src"));
+    policy.setDstAddr(ImmutableSet.of("dst"));
+    policy.setService(ImmutableSet.of("HTTP"));
+    policy.setSrcIntfZones(ImmutableSet.of());
+    policy.setDstIntfZones(ImmutableSet.of());
+
+    Warnings warnings = new Warnings(true, true, true);
+
+    Optional<AclLine> result =
+        FortiosPolicyConversions.convertPolicy(
+            policy,
+            ImmutableMap.of("HTTP", AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP)),
+            ImmutableMap.of(),
+            ImmutableSet.of("src", "dst"),
+            "test-config.txt",
+            warnings);
+
+    // Disabled policies should not convert
+    assertFalse("Disabled policy should not convert", result.isPresent());
+  }
+
+  @Test
+  public void testConvertPolicyDenyAction() {
+    // Test DENY action conversion
+    Policy policy = new Policy("3");
+    policy.setAction(Policy.Action.DENY);
+    policy.setStatus(Policy.Status.ENABLE);
+    policy.setSrcAddr(ImmutableSet.of("src"));
+    policy.setDstAddr(ImmutableSet.of("dst"));
+    policy.setService(ImmutableSet.of("HTTP"));
+    policy.setSrcIntfZones(ImmutableSet.of());
+    policy.setDstIntfZones(ImmutableSet.of());
+
+    Warnings warnings = new Warnings(true, true, true);
+
+    Optional<AclLine> result =
+        FortiosPolicyConversions.convertPolicy(
+            policy,
+            ImmutableMap.of("HTTP", AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP)),
+            ImmutableMap.of(),
+            ImmutableSet.of("src", "dst"),
+            "test-config.txt",
+            warnings);
+
+    // DENY policy should convert
+    assertTrue("DENY policy should convert", result.isPresent());
+  }
+
+  @Test
+  public void testGetPolicyName() {
+    // Test policy name generation
+    assertThat(
+        FortiosPolicyConversions.getPolicyName("123", null),
+        equalTo("123"));
+    assertThat(
+        FortiosPolicyConversions.getPolicyName("456", "My Policy"),
+        equalTo("456 named My Policy"));
+  }
+
+  @Test
+  public void testComputeOutgoingFilterName() {
+    // Test outgoing filter name generation
+    assertThat(
+        FortiosPolicyConversions.computeOutgoingFilterName(
+            "OUTGOING", "external"),
+        equalTo("OUTGOING_FILTER_external"));
+  }
 }
