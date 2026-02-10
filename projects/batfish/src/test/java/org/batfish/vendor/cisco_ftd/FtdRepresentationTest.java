@@ -1,6 +1,7 @@
 package org.batfish.vendor.cisco_ftd;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.hasSize;
@@ -21,6 +22,8 @@ import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
 import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapEntry;
 import org.batfish.vendor.cisco_ftd.representation.FtdNatAddress;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObject;
+import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroupMember;
+import org.batfish.vendor.cisco_ftd.representation.FtdServiceObjectGroupMember;
 import org.junit.Test;
 
 /** Tests for FTD representation classes. */
@@ -572,5 +575,286 @@ public class FtdRepresentationTest extends FtdGrammarTest {
 
     assertThat(networkArea0.getAreaId(), equalTo(0L));
     assertThat(networkArea1.getAreaId(), equalTo(1L));
+  }
+
+  // ==================== FtdAccessListAddressSpecifier Tests ====================
+
+  @Test
+  public void testFtdAccessListAddressSpecifierEquals() {
+    FtdAccessListAddressSpecifier specifier1 = FtdAccessListAddressSpecifier.any();
+    FtdAccessListAddressSpecifier specifier2 = FtdAccessListAddressSpecifier.any();
+
+    assertThat(specifier1, equalTo(specifier2));
+    assertThat(specifier1.hashCode(), equalTo(specifier2.hashCode()));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierNotEquals() {
+    FtdAccessListAddressSpecifier any = FtdAccessListAddressSpecifier.any();
+    FtdAccessListAddressSpecifier host = FtdAccessListAddressSpecifier.host(Ip.parse("10.0.0.1"));
+
+    assertThat(any.equals(host), equalTo(false));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierEqualsNull() {
+    FtdAccessListAddressSpecifier specifier = FtdAccessListAddressSpecifier.any();
+
+    assertThat(specifier.equals(null), equalTo(false));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierEqualsSelf() {
+    FtdAccessListAddressSpecifier specifier = FtdAccessListAddressSpecifier.any();
+
+    assertThat(specifier.equals(specifier), equalTo(true));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierHostIp() {
+    FtdAccessListAddressSpecifier specifier =
+        FtdAccessListAddressSpecifier.host(Ip.parse("192.0.2.1"));
+
+    assertThat(specifier.getType(), equalTo(FtdAccessListAddressSpecifier.AddressType.HOST));
+    assertThat(specifier.toString(), containsString("HOST"));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierObject() {
+    FtdAccessListAddressSpecifier specifier = FtdAccessListAddressSpecifier.object("OBJECT_NAME");
+
+    assertThat(specifier.getType(), equalTo(FtdAccessListAddressSpecifier.AddressType.OBJECT));
+    assertThat(specifier.getObjectName(), equalTo("OBJECT_NAME"));
+  }
+
+  @Test
+  public void testFtdAccessListAddressSpecifierAnyVsAny() {
+    FtdAccessListAddressSpecifier any1 = FtdAccessListAddressSpecifier.any();
+    FtdAccessListAddressSpecifier any2 = FtdAccessListAddressSpecifier.any();
+
+    assertThat(any1.equals(any2), equalTo(true));
+    assertThat(any1.hashCode(), equalTo(any2.hashCode()));
+  }
+
+  // ==================== FtdServiceObjectGroupMember Tests ====================
+
+  @Test
+  public void testFtdServiceObjectGroupMemberEquals() {
+    FtdServiceObjectGroupMember member1 = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+    FtdServiceObjectGroupMember member2 = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+
+    assertThat(member1.equals(member2), equalTo(true));
+    assertThat(member1.hashCode(), equalTo(member2.hashCode()));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberNotEquals() {
+    FtdServiceObjectGroupMember member1 = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+    FtdServiceObjectGroupMember member2 = FtdServiceObjectGroupMember.serviceObject("udp", "53");
+
+    assertThat(member1.equals(member2), equalTo(false));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberEqualsNull() {
+    FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+
+    assertThat(member.equals(null), equalTo(false));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberEqualsSelf() {
+    FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+
+    assertThat(member.equals(member), equalTo(true));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberTcpPort() {
+    FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
+
+    assertThat(member.getType(), equalTo(FtdServiceObjectGroupMember.MemberType.SERVICE_OBJECT));
+    assertThat(member.getProtocol(), equalTo("tcp"));
+    assertThat(member.toString(), containsString("tcp"));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberUdpPort() {
+    FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.serviceObject("udp", "53");
+
+    assertThat(member.getType(), equalTo(FtdServiceObjectGroupMember.MemberType.SERVICE_OBJECT));
+    assertThat(member.getProtocol(), equalTo("udp"));
+  }
+
+  @Test
+  public void testFtdServiceObjectGroupMemberPortObject() {
+    FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.portObject("tcp", "1000-2000");
+
+    assertThat(member.getType(), equalTo(FtdServiceObjectGroupMember.MemberType.PORT_OBJECT));
+    assertThat(member.getProtocol(), equalTo("tcp"));
+    assertThat(member.toString(), containsString("1000-2000"));
+  }
+
+  // ==================== FtdNetworkObjectGroupMember Tests ====================
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberEquals() {
+    FtdNetworkObjectGroupMember member1 = FtdNetworkObjectGroupMember.object("NETWORK_OBJ");
+    FtdNetworkObjectGroupMember member2 = FtdNetworkObjectGroupMember.object("NETWORK_OBJ");
+
+    assertThat(member1.equals(member2), equalTo(true));
+    assertThat(member1.hashCode(), equalTo(member2.hashCode()));
+  }
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberNotEquals() {
+    FtdNetworkObjectGroupMember member1 = FtdNetworkObjectGroupMember.object("NETWORK_OBJ1");
+    FtdNetworkObjectGroupMember member2 = FtdNetworkObjectGroupMember.object("NETWORK_OBJ2");
+
+    assertThat(member1.equals(member2), equalTo(false));
+  }
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberEqualsNull() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.object("NETWORK_OBJ");
+
+    assertThat(member.equals(null), equalTo(false));
+  }
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberEqualsSelf() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.object("NETWORK_OBJ");
+
+    assertThat(member.equals(member), equalTo(true));
+  }
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberHost() {
+    FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.host(Ip.parse("10.0.0.1"));
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.HOST));
+    assertThat(member.getIp(), equalTo(Ip.parse("10.0.0.1")));
+  }
+
+  @Test
+  public void testFtdNetworkObjectGroupMemberNetworkMask() {
+    FtdNetworkObjectGroupMember member =
+        FtdNetworkObjectGroupMember.networkMask(Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"));
+
+    assertThat(member.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.NETWORK_MASK));
+    assertThat(member.getIp(), equalTo(Ip.parse("10.0.0.0")));
+    assertThat(member.getMask(), equalTo(Ip.parse("255.255.255.0")));
+  }
+
+  // ==================== FtdAccessListLine Tests ====================
+
+  @Test
+  public void testFtdAccessListLineEquals() {
+    FtdAccessListLine line1 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.PERMIT,
+            "tcp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    FtdAccessListLine line2 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.PERMIT,
+            "tcp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    assertThat(line1.equals(line2), equalTo(true));
+  }
+
+  @Test
+  public void testFtdAccessListLineNotEqualsDifferentActions() {
+    FtdAccessListLine line1 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.PERMIT,
+            "tcp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    FtdAccessListLine line2 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.DENY,
+            "tcp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    assertThat(line1.equals(line2), equalTo(false));
+  }
+
+  @Test
+  public void testFtdAccessListLineHashCodeConsistent() {
+    FtdAccessListLine line1 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.PERMIT,
+            "ip",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    FtdAccessListLine line2 =
+        FtdAccessListLine.createExtended(
+            "ACL1",
+            LineAction.PERMIT,
+            "ip",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    assertThat(line1.hashCode(), equalTo(line2.hashCode()));
+  }
+
+  @Test
+  public void testFtdAccessListLineToStringContainsDetails() {
+    FtdAccessListLine line =
+        FtdAccessListLine.createExtended(
+            "TEST_ACL",
+            LineAction.PERMIT,
+            "tcp",
+            FtdAccessListAddressSpecifier.host(Ip.parse("10.0.0.1")),
+            FtdAccessListAddressSpecifier.any());
+
+    String result = line.toString();
+    assertThat(result, notNullValue());
+    assertThat(result.contains("PERMIT"), equalTo(true));
+    assertThat(result.contains("tcp"), equalTo(true));
+  }
+
+  @Test
+  public void testFtdAccessListLineAdvancedType() {
+    FtdAccessListLine line =
+        FtdAccessListLine.createAdvanced(
+            "ACL1",
+            LineAction.PERMIT,
+            "udp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    assertThat(line.getAclType(), equalTo(FtdAccessListLine.AclType.ADVANCED));
+    assertThat(line.getAction(), equalTo(LineAction.PERMIT));
+  }
+
+  @Test
+  public void testFtdAccessListLineSetTrust() {
+    FtdAccessListLine line =
+        FtdAccessListLine.createAdvanced(
+            "ACL1",
+            LineAction.PERMIT,
+            "udp",
+            FtdAccessListAddressSpecifier.any(),
+            FtdAccessListAddressSpecifier.any());
+
+    line.setTrust(true);
+    assertThat(line.isTrust(), equalTo(true));
+
+    line.setTrust(false);
+    assertThat(line.isTrust(), equalTo(false));
   }
 }

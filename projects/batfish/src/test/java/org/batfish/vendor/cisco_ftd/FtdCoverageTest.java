@@ -21,8 +21,10 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.datamodel.LineAction;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessListAddressSpecifier;
+import org.batfish.vendor.cisco_ftd.representation.FtdAccessListLine;
 import org.batfish.vendor.cisco_ftd.representation.FtdBgpNeighbor;
 import org.batfish.vendor.cisco_ftd.representation.FtdBgpProcess;
 import org.batfish.vendor.cisco_ftd.representation.FtdClassMap;
@@ -33,6 +35,7 @@ import org.batfish.vendor.cisco_ftd.representation.FtdIkev2Policy;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecProfile;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecTransformSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdNatRule;
+import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObject;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroupMember;
 import org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork;
@@ -168,6 +171,90 @@ public class FtdCoverageTest extends FtdGrammarTest {
     tunnelGroup.setIkev2Policy("IKEV2-P1");
     tunnelGroup.setPresharedKey("key");
     assertThat(tunnelGroup.toString(), containsString("IPSEC_L2L"));
+  }
+
+  @Test
+  public void testRepresentationAccessorsAndFormattingBranches() {
+    FtdAccessListAddressSpecifier any = FtdAccessListAddressSpecifier.any();
+    FtdAccessListAddressSpecifier host = FtdAccessListAddressSpecifier.host(Ip.parse("192.0.2.11"));
+    FtdAccessListAddressSpecifier network =
+        FtdAccessListAddressSpecifier.networkMask(Ip.parse("192.0.2.0"), Ip.parse("255.255.255.0"));
+    FtdAccessListAddressSpecifier object = FtdAccessListAddressSpecifier.object("OBJ_A");
+    FtdAccessListAddressSpecifier objectGroup = FtdAccessListAddressSpecifier.objectGroup("GRP_A");
+    assertThat(any.toString(), equalTo("any"));
+    assertThat(host.toString(), equalTo("host 192.0.2.11"));
+    assertThat(network.toString(), equalTo("192.0.2.0 255.255.255.0"));
+    assertThat(object.toString(), equalTo("object OBJ_A"));
+    assertThat(objectGroup.toString(), equalTo("object-group GRP_A"));
+    assertThat(host.getIp(), equalTo(Ip.parse("192.0.2.11")));
+    assertThat(network.getMask(), equalTo(Ip.parse("255.255.255.0")));
+    assertThat(object.getObjectName(), equalTo("OBJ_A"));
+    assertThat(objectGroup.getObjectName(), equalTo("GRP_A"));
+    assertThat(host.equals("not-a-specifier"), equalTo(false));
+
+    FtdServiceObjectGroupMember svcWithPort =
+        FtdServiceObjectGroupMember.serviceObject("tcp", "eq 443");
+    FtdServiceObjectGroupMember svcNoPort = FtdServiceObjectGroupMember.serviceObject("udp", null);
+    FtdServiceObjectGroupMember portNoSpec = FtdServiceObjectGroupMember.portObject("tcp", null);
+    FtdServiceObjectGroupMember group = FtdServiceObjectGroupMember.groupObject("SVC_A");
+    assertThat(
+        svcWithPort.getType(), equalTo(FtdServiceObjectGroupMember.MemberType.SERVICE_OBJECT));
+    assertThat(svcWithPort.getProtocol(), equalTo("tcp"));
+    assertThat(svcWithPort.getPortSpec(), equalTo("eq 443"));
+    assertThat(group.getObjectName(), equalTo("SVC_A"));
+    assertThat(svcWithPort.toString(), equalTo("service-object tcp eq 443"));
+    assertThat(svcNoPort.toString(), equalTo("service-object udp"));
+    assertThat(portNoSpec.toString(), equalTo("port-object "));
+    assertThat(group.equals("not-a-member"), equalTo(false));
+
+    FtdNetworkObjectGroupMember networkMember =
+        FtdNetworkObjectGroupMember.networkMask(
+            Ip.parse("198.51.100.0"), Ip.parse("255.255.255.0"));
+    FtdNetworkObjectGroupMember objectMember = FtdNetworkObjectGroupMember.object("OBJ_B");
+    FtdNetworkObjectGroupMember groupMember = FtdNetworkObjectGroupMember.groupObject("GROUP_B");
+    assertThat(
+        networkMember.getType(), equalTo(FtdNetworkObjectGroupMember.MemberType.NETWORK_MASK));
+    assertThat(networkMember.getIp(), equalTo(Ip.parse("198.51.100.0")));
+    assertThat(networkMember.getMask(), equalTo(Ip.parse("255.255.255.0")));
+    assertThat(objectMember.getObjectName(), equalTo("OBJ_B"));
+    assertThat(groupMember.toString(), equalTo("group-object GROUP_B"));
+    assertThat(objectMember.equals("not-a-net-member"), equalTo(false));
+
+    FtdAccessListLine remark = FtdAccessListLine.createRemark("ACL_TEST", "allow web");
+    assertThat(remark.getName(), equalTo("ACL_TEST"));
+    assertThat(remark.getAclType(), equalTo(FtdAccessListLine.AclType.REMARK));
+    assertThat(remark.getRemark(), equalTo("allow web"));
+    assertThat(remark.toString(), equalTo("remark allow web"));
+
+    FtdAccessListLine advanced =
+        FtdAccessListLine.createAdvanced("ACL_TEST", LineAction.PERMIT, "tcp", host, network);
+    advanced.setSourcePortSpecifier("eq 12345");
+    advanced.setDestinationPortSpecifier("eq https");
+    advanced.setInterfaceName("outside");
+    advanced.setRuleId(200L);
+    advanced.setTrust(true);
+    advanced.setInactive(true);
+    advanced.setLog(true);
+    advanced.setTimeRange("WORK_HOURS");
+    assertThat(advanced.getAclType(), equalTo(FtdAccessListLine.AclType.ADVANCED));
+    assertThat(advanced.getSourcePortSpecifier(), equalTo("eq 12345"));
+    assertThat(advanced.getDestinationPortSpecifier(), equalTo("eq https"));
+    assertThat(advanced.getInterfaceName(), equalTo("outside"));
+    assertThat(advanced.getRuleId(), equalTo(200L));
+    assertThat(advanced.isTrust(), equalTo(true));
+    assertThat(advanced.isInactive(), equalTo(true));
+    assertThat(advanced.isLog(), equalTo(true));
+    assertThat(advanced.getTimeRange(), equalTo("WORK_HOURS"));
+    assertThat(
+        advanced.toString(),
+        containsString("PERMIT tcp host 192.0.2.11 -> 192.0.2.0 255.255.255.0"));
+
+    FtdNetworkObject fqdnObject = new FtdNetworkObject("OBJ_FQDN");
+    fqdnObject.setDescription("fqdn test");
+    fqdnObject.setFqdn("example.com");
+    assertThat(fqdnObject.getDescription(), equalTo("fqdn test"));
+    assertThat(fqdnObject.getFqdn(), equalTo("example.com"));
+    assertThat(fqdnObject.toIpSpace(), nullValue());
   }
 
   @Test
