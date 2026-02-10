@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
@@ -43,7 +44,7 @@ import org.batfish.vendor.cisco_ftd.representation.Interface;
 import org.junit.Test;
 
 /** Extra targeted coverage tests for FTD representation and conversion branches. */
-public class FtdCoverageTest {
+public class FtdCoverageTest extends FtdGrammarTest {
 
   @Test
   public void testRepresentationBranches() {
@@ -245,5 +246,63 @@ public class FtdCoverageTest {
     assertThat(c.getAllInterfaces(), hasKey("GigabitEthernet0/2"));
     assertThat(c.getAllInterfaces().get("GigabitEthernet0/2").getConcreteAddress(), notNullValue());
     assertThat(c.getAllInterfaces().get("GigabitEthernet0/2").getCryptoMap(), nullValue());
+  }
+
+  @Test
+  public void testAccessGroupsSecurityDefaultsAndNatApplication() {
+    String config =
+        join(
+            "interface GigabitEthernet0/0",
+            " nameif inside",
+            " security-level 100",
+            " ip address 10.0.0.1 255.255.255.0",
+            "interface GigabitEthernet0/1",
+            " nameif outside",
+            " security-level 0",
+            " ip address 198.51.100.2 255.255.255.0",
+            "interface GigabitEthernet0/2",
+            " nameif dmz",
+            " security-level 50",
+            " ip address 172.16.0.1 255.255.255.0",
+            "access-list ACL_IN extended permit ip any any",
+            "access-list ACL_OUT extended permit ip any any",
+            "access-list ACL_GLOBAL extended permit ip any any",
+            "access-group ACL_IN in interface inside",
+            "access-group ACL_OUT out interface outside",
+            "access-group ACL_GLOBAL global",
+            "access-group ACL_MISSING in interface inside",
+            "object network REAL_1",
+            " host 10.0.0.10",
+            "object network MAPPED_1",
+            " host 192.0.2.10",
+            "object network REAL_SRC",
+            " host 10.0.0.20",
+            "object network MAPPED_SRC",
+            " host 192.0.2.20",
+            "object network REAL_DST",
+            " host 203.0.113.5",
+            "object network MAPPED_DST",
+            " host 198.51.100.5",
+            "nat (inside,outside) source static REAL_1 MAPPED_1",
+            "nat (inside,outside) after-auto source static REAL_SRC MAPPED_SRC destination static"
+                + " REAL_DST MAPPED_DST");
+
+    FtdConfiguration vc = parseVendorConfig(config);
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getIncomingFilter().getName(),
+        equalTo("ACL_IN"));
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/1").getOutgoingFilter().getName(),
+        equalTo("ACL_OUT"));
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/2").getIncomingFilter().getName(),
+        startsWith("~SECURITY_LEVEL_DEFAULT~GigabitEthernet0/2~"));
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOutgoingTransformation(), notNullValue());
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/1").getIncomingTransformation(), notNullValue());
   }
 }
