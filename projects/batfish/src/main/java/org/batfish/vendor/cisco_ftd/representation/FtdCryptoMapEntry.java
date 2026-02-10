@@ -93,4 +93,11 @@ public class FtdCryptoMapEntry implements Serializable {
   public void setSequenceNumber(int sequenceNumber) {
     _sequenceNumber = sequenceNumber;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdCryptoMapEntry[name=%s, seq=%d, peer=%s, acl=%s, transforms=%s]",
+        _name, _sequenceNumber, _peer, _accessList, _transforms);
+  }
 }

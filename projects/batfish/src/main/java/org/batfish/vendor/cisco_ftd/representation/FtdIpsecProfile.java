@@ -42,4 +42,11 @@ public class FtdIpsecProfile implements Serializable {
   public void setPfsGroup(DiffieHellmanGroup pfsGroup) {
     _pfsGroup = pfsGroup;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdIpsecProfile[name=%s, isakmp=%s, pfs=%s, transforms=%s]",
+        _name, _isakmpProfile, _pfsGroup, _transformSets);
+  }
 }

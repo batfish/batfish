@@ -20,4 +20,9 @@ public class FtdNatService implements Serializable {
   public @Nonnull String getMappedService() {
     return _mappedService;
   }
+
+  @Override
+  public String toString() {
+    return String.format("FtdNatService[%s -> %s]", _realService, _mappedService);
+  }
 }

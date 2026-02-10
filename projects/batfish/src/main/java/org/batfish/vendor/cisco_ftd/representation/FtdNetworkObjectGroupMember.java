@@ -1,6 +1,7 @@
 package org.batfish.vendor.cisco_ftd.representation;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
 
@@ -77,5 +78,25 @@ public class FtdNetworkObjectGroupMember implements Serializable {
         return "group-object " + _objectName;
     }
     throw new IllegalStateException("Unhandled MemberType: " + _type);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FtdNetworkObjectGroupMember)) {
+      return false;
+    }
+    FtdNetworkObjectGroupMember that = (FtdNetworkObjectGroupMember) o;
+    return _type == that._type
+        && Objects.equals(_ip, that._ip)
+        && Objects.equals(_mask, that._mask)
+        && Objects.equals(_objectName, that._objectName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_type, _ip, _mask, _objectName);
   }
 }

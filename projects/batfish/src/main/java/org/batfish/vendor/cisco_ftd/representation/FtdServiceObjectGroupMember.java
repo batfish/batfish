@@ -1,6 +1,7 @@
 package org.batfish.vendor.cisco_ftd.representation;
 
 import java.io.Serializable;
+import java.util.Objects;
 import javax.annotation.Nullable;
 
 /** Represents a member of a Cisco FTD service object-group. */
@@ -72,5 +73,25 @@ public class FtdServiceObjectGroupMember implements Serializable {
         return "group-object " + _objectName;
     }
     throw new IllegalStateException("Unhandled MemberType: " + _type);
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (!(o instanceof FtdServiceObjectGroupMember)) {
+      return false;
+    }
+    FtdServiceObjectGroupMember that = (FtdServiceObjectGroupMember) o;
+    return _type == that._type
+        && Objects.equals(_protocol, that._protocol)
+        && Objects.equals(_portSpec, that._portSpec)
+        && Objects.equals(_objectName, that._objectName);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(_type, _protocol, _portSpec, _objectName);
   }
 }

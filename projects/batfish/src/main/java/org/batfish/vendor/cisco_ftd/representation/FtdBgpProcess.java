@@ -38,6 +38,13 @@ public class FtdBgpProcess implements Serializable {
     _hasIpv4AddressFamily = hasIpv4AddressFamily;
   }
 
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdBgpProcess[asn=%d, routerId=%s, neighbors=%d, ipv4AF=%s]",
+        _asn, _routerId, _neighbors.size(), _hasIpv4AddressFamily);
+  }
+
   private final long _asn;
   private @Nullable Ip _routerId;
   private final Map<Ip, FtdBgpNeighbor> _neighbors;

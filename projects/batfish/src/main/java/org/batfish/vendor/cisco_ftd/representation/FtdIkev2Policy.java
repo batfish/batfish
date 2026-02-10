@@ -52,4 +52,11 @@ public class FtdIkev2Policy implements Serializable {
   public void setLifetimeSeconds(Integer lifetimeSeconds) {
     _lifetimeSeconds = lifetimeSeconds;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdIkev2Policy[priority=%d, encryption=%s, integrity=%s, dh=%s, lifetime=%s]",
+        _priority, _encryptionAlgorithms, _integrityAlgorithms, _dhGroups, _lifetimeSeconds);
+  }
 }

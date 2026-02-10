@@ -23,4 +23,9 @@ public class FtdNatDestination implements Serializable {
   public @Nonnull FtdNatAddress getMapped() {
     return _mapped;
   }
+
+  @Override
+  public String toString() {
+    return String.format("FtdNatDestination[%s -> %s]", _real, _mapped);
+  }
 }

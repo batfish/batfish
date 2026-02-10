@@ -71,6 +71,12 @@ public class FtdBgpNeighbor implements Serializable {
     _ipv4UnicastActive = ipv4UnicastActive;
   }
 
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdBgpNeighbor[ip=%s, remoteAs=%s, ipv4Active=%s]", _ip, _remoteAs, _ipv4UnicastActive);
+  }
+
   private final Ip _ip;
   private @Nullable Long _remoteAs;
   private @Nullable String _description;

@@ -55,4 +55,11 @@ public class FtdIpsecTransformSet implements Serializable {
   public void setMode(IpsecEncapsulationMode mode) {
     _mode = mode;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdIpsecTransformSet[name=%s, espEnc=%s, espAuth=%s, ahAuth=%s, mode=%s]",
+        _name, _espEncryption, _espAuthentication, _ahAuthentication, _mode);
+  }
 }

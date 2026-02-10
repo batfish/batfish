@@ -56,4 +56,10 @@ public class FtdTunnelGroup implements Serializable {
   public void setPresharedKeyStandby(String presharedKeyStandby) {
     _presharedKeyStandby = presharedKeyStandby;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdTunnelGroup[name=%s, type=%s, ikev2Policy=%s]", _name, _type, _ikev2Policy);
+  }
 }

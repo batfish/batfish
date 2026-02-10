@@ -31,4 +31,9 @@ public class FtdNatSource implements Serializable {
   public @Nonnull FtdNatAddress getMapped() {
     return _mapped;
   }
+
+  @Override
+  public String toString() {
+    return String.format("FtdNatSource[%s: %s -> %s]", _type, _real, _mapped);
+  }
 }

@@ -34,4 +34,11 @@ public class FtdServicePolicy implements Serializable {
   public @Nullable String getInterfaceName() {
     return _interfaceName;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdServicePolicy[%s, scope=%s%s]",
+        _policyMapName, _scope, _interfaceName != null ? ", interface=" + _interfaceName : "");
+  }
 }

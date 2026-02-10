@@ -62,4 +62,16 @@ public class FtdNatRule implements Serializable {
   public void setServiceTranslation(@Nullable FtdNatService serviceTranslation) {
     _serviceTranslation = serviceTranslation;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdNatRule[%s -> %s, %s, source=%s, destination=%s, service=%s]",
+        _sourceInterface,
+        _destinationInterface,
+        _position,
+        _sourceTranslation,
+        _destinationTranslation,
+        _serviceTranslation);
+  }
 }

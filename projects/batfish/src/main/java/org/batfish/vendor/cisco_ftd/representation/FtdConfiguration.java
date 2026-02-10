@@ -312,6 +312,8 @@ public class FtdConfiguration extends VendorConfiguration {
     arpService.getSubservices().put("timeout:" + _arpTimeout, new Service());
   }
 
+  private static final int MAX_NESTING_DEPTH = 100;
+
   // Configuration properties
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _vendor;
@@ -525,6 +527,7 @@ public class FtdConfiguration extends VendorConfiguration {
       // Heuristic: if LocalIP is not set, Batfish might fail to bring up session if
       // it can't resolve it.
       // But for now we rely on Batfish core to match via PeerAddress.
+      // Note: build() automatically adds the peer to the process's _activeNeighbors map
       peerBuilder.build();
     }
   }
@@ -761,16 +764,20 @@ public class FtdConfiguration extends VendorConfiguration {
         }
         return Prefix.create(specifier.getIp(), specifier.getMask()).toIpSpace();
       case OBJECT:
-        return resolveNetworkObjectIpSpace(specifier.getObjectName(), new HashSet<>());
+        return resolveNetworkObjectIpSpace(specifier.getObjectName(), new HashSet<>(), 0);
       case OBJECT_GROUP:
-        return resolveNetworkObjectGroupIpSpace(specifier.getObjectName(), new HashSet<>());
+        return resolveNetworkObjectGroupIpSpace(specifier.getObjectName(), new HashSet<>(), 0);
     }
     throw new IllegalStateException("Unhandled AddressType: " + specifier.getType());
   }
 
   private @Nullable IpSpace resolveNetworkObjectIpSpace(
-      @Nullable String name, Set<String> visited) {
+      @Nullable String name, Set<String> visited, int depth) {
     if (name == null || !visited.add(name)) {
+      return null;
+    }
+    if (depth > MAX_NESTING_DEPTH) {
+      _w.redFlagf("Object %s exceeds maximum nesting depth of %d", name, MAX_NESTING_DEPTH);
       return null;
     }
     FtdNetworkObject obj = _networkObjects.get(name);
@@ -781,8 +788,12 @@ public class FtdConfiguration extends VendorConfiguration {
   }
 
   private @Nullable IpSpace resolveNetworkObjectGroupIpSpace(
-      @Nullable String name, Set<String> visited) {
+      @Nullable String name, Set<String> visited, int depth) {
     if (name == null || !visited.add(name)) {
+      return null;
+    }
+    if (depth > MAX_NESTING_DEPTH) {
+      _w.redFlagf("Object group %s exceeds maximum nesting depth of %d", name, MAX_NESTING_DEPTH);
       return null;
     }
     FtdNetworkObjectGroup group = _networkObjectGroups.get(name);
@@ -791,7 +802,7 @@ public class FtdConfiguration extends VendorConfiguration {
     }
     List<IpSpace> members = new ArrayList<>();
     for (FtdNetworkObjectGroupMember member : group.getMembers()) {
-      IpSpace memberSpace = toMemberIpSpace(member, visited);
+      IpSpace memberSpace = toMemberIpSpace(member, visited, depth + 1);
       if (memberSpace != null) {
         members.add(memberSpace);
       }
@@ -803,7 +814,7 @@ public class FtdConfiguration extends VendorConfiguration {
   }
 
   private @Nullable IpSpace toMemberIpSpace(
-      FtdNetworkObjectGroupMember member, Set<String> visited) {
+      FtdNetworkObjectGroupMember member, Set<String> visited, int depth) {
     switch (member.getType()) {
       case HOST:
         return member.getIp() != null ? member.getIp().toIpSpace() : null;
@@ -813,9 +824,9 @@ public class FtdConfiguration extends VendorConfiguration {
         }
         return Prefix.create(member.getIp(), member.getMask()).toIpSpace();
       case OBJECT:
-        return resolveNetworkObjectIpSpace(member.getObjectName(), visited);
+        return resolveNetworkObjectIpSpace(member.getObjectName(), visited, depth);
       case GROUP_OBJECT:
-        return resolveNetworkObjectGroupIpSpace(member.getObjectName(), visited);
+        return resolveNetworkObjectGroupIpSpace(member.getObjectName(), visited, depth);
     }
     throw new IllegalStateException("Unhandled MemberType: " + member.getType());
   }

@@ -212,24 +212,30 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     if (_currentInterface == null || ctx.ip == null || ctx.mask == null) {
       return;
     }
-    Ip ip = Ip.parse(ctx.ip.getText());
-    Ip mask = Ip.parse(ctx.mask.getText());
-    _currentInterface.setAddress(ConcreteInterfaceAddress.create(ip, mask));
+    Ip ip = parseIpSafely(ctx.ip.getText(), "interface IP address");
+    Ip mask = parseIpSafely(ctx.mask.getText(), "interface netmask");
+    if (ip != null && mask != null) {
+      _currentInterface.setAddress(ConcreteInterfaceAddress.create(ip, mask));
+    }
   }
 
   @Override
   public void exitIf_security_level(If_security_levelContext ctx) {
     if (_currentInterface != null) {
-      int level = Integer.parseInt(ctx.level.getText());
-      _currentInterface.setSecurityLevel(level);
+      Integer level = parseIntegerBounded(ctx.level.getText(), "security level", 0, 100);
+      if (level != null) {
+        _currentInterface.setSecurityLevel(level);
+      }
     }
   }
 
   @Override
   public void exitIf_vlan(If_vlanContext ctx) {
     if (_currentInterface != null) {
-      int vlan = Integer.parseInt(ctx.vlan_id.getText());
-      _currentInterface.setVlan(vlan);
+      Integer vlan = parseIntegerBounded(ctx.vlan_id.getText(), "VLAN ID", 0, 4095);
+      if (vlan != null) {
+        _currentInterface.setVlan(vlan);
+      }
     }
   }
 
@@ -591,10 +597,13 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void enterCrypto_ikev2_policy(Crypto_ikev2_policyContext ctx) {
-    Integer priority = Integer.parseInt(ctx.priority.getText());
-    _currentIkev2Policy =
-        _configuration.getIkev2Policies().computeIfAbsent(priority, FtdIkev2Policy::new);
-    defineStructure(FtdStructureType.IKEV2_POLICY, String.valueOf(priority), ctx);
+    Integer priority =
+        parseIntegerBounded(ctx.priority.getText(), "IKEv2 policy priority", 1, 65535);
+    if (priority != null) {
+      _currentIkev2Policy =
+          _configuration.getIkev2Policies().computeIfAbsent(priority, FtdIkev2Policy::new);
+      defineStructure(FtdStructureType.IKEV2_POLICY, String.valueOf(priority), ctx);
+    }
   }
 
   @Override
@@ -648,7 +657,10 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         _currentIkev2Policy.getDhGroups().add(group);
       }
     } else if (ctx.LIFETIME() != null && ctx.dec() != null) {
-      _currentIkev2Policy.setLifetimeSeconds(Integer.parseInt(ctx.dec().getText()));
+      Integer lifetime = parseIntegerBounded(ctx.dec().getText(), "IKEv2 lifetime", 1, 86400);
+      if (lifetime != null) {
+        _currentIkev2Policy.setLifetimeSeconds(lifetime);
+      }
     }
   }
 
@@ -755,6 +767,76 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         return DiffieHellmanGroup.GROUP24;
       default:
         return null;
+    }
+  }
+
+  private static final int MAX_NESTING_DEPTH = 100;
+
+  // ==================== Safe Parsing Helper Methods ====================
+
+  /**
+   * Safely parse an integer with bounds checking.
+   *
+   * @param text The text to parse
+   * @param fieldName Field name for error messages
+   * @param minValue Minimum valid value (inclusive)
+   * @param maxValue Maximum valid value (inclusive)
+   * @return Parsed integer, or null if parsing fails or value is out of range
+   */
+  private @Nullable Integer parseIntegerBounded(
+      String text, String fieldName, int minValue, int maxValue) {
+    try {
+      int value = Integer.parseInt(text);
+      if (value < minValue || value > maxValue) {
+        _w.redFlagf(
+            "%s %d out of valid range [%d-%d], skipping", fieldName, value, minValue, maxValue);
+        return null;
+      }
+      return value;
+    } catch (NumberFormatException e) {
+      _w.redFlagf("Invalid %s value: %s, skipping", fieldName, text);
+      return null;
+    }
+  }
+
+  /**
+   * Safely parse a long with bounds checking.
+   *
+   * @param text The text to parse
+   * @param fieldName Field name for error messages
+   * @param minValue Minimum valid value (inclusive)
+   * @param maxValue Maximum valid value (inclusive)
+   * @return Parsed long, or null if parsing fails or value is out of range
+   */
+  private @Nullable Long parseLongBounded(
+      String text, String fieldName, long minValue, long maxValue) {
+    try {
+      long value = Long.parseLong(text);
+      if (value < minValue || value > maxValue) {
+        _w.redFlagf(
+            "%s %d out of valid range [%d-%d], skipping", fieldName, value, minValue, maxValue);
+        return null;
+      }
+      return value;
+    } catch (NumberFormatException e) {
+      _w.redFlagf("Invalid %s value: %s, skipping", fieldName, text);
+      return null;
+    }
+  }
+
+  /**
+   * Safely parse an IP address.
+   *
+   * @param text The text to parse
+   * @param fieldName Field name for error messages
+   * @return Parsed IP, or null if parsing fails
+   */
+  private @Nullable Ip parseIpSafely(String text, String fieldName) {
+    try {
+      return Ip.parse(text);
+    } catch (IllegalArgumentException e) {
+      _w.redFlagf("Invalid %s IP address: %s, skipping", fieldName, text);
+      return null;
     }
   }
 
@@ -866,7 +948,10 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
             .map(token -> token.getText())
             .collect(java.util.stream.Collectors.joining(" "))
             .trim();
-    Integer seq = ctx.seq != null ? Integer.parseInt(ctx.seq.getText()) : null;
+    Integer seq = null;
+    if (ctx.seq != null) {
+      seq = parseIntegerBounded(ctx.seq.getText(), "crypto map sequence", 1, 65535);
+    }
     if (seq != null) {
       FtdCryptoMapSet mapSet =
           _configuration.getCryptoMaps().computeIfAbsent(name, FtdCryptoMapSet::new);
@@ -922,8 +1007,10 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
     if (ctx.PEER() != null && ctx.ip_address() != null) {
       // Parse peer IP from ip_address context
-      Ip peer = Ip.parse(ctx.ip_address().getText());
-      _currentCryptoMapEntry.setPeer(peer);
+      Ip peer = parseIpSafely(ctx.ip_address().getText(), "crypto map peer IP");
+      if (peer != null) {
+        _currentCryptoMapEntry.setPeer(peer);
+      }
     } else if (ctx.TRANSFORM_SET() != null && ctx.transform_names != null) {
       for (Token token : ctx.transform_names) {
         String transformSetList = token.getText().trim();
@@ -1207,12 +1294,14 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
         && ctx.gateway != null
         && ctx.interface_name() != null) {
       String iface = ctx.interface_name().getText();
-      Ip network = Ip.parse(ctx.network.getText());
-      Ip mask = Ip.parse(ctx.mask.getText());
-      Ip gateway = Ip.parse(ctx.gateway.getText());
-      int metric = Integer.parseInt(ctx.metric.getText());
-      FtdRoute route = new FtdRoute(iface, network, mask, gateway, metric);
-      _configuration.getRoutes().add(route);
+      Ip network = parseIpSafely(ctx.network.getText(), "route network");
+      Ip mask = parseIpSafely(ctx.mask.getText(), "route netmask");
+      Ip gateway = parseIpSafely(ctx.gateway.getText(), "route gateway");
+      Integer metric = parseIntegerBounded(ctx.metric.getText(), "route metric", 0, 255);
+      if (network != null && mask != null && gateway != null && metric != null) {
+        FtdRoute route = new FtdRoute(iface, network, mask, gateway, metric);
+        _configuration.getRoutes().add(route);
+      }
     }
   }
 
@@ -1222,11 +1311,13 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   public void exitMtu_stanza(Mtu_stanzaContext ctx) {
     if (ctx.iface_name != null && ctx.mtu_value != null) {
       String ifaceName = ctx.iface_name.getText();
-      int mtu = Integer.parseInt(ctx.mtu_value.getText());
-      org.batfish.vendor.cisco_ftd.representation.Interface iface =
-          _configuration.getInterfaces().get(ifaceName);
-      if (iface != null) {
-        iface.setMtu(mtu);
+      Integer mtu = parseIntegerBounded(ctx.mtu_value.getText(), "MTU", 68, 9000);
+      if (mtu != null) {
+        org.batfish.vendor.cisco_ftd.representation.Interface iface =
+            _configuration.getInterfaces().get(ifaceName);
+        if (iface != null) {
+          iface.setMtu(mtu);
+        }
       }
     }
   }
@@ -1273,11 +1364,13 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   public void exitOspf_network(
       org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_networkContext ctx) {
     if (_currentOspfProcess != null && ctx.ip != null && ctx.mask != null && ctx.area != null) {
-      Ip ip = Ip.parse(ctx.ip.getText());
-      Ip mask = Ip.parse(ctx.mask.getText());
-      long area = Long.parseLong(ctx.area.getText());
-      FtdOspfNetwork net = new FtdOspfNetwork(ip, mask, area);
-      _currentOspfProcess.getNetworks().add(net);
+      Ip ip = parseIpSafely(ctx.ip.getText(), "OSPF network IP");
+      Ip mask = parseIpSafely(ctx.mask.getText(), "OSPF network mask");
+      Long area = parseLongBounded(ctx.area.getText(), "OSPF area", 0, 0xFFFFFFFFL);
+      if (ip != null && mask != null && area != null) {
+        FtdOspfNetwork net = new FtdOspfNetwork(ip, mask, area);
+        _currentOspfProcess.getNetworks().add(net);
+      }
     }
   }
 
@@ -1285,7 +1378,10 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   public void exitOspf_router_id(
       org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_router_idContext ctx) {
     if (_currentOspfProcess != null && ctx.id != null) {
-      _currentOspfProcess.setRouterId(Ip.parse(ctx.id.getText()));
+      Ip routerId = parseIpSafely(ctx.id.getText(), "OSPF router ID");
+      if (routerId != null) {
+        _currentOspfProcess.setRouterId(routerId);
+      }
     }
   }
 
@@ -1301,9 +1397,11 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void enterRouter_bgp_stanza(Router_bgp_stanzaContext ctx) {
-    long asn = Long.parseLong(ctx.asn.getText());
-    _currentBgpProcess = new FtdBgpProcess(asn);
-    _configuration.setBgpProcess(_currentBgpProcess);
+    Long asn = parseLongBounded(ctx.asn.getText(), "BGP ASN", 1L, 4294967295L);
+    if (asn != null) {
+      _currentBgpProcess = new FtdBgpProcess(asn);
+      _configuration.setBgpProcess(_currentBgpProcess);
+    }
   }
 
   @Override
@@ -1327,19 +1425,28 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   @Override
   public void exitBgp_router_id(Bgp_router_idContext ctx) {
     if (_currentBgpProcess != null && ctx.id != null) {
-      _currentBgpProcess.setRouterId(Ip.parse(ctx.id.getText()));
+      Ip routerId = parseIpSafely(ctx.id.getText(), "BGP router ID");
+      if (routerId != null) {
+        _currentBgpProcess.setRouterId(routerId);
+      }
     }
   }
 
   @Override
   public void exitBgp_neighbor(Bgp_neighborContext ctx) {
     if (_currentBgpProcess != null && ctx.ip != null) {
-      Ip ip = Ip.parse(ctx.ip.getText());
+      Ip ip = parseIpSafely(ctx.ip.getText(), "BGP neighbor IP");
+      if (ip == null) {
+        return;
+      }
       FtdBgpNeighbor neighbor =
           _currentBgpProcess.getNeighbors().computeIfAbsent(ip, k -> new FtdBgpNeighbor(k));
 
       if (ctx.remote_as != null) {
-        neighbor.setRemoteAs(Long.parseLong(ctx.remote_as.getText()));
+        Long remoteAs = parseLongBounded(ctx.remote_as.getText(), "BGP remote AS", 1L, 4294967295L);
+        if (remoteAs != null) {
+          neighbor.setRemoteAs(remoteAs);
+        }
       }
       if (ctx.description != null) {
         neighbor.setDescription(ctx.description.getText().trim());
@@ -1347,10 +1454,18 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       if (ctx.bgp_neighbor_timers() != null) {
         var timersCtx = ctx.bgp_neighbor_timers();
         if (timersCtx.keepalive != null) {
-          neighbor.setKeepalive(Integer.parseInt(timersCtx.keepalive.getText()));
+          Integer keepalive =
+              parseIntegerBounded(timersCtx.keepalive.getText(), "BGP keepalive", 0, 65535);
+          if (keepalive != null) {
+            neighbor.setKeepalive(keepalive);
+          }
         }
         if (timersCtx.holdtime != null) {
-          neighbor.setHoldTime(Integer.parseInt(timersCtx.holdtime.getText()));
+          Integer holdTime =
+              parseIntegerBounded(timersCtx.holdtime.getText(), "BGP holdtime", 0, 65535);
+          if (holdTime != null) {
+            neighbor.setHoldTime(holdTime);
+          }
         }
       }
       if (ctx.bgp_neighbor_route_map() != null) {

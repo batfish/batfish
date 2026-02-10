@@ -27,4 +27,11 @@ public class FtdAccessGroup implements Serializable {
   public @Nonnull String getDirection() {
     return _direction;
   }
+
+  @Override
+  public String toString() {
+    return String.format(
+        "FtdAccessGroup[%s on %s (%s)]",
+        _aclName, _interfaceName != null ? _interfaceName : "global", _direction);
+  }
 }
