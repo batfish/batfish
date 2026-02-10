@@ -4,9 +4,15 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Range;
+import java.util.Map;
+import org.batfish.datamodel.EmptyIp6Space;
+import org.batfish.datamodel.EmptyIpSpace;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Ip6;
 import org.batfish.datamodel.Prefix6;
@@ -183,5 +189,98 @@ public final class PaloAltoRepresentationCoverageTest {
     setting.addCommunityString("public");
     setting.addCommunityString("private");
     assertThat(setting.getCommunityStrings(), contains("public", "private"));
+  }
+
+  @Test
+  public void testSnmpSystem() {
+    SnmpSystem system = new SnmpSystem();
+    assertThat(system.getContact(), nullValue());
+    assertThat(system.getLocation(), nullValue());
+    assertThat(system.getSendEventSpecificTraps(), equalTo(false));
+
+    system.setContact("ops@example.com");
+    system.setLocation("dc1");
+    system.setSendEventSpecificTraps(true);
+
+    assertThat(system.getContact(), equalTo("ops@example.com"));
+    assertThat(system.getLocation(), equalTo("dc1"));
+    assertThat(system.getSendEventSpecificTraps(), equalTo(true));
+  }
+
+  @Test
+  public void testAddressObjectAdditionalPaths() {
+    AddressObject object = new AddressObject("obj1");
+    assertThat(object.getType(), nullValue());
+    assertThat(object.getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(object.getIp6Space(), equalTo(EmptyIp6Space.INSTANCE));
+
+    object.setDescription("desc");
+    assertThat(object.getDescription(), equalTo("desc"));
+
+    object.setFqdn("example.com");
+    assertThat(object.getType(), equalTo(AddressObject.Type.FQDN));
+    assertThat(object.getFqdn(), equalTo("example.com"));
+    assertThat(object.getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+
+    object.setIpLocation("location");
+    assertThat(object.getType(), equalTo(AddressObject.Type.IP_LOCATION));
+    assertThat(object.getIpLocation(), equalTo("location"));
+    assertThat(object.getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
+
+    object.setIp(Ip6.parse("1:db8::1"));
+    assertThat(object.getType(), equalTo(AddressObject.Type.IP));
+    assertThat(object.getIp6(), equalTo(Ip6.parse("1:db8::1")));
+    assertThat(object.getIp6Space(), equalTo(Ip6.parse("1:db8::1").toPrefix6().toIp6Space()));
+
+    object.setPrefix(Ip6Prefix.parse("1:db8:1::1/64"));
+    assertThat(object.getType(), equalTo(AddressObject.Type.PREFIX));
+    assertThat(object.getPrefix6().getIp(), equalTo(Ip6.parse("1:db8:1::1")));
+    assertThat(object.getIp6Space(), equalTo(Prefix6.parse("1:db8:1::/64").toIp6Space()));
+
+    Range<Ip6> ipRange6 = Range.closed(Ip6.parse("1:db8::1"), Ip6.parse("1:db8::ffff"));
+    object.setIpRange6(ipRange6);
+    assertThat(object.getType(), equalTo(AddressObject.Type.IP_RANGE));
+    assertThat(object.getIpRange6(), equalTo(ipRange6));
+    assertThat(object.getIp6Space(), equalTo(EmptyIp6Space.INSTANCE));
+  }
+
+  @Test
+  public void testAddressGroupTypeTransitionsAndIpSpaces() {
+    AddressObject ipObj = new AddressObject("ipObj");
+    ipObj.setIp(Ip.parse("10.0.0.1"));
+    ipObj.getTags().add("tag1");
+    ipObj.getTags().add("tag2");
+
+    AddressObject ip6Obj = new AddressObject("ip6Obj");
+    ip6Obj.setIp(Ip6.parse("2001:db8::1"));
+    ip6Obj.getTags().add("tag1");
+    ip6Obj.getTags().add("tag2");
+
+    Map<String, AddressObject> objects =
+        ImmutableMap.of(ipObj.getName(), ipObj, ip6Obj.getName(), ip6Obj);
+    Map<String, AddressGroup> groups = ImmutableMap.of();
+
+    AddressGroup group = new AddressGroup("group");
+    assertThat(group.getType(), nullValue());
+    assertThat(group.getMembers(), empty());
+    assertThat(group.getIpSpace(objects, groups), equalTo(EmptyIpSpace.INSTANCE));
+    assertThat(group.getIp6Space(objects, groups), equalTo(EmptyIp6Space.INSTANCE));
+
+    group.setDescription("description");
+    assertThat(group.getDescription(), equalTo("description"));
+
+    group.setFilter("'tag1' and 'tag2'");
+    assertThat(group.getType(), equalTo(AddressGroup.Type.DYNAMIC));
+    assertThat(group.getFilter(), equalTo("'tag1' and 'tag2'"));
+    assertThat(group.getIpSpace(objects, groups), equalTo(Ip.parse("10.0.0.1").toIpSpace()));
+    assertThat(
+        group.getIp6Space(objects, groups),
+        equalTo(Ip6.parse("2001:db8::1").toPrefix6().toIp6Space()));
+
+    group.addMember("ipObj");
+    assertThat(group.getType(), equalTo(AddressGroup.Type.STATIC));
+    assertThat(group.getFilter(), nullValue());
+    assertThat(group.getMembers(), hasItem("ipObj"));
+    assertThat(group.getIpSpace(objects, groups), equalTo(Ip.parse("10.0.0.1").toIpSpace()));
   }
 }
