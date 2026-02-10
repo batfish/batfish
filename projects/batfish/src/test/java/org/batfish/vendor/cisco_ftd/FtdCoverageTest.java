@@ -1,0 +1,249 @@
+package org.batfish.vendor.cisco_ftd;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
+
+import org.batfish.datamodel.ConcreteInterfaceAddress;
+import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.DeviceModel;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
+import org.batfish.datamodel.IkeHashingAlgorithm;
+import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
+import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.vendor.cisco_ftd.representation.FtdAccessListAddressSpecifier;
+import org.batfish.vendor.cisco_ftd.representation.FtdBgpNeighbor;
+import org.batfish.vendor.cisco_ftd.representation.FtdBgpProcess;
+import org.batfish.vendor.cisco_ftd.representation.FtdClassMap;
+import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
+import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapEntry;
+import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapSet;
+import org.batfish.vendor.cisco_ftd.representation.FtdIkev2Policy;
+import org.batfish.vendor.cisco_ftd.representation.FtdIpsecProfile;
+import org.batfish.vendor.cisco_ftd.representation.FtdIpsecTransformSet;
+import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroup;
+import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroupMember;
+import org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork;
+import org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess;
+import org.batfish.vendor.cisco_ftd.representation.FtdPolicyMap;
+import org.batfish.vendor.cisco_ftd.representation.FtdRoute;
+import org.batfish.vendor.cisco_ftd.representation.FtdServiceObjectGroupMember;
+import org.batfish.vendor.cisco_ftd.representation.FtdServicePolicy;
+import org.batfish.vendor.cisco_ftd.representation.FtdTunnelGroup;
+import org.batfish.vendor.cisco_ftd.representation.Interface;
+import org.junit.Test;
+
+/** Extra targeted coverage tests for FTD representation and conversion branches. */
+public class FtdCoverageTest {
+
+  @Test
+  public void testRepresentationBranches() {
+    FtdAccessListAddressSpecifier any4 = FtdAccessListAddressSpecifier.any4();
+    FtdAccessListAddressSpecifier any6 = FtdAccessListAddressSpecifier.any6();
+    FtdAccessListAddressSpecifier obj = FtdAccessListAddressSpecifier.object("OBJ1");
+    FtdAccessListAddressSpecifier objGroup = FtdAccessListAddressSpecifier.objectGroup("GRP1");
+
+    assertThat(any4.toString(), equalTo("any4"));
+    assertThat(any6.toString(), equalTo("any6"));
+    assertThat(obj.toString(), equalTo("object OBJ1"));
+    assertThat(objGroup.toString(), equalTo("object-group GRP1"));
+
+    FtdServiceObjectGroupMember svcDefault = FtdServiceObjectGroupMember.serviceObject(null, null);
+    FtdServiceObjectGroupMember port = FtdServiceObjectGroupMember.portObject("tcp", "eq 443");
+    FtdServiceObjectGroupMember group = FtdServiceObjectGroupMember.groupObject("SVC_GROUP");
+
+    assertThat(svcDefault.toString(), equalTo("service-object ip"));
+    assertThat(port.toString(), equalTo("port-object eq 443"));
+    assertThat(group.toString(), equalTo("group-object SVC_GROUP"));
+
+    FtdNetworkObjectGroupMember hostA = FtdNetworkObjectGroupMember.host(Ip.parse("10.0.0.1"));
+    FtdNetworkObjectGroupMember hostB = FtdNetworkObjectGroupMember.host(Ip.parse("10.0.0.1"));
+    assertThat(hostA, equalTo(hostB));
+    assertThat(hostA.hashCode(), equalTo(hostB.hashCode()));
+
+    FtdNetworkObjectGroup groupRep = new FtdNetworkObjectGroup("NET_GROUP");
+    groupRep.addMember(hostA);
+    assertThat(groupRep.toString(), containsString("NET_GROUP"));
+
+    FtdIpsecTransformSet transform = new FtdIpsecTransformSet("TS1");
+    transform.setEspEncryption(EncryptionAlgorithm.AES_128_CBC);
+    transform.setEspAuthentication(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
+    transform.setMode(IpsecEncapsulationMode.TRANSPORT);
+    assertThat(transform.toString(), containsString("TS1"));
+    assertThat(transform.getMode(), equalTo(IpsecEncapsulationMode.TRANSPORT));
+
+    FtdIpsecProfile profile = new FtdIpsecProfile("PROF1");
+    profile.setIsakmpProfile("IKEV2-P1");
+    profile.setPfsGroup(DiffieHellmanGroup.GROUP14);
+    profile.getTransformSets().add("TS1");
+    assertThat(profile.toString(), containsString("PROF1"));
+
+    FtdClassMap classMap = new FtdClassMap("CM1");
+    classMap.setType("inspect");
+    classMap.addMatchLine("match default-inspection-traffic");
+    classMap.addAccessListReference("ACL1");
+    assertThat(classMap.getAccessListReferences(), hasSize(1));
+
+    FtdTunnelGroup tunnelGroup = new FtdTunnelGroup("203.0.113.10");
+    tunnelGroup.setType(FtdTunnelGroup.Type.IPSEC_L2L);
+    tunnelGroup.setIkev2Policy("IKEV2-P1");
+    tunnelGroup.setPresharedKey("key");
+    assertThat(tunnelGroup.toString(), containsString("IPSEC_L2L"));
+  }
+
+  @Test
+  public void testFtdConfigurationConversionVpnBgpAndMetadata() {
+    FtdConfiguration vc = new FtdConfiguration();
+    vc.setVendor(ConfigurationFormat.CISCO_FTD);
+    vc.setHostname("ftd-edge");
+
+    vc.setNamesEnabled(true);
+    vc.getNames().put("srv1", "203.0.113.99");
+    vc.setArpTimeout(1800);
+
+    Interface inside = new Interface("GigabitEthernet0/0");
+    inside.setNameif("inside");
+    inside.setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"));
+    vc.getInterfaces().put(inside.getName(), inside);
+
+    Interface outside = new Interface("GigabitEthernet0/1");
+    outside.setNameif("outside");
+    outside.setAddress(ConcreteInterfaceAddress.parse("198.51.100.2/24"));
+    outside.setMtu(1400);
+    vc.getInterfaces().put(outside.getName(), outside);
+
+    vc.getRoutes()
+        .add(
+            new FtdRoute(
+                outside.getName(),
+                Ip.parse("172.16.0.0"),
+                Ip.parse("255.240.0.0"),
+                Ip.parse("198.51.100.1"),
+                10));
+
+    FtdIkev2Policy ikePolicy = new FtdIkev2Policy(10);
+    ikePolicy.getEncryptionAlgorithms().add(EncryptionAlgorithm.AES_256_CBC);
+    ikePolicy.getIntegrityAlgorithms().add(IkeHashingAlgorithm.SHA_256);
+    ikePolicy.getDhGroups().add(DiffieHellmanGroup.GROUP14);
+    ikePolicy.setLifetimeSeconds(86400);
+    vc.getIkev2Policies().put(10, ikePolicy);
+
+    FtdIpsecTransformSet transformSet = new FtdIpsecTransformSet("ESP-AES-SHA");
+    transformSet.setEspEncryption(EncryptionAlgorithm.AES_128_CBC);
+    transformSet.setEspAuthentication(IpsecAuthenticationAlgorithm.HMAC_SHA1_96);
+    vc.getIpsecTransformSets().put(transformSet.getName(), transformSet);
+
+    FtdIpsecProfile ipsecProfile = new FtdIpsecProfile("IPSEC-PROFILE");
+    ipsecProfile.setPfsGroup(DiffieHellmanGroup.GROUP14);
+    ipsecProfile.getTransformSets().add(transformSet.getName());
+    vc.getIpsecProfiles().put(ipsecProfile.getName(), ipsecProfile);
+
+    FtdCryptoMapSet mapSet = new FtdCryptoMapSet("CMAP");
+    FtdCryptoMapEntry entry = new FtdCryptoMapEntry("CMAP", 10);
+    entry.setPeer(Ip.parse("203.0.113.1"));
+    entry.setTransforms(java.util.List.of(transformSet.getName()));
+    entry.setPfsKeyGroup(DiffieHellmanGroup.GROUP14);
+    mapSet.addEntry(entry);
+    vc.getCryptoMaps().put(mapSet.getName(), mapSet);
+
+    vc.addCryptoMapInterfaceBinding("CMAP", "outside");
+
+    FtdTunnelGroup tg = new FtdTunnelGroup("203.0.113.1");
+    tg.setType(FtdTunnelGroup.Type.IPSEC_L2L);
+    tg.setPresharedKey("secret123");
+    vc.getTunnelGroups().put(tg.getName(), tg);
+
+    FtdBgpProcess bgp = new FtdBgpProcess(65001L);
+    bgp.setRouterId(Ip.parse("10.0.0.1"));
+    bgp.setHasIpv4AddressFamily(true);
+
+    FtdBgpNeighbor active = new FtdBgpNeighbor(Ip.parse("203.0.113.2"));
+    active.setRemoteAs(65002L);
+    active.setIpv4UnicastActive(true);
+    active.setDescription("active peer");
+    bgp.getNeighbors().put(active.getIp(), active);
+
+    FtdBgpNeighbor missingRemoteAs = new FtdBgpNeighbor(Ip.parse("203.0.113.3"));
+    bgp.getNeighbors().put(missingRemoteAs.getIp(), missingRemoteAs);
+
+    FtdBgpNeighbor inactiveIpv4 = new FtdBgpNeighbor(Ip.parse("203.0.113.4"));
+    inactiveIpv4.setRemoteAs(65004L);
+    inactiveIpv4.setIpv4UnicastActive(false);
+    bgp.getNeighbors().put(inactiveIpv4.getIp(), inactiveIpv4);
+
+    vc.setBgpProcess(bgp);
+
+    FtdOspfProcess ospf = new FtdOspfProcess("1");
+    ospf.setRouterId(Ip.parse("10.0.0.1"));
+    ospf.getNetworks().add(new FtdOspfNetwork(Ip.parse("10.0.0.0"), Ip.parse("255.255.255.0"), 0L));
+    vc.getOspfProcesses().put("1", ospf);
+
+    FtdClassMap cm = new FtdClassMap("CM_INSPECT");
+    vc.addClassMap(cm);
+    FtdPolicyMap pm = new FtdPolicyMap("PM_INSPECT");
+    vc.addPolicyMap(pm);
+    vc.addServicePolicy(new FtdServicePolicy(pm.getName(), FtdServicePolicy.Scope.GLOBAL, null));
+
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    assertThat(c.getDeviceModel(), equalTo(DeviceModel.CISCO_FTD));
+    assertThat(c.getHostname(), equalTo("ftd-edge"));
+    assertThat(c.getAllInterfaces(), hasKey("GigabitEthernet0/0"));
+    assertThat(c.getAllInterfaces(), hasKey("GigabitEthernet0/1"));
+    assertThat(c.getZones(), hasKey("inside"));
+    assertThat(c.getZones(), hasKey("outside"));
+
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/1").getCryptoMap(), equalTo("CMAP"));
+
+    assertThat(c.getIpsecPhase2Proposals(), hasKey("ESP-AES-SHA"));
+    assertThat(c.getIpsecPhase2Policies(), hasKey("IPSEC-PROFILE"));
+    assertThat(c.getIpsecPeerConfigs().size(), equalTo(1));
+    assertThat(c.getIkePhase1Proposals().size(), greaterThan(0));
+    assertThat(c.getIkePhase1Policies(), hasKey("10"));
+    assertThat(c.getIkePhase1Keys(), hasKey("203.0.113.1"));
+
+    assertThat(c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getStaticRoutes(), hasSize(0));
+    assertThat(c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess(), notNullValue());
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getBgpProcess().getActiveNeighbors().size(),
+        equalTo(1));
+    assertThat(
+        c.getVrfs().get(Configuration.DEFAULT_VRF_NAME).getOspfProcesses().size(), equalTo(1));
+
+    assertThat(c.getVendorFamily().getCisco(), notNullValue());
+    assertThat(c.getVendorFamily().getCisco().getServices(), hasKey("names"));
+    assertThat(c.getVendorFamily().getCisco().getServices(), hasKey("arp"));
+    assertThat(c.getVendorFamily().getCisco().getServices(), hasKey("mpf"));
+  }
+
+  @Test
+  public void testNamesDisabledAndNoArpMetadata() {
+    FtdConfiguration vc = new FtdConfiguration();
+    vc.setVendor(ConfigurationFormat.CISCO_FTD);
+    vc.setHostname("ftd-min");
+    vc.getNames().put("srv1", "1.1.1.1");
+
+    Interface iface = new Interface("GigabitEthernet0/2");
+    iface.setAddress(ConcreteInterfaceAddress.parse("192.0.2.2/24"));
+    vc.getInterfaces().put(iface.getName(), iface);
+
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    if (c.getVendorFamily().getCisco() != null) {
+      assertThat(c.getVendorFamily().getCisco().getServices(), not(hasKey("names")));
+      assertThat(c.getVendorFamily().getCisco().getServices(), not(hasKey("arp")));
+    }
+    assertThat(c.getAllInterfaces(), hasKey("GigabitEthernet0/2"));
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/2").getConcreteAddress(), notNullValue());
+    assertThat(c.getAllInterfaces().get("GigabitEthernet0/2").getCryptoMap(), nullValue());
+  }
+}
