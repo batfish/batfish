@@ -1843,7 +1843,7 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testSetConfigLogSettingsFormat() {
-    Configuration c = parseConfig("set-config-log-settings-format");
+    parseConfig("set-config-log-settings-format");
 
     // Test that set config shared log-settings syslog with format escaping parses correctly
     // This is the flattener output from nested configs starting with "config {"
@@ -1851,7 +1851,7 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testSetConfigInterfaceLayer2Lldp() {
-    Configuration c = parseConfig("set-config-interface-layer2-lldp");
+    parseConfig("set-config-interface-layer2-lldp");
 
     // Test that set config devices <name> network interface ethernet <name> layer2 lldp enable no
     // parses
@@ -1859,14 +1859,14 @@ public final class PaloAltoGrammarTest {
 
   @Test
   public void testSetNetworkInterfaceLayer2Zone() {
-    Configuration c = parseConfig("set-network-interface-layer2-zone");
+    parseConfig("set-network-interface-layer2-zone");
 
     // Test that set network interface ethernet <name> layer2 zone <zone> parses
   }
 
   @Test
   public void testSetNetworkInterfaceUnitsFeatures() {
-    Configuration c = parseConfig("set-network-interface-units-features");
+    parseConfig("set-network-interface-units-features");
 
     // Test that set network interface vlan units with ipv6, ndp-proxy, adjust-tcp-mss parses
   }
