@@ -21,6 +21,7 @@ import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpsecAuthenticationAlgorithm;
 import org.batfish.datamodel.IpsecEncapsulationMode;
+import org.batfish.vendor.cisco_ftd.representation.FtdAccessGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdAccessListAddressSpecifier;
 import org.batfish.vendor.cisco_ftd.representation.FtdBgpNeighbor;
 import org.batfish.vendor.cisco_ftd.representation.FtdBgpProcess;
@@ -31,6 +32,7 @@ import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdIkev2Policy;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecProfile;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecTransformSet;
+import org.batfish.vendor.cisco_ftd.representation.FtdNatRule;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroup;
 import org.batfish.vendor.cisco_ftd.representation.FtdNetworkObjectGroupMember;
 import org.batfish.vendor.cisco_ftd.representation.FtdOspfNetwork;
@@ -45,6 +47,73 @@ import org.junit.Test;
 
 /** Extra targeted coverage tests for FTD representation and conversion branches. */
 public class FtdCoverageTest extends FtdGrammarTest {
+
+  @Test
+  public void testFtdConfigurationAccessorsAndMutators() {
+    FtdConfiguration vc = new FtdConfiguration();
+    vc.setVendor(ConfigurationFormat.CISCO_FTD);
+    vc.setHostname("edge-a");
+
+    assertThat(vc.getHostname(), equalTo("edge-a"));
+    assertThat(vc.getInterfaces(), notNullValue());
+    assertThat(vc.getAccessLists(), notNullValue());
+    assertThat(vc.getNetworkObjects(), notNullValue());
+    assertThat(vc.getNetworkObjectGroups(), notNullValue());
+    assertThat(vc.getServiceObjectGroups(), notNullValue());
+    assertThat(vc.getOspfProcesses(), notNullValue());
+    assertThat(vc.getVrfs(), notNullValue());
+    assertThat(vc.getNatRules(), hasSize(0));
+    assertThat(vc.getRoutes(), hasSize(0));
+    assertThat(vc.getFailoverLines(), hasSize(0));
+    assertThat(vc.getAccessGroups(), hasSize(0));
+    assertThat(vc.getClassMaps(), notNullValue());
+    assertThat(vc.getPolicyMaps(), notNullValue());
+    assertThat(vc.getServicePolicies(), hasSize(0));
+    assertThat(vc.getCryptoMaps(), notNullValue());
+    assertThat(vc.getCryptoMapInterfaceBindings(), notNullValue());
+    assertThat(vc.getIpsecTransformSets(), notNullValue());
+    assertThat(vc.getIpsecProfiles(), notNullValue());
+    assertThat(vc.getIkev2Policies(), notNullValue());
+    assertThat(vc.getTunnelGroups(), notNullValue());
+
+    vc.addNatRule(new FtdNatRule("inside", "outside", FtdNatRule.NatPosition.AUTO));
+    vc.getRoutes()
+        .add(
+            new FtdRoute(
+                "inside",
+                Ip.parse("10.10.0.0"),
+                Ip.parse("255.255.0.0"),
+                Ip.parse("192.0.2.1"),
+                1));
+    vc.getFailoverLines().add("failover lan unit primary");
+    vc.getAccessGroups().add(new FtdAccessGroup("ACL_A", "inside", "in"));
+
+    FtdClassMap cm = new FtdClassMap("CM_A");
+    vc.addClassMap(cm);
+    FtdPolicyMap pm = new FtdPolicyMap("PM_A");
+    vc.addPolicyMap(pm);
+    vc.addServicePolicy(new FtdServicePolicy("PM_A", FtdServicePolicy.Scope.GLOBAL, null));
+    vc.addCryptoMapInterfaceBinding("CMAP_A", "outside");
+
+    FtdBgpProcess bgp = new FtdBgpProcess(65001L);
+    vc.setBgpProcess(bgp);
+    assertThat(vc.getBgpProcess(), equalTo(bgp));
+
+    vc.setNamesEnabled(true);
+    vc.getNames().put("host-a", "198.51.100.10");
+    vc.setArpTimeout(900);
+    assertThat(vc.getNamesEnabled(), equalTo(true));
+    assertThat(vc.getArpTimeout(), equalTo(900));
+
+    assertThat(vc.getNatRules(), hasSize(1));
+    assertThat(vc.getRoutes(), hasSize(1));
+    assertThat(vc.getFailoverLines(), hasSize(1));
+    assertThat(vc.getAccessGroups(), hasSize(1));
+    assertThat(vc.getClassMaps(), hasKey("CM_A"));
+    assertThat(vc.getPolicyMaps(), hasKey("PM_A"));
+    assertThat(vc.getServicePolicies(), hasSize(1));
+    assertThat(vc.getCryptoMapInterfaceBindings(), hasKey("CMAP_A"));
+  }
 
   @Test
   public void testRepresentationBranches() {
