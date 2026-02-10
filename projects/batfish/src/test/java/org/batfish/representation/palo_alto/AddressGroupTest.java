@@ -131,6 +131,12 @@ public class AddressGroupTest {
   }
 
   @Test
+  public void testGetFilterConjunctsShortString() {
+    String filter = "'";
+    assertThat(getFilterConjuncts(filter), contains("'"));
+  }
+
+  @Test
   public void testGetFilterConjuncts() {
     String filter = "'tag1' and 'tag2'";
     assertThat(getFilterConjuncts(filter), contains("tag1", "tag2"));

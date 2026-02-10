@@ -9,6 +9,7 @@ import com.google.common.collect.Range;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpRange;
 import org.batfish.representation.palo_alto.AddressObject.Type;
 import org.junit.Test;
 
@@ -68,5 +69,17 @@ public class AddressObjectTest {
     a.setIp((Ip) null);
     assertNull(a.getIp());
     assertNull(a.getType());
+  }
+
+  @Test
+  public void testGetIpSpacePrefixAndRange() {
+    AddressObject a = new AddressObject("name");
+
+    a.setPrefix(IpPrefix.parse("1.2.3.4/24"));
+    assertThat(a.getIpSpace(), equalTo(IpPrefix.parse("1.2.3.4/24").getPrefix().toIpSpace()));
+
+    Range<Ip> range = Range.closed(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.10"));
+    a.setIpRange(range);
+    assertThat(a.getIpSpace(), equalTo(IpRange.range(Ip.parse("1.2.3.4"), Ip.parse("1.2.3.10"))));
   }
 }
