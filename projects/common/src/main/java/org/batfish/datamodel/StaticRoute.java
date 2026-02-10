@@ -45,7 +45,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       @JsonProperty(PROP_NEXT_HOP_IP) @Nullable Ip nextHopIp,
       @JsonProperty(PROP_NEXT_HOP_INTERFACE) @Nullable String nextHopInterface,
       @JsonProperty(PROP_NEXT_VRF) @Nullable String nextVrf,
-      @JsonProperty(PROP_ADMINISTRATIVE_COST) int administrativeCost,
+      @JsonProperty(PROP_ADMINISTRATIVE_COST) long administrativeCost,
       @JsonProperty(PROP_METRIC) long metric,
       @JsonProperty(PROP_TAG) long tag,
       @JsonProperty(PROP_TRACK) @Nullable String track) {
@@ -66,7 +66,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
   private StaticRoute(
       @Nonnull Prefix network,
       @Nonnull NextHop nextHop,
-      int administrativeCost,
+      long administrativeCost,
       long metric,
       long tag,
       boolean nonForwarding,
@@ -161,7 +161,7 @@ public class StaticRoute extends AbstractRoute implements Comparable<StaticRoute
       return this;
     }
 
-    public @Nonnull Builder setAdministrativeCost(int administrativeCost) {
+    public @Nonnull Builder setAdministrativeCost(long administrativeCost) {
       // Call method on parent builder. Keep backwards-compatible API.
       setAdmin(administrativeCost);
       return this;

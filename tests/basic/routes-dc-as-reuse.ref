@@ -64,7 +64,7 @@
           "isKey" : false,
           "isValue" : true,
           "name" : "Admin_Distance",
-          "schema" : "Integer"
+          "schema" : "Long"
         },
         {
           "description" : "Tag for this route",

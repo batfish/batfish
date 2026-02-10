@@ -33,7 +33,7 @@ import org.batfish.datamodel.questions.BgpRouteStatus;
 public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   private final @Nullable String _nextHopInterface;
   private final @Nullable AsPath _asPath;
-  private final @Nullable Integer _adminDistance;
+  private final @Nullable Long _adminDistance;
   private final @Nonnull Set<Long> _clusterList;
   private final @Nonnull List<String> _communities;
   private final @Nullable Long _localPreference;
@@ -49,7 +49,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   private RouteRowAttribute(
       String nextHopInterface,
-      Integer adminDistance,
+      Long adminDistance,
       Long metric,
       AsPath asPath,
       Long localPreference,
@@ -80,7 +80,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
     _weight = weight;
   }
 
-  public @Nullable Integer getAdminDistance() {
+  public @Nullable Long getAdminDistance() {
     return _adminDistance;
   }
 
@@ -146,7 +146,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
 
   private static final Comparator<RouteRowAttribute> COMPARATOR =
       comparing(RouteRowAttribute::getNextHopInterface, nullsLast(String::compareTo))
-          .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Integer::compareTo))
+          .thenComparing(RouteRowAttribute::getAdminDistance, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getMetric, nullsLast(Long::compareTo))
           .thenComparing(RouteRowAttribute::getAsPath, nullsLast(AsPath::compareTo))
           .thenComparing(RouteRowAttribute::getLocalPreference, nullsLast(Long::compareTo))
@@ -245,7 +245,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
   /** Builder for {@link RouteRowAttribute} */
   public static final class Builder {
     private @Nullable String _nextHopInterface;
-    private @Nullable Integer _adminDistance;
+    private @Nullable Long _adminDistance;
     private @Nullable Long _metric;
     private @Nullable AsPath _asPath;
     private @Nullable Long _localPreference;
@@ -282,7 +282,7 @@ public class RouteRowAttribute implements Comparable<RouteRowAttribute> {
           _weight);
     }
 
-    public Builder setAdminDistance(Integer adminDistance) {
+    public Builder setAdminDistance(Long adminDistance) {
       _adminDistance = adminDistance;
       return this;
     }

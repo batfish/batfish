@@ -6604,9 +6604,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopst_preference(Popst_preferenceContext ctx) {
-    int preference = toInt(ctx.preference);
-    PsThenPreference then = new PsThenPreference(preference);
-    addPsThen(then, ctx);
+    long preference = toLong(ctx.preference);
+    PsThenPreference.Operator op =
+        ctx.ADD() != null
+            ? PsThenPreference.Operator.ADD
+            : (ctx.SUBTRACT() != null
+                ? PsThenPreference.Operator.SUBTRACT
+                : PsThenPreference.Operator.SET);
+    addPsThen(new PsThenPreference(preference, op), ctx);
   }
 
   @Override
