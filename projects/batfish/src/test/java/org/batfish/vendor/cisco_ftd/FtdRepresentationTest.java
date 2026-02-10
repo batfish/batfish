@@ -597,6 +597,7 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   }
 
   @Test
+  @SuppressWarnings("EqualsNull")
   public void testFtdAccessListAddressSpecifierEqualsNull() {
     FtdAccessListAddressSpecifier specifier = FtdAccessListAddressSpecifier.any();
 
@@ -656,6 +657,7 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   }
 
   @Test
+  @SuppressWarnings("EqualsNull")
   public void testFtdServiceObjectGroupMemberEqualsNull() {
     FtdServiceObjectGroupMember member = FtdServiceObjectGroupMember.serviceObject("tcp", "80");
 
@@ -715,6 +717,7 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   }
 
   @Test
+  @SuppressWarnings("EqualsNull")
   public void testFtdNetworkObjectGroupMemberEqualsNull() {
     FtdNetworkObjectGroupMember member = FtdNetworkObjectGroupMember.object("NETWORK_OBJ");
 
