@@ -770,8 +770,6 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
   }
 
-  private static final int MAX_NESTING_DEPTH = 100;
-
   // ==================== Safe Parsing Helper Methods ====================
 
   /**
