@@ -4,7 +4,9 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpRange;
 import org.batfish.datamodel.IpSpace;
+import org.batfish.datamodel.Prefix;
 
 /** Represents a Cisco FTD network object. */
 public class FtdNetworkObject implements Serializable {
@@ -105,12 +107,12 @@ public class FtdNetworkObject implements Serializable {
         return _hostIp != null ? _hostIp.toIpSpace() : null;
       case SUBNET:
         if (_subnetNetwork != null && _subnetMask != null) {
-          return org.batfish.datamodel.Prefix.create(_subnetNetwork, _subnetMask).toIpSpace();
+          return Prefix.create(_subnetNetwork, _subnetMask).toIpSpace();
         }
         return null;
       case RANGE:
         if (_rangeStart != null && _rangeEnd != null) {
-          return org.batfish.datamodel.IpRange.range(_rangeStart, _rangeEnd);
+          return IpRange.range(_rangeStart, _rangeEnd);
         }
         return null;
       case FQDN:

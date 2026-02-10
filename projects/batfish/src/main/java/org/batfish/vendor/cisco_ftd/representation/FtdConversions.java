@@ -15,9 +15,12 @@ import org.batfish.common.Warnings;
 import org.batfish.datamodel.AclLine;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 import org.batfish.datamodel.Configuration;
+import org.batfish.datamodel.DiffieHellmanGroup;
+import org.batfish.datamodel.EncryptionAlgorithm;
 import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.HeaderSpace;
 import org.batfish.datamodel.IkeAuthenticationMethod;
+import org.batfish.datamodel.IkeHashingAlgorithm;
 import org.batfish.datamodel.IkeKeyType;
 import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Proposal;
@@ -27,6 +30,7 @@ import org.batfish.datamodel.IpsecDynamicPeerConfig;
 import org.batfish.datamodel.IpsecPeerConfig;
 import org.batfish.datamodel.IpsecPhase2Policy;
 import org.batfish.datamodel.IpsecPhase2Proposal;
+import org.batfish.datamodel.IpsecProtocol;
 import org.batfish.datamodel.IpsecStaticPeerConfig;
 import org.batfish.datamodel.acl.MatchHeaderSpace;
 import org.batfish.datamodel.visitors.HeaderSpaceConverter;
@@ -37,9 +41,9 @@ public final class FtdConversions {
   public static @Nonnull List<IkePhase1Proposal> toIkePhase1Proposals(FtdIkev2Policy policy) {
     List<IkePhase1Proposal> proposals = new ArrayList<>();
     int count = 0;
-    for (org.batfish.datamodel.EncryptionAlgorithm enc : policy.getEncryptionAlgorithms()) {
-      for (org.batfish.datamodel.IkeHashingAlgorithm integrity : policy.getIntegrityAlgorithms()) {
-        for (org.batfish.datamodel.DiffieHellmanGroup dh : policy.getDhGroups()) {
+    for (EncryptionAlgorithm enc : policy.getEncryptionAlgorithms()) {
+      for (IkeHashingAlgorithm integrity : policy.getIntegrityAlgorithms()) {
+        for (DiffieHellmanGroup dh : policy.getDhGroups()) {
           String name = String.format("~IKEV2_PROPOSAL:%d:%d~", policy.getPriority(), count++);
           IkePhase1Proposal proposal = new IkePhase1Proposal(name);
           proposal.setEncryptionAlgorithm(enc);
@@ -63,7 +67,7 @@ public final class FtdConversions {
     proposal.setAuthenticationAlgorithm(transformSet.getEspAuthentication());
     proposal.setIpsecEncapsulationMode(transformSet.getMode());
     // FTD default protocols are ESP
-    proposal.setProtocols(ImmutableSortedSet.of(org.batfish.datamodel.IpsecProtocol.ESP));
+    proposal.setProtocols(ImmutableSortedSet.of(IpsecProtocol.ESP));
     return proposal;
   }
 

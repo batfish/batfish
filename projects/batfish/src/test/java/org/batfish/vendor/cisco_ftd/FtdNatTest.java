@@ -7,6 +7,7 @@ import static org.hamcrest.Matchers.notNullValue;
 import java.io.IOException;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Ip;
+import org.batfish.datamodel.IpProtocol;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.transformation.Transformation;
 import org.batfish.datamodel.transformation.TransformationStep;
@@ -125,7 +126,7 @@ public class FtdNatTest extends FtdGrammarTest {
                 AclLineMatchExprs.and(
                     AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/0"),
                     AclLineMatchExprs.matchSrc(Ip.parse("10.0.0.50").toIpSpace()),
-                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP),
                     AclLineMatchExprs.matchSrcPort(12345)))
             .apply(
                 TransformationStep.assignSourceIp(Ip.parse("192.0.2.50")),
@@ -165,7 +166,7 @@ public class FtdNatTest extends FtdGrammarTest {
                     AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/0"),
                     AclLineMatchExprs.matchSrc(Ip.parse("10.0.0.60").toIpSpace()),
                     AclLineMatchExprs.matchDst(Ip.parse("203.0.113.60").toIpSpace()),
-                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP),
                     AclLineMatchExprs.matchDstPort(443)))
             .apply(
                 TransformationStep.assignSourceIp(Ip.parse("192.0.2.60")),
@@ -179,7 +180,7 @@ public class FtdNatTest extends FtdGrammarTest {
                     AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/1"),
                     AclLineMatchExprs.matchDst(Ip.parse("198.51.100.60").toIpSpace()),
                     AclLineMatchExprs.matchSrc(Ip.parse("192.0.2.60").toIpSpace()),
-                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchIpProtocol(IpProtocol.TCP),
                     AclLineMatchExprs.matchDstPort(8443)))
             .apply(
                 TransformationStep.assignSourceIp(Ip.parse("10.0.0.60")),
