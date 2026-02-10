@@ -305,4 +305,27 @@ public class FtdCoverageTest extends FtdGrammarTest {
     assertThat(
         c.getAllInterfaces().get("GigabitEthernet0/1").getIncomingTransformation(), notNullValue());
   }
+
+  @Test
+  public void testAclRemarkMetadataIncludedInViAclLineName() {
+    String config =
+        join(
+            "interface GigabitEthernet0/0",
+            " nameif OUTSIDE",
+            " ip address 203.0.113.1 255.255.255.0",
+            "access-list CSM_FW_ACL_ remark rule-id 100: PREFILTER POLICY: Prefilter-FTD",
+            "access-list CSM_FW_ACL_ remark rule-id 100: RULE: ACL-OUTSIDE-IN_#1",
+            "access-list CSM_FW_ACL_ advanced trust tcp ifc OUTSIDE any any eq 80 rule-id 100");
+
+    FtdConfiguration vc = parseVendorConfig(config);
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    assertThat(c.getIpAccessLists(), hasKey("CSM_FW_ACL_"));
+    String lineName = c.getIpAccessLists().get("CSM_FW_ACL_").getLines().get(0).getName();
+    assertThat(lineName, containsString("rule-id 100"));
+    assertThat(lineName, containsString("ACL-OUTSIDE-IN_#1"));
+    assertThat(lineName, containsString("Prefilter-FTD"));
+    assertThat(lineName, containsString("ifc OUTSIDE"));
+    assertThat(lineName, containsString("trust tcp any -> any eq 80"));
+  }
 }
