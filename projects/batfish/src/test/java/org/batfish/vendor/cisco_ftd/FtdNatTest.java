@@ -102,4 +102,96 @@ public class FtdNatTest extends FtdGrammarTest {
         c.getAllInterfaces().get("GigabitEthernet0/1").getIncomingTransformation(),
         equalTo(expectedIncoming));
   }
+
+  @Test
+  public void testSourceNatWithServiceConversion() throws IOException {
+    String config =
+        join(
+            "interface GigabitEthernet0/0",
+            " nameif inside",
+            "interface GigabitEthernet0/1",
+            " nameif outside",
+            "object network REAL_SRC",
+            " host 10.0.0.50",
+            "object network MAPPED_SRC",
+            " host 192.0.2.50",
+            "nat (inside,outside) source static REAL_SRC MAPPED_SRC service tcp 12345 23456");
+
+    FtdConfiguration vc = parseVendorConfig(config);
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    Transformation expectedOutgoing =
+        Transformation.when(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/0"),
+                    AclLineMatchExprs.matchSrc(Ip.parse("10.0.0.50").toIpSpace()),
+                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchSrcPort(12345)))
+            .apply(
+                TransformationStep.assignSourceIp(Ip.parse("192.0.2.50")),
+                TransformationStep.assignSourcePort(23456))
+            .build();
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOutgoingTransformation(),
+        equalTo(expectedOutgoing));
+  }
+
+  @Test
+  public void testManualTwiceNatWithServiceConversion() throws IOException {
+    String config =
+        join(
+            "interface GigabitEthernet0/0",
+            " nameif inside",
+            "interface GigabitEthernet0/1",
+            " nameif outside",
+            "object network REAL_SRC",
+            " host 10.0.0.60",
+            "object network MAPPED_SRC",
+            " host 192.0.2.60",
+            "object network REAL_DST",
+            " host 203.0.113.60",
+            "object network MAPPED_DST",
+            " host 198.51.100.60",
+            "nat (inside,outside) after-auto source static REAL_SRC MAPPED_SRC destination static"
+                + " REAL_DST MAPPED_DST service tcp 443 8443");
+
+    FtdConfiguration vc = parseVendorConfig(config);
+    Configuration c = vc.toVendorIndependentConfigurations().get(0);
+
+    Transformation expectedOutgoing =
+        Transformation.when(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/0"),
+                    AclLineMatchExprs.matchSrc(Ip.parse("10.0.0.60").toIpSpace()),
+                    AclLineMatchExprs.matchDst(Ip.parse("203.0.113.60").toIpSpace()),
+                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchDstPort(443)))
+            .apply(
+                TransformationStep.assignSourceIp(Ip.parse("192.0.2.60")),
+                TransformationStep.assignDestinationIp(Ip.parse("198.51.100.60")),
+                TransformationStep.assignDestinationPort(8443))
+            .build();
+
+    Transformation expectedIncoming =
+        Transformation.when(
+                AclLineMatchExprs.and(
+                    AclLineMatchExprs.matchSrcInterface("GigabitEthernet0/1"),
+                    AclLineMatchExprs.matchDst(Ip.parse("198.51.100.60").toIpSpace()),
+                    AclLineMatchExprs.matchSrc(Ip.parse("192.0.2.60").toIpSpace()),
+                    AclLineMatchExprs.matchIpProtocol(org.batfish.datamodel.IpProtocol.TCP),
+                    AclLineMatchExprs.matchDstPort(8443)))
+            .apply(
+                TransformationStep.assignSourceIp(Ip.parse("10.0.0.60")),
+                TransformationStep.assignDestinationIp(Ip.parse("203.0.113.60")),
+                TransformationStep.assignDestinationPort(443))
+            .build();
+
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/0").getOutgoingTransformation(),
+        equalTo(expectedOutgoing));
+    assertThat(
+        c.getAllInterfaces().get("GigabitEthernet0/1").getIncomingTransformation(),
+        equalTo(expectedIncoming));
+  }
 }
