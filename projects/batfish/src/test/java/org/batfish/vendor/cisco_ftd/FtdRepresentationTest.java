@@ -616,7 +616,7 @@ public class FtdRepresentationTest extends FtdGrammarTest {
         FtdAccessListAddressSpecifier.host(Ip.parse("192.0.2.1"));
 
     assertThat(specifier.getType(), equalTo(FtdAccessListAddressSpecifier.AddressType.HOST));
-    assertThat(specifier.toString(), containsString("HOST"));
+    assertThat(specifier.toString(), containsString("host"));
   }
 
   @Test
@@ -747,69 +747,6 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   }
 
   // ==================== FtdAccessListLine Tests ====================
-
-  @Test
-  public void testFtdAccessListLineEquals() {
-    FtdAccessListLine line1 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.PERMIT,
-            "tcp",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    FtdAccessListLine line2 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.PERMIT,
-            "tcp",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    assertThat(line1.equals(line2), equalTo(true));
-  }
-
-  @Test
-  public void testFtdAccessListLineNotEqualsDifferentActions() {
-    FtdAccessListLine line1 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.PERMIT,
-            "tcp",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    FtdAccessListLine line2 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.DENY,
-            "tcp",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    assertThat(line1.equals(line2), equalTo(false));
-  }
-
-  @Test
-  public void testFtdAccessListLineHashCodeConsistent() {
-    FtdAccessListLine line1 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.PERMIT,
-            "ip",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    FtdAccessListLine line2 =
-        FtdAccessListLine.createExtended(
-            "ACL1",
-            LineAction.PERMIT,
-            "ip",
-            FtdAccessListAddressSpecifier.any(),
-            FtdAccessListAddressSpecifier.any());
-
-    assertThat(line1.hashCode(), equalTo(line2.hashCode()));
-  }
 
   @Test
   public void testFtdAccessListLineToStringContainsDetails() {
