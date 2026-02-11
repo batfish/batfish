@@ -313,6 +313,11 @@ HTTP: 'http' {
 };
 IBGP_MULTIPATH: 'ibgp-multipath';
 ICAP: 'icap' {
+  // ignore config icap
+  if (lastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
   if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
@@ -577,7 +582,13 @@ SCHEDULE: 'schedule' {
 };
 SCTP_PORTRANGE: 'sctp-portrange';
 SDN: 'sdn';
-SDWAN: 'sdwan';
+SDWAN: 'sdwan' {
+  // ignore config system sdwan
+  if (lastTokenType() == SYSTEM && secondToLastTokenType() == CONFIG) {
+    setType(IGNORED_CONFIG_BLOCK);
+    pushMode(M_IgnoredConfigBlock);
+  }
+};
 SECONDARY_IP: 'secondary-IP';
 SECONDARYIP: 'secondaryip';
 SELECT: 'select';
