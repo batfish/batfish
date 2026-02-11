@@ -27,7 +27,7 @@ public class FortiosRouteConversionsTest {
     org.batfish.datamodel.StaticRoute converted = result.first();
     assertThat(converted.getNetwork(), equalTo(Prefix.parse("10.0.0.0/24")));
     assertThat(converted.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
-    assertThat(converted.getAdministrativeCost(), equalTo(10)); // DEFAULT_DISTANCE
+    assertThat(converted.getAdministrativeCost(), equalTo(10L)); // DEFAULT_DISTANCE
   }
 
   @Test
@@ -78,7 +78,7 @@ public class FortiosRouteConversionsTest {
 
     assertThat(result.size(), equalTo(1));
     org.batfish.datamodel.StaticRoute converted = result.first();
-    assertThat(converted.getAdministrativeCost(), equalTo(50));
+    assertThat(converted.getAdministrativeCost(), equalTo(50L));
   }
 
   @Test
@@ -96,7 +96,7 @@ public class FortiosRouteConversionsTest {
 
     assertThat(result.size(), equalTo(1));
     org.batfish.datamodel.StaticRoute converted = result.first();
-    assertThat(converted.getAdministrativeCost(), equalTo(1)); // DEFAULT_DISTANCE_SDWAN
+    assertThat(converted.getAdministrativeCost(), equalTo(1L)); // DEFAULT_DISTANCE_SDWAN
   }
 
   @Test
