@@ -74,17 +74,19 @@ router bgp 65001
 ## Step 2: Create Directory Structure
 
 ```bash
-# Create vendor directory
-mkdir -p projects/acme/src/main/antlr4/org/batfish/grammar/acme
-mkdir -p projects/acme/src/main/java/org/batfish/grammar/acme/parsing
-mkdir -p projects/acme/src/test/java/org/batfish/grammar/acme
+# Create vendor directory using vendor-scoped pattern
+mkdir -p projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar
+mkdir -p projects/batfish/src/main/java/org/batfish/vendor/acme
+mkdir -p projects/batfish/src/test/java/org/batfish/vendor/acme
 ```
+
+**Note**: This uses the vendor-scoped pattern recommended for new vendors. See [Vendor Code Organization](../parsing/README.md#vendor-code-organization) in the parsing documentation.
 
 ---
 
 ## Step 3: Create the Lexer
 
-Create: `projects/acme/src/main/antlr4/org/batfish/grammar/acme/AcmeLexer.g4`
+Create: `projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar/AcmeLexer.g4`
 
 ```antlr
 lexer grammar AcmeLexer;
@@ -120,7 +122,7 @@ COMMENT: '#' ~[\r\n]* -> skip;
 
 ## Step 4: Create the Parser
 
-Create: `projects/acme/src/main/antlr4/org/batfish/grammar/acme/AcmeParser.g4`
+Create: `projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar/AcmeParser.g4`
 
 ```antlr
 parser grammar AcmeParser;
@@ -188,12 +190,14 @@ unrecognized_stmt_null:
 
 ## Step 5: Create Base Classes
 
-Create: `projects/acme/src/main/java/org/batfish/grammar/acme/parsing/AcmeCombinedParser.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeCombinedParser.java`
 
 ```java
-package org.batfish.grammar.acme.parsing;
+package org.batfish.vendor.acme;
 
 import org.batfish.grammar.BatfishCombinedParser;
+import org.batfish.vendor.acme.grammar.AcmeParser;
+import org.batfish.vendor.acme.grammar.AcmeLexer;
 
 public class AcmeCombinedParser
     extends BatfishCombinedParser<AcmeParser, AcmeLexer> {
@@ -204,13 +208,14 @@ public class AcmeCombinedParser
 }
 ```
 
-Create: `projects/acme/src/main/java/org/batfish/grammar/acme/parsing/AcmeBatfishLexer.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeBatfishLexer.java`
 
 ```java
-package org.batfish.grammar.acme.parsing;
+package org.batfish.vendor.acme;
 
 import org.antlr.v4.runtime.CharStream;
 import org.batfish.grammar.BatfishLexer;
+import org.batfish.vendor.acme.grammar.AcmeLexer;
 
 public class AcmeBatfishLexer extends BatfishLexer {
 
@@ -224,10 +229,10 @@ public class AcmeBatfishLexer extends BatfishLexer {
 
 ## Step 6: Create the Extractor
 
-Create: `projects/acme/src/main/java/org/batfish/grammar/acme/AcmeExtractor.java`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/AcmeExtractor.java`
 
 ```java
-package org.batfish.grammar.acme;
+package org.batfish.vendor.acme;
 
 import com.google.common.collect.ImmutableList;
 import java.util.List;
@@ -240,10 +245,9 @@ import org.batfish.datamodel.Interface;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.Prefix;
 import org.batfish.grammar.BatfishListener;
-import org.batfish.grammar.acme.AcmeParser.ConfigContext;
-import org.batfish.grammar.acme.AcmeParser.Interface_blockContext;
-import org.batfish.grammar.acme.AcmeParser.Ip_address_stmtContext;
-import org.batfish.grammar.acme.parsing.AcmeCombinedParser;
+import org.batfish.vendor.acme.grammar.AcmeParser.ConfigContext;
+import org.batfish.vendor.acme.grammar.AcmeParser.Interface_blockContext;
+import org.batfish.vendor.acme.grammar.AcmeParser.Ip_address_stmtContext;
 
 public class AcmeExtractor extends BatfishListener {
 
@@ -323,7 +327,7 @@ public enum ConfigurationFormat {
 
 ## Step 8: Create BUILD Files
 
-Create: `projects/acme/src/main/antlr4/org/batfish/grammar/acme/BUILD.bazel`
+Create: `projects/batfish/src/main/antlr4/org/batfish/vendor/acme/grammar/BUILD.bazel`
 
 ```python
 load("@rules_java//java:defs.bzl", "java_library")
@@ -341,7 +345,7 @@ antlr4_parsergen(
     name = "AcmeParser",
     srcs = ["AcmeParser.g4"],
     visitor = True,
-    package = "org.batfish.grammar.acme",
+    package = "org.batfish.vendor.acme.grammar",
 )
 
 java_library(
@@ -353,7 +357,7 @@ java_library(
 )
 ```
 
-Create: `projects/acme/src/main/java/org/batfish/grammar/acme/BUILD.bazel`
+Create: `projects/batfish/src/main/java/org/batfish/vendor/acme/BUILD.bazel`
 
 ```python
 package(default_visibility = ["//visibility:public"])
@@ -375,10 +379,10 @@ java_library(
 
 ## Step 9: Write Tests
 
-Create: `projects/acme/src/test/java/org/batfish/grammar/acme/AcmeGrammarTest.java`
+Create: `projects/batfish/src/test/java/org/batfish/vendor/acme/AcmeGrammarTest.java`
 
 ```java
-package org.batfish.grammar.acme;
+package org.batfish.vendor.acme;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
@@ -387,7 +391,6 @@ import org.batfish.common.Warnings;
 import org.batfish.config.StaticRoute;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.Interface;
-import org.batfish.grammar.acme.parsing.AcmeCombinedParser;
 import org.junit.Test;
 
 public class AcmeGrammarTest {
@@ -420,7 +423,7 @@ public class AcmeGrammarTest {
 Run tests:
 
 ```bash
-bazel test //projects/acme/src/test/java/org/batfish/grammar/acme:AcmeGrammarTest
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/acme:AcmeGrammarTest
 ```
 
 ---
@@ -430,10 +433,10 @@ bazel test //projects/acme/src/test/java/org/batfish/grammar/acme:AcmeGrammarTes
 Create test configs directory:
 
 ```bash
-mkdir -p projects/acme/src/test/resources/test_configs/simple
+mkdir -p projects/batfish/src/test/resources/test_configs/vendor/acme/simple
 ```
 
-Create: `projects/acme/src/test/resources/test_configs/simple/router.cfg`
+Create: `projects/batfish/src/test/resources/test_configs/vendor/acme/simple/router.cfg`
 
 ```bash
 hostname core-router-01
@@ -454,7 +457,7 @@ Add integration test:
 @Test
 public void testFullConfig() {
     String configText = Files.readString(
-        Paths.get("projects/acme/src/test/resources/test_configs/simple/router.cfg")
+        Paths.get("projects/batfish/src/test/resources/test_configs/vendor/acme/simple/router.cfg")
     );
 
     AcmeCombinedParser parser = new AcmeCombinedParser(configText);
@@ -478,10 +481,10 @@ public void testFullConfig() {
 
 ```bash
 # Build Acme parser
-bazel build //projects/acme/...
+bazel build //projects/batfish/src/main/java/org/batfish/vendor/acme/...
 
 # Run tests
-bazel test //projects/acme/...
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/acme/...
 
 # Build all of Batfish
 bazel build //projects/allinone:allinone_main
@@ -596,15 +599,15 @@ public void exitNeighbor_stmt(AcmeParser.Neighbor_stmtContext ctx) {
 ### File Structure
 
 ```
-projects/acme/
-├── src/main/antlr4/org/batfish/grammar/acme/
+projects/batfish/
+├── src/main/antlr4/org/batfish/vendor/acme/grammar/
 │   ├── AcmeLexer.g4
 │   └── AcmeParser.g4
-├── src/main/java/org/batfish/grammar/acme/
+├── src/main/java/org/batfish/vendor/acme/
 │   ├── AcmeExtractor.java
 │   ├── AcmeBatfishLexer.java
-│   └── parsing/AcmeCombinedParser.java
-└── src/test/java/org/batfish/grammar/acme/
+│   └── AcmeCombinedParser.java
+└── src/test/java/org/batfish/vendor/acme/
     └── AcmeGrammarTest.java
 ```
 
@@ -619,10 +622,10 @@ projects/acme/
 
 ```bash
 # Build
-bazel build //projects/acme/...
+bazel build //projects/batfish/src/main/java/org/batfish/vendor/acme/...
 
 # Test
-bazel test //projects/acme/src/test/...
+bazel test //projects/batfish/src/test/java/org/batfish/vendor/acme/...
 
 # Run service
 bazel run //projects/allinone:allinone_main
