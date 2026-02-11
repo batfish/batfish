@@ -171,15 +171,10 @@ public final class AciConversion {
     // Example: nodeName = "SW-DC1-Leaf-NSAB07-SET-01" from config
     String nodeId = node.getNodeId();
     String nodeName = node.getName();
-    String humanName;
 
-    // Prefer the actual node name from ACI config (fabricNodeIdentP.attributes.name)
-    if (nodeName != null && !nodeName.isEmpty()) {
-      // Include node ID in humanName for reference
-      humanName = nodeId != null ? nodeName + " (ID: " + nodeId + ")" : nodeName;
-    } else {
-      humanName = hostname;
-    }
+    // Set humanName consistent with other vendors (e.g., NX-OS)
+    // Use nodeName directly as the human-readable name, without augmenting with nodeId
+    String humanName = nodeName != null && !nodeName.isEmpty() ? nodeName : hostname;
 
     Configuration c = new Configuration(hostname, ConfigurationFormat.CISCO_ACI);
     c.setHumanName(humanName);
