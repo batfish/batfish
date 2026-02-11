@@ -21,6 +21,11 @@ public class RouteMap implements Serializable {
     return _rules;
   }
 
+  public void setRules(Map<String, RouteMapRule> rules) {
+    _rules.clear();
+    _rules.putAll(rules);
+  }
+
   public void setComments(String comments) {
     _comments = comments;
   }

@@ -9,6 +9,7 @@ public enum FortiosStructureType implements StructureType {
   ADDRGRP("addrgrp"),
   ADDRESS_OR_ADDRGRP("address or addrgrp"),
   INTERFACE("interface"),
+  IPPOOL("ippool"),
   INTERFACE_OR_ZONE("interface or zone"),
   POLICY("policy"),
   ROUTE_MAP("route-map"),

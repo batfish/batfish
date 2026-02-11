@@ -20,6 +20,7 @@ public final class Service extends ServiceGroupMember implements Serializable {
     ICMP,
     ICMP6,
     IP,
+    ALL,
   }
 
   @Override
