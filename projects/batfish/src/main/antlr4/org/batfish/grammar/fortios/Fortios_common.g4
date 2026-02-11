@@ -18,6 +18,9 @@ access_list_name: str;
 address_name: str;
 
 // 1-35 characters
+ippool_name: str;
+
+// 1-35 characters
 route_map_name: str;
 
 address_names: address_name+;
