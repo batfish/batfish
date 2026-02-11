@@ -7,6 +7,21 @@
         "configs/aaa_authentication_login_default_tacacs_local" : "CISCO_IOS",
         "configs/aaa_group_server_source_interface" : "CISCO_IOS",
         "configs/access_list" : "CISCO_IOS",
+        "configs/aci-bd-multiple-subnets.json" : "CISCO_ACI",
+        "configs/aci-bridge-domains.json" : "CISCO_ACI",
+        "configs/aci-contracts-complex.json" : "CISCO_ACI",
+        "configs/aci-contracts-filters.json" : "CISCO_ACI",
+        "configs/aci-contracts-simple.json" : "CISCO_ACI",
+        "configs/aci-empty-config.json" : "CISCO_ACI",
+        "configs/aci-epgs-no-bd.json" : "CISCO_ACI",
+        "configs/aci-fabric-nodes.json" : "CISCO_ACI",
+        "configs/aci-fabric-spine-leaf.json" : "CISCO_ACI",
+        "configs/aci-l3out-bgp.json" : "CISCO_ACI",
+        "configs/aci-l3out-ospf.json" : "CISCO_ACI",
+        "configs/aci-l3out-static.json" : "CISCO_ACI",
+        "configs/aci-multiple-tenants.json" : "CISCO_ACI",
+        "configs/aci-single-tenant.json" : "CISCO_ACI",
+        "configs/aci-vrf-only.json" : "CISCO_ACI",
         "configs/address_family" : "CISCO_IOS",
         "configs/arista-event-handler" : "CISCO_IOS",
         "configs/arista-logging" : "CISCO_IOS",
@@ -288,6 +303,51 @@
         ],
         "access_list" : [
           "configs/access_list"
+        ],
+        "aci-aci-bd-multiple-subnets" : [
+          "configs/aci-bd-multiple-subnets.json"
+        ],
+        "aci-aci-bridge-domains" : [
+          "configs/aci-bridge-domains.json"
+        ],
+        "aci-aci-contracts-complex" : [
+          "configs/aci-contracts-complex.json"
+        ],
+        "aci-aci-contracts-filters" : [
+          "configs/aci-contracts-filters.json"
+        ],
+        "aci-aci-contracts-simple" : [
+          "configs/aci-contracts-simple.json"
+        ],
+        "aci-aci-empty-config" : [
+          "configs/aci-empty-config.json"
+        ],
+        "aci-aci-epgs-no-bd" : [
+          "configs/aci-epgs-no-bd.json"
+        ],
+        "aci-aci-fabric-nodes" : [
+          "configs/aci-fabric-nodes.json"
+        ],
+        "aci-aci-fabric-spine-leaf" : [
+          "configs/aci-fabric-spine-leaf.json"
+        ],
+        "aci-aci-l3out-bgp" : [
+          "configs/aci-l3out-bgp.json"
+        ],
+        "aci-aci-l3out-ospf" : [
+          "configs/aci-l3out-ospf.json"
+        ],
+        "aci-aci-l3out-static" : [
+          "configs/aci-l3out-static.json"
+        ],
+        "aci-aci-multiple-tenants" : [
+          "configs/aci-multiple-tenants.json"
+        ],
+        "aci-aci-single-tenant" : [
+          "configs/aci-single-tenant.json"
+        ],
+        "aci-aci-vrf-only" : [
+          "configs/aci-vrf-only.json"
         ],
         "address_family" : [
           "configs/address_family"
@@ -1094,6 +1154,21 @@
         "configs/aaa_authentication_login_default_tacacs_local" : "PASSED",
         "configs/aaa_group_server_source_interface" : "PASSED",
         "configs/access_list" : "PASSED",
+        "configs/aci-bd-multiple-subnets.json" : "PASSED",
+        "configs/aci-bridge-domains.json" : "PASSED",
+        "configs/aci-contracts-complex.json" : "PASSED",
+        "configs/aci-contracts-filters.json" : "PASSED",
+        "configs/aci-contracts-simple.json" : "PASSED",
+        "configs/aci-empty-config.json" : "PASSED",
+        "configs/aci-epgs-no-bd.json" : "PASSED",
+        "configs/aci-fabric-nodes.json" : "PASSED",
+        "configs/aci-fabric-spine-leaf.json" : "PASSED",
+        "configs/aci-l3out-bgp.json" : "PASSED",
+        "configs/aci-l3out-ospf.json" : "PASSED",
+        "configs/aci-l3out-static.json" : "PASSED",
+        "configs/aci-multiple-tenants.json" : "PASSED",
+        "configs/aci-single-tenant.json" : "PASSED",
+        "configs/aci-vrf-only.json" : "PASSED",
         "configs/address_family" : "PASSED",
         "configs/arista-event-handler" : "PASSED",
         "configs/arista-logging" : "PASSED",
@@ -71758,6 +71833,21 @@
         "aaa_authentication_login_default_tacacs_local" : "PASSED",
         "aaa_group_server_source_interface" : "PASSED",
         "access_list" : "PASSED",
+        "aci-aci-bd-multiple-subnets" : "WARNINGS",
+        "aci-aci-bridge-domains" : "WARNINGS",
+        "aci-aci-contracts-complex" : "WARNINGS",
+        "aci-aci-contracts-filters" : "WARNINGS",
+        "aci-aci-contracts-simple" : "WARNINGS",
+        "aci-aci-empty-config" : "WARNINGS",
+        "aci-aci-epgs-no-bd" : "WARNINGS",
+        "aci-aci-fabric-nodes" : "WARNINGS",
+        "aci-aci-fabric-spine-leaf" : "WARNINGS",
+        "aci-aci-l3out-bgp" : "WARNINGS",
+        "aci-aci-l3out-ospf" : "WARNINGS",
+        "aci-aci-l3out-static" : "WARNINGS",
+        "aci-aci-multiple-tenants" : "WARNINGS",
+        "aci-aci-single-tenant" : "WARNINGS",
+        "aci-aci-vrf-only" : "WARNINGS",
         "address_family" : "PASSED",
         "aggaddress" : "PASSED",
         "arista-event-handler" : "PASSED",
@@ -72036,6 +72126,21 @@
           }
         },
         "configs/access_list" : { },
+        "configs/aci-bd-multiple-subnets.json" : { },
+        "configs/aci-bridge-domains.json" : { },
+        "configs/aci-contracts-complex.json" : { },
+        "configs/aci-contracts-filters.json" : { },
+        "configs/aci-contracts-simple.json" : { },
+        "configs/aci-empty-config.json" : { },
+        "configs/aci-epgs-no-bd.json" : { },
+        "configs/aci-fabric-nodes.json" : { },
+        "configs/aci-fabric-spine-leaf.json" : { },
+        "configs/aci-l3out-bgp.json" : { },
+        "configs/aci-l3out-ospf.json" : { },
+        "configs/aci-l3out-static.json" : { },
+        "configs/aci-multiple-tenants.json" : { },
+        "configs/aci-single-tenant.json" : { },
+        "configs/aci-vrf-only.json" : { },
         "configs/address_family" : {
           "bgp neighbor" : {
             "1.2.3.4 (VRF default)" : {
@@ -77046,6 +77151,59 @@
         ],
         "configs/access_list" : [
           "access_list"
+        ],
+        "configs/aci-bd-multiple-subnets.json" : [
+          "aci-aci-bd-multiple-subnets"
+        ],
+        "configs/aci-bridge-domains.json" : [
+          "aci-aci-bridge-domains"
+        ],
+        "configs/aci-contracts-complex.json" : [
+          "aci-aci-contracts-complex"
+        ],
+        "configs/aci-contracts-filters.json" : [
+          "aci-aci-contracts-filters"
+        ],
+        "configs/aci-contracts-simple.json" : [
+          "aci-aci-contracts-simple"
+        ],
+        "configs/aci-empty-config.json" : [
+          "aci-aci-empty-config"
+        ],
+        "configs/aci-epgs-no-bd.json" : [
+          "aci-aci-epgs-no-bd"
+        ],
+        "configs/aci-fabric-nodes.json" : [
+          "leaf1",
+          "leaf2",
+          "spine1",
+          "spine2"
+        ],
+        "configs/aci-fabric-spine-leaf.json" : [
+          "leaf-1",
+          "leaf-2",
+          "leaf-3",
+          "leaf-4",
+          "spine-1",
+          "spine-2"
+        ],
+        "configs/aci-l3out-bgp.json" : [
+          "aci-aci-l3out-bgp"
+        ],
+        "configs/aci-l3out-ospf.json" : [
+          "aci-aci-l3out-ospf"
+        ],
+        "configs/aci-l3out-static.json" : [
+          "aci-aci-l3out-static"
+        ],
+        "configs/aci-multiple-tenants.json" : [
+          "aci-aci-multiple-tenants"
+        ],
+        "configs/aci-single-tenant.json" : [
+          "aci-aci-single-tenant"
+        ],
+        "configs/aci-vrf-only.json" : [
+          "aci-aci-vrf-only"
         ],
         "configs/address_family" : [
           "address_family"
@@ -85021,6 +85179,21 @@
         "configs/aaa_authentication_login_default_tacacs_local" : { },
         "configs/aaa_group_server_source_interface" : { },
         "configs/access_list" : { },
+        "configs/aci-bd-multiple-subnets.json" : { },
+        "configs/aci-bridge-domains.json" : { },
+        "configs/aci-contracts-complex.json" : { },
+        "configs/aci-contracts-filters.json" : { },
+        "configs/aci-contracts-simple.json" : { },
+        "configs/aci-empty-config.json" : { },
+        "configs/aci-epgs-no-bd.json" : { },
+        "configs/aci-fabric-nodes.json" : { },
+        "configs/aci-fabric-spine-leaf.json" : { },
+        "configs/aci-l3out-bgp.json" : { },
+        "configs/aci-l3out-ospf.json" : { },
+        "configs/aci-l3out-static.json" : { },
+        "configs/aci-multiple-tenants.json" : { },
+        "configs/aci-single-tenant.json" : { },
+        "configs/aci-vrf-only.json" : { },
         "configs/address_family" : { },
         "configs/arista-event-handler" : { },
         "configs/arista-logging" : { },
@@ -87572,6 +87745,110 @@
             }
           ]
         },
+        "aci-aci-bd-multiple-subnets" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-bd-multiple-subnets"
+            }
+          ]
+        },
+        "aci-aci-bridge-domains" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-bridge-domains"
+            }
+          ]
+        },
+        "aci-aci-contracts-complex" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-contracts-complex"
+            }
+          ]
+        },
+        "aci-aci-contracts-filters" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-contracts-filters"
+            }
+          ]
+        },
+        "aci-aci-contracts-simple" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-contracts-simple"
+            }
+          ]
+        },
+        "aci-aci-empty-config" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-empty-config"
+            }
+          ]
+        },
+        "aci-aci-epgs-no-bd" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-epgs-no-bd"
+            }
+          ]
+        },
+        "aci-aci-l3out-bgp" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-l3out-bgp"
+            }
+          ]
+        },
+        "aci-aci-l3out-ospf" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-l3out-ospf"
+            }
+          ]
+        },
+        "aci-aci-l3out-static" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-l3out-static"
+            }
+          ]
+        },
+        "aci-aci-multiple-tenants" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-multiple-tenants"
+            }
+          ]
+        },
+        "aci-aci-single-tenant" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-single-tenant"
+            }
+          ]
+        },
+        "aci-aci-vrf-only" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No fabric nodes defined in ACI configuration. Creating single configuration for fabric: aci-aci-vrf-only"
+            }
+          ]
+        },
         "arista_bgp" : {
           "Red flags" : [
             {
@@ -87965,6 +88242,158 @@
             }
           ]
         },
+        "leaf-1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "leaf-2" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "leaf-3" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "leaf-4" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "leaf1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+            }
+          ]
+        },
+        "leaf2" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+            }
+          ]
+        },
         "nat-08c21704416f06046" : {
           "Red flags" : [
             {
@@ -88060,6 +88489,102 @@
               "text" : "NAT rule MISSING_TO ignored because it has no to zone configured"
             }
           ]
+        },
+        "spine-1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "spine-2" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-3. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf-4. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine-2. Adding minimal interface set."
+            }
+          ]
+        },
+        "spine1" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+            }
+          ]
+        },
+        "spine2" : {
+          "Red flags" : [
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node leaf2. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine1. Adding minimal interface set."
+            },
+            {
+              "tag" : "MISCELLANEOUS",
+              "text" : "No interfaces defined for fabric node spine2. Adding minimal interface set."
+            }
+          ]
         }
       }
     },
@@ -88070,6 +88595,21 @@
         "configs/aaa_authentication_login_default_tacacs_local" : "PASSED",
         "configs/aaa_group_server_source_interface" : "PASSED",
         "configs/access_list" : "PASSED",
+        "configs/aci-bd-multiple-subnets.json" : "PASSED",
+        "configs/aci-bridge-domains.json" : "PASSED",
+        "configs/aci-contracts-complex.json" : "PASSED",
+        "configs/aci-contracts-filters.json" : "PASSED",
+        "configs/aci-contracts-simple.json" : "PASSED",
+        "configs/aci-empty-config.json" : "PASSED",
+        "configs/aci-epgs-no-bd.json" : "PASSED",
+        "configs/aci-fabric-nodes.json" : "PASSED",
+        "configs/aci-fabric-spine-leaf.json" : "PASSED",
+        "configs/aci-l3out-bgp.json" : "PASSED",
+        "configs/aci-l3out-ospf.json" : "PASSED",
+        "configs/aci-l3out-static.json" : "PASSED",
+        "configs/aci-multiple-tenants.json" : "PASSED",
+        "configs/aci-single-tenant.json" : "PASSED",
+        "configs/aci-vrf-only.json" : "PASSED",
         "configs/address_family" : "PASSED",
         "configs/arista-event-handler" : "PASSED",
         "configs/arista-logging" : "PASSED",
