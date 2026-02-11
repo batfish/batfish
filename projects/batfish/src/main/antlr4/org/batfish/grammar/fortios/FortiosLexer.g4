@@ -858,6 +858,8 @@ SPAM: 'spam' {
   }
 };
 
+SCTP_PORTRANGE: 'sctp-portrange';
+
 SPEED: 'speed';
 
 SPLIT_PORT_MODE: 'split-port-mode' {
@@ -868,13 +870,11 @@ SPLIT_PORT_MODE: 'split-port-mode' {
   }
 };
 
-SCTP_PORTRANGE: 'sctp-portrange';
+SRC_CHECK: 'src-check' -> pushMode(M_Str);
 
 SRCADDR: 'srcaddr' -> pushMode(M_Str);
 
 SRCINTF: 'srcintf' -> pushMode(M_Str);
-
-SRC_CHECK: 'src-check' -> pushMode(M_Str);
 
 SSH: 'ssh' {
   // ignore config firewall ssh
