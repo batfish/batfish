@@ -1,0 +1,9 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": []
+  }
+}
