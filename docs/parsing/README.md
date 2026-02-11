@@ -17,6 +17,7 @@ then processed by an [extractor](../extraction/README.md).
 
 Different vendors have unique configuration formats and parsing requirements. For vendor-specific guidance, see:
 
+- [Cisco ACI](vendors/cisco_aci.md) - ACI-specific parsing using Jackson (JSON/XML), similar to other structured/cloud vendors (no ANTLR4 grammar for config parsing)
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
 
