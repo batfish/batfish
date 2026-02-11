@@ -1,6 +1,7 @@
 package org.batfish.vendor.cisco_ftd.grammar;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -29,6 +30,7 @@ import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Access_list_stanzaContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_address_specContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_advancedContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_extendedContext;
+import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_implicit_extendedContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_remarkContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Arp_stanzaContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Bgp_address_familyContext;
@@ -75,6 +77,9 @@ import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Og_network_objectContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Og_port_objectContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Og_service_objectContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Og_service_object_paramsContext;
+import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_networkContext;
+import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_passive_interfaceContext;
+import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_router_idContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Policy_map_stanzaContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Policy_map_tailContext;
 import org.batfish.vendor.cisco_ftd.grammar.FtdParser.Port_specContext;
@@ -96,6 +101,7 @@ import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
 import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapEntry;
 import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdIkev2Policy;
+import org.batfish.vendor.cisco_ftd.representation.FtdInterface;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecProfile;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecTransformSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdNatAddress;
@@ -116,7 +122,6 @@ import org.batfish.vendor.cisco_ftd.representation.FtdServicePolicy;
 import org.batfish.vendor.cisco_ftd.representation.FtdStructureType;
 import org.batfish.vendor.cisco_ftd.representation.FtdStructureUsage;
 import org.batfish.vendor.cisco_ftd.representation.FtdTunnelGroup;
-import org.batfish.vendor.cisco_ftd.representation.Interface;
 
 /**
  * Parse tree extractor that walks the FTD parse tree and populates an {@link FtdConfiguration}
@@ -166,7 +171,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   @Override
   public void enterInterface_stanza(Interface_stanzaContext ctx) {
     String name = ctx.name.getText();
-    Interface iface = new Interface(name);
+    FtdInterface iface = new FtdInterface(name);
     _configuration.getInterfaces().put(name, iface);
     _currentInterface = iface;
   }
@@ -323,8 +328,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   }
 
   @Override
-  public void exitAcl_implicit_extended(
-      org.batfish.vendor.cisco_ftd.grammar.FtdParser.Acl_implicit_extendedContext ctx) {
+  public void exitAcl_implicit_extended(Acl_implicit_extendedContext ctx) {
     // Implicit extended = same as acl_extended but without the EXTENDED keyword
     if (_currentAcl != null && _currentAclName != null) {
       LineAction action = toLineAction(ctx.action);
@@ -618,40 +622,28 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
     if (ctx.ENCRYPTION() != null && ctx.enc_algs != null) {
       String text =
-          ctx.enc_algs.stream()
-              .map(Token::getText)
-              .collect(java.util.stream.Collectors.joining(""))
-              .trim();
+          ctx.enc_algs.stream().map(Token::getText).collect(Collectors.joining("")).trim();
       EncryptionAlgorithm alg = parseEncryptionAlgorithm(text);
       if (alg != null) {
         _currentIkev2Policy.getEncryptionAlgorithms().add(alg);
       }
     } else if (ctx.INTEGRITY() != null && ctx.int_algs != null) {
       String text =
-          ctx.int_algs.stream()
-              .map(Token::getText)
-              .collect(java.util.stream.Collectors.joining(""))
-              .trim();
+          ctx.int_algs.stream().map(Token::getText).collect(Collectors.joining("")).trim();
       IkeHashingAlgorithm alg = parseIkeHashingAlgorithm(text);
       if (alg != null) {
         _currentIkev2Policy.getIntegrityAlgorithms().add(alg);
       }
     } else if (ctx.PRF() != null && ctx.prf_algs != null) {
       String text =
-          ctx.prf_algs.stream()
-              .map(Token::getText)
-              .collect(java.util.stream.Collectors.joining(""))
-              .trim();
+          ctx.prf_algs.stream().map(Token::getText).collect(Collectors.joining("")).trim();
       IkeHashingAlgorithm alg = parseIkeHashingAlgorithm(text);
       if (alg != null) {
         _currentIkev2Policy.getPrfAlgorithms().add(alg);
       }
     } else if (ctx.GROUP() != null && ctx.dh_groups != null) {
       String text =
-          ctx.dh_groups.stream()
-              .map(Token::getText)
-              .collect(java.util.stream.Collectors.joining(""))
-              .trim();
+          ctx.dh_groups.stream().map(Token::getText).collect(Collectors.joining("")).trim();
       DiffieHellmanGroup group = parseDhGroup(text);
       if (group != null) {
         _currentIkev2Policy.getDhGroups().add(group);
@@ -669,7 +661,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     String name =
         ctx.name_parts.stream()
             .map(token -> token.getText())
-            .collect(java.util.stream.Collectors.joining(" "))
+            .collect(Collectors.joining(" "))
             .trim();
     _currentTunnelGroup =
         _configuration.getTunnelGroups().computeIfAbsent(name, FtdTunnelGroup::new);
@@ -695,10 +687,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     }
     if (ctx.PRE_SHARED_KEY() != null && ctx.key_parts != null && !ctx.key_parts.isEmpty()) {
       String key =
-          ctx.key_parts.stream()
-              .map(Token::getText)
-              .collect(java.util.stream.Collectors.joining(""))
-              .trim();
+          ctx.key_parts.stream().map(Token::getText).collect(Collectors.joining("")).trim();
       if (ctx.REMOTE_AUTHENTICATION() != null) {
         _currentTunnelGroup.setPresharedKey(key);
       } else if (ctx.LOCAL_AUTHENTICATION() != null) {
@@ -845,7 +834,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     String name =
         ctx.name_parts.stream()
             .map(token -> token.getText())
-            .collect(java.util.stream.Collectors.joining(" "))
+            .collect(Collectors.joining(" "))
             .trim();
     FtdIpsecTransformSet transformSet = new FtdIpsecTransformSet(name);
     if (ctx.algs != null) {
@@ -898,7 +887,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     String name =
         ctx.name_parts.stream()
             .map(token -> token.getText())
-            .collect(java.util.stream.Collectors.joining(" "))
+            .collect(Collectors.joining(" "))
             .trim();
     FtdIpsecProfile profile = new FtdIpsecProfile(name);
     _configuration.getIpsecProfiles().put(name, profile);
@@ -944,7 +933,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     String name =
         ctx.name_parts.stream()
             .map(token -> token.getText())
-            .collect(java.util.stream.Collectors.joining(" "))
+            .collect(Collectors.joining(" "))
             .trim();
     Integer seq = null;
     if (ctx.seq != null) {
@@ -972,7 +961,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
     String name =
         ctx.name_parts.stream()
             .map(token -> token.getText())
-            .collect(java.util.stream.Collectors.joining(" "))
+            .collect(Collectors.joining(" "))
             .trim();
     String ifaceName = ctx.iface_name.getText().trim();
     if (!name.isEmpty() && !ifaceName.isEmpty()) {
@@ -987,7 +976,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       String aclName =
           ctx.acl_parts.stream()
               .map(token -> token.getText())
-              .collect(java.util.stream.Collectors.joining(" "))
+              .collect(Collectors.joining(" "))
               .trim();
       _currentCryptoMapEntry.setAccessList(aclName);
       referenceStructure(
@@ -1311,8 +1300,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
       String ifaceName = ctx.iface_name.getText();
       Integer mtu = parseIntegerBounded(ctx.mtu_value.getText(), "MTU", 68, 9000);
       if (mtu != null) {
-        org.batfish.vendor.cisco_ftd.representation.Interface iface =
-            _configuration.getInterfaces().get(ifaceName);
+        FtdInterface iface = _configuration.getInterfaces().get(ifaceName);
         if (iface != null) {
           iface.setMtu(mtu);
         }
@@ -1359,8 +1347,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   }
 
   @Override
-  public void exitOspf_network(
-      org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_networkContext ctx) {
+  public void exitOspf_network(Ospf_networkContext ctx) {
     if (_currentOspfProcess != null && ctx.ip != null && ctx.mask != null && ctx.area != null) {
       Ip ip = parseIpSafely(ctx.ip.getText(), "OSPF network IP");
       Ip mask = parseIpSafely(ctx.mask.getText(), "OSPF network mask");
@@ -1373,8 +1360,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   }
 
   @Override
-  public void exitOspf_router_id(
-      org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_router_idContext ctx) {
+  public void exitOspf_router_id(Ospf_router_idContext ctx) {
     if (_currentOspfProcess != null && ctx.id != null) {
       Ip routerId = parseIpSafely(ctx.id.getText(), "OSPF router ID");
       if (routerId != null) {
@@ -1384,8 +1370,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   }
 
   @Override
-  public void exitOspf_passive_interface(
-      org.batfish.vendor.cisco_ftd.grammar.FtdParser.Ospf_passive_interfaceContext ctx) {
+  public void exitOspf_passive_interface(Ospf_passive_interfaceContext ctx) {
     if (_currentOspfProcess != null && ctx.interface_name() != null) {
       _currentOspfProcess.getPassiveInterfaces().add(ctx.interface_name().getText());
     }
@@ -1678,7 +1663,7 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
   private static final Set<String> PORT_OPERATORS = Set.of("eq", "gt", "lt", "neq", "range");
 
   // Interface state
-  private @Nullable Interface _currentInterface;
+  private @Nullable FtdInterface _currentInterface;
 
   // ACL state
   private @Nullable String _currentAclName;

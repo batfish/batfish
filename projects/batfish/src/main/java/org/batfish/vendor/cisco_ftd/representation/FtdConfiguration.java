@@ -32,7 +32,6 @@ import org.batfish.datamodel.IkePhase1Key;
 import org.batfish.datamodel.IkePhase1Policy;
 import org.batfish.datamodel.IkePhase1Proposal;
 import org.batfish.datamodel.IntegerSpace;
-import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.IpAccessList;
 import org.batfish.datamodel.IpProtocol;
@@ -107,7 +106,7 @@ public class FtdConfiguration extends VendorConfiguration {
     _vendor = format;
   }
 
-  public Map<String, Interface> getInterfaces() {
+  public Map<String, FtdInterface> getInterfaces() {
     return _interfaces;
   }
 
@@ -317,7 +316,7 @@ public class FtdConfiguration extends VendorConfiguration {
   // Configuration properties
   private @Nullable String _hostname;
   private @Nullable ConfigurationFormat _vendor;
-  private final @Nonnull Map<String, Interface> _interfaces;
+  private final @Nonnull Map<String, FtdInterface> _interfaces;
   private final @Nonnull Map<String, FtdAccessList> _accessLists;
   private final @Nonnull Map<String, FtdNetworkObject> _networkObjects;
   private final @Nonnull Map<String, FtdNetworkObjectGroup> _networkObjectGroups;
@@ -469,10 +468,10 @@ public class FtdConfiguration extends VendorConfiguration {
   private void createZones(Configuration c) {
     Map<String, Zone> zones = c.getZones();
     Map<String, Set<String>> zoneInterfaces = new HashMap<>();
-    for (Map.Entry<String, Interface> entry : _interfaces.entrySet()) {
+    for (Map.Entry<String, FtdInterface> entry : _interfaces.entrySet()) {
       String interfaceName = entry.getKey();
-      Interface iface = entry.getValue();
-      String nameif = iface.getNameif();
+      FtdInterface repIface = entry.getValue();
+      String nameif = repIface.getNameif();
       if (nameif != null) {
         zoneInterfaces.computeIfAbsent(nameif, key -> new HashSet<>()).add(interfaceName);
       }
@@ -1110,9 +1109,9 @@ public class FtdConfiguration extends VendorConfiguration {
   }
 
   private void applySecurityLevelDefaults(Configuration c) {
-    for (Map.Entry<String, Interface> entry : _interfaces.entrySet()) {
+    for (Map.Entry<String, FtdInterface> entry : _interfaces.entrySet()) {
       String ifaceName = entry.getKey();
-      Interface repIface = entry.getValue();
+      FtdInterface repIface = entry.getValue();
       if (repIface.getSecurityLevel() == null) {
         continue;
       }
@@ -1648,14 +1647,13 @@ public class FtdConfiguration extends VendorConfiguration {
     return ospfBuilder.build();
   }
 
-  private void convertInterface(
-      org.batfish.vendor.cisco_ftd.representation.Interface repIface, Configuration c) {
+  private void convertInterface(FtdInterface repIface, Configuration c) {
     String ifName = repIface.getName();
     org.batfish.datamodel.Interface.Builder ib =
         org.batfish.datamodel.Interface.builder()
             .setOwner(c)
             .setName(ifName)
-            .setType(InterfaceType.PHYSICAL)
+            .setType(org.batfish.datamodel.InterfaceType.PHYSICAL)
             .setAdminUp(repIface.getActive());
 
     if (repIface.getDescription() != null) {

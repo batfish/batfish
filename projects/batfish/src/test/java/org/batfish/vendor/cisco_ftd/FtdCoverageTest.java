@@ -32,6 +32,7 @@ import org.batfish.vendor.cisco_ftd.representation.FtdConfiguration;
 import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapEntry;
 import org.batfish.vendor.cisco_ftd.representation.FtdCryptoMapSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdIkev2Policy;
+import org.batfish.vendor.cisco_ftd.representation.FtdInterface;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecProfile;
 import org.batfish.vendor.cisco_ftd.representation.FtdIpsecTransformSet;
 import org.batfish.vendor.cisco_ftd.representation.FtdNatRule;
@@ -45,7 +46,6 @@ import org.batfish.vendor.cisco_ftd.representation.FtdRoute;
 import org.batfish.vendor.cisco_ftd.representation.FtdServiceObjectGroupMember;
 import org.batfish.vendor.cisco_ftd.representation.FtdServicePolicy;
 import org.batfish.vendor.cisco_ftd.representation.FtdTunnelGroup;
-import org.batfish.vendor.cisco_ftd.representation.Interface;
 import org.junit.Test;
 
 /** Extra targeted coverage tests for FTD representation and conversion branches. */
@@ -267,12 +267,12 @@ public class FtdCoverageTest extends FtdGrammarTest {
     vc.getNames().put("srv1", "203.0.113.99");
     vc.setArpTimeout(1800);
 
-    Interface inside = new Interface("GigabitEthernet0/0");
+    FtdInterface inside = new FtdInterface("GigabitEthernet0/0");
     inside.setNameif("inside");
     inside.setAddress(ConcreteInterfaceAddress.parse("10.0.0.1/24"));
     vc.getInterfaces().put(inside.getName(), inside);
 
-    Interface outside = new Interface("GigabitEthernet0/1");
+    FtdInterface outside = new FtdInterface("GigabitEthernet0/1");
     outside.setNameif("outside");
     outside.setAddress(ConcreteInterfaceAddress.parse("198.51.100.2/24"));
     outside.setMtu(1400);
@@ -389,7 +389,7 @@ public class FtdCoverageTest extends FtdGrammarTest {
     vc.setHostname("ftd-min");
     vc.getNames().put("srv1", "1.1.1.1");
 
-    Interface iface = new Interface("GigabitEthernet0/2");
+    FtdInterface iface = new FtdInterface("GigabitEthernet0/2");
     iface.setAddress(ConcreteInterfaceAddress.parse("192.0.2.2/24"));
     vc.getInterfaces().put(iface.getName(), iface);
 

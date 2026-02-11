@@ -5,9 +5,9 @@ import javax.annotation.Nullable;
 import org.batfish.datamodel.ConcreteInterfaceAddress;
 
 /** Represents a Cisco FTD interface configuration */
-public class Interface implements Serializable {
+public class FtdInterface implements Serializable {
 
-  public Interface(String name) {
+  public FtdInterface(String name) {
     _name = name;
   }
 

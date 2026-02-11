@@ -842,8 +842,8 @@ public class FtdGrammarTest {
     FtdConfiguration vc = parseVendorConfig(config);
     Configuration c = vc.toVendorIndependentConfigurations().get(0);
 
-    Interface outside = c.getAllInterfaces().get("Ethernet0/0");
-    Interface inside = c.getAllInterfaces().get("Ethernet0/1");
+    org.batfish.datamodel.Interface outside = c.getAllInterfaces().get("Ethernet0/0");
+    org.batfish.datamodel.Interface inside = c.getAllInterfaces().get("Ethernet0/1");
 
     IpAccessList outsideAcl = outside.getIncomingFilter();
     IpAccessList insideAcl = inside.getIncomingFilter();
@@ -996,7 +996,7 @@ public class FtdGrammarTest {
     FtdConfiguration vc = parseVendorConfig(config);
     Configuration c = vc.toVendorIndependentConfigurations().get(0);
 
-    Interface iface = c.getAllInterfaces().get("Ethernet1/0");
+    org.batfish.datamodel.Interface iface = c.getAllInterfaces().get("Ethernet1/0");
     assertThat(iface, notNullValue());
     assertThat(iface.getIncomingFilter().getName(), equalTo("OUTSIDE_IN"));
   }

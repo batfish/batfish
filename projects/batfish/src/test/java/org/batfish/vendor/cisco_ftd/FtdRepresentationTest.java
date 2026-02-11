@@ -255,8 +255,8 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   @Test
   public void testInterfaceSettersAndGetters() {
     // Test Interface class directly without parsing
-    org.batfish.vendor.cisco_ftd.representation.Interface iface =
-        new org.batfish.vendor.cisco_ftd.representation.Interface("GigabitEthernet0/0");
+    org.batfish.vendor.cisco_ftd.representation.FtdInterface iface =
+        new org.batfish.vendor.cisco_ftd.representation.FtdInterface("GigabitEthernet0/0");
 
     iface.setDescription("Outside interface");
     iface.setNameif("outside");
@@ -281,7 +281,7 @@ public class FtdRepresentationTest extends FtdGrammarTest {
     String config = "interface GigabitEthernet0/0\n";
     FtdConfiguration vc = parseVendorConfig(config);
 
-    org.batfish.vendor.cisco_ftd.representation.Interface iface =
+    org.batfish.vendor.cisco_ftd.representation.FtdInterface iface =
         vc.getInterfaces().get("GigabitEthernet0/0");
 
     assertThat(iface.getActive(), equalTo(true)); // Active by default
