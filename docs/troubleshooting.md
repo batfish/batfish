@@ -2,15 +2,16 @@
 
 This guide helps you diagnose and resolve common issues when developing, building, testing, and running Batfish.
 
+**User-facing troubleshooting** (runtime errors, performance problems, memory issues when using Batfish) is available in the [Pybatfish documentation](https://batfish.readthedocs.io/en/latest/troubleshooting.html).
+
+This developer-focused guide covers build issues, test failures, parser/lexer issues, and BDD engine problems.
+
 ## Table of Contents
 
 - [Build Issues](#build-issues)
 - [Test Failures](#test-failures)
 - [Parser and Lexer Issues](#parser-and-lexer-issues)
-- [Runtime Errors](#runtime-errors)
 - [BDD and Symbolic Engine Issues](#bdd-and-symbolic-engine-issues)
-- [Performance Problems](#performance-problems)
-- [Memory Issues](#memory-issues)
 - [Getting Help](#getting-help)
 
 ---

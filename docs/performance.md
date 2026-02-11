@@ -2,6 +2,10 @@
 
 This guide helps you optimize Batfish performance for development, testing, and production workloads.
 
+**User-facing performance guidance** (JVM heap sizing, analysis optimization, scaling strategies) has moved to the [Pybatfish documentation](https://batfish.readthedocs.io/en/latest/performance.html).
+
+This developer-focused guide covers BDD memory management, data plane parallelization, profiling, and internal performance considerations.
+
 ## Table of Contents
 
 - [JVM Configuration](#jvm-configuration)
