@@ -518,8 +518,11 @@ public final class AciConfiguration extends VendorConfiguration {
       return null;
     }
     // Node names are typically in format: SW-DC1-{Role}-{NodeID}-{Set}
+    // Or shorter formats like: Spine-CNAA03, Leaf227, etc.
     // Extract the role part (case-insensitive)
     String lowerName = nodeName.toLowerCase();
+
+    // Check for SW-DC-* format (with dashes around role)
     if (lowerName.contains("-leaf-")) {
       return "leaf";
     } else if (lowerName.contains("-spine-")) {
@@ -528,6 +531,14 @@ public final class AciConfiguration extends VendorConfiguration {
       // Services nodes are leaf switches that provide connectivity to services
       return "leaf";
     }
+
+    // Check for shorter formats: Spine-*, Leaf-*, or prefix patterns
+    if (lowerName.startsWith("spine") || lowerName.startsWith("spine-")) {
+      return "spine";
+    } else if (lowerName.startsWith("leaf") || lowerName.startsWith("leaf-")) {
+      return "leaf";
+    }
+
     return null;
   }
 
