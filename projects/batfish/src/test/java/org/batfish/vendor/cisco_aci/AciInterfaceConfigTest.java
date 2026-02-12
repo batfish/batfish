@@ -375,4 +375,112 @@ public class AciInterfaceConfigTest {
 
     assertThat(config.getTenants(), hasKey("multi_subnet"));
   }
+
+  /** Creates an EPG with path attachment to a physical interface. */
+  private static String createEpgWithPathAttachment() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web/rspathAtt-[topology/pod-1/paths-255/pathep-[eth1/1]]\",\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/1]\",\"encap\":\"vlan-100\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Creates an EPG with vPC path attachment. */
+  private static String createEpgWithVpcPathAttachment() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web/rspathAtt-[topology/pod-1/protpaths-255-256/pathep-[PG_VPC_1]]\",\"tDn\":\"topology/pod-1/protpaths-255-256/pathep-[PG_VPC_1]\",\"encap\":\"vlan-200\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Creates multiple EPGs with path attachments to different interfaces. */
+  private static String createMultipleEpgsWithDifferentInterfaces() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/1]\",\"encap\":\"vlan-100\"}}}]}},{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-db\",\"name\":\"db\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/2]\",\"encap\":\"vlan-200\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Creates multiple EPGs attached to the same interface. */
+  private static String createMultipleEpgsSameInterface() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/1]\",\"encap\":\"vlan-100\"}}}]}},{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-app\",\"name\":\"app\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/1]\",\"encap\":\"vlan-110\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Creates an EPG with path attachment including metadata. */
+  private static String createEpgWithPathAttachmentMetadata() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-255/pathep-[eth1/1]\",\"encap\":\"vlan-100\",\"descr\":\"Web"
+               + " servers EPG\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Test EPG path attachment (fvRsPathAtt) linking EPG to physical interface */
+  @Test
+  public void testEpgPathAttachment() throws IOException {
+    String json = createEpgWithPathAttachment();
+    AciConfiguration config = AciConfiguration.fromJson("epg_path_att.json", json, new Warnings());
+
+    // Verify node interfaces map contains the interface
+    assertThat(config.getNodeInterfaces(), hasKey("255"));
+    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("eth1/1"));
+
+    // Verify path attachment map contains the attachment
+    assertThat(config.getPathAttachmentMap(), hasKey("255"));
+    assertThat(config.getPathAttachmentMap().get("255"), hasKey("eth1/1"));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("eth1/1").getEncap(), equalTo("vlan-100"));
+  }
+
+  /** Test vPC path attachment (protpaths) linking EPG to vPC pair */
+  @Test
+  public void testVpcPathAttachment() throws IOException {
+    String json = createEpgWithVpcPathAttachment();
+    AciConfiguration config = AciConfiguration.fromJson("vpc_path_att.json", json, new Warnings());
+
+    // Verify both nodes have the interface
+    assertThat(config.getNodeInterfaces(), hasKey("255"));
+    assertThat(config.getNodeInterfaces(), hasKey("256"));
+    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("PG_VPC_1"));
+    assertThat(config.getNodeInterfaces().get("256").iterator().next(), equalTo("PG_VPC_1"));
+
+    // Verify path attachment is in both nodes' maps
+    assertThat(config.getPathAttachmentMap(), hasKey("255"));
+    assertThat(config.getPathAttachmentMap(), hasKey("256"));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("PG_VPC_1").getEncap(), equalTo("vlan-200"));
+    assertThat(
+        config.getPathAttachmentMap().get("256").get("PG_VPC_1").getEncap(), equalTo("vlan-200"));
+
+    // Verify vPC detection
+    assertThat(config.getPathAttachmentMap().get("255").get("PG_VPC_1").isVpc(), equalTo(true));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("PG_VPC_1").getNodeId2(), equalTo("256"));
+  }
+
+  /** Test multiple path attachments to different interfaces on the same node */
+  @Test
+  public void testMultiplePathAttachments() throws IOException {
+    String json = createMultipleEpgsWithDifferentInterfaces();
+    AciConfiguration config =
+        AciConfiguration.fromJson("multi_path_att.json", json, new Warnings());
+
+    // Verify node has both interfaces
+    assertThat(config.getNodeInterfaces().get("255").size(), equalTo(2));
+  }
+
+  /** Test multiple EPGs attached to the same interface (deduplication) */
+  @Test
+  public void testMultipleEpgsSameInterface() throws IOException {
+    String json = createMultipleEpgsSameInterface();
+    AciConfiguration config =
+        AciConfiguration.fromJson("multi_epg_same_if.json", json, new Warnings());
+
+    // Verify interface is only listed once (deduplication)
+    assertThat(config.getNodeInterfaces().get("255").size(), equalTo(1));
+    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("eth1/1"));
+  }
+
+  /** Test path attachment with EPG metadata */
+  @Test
+  public void testPathAttachmentWithMetadata() throws IOException {
+    String json = createEpgWithPathAttachmentMetadata();
+    AciConfiguration config =
+        AciConfiguration.fromJson("path_att_metadata.json", json, new Warnings());
+
+    // Verify EPG metadata is captured
+    assertThat(config.getPathAttachmentMap().get("255").get("eth1/1").getEpgName(), equalTo("web"));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("eth1/1").getEpgTenant(), equalTo("tenant1"));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("eth1/1").getDescription(),
+        equalTo("Web servers EPG"));
+  }
 }

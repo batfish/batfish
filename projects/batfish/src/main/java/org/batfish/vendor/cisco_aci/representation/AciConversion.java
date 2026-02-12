@@ -423,7 +423,7 @@ public final class AciConversion {
     // Also add interfaces discovered from path attachments (fvRsPathAtt)
     String nodeId = node.getNodeId();
     if (nodeId != null && aciConfig.getNodeInterfaces() != null) {
-      List<String> pathAttachmentInterfaces = aciConfig.getNodeInterfaces().get(nodeId);
+      Set<String> pathAttachmentInterfaces = aciConfig.getNodeInterfaces().get(nodeId);
       if (pathAttachmentInterfaces != null) {
         for (String ifaceName : pathAttachmentInterfaces) {
           // Only add if not already present

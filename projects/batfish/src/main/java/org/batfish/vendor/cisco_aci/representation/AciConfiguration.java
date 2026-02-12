@@ -15,6 +15,7 @@ import com.google.common.collect.ImmutableMap;
 import java.io.IOException;
 import java.io.Serializable;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -259,8 +260,11 @@ public final class AciConfiguration extends VendorConfiguration {
   /** Map of (nodeId, interfaceName) to path attachment details */
   private Map<String, Map<String, PathAttachment>> _pathAttachmentMap;
 
-  /** Map of node IDs to interface names discovered from path attachments */
-  private Map<String, List<String>> _nodeInterfaces;
+  /**
+   * Map of node IDs to interface names discovered from path attachments (LinkedHashSet for
+   * uniqueness + insertion order)
+   */
+  private Map<String, Set<String>> _nodeInterfaces;
 
   /** Map of L3Out names to L3Out configurations */
   private Map<String, L3Out> _l3Outs;
@@ -1071,6 +1075,48 @@ public final class AciConfiguration extends VendorConfiguration {
             String tabooName = firstNonEmptyValue(rsProtByAttrs, "tnVzTabooName");
             if (tabooName != null) {
               epg.getProtectedByTaboos().add(tenantName + ":" + tabooName);
+            }
+          }
+
+          // Path Attachments (fvRsPathAtt) - link EPG to physical interfaces
+          if (childMap.containsKey("fvRsPathAtt")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> pathAttMap = (Map<String, Object>) childMap.get("fvRsPathAtt");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> pathAttAttrs = (Map<String, Object>) pathAttMap.get("attributes");
+            if (pathAttAttrs != null) {
+              String tDn = (String) pathAttAttrs.get("tDn");
+              if (tDn != null) {
+                PathAttachment pathAtt = new PathAttachment(tDn);
+                pathAtt.setEncap((String) pathAttAttrs.get("encap"));
+                pathAtt.setDescription((String) pathAttAttrs.get("descr"));
+                pathAtt.setEpgName(epgName);
+                pathAtt.setEpgTenant(tenantName);
+
+                // Add to path attachment map for both nodes (vPC pairs get two entries)
+                String nodeId = pathAtt.getNodeId();
+                String nodeId2 = pathAtt.getNodeId2();
+                if (nodeId != null) {
+                  _pathAttachmentMap
+                      .computeIfAbsent(nodeId, k -> new TreeMap<>())
+                      .put(pathAtt.getInterface(), pathAtt);
+
+                  // Add to node interfaces list (LinkedHashSet for uniqueness + order)
+                  _nodeInterfaces
+                      .computeIfAbsent(nodeId, k -> new LinkedHashSet<>())
+                      .add(pathAtt.getInterface());
+                }
+                // For vPC, also add to the secondary node
+                if (nodeId2 != null) {
+                  _pathAttachmentMap
+                      .computeIfAbsent(nodeId2, k -> new TreeMap<>())
+                      .put(pathAtt.getInterface(), pathAtt);
+
+                  _nodeInterfaces
+                      .computeIfAbsent(nodeId2, k -> new LinkedHashSet<>())
+                      .add(pathAtt.getInterface());
+                }
+              }
             }
           }
         }
@@ -1949,9 +1995,10 @@ public final class AciConfiguration extends VendorConfiguration {
   /**
    * Returns the map of node IDs to interface names discovered from path attachments.
    *
-   * @return Map of node IDs to lists of interface names
+   * @return Map of node IDs to sets of interface names (LinkedHashSet for uniqueness + insertion
+   *     order)
    */
-  public @Nonnull Map<String, List<String>> getNodeInterfaces() {
+  public @Nonnull Map<String, Set<String>> getNodeInterfaces() {
     return _nodeInterfaces;
   }
 
@@ -5058,6 +5105,7 @@ public final class AciConfiguration extends VendorConfiguration {
     private final String _tdn;
     private String _podId;
     private String _nodeId;
+    private String _nodeId2; // Secondary node ID for vPC
     private String _interface;
     private String _encap;
     private String _description;
@@ -5070,19 +5118,57 @@ public final class AciConfiguration extends VendorConfiguration {
     }
 
     private void parseTdn(String tdn) {
-      // tDn format: topology/pod-{podId}/paths-{nodeId}/pathep-[{interface}]
+      // tDn formats:
+      // - Single node: topology/pod-{podId}/paths-{nodeId}/pathep-[{interface}]
+      // - vPC pair: topology/pod-{podId}/protpaths-{nodeId1}-{nodeId2}/pathep-[{interface}]
       if (tdn == null) {
         return;
       }
 
-      String[] parts = tdn.split("/");
-      for (String part : parts) {
-        if (part.startsWith("pod-")) {
-          _podId = part.substring(4);
-        } else if (part.startsWith("paths-")) {
-          _nodeId = part.substring(6);
-        } else if (part.startsWith("pathep-[") && part.endsWith("]") && part.length() > 10) {
-          _interface = part.substring(8, part.length() - 1);
+      // Extract podId
+      int podIdx = tdn.indexOf("/pod-");
+      if (podIdx >= 0) {
+        int podStart = podIdx + 5; // Skip "/pod-"
+        int podEnd = tdn.indexOf('/', podStart);
+        if (podEnd > podStart) {
+          _podId = tdn.substring(podStart, podEnd);
+        }
+      }
+
+      // Extract nodeId (paths- or protpaths-)
+      int pathsIdx = tdn.indexOf("/paths-");
+      int protpathsIdx = tdn.indexOf("/protpaths-");
+
+      if (protpathsIdx >= 0) {
+        // vPC format: protpaths-{nodeId1}-{nodeId2}
+        int nodeStart = protpathsIdx + 11; // Skip "/protpaths-"
+        int slashIdx = tdn.indexOf('/', nodeStart);
+        if (slashIdx > nodeStart) {
+          String nodePair = tdn.substring(nodeStart, slashIdx);
+          String[] nodes = nodePair.split("-");
+          if (nodes.length >= 1) {
+            _nodeId = nodes[0];
+          }
+          if (nodes.length >= 2) {
+            _nodeId2 = nodes[1];
+          }
+        }
+      } else if (pathsIdx >= 0) {
+        // Single node: paths-{nodeId}
+        int nodeStart = pathsIdx + 7; // Skip "/paths-"
+        int slashIdx = tdn.indexOf('/', nodeStart);
+        if (slashIdx > nodeStart) {
+          _nodeId = tdn.substring(nodeStart, slashIdx);
+        }
+      }
+
+      // Extract interface name (pathep-[{interface}])
+      int pathepIdx = tdn.indexOf("/pathep-[");
+      if (pathepIdx >= 0) {
+        int ifStart = pathepIdx + 9; // Skip "/pathep-["
+        int ifEnd = tdn.indexOf(']', ifStart);
+        if (ifEnd > ifStart) {
+          _interface = tdn.substring(ifStart, ifEnd);
         }
       }
     }
@@ -5097,6 +5183,14 @@ public final class AciConfiguration extends VendorConfiguration {
 
     public @Nullable String getNodeId() {
       return _nodeId;
+    }
+
+    public @Nullable String getNodeId2() {
+      return _nodeId2;
+    }
+
+    public boolean isVpc() {
+      return _nodeId2 != null;
     }
 
     public @Nullable String getInterface() {
