@@ -649,6 +649,32 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   @Override
+  public void exitCfip_set_prefix(FortiosParser.Cfip_set_prefixContext ctx) {
+    _currentIppool.setPrefixIp(toIp(ctx.prefix_ip));
+    _currentIppool.setPrefixNetmask(toIp(ctx.netmask_value));
+  }
+
+  @Override
+  public void exitCfip_set_ge(FortiosParser.Cfip_set_geContext ctx) {
+    _currentIppool.setGe(toInteger(ctx.ge_port));
+  }
+
+  @Override
+  public void exitCfip_set_le(FortiosParser.Cfip_set_leContext ctx) {
+    _currentIppool.setLe(toInteger(ctx.le_port));
+  }
+
+  @Override
+  public void exitCfip_unset_ge(FortiosParser.Cfip_unset_geContext ctx) {
+    _currentIppool.setGe(null);
+  }
+
+  @Override
+  public void exitCfip_unset_le(FortiosParser.Cfip_unset_leContext ctx) {
+    _currentIppool.setLe(null);
+  }
+
+  @Override
   public void enterCfaddrgrp_edit(Cfaddrgrp_editContext ctx) {
     Optional<String> name = toString(ctx, ctx.address_name());
     Addrgrp existingAddrgrp = name.map(_c.getAddrgrps()::get).orElse(null);

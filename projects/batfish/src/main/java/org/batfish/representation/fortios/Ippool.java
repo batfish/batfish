@@ -17,10 +17,14 @@ public final class Ippool implements FortiosRenameableObject, Serializable {
   private @Nullable String _associatedInterface;
   private @Nullable String _comments;
   private @Nullable Ip _endip;
+  private @Nullable Ip _prefixIp;
+  private @Nullable Ip _prefixNetmask;
   private @Nonnull String _name;
   private @Nullable Ip _startip;
   private @Nullable Type _type;
   private final @Nonnull BatfishUUID _uuid;
+  private @Nullable Integer _ge;
+  private @Nullable Integer _le;
 
   public Ippool(String name, BatfishUUID uuid) {
     _name = name;
@@ -80,5 +84,37 @@ public final class Ippool implements FortiosRenameableObject, Serializable {
   @Override
   public void setName(String name) {
     _name = name;
+  }
+
+  public @Nullable Ip getPrefixIp() {
+    return _prefixIp;
+  }
+
+  public void setPrefixIp(Ip prefixIp) {
+    _prefixIp = prefixIp;
+  }
+
+  public @Nullable Ip getPrefixNetmask() {
+    return _prefixNetmask;
+  }
+
+  public void setPrefixNetmask(Ip prefixNetmask) {
+    _prefixNetmask = prefixNetmask;
+  }
+
+  public @Nullable Integer getGe() {
+    return _ge;
+  }
+
+  public void setGe(Integer ge) {
+    _ge = ge;
+  }
+
+  public @Nullable Integer getLe() {
+    return _le;
+  }
+
+  public void setLe(Integer le) {
+    _le = le;
   }
 }

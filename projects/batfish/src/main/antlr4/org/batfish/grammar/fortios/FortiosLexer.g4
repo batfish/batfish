@@ -293,6 +293,7 @@ FTP: 'ftp' {
   }
 };
 GATEWAY: 'gateway';
+GE: 'ge';
 GEOGRAPHY: 'geography';
 GLOBAL: 'global';
 GROUP: 'group';
@@ -399,6 +400,7 @@ LOG: 'log' {
 };
 LOGTRAFFIC: 'logtraffic';
 LOGTRAFFIC_START: 'logtraffic-start';
+LE: 'le';
 LOG_SINGLE_CPU_HIGH: 'log-single-cpu-high' -> pushMode(M_Str);
 LOOPBACK: 'loopback';
 MAC: 'mac';

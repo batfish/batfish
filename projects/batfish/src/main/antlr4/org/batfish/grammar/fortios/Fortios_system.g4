@@ -8,6 +8,7 @@ c_system: SYSTEM (
   cs_bfd
   | cs_global
   | cs_interface
+  | cs_ippool
   | cs_npu
   | cs_replacemsg
   | cs_zone
@@ -97,3 +98,5 @@ csnpu_line
 csnpu_set: SET null_rest_of_line;
 
 csnpu_config: CONFIG IGNORED_CONFIG_BLOCK END newline;
+
+cs_ippool: IPPOOL newline cfip*;
