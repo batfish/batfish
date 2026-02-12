@@ -19,6 +19,7 @@ Different vendors have unique configuration formats and parsing requirements. Fo
 
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
+- [ANTLR4 Tips and Tricks](antlr4_tips.md) - Practical ANTLR4 patterns, lexer rules, parser design, debugging
 
 Most developers wanting to make changes to Batfish parsing will not need to perform all the
 activities detailed in this document. Nevertheless, we recommend that you read the entire document
@@ -994,8 +995,392 @@ For the example, you can:
 
 ### Parser testing
 
-This section is still in progress. Check back later!
+Parser tests in Batfish verify that configuration files are correctly parsed, extracted, and converted into the internal data model.
+
+#### Test Organization
+
+Parser tests are organized by vendor in `projects/batfish/src/test/java/org/batfish/grammar/{vendor_name}/`:
+
+```
+projects/batfish/src/test/java/org/batfish/grammar/
+├── arista/
+│   └── AristaGrammarTest.java
+├── cisco/
+│   └── CiscoGrammarTest.java
+├── cisco_nxos/
+│   └── CiscoNxosGrammarTest.java
+├── juniper/
+│   └── JuniperGrammarTest.java
+└── ...
+```
+
+Test configurations are stored in corresponding resource directories:
+```
+projects/batfish/src/test/resources/org/batfish/grammar/{vendor_name}/testconfigs/
+├── config1/
+│   ├── config.cfg
+│   └── snapshot
+└── config2/
+    ├── config.cfg
+    └── snapshot
+```
+
+#### Test Structure
+
+A typical parser test follows this pattern:
+
+```java
+@RunWith(BatfishRunner.class)
+public class VendorGrammarTest {
+
+  @BatfishTestConfig(name = "test-config-name")
+  private static final String TESTCONFIGS = "org/batfish/grammar/{vendor}/testconfigs";
+
+  @Test
+  public void testConfigurationParsing() {
+    // Test automatic - verifies parsing succeeds without errors
+  }
+
+  @Test
+  public void testSpecificFeature() {
+    VendorConfiguration config = parseConfig("test-config-name");
+
+    // Verify extracted properties
+    assertThat(config.getHostname(), equalTo("router1"));
+    assertThat(config.getInterfaces().keySet(), hasSize(5));
+  }
+}
+```
+
+#### Test Configuration Files
+
+Test configurations should be:
+
+1. **Minimal**: Include only what's needed to test the feature
+2. **Realistic**: Use actual vendor syntax
+3. **Focused**: Test one feature or aspect at a time
+4. **Well-named**: Use descriptive directory names
+
+Example test configuration structure:
+```
+testconfigs/
+├── basic-interface/
+│   └── config.cfg          # Simple interface configuration
+├── static-routes/
+│   └── config.cfg          # Static route variations
+├── bgp-peering/
+│   └── config.cfg          # BGP neighbor configurations
+└── complex/
+    └── config.cfg          # Multiple features together
+```
+
+#### Running Parser Tests
+
+**Run a specific test**:
+```bash
+bazel test //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+```
+
+**Run a specific test method**:
+```bash
+bazel test --test_filter={VendorName}GrammarTest#testSpecificMethod \
+    //projects/batfish/src/test/java/org/batfish/grammar/{vendor}:tests
+```
+
+**Run all parser tests**:
+```bash
+bazel test //projects/batfish/src/test/java/org/batfish/grammar/...
+```
+
+#### Test Snapshots
+
+Some parser tests use snapshots to verify the extracted configuration. A snapshot contains the serialized form of the parsed configuration:
+
+- **Location**: `testconfigs/{config-name}/snapshot`
+- **Purpose**: Verify extraction produces expected output
+- **Updates**: Run `./tools/update_snapshots.sh` after intentional changes
+
+#### Common Test Patterns
+
+1. **Parsing Success**: Verify configuration parses without warnings
+2. **Extraction Validation**: Verify specific values are extracted correctly
+3. **Error Recovery**: Test handling of malformed configurations
+4. **Feature Interaction**: Test multiple features together
+5. **Format Detection**: Test automatic format identification
+
+#### Example Test
+
+```java
+@Test
+public void testBgpNeighborExtraction() {
+  JuniperConfiguration config = parseConfig("bgp-neighbor");
+
+  BgpProcess bgp = config.getDefaultVrf().getBgpProcess();
+  assertThat(bgp.getNeighbors().keySet(), hasSize(2));
+
+  BgpNeighbor neighbor1 = bgp.getNeighbors().get(Ip.parse("10.0.0.1"));
+  assertThat(neighbor1.getRemoteAs(), equalTo(65001));
+  assertThat(neighbor1.getLocalAs(), equalTo(65000));
+}
+```
+
+For more information on writing tests, see [Testing Extraction](../extraction/README.md#testing-extraction) and [Testing Guide](../development/testing_guide.md).
 
 ## Adding support for structured file formats
 
-This section is still in progress. Check back later!
+Some network devices use structured formats like JSON or YAML for configuration. Batfish supports these formats through a different mechanism than DSL parsing.
+
+### Structured vs DSL Formats
+
+**DSL Formats** (e.g., Cisco IOS, Juniper Junos):
+- Require ANTLR4 grammar definitions
+- Use lexer/parser to generate parse trees
+- Require extraction listeners
+
+**Structured Formats** (e.g., JSON, YAML):
+- Use standard JSON/YAML parsers (Jackson)
+- Direct deserialization to Java objects
+- Simpler conversion to internal data model
+
+### Supported Structured Formats
+
+Batfish currently supports these structured formats:
+
+1. **F5 BIGIP Structured** (`F5_BIGIP_STRUCTURED`)
+   - TMSH JSON format
+   - Hierarchical configuration objects
+
+2. **SONiC ConfigDB** (`SONIC_CONFIG_DB_JSON`)
+   - JSON-based configuration database
+   - Multiple configuration files
+
+3. **Cumulus NCLU** (`CUMULUS_NCLU`)
+   - JSON-based network configuration
+
+4. **Check Point Management** (`CHECK_POINT_MANAGEMENT`)
+   - YAML-based management configuration
+
+### Adding Structured Format Support
+
+#### Step 1: Add ConfigurationFormat Enum
+
+Add a new format to `ConfigurationFormat.java`:
+
+```java
+F5_NEW_FORMAT("f5_new_format"),
+```
+
+#### Step 2: Create Format Detection
+
+Update `VendorConfigurationFormatDetector.java`:
+
+```java
+private static final Pattern F5_NEW_FORMAT_PATTERN =
+    Pattern.compile("(?m)^\\s*\\{.*\"new_format_key\"");
+
+private @Nullable ConfigurationFormat checkF5NewFormat() {
+    if (fileTextMatches(F5_NEW_FORMAT_PATTERN)) {
+        return ConfigurationFormat.F5_NEW_FORMAT;
+    }
+    return null;
+}
+```
+
+Add the check to `identifyConfigurationFormat`:
+
+```java
+ConfigurationFormat format = checkF5NewFormat();
+if (format != null) {
+    return format;
+}
+```
+
+#### Step 3: Create Representation Classes
+
+Create Java classes that mirror the structured format:
+
+```java
+package org.batfish.grammar.f5_new_format;
+
+public class NewFormatConfig {
+    private List<Interface> interfaces;
+    private List<Vlan> vlans;
+
+    // Getters and setters
+    public List<Interface> getInterfaces() { return interfaces; }
+    public void setInterfaces(List<Interface> interfaces) {
+        this.interfaces = interfaces;
+    }
+}
+```
+
+#### Step 4: Create Combined Parser
+
+For structured formats, the "parser" is actually a deserializer:
+
+```java
+public class F5NewFormatCombinedParser extends CombinedParser {
+
+  private final Map<String, String> _fileTexts;
+
+  public F5NewFormatCombinedParser(
+      String filename,
+      Map<String, String> fileTexts,
+      Map<String, Warnings> warnings) {
+    super(
+        filename,
+        fileTexts.get(filename),
+        warnings,
+        F5NewFormatCombinedParser.class,
+        true); // silentSyntax
+
+    _fileTexts = fileTexts;
+  }
+
+  @Override
+  public ParserRuleContext parse() {
+    // For structured formats, parse returns null
+    // The actual parsing happens in the extractor
+    return null;
+  }
+}
+```
+
+#### Step 5: Create Control Plane Extractor
+
+The extractor deserializes the structured format:
+
+```java
+public class F5NewFormatControlPlaneExtractor implements ControlPlaneExtractor {
+
+  private final Map<String, String> _fileTexts;
+  private final Map<String, FileCopyResult> _fileResults;
+  private F5NewFormatConfiguration _configuration;
+
+  @Override
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    _configuration = new F5NewFormatConfiguration(_filename);
+
+    // Use Jackson ObjectMapper for JSON
+    ObjectMapper mapper = new BatfishObjectMapper();
+
+    try {
+      String configText = _fileTexts.get(_filename);
+      NewFormatConfig config = mapper.readValue(configText, NewFormatConfig.class);
+
+      // Convert to VendorConfiguration
+      convertInterfaces(config.getInterfaces());
+      convertVlans(config.getVlans());
+
+    } catch (IOException e) {
+      _w.redFlag("Failed to parse JSON: " + e.getMessage());
+    }
+  }
+}
+```
+
+#### Step 6: Handle YAML Formats
+
+For YAML formats, use Jackson with YAML factory:
+
+```java
+import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+
+public class CheckpointManagementControlPlaneExtractor {
+
+  @Override
+  public void processParseTree(NetworkSnapshot snapshot, ParserRuleContext tree) {
+    // For YAML
+    ObjectMapper mapper = new ObjectMapper(new YAMLFactory());
+    SnmpYml snmpYml = mapper.readValue(
+        _fileTexts.get(snmpYmlFilename).trim(),
+        SnmpYml.class);
+  }
+}
+```
+
+#### Step 7: Wire Up in ParseVendorConfigurationJob
+
+Add a case in `ParseVendorConfigurationJob.java`:
+
+```java
+case F5_NEW_FORMAT:
+  vendorConfiguration = parseF5NewFormat(fileTexts, fileResults);
+  break;
+```
+
+And implement the parsing method:
+
+```java
+private VendorConfiguration parseF5NewFormat(
+    Map<String, String> fileTexts,
+    Map<String, FileCopyResult> fileResults) {
+
+  String filename = getCfgFile(fileTexts);
+  F5NewFormatCombinedParser parser =
+      new F5NewFormatCombinedParser(filename, fileTexts, warnings);
+  F5NewFormatControlPlaneExtractor extractor =
+      new F5NewFormatControlPlaneExtractor(filename, fileTexts, fileResults, warnings);
+
+  extractor.processParseTree(wraps._snapshot, parser.parse());
+  return extractor.getVendorConfiguration();
+}
+```
+
+### JSON Deserialization Best Practices
+
+1. **Use BatfishObjectMapper**: Provides consistent JSON handling
+   ```java
+   ObjectMapper mapper = new BatfishObjectMapper();
+   ```
+
+2. **Handle Missing Fields**: Use `@JsonInclude(Include.NON_NULL)`
+   ```java
+   @JsonInclude(Include.NON_NULL)
+   public class Interface {
+       private String description;
+   }
+   ```
+
+3. **Ignore Unknown Properties**: Handle schema variations gracefully
+   ```java
+   @JsonIgnoreProperties(ignoreUnknown = true)
+   public class Interface {
+       // ...
+   }
+   ```
+
+4. **Custom Deserialization**: For complex types
+   ```java
+   public class IpAddressDeserializer extends JsonDeserializer<Ip> {
+       @Override
+       public Ip deserialize(JsonParser p, DeserializationContext ctxt) {
+           String ipStr = p.getValueAsString();
+           return Ip.parse(ipStr);
+       }
+   }
+   ```
+
+### Testing Structured Formats
+
+Test structured format parsing similarly to DSL formats:
+
+```java
+@Test
+public void testJsonFormat() {
+  Map<String, String> fileTexts = ImmutableMap.of(
+      "config.json", loadTestResource("testconfigs/json-format/config.json")
+  );
+
+  F5NewFormatConfiguration config = parseConfig(fileTexts);
+
+  assertThat(config.getInterfaces().keySet(), hasSize(3));
+  assertThat(config.getInterfaces().get("eth0").getDescription(),
+      equalTo("Uplink interface"));
+}
+```
+
+For complete examples of structured format support, see:
+- `projects/batfish/src/main/java/org/batfish/vendor/sonic/` - SONiC JSON support
+- `projects/batfish/src/main/java/org/batfish/grammar/f5_bigip_structured/` - F5 BIGIP JSON support
+- `projects/batfish/src/main/java/org/batfish/vendor/check_point_management/` - Check Point YAML support
