@@ -19,6 +19,7 @@ Different vendors have unique configuration formats and parsing requirements. Fo
 
 - [Cisco IOS-XR](vendors/ios_xr.md) - IOS-XR-specific parsing and extraction details
 - [Juniper](vendors/juniper.md) - Juniper-specific parsing and extraction details
+- [ANTLR4 Tips and Tricks](antlr4_tips.md) - Practical ANTLR4 patterns, lexer rules, parser design, debugging
 
 Most developers wanting to make changes to Batfish parsing will not need to perform all the
 activities detailed in this document. Nevertheless, we recommend that you read the entire document
