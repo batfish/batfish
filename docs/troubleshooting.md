@@ -552,30 +552,40 @@ When reporting an issue, always include:
 ### Example Issue Report
 
 ```
-**Problem**: Reachability analysis returns empty results
+**Problem**: NPE when extracting interface configuration from Juniper router
 
-**Expected**: Should find path from 10.0.0.1 to 10.0.1.10
+**Expected**: Interface should be extracted with all properties
 
-**Actual**: No flows returned
+**Actual**: NullPointerException in `InterfaceExtractor.java:45`
 
 **Steps**:
-```python
-bf.init_snapshot('configs/', name='test')
-bf.set_snapshot('test')
-result = bf.reachability(
-    headerConstraints=HeaderConstraints(
-        src_ips=ip_to_header_space("10.0.0.1/32"),
-        dst_ips=ip_to_header_space("10.0.1.10/32")
-    )
-)
-print(result.flows())  # Empty list
+```bash
+# Run vendor-specific test
+bazel test //projects/vendor/src/test/java/org/batfish/grammar/juniper:JuniperInterfaceTest
+
+# Fails with:
+# java.lang.NullPointerException
+#   at org.batfish.grammar.juniper.InterfaceExtractor.extractInterface(InterfaceExtractor.java:45)
+```
+
+**Code**:
+```java
+// Bug: not checking if context is null
+InterfaceContext ctx = getInterfaceContext();
+String name = ctx.NAME().getText();  // NPE if ctx is null
+
+// Fix: add null check
+InterfaceContext ctx = getInterfaceContext();
+if (ctx != null && ctx.NAME() != null) {
+    String name = ctx.NAME().getText();
+}
 ```
 
 **Environment**:
 - Batfish: commit abc123
 - Java: 17.0.2
 - OS: macOS 13.0
-- Config: [attached router.cfg]
+- Test config: `projects/vendor/src/test/resources/test-rigs/juniper/configs/router1.cfg`
 ```
 
 ---
