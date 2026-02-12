@@ -643,8 +643,6 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_ac
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_default_action_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_externalContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_local_preferenceContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metricContext;
-import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_metric_addContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_multipath_resolveContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_policyContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
@@ -653,6 +651,11 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_addContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_expressionContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_igpContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_subtractContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm_valueContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_discardContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv4Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_ipv6Context;
@@ -1148,7 +1151,6 @@ import org.batfish.representation.juniper.PsThenDefaultActionReject;
 import org.batfish.representation.juniper.PsThenExternal;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenMetric;
-import org.batfish.representation.juniper.PsThenMetricAdd;
 import org.batfish.representation.juniper.PsThenNextHopDiscard;
 import org.batfish.representation.juniper.PsThenNextHopIp;
 import org.batfish.representation.juniper.PsThenNextHopPeerAddress;
@@ -6525,16 +6527,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
-  public void exitPopst_metric(Popst_metricContext ctx) {
-    int metric = toInt(ctx.metric);
-    PsThenMetric then = new PsThenMetric(metric);
-    addPsThen(then, ctx);
+  public void exitPopstm_add(Popstm_addContext ctx) {
+    long metric = toLong(ctx.metric);
+    addPsThen(new PsThenMetric(metric, PsThenMetric.Operator.ADD), ctx);
   }
 
   @Override
-  public void exitPopst_metric_add(Popst_metric_addContext ctx) {
-    int metric = toInt(ctx.metric);
-    addPsThen(new PsThenMetricAdd(metric), ctx);
+  public void exitPopstm_expression(Popstm_expressionContext ctx) {
+    // TODO: implement metric expression
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopstm_igp(Popstm_igpContext ctx) {
+    // TODO: implement metric igp
+    todo(ctx);
+  }
+
+  @Override
+  public void exitPopstm_subtract(Popstm_subtractContext ctx) {
+    long metric = toLong(ctx.metric);
+    addPsThen(new PsThenMetric(metric, PsThenMetric.Operator.SUBTRACT), ctx);
+  }
+
+  @Override
+  public void exitPopstm_value(Popstm_valueContext ctx) {
+    long metric = toLong(ctx.metric);
+    addPsThen(new PsThenMetric(metric, PsThenMetric.Operator.SET), ctx);
   }
 
   @Override
