@@ -8,6 +8,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedMap;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -2428,10 +2429,17 @@ public final class AciConversion {
         continue;
       }
 
-      // Get available interfaces from leaf (prefer fabric-facing ports)
-      List<String> leafInterfaces = new ArrayList<>();
+      // Get available interfaces from leaf (merge both sources)
+      // Source 1: Fabric node interfaces (l1PhysIf)
+      // Source 2: Path attachment interfaces (EPG attachments)
+      Set<String> leafInterfaces = new LinkedHashSet<>();
       if (leaf.getInterfaces() != null) {
         leafInterfaces.addAll(leaf.getInterfaces().keySet());
+      }
+      // Also add interfaces discovered from path attachments
+      if (aciConfig.getNodeInterfaces() != null
+          && aciConfig.getNodeInterfaces().containsKey(leafNodeId)) {
+        leafInterfaces.addAll(aciConfig.getNodeInterfaces().get(leafNodeId));
       }
 
       // For each spine, use a different leaf interface to model realistic fabric connectivity
@@ -2445,13 +2453,22 @@ public final class AciConversion {
         }
 
         // Select leaf interface - use indexed interface if available, otherwise default
+        List<String> leafIfaceList = new ArrayList<>(leafInterfaces);
         String leafIface =
-            spineIndex < leafInterfaces.size()
-                ? leafInterfaces.get(spineIndex)
+            spineIndex < leafIfaceList.size()
+                ? leafIfaceList.get(spineIndex)
                 : "ethernet1/" + (spineIndex + 1);
 
-        // For spine, use different interface per leaf to model fabric ports
-        String spineIface = "ethernet1/" + (spineIndex + 1);
+        // For spine, use interfaces from fabric node (l1PhysIf) or generate default
+        String spineIface;
+        List<String> spineIfaceList = new ArrayList<>();
+        if (spine.getInterfaces() != null) {
+          spineIfaceList.addAll(spine.getInterfaces().keySet());
+        }
+        spineIface =
+            spineIndex < spineIfaceList.size()
+                ? spineIfaceList.get(spineIndex)
+                : "ethernet1/" + (spineIndex + 1);
 
         edges.add(new Layer1Edge(leafHostname, leafIface, spineHostname, spineIface));
         spineIndex++;

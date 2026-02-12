@@ -491,4 +491,40 @@ public class AciInterfaceConfigTest {
         config.getPathAttachmentMap().get("255").get("eth1/1").getDescription(),
         equalTo("Web servers EPG"));
   }
+
+  /** Creates a spine-leaf topology with interfaces and path attachments. */
+  private static String createSpineLeafTopology() {
+    return "{\"polUni\":{\"attributes\":{\"dn\":\"uni\",\"name\":\"aci-fabric\"},\"children\":[{\"fabricInst\":{\"attributes\":{\"dn\":\"uni/fabric\"},\"children\":[{\"fabricProtPol\":{\"attributes\":{},\"children\":[{\"fabricExplicitGEp\":{\"attributes\":{},\"children\":[{\"fabricNodePEp\":{\"attributes\":{\"dn\":\"uni/fabric/nodePEp-101\",\"id\":\"101\",\"name\":\"spine1\",\"role\":\"spine\",\"podId\":\"1\"},\"children\":[{\"l1PhysIf\":{\"attributes\":{\"dn\":\"uni/fabric/nodePEp-101/phys-eth1/1\",\"id\":\"eth1/1\",\"descr\":\"Link"
+               + " to leaf1\"}}},{\"l1PhysIf\":{\"attributes\":{\"dn\":\"uni/fabric/nodePEp-101/phys-eth1/2\",\"id\":\"eth1/2\",\"descr\":\"Link"
+               + " to leaf2\"}}}]}},{\"fabricNodePEp\":{\"attributes\":{\"dn\":\"uni/fabric/nodePEp-201\",\"id\":\"201\",\"name\":\"leaf1\",\"role\":\"leaf\",\"podId\":\"1\"},\"children\":[{\"l1PhysIf\":{\"attributes\":{\"dn\":\"uni/fabric/nodePEp-201/phys-eth1/1\",\"id\":\"eth1/1\",\"descr\":\"Link"
+               + " to spine1\"}}}]}}]}}]}}]}},{\"fvTenant\":{\"attributes\":{\"dn\":\"uni/tn-tenant1\",\"name\":\"tenant1\"},\"children\":[{\"fvAp\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1\",\"name\":\"ap1\"},\"children\":[{\"fvAEPg\":{\"attributes\":{\"dn\":\"uni/tn-tenant1/ap-ap1/epg-web\",\"name\":\"web\"},\"children\":[{\"fvRsPathAtt\":{\"attributes\":{\"tDn\":\"topology/pod-1/paths-201/pathep-[eth1/2]\",\"encap\":\"vlan-100\"}}}]}}]}}]}}]}}";
+  }
+
+  /** Test spine-leaf topology generation with interfaces from both sources */
+  @Test
+  public void testSpineLeafTopology() throws IOException {
+    String json = createSpineLeafTopology();
+    AciConfiguration config =
+        AciConfiguration.fromJson("spine_leaf_topo.json", json, new Warnings());
+
+    // Verify spine has interfaces from l1PhysIf
+    assertThat(config.getFabricNodes(), hasKey("101"));
+    assertThat(config.getFabricNodes().get("101").getInterfaces().size(), equalTo(2));
+    assertThat(config.getFabricNodes().get("101").getInterfaces(), hasKey("eth1/1"));
+    assertThat(config.getFabricNodes().get("101").getInterfaces(), hasKey("eth1/2"));
+
+    // Verify leaf has interfaces from l1PhysIf
+    assertThat(config.getFabricNodes(), hasKey("201"));
+    assertThat(config.getFabricNodes().get("201").getInterfaces().size(), equalTo(1));
+    assertThat(config.getFabricNodes().get("201").getInterfaces(), hasKey("eth1/1"));
+
+    // Verify leaf also has interfaces from path attachments
+    assertThat(config.getNodeInterfaces(), hasKey("201"));
+    assertThat(config.getNodeInterfaces().get("201").size(), equalTo(1));
+    assertThat(config.getNodeInterfaces().get("201").iterator().next(), equalTo("eth1/2"));
+
+    // Verify Layer1 edges are created between spine and leaf
+    var edges = org.batfish.vendor.cisco_aci.representation.AciConversion.createLayer1Edges(config);
+    assertThat(edges.size(), equalTo(1)); // 1 spine x 1 leaf = 1 edge
+  }
 }
