@@ -22,8 +22,7 @@ Batfish enables network engineers to validate configuration changes _before_ dep
 ## Quick Links
 
 **New to Batfish?**
-- [Quick Reference](quick_reference.md) - Common commands and patterns
-- [User Guide](user_guide/README.md) - Usage instructions and best practices
+- [Getting Started](https://pybatfish.readthedocs.io/en/latest/getting_started.html) - User documentation
 
 **Developing Batfish:**
 - [Development Guide](development/README.md) - Setup and contribution guidelines
@@ -115,12 +114,6 @@ After processing configurations, Batfish performs analysis:
 **[Architecture](architecture/README.md)** - System design
 - [Pipeline Overview](architecture/pipeline_overview.md) - How components fit together
 
-### User-facing
-
-**[User Guide](user_guide/README.md)** - Usage instructions
-- [Best Practices](user_guide/best_practices.md)
-- [Use Cases](user_guide/use_cases.md)
-
 **[Contributing](contributing/README.md)** - Contribution guidelines
 
 **[Question Development](question_development/README.md)** - Adding new questions
@@ -147,7 +140,7 @@ After processing configurations, Batfish performs analysis:
 1. Create snapshot: `bf.init_snapshot()`
 2. Run reachability analysis: `bf.reachability()`
 3. Check for violations
-4. See: [User Guide](user_guide/README.md), [Quick Reference](quick_reference.md)
+4. For detailed user guides, see [Pybatfish Documentation](https://pybatfish.readthedocs.io/)
 
 **Validate configuration changes:**
 1. Create baseline snapshot
