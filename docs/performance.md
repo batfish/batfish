@@ -11,30 +11,18 @@ This developer-focused guide covers BDD memory management, data plane paralleliz
 - [JVM Configuration](#jvm-configuration)
 - [BDD Memory Management](#bdd-memory-management)
 - [Data Plane Parallelization](#data-plane-parallelization)
-- [Large-Scale Network Analysis](#large-scale-network-analysis)
-- [Analysis Optimization](#analysis-optimization)
 - [Profiling and Monitoring](#profiling-and-monitoring)
-- [Known Bottlenecks](#known-bottlenecks)
-- [Performance Benchmarks](#performance-benchmarks)
+- [Internal Performance Considerations](#internal-performance-considerations)
 
 ---
 
 ## JVM Configuration
 
-### Heap Size Guidelines
+### Heap Configuration
 
-Choosing the right heap size is critical for Batfish performance.
+Batfish performance is sensitive to heap sizing. For user-facing heap sizing recommendations based on network scale, see the [Pybatfish documentation](https://batfish.readthedocs.io/en/latest/performance.html).
 
-**Rule of thumb**: Allocate heap based on network size and analysis complexity.
-
-| Network Size | Recommended Heap | Max Concurrent Questions |
-|--------------|------------------|--------------------------|
-| < 100 devices | 4GB | 1-2 |
-| 100-1,000 devices | 8GB | 2-3 |
-| 1,000-10,000 devices | 16GB | 1-2 |
-| 10,000+ devices | 32GB+ | 1 |
-
-**Setting heap size**:
+This section covers developer-focused heap configuration for local development and testing.
 ```bash
 # For local development
 export JAVA_OPTS="-Xmx8g -Xms8g"
@@ -314,170 +302,6 @@ See [Data Plane Documentation](../data_plane/README.md) for details on IBDP algo
 
 ---
 
-## Large-Scale Network Analysis
-
-### Snapshot Management
-
-**Parse once, analyze many times**:
-```python
-# GOOD - parse once
-bf.init_snapshot('configs/', name='baseline')
-bf.set_snapshot('baseline')
-
-# Ask multiple questions (reuses parsed data)
-r1 = bf.reachability(...)
-r2 = bf.reachability(...)
-```
-
-**Differential analysis is faster**:
-```python
-# GOOD - compare two snapshots
-bf.init_snapshot('old/', name='old')
-bf.init_snapshot('new/', name='new')
-# Comparison is faster than full analysis
-```
-
-**Clean up old snapshots**:
-```python
-# Prevent memory buildup
-for snap in bf.list_snapshots():
-    if snap.name.startswith('temp_'):
-        bf.delete_snapshot(snap.name)
-```
-
----
-
-### Incremental Analysis
-
-**Use differential questions**:
-```python
-# Instead of full analysis
-result = bf.reachability(...)
-
-# Compare snapshots (faster)
-result = bf.differentialReachability(
-    snapshot='new',
-    referenceSnapshot='old'
-)
-```
-
-**Focus on changed areas**:
-```python
-# Parse only changed files
-# (Requires custom workflow, not directly supported)
-```
-
----
-
-### Scaling Strategies
-
-**For very large networks** (>10,000 devices):
-
-1. **Partition analysis**:
-   ```python
-   # Analyze by region
-   regions = ['us-west', 'us-east', 'eu-west']
-   for region in regions:
-       bf.init_snapshot(f'configs/{region}/', name=region)
-       # analyze region
-   ```
-
-2. **Filter early**:
-   ```python
-   # Reduce dataset before expensive operations
-   nodes = bf.nodes(name_pattern='core-.*')
-   # Only analyze core routers
-   ```
-
-3. **Use appropriate questions**:
-   ```python
-   # GOOD - specific question
-   bf.reachability(
-       headerConstraints=HeaderConstraints(
-           dst_ips=ip_to_header_space("10.0.1.0/24")
-       )
-   )
-
-   # AVOID - all possible traffic (very slow)
-   bf.reachability()
-   ```
-
----
-
-## Analysis Optimization
-
-### Tighten Constraints
-
-**Principle**: Narrower constraints = faster analysis
-
-```python
-# AVOID - all possible traffic
-result = bf.reachability()
-
-# GOOD - specific question
-result = bf.reachability(
-    headerConstraints=HeaderConstraints(
-        src_ips=ip_to_header_space("10.0.0.5/32"),  # Single host
-        dst_ips=ip_to_header_space("10.0.1.10/32"),  # Single host
-        dst_ports=[443],  # Single port
-        protocols=["TCP"]  # Single protocol
-    )
-)
-```
-
-**Impact**:
-- Specific IP: 100-1000x faster than subnet
-- Specific port: 10-100x faster
-- Specific protocol: 2-10x faster
-
----
-
-### Question Ordering
-
-**Ask cheaper questions first**:
-
-```python
-# GOOD - filter nodes first
-nodes = bf.nodes(name_pattern='core-.*')
-if not nodes:
-    return  # No work to do
-
-# Then expensive reachability
-result = bf.reachability(startLocation=nodes[0].name)
-```
-
-**Cache question results**:
-```python
-# GOOD - reuse results
-snapshot_info = bf.get_snapshot_info('baseline')
-node_count = snapshot_info.num_nodes  # Cached
-
-# AVOID - asking multiple times
-bf.get_snapshot_info('baseline')
-bf.get_snapshot_info('baseline')
-```
-
----
-
-### Batch Operations
-
-**Process multiple questions together**:
-```python
-# GOOD - single analysis
-headers = HeaderConstraints(
-    dst_ports=[80, 443, 22, 23]
-)
-result = bf.reachability(headerConstraints=headers)
-
-# AVOID - multiple analyses
-for port in [80, 443, 22, 23]:
-    result = bf.reachability(
-        headerConstraints=HeaderConstraints(dst_ports=[port])
-    )
-```
-
----
-
 ## Profiling and Monitoring
 
 ### Enable Profiling
@@ -553,148 +377,72 @@ bazel run --jvmopt="-Dloglevel=INFO -Dlogger.org.batfish.dataplane=DEBUG" \
 
 ---
 
-## Known Bottlenecks
+## Internal Performance Considerations
 
-### Symmetric Reachability
+This section covers internal Batfish implementation bottlenecks that developers should be aware of.
 
-**Issue**: Computing all flows between all hosts is extremely slow.
+### BDD Size Explosion
 
-**Workaround**:
-```python
-# Instead of all-pairs
-# AVOID
-for src in sources:
-    for dst in destinations:
-        result = bf.reachability(src, dst)
+**Issue**: Certain configuration patterns cause BDD node count to grow exponentially.
 
-# Use single analysis with multiple sources/destinations
-result = bf.reachability(
-    startLocation=sources,
-    headerConstraints=HeaderConstraints(
-        dst_ips=ip_to_header_space("10.0.1.0/24")
-    )
-)
-```
+**Symptoms**:
+- Memory usage spikes during data plane computation
+- Analysis time increases dramatically with small config changes
+- `OutOfMemoryError` on moderately-sized networks
 
----
+**Common causes**:
+1. **Complex NAT rules**: Extensive NAT with many overlapping rules
+2. **Large route maps**: Route maps with many clauses and complex match conditions
+3. **Deep ACL nesting**: Many nested ACLs in security policies
 
-### Complex NAT Configurations
-
-**Issue**: Extensive NAT rules increase BDD size dramatically.
-
-**Symptoms**: Memory usage spikes, slow analysis
-
-**Workaround**:
-- Analyze network without NAT first
-- Add NAT incrementally
-- Consider static NAT instead of dynamic pools
+**For developers**: When implementing new vendor support, be mindful of how configuration structures map to BDD operations. Consider:
+- Can intermediate results be cached?
+- Can the grammar structure be optimized?
+- Are there opportunities to simplify BDD construction?
 
 ---
 
-### Large Route Maps
+### Oscillation in Data Plane Computation
 
-**Issue**: Complex route maps with many clauses
+**Issue**: Route oscillation can cause infinite loops in fixed-point computation.
 
-**Symptoms**: Slow data plane computation, oscillation
+**Symptoms**:
+- Analysis never completes
+- CPU usage stays at 100%
+- Log shows repeated iterations without convergence
 
-**Workaround**:
-- Simplify route maps if possible
-- Break into smaller, simpler policies
-- Use prefix-lists instead of complex access-lists in route maps
+**Detection**: Batfish automatically detects oscillation and throws exception after threshold.
 
----
+**For developers**: When modifying data plane computation logic:
+1. Test with configs known to oscillate
+2. Verify detection mechanisms work correctly
+3. Consider adding vendor-specific oscillation prevention
 
-### Many Small Files
-
-**Issue**: Thousands of small configuration files
-
-**Symptoms**: Slow initialization, high overhead
-
-**Workaround**:
-- Combine related configs (e.g., use `include` statements)
-- Filter out unnecessary vendor default configs
-- Use tar.gz for snapshots (faster than directory)
+See [Data Plane Documentation](../data_plane/README.md) for algorithm details.
 
 ---
 
-## Performance Benchmarks
+### Thread Pool Saturation
 
-### Typical Performance
+**Issue**: Data plane parallelization may not scale linearly with CPU cores.
 
-These are approximate benchmarks for reference. Your mileage may vary.
+**Symptoms**:
+- Adding more workers doesn't improve performance
+- CPU usage below expected level
 
-**Parsing**:
-- Small config (<1KB): ~10ms
-- Medium config (1-10KB): ~50ms
-- Large config (>10KB): ~200ms
-- Very large config (>100KB): ~1s
+**Common causes**:
+1. **Memory contention**: Too many workers cause GC pressure
+2. **I/O bottleneck**: Reading configs becomes bottleneck
+3. **Lock contention**: Shared data structures cause serialization
 
-**Data plane computation**:
-- Small network (100 devices): ~1s
-- Medium network (1,000 devices): ~10s
-- Large network (10,000 devices): ~60s
-- Very large network (100,000 devices): ~10min
-
-**Reachability analysis**:
-- Tight constraints: ~100ms
-- Loose constraints: ~1s
-- All possible traffic: ~10s-10min (depends heavily)
-
----
-
-### Hardware Recommendations
-
-**Development workstation**:
-- CPU: 4+ cores
-- RAM: 16GB
-- Storage: SSD (strongly recommended)
-
-**Production server**:
-- CPU: 8+ cores (fast single-thread performance matters)
-- RAM: 32GB+
-- Storage: SSD or NVMe
-
-**Large-scale analysis**:
-- CPU: 16+ cores
-- RAM: 64GB+
-- Storage: NVMe SSD
-
----
-
-### When to Scale Out
-
-Consider distributing Batfish across multiple machines when:
-- Single analysis takes >30 minutes
-- Network has >50,000 devices
-- Multiple concurrent users needed
-- Need sub-minute response times
-
-**Approach**:
-- Run multiple Batfish instances behind load balancer
-- Partition network by region/pod
-- Use caching layer for common questions
+**For developers**: When optimizing parallelization:
+- Profile with different worker counts
+- Consider work-stealing vs fixed partitioning
+- Monitor GC impact of increased parallelism
 
 ---
 
 ## Quick Reference
-
-### JVM Tuning Cheatsheet
-
-```bash
-# Small networks (<100 devices)
-JAVA_OPTS="-Xmx4g -Xms4g -XX:+UseG1GC"
-
-# Medium networks (100-1000 devices)
-JAVA_OPTS="-Xmx8g -Xms8g -XX:+UseG1GC -XX:MaxGCPauseMillis=200"
-
-# Large networks (1000-10000 devices)
-JAVA_OPTS="-Xmx16g -Xms16g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:InitiatingHeapOccupancyPercent=45"
-
-# Very large networks (>10000 devices)
-JAVA_OPTS="-Xmx32g -Xms32g -XX:+UseG1GC -XX:MaxGCPauseMillis=200 -XX:G1ReservePercent=20"
-```
-
----
 
 ### Performance Diagnostic Commands
 

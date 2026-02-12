@@ -10,6 +10,7 @@ This developer-focused guide covers build issues, test failures, parser/lexer is
 
 - [Build Issues](#build-issues)
 - [Test Failures](#test-failures)
+- [Reference Test Failures](#reference-test-failures)
 - [Parser and Lexer Issues](#parser-and-lexer-issues)
 - [BDD and Symbolic Engine Issues](#bdd-and-symbolic-engine-issues)
 - [Getting Help](#getting-help)
@@ -343,123 +344,55 @@ bazel test //projects/vendor/src/test/... --test_output=streamed
 
 ---
 
-## Runtime Errors
+### Reference Test Failures
 
-### Snapshot Initialization Fails
+Reference tests compare Batfish's output against known-good reference files. For comprehensive guidance on reference testing including structure, how to run them, and how to update them, see [Testing Guide](../development/testing_guide.md#reference-testing).
 
-**Symptoms**: `bf.init_snapshot()` raises an exception or returns errors.
+**Quick reference for ref test failures**:
+```bash
+# Run specific vendor ref tests
+bazel test //projects/vendor/src/test/java/org/batfish/grammar/vendor:VendorGrammarTest
 
-**Diagnosis**:
-```python
-# Enable detailed logging
-import logging
-logging.basicConfig(level=logging.DEBUG)
+# Run all ref tests
+bazel test //projects/batfish:batfish_tests
 
-# Initialize with dry run
-bf.init_snapshot('configs/', name='test', dryrun=True)
-
-# Check for parse errors
-bf.init_snapshot('configs/router1.cfg', name='test')
+# Update references when behavior changes intentionally
+UPDATE_REFS=true bazel test //projects/batfish:batfish_tests
 ```
 
-**Common Causes and Solutions**:
+**Common failure causes**:
+1. **Legitimate regression**: Your change broke existing behavior
+2. **Intentional behavior change**: Reference needs updating (use `UPDATE_REFS=true`)
+3. **Non-determinism**: Output ordering or timing varies
 
-1. **Unrecognized configuration lines**
-   ```
-   WARNING: Unrecognized lines in router1.cfg:
-   line 10: new-feature enabled
-   ```
-   - Check if feature is implemented in grammar
-   - If not implemented, add grammar rule or add to ignored lines
-
-2. **Missing hostname**
-   ```
-   ERROR: Configuration file does not set hostname
-   ```
-   - Ensure config has `hostname` or similar identifier
-   - Some vendors require specific hostname format
-
-3. **File encoding issues**
-   ```
-   ERROR: Failed to parse file (invalid character)
-   ```
-   - Check file is UTF-8 encoded
-   - Remove BOM if present: `sed -i '1s/^\xEF\xBB\xBF//' file.cfg`
+See [Testing Guide](../development/testing_guide.md) for detailed information on reference test structure and best practices.
 
 ---
 
-### Question Returns Empty Results
+## Parser Runtime Issues
 
-**Symptoms**: Reachability or other questions return no flows unexpectedly.
+### Configuration Processing Fails
 
-**Diagnosis**:
-```python
-# Check if snapshot exists
-snaps = bf.list_snapshots()
-print(f"Snapshots: {snaps}")
-
-# Verify snapshot was parsed successfully
-bf.set_snapshot('mysnapshot')
-nodes = bf.nodes()
-print(f"Nodes found: {len(nodes)}")
-
-# Try a simpler question first
-bf.answer("traceroute(startLocation=router1)")
-```
-
-**Common Causes**:
-1. **Snapshot not parsed correctly**: Check warnings during initialization
-2. **Wrong snapshot name**: Verify with `list_snapshots()`
-3. **Constraints too tight**: Relax header constraints
-4. **Nodes don't exist**: Verify node/interface names with `bf.nodes()`
-
-**Debug Workflow**:
-```python
-# 1. Verify snapshot
-bf.set_snapshot('mysnapshot')
-info = bf.get_snapshot_info()
-print(f"Nodes: {info.num_nodes}, Configs: {info.num_configs}")
-
-# 2. Check nodes exist
-nodes = bf.nodes()
-print(f"Nodes: {[n.name for n in nodes]}")
-
-# 3. Simplify question
-# Start with no constraints, then add gradually
-result = bf.reachability(
-    headerConstraints=HeaderConstraints(
-        src_ips=ip_to_header_space("10.0.0.1/32")
-    )
-)
-```
-
----
-
-### Service Won't Start
-
-**Symptoms**: `bazel run //projects/allinone:allinone_main` fails to start service.
+**Symptoms**: Exception thrown during configuration conversion or post-processing.
 
 **Diagnosis**:
 ```bash
-# Check if port is already in use
-lsof -i :9996  # Coordinator port
-lsof -i :9997  # Allinone port
+# Run with stack trace
+bazel test --test_output=streamed //projects/batfish:batfish_tests
 
-# Check service logs
-tail -f batfish.log
-
-# Try running with more verbose output
-bazel run --jvmopt=-Dloglevel=TRACE //projects/allinone:allinone_main -- \
-  -runclient false -coordinatorargs "-templatedirs $(git rev-parse --show-toplevel)/questions"
+# Check for specific vendor issues
+bazel test //projects/vendor/src/test/... --test_filter=MyVendorTest
 ```
 
-**Common Solutions**:
-1. **Port already in use**: Kill existing process or use different port
-2. **Corrupted containers directory**: `rm -rf containers/`
-3. **Java heap too small**: Increase with `--jvmopt=-Xmx4g`
-4. **Missing questions directory**: Ensure `-templatedirs` points to valid path
+**Common causes**:
+1. **Unimplemented grammar rules**: Configuration uses unsupported syntax
+2. **Extraction bugs**: Parse tree walker misses edge cases
+3. **Type conversion errors**: Wrong type assumed for a value
 
----
+**For developers**:
+- Add test configs that trigger the issue
+- Verify grammar handles all vendor-specific syntax
+- Check for null/optional values in extraction code
 
 ## BDD and Symbolic Engine Issues
 
@@ -569,154 +502,6 @@ bazel run --jvmopt=-Xrunhprof:cpu=samples,depth=10 //projects/allinone:allinone_
 - Use differential analysis (compare two snapshots)
 - Check for oscillation in data plane computation
 - See [Performance Tuning](../performance.md) for optimization tips
-
----
-
-## Performance Problems
-
-### Analysis is Slow
-
-**Symptoms**: Questions take >10 minutes to answer.
-
-**Quick Checks**:
-```bash
-# Check system resources
-top  # Is CPU at 100%?
-free -h  # Is memory exhausted?
-
-# Check Java heap
-jps -l  # Find Batfish PID
-jmap -heap <PID>  # Check heap usage
-```
-
-**Common Optimizations**:
-
-1. **Tighten constraints**: Reduce search space
-   ```python
-   # BAD - analyze all possible traffic
-   result = bf.reachability()
-
-   # GOOD - specific question
-   result = bf.reachability(
-       headerConstraints=HeaderConstraints(
-           src_ips=ip_to_header_space("10.0.0.5/32"),
-           dst_ips=ip_to_header_space("10.0.1.10/32"),
-           dst_ports=[443],
-           protocols=["TCP"]
-       )
-   )
-   ```
-
-2. **Increase parallelization**:
-   ```bash
-   # Use more threads for data plane computation
-   bazel run --jvmopt=-Dbatfish.dp.workers=8 //projects/allinone:allinone_main
-   ```
-
-3. **Enable caching**:
-   ```python
-   # Parse snapshot once, ask multiple questions
-   bf.init_snapshot('configs/', name='baseline')
-   bf.set_snapshot('baseline')
-
-   # These will reuse parsed data
-   r1 = bf.reachability(...)
-   r2 = bf.reachability(...)
-   ```
-
-See [Performance Tuning Guide](../performance.md) for more optimization techniques.
-
----
-
-### Snapshot Initialization is Slow
-
-**Symptoms**: `init_snapshot()` takes >5 minutes.
-
-**Diagnosis**:
-```python
-# Check which stage is slow
-import logging
-logging.basicConfig(level=logging.INFO)
-
-# Watch for messages about:
-# - Parsing files
-# - Extraction
-# - Conversion
-# - Post-processing
-```
-
-**Common Causes**:
-1. **Many configuration files**: >1000 devices
-2. **Large configurations**: Files >100KB each
-3. **Complex parsing**: Juniper configs with pre-processing
-
-**Solutions**:
-- Parse only needed files (exclude vendor defaults)
-- Use incremental analysis (parse once, analyze many times)
-- Consider increasing parallelization
-
----
-
-## Memory Issues
-
-### OutOfMemoryError: Java heap space
-
-**Symptoms**: `java.lang.OutOfMemoryError: Java heap space`
-
-**Diagnosis**:
-```bash
-# Check current heap settings
-bazel run --jvmopt=-XX:+PrintGCDetails //projects/allinone:allinone_main
-
-# Check what's using memory
-jmap -histo:live <PID> | head -20
-```
-
-**Solutions**:
-```bash
-# Increase heap size
-export JAVA_OPTS="-Xmx20g"
-./tools/bazel_run.sh
-
-# Or pass to Bazel
-bazel run --jvmopt=-Xmx20g //projects/allinone:allinone_main
-```
-
-**Heap Size Guidelines**:
-- Small networks (<100 devices): 4GB
-- Medium networks (100-1000 devices): 8GB
-- Large networks (1000-10000 devices): 16GB
-- Very large networks (>10000 devices): 32GB+
-
----
-
-### Memory Leak Over Time
-
-**Symptoms**: Service slows down after answering many questions.
-
-**Diagnosis**:
-```bash
-# Monitor heap over time
-jstat -gc <PID> 1000  # Sample every 1 second
-
-# Look for:
-# - Old generation continuously increasing
-# - Frequent full GCs
-```
-
-**Common Causes**:
-1. **BDD leaks**: Not freeing BDDs (see BDD section)
-2. **Snapshot leaks**: Not deleting old snapshots
-3. **Cache not cleared**: Internal caches growing unbounded
-
-**Solutions**:
-```python
-# Delete old snapshots
-bf.delete_snapshot('old_snapshot')
-
-# Restart service periodically (temporary workaround)
-# In production, consider running in separate process
-```
 
 ---
 
