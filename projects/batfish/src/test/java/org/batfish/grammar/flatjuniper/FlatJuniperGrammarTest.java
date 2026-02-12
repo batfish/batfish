@@ -9724,5 +9724,27 @@ public final class FlatJuniperGrammarTest {
         equalTo(4000));
   }
 
+  @Test
+  public void testBgpLocalPreference() {
+    JuniperConfiguration config = parseJuniperConfig("bgp-local-preference");
+    Map<String, NamedBgpGroup> groups =
+        config.getMasterLogicalSystem().getDefaultRoutingInstance().getNamedBgpGroups();
+    BgpGroup master =
+        config.getMasterLogicalSystem().getDefaultRoutingInstance().getMasterBgpGroup();
+
+    // Process-level local-preference
+    assertThat(master.getLocalPreference(), equalTo(50L));
+
+    // Group with override
+    BgpGroup groupOverride = groups.get("TEST-GROUP");
+    assertThat(groupOverride.getLocalPreference(), equalTo(100L));
+
+    // Group that inherits from process level
+    BgpGroup groupInherit = groups.get("TEST-GROUP-INHERIT");
+    assertThat(groupInherit.getLocalPreference(), nullValue());
+    groupInherit.cascadeInheritance();
+    assertThat(groupInherit.getLocalPreference(), equalTo(50L));
+  }
+
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());
 }
