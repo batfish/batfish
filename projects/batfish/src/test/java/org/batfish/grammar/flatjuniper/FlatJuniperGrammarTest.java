@@ -485,6 +485,7 @@ import org.batfish.representation.juniper.PsThenCommunitySet;
 import org.batfish.representation.juniper.PsThenLocalPreference;
 import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
+import org.batfish.representation.juniper.PsThenMetric2;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
@@ -3843,6 +3844,47 @@ public final class FlatJuniperGrammarTest {
     assertThat(setSub.getMetric(), instanceOf(DecrementMetric.class));
     DecrementMetric dec = (DecrementMetric) setSub.getMetric();
     assertThat(dec.getSubtrahend(), equalTo(30L));
+  }
+
+  @Test
+  public void testPsMetric2AddSubtractExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("metric2-add-subtract");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+
+    // Test literal metric2
+    PolicyStatement ps1 = policies.get("PS1");
+    assertThat(ps1.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps1.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(100, PsThenMetric2.Operator.SET)));
+
+    // Test metric2 add
+    PolicyStatement ps2 = policies.get("PS2");
+    assertThat(ps2.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps2.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(50, PsThenMetric2.Operator.ADD)));
+
+    // Test metric2 subtract
+    PolicyStatement ps3 = policies.get("PS3");
+    assertThat(ps3.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps3.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(30, PsThenMetric2.Operator.SUBTRACT)));
+
+    // Test large metric2 add (near uint32 max)
+    PolicyStatement ps4 = policies.get("PS4");
+    assertThat(ps4.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps4.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(4294967200L, PsThenMetric2.Operator.ADD)));
+
+    // Test large metric2 subtract
+    PolicyStatement ps5 = policies.get("PS5");
+    assertThat(ps5.getTerms().get("T1").getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(ps5.getTerms().get("T1").getThens().getAllThens()),
+        equalTo(new PsThenMetric2(4294967200L, PsThenMetric2.Operator.SUBTRACT)));
   }
 
   @Test
