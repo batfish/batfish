@@ -177,6 +177,14 @@ public class AciInterfaceConfigTest {
 
     assertThat(config.getHostname(), equalTo("aci-fabric"));
     assertNotNull(config.getFabricNodes());
+
+    // Verify that l1PhysIf interfaces are parsed
+    AciConfiguration.FabricNode spine = config.getFabricNodes().get("101");
+    assertNotNull(spine);
+    assertThat(spine.getInterfaces().size(), equalTo(2));
+    assertThat(spine.getInterfaces(), hasKey("eth1/1"));
+    assertThat(spine.getInterfaces(), hasKey("eth1/2"));
+    assertThat(spine.getInterfaces().get("eth1/1").getDescription(), equalTo("Link to leaf1"));
   }
 
   /** Test parsing L3Out with logical interface profile */

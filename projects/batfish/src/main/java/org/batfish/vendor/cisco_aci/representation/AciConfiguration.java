@@ -466,6 +466,7 @@ public final class AciConfiguration extends VendorConfiguration {
     // Parse children for interface information
     if (nodePep.getChildren() != null) {
       for (AciFabricNodePEp.FabricNodePEpChild nodeChild : nodePep.getChildren()) {
+        // Parse fabricInterface
         if (nodeChild.getFabricInterface() != null) {
           AciFabricNodePEp.AciInterface ifaceObj = nodeChild.getFabricInterface();
           if (ifaceObj.getAttributes() != null) {
@@ -478,6 +479,24 @@ public final class AciConfiguration extends VendorConfiguration {
               iface.setEnabled(true); // ACI interfaces are enabled by default
               // Store additional interface attributes if needed
               fabricNode.getInterfaces().put(ifaceName, iface);
+            }
+          }
+        }
+        // Parse l1PhysIf (layer 1 physical interface)
+        if (nodeChild.getL1PhysIf() != null) {
+          AciFabricNodePEp.AciL1PhysIf l1PhysIf = nodeChild.getL1PhysIf();
+          if (l1PhysIf.getAttributes() != null) {
+            AciFabricNodePEp.AciL1PhysIf.AciL1PhysIfAttributes l1Attrs = l1PhysIf.getAttributes();
+            String ifaceId = l1Attrs.getId();
+            if (ifaceId != null && !ifaceId.isEmpty()) {
+              // Avoid duplicates - only add if not already present
+              if (!fabricNode.getInterfaces().containsKey(ifaceId)) {
+                FabricNode.Interface iface = new FabricNode.Interface();
+                iface.setName(ifaceId);
+                iface.setEnabled(true); // ACI interfaces are enabled by default
+                iface.setDescription(l1Attrs.getDescription());
+                fabricNode.getInterfaces().put(ifaceId, iface);
+              }
             }
           }
         }
