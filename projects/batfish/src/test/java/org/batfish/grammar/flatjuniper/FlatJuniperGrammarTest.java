@@ -9537,7 +9537,9 @@ public final class FlatJuniperGrammarTest {
     Map<String, Policer> policers = c.getMasterLogicalSystem().getPolicers();
 
     // Verify policers are extracted
-    assertThat(policers, hasKeys("10M", "1M"));
+    assertThat(
+        policers,
+        hasKeys("10M", "1M", "FILTER-SPECIFIC-POL", "LOGICAL-INTERFACE-POL", "BOTH-FLAGS-POL"));
 
     // Verify 10M policer details
     Policer policer10M = policers.get("10M");
@@ -9546,6 +9548,8 @@ public final class FlatJuniperGrammarTest {
     assertThat(policer10M.getIfExceeding().getBandwidthLimit(), equalTo(10000000L));
     assertThat(policer10M.getIfExceeding().getBurstSizeLimit(), equalTo(15000L));
     assertThat(policer10M.getThen(), equalTo(PolicerThen.DISCARD));
+    assertThat(policer10M.getFilterSpecific(), nullValue());
+    assertThat(policer10M.getLogicalInterfacePolicer(), nullValue());
 
     // Verify 1M policer details
     Policer policer1M = policers.get("1M");
@@ -9554,6 +9558,38 @@ public final class FlatJuniperGrammarTest {
     assertThat(policer1M.getIfExceeding().getBandwidthLimit(), equalTo(1000000L));
     assertThat(policer1M.getIfExceeding().getBurstSizeLimit(), equalTo(2000L));
     assertThat(policer1M.getThen(), equalTo(PolicerThen.DISCARD));
+    assertThat(policer1M.getFilterSpecific(), nullValue());
+    assertThat(policer1M.getLogicalInterfacePolicer(), nullValue());
+
+    // Verify filter-specific policer
+    Policer filterSpecificPol = policers.get("FILTER-SPECIFIC-POL");
+    assertThat(filterSpecificPol.getName(), equalTo("FILTER-SPECIFIC-POL"));
+    assertThat(filterSpecificPol.getFilterSpecific(), equalTo(true));
+    assertThat(filterSpecificPol.getLogicalInterfacePolicer(), nullValue());
+    assertThat(filterSpecificPol.getIfExceeding(), notNullValue());
+    assertThat(filterSpecificPol.getIfExceeding().getBandwidthLimit(), equalTo(100000000L));
+    assertThat(filterSpecificPol.getIfExceeding().getBurstSizeLimit(), equalTo(200000L));
+    assertThat(filterSpecificPol.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify logical-interface-policer
+    Policer logicalInterfacePol = policers.get("LOGICAL-INTERFACE-POL");
+    assertThat(logicalInterfacePol.getName(), equalTo("LOGICAL-INTERFACE-POL"));
+    assertThat(logicalInterfacePol.getFilterSpecific(), nullValue());
+    assertThat(logicalInterfacePol.getLogicalInterfacePolicer(), equalTo(true));
+    assertThat(logicalInterfacePol.getIfExceeding(), notNullValue());
+    assertThat(logicalInterfacePol.getIfExceeding().getBandwidthLimit(), equalTo(1000000000L));
+    assertThat(logicalInterfacePol.getIfExceeding().getBurstSizeLimit(), equalTo(10000000L));
+    assertThat(logicalInterfacePol.getThen(), equalTo(PolicerThen.DISCARD));
+
+    // Verify policer with both flags
+    Policer bothFlagsPol = policers.get("BOTH-FLAGS-POL");
+    assertThat(bothFlagsPol.getName(), equalTo("BOTH-FLAGS-POL"));
+    assertThat(bothFlagsPol.getFilterSpecific(), equalTo(true));
+    assertThat(bothFlagsPol.getLogicalInterfacePolicer(), equalTo(true));
+    assertThat(bothFlagsPol.getIfExceeding(), notNullValue());
+    assertThat(bothFlagsPol.getIfExceeding().getBandwidthLimit(), equalTo(500000000L));
+    assertThat(bothFlagsPol.getIfExceeding().getBurstSizeLimit(), equalTo(1000000L));
+    assertThat(bothFlagsPol.getThen(), equalTo(PolicerThen.DISCARD));
 
     // Verify filter terms reference policers
     Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
@@ -9598,6 +9634,9 @@ public final class FlatJuniperGrammarTest {
     // Verify policer definitions
     assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "10M"));
     assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "1M"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "FILTER-SPECIFIC-POL"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "LOGICAL-INTERFACE-POL"));
+    assertThat(ccae, hasDefinedStructure(filename, FIREWALL_POLICER, "BOTH-FLAGS-POL"));
 
     // Verify policer references from filter terms
     assertThat(ccae, hasNumReferrers(filename, FIREWALL_POLICER, "10M", 1));

@@ -49,9 +49,16 @@ f_policer
 :
    POLICER name = junos_name
    (
-      fp_if_exceeding
+      fp_filter_specific
+      | fp_if_exceeding
+      | fp_logical_interface_policer
       | fp_then
    )
+;
+
+fp_filter_specific
+:
+   FILTER_SPECIFIC
 ;
 
 fp_if_exceeding
@@ -71,6 +78,11 @@ fpie_bandwidth_limit
 fpie_burst_size_limit
 :
    BURST_SIZE_LIMIT size = burst_size_limit
+;
+
+fp_logical_interface_policer
+:
+   LOGICAL_INTERFACE_POLICER
 ;
 
 fp_then
