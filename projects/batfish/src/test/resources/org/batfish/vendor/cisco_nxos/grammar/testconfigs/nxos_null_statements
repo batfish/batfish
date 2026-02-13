@@ -1,0 +1,29 @@
+! Test config for new null statement handlers
+version 9.3(3)
+hostname test-switch
+
+! Power configuration
+power redundancy-mode ps-redundant
+
+! Hardware configuration
+hardware ejector enable
+no hardware module boot-order reverse
+hardware access-list lou resource threshold 5
+hardware profile multicast max-limit lpm-entries 2048
+
+! High-availability policy
+ha-policy single-sup reload dual-sup switchover
+
+! Keystore configuration
+keystore type default
+
+! Telnet configuration
+telnet login-attempts 3
+
+! VDC without ID clause
+vdc combined-hostname
+
+! VDC with ID clause (existing behavior)
+vdc test-vdc id 1
+  allocate interface Ethernet1/1
+  limit-resource vlan minimum 16 maximum 4094
