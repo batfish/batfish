@@ -131,6 +131,8 @@ import org.batfish.representation.fortios.InternetServiceName;
 import org.batfish.representation.fortios.Ippool;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
+import org.batfish.representation.fortios.PrefixList;
+import org.batfish.representation.fortios.PrefixListRule;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
 import org.batfish.representation.fortios.SecondaryIp;
@@ -3352,6 +3354,117 @@ public final class FortiosGrammarTest {
     // None of the invalid access-lists or rule should make it into VS model
     assertThat(vc.getAccessLists(), hasKeys("acl_name1"));
     assertThat(vc.getAccessLists().get("acl_name1").getRules(), anEmptyMap());
+  }
+
+  ////////////////////
+  // Prefix-list tests //
+  ////////////////////
+
+  @Test
+  public void testPrefixListExtraction() throws IOException {
+    String hostname = "prefix_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(vc.getPrefixLists(), hasKeys("pl_name1", "pl_name2"));
+    PrefixList pl1 = vc.getPrefixLists().get("pl_name1");
+    PrefixList pl2 = vc.getPrefixLists().get("pl_name2");
+
+    // Check comments
+    assertThat(pl1.getComments(), equalTo("comment for pl_name1"));
+    assertNull(pl2.getComments());
+
+    // Check rules are in insert order
+    assertThat(pl1.getRules().keySet(), contains("1", "2", "3", "4"));
+    assertThat(pl2.getRules().keySet(), contains("1"));
+
+    PrefixListRule rule1 = pl1.getRules().get("1");
+    PrefixListRule rule2 = pl1.getRules().get("2");
+    PrefixListRule rule3 = pl1.getRules().get("3");
+    PrefixListRule rule4 = pl1.getRules().get("4");
+    PrefixListRule rule_pl2_1 = pl2.getRules().get("1");
+
+    // Rule 1: set prefix 10.0.0.0 255.255.0.0, set le 32
+    assertThat(rule1.getPrefix(), equalTo(Prefix.parse("10.0.0.0/16")));
+    assertThat(rule1.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule1.getLe(), equalTo(32));
+
+    // Rule 2: set prefix 192.168.0.0/24, unset ge, set le 24
+    assertThat(rule2.getPrefix(), equalTo(Prefix.parse("192.168.0.0/24")));
+    assertThat(rule2.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule2.getLe(), equalTo(24));
+
+    // Rule 3: set prefix 172.16.0.0/16, set ge 16, set le 24
+    assertThat(rule3.getPrefix(), equalTo(Prefix.parse("172.16.0.0/16")));
+    assertThat(rule3.getGe(), equalTo(16));
+    assertThat(rule3.getLe(), equalTo(24));
+
+    // Rule 4: set prefix 10.1.0.0 255.255.0.0, unset ge, unset le
+    assertThat(rule4.getPrefix(), equalTo(Prefix.parse("10.1.0.0/16")));
+    assertThat(rule4.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule4.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+
+    // Rule in pl2: set prefix 192.168.1.0 255.255.255.0 (no ge/le)
+    assertThat(rule_pl2_1.getPrefix(), equalTo(Prefix.parse("192.168.1.0/24")));
+    assertThat(rule_pl2_1.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule_pl2_1.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+  }
+
+  @Test
+  public void testPrefixListConversion() throws IOException {
+    String hostname = "prefix_list";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    assertThat(c.getRouteFilterLists(), hasKeys("pl_name1", "pl_name2"));
+    RouteFilterList pl1 = c.getRouteFilterLists().get("pl_name1");
+    RouteFilterList pl2 = c.getRouteFilterLists().get("pl_name2");
+
+    // Rule 1: 10.0.0.0/16 le 32 -> matches /16 through /32
+    assertTrue(pl1.permits(Prefix.parse("10.0.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("10.0.1.0/24")));
+    assertTrue(pl1.permits(Prefix.parse("10.0.1.128/32")));
+    assertFalse(pl1.permits(Prefix.parse("10.0.0.0/15"))); // outside range
+
+    // Rule 3: 172.16.0.0/16 ge 16 le 24 -> matches /16 through /24
+    assertTrue(pl1.permits(Prefix.parse("172.16.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("172.16.1.0/24")));
+    assertFalse(pl1.permits(Prefix.parse("172.16.1.128/25"))); // > 24
+    assertFalse(pl1.permits(Prefix.parse("172.16.0.0/15"))); // < 16
+
+    // Rule 4: 10.1.0.0/16 with no ge/le -> matches /16 through /32 (default)
+    assertTrue(pl1.permits(Prefix.parse("10.1.0.0/16")));
+    assertTrue(pl1.permits(Prefix.parse("10.1.1.0/24")));
+    assertTrue(pl1.permits(Prefix.parse("10.1.1.1/32")));
+
+    // pl2: 192.168.1.0/24 with no ge/le -> matches /24 through /32
+    assertTrue(pl2.permits(Prefix.parse("192.168.1.0/24")));
+    assertTrue(pl2.permits(Prefix.parse("192.168.1.128/25")));
+    assertFalse(pl2.permits(Prefix.parse("192.168.1.0/23"))); // < 24
+  }
+
+  @Test
+  public void testPrefixListRouteMapReference() throws IOException {
+    String hostname = "prefix_list_route_map";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify prefix-lists are defined
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "PL-IN-1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "PL-OUT-1"));
+
+    // Verify route-maps reference prefix-lists
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "PL-IN-1", 1));
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "PL-OUT-1", 1));
+
+    // Verify route-maps are converted to routing policies
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+    assertThat(c.getRoutingPolicies(), hasKeys("RM-IN-1", "RM-OUT-1"));
   }
 
   ////////////////////////
