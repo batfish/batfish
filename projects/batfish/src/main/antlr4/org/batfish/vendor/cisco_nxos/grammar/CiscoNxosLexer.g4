@@ -11,6 +11,7 @@ tokens {
   HSRP_VERSION_2,
   MAC_ADDRESS_LITERAL,
   MOTD,
+  NULL_LINE_TEXT,
   PASSWORD_0,
   PASSWORD_0_TEXT,
   PASSWORD_3,
@@ -865,9 +866,9 @@ GT: 'gt';
 
 GUARD: 'guard';
 
-HA_POLICY: 'ha-policy';
+HA_POLICY: 'ha-policy' -> pushMode(M_NullLine);
 
-HARDWARE: 'hardware';
+HARDWARE: 'hardware' -> pushMode(M_NullLine);
 
 HEAD: 'head';
 
@@ -1104,7 +1105,7 @@ KEY_STRING
   'key-string' -> pushMode ( M_Remark )
 ;
 
-KEYSTORE: 'keystore';
+KEYSTORE: 'keystore' -> pushMode(M_NullLine);
 
 KICKSTART
 :
@@ -1727,7 +1728,7 @@ POAP: 'poap';
 
 POINT_TO_POINT: 'point-to-point';
 
-POWER: 'power';
+POWER: 'power' -> pushMode(M_NullLine);
 
 POLICE: 'police';
 
@@ -2288,7 +2289,7 @@ TCP_FLAGS_MASK: 'tcp-flags-mask';
 
 TCP_OPTION_LENGTH: 'tcp-option-length';
 
-TELNET: 'telnet';
+TELNET: 'telnet' -> pushMode(M_NullLine);
 
 TEMPLATE: 'template';
 
@@ -3780,6 +3781,24 @@ M_Word_WORD
 ;
 
 M_Word_WS
+:
+  F_Whitespace+ -> channel ( HIDDEN )
+;
+
+// Mode for consuming the rest of a line for null commands we don't care about
+mode M_NullLine;
+
+M_NullLine_TEXT
+:
+  F_NonNewline+ -> type ( NULL_LINE_TEXT )
+;
+
+M_NullLine_NEWLINE
+:
+  F_Newline -> type ( NEWLINE ) , popMode
+;
+
+M_NullLine_WS
 :
   F_Whitespace+ -> channel ( HIDDEN )
 ;

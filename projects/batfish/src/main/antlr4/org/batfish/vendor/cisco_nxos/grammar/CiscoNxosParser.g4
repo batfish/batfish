@@ -354,18 +354,26 @@ s_null
     | CLOCK
     | ERRDISABLE
     | FEATURE
-    | HA_POLICY
-    | HARDWARE
-    | KEYSTORE
     | LICENSE
-    | POWER
     | SERVICE
     | SPANNING_TREE
     | SSH
-    | TELNET
     | USERNAME
     | USERPASSPHRASE
   ) null_rest_of_line
+  | s_null_text
+;
+
+// Null statements that use M_NullLine lexer mode (accepts arbitrary text)
+s_null_text
+:
+  (
+    HA_POLICY
+    | HARDWARE
+    | KEYSTORE
+    | POWER
+    | TELNET
+  ) NULL_LINE_TEXT? NEWLINE
 ;
 
 s_no
@@ -412,9 +420,9 @@ no_ip_null
 
 no_null
 :
-  (
+  HARDWARE NULL_LINE_TEXT? NEWLINE
+  | (
     FEATURE
-    | HARDWARE
     | IP
     | NTP
   ) null_rest_of_line

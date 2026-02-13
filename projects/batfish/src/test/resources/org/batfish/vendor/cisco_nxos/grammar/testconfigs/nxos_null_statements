@@ -1,6 +1,24 @@
-! Test config for new null statement handlers
-version 9.3(3)
+! Test config for new null statement handlers with M_NullLine mode
+version 10.3(5)
 hostname test-switch
+
+! Power configuration (uses M_NullLine for arbitrary text)
+power redundancy-mode ps-redundant
+
+! Hardware configuration (uses M_NullLine for arbitrary text)
+hardware ejector enable
+no hardware module boot-order reverse
+hardware access-list lou resource threshold 5
+hardware profile multicast max-limit lpm-entries 2048
+
+! High-availability policy (uses M_NullLine for arbitrary text)
+ha-policy single-sup reload dual-sup switchover
+
+! Keystore configuration (uses M_NullLine for arbitrary text)
+keystore type default
+
+! Telnet configuration (uses M_NullLine for arbitrary text)
+telnet login-attempts 3
 
 ! VDC without ID clause
 vdc combined-hostname
