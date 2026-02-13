@@ -2348,6 +2348,12 @@ public final class CiscoNxosGrammarTest {
   }
 
   @Test
+  public void testNullStatements() {
+    // Test that new null statement handlers parse without errors
+    assertThat(parseVendorConfig("nxos_null_statements"), notNullValue());
+  }
+
+  @Test
   public void testInterfaceBindDependency() throws IOException {
     String hostname = "nxos_interface_bind_dependency";
     String ifaceName = "Ethernet1/1";

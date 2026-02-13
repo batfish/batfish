@@ -6837,6 +6837,10 @@ public final class CiscoNxosControlPlaneExtractor extends CiscoNxosParserBaseLis
 
   @Override
   public void exitS_vdc(S_vdcContext ctx) {
+    // ID is optional; if not present, skip VDC processing
+    if (ctx.id == null) {
+      return;
+    }
     Optional<Integer> maybeId = toInteger(ctx, ctx.id);
     if (!maybeId.isPresent()) {
       return;

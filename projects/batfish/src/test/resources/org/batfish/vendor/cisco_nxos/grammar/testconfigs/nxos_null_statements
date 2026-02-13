@@ -2,24 +2,6 @@
 version 9.3(3)
 hostname test-switch
 
-! Power configuration
-power redundancy-mode ps-redundant
-
-! Hardware configuration
-hardware ejector enable
-no hardware module boot-order reverse
-hardware access-list lou resource threshold 5
-hardware profile multicast max-limit lpm-entries 2048
-
-! High-availability policy
-ha-policy single-sup reload dual-sup switchover
-
-! Keystore configuration
-keystore type default
-
-! Telnet configuration
-telnet login-attempts 3
-
 ! VDC without ID clause
 vdc combined-hostname
 
