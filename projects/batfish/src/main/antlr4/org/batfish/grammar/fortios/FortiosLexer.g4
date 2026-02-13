@@ -512,6 +512,7 @@ PHYSICAL_SWITCH: 'physical-switch' {
 POLICY: 'policy';
 POOLNAME: 'poolname' -> pushMode(M_Str);
 PORT_BLOCK_ALLOCATION: 'port-block-allocation';
+PREFIX_LIST: 'prefix-list';
 PREFIX: 'prefix';
 PRE_LOGIN_BANNER: 'pre-login-banner' -> pushMode(M_Str);
 PROFILE_PROTOCOL_OPTIONS: 'profile-protocol-options' {

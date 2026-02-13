@@ -126,6 +126,14 @@ import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_remote_asContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_inContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcne_set_route_map_outContext;
 import org.batfish.grammar.fortios.FortiosParser.Crbcr_set_statusContext;
+import org.batfish.grammar.fortios.FortiosParser.Crpl_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crple_set_commentsContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecr_editContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecre_set_geContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecre_set_leContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecre_set_prefixContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecre_unset_geContext;
+import org.batfish.grammar.fortios.FortiosParser.Crplecre_unset_leContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrm_editContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrme_set_commentsContext;
 import org.batfish.grammar.fortios.FortiosParser.Crrmecr_editContext;
@@ -198,6 +206,8 @@ import org.batfish.grammar.fortios.FortiosParser.Policy_nameContext;
 import org.batfish.grammar.fortios.FortiosParser.Policy_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Policy_statusContext;
 import org.batfish.grammar.fortios.FortiosParser.Port_rangeContext;
+import org.batfish.grammar.fortios.FortiosParser.Prefix_list_nameContext;
+import org.batfish.grammar.fortios.FortiosParser.Prefix_list_rule_numberContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_major_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Replacemsg_minor_typeContext;
 import org.batfish.grammar.fortios.FortiosParser.Route_distanceContext;
@@ -237,6 +247,8 @@ import org.batfish.representation.fortios.Ippool;
 import org.batfish.representation.fortios.Policy;
 import org.batfish.representation.fortios.Policy.Action;
 import org.batfish.representation.fortios.Policy.Status;
+import org.batfish.representation.fortios.PrefixList;
+import org.batfish.representation.fortios.PrefixListRule;
 import org.batfish.representation.fortios.Replacemsg;
 import org.batfish.representation.fortios.RouteMap;
 import org.batfish.representation.fortios.RouteMapRule;
@@ -1419,7 +1431,10 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
       _c.referenceStructure(FortiosStructureType.ACCESS_LIST, name, usage, line);
       return Optional.of(name);
     }
-    // TODO check if name exists in prefix-lists
+    if (_c.getPrefixLists().containsKey(name)) {
+      _c.referenceStructure(FortiosStructureType.PREFIX_LIST, name, usage, line);
+      return Optional.of(name);
+    }
     warn(
         ctx,
         String.format("Access-list or prefix-list %s is undefined and cannot be referenced", name));
@@ -2255,6 +2270,104 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     _currentAccessListRule.setWildcard(toIpWildcard(ctx.ip_wildcard(), false));
   }
 
+  // Prefix-list handlers
+
+  @Override
+  public void enterCrpl_edit(Crpl_editContext ctx) {
+    Optional<String> name = toString(ctx, ctx.prefix_list_name());
+    PrefixList existing = name.map(_c.getPrefixLists()::get).orElse(null);
+    _currentPrefixListNameValid = name.isPresent();
+    _currentPrefixList =
+        existing == null ? new PrefixList(toString(ctx.prefix_list_name().str())) : existing;
+  }
+
+  @Override
+  public void exitCrpl_edit(Crpl_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    if (_currentPrefixListNameValid) {
+      String name = _currentPrefixList.getName();
+      _c.defineStructure(FortiosStructureType.PREFIX_LIST, name, ctx);
+      _c.getPrefixLists().put(name, _currentPrefixList);
+    } else {
+      warn(ctx, "Prefix-list edit block ignored: name is invalid");
+    }
+    _currentPrefixList = null;
+  }
+
+  @Override
+  public void exitCrple_set_comments(Crple_set_commentsContext ctx) {
+    _currentPrefixList.setComments(toString(ctx.comment));
+  }
+
+  @Override
+  public void enterCrplecr_edit(Crplecr_editContext ctx) {
+    Optional<Long> name = toLong(ctx, ctx.prefix_list_rule_number());
+    PrefixListRule existing =
+        name.map(l -> _currentPrefixList.getRules().get(l.toString())).orElse(null);
+    _currentPrefixListRuleNameValid = name.isPresent();
+    if (existing != null) {
+      // Make a clone to edit
+      _currentPrefixListRule = SerializationUtils.clone(existing);
+    } else {
+      _currentPrefixListRule = new PrefixListRule(toString(ctx.prefix_list_rule_number().str()));
+    }
+  }
+
+  /**
+   * Returns message indicating why this prefix-list rule can't be committed in the CLI, or null if
+   * it can
+   */
+  private static @Nullable String getPrefixListRuleInvalidReason(
+      PrefixListRule rule, boolean nameValid) {
+    if (!nameValid) {
+      return "name is invalid";
+    } else if (rule.getPrefix() == null) {
+      return "prefix must be set";
+    }
+    return null;
+  }
+
+  @Override
+  public void exitCrplecr_edit(Crplecr_editContext ctx) {
+    // If edited item is valid, add/update the entry in VS map
+    String invalidReason =
+        getPrefixListRuleInvalidReason(_currentPrefixListRule, _currentPrefixListRuleNameValid);
+    if (invalidReason == null) { // is valid
+      String name = _currentPrefixListRule.getNumber();
+      _currentPrefixList.getRules().put(name, _currentPrefixListRule);
+    } else {
+      warn(ctx, String.format("Prefix-list rule edit block ignored: %s", invalidReason));
+    }
+    _currentPrefixListRule = null;
+  }
+
+  @Override
+  public void exitCrplecre_set_prefix(Crplecre_set_prefixContext ctx) {
+    _currentPrefixListRule.setPrefix(toPrefix(ctx.ip_address_with_mask_or_prefix()));
+  }
+
+  @Override
+  public void exitCrplecre_set_ge(Crplecre_set_geContext ctx) {
+    toIntegerInSpace(ctx, ctx.ge.getText(), PREFIX_LENGTH_SPACE, "prefix-list ge")
+        .ifPresent(_currentPrefixListRule::setGe);
+  }
+
+  @Override
+  public void exitCrplecre_set_le(Crplecre_set_leContext ctx) {
+    toIntegerInSpace(ctx, ctx.le.getText(), PREFIX_LENGTH_SPACE, "prefix-list le")
+        .ifPresent(_currentPrefixListRule::setLe);
+  }
+
+  @Override
+  public void exitCrplecre_unset_ge(Crplecre_unset_geContext ctx) {
+    _currentPrefixListRule.unsetGe();
+  }
+
+  @Override
+  public void exitCrplecre_unset_le(Crplecre_unset_leContext ctx) {
+    _currentPrefixListRule.unsetLe();
+  }
+
   private IntrazoneAction toIntrazoneAction(Allow_or_denyContext ctx) {
     if (ctx.ALLOW() != null) {
       return IntrazoneAction.ALLOW;
@@ -2875,6 +2988,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   }
 
   private @Nonnull Optional<String> toString(
+      ParserRuleContext messageCtx, Prefix_list_nameContext ctx) {
+    return toString(messageCtx, ctx.str(), "prefix-list name", ROUTE_MAP_NAME_PATTERN);
+  }
+
+  private @Nonnull Optional<String> toString(
       ParserRuleContext messageCtx, Service_nameContext ctx) {
     return toString(messageCtx, ctx.str(), "service name", SERVICE_NAME_PATTERN);
   }
@@ -3000,6 +3118,12 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private @Nonnull Optional<Long> toLong(ParserRuleContext messageCtx, Acl_rule_numberContext ctx) {
     return toLongInSpace(
         messageCtx, ctx.str(), ACCESS_LIST_RULE_NUMBER_SPACE, "access-list rule number");
+  }
+
+  private @Nonnull Optional<Long> toLong(
+      ParserRuleContext messageCtx, Prefix_list_rule_numberContext ctx) {
+    return toLongInSpace(
+        messageCtx, ctx.str(), PREFIX_LIST_RULE_NUMBER_SPACE, "prefix-list rule number");
   }
 
   private @Nonnull Optional<Long> toLong(
@@ -3401,6 +3525,9 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
 
   private static final LongSpace ACCESS_LIST_RULE_NUMBER_SPACE =
       LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final LongSpace PREFIX_LIST_RULE_NUMBER_SPACE =
+      LongSpace.of(Range.closed(0L, 4294967295L));
+  private static final IntegerSpace PREFIX_LENGTH_SPACE = IntegerSpace.of(Range.closed(0, 32));
   private static final LongSpace BGP_AS_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_NETWORK_ID_SPACE = LongSpace.of(Range.closed(0L, 4294967295L));
   private static final LongSpace BGP_REMOTE_AS_SPACE = LongSpace.of(Range.closed(1L, 4294967295L));
@@ -3428,6 +3555,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
   private boolean _currentAccessListNameValid;
   private AccessListRule _currentAccessListRule;
   private boolean _currentAccessListRuleNameValid;
+
+  private PrefixList _currentPrefixList;
+  private boolean _currentPrefixListNameValid;
+  private PrefixListRule _currentPrefixListRule;
+  private boolean _currentPrefixListRuleNameValid;
 
   private Address _currentAddress;
 

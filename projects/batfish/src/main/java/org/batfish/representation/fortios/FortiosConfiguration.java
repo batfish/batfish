@@ -53,6 +53,7 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public FortiosConfiguration() {
     _accessLists = new HashMap<>();
+    _prefixLists = new HashMap<>();
     _addresses = new HashMap<>();
     _addrgrps = new HashMap<>();
     _interfaces = new HashMap<>();
@@ -89,6 +90,10 @@ public class FortiosConfiguration extends VendorConfiguration {
 
   public @Nonnull Map<String, AccessList> getAccessLists() {
     return _accessLists;
+  }
+
+  public @Nonnull Map<String, PrefixList> getPrefixLists() {
+    return _prefixLists;
   }
 
   public @Nonnull Map<String, Address> getAddresses() {
@@ -171,6 +176,7 @@ public class FortiosConfiguration extends VendorConfiguration {
   private String _hostname;
   private String _rawHostname;
   private final @Nonnull Map<String, AccessList> _accessLists;
+  private final @Nonnull Map<String, PrefixList> _prefixLists;
   private final @Nonnull Map<String, Address> _addresses;
   private final @Nonnull Map<String, Addrgrp> _addrgrps;
   private final @Nonnull Map<String, Interface> _interfaces;
@@ -227,7 +233,12 @@ public class FortiosConfiguration extends VendorConfiguration {
         (name, accessList) ->
             c.getRouteFilterLists().put(name, convertAccessList(accessList, _filename)));
 
-    // Convert route-maps. Must happen after access-list conversion (and prefix-list conversion once
+    // Convert prefix-lists
+    _prefixLists.forEach(
+        (name, prefixList) ->
+            c.getRouteFilterLists().put(name, convertPrefixList(prefixList, _filename)));
+
+    // Convert route-maps. Must happen after access-list and prefix-list conversion
     // they are supported)
     _routeMaps.values().forEach(routeMap -> convertRouteMap(routeMap, c, _w));
 
@@ -431,6 +442,36 @@ public class FortiosConfiguration extends VendorConfiguration {
             vendorConfigFilename,
             FortiosStructureType.ACCESS_LIST.getDescription(),
             accessList.getName()));
+  }
+
+  @VisibleForTesting
+  static @Nonnull RouteFilterList convertPrefixList(
+      PrefixList prefixList, String vendorConfigFilename) {
+    List<RouteFilterLine> lines =
+        prefixList.getRules().values().stream()
+            .map(
+                rule -> {
+                  // Prefix-list rules are match-only (no action), treat as PERMIT
+                  LineAction action = LineAction.PERMIT;
+                  Prefix prefix = rule.getPrefix();
+                  int prefixLength = prefix.getPrefixLength();
+                  int minLen =
+                      rule.getGe() != PrefixListRule.DEFAULT_GE ? rule.getGe() : prefixLength;
+                  int maxLen =
+                      rule.getLe() != PrefixListRule.DEFAULT_LE
+                          ? rule.getLe()
+                          : Prefix.MAX_PREFIX_LENGTH;
+                  SubRange lengthRange = new SubRange(minLen, maxLen);
+                  return new RouteFilterLine(action, prefix, lengthRange);
+                })
+            .collect(ImmutableList.toImmutableList());
+    return new RouteFilterList(
+        prefixList.getName(),
+        lines,
+        new VendorStructureId(
+            vendorConfigFilename,
+            FortiosStructureType.PREFIX_LIST.getDescription(),
+            prefixList.getName()));
   }
 
   private static @Nonnull org.batfish.datamodel.Zone convertZone(Zone zone) {
