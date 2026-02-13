@@ -326,7 +326,7 @@ CCMCLIRUNNINGCONFIGCHANGED
 
 CDP: 'cdp';
 
-CFS: 'cfs';
+CFS: 'cfs' -> pushMode(M_NullLine);
 
 CHAIN
 :
@@ -539,6 +539,8 @@ DHCP: 'dhcp';
 DHCP_SNOOP: 'dhcp-snoop';
 
 DHCP_SNOOPING_VLAN: 'dhcp-snooping-vlan';
+
+DIAGNOSTIC: 'diagnostic' -> pushMode(M_NullLine);
 
 DIR: 'dir';
 
@@ -765,6 +767,8 @@ FEATURE: 'feature';
 FEATURE_CONTROL: 'feature-control';
 
 FEATURE_SET: 'feature-set';
+
+FEC: 'fec' -> pushMode(M_NullLine);
 
 FEATUREOPSTATUSCHANGE
 :
@@ -1161,7 +1165,7 @@ LINE: 'line';
 
 LINE_PROTOCOL: 'line-protocol';
 
-LINK: 'link';
+LINK: 'link' -> pushMode(M_NullLine);
 
 LINK_FLAP: 'link-flap';
 
@@ -1181,7 +1185,7 @@ LLDP: 'lldp';
 
 LOAD_DEFER: 'load-defer';
 
-LOAD_INTERVAL: 'load-interval';
+LOAD_INTERVAL: 'load-interval' -> pushMode(M_NullLine);
 
 LOAD_SHARE: 'load-share';
 
@@ -1795,7 +1799,7 @@ PRIMARY: 'primary';
 
 PRIORITY: 'priority';
 
-PRIORITY_FLOW_CONTROL: 'priority-flow-control';
+PRIORITY_FLOW_CONTROL: 'priority-flow-control' -> pushMode(M_NullLine);
 
 PRIV
 :
@@ -2175,7 +2179,7 @@ STATISTICS: 'statistics';
 
 STICKY_ARP: 'sticky-arp';
 
-STORM_CONTROL: 'storm-control';
+STORM_CONTROL: 'storm-control' -> pushMode(M_NullLine);
 
 STPX: 'stpx';
 

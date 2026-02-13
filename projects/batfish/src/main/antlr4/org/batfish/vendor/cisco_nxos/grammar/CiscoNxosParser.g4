@@ -368,10 +368,17 @@ s_null
 s_null_text
 :
   (
-    HA_POLICY
+    CFS
+    | DIAGNOSTIC
+    | FEC
+    | HA_POLICY
     | HARDWARE
     | KEYSTORE
+    | LINK
+    | LOAD_INTERVAL
     | POWER
+    | PRIORITY_FLOW_CONTROL
+    | STORM_CONTROL
     | TELNET
   ) NULL_LINE_TEXT? NEWLINE
 ;
