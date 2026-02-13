@@ -318,8 +318,7 @@ ICAP: 'icap' {
   if (lastTokenType() == CONFIG) {
     setType(IGNORED_CONFIG_BLOCK);
     pushMode(M_IgnoredConfigBlock);
-  }
-  if (lastTokenType() == REPLACEMSG) {
+  } else if (lastTokenType() == REPLACEMSG) {
     pushMode(M_Str);
   }
 };

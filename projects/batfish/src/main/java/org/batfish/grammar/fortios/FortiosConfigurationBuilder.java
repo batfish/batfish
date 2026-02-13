@@ -3380,11 +3380,11 @@ public final class FortiosConfigurationBuilder extends FortiosParserBaseListener
     if (!nameValid) {
       return "invalid name";
     }
-    if (ippool.getStartip() == null) {
-      return "missing startip";
-    }
-    if (ippool.getEndip() == null) {
-      return "missing endip";
+    // ippool can be defined with either startip+endip OR prefix+netmask
+    boolean hasStartEnd = ippool.getStartip() != null && ippool.getEndip() != null;
+    boolean hasPrefixNetmask = ippool.getPrefixIp() != null && ippool.getPrefixNetmask() != null;
+    if (!hasStartEnd && !hasPrefixNetmask) {
+      return "must have either startip+endip or prefix+netmask";
     }
     return null;
   }

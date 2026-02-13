@@ -4,16 +4,23 @@ import java.io.Serializable;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
-/** Global BFD settings for FortiOS */
+/** Global BFD settings for FortiOS. Defaults per FortiOS CLI Reference. */
 public class BfdSettings implements Serializable {
   private @Nullable Integer _interval;
   private @Nullable Integer _minRx;
   private @Nullable Integer _minTx;
   private @Nullable Integer _multiplier;
 
-  public static final int DEFAULT_INTERVAL = 50; // 50ms default
+  /** Default BFD session interval in milliseconds. FortiOS default: 50ms. */
+  public static final int DEFAULT_INTERVAL = 50;
+
+  /** Default minimum receive interval in milliseconds. FortiOS default: 50ms. */
   public static final int DEFAULT_MIN_RX = 50;
+
+  /** Default minimum transmit interval in milliseconds. FortiOS default: 50ms. */
   public static final int DEFAULT_MIN_TX = 50;
+
+  /** Default detection multiplier (number of missed packets before down). FortiOS default: 3. */
   public static final int DEFAULT_MULTIPLIER = 3;
 
   public @Nullable Integer getInterval() {

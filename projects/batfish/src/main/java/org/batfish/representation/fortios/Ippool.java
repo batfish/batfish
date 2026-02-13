@@ -7,11 +7,16 @@ import org.batfish.datamodel.Ip;
 
 /** FortiOS datamodel component containing ippool configuration */
 public final class Ippool implements FortiosRenameableObject, Serializable {
+  /** FortiOS IP pool types. See FortiOS CLI Reference for details. */
   public enum Type {
-    FIXED_PORT_RANGE,
-    ONE_TO_ONE,
-    OVERLOAD,
+    /** Port block allocation mode for carrier-grade NAT. */
     PORT_BLOCK_ALLOCATION,
+    /** One-to-one mapping between internal and external IPs. */
+    ONE_TO_ONE,
+    /** Overload mode (PAT) - multiple internal IPs share a single external IP. */
+    OVERLOAD,
+    /** Fixed port range allocation. */
+    FIXED_PORT_RANGE,
   }
 
   private @Nullable String _associatedInterface;
