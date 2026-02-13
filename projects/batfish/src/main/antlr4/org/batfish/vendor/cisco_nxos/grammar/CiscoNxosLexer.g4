@@ -865,6 +865,8 @@ GT: 'gt';
 
 GUARD: 'guard';
 
+HA_POLICY: 'ha-policy';
+
 HARDWARE: 'hardware';
 
 HEAD: 'head';
@@ -1101,6 +1103,8 @@ KEY_STRING
 :
   'key-string' -> pushMode ( M_Remark )
 ;
+
+KEYSTORE: 'keystore';
 
 KICKSTART
 :
@@ -1722,6 +1726,8 @@ PLANNED_ONLY: 'planned-only';
 POAP: 'poap';
 
 POINT_TO_POINT: 'point-to-point';
+
+POWER: 'power';
 
 POLICE: 'police';
 
