@@ -19,13 +19,17 @@ vdc_name
 
 s_vdc
 :
-  VDC name = vdc_name ID id = vdc_id NEWLINE
+  VDC name = vdc_name
   (
-    vdc_allocate
-    | vdc_allow
-    | vdc_cpu_share
-    | vdc_limit_resource_ignored
-  )*
+    ID id = vdc_id NEWLINE
+    (
+      vdc_allocate
+      | vdc_allow
+      | vdc_cpu_share
+      | vdc_limit_resource_ignored
+    )*
+    | NEWLINE
+  )
 ;
 
 vdc_allocate
