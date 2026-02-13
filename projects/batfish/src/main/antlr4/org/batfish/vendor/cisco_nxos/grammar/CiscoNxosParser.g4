@@ -354,10 +354,15 @@ s_null
     | CLOCK
     | ERRDISABLE
     | FEATURE
+    | HA_POLICY
+    | HARDWARE
+    | KEYSTORE
     | LICENSE
+    | POWER
     | SERVICE
-    | SSH
     | SPANNING_TREE
+    | SSH
+    | TELNET
     | USERNAME
     | USERPASSPHRASE
   ) null_rest_of_line
@@ -409,6 +414,7 @@ no_null
 :
   (
     FEATURE
+    | HARDWARE
     | IP
     | NTP
   ) null_rest_of_line
