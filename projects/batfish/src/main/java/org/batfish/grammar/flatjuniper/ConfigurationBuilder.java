@@ -674,6 +674,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_peer_addressCon
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_rejectContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstnh_selfContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_levelContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popsto_ribContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_numberContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Port_rangeContext;
@@ -1147,6 +1148,7 @@ import org.batfish.representation.juniper.PsFromRouteType;
 import org.batfish.representation.juniper.PsFromTag;
 import org.batfish.representation.juniper.PsFromUnsupported;
 import org.batfish.representation.juniper.PsFroms;
+import org.batfish.representation.juniper.PsProtocol;
 import org.batfish.representation.juniper.PsTerm;
 import org.batfish.representation.juniper.PsThen;
 import org.batfish.representation.juniper.PsThenAccept;
@@ -1178,6 +1180,9 @@ import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
 import org.batfish.representation.juniper.PsThens;
+import org.batfish.representation.juniper.PsToLevel;
+import org.batfish.representation.juniper.PsToProtocol;
+import org.batfish.representation.juniper.PsToRib;
 import org.batfish.representation.juniper.QualifiedNextHop;
 import org.batfish.representation.juniper.Resolution;
 import org.batfish.representation.juniper.ResolutionRib;
@@ -6296,33 +6301,33 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
 
   @Override
   public void exitPopsf_protocol(Popsf_protocolContext ctx) {
-    RoutingProtocol protocol;
+    PsProtocol protocol;
     if (ctx.AGGREGATE() != null) {
-      protocol = RoutingProtocol.AGGREGATE;
+      protocol = PsProtocol.AGGREGATE;
     } else if (ctx.BGP() != null) {
-      protocol = RoutingProtocol.BGP;
+      protocol = PsProtocol.BGP;
     } else if (ctx.DIRECT() != null) {
-      protocol = RoutingProtocol.CONNECTED;
+      protocol = PsProtocol.DIRECT;
     } else if (ctx.ISIS() != null) {
-      protocol = RoutingProtocol.ISIS_ANY;
+      protocol = PsProtocol.ISIS;
     } else if (ctx.EVPN() != null) {
-      protocol = RoutingProtocol.EVPN;
+      protocol = PsProtocol.EVPN;
     } else if (ctx.LDP() != null) {
-      protocol = RoutingProtocol.LDP;
+      protocol = PsProtocol.LDP;
     } else if (ctx.LOCAL() != null) {
-      protocol = RoutingProtocol.LOCAL;
+      protocol = PsProtocol.LOCAL;
     } else if (ctx.OSPF() != null) {
-      protocol = RoutingProtocol.OSPF;
+      protocol = PsProtocol.OSPF;
     } else if (ctx.OSPF3() != null) {
-      protocol = RoutingProtocol.OSPF3;
+      protocol = PsProtocol.OSPF3;
     } else if (ctx.RSVP() != null) {
-      protocol = RoutingProtocol.RSVP;
+      protocol = PsProtocol.RSVP;
     } else if (ctx.STATIC() != null) {
-      protocol = RoutingProtocol.STATIC;
+      protocol = PsProtocol.STATIC;
     } else {
+      assert ctx.ACCESS_INTERNAL() != null;
       todo(ctx);
-      _currentPsTerm.getFroms().setFromUnsupported(new PsFromUnsupported());
-      return;
+      protocol = PsProtocol.ACCESS_INTERNAL;
     }
     _currentPsTerm.getFroms().addFromProtocol(new PsFromProtocol(protocol));
   }
@@ -6397,13 +6402,46 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopsto_level(Popsto_levelContext ctx) {
     todo(ctx);
-    _currentPsTerm.setHasToConditions(true);
+    _currentPsTerm.getTos().setToLevel(new PsToLevel(toLong(ctx.dec())));
+  }
+
+  @Override
+  public void exitPopsto_protocol(Popsto_protocolContext ctx) {
+    todo(ctx);
+    PsProtocol protocol;
+    if (ctx.AGGREGATE() != null) {
+      protocol = PsProtocol.AGGREGATE;
+    } else if (ctx.BGP() != null) {
+      protocol = PsProtocol.BGP;
+    } else if (ctx.DIRECT() != null) {
+      protocol = PsProtocol.DIRECT;
+    } else if (ctx.ISIS() != null) {
+      protocol = PsProtocol.ISIS;
+    } else if (ctx.EVPN() != null) {
+      protocol = PsProtocol.EVPN;
+    } else if (ctx.LDP() != null) {
+      protocol = PsProtocol.LDP;
+    } else if (ctx.LOCAL() != null) {
+      protocol = PsProtocol.LOCAL;
+    } else if (ctx.OSPF() != null) {
+      protocol = PsProtocol.OSPF;
+    } else if (ctx.OSPF3() != null) {
+      protocol = PsProtocol.OSPF3;
+    } else if (ctx.RSVP() != null) {
+      protocol = PsProtocol.RSVP;
+    } else if (ctx.STATIC() != null) {
+      protocol = PsProtocol.STATIC;
+    } else {
+      assert ctx.ACCESS_INTERNAL() != null;
+      protocol = PsProtocol.ACCESS_INTERNAL;
+    }
+    _currentPsTerm.getTos().addToProtocol(new PsToProtocol(protocol));
   }
 
   @Override
   public void exitPopsto_rib(Popsto_ribContext ctx) {
     todo(ctx);
-    _currentPsTerm.setHasToConditions(true);
+    _currentPsTerm.getTos().setToRib(new PsToRib(toString(ctx.rib_name())));
   }
 
   @Override

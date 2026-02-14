@@ -233,8 +233,7 @@ public final class PsFroms implements Serializable {
     return _fromPrefixListFilterOrLongers;
   }
 
-  @Nonnull
-  Set<PsFromProtocol> getFromProtocols() {
+  public @Nonnull Set<PsFromProtocol> getFromProtocols() {
     return _fromProtocols;
   }
 
