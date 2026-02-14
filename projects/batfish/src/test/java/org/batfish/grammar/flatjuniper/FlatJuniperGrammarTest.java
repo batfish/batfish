@@ -184,6 +184,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.POLICY_STA
 import static org.batfish.representation.juniper.JuniperStructureType.PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.RTF_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_POLICY_TERM;
+import static org.batfish.representation.juniper.JuniperStructureType.SOURCE_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
@@ -427,6 +428,7 @@ import org.batfish.representation.juniper.FwFromInterface;
 import org.batfish.representation.juniper.FwFromInterfaceSet;
 import org.batfish.representation.juniper.FwFromPacketLength;
 import org.batfish.representation.juniper.FwFromPort;
+import org.batfish.representation.juniper.FwFromSourceClass;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwFromTtl;
 import org.batfish.representation.juniper.FwTerm;
@@ -487,6 +489,7 @@ import org.batfish.representation.juniper.PsThenLocalPreference.Operator;
 import org.batfish.representation.juniper.PsThenMetric;
 import org.batfish.representation.juniper.PsThenMetric2;
 import org.batfish.representation.juniper.PsThenPreference;
+import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
@@ -9783,6 +9786,90 @@ public final class FlatJuniperGrammarTest {
     assertThat(groupInherit.getLocalPreference(), nullValue());
     groupInherit.cascadeInheritance();
     assertThat(groupInherit.getLocalPreference(), equalTo(50L));
+  }
+
+  @Test
+  public void testSourceClassExtraction() {
+    JuniperConfiguration c = parseJuniperConfig("source-class");
+    Map<String, PolicyStatement> policies = c.getMasterLogicalSystem().getPolicyStatements();
+    Map<String, FirewallFilter> filters = c.getMasterLogicalSystem().getFirewallFilters();
+
+    // Test policy-statement then source-class extraction (definition)
+    PolicyStatement exportScu = policies.get("EXPORT-SCU");
+    assertThat(exportScu, notNullValue());
+
+    PsTerm termA = exportScu.getTerms().get("REGION-A");
+    assertThat(termA.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termA.getThens().getAllThens()),
+        equalTo(new PsThenSourceClass("SOURCE-CLASS-A")));
+
+    PsTerm termB = exportScu.getTerms().get("REGION-B");
+    assertThat(termB.getThens().getAllThens(), hasSize(1));
+    assertThat(
+        getOnlyElement(termB.getThens().getAllThens()),
+        equalTo(new PsThenSourceClass("SOURCE-CLASS-B")));
+
+    // Test firewall filter from source-class extraction (reference)
+    assertThat(filters, hasEntry(equalTo("METERING"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringFilter = (ConcreteFirewallFilter) filters.get("METERING");
+    assertThat(meteringFilter.getTerms(), hasKeys("METER-A", "METER-B", "METER-UNDEF", "ACCEPT"));
+
+    FwTerm fwTermA = meteringFilter.getTerms().get("METER-A");
+    assertThat(fwTermA.getFroms(), hasSize(1));
+    FwFrom fromA = getOnlyElement(fwTermA.getFroms());
+    assertThat(fromA, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassA = (FwFromSourceClass) fromA;
+    assertThat(fromSourceClassA.getName(), equalTo("SOURCE-CLASS-A"));
+
+    FwTerm fwTermB = meteringFilter.getTerms().get("METER-B");
+    assertThat(fwTermB.getFroms(), hasSize(1));
+    FwFrom fromB = getOnlyElement(fwTermB.getFroms());
+    assertThat(fromB, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassB = (FwFromSourceClass) fromB;
+    assertThat(fromSourceClassB.getName(), equalTo("SOURCE-CLASS-B"));
+
+    // Test undefined source-class reference
+    FwTerm fwTermUndef = meteringFilter.getTerms().get("METER-UNDEF");
+    assertThat(fwTermUndef.getFroms(), hasSize(1));
+    FwFrom fromUndef = getOnlyElement(fwTermUndef.getFroms());
+    assertThat(fromUndef, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassUndef = (FwFromSourceClass) fromUndef;
+    assertThat(fromSourceClassUndef.getName(), equalTo("SOURCE-CLASS-UNDEFINED"));
+
+    // Test IPv6 filter with source-class
+    assertThat(filters, hasEntry(equalTo("METERING-V6"), instanceOf(ConcreteFirewallFilter.class)));
+    ConcreteFirewallFilter meteringV6Filter = (ConcreteFirewallFilter) filters.get("METERING-V6");
+    assertThat(meteringV6Filter.getTerms(), hasKeys("METER-A", "ACCEPT"));
+
+    FwTerm fwTermV6 = meteringV6Filter.getTerms().get("METER-A");
+    assertThat(fwTermV6.getFroms(), hasSize(1));
+    FwFrom fromV6 = getOnlyElement(fwTermV6.getFroms());
+    assertThat(fromV6, instanceOf(FwFromSourceClass.class));
+    FwFromSourceClass fromSourceClassV6 = (FwFromSourceClass) fromV6;
+    assertThat(fromSourceClassV6.getName(), equalTo("SOURCE-CLASS-A"));
+  }
+
+  @Test
+  public void testSourceClassDefinitionAndReferences() throws IOException {
+    String hostname = "source-class";
+    String filename = "configs/" + hostname;
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify source-class definitions are tracked
+    assertThat(ccae, hasDefinedStructure(filename, SOURCE_CLASS, "SOURCE-CLASS-A"));
+    assertThat(ccae, hasDefinedStructure(filename, SOURCE_CLASS, "SOURCE-CLASS-B"));
+
+    // Verify source-class references are tracked
+    // SOURCE-CLASS-A is referenced 2 times (once in inet filter, once in inet6 filter)
+    assertThat(ccae, hasNumReferrers(filename, SOURCE_CLASS, "SOURCE-CLASS-A", 2));
+    // SOURCE-CLASS-B is referenced 1 time (in inet filter)
+    assertThat(ccae, hasNumReferrers(filename, SOURCE_CLASS, "SOURCE-CLASS-B", 1));
+
+    // Verify undefined source-class reference is identified
+    assertThat(ccae, hasUndefinedReference(filename, SOURCE_CLASS, "SOURCE-CLASS-UNDEFINED"));
   }
 
   private final BddTestbed _b = new BddTestbed(ImmutableMap.of(), ImmutableMap.of());

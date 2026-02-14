@@ -596,6 +596,7 @@ popst_common
    | popst_preference
    | popst_priority
    | popst_reject
+   | popst_source_class
    | popst_tag
    | popst_tag2
    | popst_tunnel_attribute
@@ -819,6 +820,11 @@ popst_priority
 popst_reject
 :
    REJECT
+;
+
+popst_source_class
+:
+   SOURCE_CLASS name = junos_name
 ;
 
 popst_tag

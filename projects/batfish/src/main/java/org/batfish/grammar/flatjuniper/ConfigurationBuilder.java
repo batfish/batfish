@@ -60,6 +60,7 @@ import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_P
 import static org.batfish.representation.juniper.JuniperStructureType.SECURITY_PROFILE;
 import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST;
 import static org.batfish.representation.juniper.JuniperStructureType.SNMP_CLIENT_LIST_OR_PREFIX_LIST;
+import static org.batfish.representation.juniper.JuniperStructureType.SOURCE_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureType.SRLG;
 import static org.batfish.representation.juniper.JuniperStructureType.TUNNEL_ATTRIBUTE;
 import static org.batfish.representation.juniper.JuniperStructureType.VLAN;
@@ -122,6 +123,7 @@ import static org.batfish.representation.juniper.JuniperStructureUsage.CLASS_OF_
 import static org.batfish.representation.juniper.JuniperStructureUsage.DHCP_RELAY_GROUP_ACTIVE_SERVER_GROUP;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DESTINATION_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_DSCP;
+import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_FROM_SOURCE_CLASS;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_SOURCE_PREFIX_LIST;
 import static org.batfish.representation.juniper.JuniperStructureUsage.FIREWALL_FILTER_TERM_DEFINITION;
@@ -393,6 +395,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_port_exceptContext
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_prefix_listContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_protocolContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_addressContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_portContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_port_exceptContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Fftf_source_prefix_listContext;
@@ -652,6 +655,7 @@ import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_next_termContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_originContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_preferenceContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_rejectContext;
+import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_source_classContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tag2Context;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popst_tagContext;
 import org.batfish.grammar.flatjuniper.FlatJuniperParser.Popstm2_addContext;
@@ -1032,6 +1036,7 @@ import org.batfish.representation.juniper.FwFromProtocol;
 import org.batfish.representation.juniper.FwFromSourceAddress;
 import org.batfish.representation.juniper.FwFromSourceAddressBookEntry;
 import org.batfish.representation.juniper.FwFromSourceAddressExcept;
+import org.batfish.representation.juniper.FwFromSourceClass;
 import org.batfish.representation.juniper.FwFromSourcePort;
 import org.batfish.representation.juniper.FwFromSourcePrefixList;
 import org.batfish.representation.juniper.FwFromSourcePrefixListExcept;
@@ -1168,6 +1173,7 @@ import org.batfish.representation.juniper.PsThenNextPolicy;
 import org.batfish.representation.juniper.PsThenOrigin;
 import org.batfish.representation.juniper.PsThenPreference;
 import org.batfish.representation.juniper.PsThenReject;
+import org.batfish.representation.juniper.PsThenSourceClass;
 import org.batfish.representation.juniper.PsThenTag;
 import org.batfish.representation.juniper.PsThenTunnelAttributeRemove;
 import org.batfish.representation.juniper.PsThenTunnelAttributeSet;
@@ -5176,6 +5182,16 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   }
 
   @Override
+  public void exitFftf_source_class(Fftf_source_classContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    FwFrom from = new FwFromSourceClass(name);
+    _currentFwTerm.getFroms().add(from);
+    _configuration.referenceStructure(
+        SOURCE_CLASS, name, FIREWALL_FILTER_FROM_SOURCE_CLASS, getLine(ctx.name.start));
+  }
+
+  @Override
   public void exitFftf_source_port(Fftf_source_portContext ctx) {
     SubRange ports = toSubRange(ctx.port_range());
     FwFrom from = new FwFromSourcePort(ports);
@@ -6688,6 +6704,14 @@ public class ConfigurationBuilder extends FlatJuniperParserBaseListener
   @Override
   public void exitPopst_reject(Popst_rejectContext ctx) {
     addPsThen(PsThenReject.INSTANCE, ctx);
+  }
+
+  @Override
+  public void exitPopst_source_class(Popst_source_classContext ctx) {
+    todo(ctx);
+    String name = toString(ctx.name);
+    addPsThen(new PsThenSourceClass(name), ctx);
+    _configuration.defineSingleLineStructure(SOURCE_CLASS, name, getLine(ctx.name.start));
   }
 
   @Override
