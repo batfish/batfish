@@ -109,7 +109,7 @@ DISABLED: 'disabled';
 
 DOMAIN: 'domain';
 
-DOMAIN_LOOKUP: 'domain-lookup';
+DOMAIN_LOOKUP: 'domain-lookup' -> pushMode(M_SINGLE_LINE);
 
 DP: 'dp';
 
@@ -123,7 +123,7 @@ EXTENDED: 'extended';
 
 DNS: 'dns';
 
-DNS_GROUP: 'dns-group';
+DNS_GROUP: 'dns-group' -> pushMode(M_SINGLE_LINE);
 
 EQ: 'eq';
 
@@ -138,8 +138,6 @@ ESP_DES: 'esp-des';
 ESP_MD5_HMAC: 'esp-md5-hmac';
 ESP_SHA_HMAC: 'esp-sha-hmac';
 ESP_NONE: 'esp-none';
-
-END: 'end';
 
 ETHERNET: 'Ethernet';
 
@@ -183,7 +181,7 @@ HOLDTIME: 'holdtime';
 
 HOST: 'host';
 
-HOSTNAME: 'hostname';
+HOSTNAME: 'hostname' -> pushMode(M_SINGLE_LINE);
 
 HTTPS: 'https';
 
@@ -405,7 +403,7 @@ SECURITY_ASSOCIATION: 'security-association';
 
 SECURITY_LEVEL: 'security-level';
 
-SERVER_GROUP: 'server-group';
+SERVER_GROUP: 'server-group' -> pushMode(M_SINGLE_LINE);
 
 SERVICE: 'service';
 
@@ -480,7 +478,7 @@ UNIT: 'unit';
 
 VARIABLE: 'variable';
 
-VERSION: 'version';
+VERSION: 'version' -> pushMode(M_SINGLE_LINE);
 
 WHITELIST: 'whitelist';
 
@@ -489,8 +487,6 @@ VLAN: 'vlan';
 VLAN_ID: 'vlan-id';
 
 VRF: 'vrf';
-
-VTY: 'vty';
 
 WARNINGS: 'warnings';
 
@@ -718,6 +714,35 @@ M_Description_NEWLINE
 ;
 
 M_Description_WS
+:
+   F_WhitespaceChar+ -> channel(HIDDEN)
+;
+
+// ============================================================================
+// M_SINGLE_LINE - Generic single-line text capture
+//
+// This mode captures rest-of-line content as a single RAW_TEXT token,
+// eliminating expensive ~NEWLINE negation patterns in the parser.
+//
+// Usage: Add `-> pushMode(M_SINGLE_LINE)` to tokens that start single-line
+// value capture (HOSTNAME, SERVER_GROUP, TIME_RANGE, etc.)
+//
+// Parser rules should then use RAW_TEXT instead of ~NEWLINE+
+// ============================================================================
+
+mode M_SINGLE_LINE;
+
+M_SINGLE_LINE_TEXT
+:
+   F_NonNewlineChar+ -> type(RAW_TEXT)
+;
+
+M_SINGLE_LINE_NEWLINE
+:
+   F_Newline+ -> type(NEWLINE), popMode
+;
+
+M_SINGLE_LINE_WS
 :
    F_WhitespaceChar+ -> channel(HIDDEN)
 ;
