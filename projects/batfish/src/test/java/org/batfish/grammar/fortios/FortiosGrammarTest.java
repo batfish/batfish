@@ -48,6 +48,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
@@ -3465,6 +3466,166 @@ public final class FortiosGrammarTest {
     // Verify route-maps are converted to routing policies
     Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
     assertThat(c.getRoutingPolicies(), hasKeys("RM-IN-1", "RM-OUT-1"));
+  }
+
+  @Test
+  public void testPrefixListEdgeCases() throws IOException {
+    String hostname = "prefix_list_edge_cases";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Valid prefix-list should be parsed correctly
+    assertThat(vc.getPrefixLists(), hasKey("pl_valid"));
+    PrefixList plValid = vc.getPrefixLists().get("pl_valid");
+    PrefixListRule validRule = plValid.getRules().get("1");
+    assertThat(validRule.getPrefix(), equalTo(Prefix.parse("10.0.0.0/8")));
+    assertThat(validRule.getGe(), equalTo(8));
+    assertThat(validRule.getLe(), equalTo(32));
+
+    // Prefix-list with ge > le (logically invalid but syntactically valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_ge_gt_le"));
+    PrefixListRule geGtLeRule = vc.getPrefixLists().get("pl_ge_gt_le").getRules().get("1");
+    assertThat(geGtLeRule.getGe(), equalTo(24));
+    assertThat(geGtLeRule.getLe(), equalTo(16));
+
+    // Prefix-list with ge=0 (minimum valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_ge_zero"));
+    PrefixListRule geZeroRule = vc.getPrefixLists().get("pl_ge_zero").getRules().get("1");
+    assertThat(geZeroRule.getGe(), equalTo(0));
+
+    // Prefix-list with le=32 (maximum valid)
+    assertThat(vc.getPrefixLists(), hasKey("pl_le_max"));
+    PrefixListRule leMaxRule = vc.getPrefixLists().get("pl_le_max").getRules().get("1");
+    assertThat(leMaxRule.getLe(), equalTo(32));
+
+    // Prefix-list with only ge set (le should be default)
+    assertThat(vc.getPrefixLists(), hasKey("pl_only_ge"));
+    PrefixListRule onlyGeRule = vc.getPrefixLists().get("pl_only_ge").getRules().get("1");
+    assertThat(onlyGeRule.getGe(), equalTo(20));
+    assertThat(onlyGeRule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+
+    // Prefix-list with only le set (ge should be default)
+    assertThat(vc.getPrefixLists(), hasKey("pl_only_le"));
+    PrefixListRule onlyLeRule = vc.getPrefixLists().get("pl_only_le").getRules().get("1");
+    assertThat(onlyLeRule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(onlyLeRule.getLe(), equalTo(24));
+
+    // Empty prefix-list (no config rule block) should exist with no rules
+    assertThat(vc.getPrefixLists(), hasKey("pl_empty"));
+    assertThat(vc.getPrefixLists().get("pl_empty").getRules().keySet(), empty());
+  }
+
+  @Test
+  public void testPrefixListRuleGeLeDefaults() {
+    // Test default values for ge/le
+    PrefixListRule rule = new PrefixListRule("1");
+    assertThat(rule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+    assertThat(rule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+    assertThat(rule.getPrefix(), nullValue());
+
+    // Set and unset ge
+    rule.setGe(16);
+    assertThat(rule.getGe(), equalTo(16));
+    rule.unsetGe();
+    assertThat(rule.getGe(), equalTo(PrefixListRule.DEFAULT_GE));
+
+    // Set and unset le
+    rule.setLe(24);
+    assertThat(rule.getLe(), equalTo(24));
+    rule.unsetLe();
+    assertThat(rule.getLe(), equalTo(PrefixListRule.DEFAULT_LE));
+  }
+
+  @Test
+  public void testIppoolValidation() throws IOException {
+    String hostname = "ippool_validation";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    FortiosConfiguration vc =
+        (FortiosConfiguration)
+            batfish.loadVendorConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Pool with startip/endip
+    assertThat(vc.getIppools(), hasKey("pool_start_end"));
+    Ippool poolStartEnd = vc.getIppools().get("pool_start_end");
+    assertThat(poolStartEnd.getStartip(), equalTo(Ip.parse("10.0.0.1")));
+    assertThat(poolStartEnd.getEndip(), equalTo(Ip.parse("10.0.0.100")));
+
+    // Pool with prefix/netmask (also has startip/endip for validity)
+    assertThat(vc.getIppools(), hasKey("pool_prefix_netmask"));
+    Ippool poolPrefix = vc.getIppools().get("pool_prefix_netmask");
+    assertThat(poolPrefix.getPrefixIp(), equalTo(Ip.parse("192.168.0.0")));
+    assertThat(poolPrefix.getPrefixNetmask(), equalTo(Ip.parse("255.255.255.0")));
+
+    // Pool with both (should parse both)
+    assertThat(vc.getIppools(), hasKey("pool_both"));
+    Ippool poolBoth = vc.getIppools().get("pool_both");
+    assertThat(poolBoth.getStartip(), equalTo(Ip.parse("172.16.0.1")));
+    assertThat(poolBoth.getPrefixIp(), equalTo(Ip.parse("172.16.0.0")));
+
+    // Pool with ge/le
+    assertThat(vc.getIppools(), hasKey("pool_with_ge_le"));
+    Ippool poolGeLe = vc.getIppools().get("pool_with_ge_le");
+    assertThat(poolGeLe.getGe(), equalTo(1024));
+    assertThat(poolGeLe.getLe(), equalTo(65535));
+  }
+
+  @Test
+  public void testIppoolValidationMethod() {
+    BatfishUUID uuid = new BatfishUUID(1);
+
+    // Valid with startip/endip
+    Ippool poolStartEnd = new Ippool("test", uuid);
+    poolStartEnd.setStartip(Ip.parse("10.0.0.1"));
+    poolStartEnd.setEndip(Ip.parse("10.0.0.100"));
+    assertNull(FortiosConfigurationBuilder.ippoolValid(poolStartEnd, true));
+
+    // Valid with prefix/netmask
+    Ippool poolPrefix = new Ippool("test", uuid);
+    poolPrefix.setPrefixIp(Ip.parse("192.168.0.0"));
+    poolPrefix.setPrefixNetmask(Ip.parse("255.255.255.0"));
+    assertNull(FortiosConfigurationBuilder.ippoolValid(poolPrefix, true));
+
+    // Invalid name
+    assertNotNull(FortiosConfigurationBuilder.ippoolValid(poolStartEnd, false));
+
+    // Invalid - neither startip/endip nor prefix/netmask
+    Ippool poolNeither = new Ippool("test", uuid);
+    assertNotNull(FortiosConfigurationBuilder.ippoolValid(poolNeither, true));
+  }
+
+  @Test
+  public void testRouteMapUndefinedPrefixList() throws IOException {
+    String hostname = "route_map_undefined_prefix";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Defined prefix-list should have a referrer
+    assertThat(ccae, hasNumReferrers(filename, FortiosStructureType.PREFIX_LIST, "DEFINED_PL", 1));
+
+    // Undefined prefix-list reference should be flagged
+    assertThat(
+        ccae,
+        hasUndefinedReference(
+            filename, FortiosStructureType.ACCESS_LIST_OR_PREFIX_LIST, "UNDEFINED_PL"));
+  }
+
+  @Test
+  public void testPrefixListStructureTracking() throws IOException {
+    String hostname = "prefix_list";
+    String filename = "configs/" + hostname;
+
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+
+    // Verify prefix-lists are tracked as defined structures
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "pl_name1"));
+    assertThat(ccae, hasDefinedStructure(filename, FortiosStructureType.PREFIX_LIST, "pl_name2"));
   }
 
   ////////////////////////
