@@ -159,11 +159,9 @@ public class FtdControlPlaneExtractor extends FtdParserBaseListener
 
   @Override
   public void exitHostname_stanza(Hostname_stanzaContext ctx) {
-    StringBuilder sb = new StringBuilder();
-    for (Token namePart : ctx.name_parts) {
-      sb.append(namePart.getText());
+    if (ctx.raw_text != null) {
+      _configuration.setHostname(ctx.raw_text.getText().trim());
     }
-    _configuration.setHostname(sb.toString());
   }
 
   // ==================== Interface ====================

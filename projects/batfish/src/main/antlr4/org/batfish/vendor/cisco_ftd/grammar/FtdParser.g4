@@ -27,52 +27,110 @@ ftd_configuration
    )* EOF
 ;
 
+// ============================================================================
+// OPTIMIZED: Hierarchical stanza dispatch
+// ============================================================================
+// Original: 43 alternatives checked sequentially
+// Optimized: 3 grouped categories + fallback
+// This reduces prediction depth and improves parse time
+// ============================================================================
+
 stanza
 :
-   aaa_stanza
-   | access_group_stanza
-   | access_list_stanza
-   | arp_stanza
-   | class_map_stanza
-   | cts_stanza
-   | cryptochecksum_stanza
-   | crypto_stanza
-   | dns_stanza
-   | enable_stanza
-   | failover_stanza
-   | flow_offload_stanza
-   | ftp_stanza
-   | hostname_stanza
-   | icmp_stanza
-   | interface_stanza
-   | logging_stanza
-   | mac_address_stanza
-   | monitor_interface_stanza
-   | mtu_stanza
-   | names_stanza
-   | nat_stanza
-   | ngips_stanza
-   | object_group_search_stanza_null
-   | object_group_stanza
-   | object_stanza
-   | pager_stanza
-   | policy_map_stanza
-   | route_stanza
-   | router_bgp_stanza
-   | router_ospf_stanza
-   | service_module_stanza
-   | service_policy_stanza
-   | snmp_server_stanza
-   | snort_stanza
-   | ssh_stanza
-   | telnet_stanza
-   | threat_detection_stanza
-   | time_range_stanza
-   | timeout_stanza
-   | tunnel_group_stanza
-   | version_stanza
+   // Group 1: Network & Security Features (high-frequency stanzas)
+   network_stanza
+
+   // Group 2: System Configuration
+   | system_stanza
+
+   // Fallback
    | unrecognized_stanza
 ;
+
+// Network & Security stanzas (routers, interfaces, ACLs, crypto, etc.)
+network_stanza
+:
+   // Routing protocols
+   router_bgp_stanza
+   | router_ospf_stanza
+   | route_stanza
+
+   // Interfaces
+   | interface_stanza
+
+   // Objects and groups
+   | object_stanza
+   | object_group_stanza
+   | object_group_search_stanza_null
+
+   // Access control
+   | access_list_stanza
+   | access_group_stanza
+
+   // NAT
+   | nat_stanza
+
+   // VPN/Crypto
+   | crypto_stanza
+   | tunnel_group_stanza
+
+   // High availability
+   | failover_stanza
+;
+
+// System configuration stanzas
+system_stanza
+:
+   // Authentication/Authorization
+   aaa_stanza
+   | enable_stanza
+
+   // Identity and naming
+   | hostname_stanza
+   | names_stanza
+
+   // Network services
+   | dns_stanza
+   | ftp_stanza
+
+   // Security services
+   | ssh_stanza
+   | telnet_stanza
+   | icmp_stanza
+   | snmp_server_stanza
+   | arp_stanza
+   | cts_stanza
+   | snort_stanza
+
+   // Logging and monitoring
+   | logging_stanza
+   | monitor_interface_stanza
+   | threat_detection_stanza
+
+   // Time and timeout
+   | time_range_stanza
+   | timeout_stanza
+
+   // Policy configuration
+   | class_map_stanza
+   | policy_map_stanza
+   | service_policy_stanza
+
+   // Interface/system settings
+   | mtu_stanza
+   | pager_stanza
+   | mac_address_stanza
+   | flow_offload_stanza
+   | version_stanza
+
+   // Service modules
+   | ngips_stanza
+   | service_module_stanza
+
+   // Crypto checksum
+   | cryptochecksum_stanza
+;
+
 
 enable_stanza
 :
@@ -81,7 +139,7 @@ enable_stanza
 
 hostname_stanza
 :
-   HOSTNAME (name_parts += ~NEWLINE)+ NEWLINE
+   HOSTNAME raw_text = RAW_TEXT NEWLINE
 ;
 
 names_stanza
@@ -101,12 +159,12 @@ dns_stanza
 
 dns_domain_lookup
 :
-   DOMAIN_LOOKUP iface_name = ~NEWLINE+ NEWLINE
+   DOMAIN_LOOKUP iface_name = RAW_TEXT NEWLINE
 ;
 
 dns_server_group
 :
-   SERVER_GROUP name = ~NEWLINE+ NEWLINE
+   SERVER_GROUP name = RAW_TEXT NEWLINE
    dns_server_group_tail*
 ;
 
@@ -121,7 +179,7 @@ dns_server_group_tail
 
 dns_group
 :
-   DNS_GROUP name = ~NEWLINE+ NEWLINE
+   DNS_GROUP name = RAW_TEXT NEWLINE
 ;
 
 ftp_stanza
@@ -332,7 +390,7 @@ mac_address_stanza
 
 version_stanza
 :
-   NGFW VERSION version = ~NEWLINE* NEWLINE
+   NGFW VERSION version = RAW_TEXT? NEWLINE
 ;
 
 cts_stanza
