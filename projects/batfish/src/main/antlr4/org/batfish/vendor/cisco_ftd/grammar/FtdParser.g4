@@ -28,114 +28,43 @@ ftd_configuration
 ;
 
 // ============================================================================
-// OPTIMIZED: Hierarchical stanza dispatch
-// ============================================================================
-// Original: 43 alternatives checked sequentially
-// Optimized: 3 grouped categories + fallback
-// This reduces prediction depth and improves parse time
+// MINIMAL STANZA DISPATCH
+// Only parse in detail what we need to extract, everything else is unrecognized
 // ============================================================================
 
 stanza
 :
-   // Group 1: Network & Security Features (high-frequency stanzas)
-   network_stanza
-
-   // Group 2: System Configuration
-   | system_stanza
-
-   // Fallback
-   | unrecognized_stanza
-;
-
-// Network & Security stanzas (routers, interfaces, ACLs, crypto, etc.)
-network_stanza
-:
-   // Routing protocols
-   router_bgp_stanza
-   | router_ospf_stanza
-   | route_stanza
-
-   // Interfaces
-   | interface_stanza
-
-   // Objects and groups
-   | object_stanza
-   | object_group_stanza
-   | object_group_search_stanza_null
-
-   // Access control
+   // Essential stanzas with data extraction (from imported grammars)
+   interface_stanza
    | access_list_stanza
    | access_group_stanza
-
-   // NAT
+   | object_stanza
+   | object_group_stanza
+   | route_stanza
    | nat_stanza
-
-   // VPN/Crypto
+   | router_bgp_stanza
+   | router_ospf_stanza
    | crypto_stanza
    | tunnel_group_stanza
-
-   // High availability
    | failover_stanza
-;
 
-// System configuration stanzas
-system_stanza
-:
-   // Authentication/Authorization
-   aaa_stanza
-   | enable_stanza
-
-   // Identity and naming
+   // Minimal extraction stanzas (defined here)
    | hostname_stanza
    | names_stanza
-
-   // Network services
-   | dns_stanza
-   | ftp_stanza
-
-   // Security services
-   | ssh_stanza
-   | telnet_stanza
-   | icmp_stanza
-   | snmp_server_stanza
+   | mtu_stanza
    | arp_stanza
-   | cts_stanza
-   | snort_stanza
-
-   // Logging and monitoring
-   | logging_stanza
-   | monitor_interface_stanza
-   | threat_detection_stanza
-
-   // Time and timeout
-   | time_range_stanza
-   | timeout_stanza
-
-   // Policy configuration
    | class_map_stanza
    | policy_map_stanza
    | service_policy_stanza
-
-   // Interface/system settings
-   | mtu_stanza
-   | pager_stanza
-   | mac_address_stanza
-   | flow_offload_stanza
-   | version_stanza
-
-   // Service modules
-   | ngips_stanza
-   | service_module_stanza
-
-   // Crypto checksum
    | cryptochecksum_stanza
+
+   // Everything else - just consume
+   | unrecognized_stanza
 ;
 
-
-enable_stanza
-:
-   ENABLE PASSWORD password = ~NEWLINE+ NEWLINE
-;
+// ============================================================================
+// ESSENTIAL STANZAS - Minimal parsing for data extraction
+// ============================================================================
 
 hostname_stanza
 :
@@ -147,104 +76,9 @@ names_stanza
    NO? NAMES NEWLINE
 ;
 
-dns_stanza
-:
-   DNS
-   (
-      dns_domain_lookup
-      | dns_server_group
-      | dns_group
-   )
-;
-
-dns_domain_lookup
-:
-   DOMAIN_LOOKUP iface_name = RAW_TEXT NEWLINE
-;
-
-dns_server_group
-:
-   SERVER_GROUP name = RAW_TEXT NEWLINE
-   dns_server_group_tail*
-;
-
-dns_server_group_tail
-:
-   (
-      NAME_SERVER ip = IP_ADDRESS NEWLINE
-      | TIMEOUT timeout = dec NEWLINE
-      | stanza_unrecognized_line
-   )
-;
-
-dns_group
-:
-   DNS_GROUP name = RAW_TEXT NEWLINE
-;
-
-ftp_stanza
-:
-   FTP MODE mode_value = ~NEWLINE+ NEWLINE
-;
-
-
-ngips_stanza
-:
-   NGIPS null_rest_of_line
-;
-
-service_module_stanza
-:
-   SERVICE_MODULE null_rest_of_line
-;
-
-time_range_stanza
-:
-   TIME_RANGE name = ~NEWLINE+ NEWLINE
-   time_range_tail*
-;
-
-time_range_tail
-:
-   (
-      ABSOLUTE null_rest_of_line
-      | stanza_unrecognized_line
-   )
-;
-
-logging_stanza
-:
-   LOGGING null_rest_of_line
-;
-
 mtu_stanza
 :
    MTU iface_name = ~NEWLINE+ mtu_value = dec NEWLINE
-;
-
-timeout_stanza
-:
-   TIMEOUT null_rest_of_line
-;
-
-ssh_stanza
-:
-   SSH null_rest_of_line
-;
-
-telnet_stanza
-:
-   TELNET null_rest_of_line
-;
-
-icmp_stanza
-:
-   ICMP null_rest_of_line
-;
-
-snmp_server_stanza
-:
-   SNMP_SERVER null_rest_of_line
 ;
 
 arp_stanza
@@ -252,6 +86,12 @@ arp_stanza
    ARP null_rest_of_line
 ;
 
+cryptochecksum_stanza
+:
+   CRYPTOCHECKSUM_LINE
+;
+
+// Class/Policy maps - needed for service policy bindings
 class_map_stanza
 :
    CLASS_MAP class_map_type? name = class_map_name NEWLINE
@@ -335,15 +175,6 @@ service_policy_interface_name
 :
    name_parts += ~NEWLINE+
 ;
-threat_detection_stanza
-:
-   THREAT_DETECTION null_rest_of_line
-;
-
-monitor_interface_stanza
-:
-   MONITOR_INTERFACE null_rest_of_line
-;
 
 access_group_stanza
 :
@@ -373,61 +204,19 @@ access_group_interface_name
    name_parts += ~NEWLINE+
 ;
 
-pager_stanza
-:
-   NO? PAGER null_rest_of_line
-;
+// ============================================================================
+// UNRECOGNIZED - Catch-all for anything we don't need to parse
+// ============================================================================
 
-aaa_stanza
-:
-   AAA null_rest_of_line
-;
-
-mac_address_stanza
-:
-   NO? MAC_ADDRESS AUTO NEWLINE
-;
-
-version_stanza
-:
-   NGFW VERSION version = RAW_TEXT? NEWLINE
-;
-
-cts_stanza
-:
-   CTS null_rest_of_line
-;
-
-snort_stanza
-:
-   SNORT null_rest_of_line
-;
-
-flow_offload_stanza
-:
-   NO? FLOW_OFFLOAD null_rest_of_line
-;
-
-cryptochecksum_stanza
-:
-   CRYPTOCHECKSUM_LINE
-;
-
-// Generic unrecognized line - matches any line
-unrecognized_line
-:
-   ~NEWLINE* NEWLINE
-;
-
-// Restricted unrecognized line that doesn't match lines starting with stanza keywords
-// Used in stanza tail rules to prevent consuming subsequent stanzas
+// Restricted unrecognized line - doesn't consume lines starting with known stanza keywords
+// Used in imported grammar tail rules
 stanza_unrecognized_line
 :
-   ~(NEWLINE | INTERFACE | ACCESS_LIST | OBJECT | OBJECT_GROUP | HOSTNAME | ROUTE | NAT | FAILOVER | CRYPTO | ACCESS_GROUP | DNS | FTP | TIME_RANGE | CLASS_MAP | POLICY_MAP | SERVICE_POLICY | TUNNEL_GROUP)
+   ~(NEWLINE | INTERFACE | ACCESS_LIST | OBJECT | OBJECT_GROUP | HOSTNAME | ROUTE | NAT | FAILOVER | CRYPTO | ACCESS_GROUP | ROUTER | TUNNEL_GROUP | CLASS_MAP | POLICY_MAP | SERVICE_POLICY)
    ~NEWLINE* NEWLINE
 ;
 
 unrecognized_stanza
 :
-   unrecognized_line
+   ~NEWLINE* NEWLINE
 ;
