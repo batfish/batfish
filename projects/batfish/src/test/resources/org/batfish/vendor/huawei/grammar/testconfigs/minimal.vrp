@@ -1,0 +1,18 @@
+# Minimal Huawei test configuration
+sysname Router1
+
+interface GigabitEthernet0/0/0
+ description Uplink to core router
+ ip address 192.168.1.1 255.255.255.0
+return
+
+interface LoopBack0
+ description Router ID
+ ip address 1.1.1.1 255.255.255.255
+return
+
+vlan 10
+
+ip route-static 0.0.0.0 0.0.0.0 192.168.1.254
+
+return
