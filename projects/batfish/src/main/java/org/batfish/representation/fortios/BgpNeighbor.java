@@ -31,6 +31,15 @@ public class BgpNeighbor implements Serializable {
     return _updateSource;
   }
 
+  public @Nullable Boolean getBfd() {
+    return _bfd;
+  }
+
+  /** Effective BFD setting: {@code true} if BFD is enabled. */
+  public boolean getBfdEffective() {
+    return Boolean.TRUE.equals(_bfd);
+  }
+
   public void setRemoteAs(Long remoteAs) {
     _remoteAs = remoteAs;
   }
@@ -47,9 +56,14 @@ public class BgpNeighbor implements Serializable {
     _updateSource = updateSource;
   }
 
+  public void setBfd(Boolean bfd) {
+    _bfd = bfd;
+  }
+
   private final @Nonnull Ip _ip;
   private @Nullable Long _remoteAs;
   private @Nullable String _routeMapIn;
   private @Nullable String _routeMapOut;
   private @Nullable String _updateSource;
+  private @Nullable Boolean _bfd;
 }

@@ -1,0 +1,57 @@
+config system global
+    set hostname "prefix_list_edge_cases"
+end
+config router prefix-list
+    edit "pl_valid"
+        config rule
+            edit 1
+                set prefix 10.0.0.0/8
+                set ge 8
+                set le 32
+            next
+        end
+    next
+    edit "pl_ge_gt_le"
+        config rule
+            edit 1
+                set prefix 192.168.0.0/16
+                set ge 24
+                set le 16
+            next
+        end
+    next
+    edit "pl_ge_zero"
+        config rule
+            edit 1
+                set prefix 172.16.0.0/16
+                set ge 0
+            next
+        end
+    next
+    edit "pl_le_max"
+        config rule
+            edit 1
+                set prefix 10.0.0.0/8
+                set le 32
+            next
+        end
+    next
+    edit "pl_only_ge"
+        config rule
+            edit 1
+                set prefix 192.168.0.0/16
+                set ge 20
+            next
+        end
+    next
+    edit "pl_only_le"
+        config rule
+            edit 1
+                set prefix 10.0.0.0/8
+                set le 24
+            next
+        end
+    next
+    edit "pl_empty"
+    next
+end
