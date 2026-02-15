@@ -238,6 +238,11 @@ public class TestrigText {
       return this;
     }
 
+    public @Nonnull Builder setExternalBgpAnnouncementsBytes(byte[] externalBgpAnnouncementsBytes) {
+      _externalBgpAnnouncementsBytes = externalBgpAnnouncementsBytes;
+      return this;
+    }
+
     public @Nonnull Builder setExternalBgpAnnouncements(String testrigResourcePrefix) {
       _externalBgpAnnouncementsBytes =
           readTestrigResources(
@@ -272,10 +277,23 @@ public class TestrigText {
     checkArgument(snapshotDir.toFile().exists(), "%s does not exist.", dir);
     checkArgument(snapshotDir.toFile().isDirectory(), "%s is not a directory.", dir);
 
-    // layer 1 topology
+    // layer 1 topology (check batfish/ subdirectory first, then root)
     Path l1TopologyPath = snapshotDir.resolve("batfish").resolve("layer1_topology.json");
+    if (!l1TopologyPath.toFile().exists()) {
+      l1TopologyPath = snapshotDir.resolve("layer1_topology.json");
+    }
     if (l1TopologyPath.toFile().exists()) {
       builder.setLayer1TopologyBytes(Files.readAllBytes(l1TopologyPath));
+    }
+
+    // external BGP announcements (check batfish/ subdirectory first, then root)
+    Path externalBgpAnnouncementsPath =
+        snapshotDir.resolve("batfish").resolve("external_bgp_announcements.json");
+    if (!externalBgpAnnouncementsPath.toFile().exists()) {
+      externalBgpAnnouncementsPath = snapshotDir.resolve("external_bgp_announcements.json");
+    }
+    if (externalBgpAnnouncementsPath.toFile().exists()) {
+      builder.setExternalBgpAnnouncementsBytes(Files.readAllBytes(externalBgpAnnouncementsPath));
     }
 
     // isp config
