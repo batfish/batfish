@@ -547,4 +547,45 @@ public class HuaweiGrammarTest {
 
     assertThat(vlan.getId(), equalTo(100));
   }
+
+  @Test
+  public void testStaticRouteParsing() {
+    String config =
+        "sysname StaticRouter\n"
+            + "\n"
+            + "ip route-static 0.0.0.0 0.0.0.0 192.168.1.1\n"
+            + "ip route-static 10.0.0.0 255.0.0.0 192.168.1.2\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+
+    assertThat(huaweiConfig.getStaticRoutes().size(), equalTo(2));
+    assertThat(huaweiConfig.getStaticRoutes().get(0).getNetwork(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(huaweiConfig.getStaticRoutes().get(0).getMask(), equalTo(Ip.parse("0.0.0.0")));
+    assertThat(
+        huaweiConfig.getStaticRoutes().get(0).getNextHop(), equalTo(Ip.parse("192.168.1.1")));
+  }
+
+  @Test
+  public void testStaticRouteConversion() throws IOException {
+    String config =
+        "sysname StaticViRouter\n"
+            + "\n"
+            + "interface GigabitEthernet0/0/0\n"
+            + " ip address 192.168.1.10 255.255.255.0\n"
+            + "return\n"
+            + "\n"
+            + "ip route-static 0.0.0.0 0.0.0.0 192.168.1.1\n"
+            + "return\n";
+
+    HuaweiConfiguration huaweiConfig = parseVendorConfig(config);
+    java.util.List<Configuration> configs = huaweiConfig.toVendorIndependentConfigurations();
+    Configuration c = configs.get(0);
+
+    // Check static route was converted
+    assertThat(c.getDefaultVrf().getStaticRoutes().size(), equalTo(1));
+    org.batfish.datamodel.StaticRoute staticRoute = c.getDefaultVrf().getStaticRoutes().first();
+    assertThat(staticRoute.getNetwork(), equalTo(org.batfish.datamodel.Prefix.parse("0.0.0.0/0")));
+    assertThat(staticRoute.getNextHopIp(), equalTo(Ip.parse("192.168.1.1")));
+  }
 }

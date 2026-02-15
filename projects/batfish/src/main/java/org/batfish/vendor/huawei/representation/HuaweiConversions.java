@@ -4,6 +4,7 @@ import static org.batfish.datamodel.bgp.LocalOriginationTypeTieBreaker.NO_PREFER
 import static org.batfish.datamodel.bgp.NextHopIpTieBreaker.LOWEST_NEXT_HOP_IP;
 
 import com.google.common.collect.ImmutableSortedMap;
+import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 import org.batfish.datamodel.BgpActivePeerConfig;
@@ -11,6 +12,8 @@ import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.InterfaceType;
 import org.batfish.datamodel.Ip;
 import org.batfish.datamodel.LongSpace;
+import org.batfish.datamodel.Prefix;
+import org.batfish.datamodel.StaticRoute;
 import org.batfish.datamodel.Vrf;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
 
@@ -148,5 +151,18 @@ public final class HuaweiConversions {
       }
     }
     return lowest;
+  }
+
+  /** Convert Huawei static routes to vendor-independent static routes. */
+  public static void convertStaticRoutes(Vrf vrf, List<HuaweiStaticRoute> staticRoutes) {
+    for (HuaweiStaticRoute route : staticRoutes) {
+      Prefix prefix = Prefix.create(route.getNetwork(), route.getMask());
+      StaticRoute.Builder staticRoute =
+          StaticRoute.builder()
+              .setNetwork(prefix)
+              .setNextHopIp(route.getNextHop())
+              .setAdministrativeCost(DEFAULT_STATIC_ROUTE_ADMIN_COST);
+      vrf.getStaticRoutes().add(staticRoute.build());
+    }
   }
 }

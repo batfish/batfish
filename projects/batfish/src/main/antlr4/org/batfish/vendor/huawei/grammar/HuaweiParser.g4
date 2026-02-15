@@ -43,7 +43,7 @@ interface_statement
 
 is_description: DESCRIPTION (~NEWLINE)+ NEWLINE;
 
-is_ip_address: IP ADDRESS addr=IP_ADDRESS mask=SUBNET_MASK NEWLINE;
+is_ip_address: IP ADDRESS addr=IP_ADDRESS mask=IP_ADDRESS NEWLINE;
 
 is_shutdown: SHUTDOWN NEWLINE;
 
@@ -62,7 +62,7 @@ si
 
 si_vpn_instance: VPN_INSTANCE name=word NEWLINE vpn_statement* s_return;
 
-si_route_static: ROUTE_STATIC dest=IP_ADDRESS mask=SUBNET_MASK nexthop=IP_ADDRESS NEWLINE;
+si_route_static: ROUTE_STATIC dest=IP_ADDRESS mask=IP_ADDRESS nexthop=IP_ADDRESS NEWLINE;
 
 si_null: null_rest_of_line;
 
@@ -80,7 +80,7 @@ bs_router_id: ROUTER_ID id=IP_ADDRESS NEWLINE;
 
 bs_peer: PEER ip=IP_ADDRESS (AS_NUMBER asn=dec)? NEWLINE;
 
-bs_network: NETWORK ip=IP_ADDRESS mask=SUBNET_MASK NEWLINE;
+bs_network: NETWORK ip=IP_ADDRESS mask=IP_ADDRESS NEWLINE;
 
 bs_null: ~(NEWLINE | RETURN) ~NEWLINE* NEWLINE;  // Don't match return statements
 

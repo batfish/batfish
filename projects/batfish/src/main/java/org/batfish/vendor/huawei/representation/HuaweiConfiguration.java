@@ -4,6 +4,7 @@ import static org.batfish.datamodel.Configuration.DEFAULT_VRF_NAME;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import javax.annotation.Nonnull;
@@ -23,6 +24,7 @@ public class HuaweiConfiguration extends VendorConfiguration {
   private final Map<Integer, HuaweiVlan> _vlans;
   private final Map<String, HuaweiAcl> _acls;
   private final Map<String, HuaweiVrf> _vrfs;
+  private final List<HuaweiStaticRoute> _staticRoutes;
   private HuaweiBgpProcess _bgpProcess;
   private HuaweiOspfProcess _ospfProcess;
 
@@ -31,6 +33,7 @@ public class HuaweiConfiguration extends VendorConfiguration {
     _vlans = new java.util.HashMap<>();
     _acls = new java.util.HashMap<>();
     _vrfs = new java.util.HashMap<>();
+    _staticRoutes = new ArrayList<>();
   }
 
   @Override
@@ -71,6 +74,10 @@ public class HuaweiConfiguration extends VendorConfiguration {
 
   public Map<String, HuaweiVrf> getVrfs() {
     return _vrfs;
+  }
+
+  public List<HuaweiStaticRoute> getStaticRoutes() {
+    return _staticRoutes;
   }
 
   public HuaweiBgpProcess getBgpProcess() {
@@ -118,6 +125,9 @@ public class HuaweiConfiguration extends VendorConfiguration {
           HuaweiConversions.convertBgpProcess(c, defaultVrf, _bgpProcess, _interfaces);
       defaultVrf.setBgpProcess(viBgpProcess);
     }
+
+    // Convert static routes
+    HuaweiConversions.convertStaticRoutes(defaultVrf, _staticRoutes);
 
     // TODO: Convert OSPF when needed (requires more complex setup)
 

@@ -35,6 +35,7 @@ import org.batfish.vendor.huawei.representation.HuaweiConfiguration;
 import org.batfish.vendor.huawei.representation.HuaweiInterface;
 import org.batfish.vendor.huawei.representation.HuaweiOspfArea;
 import org.batfish.vendor.huawei.representation.HuaweiOspfProcess;
+import org.batfish.vendor.huawei.representation.HuaweiStaticRoute;
 import org.batfish.vendor.huawei.representation.HuaweiVlan;
 import org.batfish.vendor.huawei.representation.HuaweiVrf;
 
@@ -133,8 +134,10 @@ public class HuaweiControlPlaneExtractor extends HuaweiParserBaseListener
   // Static routes
   @Override
   public void exitSi_route_static(Si_route_staticContext ctx) {
-    // TODO: Implement static route extraction
-    _warnings.unimplemented("Static route parsing");
+    Ip network = Ip.parse(ctx.dest.getText());
+    Ip mask = Ip.parse(ctx.mask.getText());
+    Ip nextHop = Ip.parse(ctx.nexthop.getText());
+    _configuration.getStaticRoutes().add(new HuaweiStaticRoute(network, mask, nextHop));
   }
 
   // BGP configuration
