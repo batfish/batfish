@@ -72,7 +72,9 @@ public class FtdGrammarBenchmarkTest extends FtdGrammarTest {
     }
 
     private double percentChange(long oldVal, long newVal) {
-      if (oldVal == 0) return 0;
+      if (oldVal == 0) {
+        return 0;
+      }
       return ((double) (newVal - oldVal) / oldVal) * 100;
     }
   }
@@ -172,10 +174,6 @@ public class FtdGrammarBenchmarkTest extends FtdGrammarTest {
 
     for (int i = 0; i < _measureIterations; i++) {
       try {
-        // Force GC before measurement
-        System.gc();
-        Thread.sleep(10);
-
         long startTime = System.nanoTime();
         FtdConfiguration ftdConfig = parseVendorConfig(config);
         long endTime = System.nanoTime();
@@ -474,6 +472,8 @@ public class FtdGrammarBenchmarkTest extends FtdGrammarTest {
         case 9:
           sb.append("policy-map PM-").append(i).append("\n");
           sb.append(" class CM-").append(i).append("\n");
+          break;
+        default:
           break;
       }
     }
