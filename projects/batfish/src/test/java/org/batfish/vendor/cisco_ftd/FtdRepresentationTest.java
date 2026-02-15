@@ -310,25 +310,6 @@ public class FtdRepresentationTest extends FtdGrammarTest {
   }
 
   @Test
-  public void testFtdOspfAreaConstructorAndGetters() {
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
-
-    assertThat(area.getAreaId(), equalTo(0L));
-  }
-
-  @Test
-  public void testFtdOspfAreaDifferentAreaIds() {
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area0 =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area1 =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(1L);
-
-    assertThat(area0.getAreaId(), equalTo(0L));
-    assertThat(area1.getAreaId(), equalTo(1L));
-  }
-
-  @Test
   public void testFtdRouteWithDifferentMetrics() {
     org.batfish.vendor.cisco_ftd.representation.FtdRoute route1 =
         new org.batfish.vendor.cisco_ftd.representation.FtdRoute(
@@ -363,7 +344,6 @@ public class FtdRepresentationTest extends FtdGrammarTest {
     assertThat(process.getRouterId(), nullValue());
     assertThat(process.getNetworks(), hasSize(0));
     assertThat(process.getPassiveInterfaces(), hasSize(0));
-    assertThat(process.getAreas().entrySet(), hasSize(0));
     assertThat(process.getPassiveInterfaceDefault(), equalTo(false));
   }
 
@@ -420,33 +400,6 @@ public class FtdRepresentationTest extends FtdGrammarTest {
     assertThat(process.getPassiveInterfaces(), hasSize(2));
     assertThat(process.getPassiveInterfaces().contains("outside"), equalTo(true));
     assertThat(process.getPassiveInterfaces().contains("inside"), equalTo(true));
-  }
-
-  @Test
-  public void testFtdOspfProcessWithArea() {
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
-
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfArea area =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L);
-
-    process.getAreas().put(0L, area);
-
-    assertThat(process.getAreas(), hasKey(0L));
-    assertThat(process.getAreas().get(0L).getAreaId(), equalTo(0L));
-  }
-
-  @Test
-  public void testFtdOspfProcessMultipleAreas() {
-    org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess process =
-        new org.batfish.vendor.cisco_ftd.representation.FtdOspfProcess("100");
-
-    process.getAreas().put(0L, new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(0L));
-    process.getAreas().put(1L, new org.batfish.vendor.cisco_ftd.representation.FtdOspfArea(1L));
-
-    assertThat(process.getAreas().entrySet(), hasSize(2));
-    assertThat(process.getAreas(), hasKey(0L));
-    assertThat(process.getAreas(), hasKey(1L));
   }
 
   // ==================== FtdPolicyMap Tests ====================
