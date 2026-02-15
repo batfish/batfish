@@ -54,6 +54,10 @@ public final class VendorConfigurationFormatDetector {
       Pattern.compile("(?m)^configuration hostname .*$");
   private static final Pattern MSS_PATTERN = Pattern.compile("(?m)^set system name");
 
+  // Huawei VRP patterns
+  private static final Pattern HUAWEI_SYSNAME_PATTERN = Pattern.compile("(?m)^sysname .+$");
+  private static final Pattern HUAWEI_RETURN_PATTERN = Pattern.compile("(?m)^return$");
+
   private static final Pattern RANCID_BASE_PATTERN =
       Pattern.compile("(?m)^[!#]RANCID-CONTENT-TYPE: ([a-zA-Z0-9_-]+)");
 
@@ -314,6 +318,14 @@ public final class VendorConfigurationFormatDetector {
     return null;
   }
 
+  private @Nullable ConfigurationFormat checkHuawei() {
+    // Huawei VRP configs have "sysname" command and typically use "return" to exit config blocks
+    if (fileTextMatches(HUAWEI_SYSNAME_PATTERN) && fileTextMatches(HUAWEI_RETURN_PATTERN)) {
+      return ConfigurationFormat.HUAWEI;
+    }
+    return null;
+  }
+
   private @Nullable ConfigurationFormat checkPaloAlto(boolean preMatch) {
     if (fileTextMatches(FLAT_PALO_ALTO_PATTERN)) {
       return ConfigurationFormat.PALO_ALTO;
@@ -512,6 +524,7 @@ public final class VendorConfigurationFormatDetector {
     format = (format == null) ? checkAlcatelAos() : format;
     format = (format == null) ? checkMss() : format;
     format = (format == null) ? checkArubaOS() : format;
+    format = (format == null) ? checkHuawei() : format;
     format = (format == null) ? checkCisco() : format;
     format = (format == null) ? checkIpTables() : format;
     return (format == null) ? ConfigurationFormat.UNKNOWN : format;
