@@ -1,0 +1,55 @@
+config system global
+    set hostname fg-ignored
+    config split-port-mode
+        edit "port31"
+        next
+    end
+    set switch-controller enable
+    set timezone "Asia/Bangkok"
+end
+config system npu
+    set dedicated-management-cpu enable
+    config np-queues
+        config ethernet-type
+            edit "ARP"
+                set type 806
+                set queue 9
+            next
+        end
+    end
+end
+config system physical-switch
+    edit "psw1"
+        set member "port1"
+    next
+end
+config system custom-language
+    set name "english"
+end
+config system admin
+    edit "admin"
+        set accprofile "super_admin"
+    next
+end
+config system sso-admin
+    edit "sso1"
+        set accprofile "super_admin"
+    next
+end
+config system ha
+    set mode a-p
+end
+config system storage
+    set status enable
+end
+config system dns
+    set primary 1.1.1.1
+end
+config system netflow
+    set vdom "root"
+end
+config firewall address
+    edit "addr1"
+        set subnet 10.0.0.0 255.255.255.0
+    next
+end

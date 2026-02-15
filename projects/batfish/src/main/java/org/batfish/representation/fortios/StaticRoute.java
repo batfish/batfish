@@ -21,12 +21,14 @@ public class StaticRoute implements Serializable {
   private @Nullable Boolean _sdwanEnabled;
   private final @Nonnull String _seqNum;
   private @Nullable Status _status;
+  private @Nullable Boolean _bfd;
 
   public static final int DEFAULT_DISTANCE = 10; // for non-SD-WAN routes only
   public static final int DEFAULT_DISTANCE_SDWAN = 1;
   public static final Prefix DEFAULT_DST = Prefix.ZERO;
   public static final boolean DEFAULT_SDWAN_ENABLED = false;
   public static final Status DEFAULT_STATUS = Status.ENABLE;
+  public static final boolean DEFAULT_BFD = false;
 
   public StaticRoute(String seqNum) {
     _seqNum = seqNum;
@@ -79,6 +81,15 @@ public class StaticRoute implements Serializable {
     return firstNonNull(_status, DEFAULT_STATUS) == Status.ENABLE;
   }
 
+  public @Nullable Boolean getBfd() {
+    return _bfd;
+  }
+
+  /** Effective BFD setting: {@code true} if BFD is enabled. */
+  public boolean getBfdEffective() {
+    return firstNonNull(_bfd, DEFAULT_BFD);
+  }
+
   public void setDevice(String device) {
     _device = device;
   }
@@ -101,5 +112,9 @@ public class StaticRoute implements Serializable {
 
   public void setStatus(Status status) {
     _status = status;
+  }
+
+  public void setBfd(Boolean bfd) {
+    _bfd = bfd;
   }
 }

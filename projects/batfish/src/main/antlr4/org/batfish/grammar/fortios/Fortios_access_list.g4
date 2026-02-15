@@ -6,6 +6,51 @@ options {
 
 cr_access_list: ACCESS_LIST newline cral_edit*;
 
+cr_prefix_list: PREFIX_LIST newline crpl_edit*;
+
+crpl_edit: EDIT prefix_list_name newline crple* NEXT newline;
+
+crple: crple_set | crple_config;
+
+crple_set: SET crple_set_comments;
+
+crple_set_comments: COMMENTS comment = str newline;
+
+crple_config: CONFIG crplec_rule;
+
+crplec_rule: RULE newline crplecr_edit* END newline;
+
+crplecr_edit: EDIT prefix_list_rule_number newline crplecre* NEXT newline;
+
+crplecre: crplecre_set | crplecre_unset;
+
+crplecre_set
+:
+    SET (
+        crplecre_set_prefix
+        | crplecre_set_ge
+        | crplecre_set_le
+    )
+;
+
+crplecre_unset: UNSET (crplecre_unset_ge | crplecre_unset_le);
+
+crplecre_set_prefix: PREFIX ip_address_with_mask_or_prefix newline;
+
+crplecre_set_ge: GE ge = uint8 newline;
+
+crplecre_set_le: LE le = uint8 newline;
+
+crplecre_unset_ge: GE newline;
+
+crplecre_unset_le: LE newline;
+
+// 1-63 characters
+prefix_list_name: str;
+
+// 0-4294967295
+prefix_list_rule_number: str;
+
 cral_edit: EDIT access_list_name newline crale* NEXT newline;
 
 crale: crale_set | crale_config;

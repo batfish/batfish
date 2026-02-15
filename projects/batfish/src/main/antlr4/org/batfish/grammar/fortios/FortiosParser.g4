@@ -9,12 +9,15 @@ import
   Fortios_firewall,
   Fortios_interface,
   Fortios_internet_service_name,
+  Fortios_ippool,
+  Fortios_isis,
   Fortios_policy,
   Fortios_route_map,
   Fortios_router,
   Fortios_service,
   Fortios_static,
   Fortios_system,
+  Fortios_vpn,
   Fortios_zone;
 
 options {
@@ -32,6 +35,7 @@ s_config
         c_system
         | c_firewall
         | c_router
+        | c_vpn
         | IGNORED_CONFIG_BLOCK
-    ) END NEWLINE
+    ) END NEWLINE? // Optional trailing NEWLINE for flexibility
 ;

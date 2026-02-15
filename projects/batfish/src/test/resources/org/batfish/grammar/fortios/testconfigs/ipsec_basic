@@ -1,0 +1,38 @@
+config system global
+    set hostname "ipsec_basic"
+end
+config system interface
+    edit "wan1"
+        set vdom "root"
+        set ip 203.0.113.1 255.255.255.0
+        set type physical
+    next
+end
+config firewall address
+    edit "local_subnet"
+        set subnet 192.168.1.0 255.255.255.0
+    next
+    edit "remote_subnet"
+        set subnet 192.168.2.0 255.255.255.0
+    next
+end
+config vpn ipsec
+    config phase1
+        edit "vpn-tunnel-1"
+            set interface "wan1"
+            set remote-gw "198.51.100.1"
+            set proposal aes256-sha256
+            set psksecret "secret123"
+            set dhgrp 14
+            set keylife 28800
+        next
+    end
+    config phase2
+        edit "vpn-tunnel-1-p2"
+            set phase1name "vpn-tunnel-1"
+            set proposal aes256-sha256
+            set src-name "local_subnet"
+            set dst-name "remote_subnet"
+        next
+    end
+end
