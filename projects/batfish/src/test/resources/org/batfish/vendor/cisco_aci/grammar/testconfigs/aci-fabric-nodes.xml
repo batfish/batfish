@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fabricInst>
+    <fabricProtPol>
+      <fabricExplicitGEp>
+        <fabricNodePEp id="101" name="spine1" role="spine" podId="1"/>
+        <fabricNodePEp id="102" name="spine2" role="spine" podId="1"/>
+        <fabricNodePEp id="201" name="leaf1" role="leaf" podId="1"/>
+        <fabricNodePEp id="202" name="leaf2" role="leaf" podId="1"/>
+        <fabricNodePEp id="203" name="leaf3" role="leaf" podId="2"/>
+      </fabricExplicitGEp>
+    </fabricProtPol>
+  </fabricInst>
+</polUni>

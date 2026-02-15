@@ -1,0 +1,40 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "First Tenant",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": []
+        }
+      },
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant2",
+            "descr": "Second Tenant",
+            "dn": "uni/tn-tenant2"
+          },
+          "children": []
+        }
+      },
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant3",
+            "descr": "Third Tenant",
+            "dn": "uni/tn-tenant3"
+          },
+          "children": []
+        }
+      }
+    ]
+  }
+}

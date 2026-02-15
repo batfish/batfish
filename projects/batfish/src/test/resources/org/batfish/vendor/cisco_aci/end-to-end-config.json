@@ -1,0 +1,579 @@
+{
+  "polUni": {
+    "attributes": {
+      "annotation": "",
+      "dn": "uni",
+      "name": "aci-fabric",
+      "nameAlias": "",
+      "userdom": "all"
+    },
+    "children": [
+      {
+        "fabricInst": {
+          "attributes": {
+            "dn": "uni/fabric",
+            "name": "fabric"
+          },
+          "children": [
+            {
+              "fabricProtPol": {
+                "attributes": {
+                  "dn": "uni/fabric/fabricprotPol"
+                },
+                "children": [
+                  {
+                    "fabricExplicitGEp": {
+                      "attributes": {
+                        "dn": "uni/fabric/fabricprotPol/expgep-1"
+                      },
+                      "children": [
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "101",
+                              "name": "spine-1",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-101",
+                              "annotation": "",
+                              "nameAlias": ""
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "102",
+                              "name": "spine-2",
+                              "role": "spine",
+                              "podId": "1",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-102",
+                              "annotation": "",
+                              "nameAlias": ""
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "201",
+                              "name": "leaf-1",
+                              "role": "leaf",
+                              "podId": "2",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-201",
+                              "annotation": "",
+                              "nameAlias": ""
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "202",
+                              "name": "leaf-2",
+                              "role": "leaf",
+                              "podId": "2",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-202",
+                              "annotation": "",
+                              "nameAlias": ""
+                            }
+                          }
+                        },
+                        {
+                          "fabricNodePEp": {
+                            "attributes": {
+                              "id": "203",
+                              "name": "leaf-3",
+                              "role": "leaf",
+                              "podId": "2",
+                              "dn": "uni/fabric/fabricprotPol/expgep-1/node-203",
+                              "annotation": "",
+                              "nameAlias": ""
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "common",
+            "descr": "Common tenant for shared policies",
+            "dn": "uni/tn-common"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "inb",
+                  "descr": "In-band management VRF",
+                  "dn": "uni/tn-common/ctx-inb"
+                }
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "default",
+                  "descr": "Default contract for common",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-common/brc-default"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "any-any-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "any-any",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "demo",
+            "descr": "Demo application tenant",
+            "dn": "uni/tn-demo"
+          },
+          "children": [
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf1",
+                  "descr": "Production VRF",
+                  "dn": "uni/tn-demo/ctx-vrf1"
+                }
+              }
+            },
+            {
+              "fvCtx": {
+                "attributes": {
+                  "name": "vrf2",
+                  "descr": "Development VRF",
+                  "dn": "uni/tn-demo/ctx-vrf2"
+                }
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd-web",
+                  "descr": "Web Bridge Domain",
+                  "dn": "uni/tn-demo/BD-bd-web"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.1.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd-app",
+                  "descr": "App Bridge Domain",
+                  "dn": "uni/tn-demo/BD-bd-app"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.2.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd-db",
+                  "descr": "DB Bridge Domain",
+                  "dn": "uni/tn-demo/BD-bd-db"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf1"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.0.3.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvBD": {
+                "attributes": {
+                  "name": "bd-dev",
+                  "descr": "Dev Bridge Domain",
+                  "dn": "uni/tn-demo/BD-bd-dev"
+                },
+                "children": [
+                  {
+                    "fvRsCtx": {
+                      "attributes": {
+                        "tnFvCtxName": "vrf2"
+                      }
+                    }
+                  },
+                  {
+                    "fvSubnet": {
+                      "attributes": {
+                        "ip": "10.1.1.1/24"
+                      }
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvAp": {
+                "attributes": {
+                  "name": "ap-web",
+                  "descr": "Web Application Profile",
+                  "dn": "uni/tn-demo/ap-ap-web"
+                },
+                "children": [
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg-web-frontend",
+                        "descr": "Frontend EPG",
+                        "dn": "uni/tn-demo/ap-ap-web/epg-epg-web-frontend"
+                      },
+                      "children": [
+                        {
+                          "fvRsBd": {
+                            "attributes": {
+                              "tnFvBDName": "bd-web"
+                            }
+                          }
+                        },
+                        {
+                          "fvRsProv": {
+                            "attributes": {
+                              "tnVzBrCPName": "web-to-app"
+                            }
+                          }
+                        },
+                        {
+                          "fvRsProv": {
+                            "attributes": {
+                              "tnVzBrCPName": "web-to-db"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg-web-backend",
+                        "descr": "Backend EPG",
+                        "dn": "uni/tn-demo/ap-ap-web/epg-epg-web-backend"
+                      },
+                      "children": [
+                        {
+                          "fvRsBd": {
+                            "attributes": {
+                              "tnFvBDName": "bd-app"
+                            }
+                          }
+                        },
+                        {
+                          "fvRsIntraEpg": {
+                            "attributes": {
+                              "tnVzBrCPName": "app-to-web"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvAp": {
+                "attributes": {
+                  "name": "ap-db",
+                  "descr": "Database Application Profile",
+                  "dn": "uni/tn-demo/ap-ap-db"
+                },
+                "children": [
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg-db-primary",
+                        "descr": "Primary DB EPG",
+                        "dn": "uni/tn-demo/ap-ap-db/epg-epg-db-primary"
+                      },
+                      "children": [
+                        {
+                          "fvRsBd": {
+                            "attributes": {
+                              "tnFvBDName": "bd-db"
+                            }
+                          }
+                        },
+                        {
+                          "fvRsProv": {
+                            "attributes": {
+                              "tnVzBrCPName": "db-to-app"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  },
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg-db-replica",
+                        "descr": "Replica DB EPG",
+                        "dn": "uni/tn-demo/ap-ap-db/epg-epg-db-replica"
+                      },
+                      "children": [
+                        {
+                          "fvRsBd": {
+                            "attributes": {
+                              "tnFvBDName": "bd-db"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "fvAp": {
+                "attributes": {
+                  "name": "ap-dev",
+                  "descr": "Dev Application Profile",
+                  "dn": "uni/tn-demo/ap-ap-dev"
+                },
+                "children": [
+                  {
+                    "fvAEPg": {
+                      "attributes": {
+                        "name": "epg-dev",
+                        "descr": "Development EPG",
+                        "dn": "uni/tn-demo/ap-ap-dev/epg-epg-dev"
+                      },
+                      "children": [
+                        {
+                          "fvRsBd": {
+                            "attributes": {
+                              "tnFvBDName": "bd-dev"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              },
+              "vzBrCP": {
+                "attributes": {
+                  "name": "web-to-app",
+                  "descr": "Web to App contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-demo/brc-web-to-app"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "http-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "http",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "web-to-db",
+                  "descr": "Web to DB contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-demo/brc-web-to-db"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "sql-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "sql",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "app-to-web",
+                  "descr": "App to Web contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-demo/brc-app-to-web"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "http-response-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "http-response",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            },
+            {
+              "vzBrCP": {
+                "attributes": {
+                  "name": "db-to-app",
+                  "descr": "DB to App contract",
+                  "scope": "context",
+                  "prio": "unspecified",
+                  "dn": "uni/tn-demo/brc-db-to-app"
+                },
+                "children": [
+                  {
+                    "vzSubj": {
+                      "attributes": {
+                        "name": "sql-response-subject",
+                        "consMatchT": "AtleastOne",
+                        "provMatchT": "AtleastOne"
+                      },
+                      "children": [
+                        {
+                          "vzRsSubjFiltAtt": {
+                            "attributes": {
+                              "action": "permit",
+                              "tnVzFilterName": "sql-response",
+                              "priorityOverride": "default"
+                            }
+                          }
+                        }
+                      ]
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "mgmt",
+            "descr": "Management tenant",
+            "dn": "uni/tn-mgmt"
+          },
+          "children": []
+        }
+      }
+    ]
+  }
+}

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1" descr="Complex Contract Test Tenant">
+    <fvCtx name="vrf1" descr="Test VRF"/>
+    <fvBD name="bd1" descr="Test Bridge Domain">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+      <fvSubnet ip="10.0.0.0/24"/>
+    </fvBD>
+    <fvAEPg name="web_epg" descr="Web EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <fvAEPg name="app_epg" descr="App EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <fvAEPg name="db_epg" descr="DB EPG">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <vzBrCP name="multi_subject_contract" descr="Contract with Multiple Subjects">
+      <vzSubj name="http" descr="HTTP Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_http"/>
+      </vzSubj>
+      <vzSubj name="https" descr="HTTPS Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_https"/>
+      </vzSubj>
+      <vzSubj name="ssh" descr="SSH Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_ssh"/>
+      </vzSubj>
+      <vzSubj name="icmp" descr="ICMP Subject">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_icmp"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzFilter name="allow_http" descr="HTTP Filter">
+      <vzEntry name="allow_http">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="80"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="allow_https" descr="HTTPS Filter">
+      <vzEntry name="allow_https">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="443"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="allow_ssh" descr="SSH Filter">
+      <vzEntry name="allow_ssh">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="22"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="allow_icmp" descr="ICMP Filter">
+      <vzEntry name="allow_icmp">
+        <vzMatchIcmpProt/>
+      </vzEntry>
+    </vzFilter>
+    <vzRsProtProv ip="web_epg" tnVzBrCPName="multi_subject_contract"/>
+    <vzRsProtCons ip="app_epg" tnVzBrCPName="multi_subject_contract"/>
+  </fvTenant>
+</polUni>

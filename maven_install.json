@@ -6,6 +6,7 @@
     "com.fasterxml.jackson.core:jackson-annotations": -921857167,
     "com.fasterxml.jackson.core:jackson-core": 1977162006,
     "com.fasterxml.jackson.core:jackson-databind": 1925127134,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": 788435040,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": -1023685858,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": -1899689209,
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": 598241176,
@@ -84,6 +85,8 @@
     "com.fasterxml.jackson.core:jackson-core:jar:sources": 1597076141,
     "com.fasterxml.jackson.core:jackson-databind": -1900032447,
     "com.fasterxml.jackson.core:jackson-databind:jar:sources": 572042403,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": -1899961543,
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:sources": 76957022,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": -272440709,
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources": 1325780484,
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": -1089570955,
@@ -96,6 +99,8 @@
     "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources": -1626348069,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations": -1678436642,
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": 1810676120,
+    "com.fasterxml.woodstox:woodstox-core": 1546377497,
+    "com.fasterxml.woodstox:woodstox-core:jar:sources": -754726802,
     "com.github.ben-manes.caffeine:caffeine": -111626221,
     "com.github.ben-manes.caffeine:caffeine:jar:sources": -594702079,
     "com.github.oowekyala.ooxml:nice-xml-messages": -1242718147,
@@ -211,6 +216,8 @@
     "org.checkerframework:checker-qual:jar:sources": -705637224,
     "org.codehaus.jettison:jettison": -342403950,
     "org.codehaus.jettison:jettison:jar:sources": 1360768140,
+    "org.codehaus.woodstox:stax2-api": 396231243,
+    "org.codehaus.woodstox:stax2-api:jar:sources": 553151588,
     "org.glassfish.grizzly:grizzly-framework": -880099071,
     "org.glassfish.grizzly:grizzly-framework:jar:sources": -1312844390,
     "org.glassfish.grizzly:grizzly-http": -1102587462,
@@ -326,6 +333,7 @@
     "com.fasterxml.jackson.core:jackson-annotations": "com.fasterxml.jackson.core:jackson-annotations:2.20",
     "com.fasterxml.jackson.core:jackson-core": "com.fasterxml.jackson.core:jackson-core:2.20.1",
     "com.fasterxml.jackson.core:jackson-databind": "com.fasterxml.jackson.core:jackson-databind:2.20.1",
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:2.20.1",
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:2.20.1",
     "com.fasterxml.jackson.datatype:jackson-datatype-guava": "com.fasterxml.jackson.datatype:jackson-datatype-guava:2.20.1",
     "com.fasterxml.jackson.datatype:jackson-datatype-jdk8": "com.fasterxml.jackson.datatype:jackson-datatype-jdk8:2.20.1",
@@ -373,6 +381,13 @@
       },
       "version": "2.20.1"
     },
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": {
+      "shasums": {
+        "jar": "190ad4eba35d89dba3517da279e0690681c4745174b94b09ea78f81ceae140f0",
+        "sources": "b4f24f275ab590f2bc20998fd237408d2a9a9955e50e8d0a9e9e6c4a4dc0172b"
+      },
+      "version": "2.20.1"
+    },
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": {
       "shasums": {
         "jar": "030f1d91f7df278e86e1ba3e129fb520871ac16ce53017c735f708823be970db",
@@ -414,6 +429,13 @@
         "sources": "2924aea4d1b742dc47176e413b6c4105a3919ed862b104add9792a09faa0f5dd"
       },
       "version": "2.20.1"
+    },
+    "com.fasterxml.woodstox:woodstox-core": {
+      "shasums": {
+        "jar": "02b9d022e9d47704ff8a7a859a0dbfd3b2882a8311eb7ff1e180f760ccda2712",
+        "sources": "b44337ff1579b6e9f042ef94b3510071c1327b2ec7d2e035a6cadf4de3af8431"
+      },
+      "version": "7.1.1"
     },
     "com.github.ben-manes.caffeine:caffeine": {
       "shasums": {
@@ -820,6 +842,13 @@
       },
       "version": "1.5.4"
     },
+    "org.codehaus.woodstox:stax2-api": {
+      "shasums": {
+        "jar": "a61c48d553efad78bc01fffc4ac528bebbae64cbaec170b2a5e39cf61eb51abe",
+        "sources": "d20d4c7af14adf8025f719f8e6255659495e4836256b5b1b816be30b5e76f1b7"
+      },
+      "version": "4.2.2"
+    },
     "org.glassfish.grizzly:grizzly-framework": {
       "shasums": {
         "jar": "3b47e048326a2326a484a51af32f946a9d244d46d6e4a1ed25bd3d49a9794c2a",
@@ -1201,6 +1230,13 @@
       "com.fasterxml.jackson.core:jackson-annotations",
       "com.fasterxml.jackson.core:jackson-core"
     ],
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": [
+      "com.fasterxml.jackson.core:jackson-annotations",
+      "com.fasterxml.jackson.core:jackson-core",
+      "com.fasterxml.jackson.core:jackson-databind",
+      "com.fasterxml.woodstox:woodstox-core",
+      "org.codehaus.woodstox:stax2-api"
+    ],
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": [
       "com.fasterxml.jackson.core:jackson-core",
       "com.fasterxml.jackson.core:jackson-databind",
@@ -1231,6 +1267,9 @@
       "com.fasterxml.jackson.core:jackson-databind",
       "jakarta.activation:jakarta.activation-api",
       "javax.xml.bind:jaxb-api"
+    ],
+    "com.fasterxml.woodstox:woodstox-core": [
+      "org.codehaus.woodstox:stax2-api"
     ],
     "com.github.ben-manes.caffeine:caffeine": [
       "com.google.errorprone:error_prone_annotations",
@@ -1559,6 +1598,14 @@
       "com.fasterxml.jackson.databind.util",
       "com.fasterxml.jackson.databind.util.internal"
     ],
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": [
+      "com.fasterxml.jackson.dataformat.xml",
+      "com.fasterxml.jackson.dataformat.xml.annotation",
+      "com.fasterxml.jackson.dataformat.xml.deser",
+      "com.fasterxml.jackson.dataformat.xml.jaxb",
+      "com.fasterxml.jackson.dataformat.xml.ser",
+      "com.fasterxml.jackson.dataformat.xml.util"
+    ],
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": [
       "com.fasterxml.jackson.dataformat.yaml",
       "com.fasterxml.jackson.dataformat.yaml.snakeyaml.error",
@@ -1597,6 +1644,85 @@
       "com.fasterxml.jackson.module.jaxb",
       "com.fasterxml.jackson.module.jaxb.deser",
       "com.fasterxml.jackson.module.jaxb.ser"
+    ],
+    "com.fasterxml.woodstox:woodstox-core": [
+      "com.ctc.wstx.api",
+      "com.ctc.wstx.cfg",
+      "com.ctc.wstx.dom",
+      "com.ctc.wstx.dtd",
+      "com.ctc.wstx.ent",
+      "com.ctc.wstx.evt",
+      "com.ctc.wstx.exc",
+      "com.ctc.wstx.io",
+      "com.ctc.wstx.msv",
+      "com.ctc.wstx.osgi",
+      "com.ctc.wstx.sax",
+      "com.ctc.wstx.shaded.msv.org_isorelax.catalog",
+      "com.ctc.wstx.shaded.msv.org_isorelax.dispatcher",
+      "com.ctc.wstx.shaded.msv.org_isorelax.dispatcher.impl",
+      "com.ctc.wstx.shaded.msv.org_isorelax.jaxp",
+      "com.ctc.wstx.shaded.msv.org_isorelax.verifier",
+      "com.ctc.wstx.shaded.msv.org_isorelax.verifier.impl",
+      "com.ctc.wstx.shaded.msv.org_jp_gr_xml.dom",
+      "com.ctc.wstx.shaded.msv.org_jp_gr_xml.sax",
+      "com.ctc.wstx.shaded.msv.org_jp_gr_xml.xml",
+      "com.ctc.wstx.shaded.msv.relaxng_datatype",
+      "com.ctc.wstx.shaded.msv.relaxng_datatype.helpers",
+      "com.ctc.wstx.shaded.msv.xsd_util",
+      "com.ctc.wstx.shaded.msv_core.datatype",
+      "com.ctc.wstx.shaded.msv_core.datatype.regexp",
+      "com.ctc.wstx.shaded.msv_core.datatype.xsd",
+      "com.ctc.wstx.shaded.msv_core.datatype.xsd.datetime",
+      "com.ctc.wstx.shaded.msv_core.datatype.xsd.ngimpl",
+      "com.ctc.wstx.shaded.msv_core.datatype.xsd.regex",
+      "com.ctc.wstx.shaded.msv_core.driver.textui",
+      "com.ctc.wstx.shaded.msv_core.grammar",
+      "com.ctc.wstx.shaded.msv_core.grammar.dtd",
+      "com.ctc.wstx.shaded.msv_core.grammar.relax",
+      "com.ctc.wstx.shaded.msv_core.grammar.relaxng",
+      "com.ctc.wstx.shaded.msv_core.grammar.relaxng.datatype",
+      "com.ctc.wstx.shaded.msv_core.grammar.trex",
+      "com.ctc.wstx.shaded.msv_core.grammar.trex.typed",
+      "com.ctc.wstx.shaded.msv_core.grammar.util",
+      "com.ctc.wstx.shaded.msv_core.grammar.xmlschema",
+      "com.ctc.wstx.shaded.msv_core.reader",
+      "com.ctc.wstx.shaded.msv_core.reader.datatype",
+      "com.ctc.wstx.shaded.msv_core.reader.datatype.xsd",
+      "com.ctc.wstx.shaded.msv_core.reader.dtd",
+      "com.ctc.wstx.shaded.msv_core.reader.relax",
+      "com.ctc.wstx.shaded.msv_core.reader.relax.core",
+      "com.ctc.wstx.shaded.msv_core.reader.relax.core.checker",
+      "com.ctc.wstx.shaded.msv_core.reader.trex",
+      "com.ctc.wstx.shaded.msv_core.reader.trex.classic",
+      "com.ctc.wstx.shaded.msv_core.reader.trex.ng",
+      "com.ctc.wstx.shaded.msv_core.reader.trex.ng.comp",
+      "com.ctc.wstx.shaded.msv_core.reader.trex.typed",
+      "com.ctc.wstx.shaded.msv_core.reader.util",
+      "com.ctc.wstx.shaded.msv_core.reader.xmlschema",
+      "com.ctc.wstx.shaded.msv_core.relaxns.grammar",
+      "com.ctc.wstx.shaded.msv_core.relaxns.grammar.relax",
+      "com.ctc.wstx.shaded.msv_core.relaxns.grammar.trex",
+      "com.ctc.wstx.shaded.msv_core.relaxns.reader",
+      "com.ctc.wstx.shaded.msv_core.relaxns.reader.relax",
+      "com.ctc.wstx.shaded.msv_core.relaxns.reader.trex",
+      "com.ctc.wstx.shaded.msv_core.relaxns.verifier",
+      "com.ctc.wstx.shaded.msv_core.scanner.dtd",
+      "com.ctc.wstx.shaded.msv_core.util",
+      "com.ctc.wstx.shaded.msv_core.util.xml",
+      "com.ctc.wstx.shaded.msv_core.verifier",
+      "com.ctc.wstx.shaded.msv_core.verifier.identity",
+      "com.ctc.wstx.shaded.msv_core.verifier.jarv",
+      "com.ctc.wstx.shaded.msv_core.verifier.jaxp",
+      "com.ctc.wstx.shaded.msv_core.verifier.psvi",
+      "com.ctc.wstx.shaded.msv_core.verifier.regexp",
+      "com.ctc.wstx.shaded.msv_core.verifier.regexp.xmlschema",
+      "com.ctc.wstx.shaded.msv_core.verifier.util",
+      "com.ctc.wstx.shaded.msv_core.writer",
+      "com.ctc.wstx.shaded.msv_core.writer.relaxng",
+      "com.ctc.wstx.sr",
+      "com.ctc.wstx.stax",
+      "com.ctc.wstx.sw",
+      "com.ctc.wstx.util"
     ],
     "com.github.ben-manes.caffeine:caffeine": [
       "com.github.benmanes.caffeine.cache",
@@ -2448,6 +2574,19 @@
       "org.codehaus.jettison.mapped",
       "org.codehaus.jettison.util"
     ],
+    "org.codehaus.woodstox:stax2-api": [
+      "org.codehaus.stax2",
+      "org.codehaus.stax2.evt",
+      "org.codehaus.stax2.io",
+      "org.codehaus.stax2.osgi",
+      "org.codehaus.stax2.ri",
+      "org.codehaus.stax2.ri.dom",
+      "org.codehaus.stax2.ri.evt",
+      "org.codehaus.stax2.ri.typed",
+      "org.codehaus.stax2.typed",
+      "org.codehaus.stax2.util",
+      "org.codehaus.stax2.validation"
+    ],
     "org.glassfish.grizzly:grizzly-framework": [
       "org.glassfish.grizzly",
       "org.glassfish.grizzly.asyncqueue",
@@ -3019,6 +3158,8 @@
       "com.fasterxml.jackson.core:jackson-core:jar:sources",
       "com.fasterxml.jackson.core:jackson-databind",
       "com.fasterxml.jackson.core:jackson-databind:jar:sources",
+      "com.fasterxml.jackson.dataformat:jackson-dataformat-xml",
+      "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:sources",
       "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml",
       "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml:jar:sources",
       "com.fasterxml.jackson.datatype:jackson-datatype-guava",
@@ -3031,6 +3172,8 @@
       "com.fasterxml.jackson.jaxrs:jackson-jaxrs-base:jar:sources",
       "com.fasterxml.jackson.module:jackson-module-jaxb-annotations",
       "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources",
+      "com.fasterxml.woodstox:woodstox-core",
+      "com.fasterxml.woodstox:woodstox-core:jar:sources",
       "com.github.ben-manes.caffeine:caffeine",
       "com.github.ben-manes.caffeine:caffeine:jar:sources",
       "com.github.oowekyala.ooxml:nice-xml-messages",
@@ -3146,6 +3289,8 @@
       "org.checkerframework:checker-qual:jar:sources",
       "org.codehaus.jettison:jettison",
       "org.codehaus.jettison:jettison:jar:sources",
+      "org.codehaus.woodstox:stax2-api",
+      "org.codehaus.woodstox:stax2-api:jar:sources",
       "org.glassfish.grizzly:grizzly-framework",
       "org.glassfish.grizzly:grizzly-framework:jar:sources",
       "org.glassfish.grizzly:grizzly-http",
@@ -3279,6 +3424,22 @@
         "com.fasterxml.jackson.databind.ObjectMapper"
       ]
     },
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.dataformat.xml.XmlFactory"
+      ],
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.dataformat.xml.XmlMapper"
+      ]
+    },
+    "com.fasterxml.jackson.dataformat:jackson-dataformat-xml:jar:sources": {
+      "com.fasterxml.jackson.core.JsonFactory": [
+        "com.fasterxml.jackson.dataformat.xml.XmlFactory"
+      ],
+      "com.fasterxml.jackson.core.ObjectCodec": [
+        "com.fasterxml.jackson.dataformat.xml.XmlMapper"
+      ]
+    },
     "com.fasterxml.jackson.dataformat:jackson-dataformat-yaml": {
       "com.fasterxml.jackson.core.JsonFactory": [
         "com.fasterxml.jackson.dataformat.yaml.YAMLFactory"
@@ -3333,6 +3494,59 @@
     "com.fasterxml.jackson.module:jackson-module-jaxb-annotations:jar:sources": {
       "com.fasterxml.jackson.databind.Module": [
         "com.fasterxml.jackson.module.jaxb.JaxbAnnotationModule"
+      ]
+    },
+    "com.fasterxml.woodstox:woodstox-core": {
+      "com.ctc.wstx.shaded.msv.relaxng_datatype.DatatypeLibraryFactory": [
+        "com.ctc.wstx.shaded.msv_core.datatype.xsd.ngimpl.DataTypeLibraryImpl"
+      ],
+      "javax.xml.stream.XMLEventFactory": [
+        "com.ctc.wstx.stax.WstxEventFactory"
+      ],
+      "javax.xml.stream.XMLInputFactory": [
+        "com.ctc.wstx.stax.WstxInputFactory"
+      ],
+      "javax.xml.stream.XMLOutputFactory": [
+        "com.ctc.wstx.stax.WstxOutputFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory": [
+        "com.ctc.wstx.dtd.DTDSchemaFactory",
+        "com.ctc.wstx.msv.RelaxNGSchemaFactory",
+        "com.ctc.wstx.msv.W3CSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.dtd": [
+        "com.ctc.wstx.dtd.DTDSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.relaxng": [
+        "com.ctc.wstx.msv.RelaxNGSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.w3c": [
+        "com.ctc.wstx.msv.W3CSchemaFactory"
+      ]
+    },
+    "com.fasterxml.woodstox:woodstox-core:jar:sources": {
+      "javax.xml.stream.XMLEventFactory": [
+        "com.ctc.wstx.stax.WstxEventFactory"
+      ],
+      "javax.xml.stream.XMLInputFactory": [
+        "com.ctc.wstx.stax.WstxInputFactory"
+      ],
+      "javax.xml.stream.XMLOutputFactory": [
+        "com.ctc.wstx.stax.WstxOutputFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory": [
+        "com.ctc.wstx.dtd.DTDSchemaFactory",
+        "com.ctc.wstx.msv.RelaxNGSchemaFactory",
+        "com.ctc.wstx.msv.W3CSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.dtd": [
+        "com.ctc.wstx.dtd.DTDSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.relaxng": [
+        "com.ctc.wstx.msv.RelaxNGSchemaFactory"
+      ],
+      "org.codehaus.stax2.validation.XMLValidationSchemaFactory.w3c": [
+        "com.ctc.wstx.msv.W3CSchemaFactory"
       ]
     },
     "com.google.auto.service:auto-service": {

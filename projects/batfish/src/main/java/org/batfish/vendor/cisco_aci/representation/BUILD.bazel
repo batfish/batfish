@@ -1,0 +1,28 @@
+load("@batfish//skylark:pmd_test.bzl", "pmd_test")
+load("@rules_java//java:defs.bzl", "java_library")
+
+package(default_visibility = ["//visibility:public"])
+
+java_library(
+    name = "representation",
+    srcs = glob(
+        ["*.java"],
+        exclude = ["BUILD.bazel"],
+    ),
+    deps = [
+        "//projects/common",
+        "@maven//:com_fasterxml_jackson_core_jackson_annotations",
+        "@maven//:com_fasterxml_jackson_core_jackson_core",
+        "@maven//:com_fasterxml_jackson_core_jackson_databind",
+        "@maven//:com_fasterxml_jackson_dataformat_jackson_dataformat_xml",
+        "@maven//:com_fasterxml_jackson_datatype_jackson_datatype_jdk8",
+        "@maven//:com_fasterxml_jackson_datatype_jackson_datatype_jsr310",
+        "@maven//:com_google_code_findbugs_jsr305",
+        "@maven//:com_google_guava_guava",
+    ],
+)
+
+pmd_test(
+    name = "pmd",
+    lib = ":representation",
+)

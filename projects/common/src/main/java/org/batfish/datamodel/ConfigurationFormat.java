@@ -11,6 +11,7 @@ public enum ConfigurationFormat {
   BLADENETWORK("bladenetwork"),
   CADANT("cadant"),
   CHECK_POINT_GATEWAY("check_point_gateway"),
+  CISCO_ACI("cisco"),
   CISCO_ASA("cisco"),
   CISCO_IOS("cisco"),
   CISCO_IOS_XR("cisco"),

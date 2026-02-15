@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<polUni>
+  <fvTenant name="tenant1">
+    <fvCtx name="vrf1"/>
+    <fvBD name="bd1">
+      <fvRsCtx tnFvCtxName="vrf1"/>
+    </fvBD>
+    <fvAEPg name="web_epg">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <fvAEPg name="app_epg">
+      <fvRsBd tnFvBDName="bd1"/>
+    </fvAEPg>
+    <vzBrCP name="web_contract">
+      <vzSubj name="http">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_http"/>
+      </vzSubj>
+      <vzSubj name="https">
+        <vzRsSubjFiltAtt tnVzFilterName="allow_https"/>
+      </vzSubj>
+    </vzBrCP>
+    <vzFilter name="allow_http">
+      <vzEntry name="allow_http">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="80"/>
+      </vzEntry>
+    </vzFilter>
+    <vzFilter name="allow_https">
+      <vzEntry name="allow_https">
+        <vzMatchTcpProt/>
+        <vzMatchDstmPort name="443"/>
+      </vzEntry>
+    </vzFilter>
+    <vzRsProtProv ip="web_epg" tnVzBrCPName="web_contract"/>
+    <vzRsProtCons ip="app_epg" tnVzBrCPName="web_contract"/>
+  </fvTenant>
+</polUni>

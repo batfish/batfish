@@ -75,6 +75,7 @@ import org.batfish.vendor.arista.grammar.AristaCombinedParser;
 import org.batfish.vendor.arista.grammar.AristaControlPlaneExtractor;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayCombinedParser;
 import org.batfish.vendor.check_point_gateway.grammar.CheckPointGatewayControlPlaneExtractor;
+import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_nxos.grammar.CiscoNxosCombinedParser;
 import org.batfish.vendor.cisco_nxos.grammar.NxosControlPlaneExtractor;
 import org.batfish.vendor.sonic.grammar.SonicControlPlaneExtractor;
@@ -319,6 +320,23 @@ public class ParseVendorConfigurationJob extends BatfishJob<ParseVendorConfigura
           vc = extractor.getVendorConfiguration();
           vc.setFilename(filename);
           break;
+        }
+
+      case CISCO_ACI:
+        {
+          Entry<String, String> fileEntry = Iterables.getOnlyElement(_fileTexts.entrySet());
+          String filename = fileEntry.getKey();
+          String fileText = fileEntry.getValue();
+          try {
+            return AciConfiguration.fromFile(
+                filename, fileText, _fileResults.get(filename).getWarnings());
+          } catch (Exception e) {
+            throw new BatfishException(
+                String.format(
+                    "Failed to create ACI config from file: '%s', with error: %s",
+                    filename, e.getMessage()),
+                e);
+          }
         }
 
       case CUMULUS_CONCATENATED:

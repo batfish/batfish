@@ -1,0 +1,20 @@
+{
+  "polUni": {
+    "attributes": {
+      "dn": "uni",
+      "name": "aci-fabric"
+    },
+    "children": [
+      {
+        "fvTenant": {
+          "attributes": {
+            "name": "tenant1",
+            "descr": "Single Test Tenant",
+            "dn": "uni/tn-tenant1"
+          },
+          "children": []
+        }
+      }
+    ]
+  }
+}
