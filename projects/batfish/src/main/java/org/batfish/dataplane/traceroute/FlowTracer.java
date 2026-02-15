@@ -118,7 +118,6 @@ import org.batfish.datamodel.flow.SetupSessionStep.SetupSessionStepDetail;
 import org.batfish.datamodel.flow.Step;
 import org.batfish.datamodel.flow.StepAction;
 import org.batfish.datamodel.flow.Trace;
-import org.batfish.datamodel.flow.TraceAndReverseFlow;
 import org.batfish.datamodel.flow.TransformationStep;
 import org.batfish.datamodel.packet_policy.ActionVisitor;
 import org.batfish.datamodel.packet_policy.Drop;
@@ -256,17 +255,6 @@ class FlowTracer {
 
   // The current flow can change as we process the packet.
   private Flow _currentFlow;
-
-  /** Creates an initial {@link FlowTracer} for a new traceroute. */
-  static @Nonnull FlowTracer initialFlowTracer(
-      TracerouteEngineImplContext tracerouteContext,
-      String node,
-      @Nullable String ingressInterface,
-      Flow originalFlow,
-      Consumer<TraceAndReverseFlow> consumer) {
-    return initialFlowTracer(
-        tracerouteContext, node, ingressInterface, originalFlow, new LegacyTraceRecorder(consumer));
-  }
 
   /** Creates an initial {@link FlowTracer} for a new traceroute. */
   static @Nonnull FlowTracer initialFlowTracer(
