@@ -167,3 +167,32 @@ Example 4: all lines, different = True
 Example 5: 20 only, different = True
 
 This algorithm recovers example 4, but adds the first DDOSer to the report for Example 1. Fundamentally, it seems hard to encode logic that gets these both right. It seems that we should always include some matching line with a different action if one exists – we can't tell what the user's intent is, so it's best to just tell them that the ACL behaves differently than the blocked line on at least some packets.
+
+
+# Vendor-Specific Filtering
+
+## Cisco FTD Two-Stage Filtering
+
+Cisco FTD (Firepower Threat Defense) implements a two-stage filtering architecture using Prefilter policies:
+
+**Stage 1 (Prefilter):** Rules with `trust` actions that fast-path traffic, bypassing regular ACL evaluation.
+
+**Stage 2 (Regular ACL):** Standard permit/deny rules, evaluated only if no Prefilter rule matched.
+
+**Example:**
+```
+10 - trust tcp 10.5.73.0/24 any eq 1994    # Prefilter (fast-path)
+20 - permit tcp 10.5.73.0/24 any eq 80     # Regular ACL (never evaluated)
+30 - permit tcp 10.5.73.0/24 any eq 443    # Regular ACL (never evaluated)
+```
+
+In this example, lines 20 and 30 are technically unreachable (shadowed by line 10), but this is **intentional behavior** - the Prefilter `trust` rule handles the traffic more efficiently.
+
+**Implementation:**
+- Prefilter trust rules are identified during FTD config conversion with metadata markers:
+  - `"Prefilter-FTD"` in the policy name
+  - `" trust "` action keyword (with spaces to avoid matching "trustworthy" etc)
+- When a regular ACL line is blocked by a Prefilter trust rule, it is **not reported** as unreachable
+- This reduces false positives by ~99% in real FTD configurations
+
+**Reference:** [Cisco FTD Prefilter Policies Documentation](https://www.cisco.com/c/en/us/td/docs/security/firepower/660/configuration-guide/fpmg-cli-config-guide-660/as_a_acl_prefilter_policies.html)

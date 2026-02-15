@@ -1,0 +1,361 @@
+! Cisco FTD Comprehensive Configuration
+! Based on real-world deployment scenarios
+! Tests all optimized grammar rules including failover_polltime_null expansion
+
+hostname ftd-production-main
+NGFW VERSION 7.4.0
+
+! Enable password
+enable password $sha512$5000$xyzabc123
+
+! DNS Configuration
+dns domain-lookup OUTSIDE
+dns server-group ProductionDNS
+ name-server 8.8.8.8
+ name-server 8.8.4.4
+ timeout 5
+
+! FTP Mode
+ftp mode passive
+
+! Interface Configuration - Testing if_ip_address flattening
+interface GigabitEthernet0/0
+ description Primary WAN Connection to ISP
+ nameif OUTSIDE
+ security-level 0
+ ip address 203.0.113.10 255.255.255.0 standby 203.0.113.11
+ mac-address 00:11:22:33:44:55 standby 00:11:22:33:44:56
+!
+interface GigabitEthernet0/1
+ description Internal LAN - Production Network
+ nameif INSIDE
+ security-level 100
+ ip address 10.0.1.1 255.255.255.0
+!
+interface GigabitEthernet0/2
+ description DMZ - Public Facing Servers
+ nameif DMZ
+ security-level 50
+ ip address 192.168.100.1 255.255.255.0
+!
+interface GigabitEthernet0/3
+ description Failover Link
+ no nameif
+!
+interface Management0/0
+ management-only
+ nameif MGMT
+ security-level 100
+ ip address 10.10.10.1 255.255.255.0
+!
+interface GigabitEthernet1/0
+ description Backup WAN
+ shutdown
+!
+interface Port-channel1
+ description PortChannel for Uplink
+ nameif UPLINK
+ security-level 0
+ ip address 198.51.100.1 255.255.255.0
+
+! Failover Configuration - Testing all failover_polltime_null alternatives
+failover
+failover lan unit primary
+failover link interface GigabitEthernet0/3
+failover polltime unit 1 holdtime 15
+failover polltime unit msec 500 holdtime 5000
+failover polltime interface 5
+failover polltime interface msec 1000
+failover polltime unit 500 holdtime 10000
+failover polltime interface 1000 holdtime 15000
+failover polltime unit msec 250 holdtime msec 2500
+failover interface ip GigabitEthernet0/3 169.254.1.1 255.255.255.252 standby 169.254.1.2
+
+! MTU Configuration
+mtu OUTSIDE 1500
+mtu INSIDE 1500
+
+! Timeout Configuration
+timeout xlate 3:00:00
+timeout conn 1:00:00 half-closed 0:10:00 udp 0:02:00 icmp 0:00:10
+
+! SSH and Telnet
+ssh 0.0.0.0 0.0.0.0 INSIDE
+ssh timeout 30
+telnet timeout 5
+
+! ICMP Settings
+icmp unreachable rate-limit 1 burst-size 1
+
+! SNMP Configuration
+snmp-server host INSIDE 192.168.1.100 community public
+snmp-server enable traps
+
+! ARP Configuration
+arp timeout 14400
+
+! Names
+names
+name 192.168.1.10 prod-db-01
+name 192.168.1.11 prod-db-02
+
+! Network Objects
+object network PROD-DB-SERVER
+ host 192.168.1.10
+ description Production Database Server Primary
+!
+object network PROD-DB-SERVER-STANDBY
+ host 192.168.1.11
+ description Production Database Server Standby
+!
+object network INTERNAL-NETWORK
+ subnet 10.0.0.0 255.255.0.0
+ description Internal Network
+!
+object network DMZ-SERVERS
+ subnet 192.168.100.0 255.255.255.0
+ description DMZ Server Subnet
+!
+object network WEB-SERVER-EXT
+ fqdn webserver.example.com
+ description External Web Server FQDN
+!
+object service DNS-UDP
+ service udp source eq domain
+ description DNS Service UDP
+!
+object service DNS-TCP
+ service tcp source eq domain
+ description DNS Service TCP
+!
+object service HTTP
+ service tcp source eq www
+ description HTTP Traffic
+!
+object service HTTPS
+ service tcp source eq https
+ description HTTPS Traffic
+
+! Object Groups
+object-group network PRODUCTION-SERVERS
+ network-object host 192.168.1.10
+ network-object host 192.168.1.11
+ network-object host 192.168.1.12
+ description Production Servers Group
+!
+object-group network DMZ-HOSTS
+ network-object 192.168.100.0 255.255.255.0
+ description DMZ Network Hosts
+!
+object-group service WEB-SERVICES tcp
+ service-object tcp source eq www
+ service-object tcp source eq https
+ port-object eq 8080
+ description Web Services Ports
+!
+object-group service DNS-SERVICES
+ service-object tcp source eq domain
+ service-object udp source eq domain
+ description DNS Services
+
+! Access Lists
+access-list OUTSIDE-IN extended permit tcp any host 203.0.113.20 eq https
+access-list OUTSIDE-IN extended permit tcp any host 203.0.113.20 eq www
+access-list OUTSIDE-IN extended deny ip any any log
+access-list INSIDE-OUT extended permit ip any any
+access-list DMZ-IN extended permit tcp 192.168.100.0 255.255.255.0 10.0.0.0 255.255.0.0 eq 3306
+access-list VPN-TRAFFIC extended permit ip 10.0.1.0 255.255.255.0 10.10.0.0 255.255.255.0
+
+! Access Groups - Testing access_group_tail expansion
+access-group OUTSIDE-IN in interface OUTSIDE
+access-group INSIDE-OUT in interface INSIDE
+access-group DMZ-IN in interface DMZ
+access-group OUTSIDE-IN global
+
+! NAT Configuration
+nat (INSIDE,OUTSIDE) source dynamic INTERNAL-NETWORK interface
+nat (DMZ,OUTSIDE) source static DMZ-SERVERS interface service tcp https https
+nat (OUTSIDE,DMZ) source dynamic any interface destination static interface PROD-DB-SERVER service tcp 3306 3306
+
+! Route Configuration
+route OUTSIDE 0.0.0.0 0.0.0.0 203.0.113.1 1
+route INSIDE 10.10.0.0 255.255.255.0 10.0.1.254 1
+route DMZ 172.16.0.0 255.255.0.0 192.168.100.254 1
+
+! OSPF Configuration - Testing ospf_interfaces config
+router ospf 100
+ network 10.0.0.0 255.255.0.0 area 0
+ network 192.168.100.0 255.255.255.0 area 0
+ default-information originate always
+ log-adjacency-changes
+!
+interface INSIDE
+ ospf authentication message-digest
+ ospf message-digest-key 1 md5 secretkey123
+ ospf cost 10
+ ospf dead-interval 40
+ ospf hello-interval 10
+ ospf priority 1
+ ospf retransmit-interval 5
+ ospf transmit-delay 1
+!
+interface DMZ
+ ospf authentication null
+ ospf network point-to-point
+ ospf priority 0
+
+! BGP Configuration - Testing bgp_with_loopback config
+router bgp 65001
+ bgp log-neighbor-changes
+ bgp bestpath as-path ignore
+ network 10.0.0.0 mask 255.255.0.0
+ network 192.168.100.0 mask 255.255.255.0
+ neighbor 203.0.113.2 remote-as 65002
+ neighbor 203.0.113.2 description ISP-Primary
+ neighbor 203.0.113.2 password encrypted cisco123
+ neighbor 203.0.113.2 route-map FILTER-OUT out
+ neighbor 203.0.113.2 prefix-list ALLOW-IN in
+ neighbor 198.51.100.2 remote-as 65003
+ neighbor 198.51.100.2 description ISP-Backup
+ neighbor 198.51.100.2 password encrypted cisco456
+!
+address-family ipv4 unicast
+ neighbor 203.0.113.2 activate
+ neighbor 203.0.113.2 soft-reconfiguration inbound
+ neighbor 198.51.100.2 activate
+ neighbor 198.51.100.2 soft-reconfiguration inbound
+ default-information originate
+exit-address-family
+
+! Crypto IKEv2 Configuration
+crypto ikev2 proposal IKEV2-PROP-AES256
+ encryption aes-cbc-256
+ integrity sha256
+ group 14
+!
+crypto ikev2 policy 100
+ proposal IKEV2-PROP-AES256
+!
+crypto ipsec transform-set ESP-AES256-SHA256 esp-aes-256 esp-sha256
+ mode tunnel
+!
+crypto ipsec proposal IPSEC-PROP
+ protocol esp encryption aes-256
+ protocol esp integrity sha256
+!
+crypto map VPN-MAP 10 match address VPN-TRAFFIC
+crypto map VPN-MAP 10 set peer 198.51.100.10
+crypto map VPN-MAP 10 set ikev2 ipsec-proposal IPSEC-PROP
+crypto map VPN-MAP 20 match address VPN-TRAFFIC-BACKUP
+crypto map VPN-MAP 20 set peer 203.0.113.20
+crypto map VPN-MAP 20 set ikev2 ipsec-proposal IPSEC-PROP
+crypto map VPN-MAP interface OUTSIDE
+
+! Tunnel Group Configuration
+tunnel-group REMOTE-SITE type ipsec-l2l
+tunnel-group REMOTE-SITE ipsec-attributes
+ ikev2 remote-authentication pre-shared-key MySecretKey123
+ ikev2 local-authentication pre-shared-key MySecretKey123
+!
+tunnel-group BACKUP-SITE type ipsec-l2l
+tunnel-group BACKUP-SITE ipsec-attributes
+ ikev2 remote-authentication pre-shared-key BackupSecret456
+ ikev2 local-authentication pre-shared-key BackupSecret456
+ peer-id-validate nocheck
+!
+tunnel-group REMOTE-ACCESS type remote-access
+tunnel-group REMOTE-ACCESS general-attributes
+ address-pool VPN-POOL
+ authentication-server-group RADIUS-SERVERS
+ default-group-policy DFLT-VPN-POLICY
+!
+tunnel-group REMOTE-ACCESS ipsec-attributes
+ ikev2 remote-authentication certificate
+ ikev2 local-authentication certificate
+
+! Class Map Configuration
+class-map type inspect dns DNS-CMAP
+ match default-inspection-traffic
+!
+class-map inspection-class
+ match default-inspection-traffic
+!
+class-map TYPE-ACCESS-CONTROL
+ match access-list OUTSIDE-IN
+
+! Policy Map Configuration
+policy-map type inspect dns DNS-POLICY
+ parameters
+  message-length maximum client 512
+  message-length maximum server 512
+ class DNS-CMAP
+  drop
+!
+policy-map global-policy
+ class inspection-class
+  inspect dns
+  inspect http
+  inspect https
+  inspect ftp
+!
+policy-map type inspect http HTTP-POLICY
+ class http-traffic
+  drop
+
+! Service Policy Configuration
+service-policy DNS-POLICY global
+service-policy global-policy global
+service-policy HTTP-POLICY interface OUTSIDE
+
+! Threat Detection
+threat-detection basic-threat
+threat-detection statistics access-list
+threat-detection rate-inspect
+
+! Monitor Interface
+monitor-interface OUTSIDE
+monitor-interface INSIDE
+
+! Time Range
+time-range BUSINESS-HOURS
+ absolute start 08:00 01 January 2025 end 18:00 31 December 2026
+ periodic weekdays 08:00 to 18:00
+!
+time-range MAINTENANCE-WINDOW
+ periodic Sunday 02:00 to 06:00
+
+! Logging Configuration
+logging enable
+logging timestamp
+logging trap informational
+logging host INSIDE 192.168.1.5
+logging facility 21
+
+! AAA Configuration
+aaa authentication ssh console LOCAL
+aaa authorization command LOCAL
+aaa accounting ssh console
+aaa authentication enable console LOCAL
+aaa authentication http console LOCAL
+aaa authentication telnet console LOCAL
+
+! MAC Address
+no mac-address auto
+
+! CTS
+cts sxp enable
+
+! Snort
+snort-rules
+
+! Flow Offload
+no flow-offload
+
+! Crypto Checksum
+cryptochecksum abc123def456789
+
+! Pager
+no pager
+
+! Version Information - Testing case-insensitive version keyword
+NGFW version 7.4.0
