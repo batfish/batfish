@@ -41,6 +41,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLIC
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SELF_REF;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_SOURCE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.APPLICATION_OVERRIDE_RULE_TO_ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_LOCAL_ADDRESS_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.ETHERNET_AGGREGATE_GROUP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
@@ -67,6 +68,7 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURI
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_TO_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SERVICE_GROUP_MEMBER;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXTHOP_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXT_VR;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TAP_INTERFACE_ZONE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
@@ -1123,7 +1125,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitBgppgp_peer_address(Bgppgp_peer_addressContext ctx) {
-    toIp(ctx, ctx.addr, "BGP peer-address").ifPresent(_currentBgpPeer::setPeerAddress);
+    _currentBgpPeer.setPeerAddress(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, BGP_PEER_ADDRESS);
   }
 
   @Override
@@ -2731,8 +2734,8 @@ public class PaloAltoConfigurationBuilder extends PaloAltoParserBaseListener
 
   @Override
   public void exitVrrtn_ip(Vrrtn_ipContext ctx) {
-    toIp(ctx, ctx.addr, "static route nexthop ip-address")
-        .ifPresent(_currentStaticRoute::setNextHopIp);
+    _currentStaticRoute.setNextHopIp(toInterfaceAddress(ctx.addr));
+    referenceInterfaceAddress(ctx.addr, STATIC_ROUTE_NEXTHOP_IP);
   }
 
   @Override

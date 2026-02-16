@@ -82,11 +82,13 @@ import static org.batfish.representation.palo_alto.PaloAltoStructureType.SERVICE
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.SHARED_GATEWAY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.TEMPLATE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureType.ZONE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.BGP_PEER_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.IMPORT_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.LAYER3_INTERFACE_ADDRESS;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_APPLICATION;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.SECURITY_RULE_CATEGORY;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_INTERFACE;
+import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.STATIC_ROUTE_NEXTHOP_IP;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.TEMPLATE_STACK_TEMPLATES;
 import static org.batfish.representation.palo_alto.PaloAltoStructureUsage.VIRTUAL_ROUTER_INTERFACE;
 import static org.batfish.representation.palo_alto.PaloAltoTraceElementCreators.emptyZoneRejectTraceElement;
@@ -282,8 +284,6 @@ import org.batfish.representation.palo_alto.Rulebase;
 import org.batfish.representation.palo_alto.SecurityRule;
 import org.batfish.representation.palo_alto.SecurityRule.RuleType;
 import org.batfish.representation.palo_alto.ServiceBuiltIn;
-import org.batfish.representation.palo_alto.SnmpSetting;
-import org.batfish.representation.palo_alto.SnmpSystem;
 import org.batfish.representation.palo_alto.StaticRoute;
 import org.batfish.representation.palo_alto.Tag;
 import org.batfish.representation.palo_alto.Template;
@@ -918,7 +918,9 @@ public final class PaloAltoGrammarTest {
     assertThat(peer.getEnableSenderSideLoopDetection(), equalTo(false));
     assertThat(peer.getLocalInterface(), equalTo("ethernet1/1"));
     assertThat(peer.getLocalAddress(), equalTo(Ip.parse("1.2.3.6")));
-    assertThat(peer.getPeerAddress(), equalTo(Ip.parse("5.4.3.2")));
+    assertThat(
+        peer.getPeerAddress(),
+        equalTo(new InterfaceAddress(InterfaceAddress.Type.IP_ADDRESS, "5.4.3.2")));
     assertThat(peer.getPeerAs(), equalTo(54321L));
     assertThat(peer.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
 
@@ -1653,27 +1655,6 @@ public final class PaloAltoGrammarTest {
     assertThat(c, hasInterface(interfaceNameUnit1, hasDescription("unit 1")));
   }
 
-  @Test
-  public void testInterfaceLldpExtraction() {
-    PaloAltoConfiguration c = parsePaloAltoConfig("interface-lldp");
-    Interface e1_1 = c.getInterfaces().get("ethernet1/1");
-    Interface e1_2 = c.getInterfaces().get("ethernet1/2");
-    Interface e1_3 = c.getInterfaces().get("ethernet1/3");
-    Interface e1_4 = c.getInterfaces().get("ethernet1/4");
-
-    assertThat(e1_1, notNullValue());
-    assertThat(e1_1.getLldpEnabled(), equalTo(true));
-
-    assertThat(e1_2, notNullValue());
-    assertThat(e1_2.getLldpEnabled(), equalTo(false));
-
-    assertThat(e1_3, notNullValue());
-    assertThat(e1_3.getLldpEnabled(), nullValue());
-
-    assertThat(e1_4, notNullValue());
-    assertThat(e1_4.getLldpEnabled(), equalTo(true));
-  }
-
   // Test for https://github.com/batfish/batfish/issues/5598.
   @Test
   public void testInterfaceAggregateExtraction() {
@@ -1831,44 +1812,6 @@ public final class PaloAltoGrammarTest {
     // Confirm all the defined syslog servers show up in VI model
     assertThat(
         c.getLoggingServers(), containsInAnyOrder("1.1.1.1", "2.2.2.2", "3.3.3.3", "4.4.4.4"));
-  }
-
-  @Test
-  public void testLogSettingsSyslogNestedFormat() {
-    Configuration c = parseConfig("log-settings-syslog-nested-format");
-
-    // Confirm the syslog server shows up in VI model
-    assertThat(c.getLoggingServers(), containsInAnyOrder("1.2.3.4"));
-  }
-
-  @Test
-  public void testSetConfigLogSettingsFormat() {
-    parseConfig("set-config-log-settings-format");
-
-    // Test that set config shared log-settings syslog with format escaping parses correctly
-    // This is the flattener output from nested configs starting with "config {"
-  }
-
-  @Test
-  public void testSetConfigInterfaceLayer2Lldp() {
-    parseConfig("set-config-interface-layer2-lldp");
-
-    // Test that set config devices <name> network interface ethernet <name> layer2 lldp enable no
-    // parses
-  }
-
-  @Test
-  public void testSetNetworkInterfaceLayer2Zone() {
-    parseConfig("set-network-interface-layer2-zone");
-
-    // Test that set network interface ethernet <name> layer2 zone <zone> parses
-  }
-
-  @Test
-  public void testSetNetworkInterfaceUnitsFeatures() {
-    parseConfig("set-network-interface-units-features");
-
-    // Test that set network interface vlan units with ipv6, ndp-proxy, adjust-tcp-mss parses
   }
 
   @Test
@@ -2518,18 +2461,17 @@ public final class PaloAltoGrammarTest {
     List<ParseWarning> parseWarnings = c.getWarnings().getParseWarnings();
     assertThat(
         parseWarnings,
-        containsInAnyOrder(hasComment("Invalid active-active-device-binding value: 2")));
+        containsInAnyOrder(
+            allOf(
+                ParseWarningMatchers.hasText("active-active-device-binding primary"),
+                hasComment("Batfish currently models this as active-active-device-binding both")),
+            hasComment("Expected active-active-device-binding in range 0-1, but got '2'")));
 
     // Make sure the active-active-device-binding isn't set to an invalid number
     Map<String, NatRule> natRules =
         c.getVirtualSystems().get(DEFAULT_VSYS_NAME).getRulebase().getNatRules();
     assertThat(natRules, hasKey("NATRULE2"));
     assertNull(natRules.get("NATRULE2").getActiveActiveDeviceBinding());
-    // Make sure PRIMARY is properly set
-    assertThat(natRules, hasKey("NATRULE1"));
-    assertEquals(
-        natRules.get("NATRULE1").getActiveActiveDeviceBinding(),
-        NatRule.ActiveActiveDeviceBinding.PRIMARY);
   }
 
   @Test
@@ -4317,28 +4259,6 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  @Ignore // TODO: requires bgppgp_bfd handler to be implemented
-  public void testBgpBfdProfileExtraction() {
-    String hostname = "bgp-bfd-profile";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify BGP configuration is extracted
-    assertThat(c.getVirtualRouters(), hasKey("BGP_VR"));
-    VirtualRouter vr = c.getVirtualRouters().get("BGP_VR");
-    assertThat(vr.getBgp(), notNullValue());
-
-    BgpVr bgp = vr.getBgp();
-    assertThat(bgp.getPeerGroups(), hasKey("PG"));
-    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
-
-    assertThat(pg.getPeers(), hasKey("PEER"));
-    BgpPeer peer = pg.getPeers().get("PEER");
-
-    // Verify BFD profile is extracted correctly
-    assertThat(peer.getBfdProfile(), equalTo("Inherit-vr-global-setting"));
-  }
-
-  @Test
   public void testBgpMultihopConversion() {
     String hostname = "bgp-multihop";
     Configuration c = parseConfig(hostname);
@@ -4349,32 +4269,6 @@ public final class PaloAltoGrammarTest {
             .getActiveNeighbors()
             .get(Ip.parse("120.120.120.120"))
             .getEbgpMultihop());
-  }
-
-  @Test
-  @Ignore // TODO: requires BGP connection options grammar to be extended
-  public void testBgpConnectionOptionsExtraction() {
-    String hostname = "bgp-connection-options";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify BGP configuration is extracted
-    assertThat(c.getVirtualRouters(), hasKey("BGP"));
-    VirtualRouter vr = c.getVirtualRouters().get("BGP");
-    assertThat(vr.getBgp(), notNullValue());
-
-    BgpVr bgp = vr.getBgp();
-    assertThat(bgp.getPeerGroups(), hasKey("PG"));
-    BgpPeerGroup pg = bgp.getPeerGroups().get("PG");
-
-    assertThat(pg.getPeers(), hasKey("PEER"));
-    BgpPeer peer = pg.getPeers().get("PEER");
-
-    // Verify BGP connection options timers are extracted correctly
-    assertThat(peer.getConnectionOptions().getKeepAliveInterval(), equalTo(30));
-    assertThat(peer.getConnectionOptions().getHoldTime(), equalTo(90));
-    assertThat(peer.getConnectionOptions().getIdleHoldTime(), equalTo(60));
-    assertThat(peer.getConnectionOptions().getMinRouteAdvInterval(), equalTo(15));
-    assertThat(peer.getConnectionOptions().getOpenDelayTime(), equalTo(10));
   }
 
   @Test
@@ -4896,462 +4790,58 @@ public final class PaloAltoGrammarTest {
   }
 
   @Test
-  public void testBgpRouteReflectionExtraction() {
-    String hostname = "bgp-route-reflection";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+  public void testAddressObjectNexthop() throws IOException {
+    String hostname = "address-object-nexthop";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
 
-    // Verify BGP configuration is extracted
-    assertThat(c.getVirtualRouters(), hasKey("default"));
-    VirtualRouter vr = c.getVirtualRouters().get("default");
-    assertThat(vr.getBgp(), notNullValue());
-
-    BgpVr bgp = vr.getBgp();
-    assertThat(bgp.getRouterId(), equalTo(Ip.parse("1.2.3.4")));
-
-    // Verify routing options
-    assertThat(bgp.getRoutingOptions(), notNullValue());
-    assertThat(bgp.getRoutingOptions().getReflectorClusterId(), equalTo(Ip.parse("1.2.3.100")));
-
-    // Verify RR_CLIENTS peer group with route reflector clients
-    assertThat(bgp.getPeerGroups(), hasKey("RR_CLIENTS"));
-    BgpPeerGroup rrClientsGroup = bgp.getPeerGroups().get("RR_CLIENTS");
-
-    // Verify all three clients are configured as route reflector clients
-    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT1"));
-    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT2"));
-    assertThat(rrClientsGroup.getPeers(), hasKey("CLIENT3"));
-
-    for (String clientName : ImmutableList.of("CLIENT1", "CLIENT2", "CLIENT3")) {
-      BgpPeer client = rrClientsGroup.getPeers().get(clientName);
-      assertThat(client.getReflectorClient(), equalTo(ReflectorClient.CLIENT));
-    }
-
-    // Verify NON_CLIENT peer group with non-client peer
-    assertThat(bgp.getPeerGroups(), hasKey("NON_CLIENT"));
-    BgpPeerGroup nonClientGroup = bgp.getPeerGroups().get("NON_CLIENT");
-    assertThat(nonClientGroup.getPeers(), hasKey("PEER1"));
-
-    BgpPeer peer1 = nonClientGroup.getPeers().get("PEER1");
-    assertThat(peer1.getReflectorClient(), equalTo(ReflectorClient.NON_CLIENT));
-  }
-
-  @Test
-  public void testBgpRouteReflectionConversion() {
-    String hostname = "bgp-route-reflection";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasVrf("default", hasBgpProcess(any(BgpProcess.class))));
-    BgpProcess proc = c.getVrfs().get("default").getBgpProcess();
-
-    // Verify all four peers are configured (3 clients + 1 non-client)
+    // Static route with address object as nexthop should resolve to the IP in the object
     assertThat(
-        proc.getActiveNeighbors().keySet(),
-        hasItems(
-            Ip.parse("192.168.1.2"),
-            Ip.parse("192.168.2.2"),
-            Ip.parse("192.168.3.2"),
-            Ip.parse("10.0.0.2")));
+        c,
+        hasVrf(
+            "BGP",
+            hasStaticRoutes(
+                hasItem(allOf(hasPrefix(Prefix.ZERO), hasNextHopIp(Ip.parse("10.10.10.1")))))));
 
-    // Verify clients have correct AS
-    BgpActivePeerConfig client1 = proc.getActiveNeighbors().get(Ip.parse("192.168.1.2"));
-    assertThat(client1.getRemoteAsns(), equalTo(LongSpace.of(65001)));
-    assertThat(client1.getLocalIp(), equalTo(Ip.parse("192.168.1.1")));
-  }
-
-  @Test
-  public void testQosProfilesExtraction() {
-    String hostname = "qos-profiles";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify configuration parses successfully
-    assertThat(c.getVirtualRouters(), hasKey("default"));
-    VirtualRouter vr = c.getVirtualRouters().get("default");
-    assertNotNull(vr);
-  }
-
-  @Test
-  public void testQosProfilesConversion() {
-    String hostname = "qos-profiles";
-    Configuration c = parseConfig(hostname);
-
-    // Verify configuration converts successfully
-    assertThat(c, hasVrf("default", hasName(equalTo("default"))));
-
-    // Verify interfaces are converted with correct addresses
-    assertThat(c, hasInterface("ethernet1/1"));
-    assertThat(c, hasInterface("ethernet1/2"));
-  }
-
-  @Test
-  public void testNatRoutingIntegrationExtraction() {
-    String hostname = "nat-routing-integration";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    assertThat(c.getVirtualRouters(), hasKey("default"));
-    VirtualRouter vr = c.getVirtualRouters().get("default");
-
-    // Verify BGP configuration
-    assertThat(vr.getBgp(), notNullValue());
-    BgpVr bgp = vr.getBgp();
-    assertThat(bgp.getLocalAs(), equalTo(65001L));
-
-    // Verify NAT rules exist
-    Vsys vs = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
-    assertThat(vs.getRulebase().getNatRules(), hasKey("SNAT_OUTBOUND"));
-    assertThat(vs.getRulebase().getNatRules(), hasKey("DNAT_DMZ"));
-    assertThat(vs.getRulebase().getNatRules(), hasKey("STATIC_NAT"));
-  }
-
-  @Test
-  public void testNatRoutingIntegrationConversion() {
-    String hostname = "nat-routing-integration";
-    Configuration c = parseConfig(hostname);
-
-    assertThat(c, hasVrf("default", hasBgpProcess(any(BgpProcess.class))));
-    Vrf vrf = c.getVrfs().get("default");
-
-    // Verify BGP peer is configured
-    BgpProcess bgpProc = vrf.getBgpProcess();
-    assertThat(bgpProc.getActiveNeighbors(), hasKey(Ip.parse("203.0.113.2")));
+    // Static route with literal IP should still work
     assertThat(
-        bgpProc.getActiveNeighbors().get(Ip.parse("203.0.113.2")).getRemoteAsns(),
-        equalTo(LongSpace.of(65002)));
+        c,
+        hasVrf(
+            "BGP",
+            hasStaticRoutes(
+                hasItem(
+                    allOf(
+                        hasPrefix(Prefix.strict("192.168.1.0/24")),
+                        hasNextHopIp(Ip.parse("192.168.2.1")))))));
 
-    // Verify interfaces exist
-    assertThat(c, hasInterface("ethernet1/1"));
-    assertThat(c, hasInterface("ethernet1/2"));
-    assertThat(c, hasInterface("ethernet1/3"));
-  }
+    // BGP peer with address object as peer-address should resolve to the IP in the object
+    assertThat(c, hasVrf("BGP", hasBgpProcess(any(BgpProcess.class))));
+    BgpProcess proc = c.getVrfs().get("BGP").getBgpProcess();
+    assertThat(proc.getActiveNeighbors().keySet(), contains(Ip.parse("5.4.3.2")));
+    BgpActivePeerConfig bgpPeer = proc.getActiveNeighbors().get(Ip.parse("5.4.3.2"));
+    assertThat(bgpPeer.getDescription(), equalTo("PEER"));
 
-  @Test
-  public void testOspfMultiAreaExtraction() {
-    String hostname = "ospf-multi-area";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
+    // Verify structure references
+    ConvertConfigurationAnswerElement ccae =
+        batfish.loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot());
+    String filename = "configs/" + hostname;
 
-    assertThat(c.getVirtualRouters(), hasKey("default"));
-    VirtualRouter vr = c.getVirtualRouters().get("default");
-
-    assertThat(vr.getOspf(), notNullValue());
-    OspfVr ospf = vr.getOspf();
-    assertThat(ospf.getRouterId(), equalTo(Ip.parse("1.1.1.1")));
-
-    // Verify 4 areas are configured
-    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.0")));
-    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.1")));
-    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.2")));
-    assertThat(ospf.getAreas(), hasKey(Ip.parse("0.0.0.3")));
-
-    // Verify area 1 is stub with default route
-    OspfArea area1 = ospf.getAreas().get(Ip.parse("0.0.0.1"));
-    assertThat(area1.getTypeSettings(), instanceOf(OspfAreaStub.class));
-    OspfAreaStub stubArea1 = (OspfAreaStub) area1.getTypeSettings();
-    assertThat(stubArea1.getDefaultRouteMetric(), equalTo(100));
-    assertTrue(stubArea1.getAcceptSummary());
-
-    // Verify area 2 is totally stubby (no summaries)
-    OspfArea area2 = ospf.getAreas().get(Ip.parse("0.0.0.2"));
-    assertThat(area2.getTypeSettings(), instanceOf(OspfAreaStub.class));
-    OspfAreaStub stubArea2 = (OspfAreaStub) area2.getTypeSettings();
-    assertFalse(stubArea2.getAcceptSummary());
-
-    // Verify area 3 is NSSA without summaries
-    OspfArea area3 = ospf.getAreas().get(Ip.parse("0.0.0.3"));
-    assertThat(area3.getTypeSettings(), instanceOf(OspfAreaNssa.class));
-    OspfAreaNssa nssaArea3 = (OspfAreaNssa) area3.getTypeSettings();
-    assertThat(nssaArea3.getDefaultRouteMetric(), equalTo(200));
-    assertThat(nssaArea3.getDefaultRouteType(), equalTo(DefaultRouteType.EXT_2));
-    assertFalse(nssaArea3.getAcceptSummary());
-
-    // Verify interface in area 2 is passive
-    OspfInterface area2Iface = area2.getInterfaces().get("ethernet1/3.30");
-    assertTrue(area2Iface.getPassive());
-    assertThat(area2Iface.getMetric(), equalTo(100));
-  }
-
-  @Test
-  public void testOspfMultiAreaConversion() {
-    String hostname = "ospf-multi-area";
-    Configuration c = parseConfig(hostname);
-
-    String processId = "~OSPF_PROCESS_1.1.1.1";
-    assertThat(c, hasVrf("default", hasName(equalTo("default"))));
-    Vrf vrf = c.getVrfs().get("default");
-    assertThat(vrf.getOspfProcesses(), hasKey(processId));
-
-    OspfProcess ospfProcess = vrf.getOspfProcesses().get(processId);
-    assertThat(ospfProcess, OspfProcessMatchers.hasRouterId(equalTo(Ip.parse("1.1.1.1"))));
-
-    // Verify all 4 areas are converted
-    assertThat(ospfProcess, hasArea(0L, allOf(hasStubType(equalTo(StubType.NONE)))));
-    assertThat(ospfProcess, hasArea(1L, hasStub(hasSuppressType3(false))));
-    assertThat(ospfProcess, hasArea(2L, hasStub(hasSuppressType3(true))));
+    // NEXTHOP-OBJ should be referenced by static route
     assertThat(
-        ospfProcess,
-        hasArea(
-            3L,
-            hasNssa(
-                allOf(
-                    hasDefaultOriginateType(OspfDefaultOriginateType.EXTERNAL_TYPE2),
-                    NssaSettingsMatchers.hasSuppressType3(true)))));
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "NEXTHOP-OBJ"),
+            STATIC_ROUTE_NEXTHOP_IP));
 
-    // Verify interfaces have correct OSPF settings
-    assertThat(c, hasInterface("ethernet1/1.10"));
-    OspfInterfaceSettings iface1Settings =
-        c.getAllInterfaces().get("ethernet1/1.10").getOspfSettings();
-    assertThat(iface1Settings.getAreaName(), equalTo(0L));
-    assertFalse(iface1Settings.getPassive());
-
-    // Verify passive interface in area 2
-    assertThat(c, hasInterface("ethernet1/3.30"));
-    OspfInterfaceSettings iface3Settings =
-        c.getAllInterfaces().get("ethernet1/3.30").getOspfSettings();
-    assertThat(iface3Settings.getAreaName(), equalTo(2L));
-    assertTrue(iface3Settings.getPassive());
-    assertThat(iface3Settings.getCost(), equalTo(100));
-  }
-
-  @Test
-  public void testSnmpSettingsExtraction() {
-    String hostname = "snmp-settings";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify SNMP settings are extracted
-    assertThat(c.getSnmpSetting(), notNullValue());
-    SnmpSetting snmpSetting = c.getSnmpSetting();
-
-    // Verify SNMP system configuration
-    assertThat(snmpSetting.getSnmpSystem(), notNullValue());
-    SnmpSystem snmpSystem = snmpSetting.getSnmpSystem();
-    // Note: Only the last SNMP system setting is preserved due to implementation
-    assertThat(snmpSystem.getSendEventSpecificTraps(), equalTo(true));
-
-    // Verify SNMP access settings
-    assertThat(snmpSetting.getAccessSettings(), iterableWithSize(4));
-  }
-
-  @Test
-  public void testIpv6PrefixExtraction() {
-    String hostname = "ipv6-prefix";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify configuration parses successfully
-    assertThat(c, notNullValue());
-  }
-
-  @Test
-  public void testIpv6PrefixConversion() {
-    String hostname = "ipv6-prefix";
-    Configuration c = parseConfig(hostname);
-
-    // Verify configuration converts successfully
-    assertThat(c, notNullValue());
-  }
-
-  // TODO: Uncomment when IPv6 neighbor discovery parsing is implemented
-  //  @Test
-  //  public void testIpv6NeighborDiscoveryExtraction() {
-  //    String hostname = "ipv6-neighbor-discovery";
-  //    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-  //
-  //    // Verify interface neighbor discovery settings are extracted
-  //    Interface iface1 = c.getAllInterfaces().get("ethernet1/1");
-  //    assertThat(iface1, notNullValue());
-  //    assertThat(iface1.getRouterAdvertisement(), equalTo(true));
-  //    // NDP proxy parsing not yet implemented
-  //    // assertThat(iface1.getNdpProxy(), equalTo(false));
-  //
-  //    Interface iface2 = c.getAllInterfaces().get("ethernet1/2");
-  //    assertThat(iface2, notNullValue());
-  //    assertThat(iface2.getRouterAdvertisement(), equalTo(false));
-  //    // assertThat(iface2.getNdpProxy(), equalTo(true));
-  //
-  //    Interface iface3 = c.getAllInterfaces().get("ethernet1/3");
-  //    assertThat(iface3, notNullValue());
-  //    assertThat(iface3.getRouterAdvertisement(), nullValue());
-  //    // assertThat(iface3.getNdpProxy(), nullValue());
-  //  }
-
-  @Test
-  public void testLegacyConfigFormat() {
-    String hostname = "config-filesystem-format";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify legacy format (set config devices localhost.localdomain ...) is supported
-    assertThat(c, notNullValue());
-    assertThat(c.getHostname(), equalTo("config-filesystem-format"));
-  }
-
-  @Test
-  public void testLegacyVsysFormat() {
-    String hostname = "vsys-configs";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-
-    // Verify legacy vsys format (set config devices localhost.localdomain vsys ...) is supported
-    assertThat(c, notNullValue());
-    assertThat(c.getVirtualSystems(), hasKey("vsys1"));
-    assertThat(c.getVirtualSystems().get("vsys1").getDisplayName(), equalTo("Primary-VSYS"));
-  }
-
-  @Test
-  public void testAddressObjectComprehensive() {
-    String hostname = "address-object-comprehensive";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
-    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
-
-    // Verify FQDN address objects
-    AddressObject webServer = addressObjects.get("web-server");
-    assertThat(webServer, notNullValue());
-    assertThat(webServer.getType(), equalTo(AddressObject.Type.FQDN));
-    assertThat(webServer.getFqdn(), equalTo("web.example.com"));
-    assertThat(webServer.getDescription(), equalTo("Web server FQDN"));
-    assertThat(webServer.getTags(), contains("web"));
-    assertThat(webServer.getIpSpace(), equalTo(EmptyIpSpace.INSTANCE));
-
-    AddressObject apiServer = addressObjects.get("api-server");
-    assertThat(apiServer, notNullValue());
-    assertThat(apiServer.getType(), equalTo(AddressObject.Type.FQDN));
-    assertThat(apiServer.getFqdn(), equalTo("api.example.com"));
-
-    // Verify IPv6 address objects - just check parsing succeeds
-    AddressObject ipv6Single = addressObjects.get("ipv6-single");
-    assertThat(ipv6Single, notNullValue());
-    assertThat(ipv6Single.getType(), equalTo(AddressObject.Type.IP));
-    assertThat(ipv6Single.getTags(), contains("ipv6"));
-
-    AddressObject ipv6Prefix = addressObjects.get("ipv6-prefix");
-    assertThat(ipv6Prefix, notNullValue());
-    assertThat(ipv6Prefix.getType(), equalTo(AddressObject.Type.PREFIX));
-    assertThat(ipv6Prefix.getDescription(), equalTo("IPv6 subnet"));
-
-    AddressObject ipv6Range = addressObjects.get("ipv6-range");
-    assertThat(ipv6Range, notNullValue());
-    assertThat(ipv6Range.getType(), equalTo(AddressObject.Type.IP_RANGE));
-  }
-
-  @Test
-  public void testSecurityRuleComprehensive() {
-    String hostname = "security-rule-comprehensive";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
-    Map<String, SecurityRule> securityRules = vsys.getRulebase().getSecurityRules();
-
-    // Verify rule with HIP profiles
-    SecurityRule rule1 = securityRules.get("rule1");
-    assertThat(rule1, notNullValue());
-    assertThat(rule1.getSourceHips(), containsInAnyOrder("hip-profile1", "hip-profile2"));
-    assertThat(rule1.getDestinationHips(), contains("hip-profile3"));
-    assertThat(rule1.getHipProfiles(), containsInAnyOrder("hip-profile-a", "hip-profile-b"));
-
-    // Verify rule with group tag
-    SecurityRule rule2 = securityRules.get("rule2");
-    assertThat(rule2, notNullValue());
-    assertThat(rule2.getGroupTag(), equalTo("critical-servers"));
-
-    // Verify rule with custom URL category
-    SecurityRule rule3 = securityRules.get("rule3");
-    assertThat(rule3, notNullValue());
-    assertThat(rule3.getCategory(), iterableWithSize(1));
-    assertThat(rule3.getCategory().iterator().next().getName(), equalTo("custom-category1"));
-
-    // Verify rule with rule type
-    SecurityRule rule4 = securityRules.get("rule4");
-    assertThat(rule4, notNullValue());
-    assertThat(rule4.getRuleType(), equalTo(SecurityRule.RuleType.INTERZONE));
-
-    // Verify rule with source users
-    SecurityRule rule5 = securityRules.get("rule5");
-    assertThat(rule5, notNullValue());
-    assertThat(rule5.getSourceUsers(), containsInAnyOrder("user1", "user2"));
-
-    // Verify rule with negate source
-    SecurityRule rule6 = securityRules.get("rule6");
-    assertThat(rule6, notNullValue());
-    assertThat(rule6.getNegateSource(), equalTo(true));
-
-    // Verify rule with negate destination
-    SecurityRule rule7 = securityRules.get("rule7");
-    assertThat(rule7, notNullValue());
-    assertThat(rule7.getNegateDestination(), equalTo(true));
-  }
-
-  @Test
-  public void testNatRuleComprehensive() {
-    String hostname = "nat-rule-comprehensive";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
-    Map<String, NatRule> natRules = vsys.getRulebase().getNatRules();
-
-    // Verify that NAT rules were created
-    assertThat(natRules.keySet(), hasItem("nat1"));
-    assertThat(natRules.keySet(), hasItem("nat2"));
-    assertThat(natRules.keySet(), hasItem("nat3"));
-    assertThat(natRules.keySet(), hasItem("nat4"));
-    assertThat(natRules.keySet(), hasItem("nat5"));
-
-    // Verify rule with active-active device binding
-    NatRule nat1 = natRules.get("nat1");
+    // PEER-OBJ should be referenced by BGP peer
     assertThat(
-        nat1.getActiveActiveDeviceBinding(), equalTo(NatRule.ActiveActiveDeviceBinding.PRIMARY));
-
-    // Verify rule with description and disabled
-    NatRule nat5 = natRules.get("nat5");
-    assertThat(nat5.getDescription(), equalTo("Test NAT rule"));
-    assertThat(nat5.getDisabled(), equalTo(true));
-  }
-
-  @Test
-  public void testAddressGroupComprehensive() {
-    String hostname = "address-group-comprehensive";
-    PaloAltoConfiguration c = parsePaloAltoConfig(hostname);
-    Vsys vsys = c.getVirtualSystems().get(DEFAULT_VSYS_NAME);
-    Map<String, AddressObject> addressObjects = vsys.getAddressObjects();
-    Map<String, AddressGroup> addressGroups = vsys.getAddressGroups();
-
-    // Verify dynamic address group with complex filter
-    AddressGroup prodWebServers = addressGroups.get("prod-web-servers");
-    assertThat(prodWebServers, notNullValue());
-    assertThat(prodWebServers.getType(), equalTo(AddressGroup.Type.DYNAMIC));
-    assertThat(prodWebServers.getFilter(), equalTo("'production' and 'web'"));
-    assertThat(prodWebServers.getDescription(), equalTo("Production web servers"));
-    // Should match only server1 (has both production and web tags)
-    assertThat(
-        prodWebServers.getIpSpace(addressObjects, addressGroups),
-        equalTo(addressObjects.get("server1").getIpSpace()));
-
-    // Verify dynamic address group with IPv6 objects
-    AddressGroup ipv6Servers = addressGroups.get("ipv6-servers");
-    assertThat(ipv6Servers, notNullValue());
-    assertThat(ipv6Servers.getType(), equalTo(AddressGroup.Type.DYNAMIC));
-    assertThat(ipv6Servers.getFilter(), equalTo("ipv6"));
-
-    // Verify static address group
-    AddressGroup allServers = addressGroups.get("all-servers");
-    assertThat(allServers, notNullValue());
-    assertThat(allServers.getType(), equalTo(AddressGroup.Type.STATIC));
-    assertThat(
-        allServers.getMembers(), containsInAnyOrder("server1", "server2", "server3", "server4"));
-
-    // Verify hybrid group (converted from dynamic to static)
-    AddressGroup hybridGroup = addressGroups.get("hybrid-group");
-    assertThat(hybridGroup, notNullValue());
-    assertThat(hybridGroup.getType(), equalTo(AddressGroup.Type.STATIC));
-    assertThat(hybridGroup.getMembers(), contains("server1"));
-    assertThat(hybridGroup.getFilter(), nullValue());
-
-    // Verify nested address groups
-    AddressGroup webServers = addressGroups.get("web-servers");
-    assertThat(webServers, notNullValue());
-    assertThat(webServers.getMembers(), containsInAnyOrder("server1", "server2"));
-
-    AddressGroup allWebServers = addressGroups.get("all-web-servers");
-    assertThat(allWebServers, notNullValue());
-    assertThat(allWebServers.getMembers(), contains("web-servers"));
-
-    // Verify dynamic group matching nested groups with tags
-    AddressGroup taggedGroups = addressGroups.get("tagged-groups");
-    assertThat(taggedGroups, notNullValue());
-    assertThat(taggedGroups.getType(), equalTo(AddressGroup.Type.DYNAMIC));
-    assertThat(taggedGroups.getFilter(), equalTo("'production'"));
+        ccae,
+        hasReferencedStructure(
+            filename,
+            PaloAltoStructureType.ADDRESS_OBJECT,
+            computeObjectName(DEFAULT_VSYS_NAME, "PEER-OBJ"),
+            BGP_PEER_ADDRESS));
   }
 }

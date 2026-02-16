@@ -72,11 +72,11 @@ public class BgpPeer implements Serializable {
     return _name;
   }
 
-  public @Nullable Ip getPeerAddress() {
+  public @Nullable InterfaceAddress getPeerAddress() {
     return _peerAddress;
   }
 
-  public void setPeerAddress(@Nullable Ip peerAddress) {
+  public void setPeerAddress(@Nullable InterfaceAddress peerAddress) {
     _peerAddress = peerAddress;
   }
 
@@ -113,7 +113,7 @@ public class BgpPeer implements Serializable {
   private @Nullable Ip _localAddress;
   private @Nullable String _localInterface;
   private final @Nonnull String _name;
-  private @Nullable Ip _peerAddress;
+  private @Nullable InterfaceAddress _peerAddress;
   private @Nullable Long _peerAs;
   private @Nullable ReflectorClient _reflectorClient;
   private @Nullable Integer _multihop;
