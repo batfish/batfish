@@ -212,6 +212,26 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   @Nullable Set<BgpAdvertisement> _externalAdvertisements;
 
   // RIBs and RIB delta builders
+  //
+  // RIB Architecture:
+  // There are two categories of RIBs:
+  //
+  // 1. Protocol-specific RIBs (_ebgpv4Rib, _ibgpv4Rib):
+  //    - Store incoming routes learned from eBGP/iBGP neighbors
+  //    - Used for route selection and best-path computation
+  //    - Routes are stored here during import processing
+  //
+  // 2. Combined egress RIBs (_bgpv4RibEbgp, _bgpv4RibIbgp):
+  //    - Store routes that will be exported (to main RIB, neighbors, etc.)
+  //    - Each respects its own multipath setting (multipathEbgp/multipathIbgp)
+  //    - Routes are routed here based on protocol type:
+  //      - RoutingProtocol.BGP -> _bgpv4RibEbgp (eBGP routes)
+  //      - RoutingProtocol.IBGP -> _bgpv4RibIbgp (iBGP routes)
+  //      - RoutingProtocol.AGGREGATE -> _bgpv4RibIbgp (local aggregates; see
+  //        processMergeOrRemoveInBgpRib for rationale)
+  //
+  // This separation ensures multipath settings are correctly applied per route type.
+
   /** Helper RIB containing all paths obtained with external BGP, for IPv4 unicast */
   final @Nonnull Bgpv4Rib _ebgpv4Rib;
 
@@ -221,8 +241,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   // outgoing RIB deltas for the current round (i.e., deltas generated in the previous round)
   private @Nonnull RibDelta<Bgpv4Route> _ebgpv4DeltaPrev = RibDelta.empty();
   private @Nonnull RibDelta<Bgpv4Route> _ebgpv4DeltaPrevBestPath = RibDelta.empty();
-  private @Nonnull RibDelta<Bgpv4Route> _bgpv4DeltaPrev = RibDelta.empty();
-  private @Nonnull RibDelta<Bgpv4Route> _bgpv4DeltaPrevBestPath = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4RibEbgpDeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4RibEbgpDeltaPrevBestPath = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4RibIbgpDeltaPrev = RibDelta.empty();
+  private @Nonnull RibDelta<Bgpv4Route> _bgpv4RibIbgpDeltaPrevBestPath = RibDelta.empty();
 
   // copy of RIBs from prev round, for new links in the current round.
   // note that we only populate the full Prev (not PrevBestPath) versions when
@@ -230,8 +252,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   private boolean _anySessionHasAdditionalPaths = true;
   private @Nonnull Set<Bgpv4Route> _ebgpv4Prev;
   private @Nonnull Set<Bgpv4Route> _ebgpv4PrevBestPath;
-  private @Nonnull Set<Bgpv4Route> _bgpv4Prev;
-  private @Nonnull Set<Bgpv4Route> _bgpv4PrevBestPath;
+  private @Nonnull Set<Bgpv4Route> _bgpv4RibEbgpPrev;
+  private @Nonnull Set<Bgpv4Route> _bgpv4RibEbgpPrevBestPath;
+  private @Nonnull Set<Bgpv4Route> _bgpv4RibIbgpPrev;
+  private @Nonnull Set<Bgpv4Route> _bgpv4RibIbgpPrevBestPath;
 
   /**
    * Routes in the main RIB at the end of the previous round. Unused if {@link #_exportFromBgpRib}
@@ -239,20 +263,38 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   private @Nonnull Set<AnnotatedRoute<AbstractRoute>> _mainRibPrev;
 
-  /** Combined BGP (both iBGP and eBGP) RIB, for IPv4 unicast */
-  @Nonnull Bgpv4Rib _bgpv4Rib;
+  /**
+   * Combined BGP RIB for eBGP routes, for IPv4 unicast. Uses multipathEbgp setting for multipath
+   * limit.
+   */
+  @Nonnull Bgpv4Rib _bgpv4RibEbgp;
 
-  /** {@link RibDelta} representing changes to {@link #_bgpv4Rib} in the current iteration */
-  private @Nonnull Builder<Bgpv4Route> _bgpv4DeltaBuilder = RibDelta.builder();
+  /**
+   * Combined BGP RIB for iBGP routes, for IPv4 unicast. Uses multipathIbgp setting for multipath
+   * limit.
+   */
+  @Nonnull Bgpv4Rib _bgpv4RibIbgp;
+
+  /** {@link RibDelta} representing changes to {@link #_bgpv4RibEbgp} in the current iteration */
+  private @Nonnull Builder<Bgpv4Route> _bgpv4RibEbgpDeltaBuilder = RibDelta.builder();
+
+  /** {@link RibDelta} representing changes to {@link #_bgpv4RibIbgp} in the current iteration */
+  private @Nonnull Builder<Bgpv4Route> _bgpv4RibIbgpDeltaBuilder = RibDelta.builder();
 
   /** {@link RibDelta} representing changes to {@link #_ebgpv4Rib} in the current iteration */
   private @Nonnull Builder<Bgpv4Route> _ebgpv4DeltaBuilder = RibDelta.builder();
 
   /**
-   * {@link RibDelta} representing changes to {@link #_bgpv4Rib} best path routes in the current
+   * {@link RibDelta} representing changes to {@link #_bgpv4RibEbgp} best path routes in the current
    * iteration
    */
-  private @Nonnull Builder<Bgpv4Route> _bgpv4DeltaBestPathBuilder = RibDelta.builder();
+  private @Nonnull Builder<Bgpv4Route> _bgpv4RibEbgpDeltaBestPathBuilder = RibDelta.builder();
+
+  /**
+   * {@link RibDelta} representing changes to {@link #_bgpv4RibIbgp} best path routes in the current
+   * iteration
+   */
+  private @Nonnull Builder<Bgpv4Route> _bgpv4RibIbgpDeltaBestPathBuilder = RibDelta.builder();
 
   /**
    * {@link RibDelta} representing changes to {@link #_ebgpv4Rib} best path routes in the current
@@ -438,11 +480,24 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
             _process.getNetworkNextHopIpTieBreaker(),
             _process.getRedistributeNextHopIpTieBreaker(),
             nextHopIpResolverRestriction);
-    _bgpv4Rib =
+    // Combined RIB for eBGP routes with multipathEbgp setting
+    _bgpv4RibEbgp =
         new Bgpv4Rib(
             _mainRib,
             bestPathTieBreaker,
-            _process.getMultipathEbgp() || _process.getMultipathIbgp() ? null : 1,
+            _process.getMultipathEbgp() ? null : 1,
+            multiPathMatchMode,
+            clusterListAsIbgpCost,
+            _process.getLocalOriginationTypeTieBreaker(),
+            _process.getNetworkNextHopIpTieBreaker(),
+            _process.getRedistributeNextHopIpTieBreaker(),
+            nextHopIpResolverRestriction);
+    // Combined RIB for iBGP routes with multipathIbgp setting
+    _bgpv4RibIbgp =
+        new Bgpv4Rib(
+            _mainRib,
+            bestPathTieBreaker,
+            _process.getMultipathIbgp() ? null : 1,
             multiPathMatchMode,
             clusterListAsIbgpCost,
             _process.getLocalOriginationTypeTieBreaker(),
@@ -495,8 +550,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     _process.getAggregates().forEach(_aggregates::put);
 
     _mainRibPrev = ImmutableSet.of();
-    _bgpv4Prev = ImmutableSet.of();
-    _bgpv4PrevBestPath = ImmutableSet.of();
+    _bgpv4RibEbgpPrev = ImmutableSet.of();
+    _bgpv4RibEbgpPrevBestPath = ImmutableSet.of();
+    _bgpv4RibIbgpPrev = ImmutableSet.of();
+    _bgpv4RibIbgpPrevBestPath = ImmutableSet.of();
     _ebgpv4Prev = ImmutableSet.of();
     _ebgpv4PrevBestPath = ImmutableSet.of();
   }
@@ -631,9 +688,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // changed since the end of the previous round. That means deltas must (still) be empty.
       // Main RIB invariant is checked at the VirtualRouter caller, since this class does not
       // have access to the main RIB delta.
-      assert _bgpv4DeltaBuilder.isEmpty();
+      assert _bgpv4RibEbgpDeltaBuilder.isEmpty();
+      assert _bgpv4RibIbgpDeltaBuilder.isEmpty();
       assert _ebgpv4DeltaBuilder.isEmpty();
-      assert _bgpv4DeltaBestPathBuilder.isEmpty();
+      assert _bgpv4RibEbgpDeltaBestPathBuilder.isEmpty();
+      assert _bgpv4RibIbgpDeltaBestPathBuilder.isEmpty();
       assert _ebgpv4DeltaBestPathBuilder.isEmpty();
 
       if (!_exportFromBgpRib) {
@@ -698,9 +757,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   public void updateResolvableRoutes(RibDelta<AnnotatedRoute<AbstractRoute>> mainRibDelta) {
-    BgpRib.MultipathRibDelta<Bgpv4Route> updateDelta = _bgpv4Rib.updateActiveRoutes(mainRibDelta);
-    _bgpv4DeltaBuilder.from(updateDelta.getMultipathDelta());
-    _bgpv4DeltaBestPathBuilder.from(updateDelta.getBestPathDelta());
+    // Update both combined RIBs
+    BgpRib.MultipathRibDelta<Bgpv4Route> ebgpUpdateDelta =
+        _bgpv4RibEbgp.updateActiveRoutes(mainRibDelta);
+    _bgpv4RibEbgpDeltaBuilder.from(ebgpUpdateDelta.getMultipathDelta());
+    _bgpv4RibEbgpDeltaBestPathBuilder.from(ebgpUpdateDelta.getBestPathDelta());
+
+    BgpRib.MultipathRibDelta<Bgpv4Route> ibgpUpdateDelta =
+        _bgpv4RibIbgp.updateActiveRoutes(mainRibDelta);
+    _bgpv4RibIbgpDeltaBuilder.from(ibgpUpdateDelta.getMultipathDelta());
+    _bgpv4RibIbgpDeltaBestPathBuilder.from(ibgpUpdateDelta.getBestPathDelta());
   }
 
   @Override
@@ -726,10 +792,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
-              "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}: {}",
+              "Redistributed via redistribution policy into local BGP RIB node {}, VRF {}:"
+                  + " ebgpDelta={}, ibgpDelta={}",
               _hostname,
               _vrfName,
-              _bgpv4DeltaBuilder.build());
+              _bgpv4RibEbgpDeltaBuilder.build(),
+              _bgpv4RibIbgpDeltaBuilder.build());
         }
       }
 
@@ -750,10 +818,12 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         }
         if (LOGGER.isDebugEnabled()) {
           LOGGER.debug(
-              "Redistributed via independent network policy into local BGP RIB node {}, VRF {}: {}",
+              "Redistributed via independent network policy into local BGP RIB node {}, VRF {}:"
+                  + " ebgpDelta={}, ibgpDelta={}",
               _hostname,
               _vrfName,
-              _bgpv4DeltaBuilder.build());
+              _bgpv4RibEbgpDeltaBuilder.build(),
+              _bgpv4RibIbgpDeltaBuilder.build());
         }
       }
     }
@@ -799,8 +869,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // We will consider the finalized deltas from the previous round instead.
     assert _ebgpv4DeltaBuilder.isEmpty();
     assert _ebgpv4DeltaBestPathBuilder.isEmpty();
-    assert _bgpv4DeltaBuilder.isEmpty();
-    assert _bgpv4DeltaBestPathBuilder.isEmpty();
+    assert _bgpv4RibEbgpDeltaBuilder.isEmpty();
+    assert _bgpv4RibIbgpDeltaBuilder.isEmpty();
+    assert _bgpv4RibEbgpDeltaBestPathBuilder.isEmpty();
+    assert _bgpv4RibIbgpDeltaBestPathBuilder.isEmpty();
     assert _evpnType3DeltaBuilder.isEmpty();
     assert _evpnType5DeltaBuilder.isEmpty();
     return
@@ -810,8 +882,10 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         // Outgoing message deltas. We need to send these to neighbors.
         || !_ebgpv4DeltaPrev.isEmpty()
         || !_ebgpv4DeltaPrevBestPath.isEmpty()
-        || !_bgpv4DeltaPrev.isEmpty()
-        || !_bgpv4DeltaPrevBestPath.isEmpty()
+        || !_bgpv4RibEbgpDeltaPrev.isEmpty()
+        || !_bgpv4RibEbgpDeltaPrevBestPath.isEmpty()
+        || !_bgpv4RibIbgpDeltaPrev.isEmpty()
+        || !_bgpv4RibIbgpDeltaPrevBestPath.isEmpty()
         || !_evpnType3DeltaPrev.isEmpty()
         || !_evpnType5DeltaPrev.isEmpty()
         || !_mainRibDelta.isEmpty()
@@ -939,13 +1013,18 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     unstage();
   }
 
-  /** Update main RIB. */
+  /** Update main RIB with routes from both eBGP and iBGP combined RIBs. */
   private void unstage() {
-    // Prepare the delta we will feed into the main RIB
-    RibDelta<Bgpv4Route> bgpv4RibDelta = _bgpv4DeltaBuilder.build();
+    // Prepare the deltas we will feed into the main RIB from both RIBs
+    RibDelta<Bgpv4Route> bgpv4RibEbgpDelta = _bgpv4RibEbgpDeltaBuilder.build();
+    RibDelta<Bgpv4Route> bgpv4RibIbgpDelta = _bgpv4RibIbgpDeltaBuilder.build();
     LOGGER.trace(
-        "{}: Unstaged BGP routes, current bgpv4Delta: {}", _c.getHostname(), bgpv4RibDelta);
-    _toMainRib.from(bgpv4RibDelta);
+        "{}: Unstaged BGP routes, ebgpDelta: {}, ibgpDelta: {}",
+        _c.getHostname(),
+        bgpv4RibEbgpDelta,
+        bgpv4RibIbgpDelta);
+    _toMainRib.from(bgpv4RibEbgpDelta);
+    _toMainRib.from(bgpv4RibIbgpDelta);
   }
 
   /** Pull v4Unicast routes from our neighbors' deltas, merge them into our own RIBs */
@@ -1174,13 +1253,31 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       // Two assertions to catch asynchrony bugs.
       assert _anySessionHasAdditionalPaths;
       assert _anySessionHasAdditionalPaths == computeAnySessionHasAdditionalPaths();
-      bgpv4Prev = _bgpv4Prev;
-      bgpv4DeltaPrev = _bgpv4DeltaPrev;
+      // Merge from both eBGP and iBGP combined RIBs
+      bgpv4Prev =
+          ImmutableSet.<Bgpv4Route>builder()
+              .addAll(_bgpv4RibEbgpPrev)
+              .addAll(_bgpv4RibIbgpPrev)
+              .build();
+      bgpv4DeltaPrev =
+          RibDelta.<Bgpv4Route>builder()
+              .from(_bgpv4RibEbgpDeltaPrev)
+              .from(_bgpv4RibIbgpDeltaPrev)
+              .build();
       ebgpv4Prev = _ebgpv4Prev;
       ebgpv4DeltaPrev = _ebgpv4DeltaPrev;
     } else {
-      bgpv4Prev = _bgpv4PrevBestPath;
-      bgpv4DeltaPrev = _bgpv4DeltaPrevBestPath;
+      // Merge best path routes from both eBGP and iBGP combined RIBs
+      bgpv4Prev =
+          ImmutableSet.<Bgpv4Route>builder()
+              .addAll(_bgpv4RibEbgpPrevBestPath)
+              .addAll(_bgpv4RibIbgpPrevBestPath)
+              .build();
+      bgpv4DeltaPrev =
+          RibDelta.<Bgpv4Route>builder()
+              .from(_bgpv4RibEbgpDeltaPrevBestPath)
+              .from(_bgpv4RibIbgpDeltaPrevBestPath)
+              .build();
       ebgpv4Prev = _ebgpv4PrevBestPath;
       ebgpv4DeltaPrev = _ebgpv4DeltaPrevBestPath;
     }
@@ -1402,10 +1499,16 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
       return RibDelta.empty();
     }
     Set<? extends AbstractRoute> currentRoutes =
-        _generateAggregatesFromMainRib ? _mainRib.getUnannotatedRoutes() : _bgpv4Rib.getRoutes();
+        _generateAggregatesFromMainRib
+            ? _mainRib.getUnannotatedRoutes()
+            : ImmutableSet.<Bgpv4Route>builder()
+                .addAll(_bgpv4RibEbgp.getRoutes())
+                .addAll(_bgpv4RibIbgp.getRoutes())
+                .build();
     RibDelta.Builder<Bgpv4Route> aggDeltaBuilder = RibDelta.builder();
     // Withdraw old aggregates. Withdrawals may be canceled out by activated aggregates below.
-    _bgpv4Rib.getRoutes().stream()
+    // Check both RIBs for existing aggregates
+    Stream.concat(_bgpv4RibEbgp.getRoutes().stream(), _bgpv4RibIbgp.getRoutes().stream())
         .filter(r -> r.getProtocol() == RoutingProtocol.AGGREGATE)
         .forEach(prevAggregate -> aggDeltaBuilder.remove(prevAggregate, Reason.WITHDRAW));
     Multimap<Prefix, AbstractRoute> potentialContributorsByAggregatePrefix =
@@ -2067,31 +2170,68 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Merges the given {@link Bgpv4Route} into {@link #_bgpv4Rib}, updating its multipath and best
-   * path delta builders accordingly. Returns the multipath delta associated with the merge.
+   * Merges the given {@link Bgpv4Route} into the appropriate combined BGP RIB ({@link
+   * #_bgpv4RibEbgp} or {@link #_bgpv4RibIbgp}), updating its multipath and best path delta builders
+   * accordingly. Returns the multipath delta associated with the merge.
    */
   private RibDelta<Bgpv4Route> processMergeInBgpRib(Bgpv4Route route) {
     return processMergeOrRemoveInBgpRib(route, true);
   }
 
   /**
-   * Removes the given {@link Bgpv4Route} from {@link #_bgpv4Rib}, updating its multipath and best
-   * path delta builders accordingly. Returns the multipath delta associated with the removal.
+   * Removes the given {@link Bgpv4Route} from the appropriate combined BGP RIB ({@link
+   * #_bgpv4RibEbgp} or {@link #_bgpv4RibIbgp}), updating its multipath and best path delta builders
+   * accordingly. Returns the multipath delta associated with the removal.
    */
   private RibDelta<Bgpv4Route> processRemoveInBgpRib(Bgpv4Route route) {
     return processMergeOrRemoveInBgpRib(route, false);
   }
 
   /**
-   * Merges or removes the given {@link Bgpv4Route} in {@link #_bgpv4Rib}, updating its multipath
-   * and best path delta builders accordingly. Returns the multipath delta associated with the
-   * change.
+   * Merges or removes the given {@link Bgpv4Route} in the appropriate combined BGP RIB ({@link
+   * #_bgpv4RibEbgp} for eBGP routes or {@link #_bgpv4RibIbgp} for iBGP routes), updating its
+   * multipath and best path delta builders accordingly. Returns the multipath delta associated with
+   * the change.
+   *
+   * <p>Routes are routed to RIBs based on protocol type:
+   *
+   * <ul>
+   *   <li>{@link RoutingProtocol#BGP} -> {@code _bgpv4RibEbgp} (eBGP routes)
+   *   <li>{@link RoutingProtocol#IBGP} -> {@code _bgpv4RibIbgp} (iBGP routes)
+   *   <li>{@link RoutingProtocol#AGGREGATE} -> {@code _bgpv4RibIbgp} (local aggregate routes)
+   * </ul>
+   *
+   * <p>AGGREGATE routes are routed to the iBGP RIB because:
+   *
+   * <ul>
+   *   <li>They are locally generated (not learned from eBGP peers), so eBGP multipath semantics
+   *       don't apply
+   *   <li>For any given prefix, there is at most one aggregate route, so multipath settings don't
+   *       meaningfully affect them
+   *   <li>They have admin distance similar to iBGP routes (200 on Cisco IOS)
+   * </ul>
    *
    * @param merge Whether to merge the given route (if false, removes it)
    */
   private RibDelta<Bgpv4Route> processMergeOrRemoveInBgpRib(Bgpv4Route route, boolean merge) {
-    return processMergeOrRemove(
-        _bgpv4Rib, route, _bgpv4DeltaBuilder, _bgpv4DeltaBestPathBuilder, merge);
+    // Route to the correct RIB based on protocol type
+    if (route.getProtocol() == RoutingProtocol.BGP) {
+      // eBGP route -> use _bgpv4RibEbgp
+      return processMergeOrRemove(
+          _bgpv4RibEbgp,
+          route,
+          _bgpv4RibEbgpDeltaBuilder,
+          _bgpv4RibEbgpDeltaBestPathBuilder,
+          merge);
+    } else {
+      // iBGP or AGGREGATE route -> use _bgpv4RibIbgp
+      return processMergeOrRemove(
+          _bgpv4RibIbgp,
+          route,
+          _bgpv4RibIbgpDeltaBuilder,
+          _bgpv4RibIbgpDeltaBestPathBuilder,
+          merge);
+    }
   }
 
   /**
@@ -2211,19 +2351,24 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // empty. We will consider the finalized deltas from the previous round instead.
     assert _ebgpv4DeltaBuilder.isEmpty();
     assert _ebgpv4DeltaBestPathBuilder.isEmpty();
-    assert _bgpv4DeltaBuilder.isEmpty();
-    assert _bgpv4DeltaBestPathBuilder.isEmpty();
+    assert _bgpv4RibEbgpDeltaBuilder.isEmpty();
+    assert _bgpv4RibIbgpDeltaBuilder.isEmpty();
+    assert _bgpv4RibEbgpDeltaBestPathBuilder.isEmpty();
+    assert _bgpv4RibIbgpDeltaBestPathBuilder.isEmpty();
     return Streams.concat(
             Stream.of(
-                // RIBs
-                _bgpv4Rib.getRoutes(),
+                // RIBs - include both eBGP and iBGP combined RIBs
+                _bgpv4RibEbgp.getRoutes(),
+                _bgpv4RibIbgp.getRoutes(),
                 _evpnType3Rib.getRoutes(),
                 _evpnType5Rib.getRoutes(),
-                // Outgoing RIB deltas
+                // Outgoing RIB deltas - include both eBGP and iBGP deltas
                 _ebgpv4DeltaPrev,
                 _ebgpv4DeltaPrevBestPath,
-                _bgpv4DeltaPrev,
-                _bgpv4DeltaPrevBestPath),
+                _bgpv4RibEbgpDeltaPrev,
+                _bgpv4RibEbgpDeltaPrevBestPath,
+                _bgpv4RibIbgpDeltaPrev,
+                _bgpv4RibIbgpDeltaPrevBestPath),
             // Message queues
             messageQueueStream(_evpnType3IncomingRoutes),
             messageQueueStream(_evpnType5IncomingRoutes))
@@ -2472,16 +2617,19 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     // Take a snapshot of current RIBs so we know to to send to new add-path sessions.
     _anySessionHasAdditionalPaths = computeAnySessionHasAdditionalPaths();
     if (_anySessionHasAdditionalPaths) {
-      _bgpv4Prev = _bgpv4Rib.getRoutes();
+      _bgpv4RibEbgpPrev = _bgpv4RibEbgp.getRoutes();
+      _bgpv4RibIbgpPrev = _bgpv4RibIbgp.getRoutes();
       _ebgpv4Prev = _ebgpv4Rib.getRoutes();
     } else {
-      _bgpv4Prev = ImmutableSet.of();
+      _bgpv4RibEbgpPrev = ImmutableSet.of();
+      _bgpv4RibIbgpPrev = ImmutableSet.of();
       _ebgpv4Prev = ImmutableSet.of();
     }
     // Take a snapshot of best-paths from current RIBs so we know what to send to new non-add-path
     // sessions, and also so we can tell what ADDs can be sent to neighbors: those that correspond
     // to current valid best paths.
-    _bgpv4PrevBestPath = _bgpv4Rib.getBestPathRoutes();
+    _bgpv4RibEbgpPrevBestPath = _bgpv4RibEbgp.getBestPathRoutes();
+    _bgpv4RibIbgpPrevBestPath = _bgpv4RibIbgp.getBestPathRoutes();
     _ebgpv4PrevBestPath = _ebgpv4Rib.getBestPathRoutes();
   }
 
@@ -2502,9 +2650,11 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
     if (_successfulWatchedTracksChanged && !_exportFromBgpRib) {
       // Sanity check that we are calling this method prior to its own execution schedule in the
       // iteration, and prior to any other node's execution schedule that touches this node.
-      assert _bgpv4DeltaBuilder.isEmpty();
+      assert _bgpv4RibEbgpDeltaBuilder.isEmpty();
+      assert _bgpv4RibIbgpDeltaBuilder.isEmpty();
       assert _ebgpv4DeltaBuilder.isEmpty();
-      assert _bgpv4DeltaBestPathBuilder.isEmpty();
+      assert _bgpv4RibEbgpDeltaBestPathBuilder.isEmpty();
+      assert _bgpv4RibIbgpDeltaBestPathBuilder.isEmpty();
       assert _ebgpv4DeltaBestPathBuilder.isEmpty();
       if (_mainRibPrev.isEmpty()) {
         // Save previous main RIB routes if they were not already saved during topology update.
@@ -2527,18 +2677,22 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
    */
   public void endOfInnerRound() {
     // Take a snapshot of this round's deltas to [additionally] send to add-path sessions.
-    _bgpv4DeltaPrev = _bgpv4DeltaBuilder.build();
+    _bgpv4RibEbgpDeltaPrev = _bgpv4RibEbgpDeltaBuilder.build();
+    _bgpv4RibIbgpDeltaPrev = _bgpv4RibIbgpDeltaBuilder.build();
     _ebgpv4DeltaPrev = _ebgpv4DeltaBuilder.build();
     _evpnType3DeltaPrev = _evpnType3DeltaBuilder.build();
     _evpnType5DeltaPrev = _evpnType5DeltaBuilder.build();
     // Take a snapshot of this round's best path deltas to send to non-add-path sessions.
-    _bgpv4DeltaPrevBestPath = _bgpv4DeltaBestPathBuilder.build();
+    _bgpv4RibEbgpDeltaPrevBestPath = _bgpv4RibEbgpDeltaBestPathBuilder.build();
+    _bgpv4RibIbgpDeltaPrevBestPath = _bgpv4RibIbgpDeltaBestPathBuilder.build();
     _ebgpv4DeltaPrevBestPath = _ebgpv4DeltaBestPathBuilder.build();
 
     // Delete all the internal state for this round that is no longer needed
-    _bgpv4DeltaBuilder = RibDelta.builder();
+    _bgpv4RibEbgpDeltaBuilder = RibDelta.builder();
+    _bgpv4RibIbgpDeltaBuilder = RibDelta.builder();
     _ebgpv4DeltaBuilder = RibDelta.builder();
-    _bgpv4DeltaBestPathBuilder = RibDelta.builder();
+    _bgpv4RibEbgpDeltaBestPathBuilder = RibDelta.builder();
+    _bgpv4RibIbgpDeltaBestPathBuilder = RibDelta.builder();
     _ebgpv4DeltaBestPathBuilder = RibDelta.builder();
     _evpnType3DeltaBuilder = RibDelta.builder();
     _evpnType5DeltaBuilder = RibDelta.builder();
@@ -2618,18 +2772,25 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
 
   /** Notifies the process an aggregate has been removed */
   void removeAggregate(AbstractRoute route) {
-    // TODO: this is probably busted because it doesn't check e/iBGP ribs.
-    BgpRib.MultipathRibDelta<Bgpv4Route> removeDelta = _bgpAggDeps.deleteRoute(route, _bgpv4Rib);
-    _bgpv4DeltaBuilder.from(removeDelta.getMultipathDelta());
-    _bgpv4DeltaBestPathBuilder.from(removeDelta.getBestPathDelta());
+    // Check both eBGP and iBGP combined RIBs for the aggregate to remove
+    BgpRib.MultipathRibDelta<Bgpv4Route> ebgpRemoveDelta =
+        _bgpAggDeps.deleteRoute(route, _bgpv4RibEbgp);
+    _bgpv4RibEbgpDeltaBuilder.from(ebgpRemoveDelta.getMultipathDelta());
+    _bgpv4RibEbgpDeltaBestPathBuilder.from(ebgpRemoveDelta.getBestPathDelta());
+
+    BgpRib.MultipathRibDelta<Bgpv4Route> ibgpRemoveDelta =
+        _bgpAggDeps.deleteRoute(route, _bgpv4RibIbgp);
+    _bgpv4RibIbgpDeltaBuilder.from(ibgpRemoveDelta.getMultipathDelta());
+    _bgpv4RibIbgpDeltaBestPathBuilder.from(ibgpRemoveDelta.getBestPathDelta());
   }
 
   /**
    * Return a stream of route advertisements we can leak to other VRFs. This includes
-   * locally-generated and received routes.
+   * locally-generated and received routes from both eBGP and iBGP combined RIBs.
    */
   Stream<RouteAdvertisement<Bgpv4Route>> getRoutesToLeak() {
-    return _bgpv4DeltaPrev.stream().filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
+    return Stream.concat(_bgpv4RibEbgpDeltaPrev.stream(), _bgpv4RibIbgpDeltaPrev.stream())
+        .filter(r -> !_importedFromOtherVrfs.contains(r.getRoute()));
   }
 
   /** Return a stream of EVPN route advertisements to leak to other VRFs. */
@@ -2638,15 +2799,22 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
   }
 
   /**
-   * Return a set of all bgpv4 routes. Excludes locally-generated (redistributed) routes for now.
+   * Return a set of all bgpv4 routes from both eBGP and iBGP combined RIBs. Excludes
+   * locally-generated (redistributed) routes for now.
    */
   public @Nonnull Set<Bgpv4Route> getV4Routes() {
-    return _bgpv4Rib.getRoutes();
+    return ImmutableSet.<Bgpv4Route>builder()
+        .addAll(_bgpv4RibEbgp.getRoutes())
+        .addAll(_bgpv4RibIbgp.getRoutes())
+        .build();
   }
 
-  /** Return a set of all bgpv4 backup routes */
+  /** Return a set of all bgpv4 backup routes from both eBGP and iBGP combined RIBs. */
   public @Nonnull Set<Bgpv4Route> getV4BackupRoutes() {
-    return _bgpv4Rib.getBackupRoutes();
+    return ImmutableSet.<Bgpv4Route>builder()
+        .addAll(_bgpv4RibEbgp.getBackupRoutes())
+        .addAll(_bgpv4RibIbgp.getBackupRoutes())
+        .build();
   }
 
   /** Return a set of all multipath-best evpn routes. */
@@ -2665,15 +2833,33 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .build();
   }
 
-  /** Return the number of bgpv4 bestpath routes. */
+  /** Return the number of bgpv4 bestpath routes from both eBGP and iBGP combined RIBs. */
   public int getNumBgpv4BestPaths() {
-    return _bgpv4Rib.getNumBestPathRoutes();
+    return _bgpv4RibEbgp.getNumBestPathRoutes() + _bgpv4RibIbgp.getNumBestPathRoutes();
   }
 
+  /**
+   * Return routes for a given prefix from both eBGP and iBGP combined RIBs. Used by track route
+   * evaluation.
+   */
+  public Set<Bgpv4Route> getBgpv4RoutesForPrefix(Prefix prefix) {
+    return ImmutableSet.<Bgpv4Route>builder()
+        .addAll(_bgpv4RibEbgp.getRoutes(prefix))
+        .addAll(_bgpv4RibIbgp.getRoutes(prefix))
+        .build();
+  }
+
+  /**
+   * Returns a combined delta builder containing routes from both eBGP and iBGP combined RIBs. Note:
+   * This creates a new builder each time; for performance-sensitive code, use the individual RIB
+   * delta builders directly.
+   */
   @VisibleForTesting
   @Nonnull
   Builder<Bgpv4Route> getBgpv4DeltaBuilder() {
-    return _bgpv4DeltaBuilder;
+    return RibDelta.<Bgpv4Route>builder()
+        .from(_bgpv4RibEbgpDeltaBuilder.build())
+        .from(_bgpv4RibIbgpDeltaBuilder.build());
   }
 
   /** Container for eBGP+iBGP RIB deltas */

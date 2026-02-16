@@ -138,7 +138,8 @@ public final class IncrementalBdpEngineTest {
         .setRedistributeNextHopIpTieBreaker(NextHopIpTieBreaker.HIGHEST_NEXT_HOP_IP)
         .build();
     Node node = new Node(c);
-    Bgpv4Rib rib = node.getVirtualRouter(DEFAULT_VRF_NAME).get().getBgpRoutingProcess()._bgpv4Rib;
+    Bgpv4Rib rib =
+        node.getVirtualRouter(DEFAULT_VRF_NAME).get().getBgpRoutingProcess()._bgpv4RibEbgp;
     Prefix prefix = Prefix.parse("192.0.2.0/24");
     rib.mergeRoute(
         Bgpv4Route.builder()

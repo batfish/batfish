@@ -661,7 +661,7 @@ final class IncrementalBdpEngine {
               trackRoute,
               Optional.ofNullable(
                       node.getVirtualRouter(trackRoute.getVrf()).get().getBgpRoutingProcess())
-                  .<GetRoutesForPrefix<Bgpv4Route>>map(brp -> brp._bgpv4Rib::getRoutes)
+                  .<GetRoutesForPrefix<Bgpv4Route>>map(brp -> brp::getBgpv4RoutesForPrefix)
                   .orElse(TrackRouteUtils::emptyGetRoutesForPrefix));
       case MAIN ->
           TrackRouteUtils.evaluateTrackRoute(

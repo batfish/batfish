@@ -136,8 +136,9 @@ public class BgpRoutingProcessTest {
     assertThat(_routingProcess._ibgpv4Rib.getUnannotatedRoutes(), empty());
     // eBGP
     assertThat(_routingProcess._ebgpv4Rib.getUnannotatedRoutes(), empty());
-    // Combined bgp
-    assertThat(_routingProcess._bgpv4Rib.getUnannotatedRoutes(), empty());
+    // Combined bgp (both eBGP and iBGP)
+    assertThat(_routingProcess._bgpv4RibEbgp.getUnannotatedRoutes(), empty());
+    assertThat(_routingProcess._bgpv4RibIbgp.getUnannotatedRoutes(), empty());
   }
 
   @Test
@@ -657,8 +658,9 @@ public class BgpRoutingProcessTest {
     Node node = new Node(_c);
     _routingProcess.initialize(node);
     _routingProcess.executeIteration(ImmutableMap.of());
+    // eBGP route should be in _bgpv4RibEbgp
     assertThat(
-        _routingProcess._bgpv4Rib.getUnannotatedRoutes(),
+        _routingProcess._bgpv4RibEbgp.getUnannotatedRoutes(),
         contains(
             isBgpv4RouteThat(
                 allOf(hasPrefix(prefix1), hasProtocol(RoutingProtocol.BGP), isNonRouting(true)))));
@@ -982,5 +984,333 @@ public class BgpRoutingProcessTest {
             .setNextHop(NextHopDiscard.instance())
             .build();
     assertThat(evpnRouteToBgpv4Route(inputRoute, 1).build(), hasTag(5L));
+  }
+
+  /**
+   * Test that _bgpv4RibEbgp and _ebgpv4Rib process eBGP routes consistently when multipathIbgp is
+   * enabled but multipathEbgp is disabled.
+   *
+   * <p>GitHub issue: https://github.com/batfish/batfish/issues/8990
+   */
+  @Test
+  public void testBgpv4RibEbgpConsistencyWithEbgpv4Rib() {
+    // Setup BGP process with multipathIbgp=true, multipathEbgp=false
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    bgpProcess.setMultipathIbgp(true);
+    bgpProcess.setMultipathEbgp(false);
+    vrf.setBgpProcess(bgpProcess);
+    Rib mainRib = new Rib();
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("60.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+
+    BgpRoutingProcess routingProcess =
+        new BgpRoutingProcess(
+            bgpProcess, c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    // Create two equal-cost eBGP routes
+    Prefix pfx = Prefix.parse("10.0.1.0/24");
+    Bgpv4Route r1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route r2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    // Insert r1 into _bgpv4RibEbgp and _ebgpv4Rib
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(r1);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(r1);
+    // Both should have the same routes after inserting r1
+    assertThat(
+        routingProcess._bgpv4RibEbgp.getRoutes(pfx),
+        equalTo(routingProcess._ebgpv4Rib.getRoutes(pfx)));
+
+    // Insert r2 into _bgpv4RibEbgp and _ebgpv4Rib
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(r2);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(r2);
+    // Both should still have the same routes after inserting r2
+    // (This was the bug: _bgpv4Rib would have both routes while _ebgpv4Rib would have only one)
+    assertThat(
+        "Combined eBGP RIB should have same routes as eBGP-only RIB when multipathEbgp=false",
+        routingProcess._bgpv4RibEbgp.getRoutes(pfx),
+        equalTo(routingProcess._ebgpv4Rib.getRoutes(pfx)));
+  }
+
+  /**
+   * Test that _bgpv4RibIbgp and _ibgpv4Rib process iBGP routes consistently when multipathEbgp is
+   * enabled but multipathIbgp is disabled (reverse of the original bug).
+   */
+  @Test
+  public void testBgpv4RibIbgpConsistencyWithIbgpv4Rib() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    bgpProcess.setMultipathIbgp(false);
+    bgpProcess.setMultipathEbgp(true);
+    vrf.setBgpProcess(bgpProcess);
+    Rib mainRib = new Rib();
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("60.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+
+    BgpRoutingProcess routingProcess =
+        new BgpRoutingProcess(
+            bgpProcess, c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    // Create two equal-cost iBGP routes
+    Prefix pfx = Prefix.parse("10.0.1.0/24");
+    Bgpv4Route r1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+    Bgpv4Route r2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(pfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(r1);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(r1);
+    assertThat(
+        routingProcess._bgpv4RibIbgp.getRoutes(pfx),
+        equalTo(routingProcess._ibgpv4Rib.getRoutes(pfx)));
+
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(r2);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(r2);
+    assertThat(
+        "Combined iBGP RIB should have same routes as iBGP-only RIB when multipathIbgp=false",
+        routingProcess._bgpv4RibIbgp.getRoutes(pfx),
+        equalTo(routingProcess._ibgpv4Rib.getRoutes(pfx)));
+  }
+
+  /**
+   * Test that when both multipath are enabled, both eBGP and iBGP routes allow multipath in their
+   * respective combined RIBs.
+   */
+  @Test
+  public void testBothMultipathEnabled() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    bgpProcess.setMultipathIbgp(true);
+    bgpProcess.setMultipathEbgp(true);
+    vrf.setBgpProcess(bgpProcess);
+    Rib mainRib = new Rib();
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("60.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+
+    BgpRoutingProcess routingProcess =
+        new BgpRoutingProcess(
+            bgpProcess, c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    // Create two equal-cost eBGP routes
+    Prefix ebgpPfx = Prefix.parse("10.0.1.0/24");
+    Bgpv4Route ebgpR1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ebgpPfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route ebgpR2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ebgpPfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(ebgpR1);
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(ebgpR2);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(ebgpR1);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(ebgpR2);
+    // Both RIBs should have both routes (multipath enabled)
+    assertThat(
+        "Both RIBs should have 2 eBGP routes when multipathEbgp=true",
+        routingProcess._bgpv4RibEbgp.getRoutes(ebgpPfx).size(),
+        equalTo(2));
+    assertThat(
+        routingProcess._bgpv4RibEbgp.getRoutes(ebgpPfx),
+        equalTo(routingProcess._ebgpv4Rib.getRoutes(ebgpPfx)));
+
+    // Create two equal-cost iBGP routes
+    Prefix ibgpPfx = Prefix.parse("10.0.2.0/24");
+    Bgpv4Route ibgpR1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ibgpPfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+    Bgpv4Route ibgpR2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ibgpPfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(ibgpR1);
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(ibgpR2);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(ibgpR1);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(ibgpR2);
+    // Both RIBs should have both routes (multipath enabled)
+    assertThat(
+        "Both RIBs should have 2 iBGP routes when multipathIbgp=true",
+        routingProcess._bgpv4RibIbgp.getRoutes(ibgpPfx).size(),
+        equalTo(2));
+    assertThat(
+        routingProcess._bgpv4RibIbgp.getRoutes(ibgpPfx),
+        equalTo(routingProcess._ibgpv4Rib.getRoutes(ibgpPfx)));
+  }
+
+  /**
+   * Test that when both multipath are disabled, neither eBGP nor iBGP routes allow multipath in
+   * their combined RIBs.
+   */
+  @Test
+  public void testBothMultipathDisabled() {
+    NetworkFactory nf = new NetworkFactory();
+    Configuration c =
+        nf.configurationBuilder()
+            .setConfigurationFormat(ConfigurationFormat.CISCO_IOS)
+            .setHostname("c1")
+            .build();
+    Vrf vrf = nf.vrfBuilder().setOwner(c).setName(DEFAULT_VRF_NAME).build();
+    BgpProcess bgpProcess = BgpProcess.testBgpProcess(Ip.ZERO);
+    bgpProcess.setMultipathIbgp(false);
+    bgpProcess.setMultipathEbgp(false);
+    vrf.setBgpProcess(bgpProcess);
+    Rib mainRib = new Rib();
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("70.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+    mainRib.mergeRouteGetDelta(
+        new AnnotatedRoute<>(
+            StaticRoute.testBuilder().setNetwork(Prefix.parse("60.0.0.0/24")).build(),
+            DEFAULT_VRF_NAME));
+
+    BgpRoutingProcess routingProcess =
+        new BgpRoutingProcess(
+            bgpProcess, c, DEFAULT_VRF_NAME, mainRib, BgpTopology.EMPTY, new PrefixTracer());
+
+    // Create two equal-cost eBGP routes
+    Prefix ebgpPfx = Prefix.parse("10.0.1.0/24");
+    Bgpv4Route ebgpR1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ebgpPfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+    Bgpv4Route ebgpR2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ebgpPfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.BGP)
+            .build();
+
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(ebgpR1);
+    routingProcess._bgpv4RibEbgp.mergeRouteGetDelta(ebgpR2);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(ebgpR1);
+    routingProcess._ebgpv4Rib.mergeRouteGetDelta(ebgpR2);
+    // Both RIBs should have only 1 route (multipath disabled)
+    assertThat(
+        "Both RIBs should have 1 eBGP route when multipathEbgp=false",
+        routingProcess._bgpv4RibEbgp.getRoutes(ebgpPfx).size(),
+        equalTo(1));
+    assertThat(
+        routingProcess._bgpv4RibEbgp.getRoutes(ebgpPfx),
+        equalTo(routingProcess._ebgpv4Rib.getRoutes(ebgpPfx)));
+
+    // Create two equal-cost iBGP routes
+    Prefix ibgpPfx = Prefix.parse("10.0.2.0/24");
+    Bgpv4Route ibgpR1 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ibgpPfx)
+            .setNextHopIp(Ip.parse("70.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("70.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+    Bgpv4Route ibgpR2 =
+        Bgpv4Route.testBuilder()
+            .setNetwork(ibgpPfx)
+            .setNextHopIp(Ip.parse("60.0.0.1"))
+            .setOriginMechanism(OriginMechanism.LEARNED)
+            .setReceivedFrom(ReceivedFromIp.of(Ip.parse("60.0.0.1")))
+            .setProtocol(RoutingProtocol.IBGP)
+            .build();
+
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(ibgpR1);
+    routingProcess._bgpv4RibIbgp.mergeRouteGetDelta(ibgpR2);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(ibgpR1);
+    routingProcess._ibgpv4Rib.mergeRouteGetDelta(ibgpR2);
+    // Both RIBs should have only 1 route (multipath disabled)
+    assertThat(
+        "Both RIBs should have 1 iBGP route when multipathIbgp=false",
+        routingProcess._bgpv4RibIbgp.getRoutes(ibgpPfx).size(),
+        equalTo(1));
+    assertThat(
+        routingProcess._bgpv4RibIbgp.getRoutes(ibgpPfx),
+        equalTo(routingProcess._ibgpv4Rib.getRoutes(ibgpPfx)));
   }
 }

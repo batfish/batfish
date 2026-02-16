@@ -215,13 +215,13 @@
         "Network" : "3.0.1.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.3"
+          "ip" : "10.12.11.2"
         },
-        "Next_Hop_IP" : "10.13.22.3",
+        "Next_Hop_IP" : "10.12.11.2",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -233,13 +233,13 @@
         "Network" : "3.0.2.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.3"
+          "ip" : "10.12.11.2"
         },
-        "Next_Hop_IP" : "10.13.22.3",
+        "Next_Hop_IP" : "10.12.11.2",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -436,13 +436,13 @@
         "Network" : "2.128.0.0/16",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.12.11.2"
+          "ip" : "10.13.22.3"
         },
-        "Next_Hop_IP" : "10.12.11.2",
+        "Next_Hop_IP" : "10.13.22.3",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -1377,13 +1377,13 @@
         "Network" : "3.0.1.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.23.21.3"
+          "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.23.21.3",
+        "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -1395,13 +1395,13 @@
         "Network" : "3.0.2.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.23.21.3"
+          "ip" : "10.12.11.1"
         },
-        "Next_Hop_IP" : "10.23.21.3",
+        "Next_Hop_IP" : "10.12.11.1",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -1487,13 +1487,13 @@
         "Network" : "1.0.1.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.12.11.1"
+          "ip" : "10.23.21.3"
         },
-        "Next_Hop_IP" : "10.12.11.1",
+        "Next_Hop_IP" : "10.23.21.3",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -5052,13 +5052,13 @@
         "Network" : "1.0.1.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.1"
+          "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.13.22.1",
+        "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -5070,13 +5070,13 @@
         "Network" : "1.0.2.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.1"
+          "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.13.22.1",
+        "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -5290,13 +5290,13 @@
         "Network" : "1.0.2.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.1"
+          "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.13.22.1",
+        "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "bgp",
+        "Protocol" : "ibgp",
         "Tag" : null,
-        "Admin_Distance" : 20,
+        "Admin_Distance" : 200,
         "Metric" : 50
       },
       {
@@ -5308,13 +5308,13 @@
         "Network" : "2.128.0.0/16",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.23.21.2"
+          "ip" : "10.13.22.1"
         },
-        "Next_Hop_IP" : "10.23.21.2",
+        "Next_Hop_IP" : "10.13.22.1",
         "Next_Hop_Interface" : "dynamic",
-        "Protocol" : "ibgp",
+        "Protocol" : "bgp",
         "Tag" : null,
-        "Admin_Distance" : 200,
+        "Admin_Distance" : 20,
         "Metric" : 50
       },
       {
@@ -5510,9 +5510,9 @@
         "Network" : "1.0.2.0/24",
         "Next_Hop" : {
           "type" : "ip",
-          "ip" : "10.13.22.1"
+          "ip" : "10.23.21.2"
         },
-        "Next_Hop_IP" : "10.13.22.1",
+        "Next_Hop_IP" : "10.23.21.2",
         "Next_Hop_Interface" : "dynamic",
         "Protocol" : "ibgp",
         "Tag" : null,
