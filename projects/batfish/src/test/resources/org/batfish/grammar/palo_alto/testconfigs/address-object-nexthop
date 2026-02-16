@@ -1,0 +1,31 @@
+set deviceconfig system hostname address-object-nexthop
+
+# Define address objects BEFORE use
+set address PEER-OBJ ip-netmask 5.4.3.2/32
+set address NEXTHOP-OBJ ip-netmask 10.10.10.1/32
+
+# Interface for BGP
+set network interface ethernet ethernet1/1 layer3 ip 1.2.3.6/24
+
+# BGP with address object as peer-address
+set network virtual-router BGP protocol bgp enable yes
+set network virtual-router BGP protocol bgp router-id 1.2.3.4
+set network virtual-router BGP protocol bgp local-as 65001
+set network virtual-router BGP protocol bgp peer-group PG type ibgp
+set network virtual-router BGP protocol bgp peer-group PG enable yes
+set network virtual-router BGP protocol bgp peer-group PG peer PEER enable yes
+set network virtual-router BGP protocol bgp peer-group PG peer PEER peer-address ip PEER-OBJ
+set network virtual-router BGP protocol bgp peer-group PG peer PEER local-address interface ethernet1/1
+
+# Static route with address object as nexthop
+set network virtual-router BGP routing-table ip static-route ROUTE1 destination 0.0.0.0/0
+set network virtual-router BGP routing-table ip static-route ROUTE1 nexthop ip-address NEXTHOP-OBJ
+
+# Static route with literal IP (for comparison)
+set network virtual-router BGP routing-table ip static-route ROUTE2 destination 192.168.1.0/24
+set network virtual-router BGP routing-table ip static-route ROUTE2 nexthop ip-address 192.168.2.1
+
+# Define address object AFTER use - tests that order doesn't matter
+set address NEXTHOP-OBJ-AFTER ip-netmask 10.20.20.1/32
+set network virtual-router BGP routing-table ip static-route ROUTE3 destination 172.16.0.0/16
+set network virtual-router BGP routing-table ip static-route ROUTE3 nexthop ip-address NEXTHOP-OBJ-AFTER
