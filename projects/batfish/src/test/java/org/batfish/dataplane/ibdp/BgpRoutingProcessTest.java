@@ -609,16 +609,11 @@ public class BgpRoutingProcessTest {
                     hasProtocol(RoutingProtocol.BGP),
                     isNonRouting(true),
                     hasOriginType(IGP)))));
+    // With the fix for split RIBs, getV4BackupRoutes() now returns only non-best routes.
+    // The INCOMPLETE route is the backup to the IGP route.
     assertThat(
         _routingProcess.getV4BackupRoutes(),
-        containsInAnyOrder(
-            isBgpv4RouteThat(
-                allOf(
-                    hasNextHop(NextHopDiscard.instance()),
-                    hasPrefix(prefix),
-                    hasProtocol(RoutingProtocol.BGP),
-                    isNonRouting(true),
-                    hasOriginType(IGP))),
+        contains(
             isBgpv4RouteThat(
                 allOf(
                     hasNextHop(NextHopDiscard.instance()),

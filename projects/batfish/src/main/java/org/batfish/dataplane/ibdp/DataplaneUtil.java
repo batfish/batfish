@@ -81,16 +81,14 @@ public final class DataplaneUtil {
                 Cell::getRowKey,
                 Cell::getColumnKey,
                 cell ->
-                    // TODO: Instead of subtracting RIB best routes from RIB backup routes, RIB
-                    // backup routes should not store best routes to begin with.
+                    // BgpRoutingProcess.getV4BackupRoutes() now computes backup routes correctly
+                    // for both single-RIB and split-RIB cases. No subtraction is needed.
                     ImmutableSet.copyOf(
-                        Sets.difference(
-                            nodes
-                                .get(cell.getRowKey())
-                                .getVirtualRouter(cell.getColumnKey())
-                                .get()
-                                .getBgpBackupRoutes(),
-                            cell.getValue()))));
+                        nodes
+                            .get(cell.getRowKey())
+                            .getVirtualRouter(cell.getColumnKey())
+                            .get()
+                            .getBgpBackupRoutes())));
   }
 
   static @Nonnull Table<String, String, Set<EvpnRoute<?, ?>>> computeEvpnRoutes(

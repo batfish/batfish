@@ -2809,12 +2809,86 @@ final class BgpRoutingProcess implements RoutingProcess<BgpTopology, BgpRoute<?,
         .build();
   }
 
-  /** Return a set of all bgpv4 backup routes from both eBGP and iBGP combined RIBs. */
+  /**
+   * Return a set of all bgpv4 backup routes from both eBGP and iBGP combined RIBs.
+   *
+   * <p>With separate RIBs for eBGP and iBGP routes, backup routes must be computed correctly when
+   * routes for the same prefix exist in both RIBs. A route that is "best" in its own RIB might be a
+   * backup when compared against routes from the other RIB.
+   *
+   * <p>This method computes the final backup routes:
+   *
+   * <ol>
+   *   <li>For prefixes with routes only in one RIB, returns routes from backup map minus tree
+   *       routes
+   *   <li>For prefixes with routes in both RIBs (split-RIB case), returns only the non-best route
+   * </ol>
+   */
   public @Nonnull Set<Bgpv4Route> getV4BackupRoutes() {
-    return ImmutableSet.<Bgpv4Route>builder()
-        .addAll(_bgpv4RibEbgp.getBackupRoutes())
-        .addAll(_bgpv4RibIbgp.getBackupRoutes())
-        .build();
+    // Group tree routes by prefix for each RIB
+    Set<Prefix> ebgpPrefixes =
+        _bgpv4RibEbgp.getRoutes().stream()
+            .map(Bgpv4Route::getNetwork)
+            .collect(ImmutableSet.toImmutableSet());
+    Set<Prefix> ibgpPrefixes =
+        _bgpv4RibIbgp.getRoutes().stream()
+            .map(Bgpv4Route::getNetwork)
+            .collect(ImmutableSet.toImmutableSet());
+
+    // Find prefixes that exist in both RIBs (split-RIB case)
+    Set<Prefix> splitRibPrefixes =
+        ebgpPrefixes.stream().filter(ibgpPrefixes::contains).collect(ImmutableSet.toImmutableSet());
+
+    ImmutableSet.Builder<Bgpv4Route> backupRoutes = ImmutableSet.builder();
+
+    // For split-RIB prefixes, find the overall best and return only non-best as backup
+    for (Prefix prefix : splitRibPrefixes) {
+      // Get all routes for this prefix from both RIBs
+      Set<Bgpv4Route> ebgpRoutes = _bgpv4RibEbgp.getRoutes(prefix);
+      Set<Bgpv4Route> ibgpRoutes = _bgpv4RibIbgp.getRoutes(prefix);
+
+      Set<Bgpv4Route> allRoutes =
+          ImmutableSet.<Bgpv4Route>builder().addAll(ebgpRoutes).addAll(ibgpRoutes).build();
+
+      if (allRoutes.size() <= 1) {
+        continue;
+      }
+
+      // Find the overall best route
+      Bgpv4Route best = null;
+      for (Bgpv4Route route : allRoutes) {
+        if (best == null || _bgpv4RibEbgp.comparePreference(route, best) > 0) {
+          best = route;
+        }
+      }
+
+      // Return only the non-best route as backup
+      for (Bgpv4Route route : allRoutes) {
+        if (!route.equals(best)) {
+          backupRoutes.add(route);
+        }
+      }
+    }
+
+    // For non-split-RIB prefixes in eBGP RIB: return backup map minus tree routes
+    for (Bgpv4Route route : _bgpv4RibEbgp.getBackupRoutes()) {
+      if (!splitRibPrefixes.contains(route.getNetwork())) {
+        if (!_bgpv4RibEbgp.getRoutes().contains(route)) {
+          backupRoutes.add(route);
+        }
+      }
+    }
+
+    // For non-split-RIB prefixes in iBGP RIB: return backup map minus tree routes
+    for (Bgpv4Route route : _bgpv4RibIbgp.getBackupRoutes()) {
+      if (!splitRibPrefixes.contains(route.getNetwork())) {
+        if (!_bgpv4RibIbgp.getRoutes().contains(route)) {
+          backupRoutes.add(route);
+        }
+      }
+    }
+
+    return backupRoutes.build();
   }
 
   /** Return a set of all multipath-best evpn routes. */
