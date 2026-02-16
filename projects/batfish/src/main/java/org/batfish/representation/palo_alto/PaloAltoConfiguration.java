@@ -1974,6 +1974,29 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     }
   }
 
+  /** Converts interface address {@link InterfaceAddress} to {@link Ip}. */
+  private @Nullable Ip interfaceAddressToIp(@Nullable InterfaceAddress address, Vsys vsys) {
+    if (address == null) {
+      return null;
+    }
+    // Resolve the address (either as a reference or as a literal IP)
+    ConcreteInterfaceAddress concreteAddress =
+        interfaceAddressToConcreteInterfaceAddress(address, vsys, _w);
+    if (concreteAddress == null) {
+      // REFERENCE type that couldn't be resolved
+      _w.redFlagf("Could not resolve address reference: %s", address.getValue());
+      return null;
+    }
+    // Verify the address is a host address (/32)
+    if (concreteAddress.getPrefix().getPrefixLength() != Prefix.MAX_PREFIX_LENGTH) {
+      _w.redFlagf(
+          "Address %s has non-/32 mask %s, expected a host address",
+          address.getValue(), concreteAddress.getPrefix().getPrefixLength());
+      return null;
+    }
+    return concreteAddress.getIp();
+  }
+
   /** Converts {@link RuleEndpoint} to {@code IpSpace} */
   @SuppressWarnings("fallthrough")
   private @Nonnull IpSpace ruleEndpointToIpSpace(RuleEndpoint endpoint, Vsys vsys, Warnings w) {
@@ -2608,7 +2631,8 @@ public class PaloAltoConfiguration extends VendorConfiguration {
             .setDescription(peer.getName())
             .setGroup(pg.getName())
             .setLocalAs(localAs)
-            .setPeerAddress(peer.getPeerAddress())
+            .setPeerAddress(
+                interfaceAddressToIp(peer.getPeerAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME)))
             // Multihop (as batfish VI model understands it) is always on for PAN because of
             // "number + 2" computation
             // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
@@ -2880,6 +2904,9 @@ public class PaloAltoConfiguration extends VendorConfiguration {
         _w.redFlagf("Cannot convert static route %s, as it has no nexthop.", e.getKey());
         continue;
       }
+      // Resolve nexthop IP address reference
+      Ip nextHopIp =
+          interfaceAddressToIp(sr.getNextHopIp(), _virtualSystems.get(DEFAULT_VSYS_NAME));
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
@@ -2888,8 +2915,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
                           ? NextHopDiscard.instance()
                           : nextVrf != null
                               ? NextHopVrf.of(nextVrf)
-                              : NextHop.legacyConverter(
-                                  sr.getNextHopInterface(), sr.getNextHopIp()))
+                              : NextHop.legacyConverter(sr.getNextHopInterface(), nextHopIp))
                   .setAdministrativeCost(sr.getAdminDistance())
                   .setMetric(sr.getMetric())
                   .setNetwork(destination)
