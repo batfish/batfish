@@ -34,8 +34,11 @@ class GrammarValidator:
         self.parser_rules: Dict[str, Tuple[str, int]] = (
             {}
         )  # name -> (definition, line_num)
-        self.lexer_rules: Set[str] = set()
-        self.fragments: Set[str] = set()
+        self.lexer_rules: Set[Tuple[str, int]] = set()  # (name, line_num)
+        self.fragments: Set[Tuple[str, int]] = set()  # (name, line_num)
+        self.mode_tokens: Dict[str, List[Tuple[str, int]]] = (
+            {}
+        )  # mode_name -> [(token, line)]
         self.imports: List[str] = []
         self.is_main_parser = False
 
@@ -75,6 +78,7 @@ class GrammarValidator:
         current_rule = None
         current_definition = []
         rule_start_line = 0
+        current_mode = None  # Track current lexer mode
 
         for i, line in enumerate(self.lines, 1):
             # Skip comments
@@ -87,6 +91,14 @@ class GrammarValidator:
                 self.imports.extend(
                     [imp.strip() for imp in import_match.group(1).split(",")]
                 )
+                continue
+
+            # Detect mode declaration in lexer grammars
+            mode_match = re.match(r"^mode\s+([A-Za-z][A-Za-z0-9_]*);?", line.strip())
+            if mode_match:
+                current_mode = mode_match.group(1)
+                if current_mode not in self.mode_tokens:
+                    self.mode_tokens[current_mode] = []
                 continue
 
             # Detect parser rule (lowercase start)
@@ -106,13 +118,25 @@ class GrammarValidator:
 
             # Detect lexer rule or fragment (uppercase start)
             if current_rule is None:
-                lexer_rule_match = re.match(r"^([A-Z][A-Z0-9_]*)\s*:", line.strip())
-                if lexer_rule_match:
-                    rule_name = lexer_rule_match.group(1)
-                    if line.strip().startswith("fragment"):
-                        self.fragments.add(rule_name)
-                    else:
-                        self.lexer_rules.add(rule_name)
+                # Check for fragment
+                if line.strip().startswith("fragment"):
+                    frag_match = re.match(
+                        r"^fragment\s+([A-Z][A-Za-z0-9_]*)\s*:", line.strip()
+                    )
+                    if frag_match:
+                        self.fragments.add((frag_match.group(1), i))
+                else:
+                    lexer_rule_match = re.match(
+                        r"^([A-Z][A-Za-z0-9_]*)\s*:", line.strip()
+                    )
+                    if lexer_rule_match:
+                        rule_name = lexer_rule_match.group(1)
+                        if current_mode:
+                            # Mode token
+                            self.mode_tokens[current_mode].append((rule_name, i))
+                        else:
+                            # Default mode token
+                            self.lexer_rules.add((rule_name, i))
 
             # Continue building current rule definition
             if current_rule:
@@ -151,15 +175,6 @@ class GrammarValidator:
             if "_null" in rule_name:
                 # _null should only be on leaf rules
                 self._check_leaf_vs_nonleaf_null(rule_name, definition, line_num)
-
-            # Check: recommended prefixes for top-level rules
-            if self.is_main_parser and not rule_name.startswith("s_"):
-                # Only warn for non-top-level looking rules
-                if "_" in rule_name and not rule_name.startswith("_"):
-                    self.warnings.append(
-                        f"Line {line_num}: Top-level parser rule '{rule_name}' should use 's_' prefix "
-                        f"(or follow naming convention in docs/parsing/README.md)"
-                    )
 
     def _check_leaf_vs_nonleaf_null(
         self, rule_name: str, definition: str, line_num: int
@@ -284,24 +299,39 @@ class GrammarValidator:
 
     def _validate_lexer_rule_names(self):
         """Check lexer rule naming conventions."""
-        # Keywords: ALL_CAPS with underscores
-        for rule in self.lexer_rules:
+        # Default mode tokens: ALL_CAPS with underscores
+        for rule, line_num in self.lexer_rules:
             if rule != rule.upper():
                 self.errors.append(
-                    f"Lexer rule '{rule}' should be ALL_CAPS with underscores"
+                    f"Line {line_num}: Lexer rule '{rule}' should be ALL_CAPS with underscores"
                 )
 
+        # Mode tokens: M_ModeName_TOKEN_NAME pattern
+        # The mode name already includes M_ prefix (e.g., M_AsPath)
+        for mode_name, tokens in self.mode_tokens.items():
+            for token_name, line_num in tokens:
+                expected_prefix = f"{mode_name}_"
+                if not token_name.startswith(expected_prefix):
+                    self.warnings.append(
+                        f"Line {line_num}: Mode token '{token_name}' in mode '{mode_name}' "
+                        f"should follow pattern '{mode_name}_TOKEN_NAME'"
+                    )
+
         # Fragments: F_CamelCase
-        for frag in self.fragments:
+        for frag, line_num in self.fragments:
             if not frag.startswith("F_"):
                 self.warnings.append(
-                    f"Fragment '{frag}' should use F_CamelCase naming convention"
+                    f"Line {line_num}: Fragment '{frag}' should use F_CamelCase naming convention"
                 )
-            elif not frag[2:].islower() and not frag[2:] == frag[2:].title().replace(
-                "_", ""
-            ):
-                # After F_, should be roughly camelCase or PascalCase
-                pass  # Allow flexibility here
+            elif len(frag) > 2:
+                # After F_, should be CamelCase (PascalCase)
+                suffix = frag[2:]
+                # Check it starts with uppercase and contains at least one letter
+                if not (suffix[0].isupper() and any(c.isalpha() for c in suffix)):
+                    self.warnings.append(
+                        f"Line {line_num}: Fragment '{frag}' should use F_CamelCase naming "
+                        f"(expected F_ followed by CamelCase, e.g., F_Uint8)"
+                    )
 
     def _validate_rule_ordering(self):
         """Check that rules are in lexicographical order within their prefix groups."""

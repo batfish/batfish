@@ -996,6 +996,34 @@ For the example, you can:
 
 This section is still in progress. Check back later!
 
+## Grammar Validation Tool
+
+Batfish includes an automated grammar validation tool (`tools/validate_grammar_rules.py`) that checks ANTLR grammar files against the conventions documented in this file.
+
+### What it validates
+
+- **Parser rule naming**: Rules must be lowercase
+- **`_null` suffix usage**: Leaf rules should have `_null` suffix, non-leaf rules should not
+- **NEWLINE placement**: NEWLINE should be at leaf level, not parent level
+- **Lexer rule naming**: Default mode tokens should be ALL_CAPS with underscores
+- **Mode token naming**: Mode tokens should follow `M_ModeName_TOKEN_NAME` pattern
+- **Fragment naming**: Fragments should use `F_CamelCase` naming
+- **LL(1) hints**: Warns about potential LL(1) violations
+
+### Usage
+
+```bash
+# Validate all grammar files (verbose mode shows warnings)
+python3 tools/validate_grammar_rules.py --verbose
+
+# Validate specific file
+python3 tools/validate_grammar_rules.py path/to/file.g4
+
+# Pre-commit automatically runs validation on changed .g4 files
+```
+
+See `tools/VALIDATE_GRAMMAR_RULES.md` for detailed usage and examples.
+
 ## Adding support for structured file formats
 
 This section is still in progress. Check back later!
