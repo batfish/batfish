@@ -61,7 +61,7 @@ import org.apache.logging.log4j.Logger;
  * <p>It was originally authored by John Whaley, and has since been heavily modified and improved by
  * the Batfish Authors.
  */
-public class JFactory extends BDDFactory implements Serializable {
+public final class JFactory extends BDDFactory implements Serializable {
   private static final Logger LOGGER = LogManager.getLogger(JFactory.class);
 
   /** Whether to maintain (and in some cases print) statistics about the cache use. */
@@ -149,7 +149,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
-  protected class BDDImpl extends BDD {
+  protected final class BDDImpl extends BDD {
     int _index;
 
     BDDImpl(int index) {
