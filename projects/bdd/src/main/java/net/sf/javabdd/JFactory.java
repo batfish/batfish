@@ -935,14 +935,19 @@ public class JFactory extends BDDFactory implements Serializable {
 
   /*=== OTHER INTERNAL DEFINITIONS =======================================*/
 
+  /**
+   * Multiplicative hash combining two ints. Uses Knuth's constant and a secondary mixing constant
+   * with a finalization XOR shift for good distribution with power-of-2 table sizes.
+   */
   private static int PAIR(int a, int b) {
-    // return Math.abs((a + b) * (a + b + 1) / 2 + a);
-    return (a + b) * (a + b + 1) / 2 + a;
+    int h = a * 0x9e3779b9 + b * 0x517cc1b7;
+    return h ^ (h >>> 16);
   }
 
+  /** Multiplicative hash combining three ints. See {@link #PAIR(int, int)}. */
   private static int TRIPLE(int a, int b, int c) {
-    // return Math.abs(PAIR(c, PAIR(a, b)));
-    return PAIR(c, PAIR(a, b));
+    int h = a * 0x9e3779b9 + b * 0x517cc1b7 + c * 0x6c62272e;
+    return h ^ (h >>> 16);
   }
 
   private int NODEHASH(int lvl, int l, int h) {
@@ -1029,7 +1034,7 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private static int NOTHASH(int r) {
-    return r;
+    return r; // BDD node IDs are sequential; no mixing needed for power-of-2 tables
   }
 
   private static int APPLYHASH(int l, int r, int op) {
@@ -1052,8 +1057,8 @@ public class JFactory extends BDDFactory implements Serializable {
     return PAIR(f, c);
   }
 
-  private static int QUANTHASH(int r) {
-    return r;
+  private static int QUANTHASH(int r, int quantid) {
+    return PAIR(r, quantid);
   }
 
   private static int TRANSFORMHASH(int cacheid, int l, int r) {
@@ -1084,8 +1089,8 @@ public class JFactory extends BDDFactory implements Serializable {
     return PAIR(r, miscid);
   }
 
-  private static int APPEXHASH(int l, int r, int op) {
-    return PAIR(l, r);
+  private static int APPEXHASH(int l, int r, int appexid) {
+    return TRIPLE(l, r, appexid);
   }
 
   private boolean INVARSET(int a) {
@@ -2312,7 +2317,7 @@ public class JFactory extends BDDFactory implements Serializable {
       res = and_rec(l, r);
       applyop = bddop_or;
     } else {
-      int hash = APPEXHASH(l, r, bddop_and);
+      int hash = APPEXHASH(l, r, appexid);
       int cached = appexcache.lookup(hash, l, r, appexid);
       if (cached >= 0) return cached;
 
@@ -2590,7 +2595,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       applyop = oldop;
     } else {
-      int hash = APPEXHASH(l, r, appexop);
+      int hash = APPEXHASH(l, r, appexid);
       int cached = appexcache.lookup(hash, l, r, appexid);
       if (cached >= 0) return cached;
 
@@ -2664,7 +2669,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
       applyop = oldop;
     } else {
-      int hash = APPEXHASH(l, r, appexop);
+      int hash = APPEXHASH(l, r, appexid);
       int cached = appexcache.lookup(hash, l, r, appexid);
       if (cached >= 0) return cached;
 
@@ -2738,7 +2743,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return r;
     }
 
-    int hash = QUANTHASH(r);
+    int hash = QUANTHASH(r, quantid);
     int cached = quantcache.lookup(hash, r, 0, quantid);
     if (cached >= 0) return cached;
 
@@ -2768,7 +2773,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return r;
     }
 
-    int hash = QUANTHASH(r);
+    int hash = QUANTHASH(r, quantid);
     int cached = quantcache.lookup(hash, r, 0, quantid);
     if (cached >= 0) return cached;
 
@@ -2850,7 +2855,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return r;
     }
 
-    int hash = QUANTHASH(r);
+    int hash = QUANTHASH(r, quantid);
     int cached = quantcache.lookup(hash, r, 0, quantid);
     if (cached >= 0) return cached;
 
@@ -2889,7 +2894,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return true;
     }
 
-    int hash = QUANTHASH(r);
+    int hash = QUANTHASH(r, quantid);
     int cached = quantcache.lookup(hash, r, 0, quantid);
     if (cached >= 0) return cached == 1;
 
@@ -2913,7 +2918,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return BDDONE;
     }
 
-    int hash = QUANTHASH(r);
+    int hash = QUANTHASH(r, quantid);
     int cached = quantcache.lookup(hash, r, 0, quantid);
     if (cached >= 0) return cached;
 
