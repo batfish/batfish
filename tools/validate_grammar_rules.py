@@ -355,6 +355,60 @@ class GrammarValidator:
                         f"(expected F_ followed by CamelCase, e.g., F_Uint8)"
                     )
 
+        # Check lexer rule ordering in default mode
+        self._validate_lexer_rule_ordering()
+
+    def _validate_lexer_rule_ordering(self):
+        """Check that lexer rules are ordered correctly.
+
+        In ANTLR, for same-length matches, the first rule wins.
+        So keywords/literals should come before general patterns like [a-z]+.
+        """
+        # Patterns that are "catch-all" or general for alphanumeric text
+        # These can match the same text as keywords, so keywords must be first
+        general_alphanum_pattern = re.compile(
+            r"^\s*"
+            r"([A-Z][A-Z0-9_]*)\s*:\s*"
+            r"(\[[a-zA-Z]|~['\"]|F_)"  # Starts with [a-z], [A-Z], negation, or fragment ref
+        )
+
+        # Pattern for literal keywords like 'if', 'then', etc. (alphanumeric only)
+        literal_alphanum_pattern = re.compile(
+            r"^\s*"
+            r"([A-Z][A-Z0-9_]*)\s*:\s*"
+            r"'([a-zA-Z][a-zA-Z0-9_-]*)'"  # Literal string that's alphanumeric/hyphen
+        )
+
+        first_general_line = None
+        first_general_rule = None
+
+        for i, line in enumerate(self.lines, 1):
+            # Skip comments and empty lines
+            stripped = line.strip()
+            if not stripped or stripped.startswith("//"):
+                continue
+
+            # Check for general pattern (catch-all style for alphanumeric)
+            if first_general_line is None:
+                match = general_alphanum_pattern.match(line)
+                if match:
+                    first_general_line = i
+                    first_general_rule = match.group(1)
+            else:
+                # Check if a literal keyword appears after the general pattern
+                match = literal_alphanum_pattern.match(line)
+                if match:
+                    literal_rule = match.group(1)
+                    literal_text = match.group(2)
+                    self.warnings.append(
+                        f"Line {i}: Lexer rule '{literal_rule}' ('{literal_text}') is a keyword "
+                        f"but appears after general pattern '{first_general_rule}' (line {first_general_line}). "
+                        f"In ANTLR, for same-length matches, the first rule wins. "
+                        f"Move keywords before general patterns."
+                    )
+                    # Only warn once per file to avoid noise
+                    break
+
     def _validate_rule_ordering(self):
         """Check that rules are in lexicographical order within their prefix groups."""
         rule_names = list(self.parser_rules.keys())
