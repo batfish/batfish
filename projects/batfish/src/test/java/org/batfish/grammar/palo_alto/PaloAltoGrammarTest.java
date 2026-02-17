@@ -4855,4 +4855,28 @@ public final class PaloAltoGrammarTest {
             computeObjectName(DEFAULT_VSYS_NAME, "PEER-OBJ"),
             BGP_PEER_ADDRESS));
   }
+
+  @Test
+  public void testAddressObjectNexthopWarnings() throws IOException {
+    String hostname = "address-object-nexthop-warnings";
+    Batfish batfish = getBatfishForConfigurationNames(hostname);
+    Configuration c = batfish.loadConfigurations(batfish.getSnapshot()).get(hostname);
+
+    // Routes with invalid nexthops should not be converted
+    assertThat(c, hasVrf("VR", hasStaticRoutes(empty())));
+
+    // Verify warnings are generated for unresolved references
+    Warnings warnings =
+        batfish
+            .loadConvertConfigurationAnswerElementOrReparse(batfish.getSnapshot())
+            .getWarnings()
+            .get(hostname);
+    assertThat(
+        warnings,
+        hasRedFlag(hasText(containsString("Could not resolve address reference: UNDEFINED-OBJ"))));
+    assertThat(
+        warnings,
+        hasRedFlag(
+            hasText(containsString("Could not resolve address reference: NEXTHOP-NETMASK"))));
+  }
 }

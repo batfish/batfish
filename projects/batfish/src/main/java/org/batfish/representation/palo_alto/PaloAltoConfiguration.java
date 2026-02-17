@@ -1939,7 +1939,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
     // object regardless of the type of interface address we're expecting.
     if (vsys.getAddressObjects().containsKey(addressText)) {
       AddressObject addrObject = vsys.getAddressObjects().get(addressText);
-      ConcreteInterfaceAddress concreteIfaceAddr = addrObject.toConcreteInterfaceAddress(_w);
+      ConcreteInterfaceAddress concreteIfaceAddr;
+      try {
+        concreteIfaceAddr = addrObject.toConcreteInterfaceAddress(_w);
+      } catch (AssertionError e) {
+        // Address object has invalid format (e.g., non-/32 mask for host address)
+        return null;
+      }
       if (concreteIfaceAddr != null) {
         return concreteIfaceAddr;
       }
@@ -2907,6 +2913,13 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       // Resolve nexthop IP address reference
       Ip nextHopIp =
           interfaceAddressToIp(sr.getNextHopIp(), _virtualSystems.get(DEFAULT_VSYS_NAME));
+      // Skip if nexthop IP resolution failed and no interface/nextVr specified
+      if (!sr.getNextHopDiscard()
+          && nextVrf == null
+          && nextHopIp == null
+          && sr.getNextHopInterface() == null) {
+        continue;
+      }
       vrf.getStaticRoutes()
           .add(
               org.batfish.datamodel.StaticRoute.builder()
