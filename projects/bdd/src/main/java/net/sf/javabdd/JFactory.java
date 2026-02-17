@@ -389,7 +389,7 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public boolean andSat(BDD that) {
       if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
+        applycache = FlatCacheI_init(cachesize);
       }
       return andsat_rec(_index, ((BDDImpl) that)._index);
     }
@@ -397,7 +397,7 @@ public class JFactory extends BDDFactory implements Serializable {
     @Override
     public boolean diffSat(BDD that) {
       if (applycache == null) {
-        applycache = BddCacheI_init(cachesize);
+        applycache = FlatCacheI_init(cachesize);
       }
       return diffsat_rec(_index, ((BDDImpl) that)._index);
     }
@@ -706,6 +706,52 @@ public class JFactory extends BDDFactory implements Serializable {
   // a = operator, b = result, c = unused
   private static class MultiOpBddCacheData extends BddCacheData {
     int[] operands;
+  }
+
+  /**
+   * Flat int[]-based cache for int-result operations. Eliminates pointer dereferences by storing
+   * entries as contiguous ints: [a, b, c, res] tuples.
+   */
+  private static final class FlatCacheI implements Serializable {
+    static final int ENTRY_SHIFT = 2; // log2(4) - 4 ints per entry
+    int[] data;
+    int mask;
+
+    FlatCacheI(int numEntries) {
+      mask = numEntries - 1;
+      data = new int[numEntries << ENTRY_SHIFT];
+      // Initialize all entries as unused (a = -1)
+      for (int i = 0; i < data.length; i += 4) {
+        data[i] = -1;
+      }
+    }
+
+    /** Returns the cached result for key (a, b, c), or -1 if not found. */
+    int lookup(int hash, int a, int b, int c, CacheStats stats) {
+      int eBase = (hash & mask) << ENTRY_SHIFT;
+      if (data[eBase] == a && data[eBase + 1] == b && data[eBase + 2] == c) {
+        if (CACHESTATS) {
+          stats.opHit++;
+        }
+        return data[eBase + 3];
+      }
+      if (CACHESTATS) {
+        stats.opMiss++;
+      }
+      return -1;
+    }
+
+    /** Stores a result for key (a, b, c). */
+    void store(int hash, int a, int b, int c, int res, CacheStats stats) {
+      int eBase = (hash & mask) << ENTRY_SHIFT;
+      if (CACHESTATS && data[eBase] != -1) {
+        stats.opOverwrite++;
+      }
+      data[eBase] = a;
+      data[eBase + 1] = b;
+      data[eBase + 2] = c;
+      data[eBase + 3] = res;
+    }
   }
 
   private static class BddCache {
@@ -1174,7 +1220,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return BDDZERO;
     }
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
@@ -1217,7 +1263,7 @@ public class JFactory extends BDDFactory implements Serializable {
       return BDDONE;
     }
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
@@ -1253,7 +1299,7 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(r);
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
 
     INITREF();
@@ -1264,7 +1310,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int not_rec(int r) {
-    BddCacheDataI entry;
     int res;
 
     if (ISZERO(r)) {
@@ -1274,30 +1319,15 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = NOTHASH(r);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == r && entry.c == bddop_not) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, r, 0, bddop_not, cachestats);
+    if (cached >= 0) return cached;
 
     PUSHREF(not_rec(LOW(r)));
     PUSHREF(not_rec(HIGH(r)));
     res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = bddop_not;
-    entry.res = res;
-    entry.hash = hash;
+    applycache.store(hash, r, 0, bddop_not, res, cachestats);
 
     return res;
   }
@@ -1308,7 +1338,7 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(h);
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (multiopcache == null) {
       multiopcache = BddCacheMultiOp_init(cachesize);
@@ -1425,7 +1455,7 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(r);
 
     if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
+      replacecache = FlatCacheI_init(cachesize);
     }
     replacepair = pair.result;
     replacelast = pair.last;
@@ -1439,7 +1469,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int replace_rec(int r) {
-    BddCacheDataI entry;
     int res;
 
     if (ISCONST(r) || LEVEL(r) > replacelast) {
@@ -1447,16 +1476,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = REPLACEHASH(replaceid, r);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = replacecache.lookup(hash, r, 0, replaceid, cachestats);
+    if (cached >= 0) return cached;
 
     PUSHREF(replace_rec(LOW(r)));
     PUSHREF(replace_rec(HIGH(r)));
@@ -1478,13 +1499,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
+    replacecache.store(hash, r, 0, replaceid, res, cachestats);
 
     return res;
   }
@@ -1513,16 +1528,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = CORRECTIFYHASH(replaceid, l, r);
-    BddCacheDataI entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == l && entry.b == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = replacecache.lookup(hash, l, r, replaceid, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL(l) == LEVEL(r)) {
       PUSHREF(bdd_correctify(level, LOW(l), LOW(r)));
@@ -1539,14 +1546,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
+    replacecache.store(hash, l, r, replaceid, res, cachestats);
 
     return res;
   }
@@ -1561,7 +1561,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     applyop = op;
 
@@ -1584,7 +1584,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int apply_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (VERIFY_ASSERTIONS) {
@@ -1733,17 +1732,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = APPLYHASH(l, r, applyop);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == applyop) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, l, r, applyop, cachestats);
+    if (cached >= 0) return cached;
 
     int LEVEL_l = LEVEL(l);
     int LEVEL_r = LEVEL(r);
@@ -1763,20 +1753,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = applyop;
-    entry.res = res;
-    entry.hash = hash;
+    applycache.store(hash, l, r, applyop, res, cachestats);
 
     return res;
   }
 
   private int and_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (l == r) {
@@ -1794,17 +1776,8 @@ public class JFactory extends BDDFactory implements Serializable {
       r = t;
     }
     int hash = APPLYHASH(l, r, bddop_and);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == bddop_and) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, l, r, bddop_and, cachestats);
+    if (cached >= 0) return cached;
 
     int LEVEL_l = LEVEL(l);
     int LEVEL_r = LEVEL(r);
@@ -1824,14 +1797,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_and;
-    entry.res = res;
-    entry.hash = hash;
+    applycache.store(hash, l, r, bddop_and, res, cachestats);
 
     return res;
   }
@@ -1847,17 +1813,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // TODO: should we also check for diff? For now, don't since diff_sat should be real fast.
     int hash = APPLYHASH(l, r, bddop_diffsat);
-    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
-    if (entry.a == l && entry.b == r && entry.c == bddop_diffsat) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      // We set entry.res to BDDZERO for false and BDDONE for true.
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, l, r, bddop_diffsat, cachestats);
+    if (cached >= 0) return cached == 1;
 
     boolean res;
     if (LEVEL(l) == LEVEL(r)) {
@@ -1868,14 +1825,7 @@ public class JFactory extends BDDFactory implements Serializable {
       res = diffsat_rec(l, LOW(r)) || diffsat_rec(l, HIGH(r));
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_diffsat;
-    entry.res = res ? BDDONE : BDDZERO;
-    entry.hash = hash;
+    applycache.store(hash, l, r, bddop_diffsat, res ? 1 : 0, cachestats);
 
     return res;
   }
@@ -1896,17 +1846,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
     // TODO: should we also check for and? For now, don't since and_sat should be real fast.
     int hash = APPLYHASH(l, r, bddop_andsat);
-    BddCacheDataI entry = BddCache_lookupI(applycache, hash);
-    if (entry.a == l && entry.b == r && entry.c == bddop_andsat) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      // We set entry.res to BDDZERO for false and BDDONE for true.
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, l, r, bddop_andsat, cachestats);
+    if (cached >= 0) return cached == 1;
 
     boolean res;
     if (LEVEL(l) == LEVEL(r)) {
@@ -1917,14 +1858,7 @@ public class JFactory extends BDDFactory implements Serializable {
       res = andsat_rec(l, LOW(r)) || andsat_rec(l, HIGH(r));
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_andsat;
-    entry.res = res ? BDDONE : BDDZERO;
-    entry.hash = hash;
+    applycache.store(hash, l, r, bddop_andsat, res ? 1 : 0, cachestats);
 
     return res;
   }
@@ -2251,7 +2185,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int or_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (l == r) {
@@ -2269,17 +2202,8 @@ public class JFactory extends BDDFactory implements Serializable {
       r = t;
     }
     int hash = APPLYHASH(l, r, bddop_or);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == l && entry.b == r && entry.c == bddop_or) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, l, r, bddop_or, cachestats);
+    if (cached >= 0) return cached;
 
     int LEVEL_l = LEVEL(l);
     int LEVEL_r = LEVEL(r);
@@ -2299,20 +2223,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = bddop_or;
-    entry.res = res;
-    entry.hash = hash;
+    applycache.store(hash, l, r, bddop_or, res, cachestats);
 
     return res;
   }
 
   private int relprod_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (l == BDDZERO || r == BDDZERO) {
@@ -2333,16 +2249,8 @@ public class JFactory extends BDDFactory implements Serializable {
       applyop = bddop_or;
     } else {
       int hash = APPEXHASH(l, r, bddop_and);
-      entry = BddCache_lookupI(appexcache, hash);
-      if (entry.a == l && entry.b == r && entry.c == appexid) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
-      if (CACHESTATS) {
-        cachestats.opMiss++;
-      }
+      int cached = appexcache.lookup(hash, l, r, appexid, cachestats);
+      if (cached >= 0) return cached;
 
       if (LEVEL_l == LEVEL_r) {
         PUSHREF(relprod_rec(LOW(l), LOW(r)));
@@ -2372,14 +2280,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
-      if (CACHESTATS && entry.a != -1) {
-        cachestats.opOverwrite++;
-      }
-      entry.a = l;
-      entry.b = r;
-      entry.c = appexid;
-      entry.res = res;
-      entry.hash = hash;
+      appexcache.store(hash, l, r, appexid, res, cachestats);
     }
 
     return res;
@@ -2407,13 +2308,13 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (appexcache == null) {
-      appexcache = BddCacheI_init(cachesize);
+      appexcache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     applyop = bddop_or;
     appexop = opr;
@@ -2437,10 +2338,10 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
+      replacecache = FlatCacheI_init(cachesize);
     }
     replacepair = pair.result;
     replacelast = pair.last;
@@ -2454,7 +2355,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int transform_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (ISZERO(l) || ISZERO(r)) {
@@ -2464,16 +2364,8 @@ public class JFactory extends BDDFactory implements Serializable {
       return and_rec(l, r);
     }
     int hash = TRANSFORMHASH(replaceid, l, r);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == l && entry.b == r && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss--;
-    }
+    int cached = replacecache.lookup(hash, l, r, replaceid, cachestats);
+    if (cached >= 0) return cached;
 
     int level;
     if (LEVEL(l) == LEVEL(r)) {
@@ -2511,14 +2403,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = l;
-    entry.b = r;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
+    replacecache.store(hash, l, r, replaceid, res, cachestats);
 
     return res;
   }
@@ -2584,7 +2469,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int appquant_rec(int l, int r) {
-    BddCacheDataI entry;
     int res;
 
     if (VERIFY_ASSERTIONS) {
@@ -2643,16 +2527,8 @@ public class JFactory extends BDDFactory implements Serializable {
       applyop = oldop;
     } else {
       int hash = APPEXHASH(l, r, appexop);
-      entry = BddCache_lookupI(appexcache, hash);
-      if (entry.a == l && entry.b == r && entry.c == appexid) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
-      if (CACHESTATS) {
-        cachestats.opMiss++;
-      }
+      int cached = appexcache.lookup(hash, l, r, appexid, cachestats);
+      if (cached >= 0) return cached;
 
       int lev;
       if (LEVEL(l) == LEVEL(r)) {
@@ -2687,21 +2563,13 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
-      if (CACHESTATS && entry.a != -1) {
-        cachestats.opOverwrite++;
-      }
-      entry.a = l;
-      entry.b = r;
-      entry.c = appexid;
-      entry.res = res;
-      entry.hash = hash;
+      appexcache.store(hash, l, r, appexid, res, cachestats);
     }
 
     return res;
   }
 
   private int appuni_rec(int l, int r, int var) {
-    BddCacheDataI entry;
     int res;
 
     int LEVEL_l, LEVEL_r, LEVEL_var;
@@ -2733,16 +2601,8 @@ public class JFactory extends BDDFactory implements Serializable {
       applyop = oldop;
     } else {
       int hash = APPEXHASH(l, r, appexop);
-      entry = BddCache_lookupI(appexcache, hash);
-      if (entry.a == l && entry.b == r && entry.c == appexid) {
-        if (CACHESTATS) {
-          cachestats.opHit++;
-        }
-        return entry.res;
-      }
-      if (CACHESTATS) {
-        cachestats.opMiss++;
-      }
+      int cached = appexcache.lookup(hash, l, r, appexid, cachestats);
+      if (cached >= 0) return cached;
 
       int lev;
       if (LEVEL_l == LEVEL_r) {
@@ -2793,21 +2653,13 @@ public class JFactory extends BDDFactory implements Serializable {
 
       POPREF(2);
 
-      if (CACHESTATS && entry.a != -1) {
-        cachestats.opOverwrite++;
-      }
-      entry.a = l;
-      entry.b = r;
-      entry.c = appexid;
-      entry.res = res;
-      entry.hash = hash;
+      appexcache.store(hash, l, r, appexid, res, cachestats);
     }
 
     return res;
   }
 
   private int unique_rec(int r, int q) {
-    BddCacheDataI entry;
     int res;
     int LEVEL_r, LEVEL_q;
 
@@ -2823,16 +2675,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = quantcache.lookup(hash, r, 0, quantid, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL_r == LEVEL_q) {
       PUSHREF(unique_rec(LOW(r), HIGH(q)));
@@ -2846,13 +2690,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
+    quantcache.store(hash, r, 0, quantid, res, cachestats);
 
     return res;
   }
@@ -2867,16 +2705,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = QUANTHASH(r);
-    BddCacheDataI entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = quantcache.lookup(hash, r, 0, quantid, cachestats);
+    if (cached >= 0) return cached;
 
     int res = -1; // indicates that it has not been set.
 
@@ -2944,19 +2774,12 @@ public class JFactory extends BDDFactory implements Serializable {
       POPREF(2);
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
+    quantcache.store(hash, r, 0, quantid, res, cachestats);
 
     return res;
   }
 
   private int quant_rec(int r) {
-    BddCacheDataI entry;
     int res;
 
     if (r < 2 || LEVEL(r) > quantlast) {
@@ -2964,16 +2787,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = quantcache.lookup(hash, r, 0, quantid, cachestats);
+    if (cached >= 0) return cached;
 
     PUSHREF(quant_rec(LOW(r)));
     PUSHREF(quant_rec(HIGH(r)));
@@ -2997,19 +2812,12 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
+    quantcache.store(hash, r, 0, quantid, res, cachestats);
 
     return res;
   }
 
   private boolean testsVars_rec(int r) {
-    BddCacheDataI entry;
 
     if (r < 2 || LEVEL(r) > quantlast) {
       return false;
@@ -3018,32 +2826,17 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res == BDDONE;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = quantcache.lookup(hash, r, 0, quantid, cachestats);
+    if (cached >= 0) return cached == 1;
 
     boolean res = testsVars_rec(LOW(r)) || testsVars_rec(HIGH(r));
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res ? BDDONE : BDDZERO;
-    entry.hash = hash;
+    quantcache.store(hash, r, 0, quantid, res ? 1 : 0, cachestats);
 
     return res;
   }
 
   private int project_rec(int r) {
-    BddCacheDataI entry;
     int res;
 
     if (r < 2) {
@@ -3057,16 +2850,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = QUANTHASH(r);
-    entry = BddCache_lookupI(quantcache, hash);
-    if (entry.a == r && entry.c == quantid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = quantcache.lookup(hash, r, 0, quantid, cachestats);
+    if (cached >= 0) return cached;
 
     int low = PUSHREF(project_rec(LOW(r)));
     int high = PUSHREF(project_rec(HIGH(r)));
@@ -3080,13 +2865,7 @@ public class JFactory extends BDDFactory implements Serializable {
 
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = quantid;
-    entry.res = res;
-    entry.hash = hash;
+    quantcache.store(hash, r, 0, quantid, res, cachestats);
 
     return res;
   }
@@ -3096,7 +2875,7 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(c);
 
     if (misccache == null) {
-      misccache = BddCacheI_init(cachesize);
+      misccache = FlatCacheI_init(cachesize);
     }
     miscid = CACHEID_CONSTRAIN;
 
@@ -3108,7 +2887,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int constrain_rec(int f, int c) {
-    BddCacheDataI entry;
     int res;
 
     if (ISONE(c)) {
@@ -3122,16 +2900,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = CONSTRAINHASH(f, c);
-    entry = BddCache_lookupI(misccache, hash);
-    if (entry.a == f && entry.b == c && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = misccache.lookup(hash, f, c, miscid, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL(f) == LEVEL(c)) {
       if (ISZERO(LOW(c))) {
@@ -3162,14 +2932,7 @@ public class JFactory extends BDDFactory implements Serializable {
       }
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = c;
-    entry.c = miscid;
-    entry.res = res;
-    entry.hash = hash;
+    misccache.store(hash, f, c, miscid, res, cachestats);
 
     return res;
   }
@@ -3184,11 +2947,11 @@ public class JFactory extends BDDFactory implements Serializable {
 
     if (replacecache == null) {
       // compose_rec uses replacecache
-      replacecache = BddCacheI_init(cachesize);
+      replacecache = FlatCacheI_init(cachesize);
     }
     if (applycache == null) {
       // compose_rec can call ite_rec, which uses applycache
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     composelevel = bddvar2level[var];
     replaceid = (composelevel << 3) | CACHEID_COMPOSE;
@@ -3200,7 +2963,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int compose_rec(int f, int g) {
-    BddCacheDataI entry;
     int res;
 
     if (LEVEL(f) > composelevel) {
@@ -3208,16 +2970,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = COMPOSEHASH(replaceid, f, g);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == f && entry.b == g && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = replacecache.lookup(hash, f, g, replaceid, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL(f) < composelevel) {
       if (LEVEL(f) == LEVEL(g)) {
@@ -3239,14 +2993,7 @@ public class JFactory extends BDDFactory implements Serializable {
       res = ite_rec(g, HIGH(f), LOW(f));
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = g;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
+    replacecache.store(hash, f, g, replaceid, res, cachestats);
 
     return res;
   }
@@ -3255,10 +3002,10 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(f);
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (replacecache == null) {
-      replacecache = BddCacheI_init(cachesize);
+      replacecache = FlatCacheI_init(cachesize);
     }
     replacepair = pair.result;
     replaceid = (pair.id << 3) | CACHEID_VECCOMPOSE;
@@ -3272,7 +3019,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int veccompose_rec(int f) {
-    BddCacheDataI entry;
     int res;
 
     if (LEVEL(f) > replacelast) {
@@ -3280,29 +3026,15 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = VECCOMPOSEHASH(replaceid, f);
-    entry = BddCache_lookupI(replacecache, hash);
-    if (entry.a == f && entry.c == replaceid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = replacecache.lookup(hash, f, 0, replaceid, cachestats);
+    if (cached >= 0) return cached;
 
     PUSHREF(veccompose_rec(LOW(f)));
     PUSHREF(veccompose_rec(HIGH(f)));
     res = ite_rec(replacepair[LEVEL(f)], READREF(1), READREF(2));
     POPREF(2);
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.c = replaceid;
-    entry.res = res;
-    entry.hash = hash;
+    replacecache.store(hash, f, 0, replaceid, res, cachestats);
 
     return res;
   }
@@ -3319,10 +3051,10 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     applyop = bddop_or;
     quantid = (var << 3) | CACHEID_EXIST; /* FIXME: range */
@@ -3347,7 +3079,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     quantid = (var << 3) | CACHEID_TESTS_CONSTRAINT; /* FIXME: range */
 
@@ -3368,10 +3100,10 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     quantid = (var << 3) | CACHEID_PROJECT;
 
@@ -3394,10 +3126,10 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     quantid = (var << 3) | CACHEID_FORALL;
     applyop = bddop_and;
@@ -3418,10 +3150,10 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     quantid = (var << 3) | CACHEID_UNIQUE;
     applyop = bddop_xor;
@@ -3445,7 +3177,7 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (misccache == null) {
-      misccache = BddCacheI_init(cachesize);
+      misccache = FlatCacheI_init(cachesize);
     }
     miscid = (var << 3) | CACHEID_RESTRICT;
 
@@ -3457,7 +3189,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int restrict_rec(int r) {
-    BddCacheDataI entry;
     int res;
 
     if (ISCONST(r) || LEVEL(r) > quantlast) {
@@ -3465,16 +3196,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = RESTRHASH(r, miscid);
-    entry = BddCache_lookupI(misccache, hash);
-    if (entry.a == r && entry.c == miscid) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = misccache.lookup(hash, r, 0, miscid, cachestats);
+    if (cached >= 0) return cached;
 
     if (INSVARSET(LEVEL(r))) {
       if (quantvarset[LEVEL(r)] > 0) {
@@ -3489,13 +3212,7 @@ public class JFactory extends BDDFactory implements Serializable {
       POPREF(2);
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = r;
-    entry.c = miscid;
-    entry.res = res;
-    entry.hash = hash;
+    misccache.store(hash, r, 0, miscid, res, cachestats);
 
     return res;
   }
@@ -3505,7 +3222,7 @@ public class JFactory extends BDDFactory implements Serializable {
     CHECK(d);
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     applyop = bddop_or;
 
@@ -3517,7 +3234,6 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private int simplify_rec(int f, int d) {
-    BddCacheDataI entry;
     int res;
 
     if (ISONE(d) || ISCONST(f)) {
@@ -3529,17 +3245,8 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     int hash = APPLYHASH(f, d, bddop_simplify);
-    entry = BddCache_lookupI(applycache, hash);
-
-    if (entry.a == f && entry.b == d && entry.c == bddop_simplify) {
-      if (CACHESTATS) {
-        cachestats.opHit++;
-      }
-      return entry.res;
-    }
-    if (CACHESTATS) {
-      cachestats.opMiss++;
-    }
+    int cached = applycache.lookup(hash, f, d, bddop_simplify, cachestats);
+    if (cached >= 0) return cached;
 
     if (LEVEL(f) == LEVEL(d)) {
       if (ISZERO(LOW(d))) {
@@ -3563,14 +3270,7 @@ public class JFactory extends BDDFactory implements Serializable {
       POPREF(1);
     }
 
-    if (CACHESTATS && entry.a != -1) {
-      cachestats.opOverwrite++;
-    }
-    entry.a = f;
-    entry.b = d;
-    entry.c = bddop_simplify;
-    entry.res = res;
-    entry.hash = hash;
+    applycache.store(hash, f, d, bddop_simplify, res, cachestats);
 
     return res;
   }
@@ -3663,13 +3363,13 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (appexcache == null) {
-      appexcache = BddCacheI_init(cachesize);
+      appexcache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     applyop = bddop_and;
     appexop = opr;
@@ -3698,13 +3398,13 @@ public class JFactory extends BDDFactory implements Serializable {
     }
 
     if (applycache == null) {
-      applycache = BddCacheI_init(cachesize);
+      applycache = FlatCacheI_init(cachesize);
     }
     if (appexcache == null) {
-      appexcache = BddCacheI_init(cachesize);
+      appexcache = FlatCacheI_init(cachesize);
     }
     if (quantcache == null) {
-      quantcache = BddCacheI_init(cachesize);
+      quantcache = FlatCacheI_init(cachesize);
     }
     applyop = bddop_xor;
     appexop = opr;
@@ -4283,17 +3983,20 @@ public class JFactory extends BDDFactory implements Serializable {
 
     /* Try to find an existing node of this kind */
     int hash2 = NODEHASH(level, low, high);
-    int res = HASH(hash2);
+    int res = bddhash[hash2];
 
     while (res != 0) {
-      if (LEVEL(res) == level && LOW(res) == low && HIGH(res) == high) {
+      int base = res * __node_size;
+      if ((bddnodes[base] & LEV_MASK) == level
+          && bddnodes[base + 1] == low
+          && bddnodes[base + 2] == high) {
         if (CACHESTATS) {
           cachestats.uniqueHit++;
         }
         return res;
       }
 
-      res = NEXT(res);
+      res = bddnodes[base + 3]; // NEXT
       if (CACHESTATS) {
         cachestats.uniqueChain++;
       }
@@ -4328,18 +4031,19 @@ public class JFactory extends BDDFactory implements Serializable {
 
     /* Build new node */
     res = bddfreepos;
-    bddfreepos = NEXT(bddfreepos);
+    int resBase = res * __node_size;
+    bddfreepos = bddnodes[resBase + 3]; // NEXT(bddfreepos)
     bddfreenum--;
     bddproduced++;
     newNodeIndex(res);
 
-    SETLEVELANDMARK(res, level);
-    SETLOW(res, low);
-    SETHIGH(res, high);
+    bddnodes[resBase] = level; // SETLEVELANDMARK - mark is 0 for new nodes
+    bddnodes[resBase + 1] = low; // SETLOW
+    bddnodes[resBase + 2] = high; // SETHIGH
 
     /* Insert node */
-    SETNEXT(res, HASH(hash2));
-    SETHASH(hash2, res);
+    bddnodes[resBase + 3] = bddhash[hash2]; // SETNEXT(res, HASH(hash2))
+    bddhash[hash2] = res; // SETHASH(hash2, res)
 
     return res;
   }
@@ -4524,11 +4228,12 @@ public class JFactory extends BDDFactory implements Serializable {
   private transient int supportMin; /* Min. used level in support calc. */
   private transient int supportMax; /* Max. used level in support calc. */
   private @Nonnull transient int[] supportSet; /* The found support set */
-  private transient BddCache applycache; /* Cache for apply and ite results. See note in ite_rec. */
-  private transient BddCache quantcache; /* Cache for exist/forall results */
-  private transient BddCache appexcache; /* Cache for appex/appall results */
-  private transient BddCache replacecache; /* Cache for replace results */
-  private transient BddCache misccache; /* Cache for other results */
+  private transient FlatCacheI
+      applycache; /* Cache for apply and ite results. See note in ite_rec. */
+  private transient FlatCacheI quantcache; /* Cache for exist/forall results */
+  private transient FlatCacheI appexcache; /* Cache for appex/appall results */
+  private transient FlatCacheI replacecache; /* Cache for replace results */
+  private transient FlatCacheI misccache; /* Cache for other results */
   private transient BddCache multiopcache; /* Cache for varargs operators */
   private transient BddCache countcache; /* Cache for count results */
   private int cacheratio;
@@ -4546,22 +4251,22 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private void bdd_operator_reset() {
-    BddCache_reset(applycache);
-    BddCache_reset(quantcache);
-    BddCache_reset(appexcache);
-    BddCache_reset(replacecache);
-    BddCache_reset(misccache);
+    FlatCacheI_reset(applycache);
+    FlatCacheI_reset(quantcache);
+    FlatCacheI_reset(appexcache);
+    FlatCacheI_reset(replacecache);
+    FlatCacheI_reset(misccache);
     BddCache_reset(multiopcache);
     BddCache_reset(countcache);
   }
 
   private void bdd_operator_clean() {
     Stream.<Runnable>of(
-            () -> BddCache_clean_ab(applycache),
-            () -> BddCache_clean_a(quantcache),
-            () -> BddCache_clean_ab(appexcache),
-            () -> BddCache_clean_ab(replacecache),
-            () -> BddCache_clean_ab(misccache),
+            () -> FlatCacheI_clean_ab(applycache),
+            () -> FlatCacheI_clean_a(quantcache),
+            () -> FlatCacheI_clean_ab(appexcache),
+            () -> FlatCacheI_clean_ab(replacecache),
+            () -> FlatCacheI_clean_ab(misccache),
             () -> BddCache_clean_multiop(multiopcache),
             () -> BddCache_clean_d(countcache))
         .parallel()
@@ -4580,11 +4285,11 @@ public class JFactory extends BDDFactory implements Serializable {
   @Override
   public int setCacheSize(int newcachesize) {
     int old = cachesize;
-    BddCache_resize(applycache, newcachesize);
-    BddCache_resize(quantcache, newcachesize);
-    BddCache_resize(appexcache, newcachesize);
-    BddCache_resize(replacecache, newcachesize);
-    BddCache_resize(misccache, newcachesize);
+    FlatCacheI_resize_apply(newcachesize);
+    quantcache = FlatCacheI_resize(quantcache, newcachesize);
+    appexcache = FlatCacheI_resize(appexcache, newcachesize);
+    replacecache = FlatCacheI_resize(replacecache, newcachesize);
+    misccache = FlatCacheI_resize(misccache, newcachesize);
     BddCache_resize(multiopcache, newcachesize);
     BddCache_resize(countcache, newcachesize);
     return old;
@@ -4594,16 +4299,22 @@ public class JFactory extends BDDFactory implements Serializable {
     if (cacheratio > 0) {
       int newcachesize = bddnodesize / cacheratio;
 
-      BddCache_resize(applycache, newcachesize);
-      BddCache_resize(quantcache, newcachesize);
-      BddCache_resize(appexcache, newcachesize);
-      BddCache_resize(replacecache, newcachesize);
-      BddCache_resize(misccache, newcachesize);
+      FlatCacheI_resize_apply(newcachesize);
+      quantcache = FlatCacheI_resize(quantcache, newcachesize);
+      appexcache = FlatCacheI_resize(appexcache, newcachesize);
+      replacecache = FlatCacheI_resize(replacecache, newcachesize);
+      misccache = FlatCacheI_resize(misccache, newcachesize);
       BddCache_resize(multiopcache, newcachesize);
       BddCache_resize(countcache, newcachesize);
 
       cachesize = newcachesize;
     }
+  }
+
+  private FlatCacheI FlatCacheI_init(int size) {
+    size = Integer.highestOneBit(size - 1) << 1;
+    if (size < 16) size = 16;
+    return new FlatCacheI(size);
   }
 
   private BddCache BddCacheI_init(int size) {
@@ -4660,20 +4371,10 @@ public class JFactory extends BDDFactory implements Serializable {
    * <p>Slow. Should only be used in debugging contexts.
    */
   private String getCacheName(BddCache cache) {
-    if (cache == applycache) {
-      return "apply";
-    } else if (cache == appexcache) {
-      return "appex";
-    } else if (cache == countcache) {
+    if (cache == countcache) {
       return "count";
-    } else if (cache == misccache) {
-      return "misc";
     } else if (cache == multiopcache) {
       return "multiop";
-    } else if (cache == quantcache) {
-      return "quant";
-    } else if (cache == replacecache) {
-      return "replace";
     } else {
       return "unknown";
     }
@@ -4735,6 +4436,53 @@ public class JFactory extends BDDFactory implements Serializable {
 
   private static BddCacheDataI BddCache_lookupI(BddCache cache, int hash) {
     return (BddCacheDataI) cache.table[hash & cache.tablemask];
+  }
+
+  private static void FlatCacheI_reset(FlatCacheI cache) {
+    if (cache == null) return;
+    for (int i = 0; i < cache.data.length; i += 4) {
+      cache.data[i] = -1;
+    }
+  }
+
+  private void FlatCacheI_clean_ab(FlatCacheI cache) {
+    if (cache == null) return;
+    int[] data = cache.data;
+    for (int i = 0; i < data.length; i += 4) {
+      int a = data[i];
+      if (a < 0) continue;
+      if (LOW(a) == INVALID_BDD
+          || (data[i + 1] != 0 && LOW(data[i + 1]) == INVALID_BDD)
+          || LOW(data[i + 3]) == INVALID_BDD) {
+        data[i] = -1;
+      }
+    }
+  }
+
+  private static FlatCacheI FlatCacheI_resize(FlatCacheI cache, int newsize) {
+    if (cache == null) return null;
+    newsize = Integer.highestOneBit(newsize - 1) << 1;
+    if (newsize < 16) newsize = 16;
+    return new FlatCacheI(newsize);
+  }
+
+  private void FlatCacheI_clean_a(FlatCacheI cache) {
+    if (cache == null) return;
+    int[] data = cache.data;
+    for (int i = 0; i < data.length; i += 4) {
+      int a = data[i];
+      if (a < 0) continue;
+      if (LOW(a) == INVALID_BDD || LOW(data[i + 3]) == INVALID_BDD) {
+        data[i] = -1;
+      }
+    }
+  }
+
+  private void FlatCacheI_resize_apply(int newsize) {
+    if (applycache == null) return;
+    newsize = Integer.highestOneBit(newsize - 1) << 1;
+    if (newsize < 16) newsize = 16;
+    applycache = new FlatCacheI(newsize);
   }
 
   private static BigIntegerBddCacheData BddCache_lookupBigInteger(BddCache cache, int hash) {
@@ -4983,7 +4731,7 @@ public class JFactory extends BDDFactory implements Serializable {
         p.id = pairsid++;
       }
       // bdd_operator_reset();
-      BddCache_reset(replacecache);
+      FlatCacheI_reset(replacecache);
       _validPairIdsForTransform.clear();
     }
 
