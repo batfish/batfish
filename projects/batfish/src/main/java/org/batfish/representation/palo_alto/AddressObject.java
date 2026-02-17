@@ -83,6 +83,23 @@ public final class AddressObject implements Serializable {
     return null;
   }
 
+  /**
+   * Returns whether this address object can be used as a host address (e.g., for BGP peer-address
+   * or static-route nexthop). Only single IP addresses or /32 prefixes are valid for this purpose.
+   */
+  public boolean isValidHostAddress() {
+    // IP type is always a single address, valid for host use
+    if (_ip != null) {
+      return true;
+    }
+    // PREFIX type is only valid if it's a /32
+    if (_prefix != null) {
+      return _prefix.getPrefix().getPrefixLength() == Prefix.MAX_PREFIX_LENGTH;
+    }
+    // IP_RANGE and other types are not valid for host addresses
+    return false;
+  }
+
   /** Returns all addresses owned by this address object as an IP {@link RangeSet}. */
   public @Nonnull RangeSet<Ip> getAddressAsRangeSet() {
     if (_ip != null) {

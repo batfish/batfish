@@ -4876,7 +4876,6 @@ public final class PaloAltoGrammarTest {
         hasRedFlag(hasText(containsString("Could not resolve address reference: UNDEFINED-OBJ"))));
     assertThat(
         warnings,
-        hasRedFlag(
-            hasText(containsString("Could not resolve address reference: NEXTHOP-NETMASK"))));
+        hasRedFlag(hasText(containsString("NEXTHOP-NETMASK' is not a valid host address"))));
   }
 }
