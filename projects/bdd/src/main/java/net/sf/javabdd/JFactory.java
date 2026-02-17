@@ -33,7 +33,6 @@ import static com.google.common.base.Preconditions.checkArgument;
 import com.carrotsearch.hppc.IntHashSet;
 import com.carrotsearch.hppc.IntSet;
 import com.carrotsearch.hppc.IntStack;
-import com.carrotsearch.hppc.procedures.IntProcedure;
 import com.google.common.annotations.VisibleForTesting;
 import java.io.IOException;
 import java.io.PrintStream;
@@ -93,7 +92,8 @@ public class JFactory extends BDDFactory implements Serializable {
 
   protected JFactory() {
     supportSet = new int[0];
-    bddrefstack = new IntStack();
+    bddrefstack = new int[4096];
+    bddrefstackTop = 0;
     _bddReuse = new LinkedList<>();
   }
 
@@ -102,7 +102,8 @@ public class JFactory extends BDDFactory implements Serializable {
       throws IOException, ClassNotFoundException {
     stream.defaultReadObject();
     supportSet = new int[0];
-    bddrefstack = new IntStack();
+    bddrefstack = new int[4096];
+    bddrefstackTop = 0;
     _bddReuse = new LinkedList<>();
     quantvarset = new int[bddvarnum];
   }
@@ -743,7 +744,8 @@ public class JFactory extends BDDFactory implements Serializable {
   private int bddfreenum; /* Number of free nodes */
   private int bddproduced; /* Number of new nodes ever produced */
   private int bddvarnum; /* Number of defined BDD variables */
-  private transient IntStack bddrefstack; /* BDDs referenced during the current computation. */
+  private transient int[] bddrefstack; /* BDDs referenced during the current computation. */
+  private transient int bddrefstackTop; /* Next free position in bddrefstack. */
   private int[] bddvar2level; /* Variable -> level table */
   private int[] bddlevel2var; /* Level -> variable table */
   private boolean bddresized; /* Flag indicating a resize of the nodetable */
@@ -3934,24 +3936,27 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   private void INITREF() {
-    bddrefstack.clear();
+    bddrefstackTop = 0;
   }
 
   private int PUSHREF(int a) {
-    bddrefstack.push(a);
+    if (bddrefstackTop >= bddrefstack.length) {
+      bddrefstack = Arrays.copyOf(bddrefstack, bddrefstack.length * 2);
+    }
+    bddrefstack[bddrefstackTop++] = a;
     return a;
   }
 
   private int READREF(int a) {
-    return bddrefstack.get(bddrefstack.elementsCount - a);
+    return bddrefstack[bddrefstackTop - a];
   }
 
   private void POPREF(int a) {
-    bddrefstack.discard(a);
+    bddrefstackTop -= a;
   }
 
   private void SETREF(int index, int a) {
-    bddrefstack.set(index, a);
+    bddrefstack[index] = a;
   }
 
   private int bdd_nodecount(int r) {
@@ -4112,7 +4117,9 @@ public class JFactory extends BDDFactory implements Serializable {
       gbc_handler(true, gcstats);
     }
 
-    bddrefstack.forEach((IntProcedure) this::bdd_mark);
+    for (int i = 0; i < bddrefstackTop; i++) {
+      bdd_mark(bddrefstack[i]);
+    }
 
     for (int n = 0; n < bddnodesize; n++) {
       if (HASREF(n)) {
