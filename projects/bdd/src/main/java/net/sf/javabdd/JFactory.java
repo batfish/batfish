@@ -989,7 +989,6 @@ public final class JFactory extends BDDFactory implements Serializable {
   private static final int BDDONE = 1;
   private static final int BDDZERO = 0;
 
-  private boolean bddrunning; /* Flag - package initialized */
   private int bdderrorcond; /* Some error condition */
   private int bddnodesize; /* Number of allocated nodes (power of 2) */
   private int bddnodemask; /* bddnodesize - 1, for fast hash masking */
@@ -1149,9 +1148,7 @@ public final class JFactory extends BDDFactory implements Serializable {
   }
 
   private void CHECK(int r) {
-    if (!bddrunning) {
-      bdd_error(BDD_RUNNING);
-    } else if (r < 0 || r >= bddnodesize) {
+    if (r < 0 || r >= bddnodesize) {
       bdd_error(BDD_ILLBDD);
     } else if (VERIFY_ASSERTIONS && r >= 2 && LOW(r) == INVALID_BDD) {
       bdd_error(BDD_ILLBDD);
@@ -4146,7 +4143,7 @@ public final class JFactory extends BDDFactory implements Serializable {
     if (root == INVALID_BDD) {
       bdd_error(BDD_BREAK); /* distinctive */
     }
-    if (root < 2 || !bddrunning) {
+    if (root < 2) {
       return root;
     }
     if (VERIFY_ASSERTIONS) {
@@ -4166,7 +4163,7 @@ public final class JFactory extends BDDFactory implements Serializable {
     if (root == INVALID_BDD) {
       bdd_error(BDD_BREAK); /* distinctive */
     }
-    if (root < 2 || !bddrunning) {
+    if (root < 2) {
       return root;
     }
     if (VERIFY_ASSERTIONS) {
@@ -4387,7 +4384,7 @@ public final class JFactory extends BDDFactory implements Serializable {
 
   @Override
   protected void initialize(int initnodesize, int cs) {
-    if (bddrunning) {
+    if (bddnodes != null) {
       bdd_error(BDD_RUNNING);
     }
 
@@ -4420,7 +4417,6 @@ public final class JFactory extends BDDFactory implements Serializable {
 
     bddfreepos = 2;
     bddfreenum = bddnodesize - 2;
-    bddrunning = true;
     bddvarnum = 0;
     gbcollectnum = 0;
     gbcclock = 0;
@@ -5002,7 +4998,7 @@ public final class JFactory extends BDDFactory implements Serializable {
 
   @Override
   public boolean isInitialized() {
-    return bddrunning;
+    return bddnodes != null;
   }
 
   @Override
