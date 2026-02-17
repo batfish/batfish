@@ -1963,6 +1963,20 @@ public class JFactory extends BDDFactory implements Serializable {
   }
 
   /**
+   * Check if array is sorted in ascending order. Used to skip the O(n log n) Dual-Pivot QuickSort
+   * in {@link Arrays#sort(int[])} when operands are already sorted.
+   *
+   * @see <a
+   *     href="https://docs.oracle.com/en/java/javase/17/docs/api/java.base/java/util/Arrays.html#sort(int%5B%5D)">Arrays.sort(int[])</a>
+   */
+  private static boolean isSorted(int[] a) {
+    for (int i = 1; i < a.length; i++) {
+      if (a[i - 1] > a[i]) return false;
+    }
+    return true;
+  }
+
+  /**
    * Dedup a sorted array. Returns the input array if it contains no duplicates. Mutates the array
    * if there are duplicates.
    */
@@ -1998,8 +2012,10 @@ public class JFactory extends BDDFactory implements Serializable {
       return and_rec(operands[0], operands[1]);
     }
 
-    // sort and dedup the operands to optimize caching
-    Arrays.sort(operands);
+    // sort and dedup the operands to optimize caching (skip if already sorted)
+    if (!isSorted(operands)) {
+      Arrays.sort(operands);
+    }
     operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_and);
@@ -2145,8 +2161,10 @@ public class JFactory extends BDDFactory implements Serializable {
       return or_rec(operands[0], operands[1]);
     }
 
-    // sort and dedup the operands to optimize caching
-    Arrays.sort(operands);
+    // sort and dedup the operands to optimize caching (skip if already sorted)
+    if (!isSorted(operands)) {
+      Arrays.sort(operands);
+    }
     operands = dedupSorted(operands, operands.length);
 
     int hash = MULTIOPHASH(operands, bddop_or);
