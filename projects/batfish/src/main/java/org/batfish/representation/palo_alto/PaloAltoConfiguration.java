@@ -2634,14 +2634,20 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       assert true; // TODO figure out the default and handle separately.
     }
 
+    Vsys vsys = _virtualSystems.get(DEFAULT_VSYS_NAME);
+    Ip peerIp = interfaceAddressToIp(peer.getPeerAddress(), vsys);
+    if (peerIp == null) {
+      _w.redFlagf("Could not resolve peer-address for peer %s; disabling it", peer.getName());
+      return;
+    }
+
     BgpActivePeerConfig.Builder peerB =
         BgpActivePeerConfig.builder()
             .setBgpProcess(proc)
             .setDescription(peer.getName())
             .setGroup(pg.getName())
             .setLocalAs(localAs)
-            .setPeerAddress(
-                interfaceAddressToIp(peer.getPeerAddress(), _virtualSystems.get(DEFAULT_VSYS_NAME)))
+            .setPeerAddress(peerIp)
             // Multihop (as batfish VI model understands it) is always on for PAN because of
             // "number + 2" computation
             // See https://knowledgebase.paloaltonetworks.com/KCSArticleDetail?id=kA10g000000ClKkCAK
@@ -2654,10 +2660,7 @@ public class PaloAltoConfiguration extends VendorConfiguration {
       Optional.ofNullable(peer.getLocalInterface())
           .map(_interfaces::get)
           .map(Interface::getAddress)
-          .map(
-              a ->
-                  interfaceAddressToConcreteInterfaceAddress(
-                      a, _virtualSystems.get(DEFAULT_VSYS_NAME), _w))
+          .map(a -> interfaceAddressToConcreteInterfaceAddress(a, vsys, _w))
           .map(ConcreteInterfaceAddress::getIp)
           .ifPresent(peerB::setLocalIp);
     }
