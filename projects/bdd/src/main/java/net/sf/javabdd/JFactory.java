@@ -995,7 +995,7 @@ public class JFactory extends BDDFactory implements Serializable {
       bdd_error(BDD_RUNNING);
     } else if (r < 0 || r >= bddnodesize) {
       bdd_error(BDD_ILLBDD);
-    } else if (r >= 2 && LOW(r) == INVALID_BDD) {
+    } else if (VERIFY_ASSERTIONS && r >= 2 && LOW(r) == INVALID_BDD) {
       bdd_error(BDD_ILLBDD);
     }
   }
@@ -3983,11 +3983,13 @@ public class JFactory extends BDDFactory implements Serializable {
     if (root < 2 || !bddrunning) {
       return root;
     }
-    if (root >= bddnodesize) {
-      return bdd_error(BDD_ILLBDD);
-    }
-    if (LOW(root) == INVALID_BDD) {
-      return bdd_error(BDD_ILLBDD);
+    if (VERIFY_ASSERTIONS) {
+      if (root >= bddnodesize) {
+        return bdd_error(BDD_ILLBDD);
+      }
+      if (LOW(root) == INVALID_BDD) {
+        return bdd_error(BDD_ILLBDD);
+      }
     }
 
     INCREF(root);
@@ -4001,16 +4003,17 @@ public class JFactory extends BDDFactory implements Serializable {
     if (root < 2 || !bddrunning) {
       return root;
     }
-    if (root >= bddnodesize) {
-      return bdd_error(BDD_ILLBDD);
-    }
-    if (LOW(root) == INVALID_BDD) {
-      return bdd_error(BDD_ILLBDD);
-    }
-
-    /* if the following line is present, fails there much earlier */
-    if (!HASREF(root)) {
-      bdd_error(BDD_BREAK); /* distinctive */
+    if (VERIFY_ASSERTIONS) {
+      if (root >= bddnodesize) {
+        return bdd_error(BDD_ILLBDD);
+      }
+      if (LOW(root) == INVALID_BDD) {
+        return bdd_error(BDD_ILLBDD);
+      }
+      /* if the following line is present, fails there much earlier */
+      if (!HASREF(root)) {
+        bdd_error(BDD_BREAK); /* distinctive */
+      }
     }
 
     DECREF(root);
