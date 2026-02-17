@@ -44,8 +44,6 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.Queue;
 import java.util.Random;
 import java.util.Set;
 import java.util.function.IntFunction;
@@ -70,7 +68,10 @@ public class JFactory extends BDDFactory implements Serializable {
   private static final boolean CACHESTATS = false;
 
   /** A cache of BDDImpls that have been freed and may now be reused. */
-  private transient Queue<BDDImpl> _bddReuse;
+  private transient BDDImpl[] _bddReuse;
+
+  /** Number of valid entries in {@link #_bddReuse}. */
+  private transient int _bddReuseSize;
 
   /** The limit on the size of {@link #_bddReuse}. */
   private static final int BDD_REUSE_LIMIT = 1024;
@@ -94,7 +95,8 @@ public class JFactory extends BDDFactory implements Serializable {
     supportSet = new int[0];
     bddrefstack = new int[4096];
     bddrefstackTop = 0;
-    _bddReuse = new LinkedList<>();
+    _bddReuse = new BDDImpl[BDD_REUSE_LIMIT];
+    _bddReuseSize = 0;
   }
 
   @Serial
@@ -104,7 +106,8 @@ public class JFactory extends BDDFactory implements Serializable {
     supportSet = new int[0];
     bddrefstack = new int[4096];
     bddrefstackTop = 0;
-    _bddReuse = new LinkedList<>();
+    _bddReuse = new BDDImpl[BDD_REUSE_LIMIT];
+    _bddReuseSize = 0;
     quantvarset = new int[bddvarnum];
   }
 
@@ -135,15 +138,14 @@ public class JFactory extends BDDFactory implements Serializable {
   /** Private helper function to create BDD objects. */
   private BDDImpl makeBDD(int id) {
     madeBDDs++;
-    BDDImpl ret = _bddReuse.poll();
-    if (ret == null) {
-      ret = new BDDImpl(id);
-    } else {
+    if (_bddReuseSize > 0) {
+      BDDImpl ret = _bddReuse[--_bddReuseSize];
       reusedBDDs++;
       ret._index = id;
       bdd_addref(id);
+      return ret;
     }
-    return ret;
+    return new BDDImpl(id);
   }
 
   /** Wrapper for the BDD index number used internally in the representation. */
@@ -547,8 +549,8 @@ public class JFactory extends BDDFactory implements Serializable {
       bdd_delref(_index);
       _index = INVALID_BDD;
       ++freedBDDs;
-      if (_bddReuse.size() < BDD_REUSE_LIMIT) {
-        _bddReuse.offer(this);
+      if (_bddReuseSize < BDD_REUSE_LIMIT) {
+        _bddReuse[_bddReuseSize++] = this;
       }
     }
   }
