@@ -631,7 +631,9 @@ public final class AciConversion {
                 .build();
         interfaces.put(ifaceName, iface);
       }
-    } else if ("leaf".equals(roleLower) || "services".equals(roleLower)) {
+    } else if ("leaf".equals(roleLower)
+        || "services".equals(roleLower)
+        || "service".equals(roleLower)) {
       // Leaf switches have:
       // 1. Fabric uplinks to spine (eth1/53-54 typically)
       // 2. Downstream ports for endpoints (eth1/1-52)
@@ -2894,14 +2896,16 @@ public final class AciConversion {
             .filter(node -> node.getRole() != null && "spine".equalsIgnoreCase(node.getRole()))
             .collect(Collectors.toList());
 
-    // Include both "leaf" and "services" nodes as leaves (services are treated as leaf switches)
+    // Include both "leaf" and "service"/"services" nodes as leaves
+    // (service nodes are leaf switches that provide connectivity to services)
     List<AciConfiguration.FabricNode> leaves =
         aciConfig.getFabricNodes().values().stream()
             .filter(
                 node ->
                     node.getRole() != null
                         && ("leaf".equalsIgnoreCase(node.getRole())
-                            || "services".equalsIgnoreCase(node.getRole())))
+                            || "services".equalsIgnoreCase(node.getRole())
+                            || "service".equalsIgnoreCase(node.getRole())))
             .collect(Collectors.toList());
 
     // Connect each leaf to each spine

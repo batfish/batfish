@@ -539,8 +539,9 @@ public final class AciConfiguration extends VendorConfiguration {
       return "leaf";
     } else if (lowerName.contains("-spine-")) {
       return "spine";
-    } else if (lowerName.contains("-services-")) {
+    } else if (lowerName.contains("-services-") || lowerName.contains("-service-")) {
       // Services nodes are leaf switches that provide connectivity to services
+      // Accept both "-services-" and "-service-" (singular and plural forms)
       return "leaf";
     }
 
