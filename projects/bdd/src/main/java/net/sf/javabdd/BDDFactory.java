@@ -393,7 +393,8 @@ public abstract class BDDFactory {
     }
 
     // Speculative optimization: sort by decreasing level
-    List<BDD> ordered = Arrays.stream(bdds).sorted((b1, b2) -> b2.level() - b1.level()).toList();
+    BDD[] ordered = bdds.clone();
+    Arrays.sort(ordered, (b1, b2) -> b2.level() - b1.level());
 
     BDD onehot = zero();
     BDD allFalse = one();
