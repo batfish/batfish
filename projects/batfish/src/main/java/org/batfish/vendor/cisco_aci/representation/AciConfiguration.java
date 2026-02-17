@@ -256,6 +256,9 @@ public final class AciConfiguration extends VendorConfiguration {
   /** Map of VPC IDs to VPC pair configurations */
   private Map<String, VpcPair> _vpcPairs;
 
+  /** List of explicit fabric links (from fabric_links.json) */
+  private List<FabricLink> _fabricLinks;
+
   /** Map of inter-fabric connection IDs to connection configurations */
   private Map<String, InterFabricConnection> _interFabricConnections;
 
@@ -289,6 +292,7 @@ public final class AciConfiguration extends VendorConfiguration {
     _tabooContracts = new TreeMap<>();
     _fabricNodes = new TreeMap<>();
     _vpcPairs = new TreeMap<>();
+    _fabricLinks = new ArrayList<>();
     _interFabricConnections = new TreeMap<>();
     _pathAttachmentMap = new TreeMap<>();
     _nodeInterfaces = new TreeMap<>();
@@ -1640,6 +1644,47 @@ public final class AciConfiguration extends VendorConfiguration {
       }
     }
     return null;
+  }
+
+  /**
+   * Normalizes ACI interface names to canonical form.
+   *
+   * <p>ACI uses short lowercase names in path attachment tDn values (e.g., "eth1/3", "po1"). This
+   * method converts them to canonical names that match how interfaces are named in Batfish (e.g.,
+   * "Ethernet1/3", "port-channel1").
+   *
+   * @param ifaceName The interface name from ACI (may be short form like "eth1/3")
+   * @return The canonical interface name (e.g., "Ethernet1/3")
+   */
+  public static @Nonnull String normalizeInterfaceName(@Nonnull String ifaceName) {
+    String lower = ifaceName.toLowerCase();
+
+    // Handle Ethernet interfaces: eth1/3 -> Ethernet1/3
+    if (lower.startsWith("eth") && lower.matches("eth\\d+/\\d+.*")) {
+      return "Ethernet" + ifaceName.substring(3);
+    }
+
+    // Handle port-channel: po1 -> port-channel1
+    if (lower.startsWith("po") && lower.matches("po\\d+.*")) {
+      return "port-channel" + ifaceName.substring(2);
+    }
+
+    // Handle Loopback: lo0 -> Loopback0
+    if (lower.startsWith("lo") && lower.matches("lo\\d+.*")) {
+      return "Loopback" + ifaceName.substring(2);
+    }
+
+    // Handle Vlan: vl100 -> Vlan100
+    if (lower.startsWith("vl") && lower.matches("vl\\d+.*")) {
+      return "Vlan" + ifaceName.substring(2);
+    }
+
+    // Default: capitalize first letter and return as-is (for named interfaces like PG_VPC_FW_1)
+    if (!ifaceName.isEmpty()) {
+      return ifaceName.substring(0, 1).toUpperCase() + ifaceName.substring(1);
+    }
+
+    return ifaceName;
   }
 
   /** Parses a BGP external policy (bgpExtP) from a raw map structure. */
@@ -3192,6 +3237,73 @@ public final class AciConfiguration extends VendorConfiguration {
 
     public void setPeer2NodeId(String peer2NodeId) {
       _peer2NodeId = peer2NodeId;
+    }
+  }
+
+  /**
+   * ACI Fabric Link configuration.
+   *
+   * <p>Represents a physical link between two fabric nodes (spine-leaf, spine-spine, etc.). This
+   * data comes from the optional fabric_links.json file, typically exported from APIC's fabricLink
+   * MOs.
+   */
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class FabricLink implements Serializable {
+    private String _node1Id;
+    private String _node1Interface;
+    private String _node2Id;
+    private String _node2Interface;
+    private String _linkState; // "up", "down", etc.
+
+    public FabricLink() {}
+
+    public FabricLink(
+        String node1Id, String node1Interface, String node2Id, String node2Interface) {
+      _node1Id = node1Id;
+      _node1Interface = node1Interface;
+      _node2Id = node2Id;
+      _node2Interface = node2Interface;
+    }
+
+    public @Nullable String getNode1Id() {
+      return _node1Id;
+    }
+
+    public void setNode1Id(String node1Id) {
+      _node1Id = node1Id;
+    }
+
+    public @Nullable String getNode1Interface() {
+      return _node1Interface;
+    }
+
+    public void setNode1Interface(String node1Interface) {
+      _node1Interface = node1Interface;
+    }
+
+    public @Nullable String getNode2Id() {
+      return _node2Id;
+    }
+
+    public void setNode2Id(String node2Id) {
+      _node2Id = node2Id;
+    }
+
+    public @Nullable String getNode2Interface() {
+      return _node2Interface;
+    }
+
+    public void setNode2Interface(String node2Interface) {
+      _node2Interface = node2Interface;
+    }
+
+    public @Nullable String getLinkState() {
+      return _linkState;
+    }
+
+    public void setLinkState(String linkState) {
+      _linkState = linkState;
     }
   }
 
@@ -5511,7 +5623,7 @@ public final class AciConfiguration extends VendorConfiguration {
         int ifStart = pathepIdx + 9; // Skip "/pathep-["
         int ifEnd = tdn.indexOf(']', ifStart);
         if (ifEnd > ifStart) {
-          _interface = tdn.substring(ifStart, ifEnd);
+          _interface = normalizeInterfaceName(tdn.substring(ifStart, ifEnd));
         }
       }
     }

@@ -416,15 +416,16 @@ public class AciInterfaceConfigTest {
     String json = createEpgWithPathAttachment();
     AciConfiguration config = AciConfiguration.fromJson("epg_path_att.json", json, new Warnings());
 
-    // Verify node interfaces map contains the interface
+    // Verify node interfaces map contains the interface (normalized to canonical name)
     assertThat(config.getNodeInterfaces(), hasKey("255"));
-    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("eth1/1"));
+    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("Ethernet1/1"));
 
     // Verify path attachment map contains the attachment
     assertThat(config.getPathAttachmentMap(), hasKey("255"));
-    assertThat(config.getPathAttachmentMap().get("255"), hasKey("eth1/1"));
+    assertThat(config.getPathAttachmentMap().get("255"), hasKey("Ethernet1/1"));
     assertThat(
-        config.getPathAttachmentMap().get("255").get("eth1/1").getEncap(), equalTo("vlan-100"));
+        config.getPathAttachmentMap().get("255").get("Ethernet1/1").getEncap(),
+        equalTo("vlan-100"));
   }
 
   /** Test vPC path attachment (protpaths) linking EPG to vPC pair */
@@ -473,7 +474,7 @@ public class AciInterfaceConfigTest {
 
     // Verify interface is only listed once (deduplication)
     assertThat(config.getNodeInterfaces().get("255").size(), equalTo(1));
-    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("eth1/1"));
+    assertThat(config.getNodeInterfaces().get("255").iterator().next(), equalTo("Ethernet1/1"));
   }
 
   /** Test path attachment with EPG metadata */
@@ -484,11 +485,13 @@ public class AciInterfaceConfigTest {
         AciConfiguration.fromJson("path_att_metadata.json", json, new Warnings());
 
     // Verify EPG metadata is captured
-    assertThat(config.getPathAttachmentMap().get("255").get("eth1/1").getEpgName(), equalTo("web"));
     assertThat(
-        config.getPathAttachmentMap().get("255").get("eth1/1").getEpgTenant(), equalTo("tenant1"));
+        config.getPathAttachmentMap().get("255").get("Ethernet1/1").getEpgName(), equalTo("web"));
     assertThat(
-        config.getPathAttachmentMap().get("255").get("eth1/1").getDescription(),
+        config.getPathAttachmentMap().get("255").get("Ethernet1/1").getEpgTenant(),
+        equalTo("tenant1"));
+    assertThat(
+        config.getPathAttachmentMap().get("255").get("Ethernet1/1").getDescription(),
         equalTo("Web servers EPG"));
   }
 
@@ -518,10 +521,10 @@ public class AciInterfaceConfigTest {
     assertThat(config.getFabricNodes().get("201").getInterfaces().size(), equalTo(1));
     assertThat(config.getFabricNodes().get("201").getInterfaces(), hasKey("eth1/1"));
 
-    // Verify leaf also has interfaces from path attachments
+    // Verify leaf also has interfaces from path attachments (normalized to canonical name)
     assertThat(config.getNodeInterfaces(), hasKey("201"));
     assertThat(config.getNodeInterfaces().get("201").size(), equalTo(1));
-    assertThat(config.getNodeInterfaces().get("201").iterator().next(), equalTo("eth1/2"));
+    assertThat(config.getNodeInterfaces().get("201").iterator().next(), equalTo("Ethernet1/2"));
 
     // Verify Layer1 edges are created between spine and leaf
     var edges = org.batfish.vendor.cisco_aci.representation.AciConversion.createLayer1Edges(config);
