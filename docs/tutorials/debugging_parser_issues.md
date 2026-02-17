@@ -238,7 +238,109 @@ IP: [0-9]+ '.' [0-9]+ '.' [0-9]+ '.' [0-9]+;
 
 ---
 
-### Step 5: Use Parse Tree Visualization
+### Step 5: Interpreting Detailed Parse Error Output
+
+When parser tests fail, Batfish produces detailed error output that can help you quickly identify the root cause. Understanding how to read this output is essential for efficient debugging.
+
+#### Example: Detailed Parser Error
+
+Here's an example of what a detailed parse error looks like:
+
+```
+Parser error
+org.batfish.main.ParserBatfishException:
+  <omitted>
+Caused by: org.batfish.common.DebugBatfishException:
+lexer: FlatJuniperLexer: line 4:30: token recognition error at: 'n'
+Current rule stack: '[s_switch_options s_common statement set_line_tail set_line flat_juniper_configuration]'.
+Current rule starts at: line: 4, col 4
+Parse tree for current rule:
+(s_switch_options
+  SWITCH_OPTIONS:'switch-options')
+Lexer mode: M_VrfTarget
+Lexer state variables:
+  markWildcards: false
+Error context lines:
+   1:      #
+   2:      set system host-name juniper-so-vrf-target-auto
+   3:      #
+>>>4:      set switch-options vrf-target nauto
+   5:      #
+```
+
+#### Breaking Down the Error Output
+
+1. **Token Recognition Error**:
+   ```
+   lexer: FlatJuniperLexer: line 4:30: token recognition error at: 'n'
+   ```
+   - `line 4:30` - The error is on line 4, column 30
+   - `token recognition error at: 'n'` - The lexer couldn't recognize the character 'n' at this position
+
+2. **Current Rule Stack**:
+   ```
+   Current rule stack: '[s_switch_options s_common statement set_line_tail set_line flat_juniper_configuration]'.
+   ```
+   - Shows the hierarchy of grammar rules being processed
+   - The most recent (innermost) rule is `s_switch_options`
+   - This helps trace how the parser reached the error location
+
+3. **Parse Tree for Current Rule**:
+   ```
+   Parse tree for current rule:
+   (s_switch_options
+     SWITCH_OPTIONS:'switch-options')
+   ```
+   - Shows what has been successfully parsed so far within the current rule
+   - Here, `switch-options` was recognized, but parsing failed after that
+
+4. **Lexer Mode**:
+   ```
+   Lexer mode: M_VrfTarget
+   ```
+   - The lexer is in a non-default mode called `M_VrfTarget`
+   - This is crucial: different lexer modes have different token definitions
+   - The error may be because the token isn't defined in this specific mode
+
+5. **Error Context Lines**:
+   ```
+   Error context lines:
+      1:      #
+      2:      set system host-name juniper-so-vrf-target-auto
+      3:      #
+   >>>4:      set switch-options vrf-target nauto
+      5:      #
+   ```
+   - Shows the actual input with `>>>` marking the problematic line
+   - In this example, `nauto` is invalid (should be `auto`)
+
+#### Using Lexer Mode Information
+
+The lexer mode information is particularly valuable. When you see a non-default mode, check that mode's token definitions:
+
+```antlr
+// From FlatJuniperLexer.g4
+mode M_VrfTarget;
+
+M_VrfTarget_COLON: ':' -> type ( COLON );
+M_VrfTarget_DEC: F_Digit+ -> type ( DEC );
+M_VrfTarget_AUTO: 'auto' -> type ( AUTO );
+M_VrfTarget_EXPORT: 'export' -> type ( EXPORT );
+M_VrfTarget_IMPORT: 'import' -> type ( IMPORT );
+M_VrfTarget_NEWLINE: F_NewlineChar+ -> type(NEWLINE), popMode;
+```
+
+In this example, the mode only allows specific tokens (`auto`, `export`, `import`, etc.). The word `nauto` doesn't match any of these, causing the error.
+
+#### Fixing Based on Error Analysis
+
+1. **If the token should exist**: Add the token definition to the appropriate lexer mode
+2. **If the input is wrong**: Fix your test configuration file
+3. **If the mode transition is wrong**: Check where `pushMode` is called in the lexer
+
+---
+
+### Step 6: Use Parse Tree Visualization
 
 **In your test**:
 

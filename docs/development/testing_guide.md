@@ -190,6 +190,58 @@ Note that some packages are excluded from coverage instrumentation to prevent cr
 - Use Hamcrest matchers for more readable assertions
 - Create custom matchers for domain-specific assertions
 
+#### Prefer assertThat() over assertTrue()/assertNull()
+
+Batfish developers consistently use Hamcrest matchers (`assertThat`) instead of JUnit's basic assertions (`assertTrue`, `assertNull`, `assertEquals`). This is more than a style preference—Hamcrest matchers provide significantly better error messages when tests fail.
+
+**Why prefer matchers:**
+
+```java
+// BAD: assertTrue gives unhelpful error messages
+assertTrue(someList().size() == 5);
+// Failure: java.lang.AssertionError
+
+// GOOD: Hamcrest matcher explains what went wrong
+assertThat(someList(), hasSize(5));
+// Failure: java.lang.AssertionError:
+// Expected: a collection with size <5>
+//      but: collection size was <3>
+```
+
+**Common patterns in Batfish tests:**
+
+```java
+// Instead of assertNull(myObject.getFoo())
+assertThat(myObject.getFoo(), nullValue());
+
+// Instead of assertTrue(myList.size() == 3)
+assertThat(myList, hasSize(3));
+
+// Instead of assertTrue(myValue == expectedValue)
+assertThat(myValue, equalTo(expectedValue));
+
+// Instead of assertTrue(myList.contains(item))
+assertThat(myList, hasItem(item));
+
+// Instead of assertTrue(mySet.containsAll(otherSet))
+assertThat(mySet, hasItems(expectedItems.toArray(new String[0])));
+```
+
+**Better debugging with matchers:**
+
+When a test fails, Hamcrest matchers show both the expected value and the actual value in a clear format:
+
+```java
+// Test code
+assertThat(config.getInterfaces().keySet(), contains("eth0", "eth1", "eth2"));
+
+// Failure output shows exactly what was expected vs. actual:
+// Expected: iterable containing ["eth0", "eth1", "eth2"]
+//      but: item 0 was "ge-0/0/0"
+```
+
+This makes debugging much faster compared to generic assertion failures.
+
 #### Testing ACLs and Filters
 
 Use idiomatic matchers for concise, readable ACL tests:
