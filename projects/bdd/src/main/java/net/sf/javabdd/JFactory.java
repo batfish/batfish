@@ -1985,18 +1985,20 @@ public final class JFactory extends BDDFactory implements Serializable {
     int cached = applycache.lookup(hash, l, r, applyop);
     if (cached >= 0) return cached;
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int LEVEL_l = LEVEL(l);
+    int LEVEL_r = LEVEL(r);
+    if (LEVEL_l == LEVEL_r) {
       PUSHREF(apply_rec(LOW(l), LOW(r)));
       PUSHREF(apply_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
+    } else if (LEVEL_l < LEVEL_r) {
       PUSHREF(apply_rec(LOW(l), r));
       PUSHREF(apply_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
     } else {
       PUSHREF(apply_rec(l, LOW(r)));
       PUSHREF(apply_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -2027,18 +2029,20 @@ public final class JFactory extends BDDFactory implements Serializable {
     int cached = applycache.lookup(hash, l, r, bddop_and);
     if (cached >= 0) return cached;
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int LEVEL_l = LEVEL(l);
+    int LEVEL_r = LEVEL(r);
+    if (LEVEL_l == LEVEL_r) {
       PUSHREF(and_rec(LOW(l), LOW(r)));
       PUSHREF(and_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
+    } else if (LEVEL_l < LEVEL_r) {
       PUSHREF(and_rec(LOW(l), r));
       PUSHREF(and_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
     } else {
       PUSHREF(and_rec(l, LOW(r)));
       PUSHREF(and_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
@@ -2469,18 +2473,20 @@ public final class JFactory extends BDDFactory implements Serializable {
     int cached = applycache.lookup(hash, l, r, bddop_or);
     if (cached >= 0) return cached;
 
-    if (LEVEL(l) == LEVEL(r)) {
+    int LEVEL_l = LEVEL(l);
+    int LEVEL_r = LEVEL(r);
+    if (LEVEL_l == LEVEL_r) {
       PUSHREF(or_rec(LOW(l), LOW(r)));
       PUSHREF(or_rec(HIGH(l), HIGH(r)));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
-    } else if (LEVEL(l) < LEVEL(r)) {
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
+    } else if (LEVEL_l < LEVEL_r) {
       PUSHREF(or_rec(LOW(l), r));
       PUSHREF(or_rec(HIGH(l), r));
-      res = bdd_makenode(LEVEL(l), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_l, READREF(2), READREF(1));
     } else {
       PUSHREF(or_rec(l, LOW(r)));
       PUSHREF(or_rec(l, HIGH(r)));
-      res = bdd_makenode(LEVEL(r), READREF(2), READREF(1));
+      res = bdd_makenode(LEVEL_r, READREF(2), READREF(1));
     }
 
     POPREF(2);
