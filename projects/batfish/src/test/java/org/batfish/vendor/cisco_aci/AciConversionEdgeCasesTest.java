@@ -14,7 +14,10 @@ import java.util.SortedMap;
 import org.batfish.common.Warnings;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
+import org.batfish.datamodel.ExprAclLine;
 import org.batfish.datamodel.Interface;
+import org.batfish.datamodel.IpAccessList;
+import org.batfish.datamodel.LineAction;
 import org.batfish.datamodel.Vrf;
 import org.batfish.vendor.cisco_aci.representation.AciConfiguration;
 import org.batfish.vendor.cisco_aci.representation.AciConversion;
@@ -307,6 +310,7 @@ public class AciConversionEdgeCasesTest {
 
     AciConfiguration.Contract.Filter filter = new AciConfiguration.Contract.Filter();
     filter.setName("deny-filter");
+    filter.setAction("deny"); // Set the action to deny
     filter.setIpProtocol("tcp");
     filter.setDestinationPorts(ImmutableList.of("23"));
 
@@ -324,6 +328,83 @@ public class AciConversionEdgeCasesTest {
 
     String aclName = AciConversion.getContractAclName("tenant1:deny-contract");
     assertThat(leafConfig.getIpAccessLists(), hasKey(aclName));
+
+    // Verify that the ACL has a DENY line for the deny filter
+    IpAccessList acl = leafConfig.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    // Should have at least one deny line (plus default deny at the end)
+    long denyCount =
+        acl.getLines().stream()
+            .filter(line -> ((ExprAclLine) line).getAction() == LineAction.DENY)
+            .count();
+    assertTrue("Expected at least 2 deny lines (filter deny + implicit deny)", denyCount >= 2);
+  }
+
+  /** Test conversion with contract having mixed permit and deny actions. */
+  @Test
+  public void testContractWithMixedActions() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Add fabric node
+    AciConfiguration.FabricNode node = createFabricNode("101", "leaf1", "1", "leaf");
+    config.getFabricNodes().put("101", node);
+
+    // Create contract with both permit and deny actions
+    AciConfiguration.Contract contract = config.getOrCreateContract("tenant1:mixed-contract");
+    contract.setTenant("tenant1");
+
+    AciConfiguration.Contract.Subject subject = new AciConfiguration.Contract.Subject();
+    subject.setName("mixed-subject");
+
+    // Permit filter for HTTP
+    AciConfiguration.Contract.Filter permitFilter = new AciConfiguration.Contract.Filter();
+    permitFilter.setName("permit-http");
+    permitFilter.setAction("permit");
+    permitFilter.setIpProtocol("tcp");
+    permitFilter.setDestinationPorts(ImmutableList.of("80"));
+
+    // Deny filter for Telnet
+    AciConfiguration.Contract.Filter denyFilter = new AciConfiguration.Contract.Filter();
+    denyFilter.setName("deny-telnet");
+    denyFilter.setAction("deny");
+    denyFilter.setIpProtocol("tcp");
+    denyFilter.setDestinationPorts(ImmutableList.of("23"));
+
+    subject.setFilters(ImmutableList.of(permitFilter, denyFilter));
+    contract.setSubjects(ImmutableList.of(subject));
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = viConfigs.get("leaf1");
+    assertNotNull(leafConfig);
+
+    String aclName = AciConversion.getContractAclName("tenant1:mixed-contract");
+    assertThat(leafConfig.getIpAccessLists(), hasKey(aclName));
+
+    IpAccessList acl = leafConfig.getIpAccessLists().get(aclName);
+    assertNotNull(acl);
+
+    // Should have 1 permit line (HTTP), 1 explicit deny line (Telnet), plus default deny = 3 total
+    assertThat(acl.getLines().size(), equalTo(3));
+
+    long permitCount =
+        acl.getLines().stream()
+            .filter(line -> ((ExprAclLine) line).getAction() == LineAction.PERMIT)
+            .count();
+    long denyCount =
+        acl.getLines().stream()
+            .filter(line -> ((ExprAclLine) line).getAction() == LineAction.DENY)
+            .count();
+
+    assertThat(permitCount, equalTo(1L)); // HTTP permit
+    assertThat(denyCount, equalTo(2L)); // Telnet deny + default deny
   }
 
   /** Test conversion with empty tenant. */

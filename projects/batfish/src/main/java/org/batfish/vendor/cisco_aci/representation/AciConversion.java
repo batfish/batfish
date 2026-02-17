@@ -50,6 +50,7 @@ import org.batfish.datamodel.acl.AclLineMatchExpr;
 import org.batfish.datamodel.acl.AclLineMatchExprs;
 import org.batfish.datamodel.acl.PermittedByAcl;
 import org.batfish.datamodel.bgp.Ipv4UnicastAddressFamily;
+import org.batfish.datamodel.ospf.OspfNetworkType;
 import org.batfish.datamodel.routing_policy.RoutingPolicy;
 import org.batfish.datamodel.routing_policy.expr.CallExpr;
 import org.batfish.datamodel.routing_policy.expr.LiteralLong;
@@ -214,6 +215,9 @@ public final class AciConversion {
 
     // Convert L3Out configurations (BGP, static routes, etc.)
     convertL3Outs(node, aciConfig, interfaces, defaultVrf, c, warnings);
+
+    // Convert L2Out configurations (external Layer 2 connectivity)
+    convertL2Outs(node, aciConfig, interfaces, defaultVrf, c, warnings);
 
     return c;
   }
@@ -926,8 +930,11 @@ public final class AciConversion {
 
     ImmutableList.Builder<ExprAclLine> lines = ImmutableList.builder();
 
-    // Default action is permit for contract filters
+    // Determine action based on filter's action field (default to permit)
     LineAction action = LineAction.PERMIT;
+    if (filter.getAction() != null && "deny".equalsIgnoreCase(filter.getAction())) {
+      action = LineAction.DENY;
+    }
 
     // Build match expressions based on filter criteria
     ImmutableList.Builder<AclLineMatchExpr> matchExprs = ImmutableList.builder();
@@ -1601,6 +1608,131 @@ public final class AciConversion {
   }
 
   /**
+   * Converts L2Out configurations to VLAN interfaces for external Layer 2 connectivity.
+   *
+   * <p>L2Out in ACI provides external Layer 2 connectivity. This method creates VLAN interfaces
+   * representing the L2Out connections with appropriate VLAN IDs derived from the encapsulation.
+   *
+   * @param node The fabric node
+   * @param aciConfig The ACI configuration
+   * @param interfaces Map of existing interfaces
+   * @param defaultVrf The default VRF
+   * @param c The Batfish configuration
+   * @param warnings Warnings container
+   */
+  private static void convertL2Outs(
+      AciConfiguration.FabricNode node,
+      AciConfiguration aciConfig,
+      Map<String, Interface> interfaces,
+      Vrf defaultVrf,
+      Configuration c,
+      Warnings warnings) {
+    Map<String, AciConfiguration.L2Out> l2Outs = aciConfig.getL2Outs();
+    if (l2Outs == null || l2Outs.isEmpty()) {
+      return;
+    }
+
+    for (Map.Entry<String, AciConfiguration.L2Out> entry : l2Outs.entrySet()) {
+      AciConfiguration.L2Out l2Out = entry.getValue();
+      String l2OutName = l2Out.getName();
+      if (l2OutName == null || l2OutName.isEmpty()) {
+        continue;
+      }
+
+      // Determine the VLAN ID from encapsulation
+      int vlanId = parseL2OutVlanId(l2Out, warnings);
+      if (vlanId <= 0) {
+        continue;
+      }
+
+      // Determine the target VRF from the bridge domain
+      Vrf targetVrf = defaultVrf;
+      String bdName = l2Out.getBridgeDomain();
+      if (bdName != null && !bdName.isEmpty()) {
+        AciConfiguration.BridgeDomain bd = aciConfig.getBridgeDomains().get(bdName);
+        if (bd != null && bd.getVrf() != null) {
+          Vrf foundVrf = c.getVrfs().get(bd.getVrf());
+          if (foundVrf != null) {
+            targetVrf = foundVrf;
+          }
+        }
+      }
+
+      // Create interface name
+      String interfaceName = "L2Out-" + l2OutName;
+
+      // Skip if interface already exists
+      if (interfaces.containsKey(interfaceName)) {
+        continue;
+      }
+
+      // Build the L2Out interface
+      Interface.Builder l2OutInterface =
+          Interface.builder()
+              .setName(interfaceName)
+              .setType(InterfaceType.VLAN)
+              .setOwner(c)
+              .setVrf(targetVrf)
+              .setAdminUp(true)
+              .setMtu(DEFAULT_MTU)
+              .setVlan(vlanId)
+              .setHumanName(String.format("L2Out %s (VLAN %d)", l2OutName, vlanId))
+              .setDescription(
+                  l2Out.getDescription() != null
+                      ? l2Out.getDescription()
+                      : String.format("L2Out %s for external L2 connectivity", l2OutName))
+              .setDeclaredNames(ImmutableList.of(interfaceName));
+
+      interfaces.put(interfaceName, l2OutInterface.build());
+    }
+  }
+
+  /**
+   * Parses the VLAN ID from an L2Out encapsulation.
+   *
+   * <p>Supports formats: "vlan-100", "vxlan-5000"
+   *
+   * @param l2Out The L2Out configuration
+   * @param warnings Warnings container
+   * @return The VLAN ID (1-4095), or 0 if invalid
+   */
+  private static int parseL2OutVlanId(AciConfiguration.L2Out l2Out, Warnings warnings) {
+    String encap = l2Out.getEncapsulation();
+    if (encap == null || encap.isEmpty()) {
+      // Generate VLAN ID from L2Out name hash if no encapsulation
+      return Math.abs(l2Out.getName().hashCode() % 4094) + 1;
+    }
+
+    encap = encap.toLowerCase();
+
+    // Parse VLAN format: "vlan-100"
+    if (encap.startsWith("vlan-")) {
+      try {
+        int vlan = Integer.parseInt(encap.substring(5));
+        if (vlan >= 1 && vlan <= 4095) {
+          return vlan;
+        }
+      } catch (NumberFormatException e) {
+        warnings.redFlagf("Invalid VLAN encapsulation '%s' for L2Out %s", encap, l2Out.getName());
+      }
+    }
+
+    // Parse VXLAN format: "vxlan-5000" -> map to VLAN (VNI % 4094 + 1)
+    if (encap.startsWith("vxlan-")) {
+      try {
+        int vni = Integer.parseInt(encap.substring(6));
+        if (vni >= 1) {
+          return (vni % 4094) + 1;
+        }
+      } catch (NumberFormatException e) {
+        warnings.redFlagf("Invalid VXLAN encapsulation '%s' for L2Out %s", encap, l2Out.getName());
+      }
+    }
+
+    return 0;
+  }
+
+  /**
    * Converts BGP peers from an L3Out to a Batfish BgpProcess.
    *
    * @param l3Out The L3Out configuration
@@ -2244,6 +2376,79 @@ public final class AciConversion {
   }
 
   /**
+   * Converts ACI OSPF network type string to Batfish OspfNetworkType.
+   *
+   * @param networkTypeStr The network type string
+   * @return The corresponding OspfNetworkType, or null if not recognized
+   */
+  @VisibleForTesting
+  public static @Nullable OspfNetworkType convertOspfNetworkType(@Nullable String networkTypeStr) {
+    if (networkTypeStr == null) {
+      return null;
+    }
+
+    switch (networkTypeStr.toLowerCase()) {
+      case "point-to-point":
+      case "p2p":
+        return OspfNetworkType.POINT_TO_POINT;
+      case "broadcast":
+      case "bcast":
+        return OspfNetworkType.BROADCAST;
+      case "non-broadcast":
+      case "nbma":
+        return OspfNetworkType.NON_BROADCAST_MULTI_ACCESS;
+      case "point-to-multipoint":
+      case "p2mp":
+        return OspfNetworkType.POINT_TO_MULTIPOINT;
+      default:
+        return null;
+    }
+  }
+
+  /**
+   * Parses an OSPF area ID from a string.
+   *
+   * <p>OSPF area IDs can be either numeric (e.g., "0", "1") or in IP address format (e.g.,
+   * "0.0.0.0", "0.0.0.1"). This method converts both formats to a long value.
+   *
+   * @param areaIdStr The area ID string to parse
+   * @return The area ID as a long, or null if invalid
+   */
+  @VisibleForTesting
+  public static @Nullable Long parseAreaId(@Nullable String areaIdStr) {
+    if (areaIdStr == null || areaIdStr.isEmpty()) {
+      return null;
+    }
+
+    // Try parsing as a simple numeric value first
+    try {
+      return Long.parseLong(areaIdStr);
+    } catch (NumberFormatException e) {
+      // Not a simple number, try IP address format
+    }
+
+    // Try parsing as IP address format (e.g., "0.0.0.1")
+    String[] parts = areaIdStr.split("\\.");
+    if (parts.length != 4) {
+      return null;
+    }
+
+    try {
+      long result = 0;
+      for (int i = 0; i < 4; i++) {
+        int octet = Integer.parseInt(parts[i]);
+        if (octet < 0 || octet > 255) {
+          return null;
+        }
+        result = (result << 8) | octet;
+      }
+      return result;
+    } catch (NumberFormatException e) {
+      return null;
+    }
+  }
+
+  /**
    * Converts external EPGs (L3ExtEpg) from an L3Out.
    *
    * <p>External EPGs define subnets for external connectivity. This method creates static routes or
@@ -2495,7 +2700,166 @@ public final class AciConversion {
       }
     }
 
+    // Add inter-fabric connection edges
+    createInterFabricLayer1Edges(aciConfig, nodeIdToHostname, edges);
+
     return edges.build();
+  }
+
+  /**
+   * Creates Layer1Edge objects for inter-fabric connections.
+   *
+   * <p>Inter-fabric connections represent physical or logical links between border switches in
+   * different ACI fabrics. These connections are typically established via L3Out connections with
+   * BGP peering, shared external networks, or MPLS connections.
+   *
+   * @param aciConfig The ACI configuration containing inter-fabric connections
+   * @param nodeIdToHostname Map of node IDs to hostnames for resolving node references
+   * @param edges Builder to add the created edges to
+   */
+  @VisibleForTesting
+  static void createInterFabricLayer1Edges(
+      AciConfiguration aciConfig,
+      Map<String, String> nodeIdToHostname,
+      ImmutableSet.Builder<Layer1Edge> edges) {
+
+    Map<String, AciConfiguration.InterFabricConnection> connections =
+        aciConfig.getInterFabricConnections();
+    if (connections == null || connections.isEmpty()) {
+      return;
+    }
+
+    // Find border nodes (nodes that have L3Out interfaces)
+    Set<String> borderNodeIds = findBorderNodeIds(aciConfig);
+
+    // Get list of fabric nodes for selecting representative border nodes
+    List<AciConfiguration.FabricNode> fabricNodes =
+        new ArrayList<>(aciConfig.getFabricNodes().values());
+
+    // Filter to get border nodes
+    List<AciConfiguration.FabricNode> borderNodes =
+        fabricNodes.stream()
+            .filter(node -> borderNodeIds.contains(node.getNodeId()))
+            .collect(Collectors.toList());
+
+    // If no specific border nodes found, use all leaf switches as potential border nodes
+    if (borderNodes.isEmpty()) {
+      borderNodes =
+          fabricNodes.stream()
+              .filter(
+                  node ->
+                      node.getRole() != null
+                          && ("leaf".equalsIgnoreCase(node.getRole())
+                              || "services".equalsIgnoreCase(node.getRole())))
+              .collect(Collectors.toList());
+    }
+
+    if (borderNodes.isEmpty()) {
+      return;
+    }
+
+    // Create edges for each inter-fabric connection
+    for (Map.Entry<String, AciConfiguration.InterFabricConnection> entry : connections.entrySet()) {
+      String connectionId = entry.getKey();
+      AciConfiguration.InterFabricConnection connection = entry.getValue();
+
+      String fabric1 = connection.getFabric1();
+      String fabric2 = connection.getFabric2();
+      if (fabric1 == null || fabric2 == null) {
+        continue;
+      }
+
+      // Generate interface name for the inter-fabric link
+      String ifaceName = generateInterFabricInterfaceName(connectionId, connection);
+
+      // Use first two available border nodes for the connection
+      // In a real ACI deployment, the specific nodes would be determined by L3Out path attachments
+      AciConfiguration.FabricNode node1 = borderNodes.size() > 0 ? borderNodes.get(0) : null;
+      AciConfiguration.FabricNode node2 = borderNodes.size() > 1 ? borderNodes.get(1) : node1;
+
+      if (node1 == null || node2 == null) {
+        continue;
+      }
+
+      String hostname1 = nodeIdToHostname.get(node1.getNodeId());
+      String hostname2 = nodeIdToHostname.get(node2.getNodeId());
+
+      if (hostname1 == null || hostname2 == null) {
+        continue;
+      }
+
+      // Create bidirectional edge for the inter-fabric connection
+      // Each fabric side gets its own interface for the connection
+      String iface1 = ifaceName + "-fabric1";
+      String iface2 = ifaceName + "-fabric2";
+
+      edges.add(new Layer1Edge(hostname1, iface1, hostname2, iface2));
+    }
+  }
+
+  /**
+   * Finds the node IDs of border nodes (nodes participating in L3Out connections).
+   *
+   * <p>Border nodes are leaf switches that have L3Out interfaces configured, making them the
+   * connection points for external networks and inter-fabric links.
+   *
+   * @param aciConfig The ACI configuration
+   * @return Set of node IDs for border nodes
+   */
+  private static Set<String> findBorderNodeIds(AciConfiguration aciConfig) {
+    Set<String> borderNodeIds = new HashSet<>();
+
+    // Check L3Out configurations for node references in path attachments
+    for (AciConfiguration.L3Out l3out : aciConfig.getL3Outs().values()) {
+      // Check path attachments for node IDs
+      if (l3out.getPathAttachments() != null) {
+        for (AciConfiguration.L3OutPathAttachment attachment : l3out.getPathAttachments()) {
+          if (attachment.getNodeId() != null) {
+            borderNodeIds.add(attachment.getNodeId());
+          }
+        }
+      }
+
+      // If L3Out has BGP peers, mark all leaf nodes as potential border nodes
+      // BGP configuration is at the L3Out level, not per-node
+      if (l3out.getBgpPeers() != null && !l3out.getBgpPeers().isEmpty()) {
+        for (AciConfiguration.FabricNode node : aciConfig.getFabricNodes().values()) {
+          if (node.getRole() != null
+              && ("leaf".equalsIgnoreCase(node.getRole())
+                  || "services".equalsIgnoreCase(node.getRole()))) {
+            borderNodeIds.add(node.getNodeId());
+          }
+        }
+      }
+    }
+
+    // Also check path attachments for nodes that host EPGs with external connectivity
+    if (aciConfig.getPathAttachmentMap() != null) {
+      borderNodeIds.addAll(aciConfig.getPathAttachmentMap().keySet());
+    }
+
+    return borderNodeIds;
+  }
+
+  /**
+   * Generates an interface name for an inter-fabric connection.
+   *
+   * @param connectionId The connection identifier
+   * @param connection The inter-fabric connection
+   * @return A normalized interface name for the connection
+   */
+  private static String generateInterFabricInterfaceName(
+      String connectionId, AciConfiguration.InterFabricConnection connection) {
+    // Create a normalized interface name based on connection type and ID
+    String connType = connection.getConnectionType();
+    if (connType == null || connType.isEmpty()) {
+      connType = "generic";
+    }
+
+    // Sanitize connection ID for use in interface name
+    String sanitizedId = connectionId.replaceAll("[^a-zA-Z0-9_-]", "-");
+
+    return String.format("inter-fabric-%s-%s", connType, sanitizedId);
   }
 
   /**

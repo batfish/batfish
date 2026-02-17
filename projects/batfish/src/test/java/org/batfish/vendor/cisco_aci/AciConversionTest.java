@@ -884,4 +884,106 @@ public class AciConversionTest {
             .getAction(),
         equalTo(LineAction.DENY));
   }
+
+  /** Test L2Out conversion creates VLAN interfaces for external Layer 2 connectivity. */
+  @Test
+  public void testL2OutCreatesVlanInterface() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("l2out-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create a fabric node
+    AciConfiguration.FabricNode node = createFabricNode("201", "leaf1", "2", "leaf");
+    config.getFabricNodes().put("201", node);
+
+    // Create VRF
+    AciVrfModel vrf = new AciVrfModel("vrf1");
+    vrf.setTenant("tenant1");
+    config.getVrfs().put("vrf1", vrf);
+
+    // Create bridge domain
+    AciConfiguration.BridgeDomain bd = new AciConfiguration.BridgeDomain("bd1");
+    bd.setVrf("vrf1");
+    bd.setTenant("tenant1");
+    config.getBridgeDomains().put("bd1", bd);
+
+    // Create L2Out
+    AciConfiguration.L2Out l2out = new AciConfiguration.L2Out("external_l2");
+    l2out.setTenant("tenant1");
+    l2out.setBridgeDomain("bd1");
+    l2out.setEncapsulation("vlan-100");
+    config.getL2Outs().put("tenant1:external_l2", l2out);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> configs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = configs.get("leaf1");
+    assertNotNull(leafConfig);
+
+    // Find the L2Out interface
+    Interface l2OutInterface = null;
+    for (Interface iface : leafConfig.getAllInterfaces().values()) {
+      if (iface.getName().startsWith("L2Out-")) {
+        l2OutInterface = iface;
+        break;
+      }
+    }
+
+    assertNotNull("Expected L2Out interface to be created", l2OutInterface);
+    assertEquals(InterfaceType.VLAN, l2OutInterface.getInterfaceType());
+    assertEquals(100, l2OutInterface.getVlan().intValue());
+    assertEquals("vrf1", l2OutInterface.getVrf().getName());
+    assertTrue(l2OutInterface.getAdminUp());
+  }
+
+  /** Test inter-fabric connections create Layer1 edges. */
+  @Test
+  public void testInterFabricConnectionsCreateLayer1Edges() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("inter-fabric-test");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create fabric nodes (border leafs)
+    AciConfiguration.FabricNode leaf1 = createFabricNode("201", "border-leaf1", "1", "leaf");
+    AciConfiguration.FabricNode leaf2 = createFabricNode("202", "border-leaf2", "1", "leaf");
+    config.getFabricNodes().put("201", leaf1);
+    config.getFabricNodes().put("202", leaf2);
+
+    // Create L3Out with path attachment to identify border nodes
+    AciConfiguration.L3Out l3out = new AciConfiguration.L3Out("external-routes");
+    l3out.setTenant("tenant1");
+
+    AciConfiguration.L3OutPathAttachment attachment = new AciConfiguration.L3OutPathAttachment();
+    attachment.setNodeId("201");
+    l3out.getPathAttachments().add(attachment);
+
+    config.getL3Outs().put("tenant1:external-routes", l3out);
+
+    // Create an inter-fabric connection
+    AciConfiguration.InterFabricConnection connection =
+        new AciConfiguration.InterFabricConnection(
+            "fabric-dc1", "fabric-dc2", "bgp", "Inter-fabric BGP connection");
+    connection.addBgpPeer("192.168.1.1");
+
+    config.getInterFabricConnections().put("dc1-dc2-bgp", connection);
+
+    config.finalizeStructures();
+
+    // Create Layer1 edges
+    var edges = AciConversion.createLayer1Edges(config);
+
+    // Should have at least 1 inter-fabric edge
+    long interFabricEdges =
+        edges.stream()
+            .filter(
+                edge ->
+                    edge.getNode1().getInterfaceName().startsWith("inter-fabric-")
+                        || edge.getNode2().getInterfaceName().startsWith("inter-fabric-"))
+            .count();
+
+    assertThat("Expected at least 1 inter-fabric edge", interFabricEdges, equalTo(1L));
+  }
 }

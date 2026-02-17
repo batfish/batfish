@@ -21,6 +21,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 import org.batfish.common.VendorConversionException;
@@ -341,6 +343,16 @@ public final class AciConfiguration extends VendorConfiguration {
         AciFabricInst fabricInst = child.getFabricInst();
         if (fabricInst.getChildren() != null) {
           for (AciFabricInst.FabricInstChild instChild : fabricInst.getChildren()) {
+            // Parse fabricNodeIdentPol to get node name mappings (primary source)
+            if (instChild.getFabricNodeIdentPol() != null) {
+              AciFabricNodeIdentPol identPol = instChild.getFabricNodeIdentPol();
+              if (identPol.getChildren() != null) {
+                for (AciFabricNodeIdentP nodeIdentP : identPol.getChildren()) {
+                  parseFabricNodeIdentP(nodeIdentP, nodeIdToName);
+                }
+              }
+            }
+            // Parse fabricProtPol for fabricNodePEp entries
             if (instChild.getFabricProtPol() != null) {
               AciFabricProtPol protPol = instChild.getFabricProtPol();
               if (protPol.getChildren() != null) {
@@ -350,7 +362,7 @@ public final class AciConfiguration extends VendorConfiguration {
                     if (explicitEp.getChildren() != null) {
                       for (AciFabricExplicitGEp.FabricExplicitGEpChild expChild :
                           explicitEp.getChildren()) {
-                        // Parse fabricNodeIdentP to get node names
+                        // Parse fabricNodeIdentP to get node names (fallback source)
                         if (expChild.getFabricNodeIdentP() != null) {
                           parseFabricNodeIdentP(expChild.getFabricNodeIdentP(), nodeIdToName);
                         }
@@ -368,7 +380,7 @@ public final class AciConfiguration extends VendorConfiguration {
         }
       }
 
-      // ALSO parse from ctrlrInst (controller) - this is where the real node names are!
+      // ALSO parse from ctrlrInst (controller) - alternative location for node names
       if (child.getCtrlrInst() != null) {
         AciCtrlrInst ctrlrInst = child.getCtrlrInst();
         if (ctrlrInst.getChildren() != null) {
@@ -1383,11 +1395,110 @@ public final class AciConfiguration extends VendorConfiguration {
             Map<String, Object> ospfExtPMap = (Map<String, Object>) childMap.get("ospfExtP");
             parseOspfExtPFromMap(ospfExtPMap, l3out, warnings);
           }
+
+          // Logical Node Profile (l3extLNodeP) - contains node and interface attachments
+          else if (childMap.containsKey("l3extLNodeP")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> nodePMap = (Map<String, Object>) childMap.get("l3extLNodeP");
+            parseL3ExtLNodePFromMap(nodePMap, l3out, warnings);
+          }
         }
       }
     }
 
     _l3Outs.put(fqL3OutName, l3out);
+  }
+
+  /** Parses a logical node profile (l3extLNodeP) from a raw map structure. */
+  private void parseL3ExtLNodePFromMap(
+      Map<String, Object> nodePMap, L3Out l3out, Warnings warnings) {
+    if (nodePMap.containsKey("children")) {
+      @SuppressWarnings("unchecked")
+      List<Object> children = (List<Object>) nodePMap.get("children");
+      for (Object childObj : children) {
+        if (childObj instanceof Map) {
+          @SuppressWarnings("unchecked")
+          Map<String, Object> childMap = (Map<String, Object>) childObj;
+
+          // Logical Interface Profile (l3extLIfP) - contains path attachments
+          if (childMap.containsKey("l3extLIfP")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> lifPMap = (Map<String, Object>) childMap.get("l3extLIfP");
+            parseL3ExtLIfPFromMap(lifPMap, l3out, warnings);
+          }
+        }
+      }
+    }
+  }
+
+  /** Parses a logical interface profile (l3extLIfP) from a raw map structure. */
+  private void parseL3ExtLIfPFromMap(Map<String, Object> lifPMap, L3Out l3out, Warnings warnings) {
+    String ifProfileName = null;
+    String ifDescription = null;
+
+    @SuppressWarnings("unchecked")
+    Map<String, Object> attrs = (Map<String, Object>) lifPMap.get("attributes");
+    if (attrs != null) {
+      ifProfileName = (String) attrs.get("name");
+      ifDescription = (String) attrs.get("descr");
+    }
+
+    if (lifPMap.containsKey("children")) {
+      @SuppressWarnings("unchecked")
+      List<Object> children = (List<Object>) lifPMap.get("children");
+      for (Object childObj : children) {
+        if (childObj instanceof Map) {
+          @SuppressWarnings("unchecked")
+          Map<String, Object> childMap = (Map<String, Object>) childObj;
+
+          // Path attachment (l3extRsPathL3OutAtt)
+          if (childMap.containsKey("l3extRsPathL3OutAtt")) {
+            @SuppressWarnings("unchecked")
+            Map<String, Object> pathAttMap =
+                (Map<String, Object>) childMap.get("l3extRsPathL3OutAtt");
+            @SuppressWarnings("unchecked")
+            Map<String, Object> pathAttrs = (Map<String, Object>) pathAttMap.get("attributes");
+            if (pathAttrs != null) {
+              L3OutPathAttachment pathAtt = new L3OutPathAttachment();
+              pathAtt.setTargetDn((String) pathAttrs.get("tDn"));
+              pathAtt.setEncapsulation((String) pathAttrs.get("encap"));
+              pathAtt.setAddress((String) pathAttrs.get("addr"));
+              pathAtt.setMac((String) pathAttrs.get("mac"));
+              pathAtt.setMode((String) pathAttrs.get("mode"));
+              pathAtt.setInterfaceType((String) pathAttrs.get("ifInstT"));
+              pathAtt.setDescription(ifDescription);
+
+              // Parse tDn to extract node ID and interface name
+              // Examples:
+              // - topology/pod-1/paths-1255/pathep-[eth1/29] (single node)
+              // - topology/pod-1/protpaths-1255-1256/pathep-[PG_VPC_FW_1] (VPC pair)
+              String tDn = pathAtt.getTargetDn();
+              if (tDn != null) {
+                // Extract node ID from "paths-N" pattern (single node)
+                Pattern singlePathPattern = Pattern.compile("paths-(\\d+)/pathep-\\[(.+?)\\]");
+                Matcher singleMatcher = singlePathPattern.matcher(tDn);
+                if (singleMatcher.find()) {
+                  pathAtt.setNodeId(singleMatcher.group(1));
+                  pathAtt.setInterfaceName(singleMatcher.group(2));
+                } else {
+                  // For VPC pairs (protpaths-N-M), we don't set a single nodeId
+                  // but still extract the interface name
+                  Pattern vpcPathPattern =
+                      Pattern.compile("protpaths-([\\d-]+)/pathep-\\[(.+?)\\]");
+                  Matcher vpcMatcher = vpcPathPattern.matcher(tDn);
+                  if (vpcMatcher.find()) {
+                    // nodeId remains null for VPC (indicates multi-node)
+                    pathAtt.setInterfaceName(vpcMatcher.group(2));
+                  }
+                }
+              }
+
+              l3out.getPathAttachments().add(pathAtt);
+            }
+          }
+        }
+      }
+    }
   }
 
   /** Parses an external EPG (l3extInstP) from a raw map structure. */
@@ -1718,9 +1829,7 @@ public final class AciConfiguration extends VendorConfiguration {
 
               Contract.Filter filter = new Contract.Filter();
               filter.setName(tnVzFilterName);
-              if ("deny".equalsIgnoreCase(action)) {
-                // Action is deny - mark on filter
-              }
+              filter.setAction(action);
               subject.getFilters().add(filter);
             }
           }
@@ -2601,6 +2710,7 @@ public final class AciConfiguration extends VendorConfiguration {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class Filter implements Serializable {
       private String _name;
+      private String _action;
       private String _etherType;
       private String _ipProtocol;
       private List<String> _sourcePorts;
@@ -2623,6 +2733,14 @@ public final class AciConfiguration extends VendorConfiguration {
 
       public void setName(String name) {
         _name = name;
+      }
+
+      public @Nullable String getAction() {
+        return _action;
+      }
+
+      public void setAction(String action) {
+        _action = action;
       }
 
       public @Nullable String getEtherType() {
@@ -3464,8 +3582,8 @@ public final class AciConfiguration extends VendorConfiguration {
           if (childNode.has("fvTenant")) {
             child.setFvTenant(p.getCodec().treeToValue(childNode.get("fvTenant"), AciTenant.class));
           } else if (childNode.has("fabricInst")) {
-            child.setFabricInst(
-                p.getCodec().treeToValue(childNode.get("fabricInst"), AciFabricInst.class));
+            // fabricInst has mixed-type children, so parse it manually
+            child.setFabricInst(parseFabricInst(childNode.get("fabricInst"), p, ctxt));
           } else if (childNode.has("ctrlrInst")) {
             // ctrlrInst has mixed-type children, so parse it manually
             child.setCtrlrInst(parseCtrlrInst(childNode.get("ctrlrInst"), p, ctxt));
@@ -3504,6 +3622,63 @@ public final class AciConfiguration extends VendorConfiguration {
       }
 
       return ctrlrInst;
+    }
+
+    private AciFabricInst parseFabricInst(JsonNode node, JsonParser p, DeserializationContext ctxt)
+        throws IOException {
+      AciFabricInst fabricInst = new AciFabricInst();
+
+      // Parse attributes
+      JsonNode attributesNode = node.get("attributes");
+      if (attributesNode != null) {
+        fabricInst.setAttributes(
+            p.getCodec().treeToValue(attributesNode, AciFabricInst.AciFabricInstAttributes.class));
+      }
+
+      // Parse children - mixed-type like ctrlrInst
+      JsonNode childrenNode = node.get("children");
+      if (childrenNode != null && childrenNode.isArray()) {
+        com.google.common.collect.ImmutableList.Builder<AciFabricInst.FabricInstChild> children =
+            com.google.common.collect.ImmutableList.builder();
+        for (JsonNode childNode : childrenNode) {
+          AciFabricInst.FabricInstChild child = new AciFabricInst.FabricInstChild();
+
+          if (childNode.has("fabricNodeIdentPol")) {
+            child.setFabricNodeIdentPol(
+                parseFabricNodeIdentPol(childNode.get("fabricNodeIdentPol"), p));
+          } else if (childNode.has("fabricProtPol")) {
+            child.setFabricProtPol(
+                p.getCodec().treeToValue(childNode.get("fabricProtPol"), AciFabricProtPol.class));
+          }
+          // Ignore other child types
+
+          children.add(child);
+        }
+        fabricInst.setChildren(children.build());
+      }
+
+      return fabricInst;
+    }
+
+    private AciFabricNodeIdentPol parseFabricNodeIdentPol(JsonNode node, JsonParser p)
+        throws IOException {
+      AciFabricNodeIdentPol identPol = new AciFabricNodeIdentPol();
+
+      JsonNode childrenNode = node.get("children");
+      if (childrenNode != null && childrenNode.isArray()) {
+        com.google.common.collect.ImmutableList.Builder<AciFabricNodeIdentP> children =
+            com.google.common.collect.ImmutableList.builder();
+        for (JsonNode childNode : childrenNode) {
+          if (childNode.has("fabricNodeIdentP")) {
+            children.add(
+                p.getCodec()
+                    .treeToValue(childNode.get("fabricNodeIdentP"), AciFabricNodeIdentP.class));
+          }
+        }
+        identPol.setChildren(children.build());
+      }
+
+      return identPol;
     }
   }
 
@@ -3588,6 +3763,7 @@ public final class AciConfiguration extends VendorConfiguration {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class FabricInstChild implements Serializable {
       private @Nullable AciFabricProtPol _fabricProtPol;
+      private @Nullable AciFabricNodeIdentPol _fabricNodeIdentPol;
 
       @JsonProperty("fabricProtPol")
       public @Nullable AciFabricProtPol getFabricProtPol() {
@@ -3597,6 +3773,16 @@ public final class AciConfiguration extends VendorConfiguration {
       @JsonProperty("fabricProtPol")
       public void setFabricProtPol(@Nullable AciFabricProtPol fabricProtPol) {
         _fabricProtPol = fabricProtPol;
+      }
+
+      @JsonProperty("fabricNodeIdentPol")
+      public @Nullable AciFabricNodeIdentPol getFabricNodeIdentPol() {
+        return _fabricNodeIdentPol;
+      }
+
+      @JsonProperty("fabricNodeIdentPol")
+      public void setFabricNodeIdentPol(@Nullable AciFabricNodeIdentPol fabricNodeIdentPol) {
+        _fabricNodeIdentPol = fabricNodeIdentPol;
       }
     }
   }
@@ -4357,12 +4543,14 @@ public final class AciConfiguration extends VendorConfiguration {
     private List<StaticRoute> _staticRoutes;
     private OspfConfig _ospfConfig;
     private List<ExternalEpg> _externalEpgs;
+    private List<L3OutPathAttachment> _pathAttachments;
 
     public L3Out(String name) {
       _name = name;
       _bgpPeers = new ArrayList<>();
       _staticRoutes = new ArrayList<>();
       _externalEpgs = new ArrayList<>();
+      _pathAttachments = new ArrayList<>();
     }
 
     public String getName() {
@@ -4455,6 +4643,115 @@ public final class AciConfiguration extends VendorConfiguration {
 
     public void setExternalEpgs(List<ExternalEpg> externalEpgs) {
       _externalEpgs = new ArrayList<>(externalEpgs);
+    }
+
+    public List<L3OutPathAttachment> getPathAttachments() {
+      return _pathAttachments;
+    }
+
+    public void setPathAttachments(List<L3OutPathAttachment> pathAttachments) {
+      _pathAttachments = new ArrayList<>(pathAttachments);
+    }
+  }
+
+  /**
+   * L3Out path attachment configuration.
+   *
+   * <p>Represents the physical path attachment for an L3Out interface (l3extRsPathL3OutAtt). This
+   * defines which physical interfaces and VLAN encapsulation are used for external connectivity.
+   */
+  @JsonInclude(JsonInclude.Include.NON_NULL)
+  @JsonIgnoreProperties(ignoreUnknown = true)
+  public static class L3OutPathAttachment implements Serializable {
+    private String _targetDn;
+    private String _encapsulation;
+    private String _address;
+    private String _mac;
+    private String _mode;
+    private String _interfaceType;
+    private String _nodeId;
+    private String _interfaceName;
+    private String _description;
+
+    /** The target distinguished name (tDn) pointing to the physical path. */
+    public @Nullable String getTargetDn() {
+      return _targetDn;
+    }
+
+    public void setTargetDn(String targetDn) {
+      _targetDn = targetDn;
+    }
+
+    /** The VLAN encapsulation (e.g., "vlan-794"). */
+    public @Nullable String getEncapsulation() {
+      return _encapsulation;
+    }
+
+    public void setEncapsulation(String encapsulation) {
+      _encapsulation = encapsulation;
+    }
+
+    /** The IP address on the interface. */
+    public @Nullable String getAddress() {
+      return _address;
+    }
+
+    public void setAddress(String address) {
+      _address = address;
+    }
+
+    /** The MAC address of the SVI. */
+    public @Nullable String getMac() {
+      return _mac;
+    }
+
+    public void setMac(String mac) {
+      _mac = mac;
+    }
+
+    /** The port mode (e.g., "regular", "native"). */
+    public @Nullable String getMode() {
+      return _mode;
+    }
+
+    public void setMode(String mode) {
+      _mode = mode;
+    }
+
+    /** The interface instance type (e.g., "ext-svi", "sub-interface"). */
+    public @Nullable String getInterfaceType() {
+      return _interfaceType;
+    }
+
+    public void setInterfaceType(String interfaceType) {
+      _interfaceType = interfaceType;
+    }
+
+    /** The node ID extracted from the tDn (for single-path) or null for VPC. */
+    public @Nullable String getNodeId() {
+      return _nodeId;
+    }
+
+    public void setNodeId(String nodeId) {
+      _nodeId = nodeId;
+    }
+
+    /** The interface name extracted from the tDn. */
+    public @Nullable String getInterfaceName() {
+      return _interfaceName;
+    }
+
+    public void setInterfaceName(String interfaceName) {
+      _interfaceName = interfaceName;
+    }
+
+    /** Description from the logical interface profile. */
+    public @Nullable String getDescription() {
+      return _description;
+    }
+
+    public void setDescription(String description) {
+      _description = description;
     }
   }
 
@@ -5154,6 +5451,7 @@ public final class AciConfiguration extends VendorConfiguration {
       // tDn formats:
       // - Single node: topology/pod-{podId}/paths-{nodeId}/pathep-[{interface}]
       // - vPC pair: topology/pod-{podId}/protpaths-{nodeId1}-{nodeId2}/pathep-[{interface}]
+      // - Node reference only: topology/pod-{podId}/node-{nodeId} (no interface)
       if (tdn == null) {
         return;
       }
@@ -5168,9 +5466,10 @@ public final class AciConfiguration extends VendorConfiguration {
         }
       }
 
-      // Extract nodeId (paths- or protpaths-)
+      // Extract nodeId (paths-, protpaths-, or node-)
       int pathsIdx = tdn.indexOf("/paths-");
       int protpathsIdx = tdn.indexOf("/protpaths-");
+      int nodeIdx = tdn.indexOf("/node-");
 
       if (protpathsIdx >= 0) {
         // vPC format: protpaths-{nodeId1}-{nodeId2}
@@ -5192,6 +5491,16 @@ public final class AciConfiguration extends VendorConfiguration {
         int slashIdx = tdn.indexOf('/', nodeStart);
         if (slashIdx > nodeStart) {
           _nodeId = tdn.substring(nodeStart, slashIdx);
+        }
+      } else if (nodeIdx >= 0) {
+        // Node reference only: node-{nodeId} (without interface information)
+        int nodeStart = nodeIdx + 6; // Skip "/node-"
+        int slashIdx = tdn.indexOf('/', nodeStart);
+        if (slashIdx > nodeStart) {
+          _nodeId = tdn.substring(nodeStart, slashIdx);
+        } else {
+          // No trailing slash, take rest of string
+          _nodeId = tdn.substring(nodeStart);
         }
       }
 

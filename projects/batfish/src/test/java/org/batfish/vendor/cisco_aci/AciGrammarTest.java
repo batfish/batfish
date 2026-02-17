@@ -1331,6 +1331,81 @@ public class AciGrammarTest {
     }
   }
 
+  /**
+   * Test parsing ACI config with fabricNodeIdentPol under fabricInst (real-world structure). This
+   * matches the structure from actual ACI config exports where node names are in fabricNodeIdentPol
+   * (separate from fabricNodePEp which has empty names).
+   */
+  @Test
+  public void testParseRealConfig_fabricNodeIdentPolUnderFabricInst() throws IOException {
+    // Real ACI config structure:
+    // - fabricNodeIdentPol is a direct child of fabricInst (not under fabricExplicitGEp)
+    // - fabricNodePEp has empty name and "unspecified" role
+    // - Node names contain role info (e.g., "ACI-Spine-Node01", "ACI-Leaf-Node01")
+    String json =
+        "{"
+            + "\"polUni\": {"
+            + "\"attributes\": {\"dn\": \"uni\", \"name\": \"aci-fabric\"},"
+            + "\"children\": ["
+            + "{\"fabricInst\": {"
+            + "\"attributes\": {\"dn\": \"uni/fabric\"},"
+            + "\"children\": ["
+            // fabricNodeIdentPol is a direct child of fabricInst
+            + "{\"fabricNodeIdentPol\": {"
+            + "\"attributes\": {\"name\": \"default\"},"
+            + "\"children\": ["
+            + "{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"1101\", "
+            + "\"name\": \"ACI-Spine-Node01\", \"role\": \"unspecified\"}}},"
+            + "{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"1102\", "
+            + "\"name\": \"ACI-Spine-Node02\", \"role\": \"unspecified\"}}},"
+            + "{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"1201\", "
+            + "\"name\": \"ACI-Leaf-Node01\", \"role\": \"unspecified\"}}},"
+            + "{\"fabricNodeIdentP\": {\"attributes\": {\"nodeId\": \"1202\", "
+            + "\"name\": \"ACI-Leaf-Node02\", \"role\": \"unspecified\"}}}"
+            + "]}}"
+            + ","
+            // fabricProtPol with fabricNodePEp entries (empty names, no role)
+            + "{\"fabricProtPol\": {"
+            + "\"attributes\": {\"dn\": \"uni/fabric/fabricprotPol\"},"
+            + "\"children\": ["
+            + "{\"fabricExplicitGEp\": {"
+            + "\"attributes\": {\"id\": \"1\"},"
+            + "\"children\": ["
+            + "{\"fabricNodePEp\": {\"attributes\": {\"id\": \"1101\", \"name\": \"\", "
+            + "\"podId\": \"1\"}}},"
+            + "{\"fabricNodePEp\": {\"attributes\": {\"id\": \"1102\", \"name\": \"\", "
+            + "\"podId\": \"1\"}}},"
+            + "{\"fabricNodePEp\": {\"attributes\": {\"id\": \"1201\", \"name\": \"\", "
+            + "\"podId\": \"1\"}}},"
+            + "{\"fabricNodePEp\": {\"attributes\": {\"id\": \"1202\", \"name\": \"\", "
+            + "\"podId\": \"1\"}}}"
+            + "]}}]}}]}}]}}";
+
+    AciConfiguration config =
+        AciConfiguration.fromJson("fabricNodeIdentPol-test.json", json, new Warnings());
+    config.setVendor(org.batfish.datamodel.ConfigurationFormat.CISCO_ACI);
+
+    // Verify fabric nodes were parsed with names from fabricNodeIdentPol
+    assertThat(config.getFabricNodes().size(), equalTo(4));
+    assertThat(config.getFabricNodes(), hasKey("1101"));
+    assertThat(config.getFabricNodes(), hasKey("1102"));
+    assertThat(config.getFabricNodes(), hasKey("1201"));
+    assertThat(config.getFabricNodes(), hasKey("1202"));
+
+    // Verify names were extracted from fabricNodeIdentPol
+    assertThat(config.getFabricNodes().get("1101").getName(), equalTo("ACI-Spine-Node01"));
+    assertThat(config.getFabricNodes().get("1201").getName(), equalTo("ACI-Leaf-Node01"));
+
+    // Verify roles were extracted from node names (name contains "-Spine-" or "-Leaf-")
+    assertThat(config.getFabricNodes().get("1101").getRole(), equalTo("spine"));
+    assertThat(config.getFabricNodes().get("1102").getRole(), equalTo("spine"));
+    assertThat(config.getFabricNodes().get("1201").getRole(), equalTo("leaf"));
+    assertThat(config.getFabricNodes().get("1202").getRole(), equalTo("leaf"));
+
+    // Verify topology edges are created: 2 spines x 2 leaves = 4 edges
+    assertThat(config.getLayer1Edges().size(), equalTo(4));
+  }
+
   /** Helper method to load test JSON resource files. */
   private String loadTestResource(String filename) throws IOException {
     try (java.io.InputStream is = getClass().getResourceAsStream(filename)) {
