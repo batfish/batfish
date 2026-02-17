@@ -6,12 +6,15 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasKey;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import com.google.common.collect.ImmutableList;
+import java.util.Set;
 import java.util.SortedMap;
 import org.batfish.common.Warnings;
+import org.batfish.common.topology.Layer1Edge;
 import org.batfish.datamodel.Configuration;
 import org.batfish.datamodel.ConfigurationFormat;
 import org.batfish.datamodel.ExprAclLine;
@@ -516,5 +519,123 @@ public class AciConversionEdgeCasesTest {
     assertThat(leafConfig.getVrfs(), hasKey(DEFAULT_VRF_NAME));
     Vrf defaultVrf = leafConfig.getVrfs().get(DEFAULT_VRF_NAME);
     assertNotNull(defaultVrf);
+  }
+
+  /** Test fallback interfaces are created for isolated leaf nodes. */
+  @Test
+  public void testFallbackInterfacesForIsolatedLeaf() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create leaf node with no interfaces
+    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    // No interfaces added - node is isolated
+    config.getFabricNodes().put("101", leaf);
+
+    // Create spine node to enable topology
+    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    config.getFabricNodes().put("201", spine);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration leafConfig = viConfigs.get("SW-DC1-Leaf-101");
+    assertNotNull(leafConfig);
+
+    // Should have fallback interfaces created (ethernet1/1-8 and ethernet1/53-54)
+    int interfaceCount = leafConfig.getAllInterfaces().size();
+    assertTrue(
+        "Expected at least 10 fallback interfaces (8 downstream + 2 uplink + 1 loopback), got "
+            + interfaceCount,
+        interfaceCount >= 10);
+  }
+
+  /** Test fallback interfaces are created for isolated spine nodes. */
+  @Test
+  public void testFallbackInterfacesForIsolatedSpine() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create spine node with no interfaces
+    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    config.getFabricNodes().put("201", spine);
+
+    // Create leaf node to enable topology
+    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    config.getFabricNodes().put("101", leaf);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration spineConfig = viConfigs.get("SW-DC1-Spine-201");
+    assertNotNull(spineConfig);
+
+    // Should have fallback interfaces created (ethernet1/1-32)
+    int interfaceCount = spineConfig.getAllInterfaces().size();
+    assertTrue(
+        "Expected at least 32 fallback interfaces + 1 loopback, got " + interfaceCount,
+        interfaceCount >= 32);
+  }
+
+  /** Test services nodes are treated as leaves in topology. */
+  @Test
+  public void testServicesNodesTreatedAsLeaves() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+    config.setVendor(ConfigurationFormat.CISCO_ACI);
+
+    // Create services node with no interfaces
+    AciConfiguration.FabricNode services =
+        createFabricNode("301", "SW-DC1-Services-301", "1", "services");
+    config.getFabricNodes().put("301", services);
+
+    // Create spine node to enable topology
+    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    config.getFabricNodes().put("201", spine);
+
+    config.finalizeStructures();
+
+    Warnings warnings = new Warnings(false, true, true);
+    SortedMap<String, Configuration> viConfigs =
+        AciConversion.toVendorIndependentConfigurations(config, warnings);
+
+    Configuration servicesConfig = viConfigs.get("SW-DC1-Services-301");
+    assertNotNull(servicesConfig);
+
+    // Services nodes should get leaf-style fallback interfaces
+    int interfaceCount = servicesConfig.getAllInterfaces().size();
+    assertTrue(
+        "Expected at least 10 fallback interfaces (8 downstream + 2 uplink + 1 loopback), got "
+            + interfaceCount,
+        interfaceCount >= 10);
+  }
+
+  /** Test Layer 1 edges are created between isolated nodes. */
+  @Test
+  public void testLayer1EdgesForIsolatedNodes() {
+    AciConfiguration config = new AciConfiguration();
+    config.setHostname("test-fabric");
+
+    // Create isolated leaf and spine nodes
+    AciConfiguration.FabricNode leaf = createFabricNode("101", "SW-DC1-Leaf-101", "1", "leaf");
+    config.getFabricNodes().put("101", leaf);
+
+    AciConfiguration.FabricNode spine = createFabricNode("201", "SW-DC1-Spine-201", "1", "spine");
+    config.getFabricNodes().put("201", spine);
+
+    config.finalizeStructures();
+
+    Set<Layer1Edge> edges = AciConversion.createLayer1Edges(config);
+
+    // Should have edges connecting leaf to spine
+    assertFalse("Expected Layer 1 edges to be created", edges.isEmpty());
   }
 }

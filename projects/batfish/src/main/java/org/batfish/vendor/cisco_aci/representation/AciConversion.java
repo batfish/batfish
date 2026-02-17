@@ -568,15 +568,112 @@ public final class AciConversion {
       interfaces.put(mgmtIfaceName, mgmtIface);
     }
 
-    // If no interfaces were defined, create a basic management interface
+    // If no interfaces were defined (only loopback), create fallback fabric interfaces
+    // This ensures isolated nodes get connected in the spine-leaf topology
     if (interfaces.size() == 1) { // Only loopback
       warnings.redFlag(
           "No interfaces defined for fabric node "
               + node.getName()
-              + ". Adding minimal interface set.");
+              + ". Adding fallback fabric interfaces based on role.");
+      createFallbackFabricInterfaces(node, c, vrf, interfaces);
     }
 
     return interfaces;
+  }
+
+  /**
+   * Creates fallback fabric interfaces for a node that has no explicit interfaces defined.
+   *
+   * <p>This ensures isolated nodes (like those from configs without EPG path attachments) get
+   * connected in the spine-leaf topology. Interface creation is based on node role:
+   *
+   * <ul>
+   *   <li>Spine: Creates interfaces for connecting to multiple leaf switches
+   *   <li>Leaf: Creates fabric uplink interfaces (typically eth1/53-54) and downstream ports
+   *   <li>Services: Treated as leaf switches
+   * </ul>
+   *
+   * @param node The fabric node
+   * @param c The Batfish configuration
+   * @param vrf The VRF for the interfaces
+   * @param interfaces Map to add the created interfaces to
+   */
+  private static void createFallbackFabricInterfaces(
+      AciConfiguration.FabricNode node,
+      Configuration c,
+      Vrf vrf,
+      Map<String, Interface> interfaces) {
+
+    String role = node.getRole();
+    if (role == null) {
+      return; // Can't determine what interfaces to create
+    }
+
+    String roleLower = role.toLowerCase();
+
+    if ("spine".equals(roleLower)) {
+      // Spine switches connect to all leaf switches
+      // Create multiple fabric interfaces (eth1/1 through eth1/32 as typical spine ports)
+      for (int i = 1; i <= 32; i++) {
+        String ifaceName = String.format("ethernet1/%d", i);
+        Interface iface =
+            Interface.builder()
+                .setName(ifaceName)
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(c)
+                .setVrf(vrf)
+                .setAdminUp(true)
+                .setMtu(DEFAULT_MTU)
+                .setDescription(
+                    String.format("Fabric interface to leaf (fallback) - Node %s", node.getName()))
+                .setHumanName(ifaceName)
+                .setDeclaredNames(ImmutableList.of(ifaceName))
+                .build();
+        interfaces.put(ifaceName, iface);
+      }
+    } else if ("leaf".equals(roleLower) || "services".equals(roleLower)) {
+      // Leaf switches have:
+      // 1. Fabric uplinks to spine (eth1/53-54 typically)
+      // 2. Downstream ports for endpoints (eth1/1-52)
+
+      // Create fabric uplink interfaces
+      for (int i = 53; i <= 54; i++) {
+        String ifaceName = String.format("ethernet1/%d", i);
+        Interface iface =
+            Interface.builder()
+                .setName(ifaceName)
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(c)
+                .setVrf(vrf)
+                .setAdminUp(true)
+                .setMtu(DEFAULT_MTU)
+                .setDescription(
+                    String.format("Fabric uplink to spine (fallback) - Node %s", node.getName()))
+                .setHumanName(ifaceName)
+                .setDeclaredNames(ImmutableList.of(ifaceName))
+                .build();
+        interfaces.put(ifaceName, iface);
+      }
+
+      // Create a few downstream interfaces for EPG connectivity
+      for (int i = 1; i <= 8; i++) {
+        String ifaceName = String.format("ethernet1/%d", i);
+        Interface iface =
+            Interface.builder()
+                .setName(ifaceName)
+                .setType(InterfaceType.PHYSICAL)
+                .setOwner(c)
+                .setVrf(vrf)
+                .setAdminUp(true)
+                .setMtu(DEFAULT_MTU)
+                .setDescription(
+                    String.format("Downstream port for EPGs (fallback) - Node %s", node.getName()))
+                .setHumanName(ifaceName)
+                .setDeclaredNames(ImmutableList.of(ifaceName))
+                .build();
+        interfaces.put(ifaceName, iface);
+      }
+    }
   }
 
   /**
@@ -2797,9 +2894,14 @@ public final class AciConversion {
             .filter(node -> node.getRole() != null && "spine".equalsIgnoreCase(node.getRole()))
             .collect(Collectors.toList());
 
+    // Include both "leaf" and "services" nodes as leaves (services are treated as leaf switches)
     List<AciConfiguration.FabricNode> leaves =
         aciConfig.getFabricNodes().values().stream()
-            .filter(node -> node.getRole() != null && "leaf".equalsIgnoreCase(node.getRole()))
+            .filter(
+                node ->
+                    node.getRole() != null
+                        && ("leaf".equalsIgnoreCase(node.getRole())
+                            || "services".equalsIgnoreCase(node.getRole())))
             .collect(Collectors.toList());
 
     // Connect each leaf to each spine
