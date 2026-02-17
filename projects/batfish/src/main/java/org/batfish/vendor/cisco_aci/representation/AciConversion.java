@@ -2941,7 +2941,7 @@ public final class AciConversion {
         String leafIface =
             spineIndex < leafIfaceList.size()
                 ? leafIfaceList.get(spineIndex)
-                : "ethernet1/" + (spineIndex + 1);
+                : "Ethernet1/" + (spineIndex + 1);
 
         // For spine, use interfaces from fabric node (l1PhysIf) or generate default
         String spineIface;
@@ -2952,7 +2952,7 @@ public final class AciConversion {
         spineIface =
             spineIndex < spineIfaceList.size()
                 ? spineIfaceList.get(spineIndex)
-                : "ethernet1/" + (spineIndex + 1);
+                : "Ethernet1/" + (spineIndex + 1);
 
         edges.add(new Layer1Edge(leafHostname, leafIface, spineHostname, spineIface));
         spineIndex++;
